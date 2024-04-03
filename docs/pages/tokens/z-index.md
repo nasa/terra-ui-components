@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Z-Index Tokens
-  description: Z-indexes are used to stack components in a logical manner.
+    title: Z-Index Tokens
+    description: Z-indexes are used to stack components in a logical manner.
 ---
 
 # Z-Index Tokens

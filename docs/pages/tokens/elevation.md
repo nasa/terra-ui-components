@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Elevation
-  description: Elevation tokens are used to give elements the appearance of being raised off the page.
+    title: Elevation
+    description: Elevation tokens are used to give elements the appearance of being raised off the page.
 ---
 
 # Elevation Tokens

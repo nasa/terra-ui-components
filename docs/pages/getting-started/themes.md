@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Themes
-  description: Everything you need to know about theming Shoelace.
+    title: Themes
+    description: Everything you need to know about theming Shoelace.
 ---
 
 # Themes
@@ -23,7 +23,7 @@ All selectors must be scoped to the theme's class to ensure interoperability wit
 ```css
 :host,
 .gd-theme-purple-power {
-  /* ... */
+    /* ... */
 }
 ```
 
@@ -33,13 +33,13 @@ To activate a theme, import it and apply the theme's class to the `<html>` eleme
 
 ```html
 <html class="gd-theme-dark">
-  <head>
-    <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/dark.css" />
-  </head>
+    <head>
+        <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/dark.css" />
+    </head>
 
-  <body>
-    ...
-  </body>
+    <body>
+        ...
+    </body>
 </html>
 ```
 
@@ -53,18 +53,18 @@ You can activate themes on various containers throughout the page. This example 
 
 ```html
 <html>
-  <head>
-    <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/light.css" />
-    <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/dark.css" />
-  </head>
+    <head>
+        <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/light.css" />
+        <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/dark.css" />
+    </head>
 
-  <body>
-    <nav class="gd-theme-dark">
-      <!-- dark-themed sidebar -->
-    </nav>
+    <body>
+        <nav class="gd-theme-dark">
+            <!-- dark-themed sidebar -->
+        </nav>
 
-    <!-- light-themed content -->
-  </body>
+        <!-- light-themed content -->
+    </body>
 </html>
 ```
 
@@ -84,7 +84,7 @@ If you're customizing the light theme, you should scope your styles to the follo
 :root,
 :host,
 .gd-theme-light {
-  /* your custom styles here */
+    /* your custom styles here */
 }
 ```
 
@@ -93,7 +93,7 @@ If you're customizing the dark theme, you should scope your styles to the follow
 ```css
 :host,
 .gd-theme-dark {
-  /* your custom styles here */
+    /* your custom styles here */
 }
 ```
 
@@ -110,7 +110,7 @@ Start by changing the selector to match your theme's name. Assuming your new the
 ```css
 :host,
 .gd-theme-purple-power {
-  /* your custom styles here */
+    /* your custom styles here */
 }
 ```
 
@@ -128,8 +128,8 @@ To install the dark theme, add the following to the `<head>` section of your pag
 
 ```html
 <link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@%VERSION%/%CDNDIR%/themes/dark.css"
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/dark.css"
 />
 ```
 
@@ -137,7 +137,7 @@ To activate the theme, apply the `gd-theme-dark` class to the `<html>` element.
 
 ```html
 <html class="gd-theme-dark">
-  ...
+    ...
 </html>
 ```
 
@@ -145,8 +145,8 @@ To activate the theme, apply the `gd-theme-dark` class to the `<html>` element.
 
 Shoelace doesn't try to auto-detect the user's light/dark mode preference. This should be done at the application level. As a best practice, to provide a dark theme in your app, you should:
 
-- Check for [`prefers-color-scheme`](https://stackoverflow.com/a/57795495/567486) and use its value by default
-- Allow the user to override the setting in your app
-- Remember the user's preference and restore it on subsequent logins
+-   Check for [`prefers-color-scheme`](https://stackoverflow.com/a/57795495/567486) and use its value by default
+-   Allow the user to override the setting in your app
+-   Remember the user's preference and restore it on subsequent logins
 
 Shoelace avoids using the `prefers-color-scheme` media query because not all apps support dark mode, and it would break things for the ones that don't.

@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Color Tokens
-  description: Color tokens help maintain consistent use of color throughout your app.
+    title: Color Tokens
+    description: Color tokens help maintain consistent use of color throughout your app.
 ---
 
 # Color Tokens

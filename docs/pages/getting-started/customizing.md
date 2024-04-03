@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Customizing
-  description: Learn how to customize Shoelace through parts and custom properties.
+    title: Customizing
+    description: Learn how to customize Shoelace through parts and custom properties.
 ---
 
 # Customizing
@@ -20,18 +20,18 @@ To customize a design token, simply override it in your stylesheet using a `:roo
 
 ```css
 :root {
-  /* Changes the primary theme color to purple using primitives */
-  --gd-color-primary-50: var(--gd-color-purple-50);
-  --gd-color-primary-100: var(--gd-color-purple-100);
-  --gd-color-primary-200: var(--gd-color-purple-200);
-  --gd-color-primary-300: var(--gd-color-purple-300);
-  --gd-color-primary-400: var(--gd-color-purple-400);
-  --gd-color-primary-500: var(--gd-color-purple-500);
-  --gd-color-primary-600: var(--gd-color-purple-600);
-  --gd-color-primary-700: var(--gd-color-purple-700);
-  --gd-color-primary-800: var(--gd-color-purple-800);
-  --gd-color-primary-900: var(--gd-color-purple-900);
-  --gd-color-primary-950: var(--gd-color-purple-950);
+    /* Changes the primary theme color to purple using primitives */
+    --gd-color-primary-50: var(--gd-color-purple-50);
+    --gd-color-primary-100: var(--gd-color-purple-100);
+    --gd-color-primary-200: var(--gd-color-purple-200);
+    --gd-color-primary-300: var(--gd-color-purple-300);
+    --gd-color-primary-400: var(--gd-color-purple-400);
+    --gd-color-primary-500: var(--gd-color-purple-500);
+    --gd-color-primary-600: var(--gd-color-purple-600);
+    --gd-color-primary-700: var(--gd-color-purple-700);
+    --gd-color-primary-800: var(--gd-color-purple-800);
+    --gd-color-primary-900: var(--gd-color-purple-900);
+    --gd-color-primary-950: var(--gd-color-purple-950);
 }
 ```
 
@@ -46,7 +46,7 @@ Shoelace components use a [shadow DOM](https://developer.mozilla.org/en-US/docs/
 Here's an example that modifies buttons with the `tomato-button` class.
 
 ```html:preview
-<gd-button class="tomato-button"> Tomato Button </gd-button>
+<sl-button class="tomato-button"> Tomato Button </sl-button>
 
 <style>
   .tomato-button::part(base) {
@@ -74,11 +74,11 @@ Here's an example that modifies buttons with the `tomato-button` class.
 
 At first glance, this approach might seem a bit verbose or even limiting, but it comes with a few important advantages:
 
-- Customizations can be made to components with explicit selectors, such as `::part(icon)`, rather than implicit selectors, such as `.button > div > span + .icon`, that are much more fragile.
+-   Customizations can be made to components with explicit selectors, such as `::part(icon)`, rather than implicit selectors, such as `.button > div > span + .icon`, that are much more fragile.
 
-- The internal structure of a component will likely change as it evolves. By exposing CSS parts through an API, the internals can be reworked without fear of breaking customizations as long as its parts remain intact.
+-   The internal structure of a component will likely change as it evolves. By exposing CSS parts through an API, the internals can be reworked without fear of breaking customizations as long as its parts remain intact.
 
-- It encourages us to think more about how components are designed and how customizations should be allowed before users can take advantage of them. Once we opt a part into the component's API, it's guaranteed to be supported and can't be removed until a major version of the library is released.
+-   It encourages us to think more about how components are designed and how customizations should be allowed before users can take advantage of them. Once we opt a part into the component's API, it's guaranteed to be supported and can't be removed until a major version of the library is released.
 
 Most (but not all) components expose parts. You can find them in each component's API documentation under the "CSS Parts" section.
 
@@ -90,7 +90,7 @@ You can set custom properties on a component in your stylesheet.
 
 ```css
 gd-avatar {
-  --size: 6rem;
+    --size: 6rem;
 }
 ```
 
@@ -98,14 +98,14 @@ This will also work if you need to target a subset of components with a specific
 
 ```css
 gd-avatar.your-class {
-  --size: 6rem;
+    --size: 6rem;
 }
 ```
 
 Alternatively, you can set them inline directly on the element.
 
 ```html
-<gd-avatar style="--size: 6rem;"></gd-avatar>
+<sl-avatar style="--size: 6rem;"></sl-avatar>
 ```
 
 Not all components expose CSS custom properties. For those that do, they can be found in the component's API documentation.
@@ -119,18 +119,18 @@ To customize a default animation, use the `setDefaultAnimation()` method. The fu
 This example will make all dialogs use a custom show animation.
 
 ```js
-import { setDefaultAnimation } from '@gesdisc/components/dist/utilities/animation-registry.js';
+import { setDefaultAnimation } from '@gesdisc/components/dist/utilities/animation-registry.js'
 
 // Change the default animation for all dialogs
 setDefaultAnimation('dialog.show', {
-  keyframes: [
-    { transform: 'rotate(-10deg) scale(0.5)', opacity: '0' },
-    { transform: 'rotate(0deg) scale(1)', opacity: '1' }
-  ],
-  options: {
-    duration: 500
-  }
-});
+    keyframes: [
+        { transform: 'rotate(-10deg) scale(0.5)', opacity: '0' },
+        { transform: 'rotate(0deg) scale(1)', opacity: '1' },
+    ],
+    options: {
+        duration: 500,
+    },
+})
 ```
 
 :::tip
@@ -142,20 +142,20 @@ If you only want to target a single component, use the `setAnimation()` method i
 In this example, only the target dialog will use a custom show animation.
 
 ```js
-import { setAnimation } from '@gesdisc/components/dist/utilities/animation-registry.js';
+import { setAnimation } from '@gesdisc/components/dist/utilities/animation-registry.js'
 
 // Change the animation for a single dialog
-const dialog = document.querySelector('#my-dialog');
+const dialog = document.querySelector('#my-dialog')
 
 setAnimation(dialog, 'dialog.show', {
-  keyframes: [
-    { transform: 'rotate(-10deg) scale(0.5)', opacity: '0' },
-    { transform: 'rotate(0deg) scale(1)', opacity: '1' }
-  ],
-  options: {
-    duration: 500
-  }
-});
+    keyframes: [
+        { transform: 'rotate(-10deg) scale(0.5)', opacity: '0' },
+        { transform: 'rotate(0deg) scale(1)', opacity: '1' },
+    ],
+    options: {
+        duration: 500,
+    },
+})
 ```
 
 To learn more about creating Web Animations, refer to the documentation for [`Element.animate()`](https://developer.mozilla.org/en-US/docs/Web/API/Element/animate).

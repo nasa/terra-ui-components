@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Accessibility Commitment
-  description: Shoelace recognizes the need for all users to have undeterred access to the websites and applications that are created with it.
+    title: Accessibility Commitment
+    description: Shoelace recognizes the need for all users to have undeterred access to the websites and applications that are created with it.
 ---
 
 # Accessibility Commitment

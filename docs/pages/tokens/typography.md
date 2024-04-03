@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Typography
-  description: Typography tokens are used to maintain a consistent set of font styles throughout your app.
+    title: Typography
+    description: Typography tokens are used to maintain a consistent set of font styles throughout your app.
 ---
 
 # Typography Tokens

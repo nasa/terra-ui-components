@@ -1,36 +1,39 @@
-import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing';
+import { aTimeout, elementUpdated, expect, fixture } from '@open-wc/testing'
 
-import { activeElements, getDeepestActiveElement } from './active-elements.js';
-import { clickOnElement } from './test.js';
-import { html } from 'lit';
-import { sendKeys } from '@web/test-runner-commands';
-import type { SlDialog } from '../gesdisc-components.js';
+import { activeElements, getDeepestActiveElement } from './active-elements.js'
+import { clickOnElement } from './test.js'
+import { html } from 'lit'
+import { sendKeys } from '@web/test-runner-commands'
+import type { SlDialog } from '../gesdisc-components.js'
 
-import '../../../dist/gesdisc-components.js';
+import '../../../dist/gesdisc-components.js'
 
 async function holdShiftKey(callback: () => Promise<void>) {
-  await sendKeys({ down: 'Shift' });
-  await callback();
-  await sendKeys({ up: 'Shift' });
+    await sendKeys({ down: 'Shift' })
+    await callback()
+    await sendKeys({ up: 'Shift' })
 }
 
 const tabKey =
-  navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('HeadlessChrome') ? 'Alt+Tab' : 'Tab';
+    navigator.userAgent.includes('Safari') &&
+    !navigator.userAgent.includes('HeadlessChrome')
+        ? 'Alt+Tab'
+        : 'Tab'
 
 // Simple helper to turn the activeElements generator into an array
 function activeElementsArray() {
-  return [...activeElements()];
+    return [...activeElements()]
 }
 
 window.customElements.define(
-  'tab-test-1',
-  class extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({ mode: 'open' });
-    }
-    connectedCallback() {
-      this.shadowRoot!.innerHTML = `
+    'tab-test-1',
+    class extends HTMLElement {
+        constructor() {
+            super()
+            this.attachShadow({ mode: 'open' })
+        }
+        connectedCallback() {
+            this.shadowRoot!.innerHTML = `
       <gd-drawer>
         <slot name="label" slot="label"></slot>
 
@@ -38,13 +41,13 @@ window.customElements.define(
 
         <slot name="footer" slot="footer"></slot>
       </gd-drawer>
-    `;
+    `
+        }
     }
-  }
-);
+)
 
 it('Should allow tabbing to slotted elements', async () => {
-  const el = await fixture(html`
+    const el = await fixture(html`
     <tab-test-1>
       <div slot="label">
         <gd-button id="focus-1">Focus 1</gd-button>
@@ -62,158 +65,172 @@ it('Should allow tabbing to slotted elements', async () => {
         <button tabindex="-1">No Focus</button>
       </div>
     </tab-test-1>
-  `);
+  `)
 
-  const drawer = el.shadowRoot?.querySelector('gd-drawer');
+    const drawer = el.shadowRoot?.querySelector('gd-drawer')
 
-  if (drawer === null || drawer === undefined) throw Error('Could not find drawer inside of the test element');
+    if (drawer === null || drawer === undefined)
+        throw Error('Could not find drawer inside of the test element')
 
-  await drawer.show();
+    await drawer.show()
 
-  await elementUpdated(drawer);
+    await elementUpdated(drawer)
 
-  const focusZero = drawer.shadowRoot?.querySelector("[role='dialog']");
+    const focusZero = drawer.shadowRoot?.querySelector("[role='dialog']")
 
-  if (focusZero === null || focusZero === undefined) throw Error('Could not find dialog panel inside <gd-drawer>');
+    if (focusZero === null || focusZero === undefined)
+        throw Error('Could not find dialog panel inside <gd-drawer>')
 
-  const focusOne = el.querySelector('#focus-1');
-  const focusTwo = drawer.shadowRoot?.querySelector("[part~='close-button']");
+    const focusOne = el.querySelector('#focus-1')
+    const focusTwo = drawer.shadowRoot?.querySelector("[part~='close-button']")
 
-  if (focusTwo === null || focusTwo === undefined) throw Error('Could not find close button inside <gd-drawer>');
+    if (focusTwo === null || focusTwo === undefined)
+        throw Error('Could not find close button inside <gd-drawer>')
 
-  const focusThree = el.querySelector('#focus-3');
-  const focusFour = el.querySelector('#focus-4');
-  const focusFive = el.querySelector('#focus-5');
-  const focusSix = el.querySelector('#focus-6');
+    const focusThree = el.querySelector('#focus-3')
+    const focusFour = el.querySelector('#focus-4')
+    const focusFive = el.querySelector('#focus-5')
+    const focusSix = el.querySelector('#focus-6')
 
-  // When we open drawer, we should be focused on the panel to start.
-  expect(getDeepestActiveElement()).to.equal(focusZero);
+    // When we open drawer, we should be focused on the panel to start.
+    expect(getDeepestActiveElement()).to.equal(focusZero)
 
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusOne);
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusOne)
 
-  // When we hit the <Tab> key we should go to the "close button" on the drawer
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusTwo);
+    // When we hit the <Tab> key we should go to the "close button" on the drawer
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusTwo)
 
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusThree);
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusThree)
 
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusFour);
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusFour)
 
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusFive);
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusFive)
 
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusSix);
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusSix)
 
-  // Now we should loop back to #panel
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusZero);
+    // Now we should loop back to #panel
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusZero)
 
-  // Now we should loop back to #panel
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(focusOne);
+    // Now we should loop back to #panel
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(focusOne)
 
-  // Let's reset and try from starting point 0 and go backwards.
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusZero);
+    // Let's reset and try from starting point 0 and go backwards.
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusZero)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusSix);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusSix)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusFive);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusFive)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusFour);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusFour)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusThree);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusThree)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusTwo);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusTwo)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusOne);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusOne)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusZero);
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusZero)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(focusSix);
-});
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(focusSix)
+})
 
 it.skip('Should account for when focus is changed from outside sources (like clicking)', async () => {
-  const dialog = await fixture(html`
-    <gd-dialog open="" label="Dialog" class="dialog-overview">
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      <gd-input placeholder="tab to me"></gd-input>
-      <gd-button slot="footer" variant="primary">Close</gd-button>
-    </gd-dialog>
-  `);
+    const dialog = await fixture(html`
+        <gd-dialog open="" label="Dialog" class="dialog-overview">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+            <gd-input placeholder="tab to me"></gd-input>
+            <gd-button slot="footer" variant="primary">Close</gd-button>
+        </gd-dialog>
+    `)
 
-  const inputEl = dialog.querySelector('gd-input')!;
-  const closeButton = dialog.shadowRoot!.querySelector('gd-icon-button')!;
-  const footerButton = dialog.querySelector('gd-button')!;
+    const inputEl = dialog.querySelector('gd-input')!
+    const closeButton = dialog.shadowRoot!.querySelector('gd-icon-button')!
+    const footerButton = dialog.querySelector('gd-button')!
 
-  expect(activeElementsArray()).to.not.include(inputEl);
+    expect(activeElementsArray()).to.not.include(inputEl)
 
-  // Sets focus to the input element
-  inputEl.focus();
+    // Sets focus to the input element
+    inputEl.focus()
 
-  expect(activeElementsArray()).to.include(inputEl);
+    expect(activeElementsArray()).to.include(inputEl)
 
-  await sendKeys({ press: tabKey });
+    await sendKeys({ press: tabKey })
 
-  expect(activeElementsArray()).not.to.include(inputEl);
-  expect(activeElementsArray()).to.include(footerButton);
+    expect(activeElementsArray()).not.to.include(inputEl)
+    expect(activeElementsArray()).to.include(footerButton)
 
-  // Reset focus back to input el
-  inputEl.focus();
-  expect(activeElementsArray()).to.include(inputEl);
+    // Reset focus back to input el
+    inputEl.focus()
+    expect(activeElementsArray()).to.include(inputEl)
 
-  await holdShiftKey(async () => await sendKeys({ press: tabKey }));
-  expect(activeElementsArray()).to.include(closeButton);
-});
+    await holdShiftKey(async () => await sendKeys({ press: tabKey }))
+    expect(activeElementsArray()).to.include(closeButton)
+})
 
 // https://github.com/gesdisc/components/issues/1710
 it('Should respect nested modal instances', async () => {
-  const dialogOne = (): SlDialog => document.querySelector('#dialog-1')!;
-  const dialogTwo = (): SlDialog => document.querySelector('#dialog-2')!;
+    const dialogOne = (): SlDialog => document.querySelector('#dialog-1')!
+    const dialogTwo = (): SlDialog => document.querySelector('#dialog-2')!
 
-  // lit-a11y doesn't like the "autofocus" attribute.
-  /* eslint-disable */
-  await fixture(html`
-    <div>
-      <gd-button id="open-dialog-1" @click=${() => dialogOne().show()}></gd-button>
-      <gd-dialog id="dialog-1" label="Dialog 1">
-        <gd-button @click=${() => dialogTwo().show()} id="open-dialog-2">Open Dialog 2</gd-button>
-        <gd-button slot="footer" variant="primary">Close</gd-button>
-      </gd-dialog>
+    // lit-a11y doesn't like the "autofocus" attribute.
+    /* eslint-disable */
+    await fixture(html`
+        <div>
+            <gd-button
+                id="open-dialog-1"
+                @click=${() => dialogOne().show()}
+            ></gd-button>
+            <gd-dialog id="dialog-1" label="Dialog 1">
+                <gd-button @click=${() => dialogTwo().show()} id="open-dialog-2"
+                    >Open Dialog 2</gd-button
+                >
+                <gd-button slot="footer" variant="primary">Close</gd-button>
+            </gd-dialog>
 
-      <gd-dialog id="dialog-2" label="Dialog 2">
-        <gd-input id="focus-1" autofocus="" placeholder="I will have focus when the dialog is opened"></gd-input>
-        <gd-input id="focus-2" placeholder="Second input"></gd-input>
-        <gd-button slot="footer" variant="primary" class="close-2">Close</gd-button>
-      </gd-dialog>
-    </div>
-  `);
-  /* eslint-enable */
+            <gd-dialog id="dialog-2" label="Dialog 2">
+                <gd-input
+                    id="focus-1"
+                    autofocus=""
+                    placeholder="I will have focus when the dialog is opened"
+                ></gd-input>
+                <gd-input id="focus-2" placeholder="Second input"></gd-input>
+                <gd-button slot="footer" variant="primary" class="close-2"
+                    >Close</gd-button
+                >
+            </gd-dialog>
+        </div>
+    `)
+    /* eslint-enable */
 
-  const firstFocusedEl = document.querySelector('#focus-1');
-  const secondFocusedEl = document.querySelector('#focus-2');
+    const firstFocusedEl = document.querySelector('#focus-1')
+    const secondFocusedEl = document.querySelector('#focus-2')
 
-  // So we can trigger auto-focus stuff
-  await clickOnElement(document.querySelector('#open-dialog-1')!);
-  // These clicks need a ~100ms timeout. I'm assuming for animation reasons?
-  await aTimeout(100);
-  await clickOnElement(document.querySelector('#open-dialog-2')!);
-  await aTimeout(100);
+    // So we can trigger auto-focus stuff
+    await clickOnElement(document.querySelector('#open-dialog-1')!)
+    // These clicks need a ~100ms timeout. I'm assuming for animation reasons?
+    await aTimeout(100)
+    await clickOnElement(document.querySelector('#open-dialog-2')!)
+    await aTimeout(100)
 
-  expect(activeElementsArray()).to.include(firstFocusedEl);
+    expect(activeElementsArray()).to.include(firstFocusedEl)
 
-  await sendKeys({ press: tabKey });
-  expect(activeElementsArray()).to.include(secondFocusedEl);
-});
+    await sendKeys({ press: tabKey })
+    expect(activeElementsArray()).to.include(secondFocusedEl)
+})

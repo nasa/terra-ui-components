@@ -1,21 +1,21 @@
 ---
 meta:
-  title: Angular
-  description: Tips for using Shoelace in your Angular app.
+    title: Angular
+    description: Tips for using GES DISC Components in your Angular app.
 ---
 
 # Angular
 
-Angular [plays nice](https://custom-elements-everywhere.com/#angular) with custom elements, so you can use Shoelace in your Angular apps with ease.
+Angular [plays nice](https://custom-elements-everywhere.com/#angular) with custom elements, so you can use GES DISC Components in your Angular apps with ease.
 
 ## Installation
 
 ### Download the npm package
 
-To add Shoelace to your Angular app, install the package from npm.
+To add GES DISC Components to your Angular app, install the package from npm.
 
 ```bash
-npm install @shoelace-style/shoelace
+npm install @gesdisc/components
 ```
 
 ### Update the Angular Configuration
@@ -32,10 +32,10 @@ Its also important to load the components by using a `<script>` tag into the ind
       ...
       "styles": [
         "src/styles.scss",
-        "@shoelace-style/shoelace/dist/themes/light.css"
+        "@gesdisc/components/dist/themes/light.css"
        ],
       "scripts": [
-        "@shoelace-style/shoelace/dist/shoelace.js"
+        "@gesdisc/components/dist/gesdisc-components.js"
       ]
       ...
 ```
@@ -45,13 +45,13 @@ Its also important to load the components by using a `<script>` tag into the ind
 Next, set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets in the `main.ts`. In this example, we'll use the CDN as a base path.
 
 ```jsx
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path';
+import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@%VERSION%/%CDNDIR%/');
+setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@shoelace-style/shoelace/%NPMDIR%/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@gesdisc/components/%NPMDIR%/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -59,29 +59,29 @@ If you'd rather not use the CDN for assets, you can create a build task that cop
 Then make sure to apply the custom elements schema as shown below.
 
 ```js
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser'
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
 
-import { AppComponent } from './app.component';
+import { AppComponent } from './app.component'
 
 @NgModule({
-  declarations: [AppComponent],
-  imports: [BrowserModule],
-  providers: [],
-  bootstrap: [AppComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+    declarations: [AppComponent],
+    imports: [BrowserModule],
+    providers: [],
+    bootstrap: [AppComponent],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}
 ```
 
-## Reference Shoelace components in your Angular component code
+## Reference GES DISC Components in your Angular component code
 
 ```js
 import { SlDrawer } from '@gesdisc/components';
 
 @Component({
   selector: 'app-drawer-example',
-  template: '<div id="page"><button (click)="showDrawer()">Show drawer</button><gd-drawer #drawer label="Drawer" class="drawer-focus" style="--size: 50vw"><p>Drawer content</p></gd-drawer></div>'
+  template: '<div id="page"><button (click)="showDrawer()">Show drawer</button><sl-drawer #drawer label="Drawer" class="drawer-focus" style="--size: 50vw"><p>Drawer content</p></sl-drawer></div>'
 })
 export class DrawerExampleComponent implements OnInit {
 
@@ -100,14 +100,14 @@ export class DrawerExampleComponent implements OnInit {
   ...
 
   showDrawer() {
-    // use nativeElement to access Shoelace components
+    // use nativeElement to access GES DISC Components
     this.drawer?.nativeElement.show();
   }
 }
 ```
 
-Now you can start using Shoelace components in your app!
+Now you can start using GES DISC Components in your app!
 
 :::tip
-Are you using Shoelace with Angular? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/angular.md)
+Are you using GES DISC Components with Angular? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/angular.md)
 :::

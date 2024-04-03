@@ -5,35 +5,35 @@
  */
 
 @supports (scrollbar-gutter: stable) {
-  .gd-scroll-lock {
-    scrollbar-gutter: stable !important;
-    overflow: hidden !important;
-  }
+    .gd-scroll-lock {
+        scrollbar-gutter: stable !important;
+        overflow: hidden !important;
+    }
 }
 
 /** This can go away once Safari has scrollbar-gutter support. */
 @supports not (scrollbar-gutter: stable) {
-  .gd-scroll-lock body {
-    padding-right: var(--gd-scroll-lock-size) !important;
-    overflow: hidden !important;
-  }
+    .gd-scroll-lock body {
+        padding-right: var(--gd-scroll-lock-size) !important;
+        overflow: hidden !important;
+    }
 }
 
 .gd-toast-stack {
-  position: fixed;
-  top: 0;
-  inset-inline-end: 0;
-  z-index: var(--gd-z-index-toast);
-  width: 28rem;
-  max-width: 100%;
-  max-height: 100%;
-  overflow: auto;
+    position: fixed;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: var(--gd-z-index-toast);
+    width: 28rem;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
 }
 
 .gd-toast-stack gd-alert {
-  margin: var(--gd-spacing-medium);
+    margin: var(--gd-spacing-medium);
 }
 
 .gd-toast-stack gd-alert::part(base) {
-  box-shadow: var(--gd-shadow-large);
+    box-shadow: var(--gd-shadow-large);
 }

@@ -1,33 +1,33 @@
 ---
 meta:
-  title: React
-  description: Tips for using Shoelace in your React app.
+    title: React
+    description: Tips for using GES DISC Components in your React app.
 ---
 
 # React
 
-Shoelace offers a React version of every component to provide an idiomatic experience for React users. You can easily toggle between HTML and React examples throughout the documentation.
+GES DISC Components offers a React version of every component to provide an idiomatic experience for React users. You can easily toggle between HTML and React examples throughout the documentation.
 
 ## Installation
 
-To add Shoelace to your React app, install the package from npm.
+To add GES DISC Components to your React app, install the package from npm.
 
 ```bash
-npm install @shoelace-style/shoelace
+npm install @gesdisc/components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
 // App.jsx
-import '@shoelace-style/shoelace/%NPMDIR%/themes/light.css';
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path';
+import '@gesdisc/components/%NPMDIR%/themes/light.css'
+import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@%VERSION%/%CDNDIR%/');
+setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a [build task](https://webpack.js.org/plugins/copy-webpack-plugin/) that copies `node_modules/@shoelace-style/shoelace/%NPMDIR%/assets` into your app's `public` directory. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a [build task](https://webpack.js.org/plugins/copy-webpack-plugin/) that copies `node_modules/@gesdisc/components/%NPMDIR%/assets` into your app's `public` directory. Then you can point the base path to that folder instead.
 :::
 
 Now you can start using components!
@@ -40,14 +40,14 @@ Preact users facing type errors using components may benefit from setting "paths
 
 ### Importing Components
 
-Every Shoelace component is available to import as a React component. Note that we're importing the `<SlButton>` _React component_ instead of the `<gd-button>` _custom element_ in the example below.
+Every GES DISC component is available to import as a React component. Note that we're importing the `<SlButton>` _React component_ instead of the `<sl-button>` _custom element_ in the example below.
 
 ```jsx
-import SlButton from '@gesdisc/components/%NPMDIR%/react/button';
+import SlButton from '@gesdisc/components/%NPMDIR%/react/button'
 
-const MyComponent = () => <SlButton variant="primary">Click me</SlButton>;
+const MyComponent = () => <SlButton variant="primary">Click me</SlButton>
 
-export default MyComponent;
+export default MyComponent
 ```
 
 #### Notes about tree shaking
@@ -55,7 +55,7 @@ export default MyComponent;
 Previously, it was recommended to import from a single entrypoint like so:
 
 ```jsx
-import { SlButton } from '@gesdisc/components/%NPMDIR%/react';
+import { SlButton } from '@gesdisc/components/%NPMDIR%/react'
 ```
 
 However, tree-shaking extra Shoelace components proved to be a challenge. As a result, we now recommend cherry-picking components you want to use, rather than importing from a single entrypoint.
@@ -74,51 +74,61 @@ Many Shoelace components emit [custom events](https://developer.mozilla.org/en-U
 Here's how you can bind the input's value to a state variable.
 
 ```jsx
-import { useState } from 'react';
-import SlInput from '@gesdisc/components/%NPMDIR%/react/input';
+import { useState } from 'react'
+import SlInput from '@gesdisc/components/%NPMDIR%/react/input'
 
 function MyComponent() {
-  const [value, setValue] = useState('');
+    const [value, setValue] = useState('')
 
-  return <SlInput value={value} onSlInput={event => setValue(event.target.value)} />;
+    return <SlInput value={value} onSlInput={event => setValue(event.target.value)} />
 }
 
-export default MyComponent;
+export default MyComponent
 ```
 
 If you're using TypeScript, it's important to note that `event.target` will be a reference to the underlying custom element. You can use `(event.target as any).value` as a quick fix, or you can strongly type the event target as shown below.
 
 ```tsx
-import { useState } from 'react';
-import SlInput from '@gesdisc/components/%NPMDIR%/react/input';
-import type SlInputElement from '@gesdisc/components/%NPMDIR%/components/input/input';
+import { useState } from 'react'
+import SlInput from '@gesdisc/components/%NPMDIR%/react/input'
+import type SlInputElement from '@gesdisc/components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
-  const [value, setValue] = useState('');
+    const [value, setValue] = useState('')
 
-  return <SlInput value={value} onSlInput={event => setValue((event.target as SlInputElement).value)} />;
+    return (
+        <SlInput
+            value={value}
+            onSlInput={event => setValue((event.target as SlInputElement).value)}
+        />
+    )
 }
 
-export default MyComponent;
+export default MyComponent
 ```
 
 You can also import the event type for use in your callbacks, shown below.
 
 ```tsx
-import { useCallback, useState } from 'react';
-import SlInput, { type SlInputEvent } from '@gesdisc/components/%NPMDIR%/react/input';
-import type SlInputElement from '@gesdisc/components/%NPMDIR%/components/input/input';
+import { useCallback, useState } from 'react'
+import SlInput, { type SlInputEvent } from '@gesdisc/components/%NPMDIR%/react/input'
+import type SlInputElement from '@gesdisc/components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
-  const [value, setValue] = useState('');
-  const onInput = useCallback((event: SlInputEvent) => {
-    setValue(event.detail);
-  }, []);
+    const [value, setValue] = useState('')
+    const onInput = useCallback((event: SlInputEvent) => {
+        setValue(event.detail)
+    }, [])
 
-  return <SlInput value={value} onSlInput={event => setValue((event.target as SlInputElement).value)} />;
+    return (
+        <SlInput
+            value={value}
+            onSlInput={event => setValue((event.target as SlInputElement).value)}
+        />
+    )
 }
 
-export default MyComponent;
+export default MyComponent
 ```
 
 ## Testing with Jest
@@ -149,18 +159,18 @@ In `src/setupTests.js`, add the following.
 
 ```js
 Object.defineProperty(window, 'matchMedia', {
-  writable: true,
-  value: jest.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn()
-  }))
-});
+    writable: true,
+    value: jest.fn().mockImplementation(query => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(), // deprecated
+        removeListener: jest.fn(), // deprecated
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+    })),
+})
 ```
 
 For more details, refer to Jest's [manual mocking](https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom) documentation.

@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Localization
-  description: Discover how to localize Shoelace with minimal effort.
+    title: Localization
+    description: Discover how to localize Shoelace with minimal effort.
 ---
 
 # Localization
@@ -10,13 +10,16 @@ Components can be localized by importing the appropriate translation file and se
 
 ```html
 <html lang="es">
-  <head>
-    <script type="module" src="/path/to/shoelace/dist/translations/es.js"></script>
-  </head>
+    <head>
+        <script
+            type="module"
+            src="/path/to/shoelace/dist/translations/es.js"
+        ></script>
+    </head>
 
-  <body>
-    ...
-  </body>
+    <body>
+        ...
+    </body>
 </html>
 ```
 
@@ -28,17 +31,17 @@ Shoelace ships with a number of translations. The default is English (US), which
 
 The location of translations depends on how you're consuming Shoelace.
 
-- If you're using the CDN, [import them from the CDN](https://www.jsdelivr.com/package/npm/@shoelace-style/shoelace?path=%CDNDIR%%2Ftranslations)
-- If you're using a bundler, import them from `@shoelace-style/shoelace/%NPMDIR%/translations/[lang].js`
+-   If you're using the CDN, [import them from the CDN](https://www.jsdelivr.com/package/npm/@gesdisc/components?path=%CDNDIR%%2Ftranslations)
+-   If you're using a bundler, import them from `@gesdisc/components/%NPMDIR%/translations/[lang].js`
 
 You do not need to load translations up front. You can import them dynamically even after updating the `lang` attribute. Once a translation is registered, localized components will update automatically.
 
 ```js
 // Same as setting <html lang="de">
-document.documentElement.lang = 'de';
+document.documentElement.lang = 'de'
 
 // Import the translation
-import('/path/to/shoelace/dist/translations/de.js');
+import('/path/to/shoelace/dist/translations/de.js')
 ```
 
 ### Translation Resolution
@@ -69,12 +72,12 @@ You can use a different locale for an individual component by setting its `lang`
 
 ```html
 <html lang="es">
-  ...
+    ...
 
-  <body>
-    <gd-button><!-- Spanish --></gd-button>
-    <gd-button lang="ru"><!-- Russian --></gd-button>
-  </body>
+    <body>
+        <sl-button><!-- Spanish --></sl-button>
+        <sl-button lang="ru"><!-- Russian --></sl-button>
+    </body>
 </html>
 ```
 
@@ -82,13 +85,13 @@ For performance reasons, the `lang` and `dir` attributes must be on the componen
 
 ```html
 <html lang="es">
-  ...
+    ...
 
-  <body>
-    <div lang="ru">
-      <gd-button><!-- still in Spanish --></gd-button>
-    </div>
-  </body>
+    <body>
+        <div lang="ru">
+            <sl-button><!-- still in Spanish --></sl-button>
+        </div>
+    </body>
 </html>
 ```
 
@@ -123,13 +126,13 @@ Once your translation has been compiled to JavaScript, import it and activate it
 
 ```html
 <html lang="es">
-  <head>
-    <script type="module" src="/path/to/es.js"></script>
-  </head>
+    <head>
+        <script type="module" src="/path/to/es.js"></script>
+    </head>
 
-  <body>
-    ...
-  </body>
+    <body>
+        ...
+    </body>
 </html>
 ```
 

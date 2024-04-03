@@ -1,1 +1,1 @@
-export { getAnimationNames, getEasingNames } from '../components/animation/animations.js';
+export { getAnimationNames, getEasingNames } from '@shoelace-style/shoelace'

@@ -1,29 +1,31 @@
-const Prism = require('prismjs');
-const PrismLoader = require('prismjs/components/index.js');
+const Prism = require('prismjs')
+const PrismLoader = require('prismjs/components/index.js')
 
-PrismLoader('diff');
-PrismLoader.silent = true;
+PrismLoader('diff')
+PrismLoader.silent = true
 
 /** Highlights a code string. */
 function highlight(code, language) {
-  const alias = language.replace(/^diff-/, '');
-  const isDiff = /^diff-/i.test(language);
+    const alias = language.replace(/^diff-/, '')
+    const isDiff = /^diff-/i.test(language)
 
-  // Auto-load the target language
-  if (!Prism.languages[alias]) {
-    PrismLoader(alias);
-
+    // Auto-load the target language
     if (!Prism.languages[alias]) {
-      throw new Error(`Unsupported language for code highlighting: "${language}"`);
+        PrismLoader(alias)
+
+        if (!Prism.languages[alias]) {
+            throw new Error(
+                `Unsupported language for code highlighting: "${language}"`
+            )
+        }
     }
-  }
 
-  // Register diff-* languages to use the diff grammar
-  if (isDiff) {
-    Prism.languages[language] = Prism.languages.diff;
-  }
+    // Register diff-* languages to use the diff grammar
+    if (isDiff) {
+        Prism.languages[language] = Prism.languages.diff
+    }
 
-  return Prism.highlight(code, Prism.languages[language], language);
+    return Prism.highlight(code, Prism.languages[language], language)
 }
 
 /**
@@ -35,29 +37,29 @@ function highlight(code, language) {
  * appropriate DOM manipulations.
  */
 module.exports = function (doc) {
-  doc.querySelectorAll('pre > code[class]').forEach(code => {
-    // Look for class="language-*" and split colons into separate classes
-    code.classList.forEach(className => {
-      if (className.startsWith('language-')) {
-        //
-        // We use certain suffixes to indicate code previews, expanded states, etc. The class might look something like
-        // this:
-        //
-        //  class="language-html:preview:expanded"
-        //
-        // The language will always come first, so we need to drop the "language-" prefix and everything after the first
-        // color to get the highlighter language.
-        //
-        const language = className.replace(/^language-/, '').split(':')[0];
+    doc.querySelectorAll('pre > code[class]').forEach(code => {
+        // Look for class="language-*" and split colons into separate classes
+        code.classList.forEach(className => {
+            if (className.startsWith('language-')) {
+                //
+                // We use certain suffixes to indicate code previews, expanded states, etc. The class might look something like
+                // this:
+                //
+                //  class="language-html:preview:expanded"
+                //
+                // The language will always come first, so we need to drop the "language-" prefix and everything after the first
+                // color to get the highlighter language.
+                //
+                const language = className.replace(/^language-/, '').split(':')[0]
 
-        try {
-          code.innerHTML = highlight(code.textContent ?? '', language);
-        } catch (err) {
-          // Language not found, skip it
-        }
-      }
-    });
-  });
+                try {
+                    code.innerHTML = highlight(code.textContent ?? '', language)
+                } catch (err) {
+                    // Language not found, skip it
+                }
+            }
+        })
+    })
 
-  return doc;
-};
+    return doc
+}

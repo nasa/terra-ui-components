@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Form Controls
-  description: Some things to note about Shoelace and forms.
+    title: Form Controls
+    description: Some things to note about Shoelace and forms.
 ---
 
 # Form Controls
@@ -21,8 +21,8 @@ Serialization is just a fancy word for collecting form data. If you're relying o
 The [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData) interface offers a standard way to serialize forms in the browser. You can create a `FormData` object from any `<form>` element like this.
 
 ```js
-const form = document.querySelector('form');
-const data = new FormData(form);
+const form = document.querySelector('form')
+const data = new FormData(form)
 
 // All form control data is available in a FormData object
 ```
@@ -30,10 +30,10 @@ const data = new FormData(form);
 However, some folks find `FormData` tricky to work with or they need to pass a JSON payload to their server. To accommodate this, Shoelace offers a serialization utility that gathers form data and returns a simple JavaScript object instead.
 
 ```js
-import { serialize } from '@gesdisc/components/dist/utilities/form.js';
+import { serialize } from '@gesdisc/components/dist/utilities/form.js'
 
-const form = document.querySelector('form');
-const data = serialize(form);
+const form = document.querySelector('form')
+const data = serialize(form)
 
 // All form control data is available in a plain object
 ```
@@ -62,20 +62,20 @@ The form will not be submitted if a required field is incomplete.
 
 ```html:preview
 <form class="input-validation-required">
-  <gd-input name="name" label="Name" required></gd-input>
+  <sl-input name="name" label="Name" required></sl-input>
   <br />
-  <gd-select label="Favorite Animal" clearable required>
-    <gd-option value="birds">Birds</gd-option>
-    <gd-option value="cats">Cats</gd-option>
-    <gd-option value="dogs">Dogs</gd-option>
-    <gd-option value="other">Other</gd-option>
-  </gd-select>
+  <sl-select label="Favorite Animal" clearable required>
+    <sl-option value="birds">Birds</sl-option>
+    <sl-option value="cats">Cats</sl-option>
+    <sl-option value="dogs">Dogs</sl-option>
+    <sl-option value="other">Other</sl-option>
+  </sl-select>
   <br />
-  <gd-textarea name="comment" label="Comment" required></gd-textarea>
+  <sl-textarea name="comment" label="Comment" required></sl-textarea>
   <br />
-  <gd-checkbox required>Check me before submitting</gd-checkbox>
+  <sl-checkbox required>Check me before submitting</sl-checkbox>
   <br /><br />
-  <gd-button type="submit" variant="primary">Submit</gd-button>
+  <sl-button type="submit" variant="primary">Submit</sl-button>
 </form>
 
 <script type="module">
@@ -138,14 +138,14 @@ const App = () => {
 
 ### Input Patterns
 
-To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern), use the `pattern` attribute. This example only allows the letters A-Z, so the form will not submit if a number or symbol is entered. This only works with `<gd-input>` elements.
+To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern), use the `pattern` attribute. This example only allows the letters A-Z, so the form will not submit if a number or symbol is entered. This only works with `<sl-input>` elements.
 
 ```html:preview
 <form class="input-validation-pattern">
-  <gd-input name="letters" required label="Letters" pattern="[A-Za-z]+"></gd-input>
+  <sl-input name="letters" required label="Letters" pattern="[A-Za-z]+"></sl-input>
   <br />
-  <gd-button type="submit" variant="primary">Submit</gd-button>
-  <gd-button type="reset" variant="default">Reset</gd-button>
+  <sl-button type="submit" variant="primary">Submit</sl-button>
+  <sl-button type="reset" variant="default">Reset</sl-button>
 </form>
 
 <script type="module">
@@ -192,12 +192,12 @@ Some input types will automatically trigger constraints, such as `email` and `ur
 
 ```html:preview
 <form class="input-validation-type">
-  <gd-input type="email" label="Email" placeholder="you@example.com" required></gd-input>
+  <sl-input type="email" label="Email" placeholder="you@example.com" required></sl-input>
   <br />
-  <gd-input type="url" label="URL" placeholder="https://example.com/" required></gd-input>
+  <sl-input type="url" label="URL" placeholder="https://example.com/" required></sl-input>
   <br />
-  <gd-button type="submit" variant="primary">Submit</gd-button>
-  <gd-button type="reset" variant="default">Reset</gd-button>
+  <sl-button type="submit" variant="primary">Submit</sl-button>
+  <sl-button type="reset" variant="default">Reset</sl-button>
 </form>
 
 <script type="module">
@@ -246,10 +246,10 @@ To create a custom validation error, pass a non-empty string to the `setCustomVa
 
 ```html:preview
 <form class="input-validation-custom">
-  <gd-input label="Type “shoelace”" required></gd-input>
+  <sl-input label="Type “shoelace”" required></sl-input>
   <br />
-  <gd-button type="submit" variant="primary">Submit</gd-button>
-  <gd-button type="reset" variant="default">Reset</gd-button>
+  <sl-button type="submit" variant="primary">Submit</sl-button>
+  <sl-button type="reset" variant="default">Reset</sl-button>
 </form>
 
 <script type="module">
@@ -321,12 +321,12 @@ Custom validation can be applied to any form control that supports the `setCusto
 
 Due to the many ways form controls are used, Shoelace doesn't provide out of the box validation styles for form controls as part of its default theme. Instead, the following attributes will be applied to reflect a control's validity as users interact with it. You can use them to create custom styles for any of the validation states you're interested in.
 
-- `data-required` - the form control is required
-- `data-optional` - the form control is optional
-- `data-invalid` - the form control is currently invalid
-- `data-valid` - the form control is currently valid
-- `data-user-invalid` - the form control is currently invalid and the user has interacted with it
-- `data-user-valid` - the form control is currently valid and the user has interacted with it
+-   `data-required` - the form control is required
+-   `data-optional` - the form control is optional
+-   `data-invalid` - the form control is currently invalid
+-   `data-valid` - the form control is currently valid
+-   `data-user-invalid` - the form control is currently invalid and the user has interacted with it
+-   `data-user-valid` - the form control is currently valid and the user has interacted with it
 
 These attributes map to the browser's built-in pseudo classes for validation: [`:required`](https://developer.mozilla.org/en-US/docs/Web/CSS/:required), [`:optional`](https://developer.mozilla.org/en-US/docs/Web/CSS/:optional), [`:invalid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:invalid), [`:valid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:valid), and the proposed [`:user-invalid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:user-invalid) and [`:user-valid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:user-valid).
 
@@ -342,25 +342,25 @@ This example demonstrates custom validation styles using `data-user-invalid` and
 
 ```html:preview
 <form class="validity-styles">
-  <gd-input
+  <sl-input
     name="name"
     label="Name"
     help-text="What would you like people to call you?"
     autocomplete="off"
     required
-  ></gd-input>
+  ></sl-input>
 
-  <gd-select name="animal" label="Favorite Animal" help-text="Select the best option." clearable required>
-    <gd-option value="birds">Birds</gd-option>
-    <gd-option value="cats">Cats</gd-option>
-    <gd-option value="dogs">Dogs</gd-option>
-    <gd-option value="other">Other</gd-option>
-  </gd-select>
+  <sl-select name="animal" label="Favorite Animal" help-text="Select the best option." clearable required>
+    <sl-option value="birds">Birds</sl-option>
+    <sl-option value="cats">Cats</sl-option>
+    <sl-option value="dogs">Dogs</sl-option>
+    <sl-option value="other">Other</sl-option>
+  </sl-select>
 
-  <gd-checkbox value="accept" required>Accept terms and conditions</gd-checkbox>
+  <sl-checkbox value="accept" required>Accept terms and conditions</sl-checkbox>
 
-  <gd-button type="submit" variant="primary">Submit</gd-button>
-  <gd-button type="reset" variant="default">Reset</gd-button>
+  <sl-button type="submit" variant="primary">Submit</sl-button>
+  <sl-button type="reset" variant="default">Reset</sl-button>
 </form>
 
 <script type="module">
@@ -448,18 +448,18 @@ To disable the browser's error messages, you need to cancel the `gd-invalid` eve
 
 ```html:preview
 <form class="inline-validation">
-  <gd-input
+  <sl-input
     name="name"
     label="Name"
     help-text="What would you like people to call you?"
     autocomplete="off"
     required
-  ></gd-input>
+  ></sl-input>
 
   <div id="name-error" aria-live="polite" hidden></div>
 
-  <gd-button type="submit" variant="primary">Submit</gd-button>
-  <gd-button type="reset" variant="default">Reset</gd-button>
+  <sl-button type="submit" variant="primary">Submit</sl-button>
+  <sl-button type="reset" variant="default">Reset</sl-button>
 </form>
 
 <script type="module">
@@ -557,12 +557,12 @@ This example is meant to demonstrate the concept of providing your own error mes
 At this time, using [`HTMLFormElement.elements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/elements) will not return Shoelace form controls because the browser is unaware of their status as custom element form controls. Fortunately, Shoelace provides an `elements()` function that does something very similar. However, instead of returning an [`HTMLFormControlsCollection`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection), it returns an array of HTML and Shoelace form controls in the order they appear in the DOM.
 
 ```js
-import { getFormControls } from '@gesdisc/components/dist/utilities/form.js';
+import { getFormControls } from '@gesdisc/components/dist/utilities/form.js'
 
-const form = document.querySelector('#my-form');
-const formControls = getFormControls(form);
+const form = document.querySelector('#my-form')
+const formControls = getFormControls(form)
 
-console.log(formControls); // e.g. [input, gd-input, ...]
+console.log(formControls) // e.g. [input, gd-input, ...]
 ```
 
 :::tip

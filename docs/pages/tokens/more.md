@@ -1,7 +1,7 @@
 ---
 meta:
-  title: More Design Tokens
-  description: Additional design tokens can be found here.
+    title: More Design Tokens
+    description: Additional design tokens can be found here.
 ---
 
 # More Design Tokens

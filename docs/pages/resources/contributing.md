@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Contributing
-  description: Shoelace is an open source project, meaning everyone can use it and contribute to its development.
+    title: Contributing
+    description: Shoelace is an open source project, meaning everyone can use it and contribute to its development.
 ---
 
 # Contributing
@@ -12,16 +12,16 @@ The easiest way to get started contributing is to join the [community chat](http
 
 A common misconception about contributing to an open source project is that you need to know how to code. This simply isn't true. In fact, there are _many_ ways to contribute, and some of the most important contributions come from those who never write a single line of code. Here's a list of ways you can make a meaningful contribution to the project:
 
-- Submitting well-written bug reports
-- Submitting feature requests that are within the scope of the project
-- Improving the documentation
-- Responding to users that need help in the community chat or discussion forum
-- Triaging issues on GitHub
-- Being a developer advocate for the project
-- Sponsoring the project financially
-- Writing tests
-- Sharing ideas
-- And, of course, contributing code!
+-   Submitting well-written bug reports
+-   Submitting feature requests that are within the scope of the project
+-   Improving the documentation
+-   Responding to users that need help in the community chat or discussion forum
+-   Triaging issues on GitHub
+-   Being a developer advocate for the project
+-   Sponsoring the project financially
+-   Writing tests
+-   Sharing ideas
+-   And, of course, contributing code!
 
 Please take a moment to review these guidelines to make the contribution process as easy as possible for both yourself and the project's maintainers.
 
@@ -35,11 +35,11 @@ I realize that one cannot reasonably enforce this any more than one can enforce 
 
 The [issue tracker](https://github.com/gesdisc/components/issues) is for bug reports, feature requests, and pull requests.
 
-- Please **do not** use the issue tracker for personal support requests. Use [the discussion forum](https://github.com/gesdisc/components/discussions/categories/help) instead.
-- Please **do not** use the issue tracker for feature requests. Use [the discussion forum](https://github.com/gesdisc/components/discussions/categories/ideas) instead.
-- Please **do not** derail, hijack, or troll issues. Keep the discussion on topic and be respectful of others.
-- Please **do not** post comments with "+1" or "👍". Use [reactions](https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/) instead.
-- Please **do** use the issue tracker for feature requests, bug reports, and pull requests.
+-   Please **do not** use the issue tracker for personal support requests. Use [the discussion forum](https://github.com/gesdisc/components/discussions/categories/help) instead.
+-   Please **do not** use the issue tracker for feature requests. Use [the discussion forum](https://github.com/gesdisc/components/discussions/categories/ideas) instead.
+-   Please **do not** derail, hijack, or troll issues. Keep the discussion on topic and be respectful of others.
+-   Please **do not** post comments with "+1" or "👍". Use [reactions](https://github.blog/2016-03-10-add-reactions-to-pull-requests-issues-and-comments/) instead.
+-   Please **do** use the issue tracker for feature requests, bug reports, and pull requests.
 
 Issues that do not follow these guidelines are subject to closure. There simply aren't enough resources for the author and contributors to troubleshoot personal support requests.
 
@@ -47,20 +47,20 @@ Issues that do not follow these guidelines are subject to closure. There simply 
 
 Feature requests can be added using [the discussion forum](https://github.com/gesdisc/components/discussions/categories/ideas).
 
-- Please **do** search for an existing request before suggesting a new feature.
-- Please **do** use the voting buttons to vote for a feature.
-- Please **do** share substantial use cases and perspective that support new features if they haven't already been mentioned.
-- Please **do not** bump, spam, or ping contributors to prioritize your own feature.
+-   Please **do** search for an existing request before suggesting a new feature.
+-   Please **do** use the voting buttons to vote for a feature.
+-   Please **do** share substantial use cases and perspective that support new features if they haven't already been mentioned.
+-   Please **do not** bump, spam, or ping contributors to prioritize your own feature.
 
 ### Bug Reports
 
 A bug is _a demonstrable problem_ caused by code in the library. Bug reports are an important contribution to the quality of the project. When submitting a bug report, there are a few steps you can take to make sure your issues gets attention quickly.
 
-- Please **do not** paste in large blocks of irrelevant code
-- Please **do** search for an existing issue before creating a new one
-- Please **do** explain the bug clearly
-- Please **do** provide a minimal test case that demonstrates the bug (e.g. [jsfiddle.net](https://jsfiddle.net/) or [CodePen](https://codepen.io/))
-- Please **do** provide additional information, when necessary, to replicate the bug
+-   Please **do not** paste in large blocks of irrelevant code
+-   Please **do** search for an existing issue before creating a new one
+-   Please **do** explain the bug clearly
+-   Please **do** provide a minimal test case that demonstrates the bug (e.g. [jsfiddle.net](https://jsfiddle.net/) or [CodePen](https://codepen.io/))
+-   Please **do** provide additional information, when necessary, to replicate the bug
 
 **A minimal test case is critical to a successful bug report.** It demonstrates that the bug exists in the library and not in surrounding code. Contributors should be able to understand the bug without studying your code, otherwise they'll probably move on to another bug.
 
@@ -68,10 +68,10 @@ A bug is _a demonstrable problem_ caused by code in the library. Bug reports are
 
 To keep the project on track, please consider the following guidelines before submitting a PR.
 
-- Please **do not** submit a PR without opening an issue first, unless the changes are trivial (e.g. fixing typos or outdated docs). This may prevent you from doing work that won't be accepted for various reasons (e.g. someone is already working on it, it's not a good fit for the project's roadmap, it needs additional planning, etc.)
-- Please **do** make sure your PR clearly defines what you're changing. Even if you feel your changes are obvious, please explain them so other contributors can more easily review your works. PRs without detailed descriptions are subject to closure pending more details.
-- Please **do** open your PR against the `next` branch.
-- Please **do not** edit anything in `dist/`. These files are generated automatically, so you need to edit the source files instead.
+-   Please **do not** submit a PR without opening an issue first, unless the changes are trivial (e.g. fixing typos or outdated docs). This may prevent you from doing work that won't be accepted for various reasons (e.g. someone is already working on it, it's not a good fit for the project's roadmap, it needs additional planning, etc.)
+-   Please **do** make sure your PR clearly defines what you're changing. Even if you feel your changes are obvious, please explain them so other contributors can more easily review your works. PRs without detailed descriptions are subject to closure pending more details.
+-   Please **do** open your PR against the `next` branch.
+-   Please **do not** edit anything in `dist/`. These files are generated automatically, so you need to edit the source files instead.
 
 The author reserves the right to reject any PR that's outside the scope of the project or doesn't meet code quality standards.
 
@@ -267,11 +267,11 @@ Components should be composable, meaning you can easily reuse them with and with
 
 ### Component Structure
 
-All components have a host element, which is a reference to the `<gd-*>` element itself. Make sure to always set the host element's `display` property to the appropriate value depending on your needs, as the default is `inline` per the custom element spec.
+All components have a host element, which is a reference to the `<sl-*>` element itself. Make sure to always set the host element's `display` property to the appropriate value depending on your needs, as the default is `inline` per the custom element spec.
 
 ```css
 :host {
-  display: block;
+    display: block;
 }
 ```
 
@@ -279,16 +279,16 @@ Aside from `display`, avoid setting styles on the host element when possible. Th
 
 When authoring components, please try to follow the same structure and conventions found in other components. Classes, for example, generally follow this structure:
 
-- Static properties/methods
-- Private/public properties (that are _not_ reactive)
-- `@query` decorators
-- `@state` decorators
-- `@property` decorators
-- Lifecycle methods (`connectedCallback()`, `disconnectedCallback()`, `firstUpdated()`, etc.)
-- Private methods
-- `@watch` decorators
-- Public methods
-- The `render()` method
+-   Static properties/methods
+-   Private/public properties (that are _not_ reactive)
+-   `@query` decorators
+-   `@state` decorators
+-   `@property` decorators
+-   Lifecycle methods (`connectedCallback()`, `disconnectedCallback()`, `firstUpdated()`, etc.)
+-   Private methods
+-   `@watch` decorators
+-   Public methods
+-   The `render()` method
 
 Please avoid using the `public` keyword for class fields. It's simply too verbose when combined with decorators, property names, and arguments. However, _please do_ add `private` in front of any property or method that is intended to be private.
 
@@ -312,17 +312,17 @@ When naming boolean props that hide or disable things, prefix them with `no-`, e
 
 When a component relies on the presence of slotted content to do something, don't assume its initial state is permanent. Slotted content can be added or removed any time and components must be aware of this. A good practice to manage this is:
 
-- Add `@slotchange={this.handleSlotChange}` to the slots you want to watch
-- Add a `handleSlotChange` method and use the `hasSlot` utility to update state variables for the the respective slot(s)
-- Never conditionally render `<slot>` elements in a component — always use `hidden` so the slot remains in the DOM and the `slotchange` event can be captured
+-   Add `@slotchange={this.handleSlotChange}` to the slots you want to watch
+-   Add a `handleSlotChange` method and use the `hasSlot` utility to update state variables for the the respective slot(s)
+-   Never conditionally render `<slot>` elements in a component — always use `hidden` so the slot remains in the DOM and the `slotchange` event can be captured
 
 See the source of card, dialog, or drawer for examples.
 
 ### Dynamic Slot Names and Expand/Collapse Icons
 
-A pattern has been established in `<gd-details>` and `<gd-tree-item>` for expand/collapse icons that animate on open/close. In short, create two slots called `expand-icon` and `collapse-icon` and render them both in the DOM, using CSS to show/hide only one based on the current open state. Avoid conditionally rendering them. Also avoid using dynamic slot names, such as `<slot name=${open ? 'open' : 'closed'}>`, because Firefox will not animate them.
+A pattern has been established in `<sl-details>` and `<sl-tree-item>` for expand/collapse icons that animate on open/close. In short, create two slots called `expand-icon` and `collapse-icon` and render them both in the DOM, using CSS to show/hide only one based on the current open state. Avoid conditionally rendering them. Also avoid using dynamic slot names, such as `<slot name=${open ? 'open' : 'closed'}>`, because Firefox will not animate them.
 
-There should be a container element immediately surrounding both slots. The container should be animated with CSS by default and it should have a part so the user can override the animation or disable it. Please refer to the source and documentation for `<gd-details>` and/or `<gd-tree-item>` for details.
+There should be a container element immediately surrounding both slots. The container should be animated with CSS by default and it should have a part so the user can override the animation or disable it. Please refer to the source and documentation for `<sl-details>` and/or `<sl-tree-item>` for details.
 
 ### Fallback Content in Slots
 
@@ -330,7 +330,7 @@ When providing fallback content inside of `<slot>` elements, avoid adding parts,
 
 ```html
 <slot name="icon">
-  <gd-icon part="close-icon"></gd-icon>
+    <sl-icon part="close-icon"></sl-icon>
 </slot>
 ```
 
@@ -352,8 +352,8 @@ To expose custom properties as part of a component's API, scope them to the `:ho
 
 ```css
 :host {
-  --color: var(--gd-color-primary-500);
-  --background-color: var(--gd-color-neutral-100);
+    --color: var(--gd-color-primary-500);
+    --background-color: var(--gd-color-neutral-100);
 }
 ```
 
@@ -365,7 +365,7 @@ Then use the following syntax for comments so they appear in the generated docs.
  * @cssproperty --background-color: The component's background color.
  */
 export default class SlExample {
-  // ...
+    // ...
 }
 ```
 
@@ -399,7 +399,7 @@ When composing elements, use `part` to export the host element and `exportparts`
 render() {
   return html`
     <div part="base">
-      <gd-icon part="icon" exportparts="base:icon__base" ...></gd-icon>
+      <sl-icon part="icon" exportparts="base:icon__base" ...></sl-icon>
     </div>
   `;
 }
@@ -411,13 +411,13 @@ This results in a consistent, easy to understand structure for parts. In this ex
 
 TL;DR – a component is a dependency if and only if it's rendered inside another component's shadow root.
 
-Many Shoelace components use other Shoelace components internally. For example, `<gd-button>` uses both `<gd-icon>` and `<gd-spinner>` for its caret icon and loading state, respectively. Since these components appear in the button's shadow root, they are considered dependencies of Button. Since dependencies are automatically loaded, users only need to import the button and everything will work as expected.
+Many Shoelace components use other Shoelace components internally. For example, `<sl-button>` uses both `<sl-icon>` and `<sl-spinner>` for its caret icon and loading state, respectively. Since these components appear in the button's shadow root, they are considered dependencies of Button. Since dependencies are automatically loaded, users only need to import the button and everything will work as expected.
 
-Contrast this to `<gd-select>` and `<gd-option>`. At first, one might assume that Option is a dependency of Select. After all, you can't really use Select without slotting in at least one Option. However, Option _is not_ a dependency of Select! The reason is because no Option is rendered in the Select's shadow root. Since the options are provided by the user, it's up to them to import both components independently.
+Contrast this to `<sl-select>` and `<sl-option>`. At first, one might assume that Option is a dependency of Select. After all, you can't really use Select without slotting in at least one Option. However, Option _is not_ a dependency of Select! The reason is because no Option is rendered in the Select's shadow root. Since the options are provided by the user, it's up to them to import both components independently.
 
 People often suggest that Shoelace should auto-load Select + Option, Menu + Menu Item, Breadcrumb + Breadcrumb Item, etc. Although some components are designed to work together, they're technically not dependencies so eagerly loading them may not be desirable. What if someone wants to roll their own component with a superset of features? They wouldn't be able to if Shoelace automatically imported it!
 
-Similarly, in the case of `<gd-radio-group>` there was originally only `<gd-radio>`, but now you can use either `<gd-radio>` or `<gd-radio-button>` as child elements. Which component(s) should be auto-loaded dependencies in this case? Had Radio been a dependency of Radio Group, users that only wanted Radio Buttons would be forced to register both with no way to opt out and no way to provide their own customized version.
+Similarly, in the case of `<sl-radio-group>` there was originally only `<sl-radio>`, but now you can use either `<sl-radio>` or `<sl-radio-button>` as child elements. Which component(s) should be auto-loaded dependencies in this case? Had Radio been a dependency of Radio Group, users that only wanted Radio Buttons would be forced to register both with no way to opt out and no way to provide their own customized version.
 
 For non-dependencies, _the user_ should decide what gets registered, even if it comes with a minor inconvenience.
 
@@ -425,19 +425,19 @@ For non-dependencies, _the user_ should decide what gets registered, even if it 
 
 Form controls should support submission and validation through the following conventions:
 
-- All form controls must use `name`, `value`, and `disabled` properties in the same manner as `HTMLInputElement`
-- All form controls must have a `setCustomValidity()` method so the user can set a custom validation message
-- All form controls must have a `reportValidity()` method that report their validity during form submission
-- All form controls must have an `invalid` property that reflects their validity
-- All form controls should mirror their native validation attributes such as `required`, `pattern`, `minlength`, `maxlength`, etc. when possible
-- All form controls must be tested to work with the standard `<form>` element
+-   All form controls must use `name`, `value`, and `disabled` properties in the same manner as `HTMLInputElement`
+-   All form controls must have a `setCustomValidity()` method so the user can set a custom validation message
+-   All form controls must have a `reportValidity()` method that report their validity during form submission
+-   All form controls must have an `invalid` property that reflects their validity
+-   All form controls should mirror their native validation attributes such as `required`, `pattern`, `minlength`, `maxlength`, etc. when possible
+-   All form controls must be tested to work with the standard `<form>` element
 
 ### System Icons
 
-Avoid inlining SVG icons inside of templates. If a component requires an icon, make sure `<gd-icon>` is a dependency of the component and use the [system library](/components/icon#customizing-the-system-library):
+Avoid inlining SVG icons inside of templates. If a component requires an icon, make sure `<sl-icon>` is a dependency of the component and use the [system library](/components/icon#customizing-the-system-library):
 
 ```html
-<gd-icon library="system" name="..."></gd-icon>
+<sl-icon library="system" name="..."></sl-icon>
 ```
 
 This will render the icons instantly whereas the default library will fetch them from a remote source. If an icon isn't available in the system library, you will need to add it to `library.system.ts`. Using the system library ensures that all icons load instantly and are customizable by users who wish to provide a custom resolver for the system library.
@@ -446,21 +446,23 @@ This will render the icons instantly whereas the default library will fetch them
 
 What to test for a given component:
 
-- Start with a simple test that checks that the default version of the component still renders.
-- Add at least one accessibility test (The accessibility check only covers the parts of the DOM which are currently visible and rendered. Depending on the component, more than one accessibility test is required to cover all scenarios.):
+-   Start with a simple test that checks that the default version of the component still renders.
+-   Add at least one accessibility test (The accessibility check only covers the parts of the DOM which are currently visible and rendered. Depending on the component, more than one accessibility test is required to cover all scenarios.):
 
 ```ts
-const myComponent = await fixture<SlAlert>(html`<gd-my-component>SomeContent</gd-my-component>`);
+const myComponent = await fixture<SlAlert>(
+    html`<sl-my-component>SomeContent</sl-my-component>`
+)
 
-await expect(myComponent).to.be.accessible();
+await expect(myComponent).to.be.accessible()
 ```
 
-- Try to cover all features advertised in the component's description
+-   Try to cover all features advertised in the component's description
 
 Guidelines for writing tests:
 
-- Each test should declare its own, hand crafted hml fixture for the component. Do not try to write one big component to match all tests. This helps keeping each test understandable in isolation.
-- Tests should not produce log lines. Note that sometimes this cannot be prevented as the test runner might log errors (e.g. 404s).
-- Try keeping the main test readable: Extract more complicated sets of selectors/commands/assertions into separate functions.
-- Try to aim testing the user facing features of the component instead of the internal workings of the component.
-- Group multiple tests for one feature into describe blocks.
+-   Each test should declare its own, hand crafted hml fixture for the component. Do not try to write one big component to match all tests. This helps keeping each test understandable in isolation.
+-   Tests should not produce log lines. Note that sometimes this cannot be prevented as the test runner might log errors (e.g. 404s).
+-   Try keeping the main test readable: Extract more complicated sets of selectors/commands/assertions into separate functions.
+-   Try to aim testing the user facing features of the component instead of the internal workings of the component.
+-   Group multiple tests for one feature into describe blocks.

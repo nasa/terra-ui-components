@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="{{ assetUrl('styles/search.css') }}" />
 
     {# Favicons #}
-    <link rel="icon" href="{{ assetUrl('images/logo.svg') }}" type="image/x-icon" />
+    <link rel="icon" href="{{ assetUrl('images/NASA_logo.svg') }}" type="image/x-icon" />
 
     {# Twitter Cards #}
     <meta name="twitter:card" content="summary" />
@@ -53,6 +53,13 @@
     <script src="{{ assetUrl('scripts/code-previews.js') }}" defer></script>
     <script src="{{ assetUrl('scripts/lunr.js') }}" defer></script>
     <script src="{{ assetUrl('scripts/search.js') }}" defer></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"></script>
   </head>
   <body>
     <a id="skip-to-main" class="visually-hidden" href="#main-content" data-smooth-link="false">
@@ -71,51 +78,29 @@
     {# Icon toolbar #}
     <div id="icon-toolbar">
       {# GitHub #}
-      <a href="https://github.com/gesdisc/components" title="View Shoelace on GitHub">
-        <gd-icon name="github"></gd-icon>
-      </a>
-
-      {# Twitter #}
-      <a href="https://twitter.com/shoelace_style" title="Follow Shoelace on Twitter">
-        <gd-icon name="twitter"></gd-icon>
+      <a href="https://github.com/gesdisc/components" title="View GES DISC Components on GitHub">
+        <sl-icon name="github"></sl-icon>
       </a>
 
       {# Theme selector #}
-      <gd-dropdown id="theme-selector" placement="bottom-end" distance="3">
-        <gd-button slot="trigger" size="small" variant="text" caret title="Press \ to toggle">
-          <gd-icon class="only-light" name="sun-fill"></gd-icon>
-          <gd-icon class="only-dark" name="moon-fill"></gd-icon>
-        </gd-button>
-        <gd-menu>
-          <gd-menu-item type="checkbox" value="light">Light</gd-menu-item>
-          <gd-menu-item type="checkbox" value="dark">Dark</gd-menu-item>
-          <gd-divider></gd-divider>
-          <gd-menu-item type="checkbox" value="auto">System</gd-menu-item>
-        </gd-menu>
-      </gd-dropdown>
+      <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
+        <sl-button slot="trigger" size="small" variant="text" caret title="Press \ to toggle">
+          <sl-icon class="only-light" name="sun-fill"></sl-icon>
+          <sl-icon class="only-dark" name="moon-fill"></sl-icon>
+        </sl-button>
+        <sl-menu>
+          <sl-menu-item type="checkbox" value="light">Light</sl-menu-item>
+          <sl-menu-item type="checkbox" value="dark">Dark</sl-menu-item>
+          <sl-divider></sl-divider>
+          <sl-menu-item type="checkbox" value="auto">System</sl-menu-item>
+        </sl-menu>
+      </sl-dropdown>
     </div>
-
-    <a
-      class="ks-banner{% if toc %} with-toc{% endif %}"
-      href="https://www.kickstarter.com/projects/fontawesome/web-awesome?ref=71ihfk"
-      target="_blank"
-    >
-      <span>
-        <svg viewBox="0 0 20 16" xmlns="http://www.w3.org/2000/svg">
-          <path fill="#f36944" d="M11.63 1.625C11.63 2.27911 11.2435 2.84296 10.6865 3.10064L14 6L17.2622 5.34755C17.0968 5.10642 17 4.81452 17 4.5C17 3.67157 17.6716 3 18.5 3C19.3284 3 20 3.67157 20 4.5C20 5.31157 19.3555 5.9726 18.5504 5.99917L15.0307 13.8207C14.7077 14.5384 13.9939 15 13.2068 15H6.79317C6.00615 15 5.29229 14.5384 4.96933 13.8207L1.44963 5.99917C0.64452 5.9726 0 5.31157 0 4.5C0 3.67157 0.671573 3 1.5 3C2.32843 3 3 3.67157 3 4.5C3 4.81452 2.9032 5.10642 2.73777 5.34755L6 6L9.31702 3.09761C8.76346 2.83855 8.38 2.27656 8.38 1.625C8.38 0.727537 9.10754 0 10.005 0C10.9025 0 11.63 0.727537 11.63 1.625Z"/>
-        </svg>
-        <span>
-          <strong style="white-space: nowrap;">Get ready for more awesome!</strong>
-          Web Awesome, the next iteration of Shoelace, is on Kickstarter.
-        </span>
-      </span>
-      <span class="faux-button">Read Our Story</span>
-    </a>
 
     <aside id="sidebar" data-preserve-scroll>
       <header>
-        <a href="/">
-          <img src="{{ assetUrl('images/wordmark.svg') }}" alt="Shoelace" />
+        <a href="/" class="sidebar-logo">
+          <div class="text-logo" style="font-size: 2rem">GES DISC Components</div>
         </a>
         <div class="sidebar-version">
           {{ meta.version }}
@@ -123,19 +108,16 @@
       </header>
 
       <div class="sidebar-buttons">
-        <gd-button size="small" class="repo-button repo-button--github" href="https://github.com/gesdisc/components" target="_blank">
-          <gd-icon slot="prefix" name="github"></gd-icon> Code
-        </gd-button>
-        <gd-button size="small" class="repo-button repo-button--star" href="https://github.com/gesdisc/components/stargazers" target="_blank">
-          <gd-icon slot="prefix" name="star-fill"></gd-icon> Star
-        </gd-button>
-        <gd-button size="small" class="repo-button repo-button--twitter" href="https://twitter.com/shoelace_style" target="_blank">
-          <gd-icon slot="prefix" name="twitter"></gd-icon> Follow
-        </gd-button>
+        <sl-button size="small" class="repo-button repo-button--github" href="https://github.com/gesdisc/components" target="_blank">
+          <sl-icon slot="prefix" name="github"></sl-icon> Code
+        </sl-button>
+        <sl-button size="small" class="repo-button repo-button--star" href="https://github.com/gesdisc/components/stargazers" target="_blank">
+          <sl-icon slot="prefix" name="star-fill"></sl-icon> Star
+        </sl-button>
       </div>
 
       <button class="search-box" type="button" title="Press / to search" aria-label="Search" data-plugin="search">
-        <gd-icon name="search"></gd-icon>
+        <sl-icon name="search"></sl-icon>
         <span>Search</span>
       </button>
 

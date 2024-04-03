@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Spacing Tokens
-  description: Spacing tokens are used to provide consistent spacing between content in your app.
+    title: Spacing Tokens
+    description: Spacing tokens are used to provide consistent spacing between content in your app.
 ---
 
 # Spacing Tokens

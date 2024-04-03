@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Integrating with NextJS
-  description: This page explains how to integrate Shoelace with a NextJS app.
+    title: Integrating with NextJS
+    description: This page explains how to integrate Shoelace with a NextJS app.
 ---
 
 # Integrating with NextJS
@@ -16,16 +16,16 @@ This is a community-maintained document. Please [ask the community](/resources/c
 
 This integration has been tested with the following:
 
-- Node: 16.13.1
-- NextJS: 12.1.6
-- Shoelace: 2.0.0-beta.74
+-   Node: 16.13.1
+-   NextJS: 12.1.6
+-   Shoelace: 2.0.0-beta.74
 
 ## Instructions
 
 To get started using Shoelace with NextJS, the following packages must be installed.
 
 ```bash
-yarn add @shoelace-style/shoelace copy-webpack-plugin next-compose-plugins next-transpile-modules
+yarn add @gesdisc/components copy-webpack-plugin next-compose-plugins next-transpile-modules
 ```
 
 ### Enabling ESM
@@ -44,7 +44,7 @@ There's one more step to enable ESM in NextJS, but we'll tackle that in our Next
 The next step is to import Shoelace's default theme (stylesheet) in your `_app.js` file:
 
 ```css
-import '@shoelace-style/shoelace/dist/themes/light.css';
+import '@gesdisc/components/dist/themes/light.css';
 ```
 
 ### Defining Custom Elements
@@ -55,27 +55,29 @@ We'll want to create a component that uses [React's `useLayoutEffect`](https://r
 
 ```javascript
 function CustomEls({ URL }) {
-  // useRef to avoid re-renders
-  const customEls = useRef(false);
+    // useRef to avoid re-renders
+    const customEls = useRef(false)
 
-  useLayoutEffect(() => {
-    if (customEls.current) {
-      return;
-    }
+    useLayoutEffect(() => {
+        if (customEls.current) {
+            return
+        }
 
-    import('@shoelace-style/shoelace/dist/utilities/base-path').then(({ setBasePath }) => {
-      setBasePath(`${URL}/static/static`);
+        import('@gesdisc/components/dist/utilities/base-path').then(
+            ({ setBasePath }) => {
+                setBasePath(`${URL}/static/static`)
 
-      // This imports all components
-      import('@shoelace-style/shoelace/dist/react');
-      // If you're wanting to selectively import components, replace this line with your own definitions
+                // This imports all components
+                import('@gesdisc/components/dist/react')
+                // If you're wanting to selectively import components, replace this line with your own definitions
 
-      // import("@shoelace-style/shoelace/dist/components/button/button");
-      customEls.current = true;
-    });
-  }, [URL, customEls]);
+                // import("@gesdisc/components/dist/components/button/button");
+                customEls.current = true
+            }
+        )
+    }, [URL, customEls])
 
-  return null;
+    return null
 }
 ```
 
@@ -95,13 +97,13 @@ While we need to use `useLayoutEffect` for the initial render, NextJS will throw
 
 ```javascript
 function MyApp({ Component, pageProps, URL }) {
-  const isBrowser = typeof window !== 'undefined';
-  return (
-    <>
-      {isBrowser && <CustomEls URL={URL} />}
-      <Component {...pageProps} />
-    </>
-  );
+    const isBrowser = typeof window !== 'undefined'
+    return (
+        <>
+            {isBrowser && <CustomEls URL={URL} />}
+            <Component {...pageProps} />
+        </>
+    )
 }
 ```
 
@@ -117,12 +119,12 @@ Then, modify your `MyApp` class in `_app.js` to pass this process environment in
 
 ```javascript
 MyApp.getInitialProps = async context => {
-  const URL = process.env.BASE_URL;
+    const URL = process.env.BASE_URL
 
-  return {
-    URL
-  };
-};
+    return {
+        URL,
+    }
+}
 ```
 
 :::tip
@@ -134,33 +136,36 @@ You'll need to set this `BASE_URL` variable inside the build process of whatever
 Next we need to add Shoelace's assets to the final build output. To do this, modify `next.config.js` to look like this.
 
 ```javascript
-import { dirname, resolve } from 'path';
-import { fileURLToPath } from 'url';
-import CopyPlugin from 'copy-webpack-plugin';
-import withPlugins from 'next-compose-plugins';
-import withTM from 'next-transpile-modules';
+import { dirname, resolve } from 'path'
+import { fileURLToPath } from 'url'
+import CopyPlugin from 'copy-webpack-plugin'
+import withPlugins from 'next-compose-plugins'
+import withTM from 'next-transpile-modules'
 
-const withTMCompiled = withTM(['@shoelace-style/shoelace']);
+const withTMCompiled = withTM(['@gesdisc/components'])
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export default withPlugins([withTMCompiled], {
-  // This is required for ESM to work properly with Shoelace
-  experimental: { esmExternals: 'loose' },
-  webpack: config => {
-    config.plugins.push(
-      new CopyPlugin({
-        patterns: [
-          {
-            from: resolve(__dirname, 'node_modules/@shoelace-style/shoelace/dist/assets/icons'),
-            to: resolve(__dirname, 'static/icons')
-          }
-        ]
-      })
-    );
-    return config;
-  }
-});
+    // This is required for ESM to work properly with Shoelace
+    experimental: { esmExternals: 'loose' },
+    webpack: config => {
+        config.plugins.push(
+            new CopyPlugin({
+                patterns: [
+                    {
+                        from: resolve(
+                            __dirname,
+                            'node_modules/@gesdisc/components/dist/assets/icons'
+                        ),
+                        to: resolve(__dirname, 'static/icons'),
+                    },
+                ],
+            })
+        )
+        return config
+    },
+})
 ```
 
 :::tip
@@ -169,4 +174,4 @@ This will copy the files from `node_modules` into your `static` folder on every 
 
 ## Additional Resources
 
-- There is a third-party [example repo](https://github.com/crutchcorn/nextjs-shoelace-example), courtesy of [crutchcorn](https://github.com/crutchcorn), available to help you get started.
+-   There is a third-party [example repo](https://github.com/crutchcorn/nextjs-shoelace-example), courtesy of [crutchcorn](https://github.com/crutchcorn), available to help you get started.

@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Transition Tokens
-  description: Transition tokens are used to provide consistent transitions throughout your app.
+    title: Transition Tokens
+    description: Transition tokens are used to provide consistent transitions throughout your app.
 ---
 
 # Transition Tokens

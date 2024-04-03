@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Vue
-  description: Tips for using Shoelace in your Vue 3 app.
+    title: Vue
+    description: Tips for using Shoelace in your Vue 3 app.
 ---
 
 # Vue
@@ -17,20 +17,20 @@ These instructions are for Vue 3 and above. If you're using Vue 2, please see th
 To add Shoelace to your Vue app, install the package from npm.
 
 ```bash
-npm install @shoelace-style/shoelace
+npm install @gesdisc/components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
-import '@shoelace-style/shoelace/dist/themes/light.css';
-import { setBasePath } from '@gesdisc/components/dist/utilities/base-path';
+import '@gesdisc/components/dist/themes/light.css'
+import { setBasePath } from '@gesdisc/components/dist/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@%VERSION%/%CDNDIR%/');
+setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@shoelace-style/shoelace/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@gesdisc/components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -45,9 +45,9 @@ Once you have configured your application for custom elements, you should be abl
 
 ```json
 {
-  "compilerOptions": {
-    "types": ["@shoelace-style/shoelace/dist/types/vue"]
-  }
+    "compilerOptions": {
+        "types": ["@gesdisc/components/dist/types/vue"]
+    }
 }
 ```
 
@@ -57,32 +57,32 @@ Once you have configured your application for custom elements, you should be abl
 
 ```html
 <template>
-  <div class="container">
-    <h1>QR code generator</h1>
+    <div class="container">
+        <h1>QR code generator</h1>
 
-    <gd-input maxlength="255" clearable label="Value" v-model="qrCode"></gd-input>
+        <sl-input maxlength="255" clearable label="Value" v-model="qrCode"></sl-input>
 
-    <gd-qr-code :value="qrCode"></gd-qr-code>
-  </div>
+        <sl-qr-code :value="qrCode"></sl-qr-code>
+    </div>
 </template>
 
 <script setup>
-  import { ref } from 'vue';
-  import '@shoelace-style/shoelace/dist/components/qr-code/qr-code.js';
-  import '@shoelace-style/shoelace/dist/components/input/input.js';
+    import { ref } from 'vue'
+    import '@gesdisc/components/dist/components/qr-code/qr-code.js'
+    import '@gesdisc/components/dist/components/input/input.js'
 
-  const qrCode = ref();
+    const qrCode = ref()
 </script>
 
 <style>
-  .container {
-    max-width: 400px;
-    margin: 0 auto;
-  }
+    .container {
+        max-width: 400px;
+        margin: 0 auto;
+    }
 
-  gd-input {
-    margin: var(--gd-spacing-large) 0;
-  }
+    gd-input {
+        margin: var(--gd-spacing-large) 0;
+    }
 </style>
 ```
 
@@ -91,7 +91,7 @@ Once you have configured your application for custom elements, you should be abl
 When binding complex data such as objects and arrays, use the `.prop` modifier to make Vue bind them as a property instead of an attribute.
 
 ```html
-<gd-color-picker :swatches.prop="mySwatches" />
+<sl-color-picker :swatches.prop="mySwatches" />
 ```
 
 ### Two-way Binding
@@ -100,9 +100,9 @@ One caveat is there's currently [no support for v-model on custom elements](http
 
 ```html
 <!-- This doesn't work -->
-<gd-input v-model="name"></gd-input>
+<sl-input v-model="name"></sl-input>
 <!-- This works, but it's a bit longer -->
-<gd-input :value="name" @input="name = $event.target.value"></gd-input>
+<sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
 
 If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-gd-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
@@ -118,10 +118,15 @@ Slots in Shoelace/web components are functionally the same as basic slots in Vue
 Here is an example:
 
 ```html
-<gd-drawer label="Drawer" placement="start" class="drawer-placement-start" :open="drawerIsOpen">
-  This drawer slides in from the start.
-  <div slot="footer">
-    <gd-button variant="primary" @click=" drawerIsOpen = false">Close</gd-button>
-  </div>
-</gd-drawer>
+<sl-drawer
+    label="Drawer"
+    placement="start"
+    class="drawer-placement-start"
+    :open="drawerIsOpen"
+>
+    This drawer slides in from the start.
+    <div slot="footer">
+        <sl-button variant="primary" @click=" drawerIsOpen = false">Close</sl-button>
+    </div>
+</sl-drawer>
 ```

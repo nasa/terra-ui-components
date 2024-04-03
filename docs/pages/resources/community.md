@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Community
-  description: Shoelace has a growing community of designers and developers that are building amazing things with web components.
+    title: Community
+    description: Shoelace has a growing community of designers and developers that are building amazing things with web components.
 ---
 
 # Community
@@ -14,38 +14,38 @@ Please be respectful of other users and remember that Shoelace is an open source
 
 The [discussion forum](https://github.com/gesdisc/components/discussions) is open to anyone with a GitHub account. This is the best place to:
 
-- Ask for help
-- Share ideas and get feedback
-- Show the community what you're working on
-- Learn more about the project, its values, and its roadmap
+-   Ask for help
+-   Share ideas and get feedback
+-   Show the community what you're working on
+-   Learn more about the project, its values, and its roadmap
 
-<gd-button variant="primary" href="https://github.com/gesdisc/components/discussions" target="_blank">
-  <gd-icon name="github" slot="prefix"></gd-icon>
+<sl-button variant="primary" href="https://github.com/gesdisc/components/discussions" target="_blank">
+  <sl-icon name="github" slot="prefix"></sl-icon>
   Join the Discussion
-</gd-button>
+</sl-button>
 
 ## Community Chat
 
 The [community chat](https://discord.gg/mg8f26C) is open to the public and powered by [Discord](https://discord.com/). This is a good place to:
 
-- Ask for help
-- Share ideas and get feedback
-- Show the community what you're working on
-- Chat live with other designers, developers, and Shoelace fans
+-   Ask for help
+-   Share ideas and get feedback
+-   Show the community what you're working on
+-   Chat live with other designers, developers, and Shoelace fans
 
-<gd-button variant="primary" href="https://discord.gg/mg8f26C" target="_blank">
-  <gd-icon name="discord" slot="prefix"></gd-icon>
+<sl-button variant="primary" href="https://discord.gg/mg8f26C" target="_blank">
+  <sl-icon name="discord" slot="prefix"></sl-icon>
   Join the Chat
-</gd-button>
+</sl-button>
 
 ## Stack Overflow
 
 You can post questions on Stack Overflow using [the "shoelace" tag](https://stackoverflow.com/questions/tagged/shoelace). This is a public forum where talented developers answer questions. It's a great way to get help, but it is not maintained by the Shoelace author.
 
-<gd-button variant="primary" href="https://stackoverflow.com/questions/ask?tags=shoelace" target="_blank">
-  <gd-icon name="stack-overflow" slot="prefix"></gd-icon>
+<sl-button variant="primary" href="https://stackoverflow.com/questions/ask?tags=shoelace" target="_blank">
+  <sl-icon name="stack-overflow" slot="prefix"></sl-icon>
   Ask for Help
-</gd-button>
+</sl-button>
 
 ## Twitter
 
@@ -53,7 +53,7 @@ Follow [@shoelace_style](https://twitter.com/shoelace_style) on Twitter for gene
 
 **Please avoid using Twitter for support questions.** The [discussion forum](https://github.com/gesdisc/components/discussions) is a much better place to share code snippets, screenshots, and other troubleshooting info. You'll have much better luck there, as more users will have a chance to help you.
 
-<gd-button variant="primary" href="https://twitter.com/shoelace_style" target="_blank">
-  <gd-icon name="twitter" slot="prefix"></gd-icon>
+<sl-button variant="primary" href="https://twitter.com/shoelace_style" target="_blank">
+  <sl-icon name="twitter" slot="prefix"></sl-icon>
   Follow on Twitter
-</gd-button>
+</sl-button>

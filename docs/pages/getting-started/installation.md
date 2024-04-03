@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Installation
-  description: Choose the installation method that works best for you.
+    title: Installation
+    description: Choose the installation method that works best for you.
 ---
 
 # Installation
@@ -10,11 +10,11 @@ You can load Shoelace via CDN or by installing it locally. If you're using a fra
 
 ## CDN Installation (Easiest)
 
-<gd-tab-group>
-<gd-tab slot="nav" panel="autoloader" active>Autoloader</gd-tab>
-<gd-tab slot="nav" panel="traditional">Traditional Loader</gd-tab>
+<sl-tab-group>
+<sl-tab slot="nav" panel="autoloader" active>Autoloader</sl-tab>
+<sl-tab slot="nav" panel="traditional">Traditional Loader</sl-tab>
 
-<gd-tab-panel name="autoloader">
+<sl-tab-panel name="autoloader">
 
 The experimental autoloader is the easiest and most efficient way to use Shoelace. A lightweight script watches the DOM for unregistered Shoelace elements and lazy loads them for you — even if they're added dynamically.
 
@@ -26,9 +26,9 @@ While convenient, autoloading may lead to a [Flash of Undefined Custom Elements]
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/gesdisc-components-autoloader.js"></script>
 ```
 
-</gd-tab-panel>
+</sl-tab-panel>
 
-<gd-tab-panel name="traditional">
+<sl-tab-panel name="traditional">
 
 The traditional CDN loader registers all Shoelace elements up front. Note that, if you're only using a handful of components, it will be much more efficient to stick with the autoloader. However, you can also [cherry pick](#cherry-picking) components if you want to load specific ones up front.
 
@@ -38,8 +38,8 @@ The traditional CDN loader registers all Shoelace elements up front. Note that, 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/shoelace.js" ></script>
 ```
 
-</gd-tab-panel>
-</gd-tab-group>
+</sl-tab-panel>
+</sl-tab-group>
 
 ### Dark Theme
 
@@ -56,15 +56,15 @@ If you want to load the light or dark theme based on the user's `prefers-color-s
 
 ```html
 <link
-  rel="stylesheet"
-  media="(prefers-color-scheme:light)"
-  href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/light.css"
+    rel="stylesheet"
+    media="(prefers-color-scheme:light)"
+    href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/light.css"
 />
 <link
-  rel="stylesheet"
-  media="(prefers-color-scheme:dark)"
-  href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/dark.css"
-  onload="document.documentElement.classList.add('gd-theme-dark');"
+    rel="stylesheet"
+    media="(prefers-color-scheme:dark)"
+    href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/dark.css"
+    onload="document.documentElement.classList.add('gd-theme-dark');"
 />
 ```
 
@@ -106,8 +106,8 @@ However, if you're [cherry picking](#cherry-picking) or [bundling](#bundling) Sh
 <!-- Option 2: the setBasePath() method -->
 <script src="bundle.js"></script>
 <script type="module">
-  import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js';
-  setBasePath('/path/to/shoelace/%NPMDIR%');
+    import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js'
+    setBasePath('/path/to/shoelace/%NPMDIR%')
 </script>
 ```
 
@@ -121,17 +121,20 @@ Most of the magic behind assets is handled internally by Shoelace, but if you ne
 
 ```html
 <script type="module">
-  import { getBasePath, setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js';
+    import {
+        getBasePath,
+        setBasePath,
+    } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js'
 
-  setBasePath('/path/to/assets');
+    setBasePath('/path/to/assets')
 
-  // ...
+    // ...
 
-  // Get the base path, e.g. /path/to/assets
-  const basePath = getBasePath();
+    // Get the base path, e.g. /path/to/assets
+    const basePath = getBasePath()
 
-  // Get the path to an asset, e.g. /path/to/assets/file.ext
-  const assetPath = getBasePath('file.ext');
+    // Get the path to an asset, e.g. /path/to/assets/file.ext
+    const assetPath = getBasePath('file.ext')
 </script>
 ```
 
@@ -145,9 +148,9 @@ Here's an example that loads only the button component. Again, if you're not usi
 <link rel="stylesheet" href="/path/to/shoelace/%NPMDIR%/themes/light.css" />
 
 <script type="module" data-gesdisc-components="/path/to/shoelace/%NPMDIR%">
-  import '@gesdisc/components/%NPMDIR%/components/button/button.js';
+    import '@gesdisc/components/%NPMDIR%/components/button/button.js'
 
-  // <gd-button> is ready to use!
+    // <sl-button> is ready to use!
 </script>
 ```
 
@@ -173,23 +176,23 @@ npm install @gesdisc/components
 
 Now it's time to configure your bundler. Configurations vary for each tool, but here are some examples to help you get started.
 
-- [Example webpack config](https://github.com/shoelace-style/webpack-example/blob/master/webpack.config.js)
-- [Example Rollup config](https://github.com/shoelace-style/rollup-example/blob/master/rollup.config.js)
+-   [Example webpack config](https://github.com/shoelace-style/webpack-example/blob/master/webpack.config.js)
+-   [Example Rollup config](https://github.com/shoelace-style/rollup-example/blob/master/rollup.config.js)
 
 Once your bundler is configured, you'll be able to import Shoelace components and utilities.
 
 ```js
-import '@gesdisc/components/%NPMDIR%/themes/light.css';
-import '@gesdisc/components/%NPMDIR%/components/button/button.js';
-import '@gesdisc/components/%NPMDIR%/components/icon/icon.js';
-import '@gesdisc/components/%NPMDIR%/components/input/input.js';
-import '@gesdisc/components/%NPMDIR%/components/rating/rating.js';
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js';
+import '@gesdisc/components/%NPMDIR%/themes/light.css'
+import '@gesdisc/components/%NPMDIR%/components/button/button.js'
+import '@gesdisc/components/%NPMDIR%/components/icon/icon.js'
+import '@gesdisc/components/%NPMDIR%/components/input/input.js'
+import '@gesdisc/components/%NPMDIR%/components/rating/rating.js'
+import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js'
 
 // Set the base path to the folder you copied Shoelace's assets to
-setBasePath('/path/to/shoelace/%NPMDIR%');
+setBasePath('/path/to/shoelace/%NPMDIR%')
 
-// <gd-button>, <gd-icon>, <gd-input>, and <gd-rating> are ready to use!
+// <sl-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
 ```
 
 :::warning
@@ -217,7 +220,7 @@ You'll notice that the CDN links all start with `/%CDNDIR%/<path>` and npm impor
 
 TL;DR:
 
-- `@gesdisc/components/%CDNDIR%` is for CDN users
-- `@gesdisc/components/%NPMDIR%` is for npm users
+-   `@gesdisc/components/%CDNDIR%` is for CDN users
+-   `@gesdisc/components/%NPMDIR%` is for npm users
 
 This change was introduced in `v2.5.0` to address issues around installations from npm loading multiple versions of libraries (such as the Lit) that Shoelace uses internally.

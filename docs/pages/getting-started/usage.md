@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Usage
-  description: Learn more about using custom elements.
+    title: Usage
+    description: Learn more about using custom elements.
 ---
 
 # Usage
@@ -15,23 +15,23 @@ If you're new to custom elements, often referred to as "web components," this se
 Many components have properties that can be set using attributes. For example, buttons accept a `size` attribute that maps to the `size` property which dictates the button's size.
 
 ```html
-<gd-button size="small">Click me</gd-button>
+<sl-button size="small">Click me</sl-button>
 ```
 
 Some properties are boolean, so they only have true/false values. To activate a boolean property, add the corresponding attribute without a value.
 
 ```html
-<gd-button disabled>Click me</gd-button>
+<sl-button disabled>Click me</sl-button>
 ```
 
 In rare cases, a property may require an array, an object, or a function. For example, to customize the color picker's list of preset swatches, you set the `swatches` property to an array of colors. This must be done with JavaScript.
 
 ```html
-<gd-color-picker></gd-color-picker>
+<sl-color-picker></sl-color-picker>
 
 <script>
-  const colorPicker = document.querySelector('gd-color-picker');
-  colorPicker.swatches = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'];
+    const colorPicker = document.querySelector('gd-color-picker')
+    colorPicker.swatches = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
 </script>
 ```
 
@@ -41,16 +41,16 @@ Refer to a component's documentation for a complete list of its properties.
 
 You can listen for standard events such as `click`, `mouseover`, etc. as you normally would. However, it's important to note that many events emitted within a component's shadow root will be [retargeted](https://dom.spec.whatwg.org/#retarget) to the host element. This may result in, for example, multiple `click` handlers executing even if the user clicks just once. Furthermore, `event.target` will point to the host element, making things even more confusing.
 
-As a result, you should almost always listen for custom events instead. For example, instead of listening to `click` to determine when an `<gd-checkbox>` gets toggled, listen to `gd-change`.
+As a result, you should almost always listen for custom events instead. For example, instead of listening to `click` to determine when an `<sl-checkbox>` gets toggled, listen to `gd-change`.
 
 ```html
-<gd-checkbox>Check me</gd-checkbox>
+<sl-checkbox>Check me</sl-checkbox>
 
 <script>
-  const checkbox = document.querySelector('gd-checkbox');
-  checkbox.addEventListener('gd-change', event => {
-    console.log(event.target.checked ? 'checked' : 'not checked');
-  });
+    const checkbox = document.querySelector('gd-checkbox')
+    checkbox.addEventListener('gd-change', event => {
+        console.log(event.target.checked ? 'checked' : 'not checked')
+    })
 </script>
 ```
 
@@ -61,11 +61,11 @@ All custom events are prefixed with `gd-` to prevent collisions with standard ev
 Some components have methods you can call to trigger various behaviors. For example, you can set focus on a Shoelace input using the `focus()` method.
 
 ```html
-<gd-input></gd-input>
+<sl-input></sl-input>
 
 <script>
-  const input = document.querySelector('gd-input');
-  input.focus();
+    const input = document.querySelector('gd-input')
+    input.focus()
 </script>
 ```
 
@@ -78,16 +78,16 @@ Many components use slots to accept content inside of them. The most common slot
 For example, a button's default slot is used to populate its label.
 
 ```html
-<gd-button>Click me</gd-button>
+<sl-button>Click me</sl-button>
 ```
 
 Some components also have _named_ slots. A named slot can be populated by adding a child element with the appropriate `slot` attribute. Notice how the icon below has the `slot="prefix"` attribute? This tells the component to place the icon into its `prefix` slot.
 
 ```html
-<gd-button>
-  <gd-icon slot="prefix" name="gear"></gd-icon>
-  Settings
-</gd-button>
+<sl-button>
+    <sl-icon slot="prefix" name="gear"></sl-icon>
+    Settings
+</sl-button>
 ```
 
 The location of a named slot doesn't matter. You can put it anywhere inside the component and the browser will move it to the right place automatically!
@@ -100,17 +100,17 @@ Custom elements cannot have self-closing tags. Similar to `<script>` and `<texta
 
 ```html
 <!-- Don't do this -->
-<gd-input />
+<sl-input />
 
 <!-- Always do this -->
-<gd-input></gd-input>
+<sl-input></sl-input>
 ```
 
 ## Differences from Native Elements
 
 You might expect similarly named elements to share the same API as native HTML elements, but this is not always the case. Shoelace components **are not** designed to be one-to-one replacements for their HTML counterparts. While they usually share the same API, there may be subtle differences.
 
-For example, `<button>` and `<gd-button>` both have a `type` attribute, but the native one defaults to `submit` while the Shoelace one defaults to `button` since this is a better default for most users.
+For example, `<button>` and `<sl-button>` both have a `type` attribute, but the native one defaults to `submit` while the Shoelace one defaults to `button` since this is a better default for most users.
 
 :::tip
 **Don't make assumptions about a component's API!** To prevent unexpected behaviors, please take the time to review the documentation and make sure you understand what each attribute, property, method, and event is intended to do.
@@ -124,7 +124,7 @@ One option is to use the [`:defined`](https://developer.mozilla.org/en-US/docs/W
 
 ```css
 :not(:defined) {
-  visibility: hidden;
+    visibility: hidden;
 }
 ```
 
@@ -136,26 +136,26 @@ A clever way to use this method is to hide the `<body>` with `opacity: 0` and ad
 
 ```html
 <style>
-  body {
-    opacity: 0;
-  }
+    body {
+        opacity: 0;
+    }
 
-  body.ready {
-    opacity: 1;
-    transition: 0.25s opacity;
-  }
+    body.ready {
+        opacity: 1;
+        transition: 0.25s opacity;
+    }
 </style>
 
 <script type="module">
-  await Promise.allSettled([
-    customElements.whenDefined('gd-button'),
-    customElements.whenDefined('gd-card'),
-    customElements.whenDefined('gd-rating')
-  ]);
+    await Promise.allSettled([
+        customElements.whenDefined('gd-button'),
+        customElements.whenDefined('gd-card'),
+        customElements.whenDefined('gd-rating'),
+    ])
 
-  // Button, card, and rating are registered now! Add
-  // the `ready` class so the UI fades in.
-  document.body.classList.add('ready');
+    // Button, card, and rating are registered now! Add
+    // the `ready` class so the UI fades in.
+    document.body.classList.add('ready')
 </script>
 ```
 
@@ -168,21 +168,21 @@ To optimize performance and reduce re-renders, Lit batches component updates. Th
 Consider this example. We're going to change the `checked` property of the checkbox and observe its corresponding `checked` attribute, which happens to reflect.
 
 ```js
-const checkbox = document.querySelector('gd-checkbox');
-checkbox.checked = true;
+const checkbox = document.querySelector('gd-checkbox')
+checkbox.checked = true
 
-console.log(checkbox.hasAttribute('checked')); // false
+console.log(checkbox.hasAttribute('checked')) // false
 ```
 
 Most developers will expect this to be `true` instead of `false`, but the component hasn't had a chance to re-render yet so the attribute doesn't exist when `hasAttribute()` is called. Since changes are batched, we need to wait for the update before proceeding. This can be done using the `updateComplete` property, which is available on all Lit-based components.
 
 ```js
-const checkbox = document.querySelector('gd-checkbox');
-checkbox.checked = true;
+const checkbox = document.querySelector('gd-checkbox')
+checkbox.checked = true
 
 checkbox.updateComplete.then(() => {
-  console.log(checkbox.hasAttribute('checked')); // true
-});
+    console.log(checkbox.hasAttribute('checked')) // true
+})
 ```
 
 This time we see an empty string, which means the boolean attribute is now present!
@@ -204,7 +204,7 @@ Shoelace ships with a file called `vscode.html-custom-data.json` that can be use
 
 ```js
 {
-  "html.customData": ["./node_modules/@shoelace-style/shoelace/dist/vscode.html-custom-data.json"]
+  "html.customData": ["./node_modules/@gesdisc/components/dist/vscode.html-custom-data.json"]
 }
 ```
 
@@ -214,7 +214,7 @@ If `settings.json` already exists, simply add the above line to the root of the 
 
 If you are using a [JetBrains IDE](https://www.jetbrains.com/) and you are installing Shoelace from NPM, the editor will automatically detect the `web-types.json` file from the package and you should immediately see component information in your editor.
 
-If you are installing from the CDN, you can [download a local copy](https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace/dist/web-types.json) and add it to the root of your project. Be sure to add a reference to the `web-types.json` file in your `package.json` in order for your editor to properly detect it.
+If you are installing from the CDN, you can [download a local copy](https://cdn.jsdelivr.net/npm/@gesdisc/components/dist/web-types.json) and add it to the root of your project. Be sure to add a reference to the `web-types.json` file in your `package.json` in order for your editor to properly detect it.
 
 ```json
 {

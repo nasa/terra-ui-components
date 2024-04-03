@@ -26,12 +26,12 @@
     </div>
 
     <div class="component-header__info">
-      <gd-badge variant="neutral" pill>
+      <sl-badge variant="neutral" pill>
         Since {{component.since or '?' }}
-      </gd-badge>
-      <gd-badge variant="{{ badgeVariant }}" pill style="text-transform: capitalize;">
+      </sl-badge>
+      <sl-badge variant="{{ badgeVariant }}" pill style="text-transform: capitalize;">
         {{ component.status }}
-      </gd-badge>
+      </sl-badge>
     </div>
   </header>
 
@@ -51,42 +51,42 @@
     any of the following snippets to <a href="/getting-started/installation#cherry-picking">cherry pick</a> this component.
   </p>
 
-  <gd-tab-group>
-    <gd-tab slot="nav" panel="script">Script</gd-tab>
-    <gd-tab slot="nav" panel="import">Import</gd-tab>
-    <gd-tab slot="nav" panel="bundler">Bundler</gd-tab>
-    <gd-tab slot="nav" panel="react">React</gd-tab>
+  <sl-tab-group>
+    <sl-tab slot="nav" panel="script">Script</sl-tab>
+    <sl-tab slot="nav" panel="import">Import</sl-tab>
+    <sl-tab slot="nav" panel="bundler">Bundler</sl-tab>
+    <sl-tab slot="nav" panel="react">React</sl-tab>
 
-    <gd-tab-panel name="script">
+    <sl-tab-panel name="script">
       <p>
         To import this component from <a href="https://www.jsdelivr.com/package/npm/@gesdisc/components">the CDN</a>
         using a script tag:
       </p>
       <pre><code class="language-html">&lt;script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/npm/@gesdisc/components@{{ meta.version }}/{{ meta.cdndir }}/{{ component.path }}&quot;&gt;&lt;/script&gt;</code></pre>
-    </gd-tab-panel>
+    </sl-tab-panel>
 
-    <gd-tab-panel name="import">
+    <sl-tab-panel name="import">
       <p>
         To import this component from <a href="https://www.jsdelivr.com/package/npm/@gesdisc/components">the CDN</a>
         using a JavaScript import:
       </p>
       <pre><code class="language-js">import 'https://cdn.jsdelivr.net/npm/@gesdisc/components@{{ meta.version }}/{{ meta.cdndir }}/{{ component.path }}';</code></pre>
-    </gd-tab-panel>
+    </sl-tab-panel>
 
-    <gd-tab-panel name="bundler">
+    <sl-tab-panel name="bundler">
       <p>
         To import this component using <a href="{{ rootUrl('/getting-started/installation#bundling') }}">a bundler</a>:
       </p>
       <pre><code class="language-js">import '@gesdisc/components/{{ meta.npmdir }}/{{ component.path }}';</code></pre>
-    </gd-tab-panel>
+    </sl-tab-panel>
 
-    <gd-tab-panel name="react">
+    <sl-tab-panel name="react">
       <p>
         To import this component as a <a href="/frameworks/react">React component</a>:
       </p>
       <pre><code class="language-js">import {{ component.name }} from '@gesdisc/components/{{ meta.npmdir }}/react/{{ component.tagNameWithoutPrefix }}';</code></pre>
-    </gd-tab-panel>
-  </gd-tab-group>
+    </sl-tab-panel>
+  </sl-tab-group>
 
   {# Slots #}
   {% if component.slots.length %}
@@ -140,13 +140,13 @@
               {% if prop.attribute | length > 0 %}
                 {% if prop.attribute != prop.name %}
                   <br>
-                  <gd-tooltip content="This attribute is different from its property">
+                  <sl-tooltip content="This attribute is different from its property">
                     <small>
                       <code class="nowrap">
                         {{ prop.attribute }}
                       </code>
                     </small>
-                  </gd-tooltip>
+                  </sl-tooltip>
                 {% endif %}
               {% endif %}
             </td>
@@ -155,7 +155,7 @@
             </td>
             <td style="text-align: center;">
               {% if prop.reflects %}
-                <gd-icon label="yes" name="check-lg"></gd-icon>
+                <sl-icon label="yes" name="check-lg"></sl-icon>
               {% endif %}
             </td>
             <td>

@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Border Radius
-  description: Border radius tokens are used to give sharp edges a more subtle, rounded effect.
+    title: Border Radius
+    description: Border radius tokens are used to give sharp edges a more subtle, rounded effect.
 ---
 
 # Border Radius Tokens

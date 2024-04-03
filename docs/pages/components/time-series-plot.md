@@ -1,7 +1,7 @@
 ---
 meta:
-  title: Time Series Plot
-  description:
+    title: Time Series Plot
+    description:
 layout: component
 ---
 
