@@ -22,7 +22,10 @@ export default class GdPlot extends GDElement {
     base: HTMLElement
 
     @property()
-    layout?: Partial<Layout>
+    plotTitle?: string
+
+    @property()
+    layout?: Partial<Layout> = {}
 
     @property()
     config?: Partial<Config>
@@ -48,9 +51,15 @@ export default class GdPlot extends GDElement {
             return
         }
 
-        console.log('update plot with data ', this.data)
-
-        newPlot(this.base, this.data, this.layout, this.config)
+        newPlot(
+            this.base,
+            this.data,
+            {
+                title: this.plotTitle, // support for adding a title directly
+                ...this.layout, // or complete access to the Plotly layout
+            },
+            this.config
+        )
     }
 
     render() {

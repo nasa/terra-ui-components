@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<gd-plot id="example"></gd-plot>
+<gd-plot id="example" plotTitle="Example Plot"></gd-plot>
 
 <script>
     document.getElementById('example').data = [
