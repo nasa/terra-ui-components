@@ -1,5 +1,6 @@
 // Components
 export { default as GdTimeSeriesPlot } from './components/time-series-plot/time-series-plot.js'
+export { default as GdPlot } from './components/plot/plot.js';
 /* plop:component */
 
 // Utilities
