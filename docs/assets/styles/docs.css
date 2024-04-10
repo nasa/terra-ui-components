@@ -1098,7 +1098,7 @@ html.sidebar-open #menu-toggle {
     display: none;
 }
 
-#theme-selector gd-menu {
+#theme-selector sl-menu {
     /* Set an initial size to prevent width being too small when first opening on small screen width */
     width: 140px;
 }
