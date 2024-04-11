@@ -1,7 +1,7 @@
 // Components
-export { default as GdTimeSeriesPlot } from './components/time-series-plot/time-series-plot.js'
-export { default as GdPlot } from './components/plot/plot.js';
-export { default as GdDateRangeSlider } from './components/date-range-slider/date-range-slider.js';
+export { default as GdTimeSeries } from './components/time-series/time-series.js'
+export { default as GdPlot } from './components/plot/plot.js'
+export { default as GdDateRangeSlider } from './components/date-range-slider/date-range-slider.js'
 /* plop:component */
 
 // Utilities
