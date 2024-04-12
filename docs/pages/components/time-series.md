@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<gd-time-series></gd-time-series>
+<gd-time-series collection="GPM_3IMERGHH_06" variable="precipitationCal"></gd-time-series>
 ```
 
 ## Examples
