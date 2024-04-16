@@ -1,5 +1,6 @@
 // Components
 export { default as GdTimeSeriesPlot } from './components/time-series-plot/time-series-plot.js'
+export { default as GdSpatialPicker } from './components/spatial-picker/spatial-picker.js';
 /* plop:component */
 
 // Utilities
