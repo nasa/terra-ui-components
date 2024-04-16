@@ -8,6 +8,7 @@ import noUiSlider, { type API } from 'nouislider'
 import { format } from 'date-fns'
 import { mergeTooltips } from './noui-slider-utilities.js'
 import { isValidDate } from '../../utilities/date.js'
+import { watch } from '../../internal/watch.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -47,7 +48,26 @@ export default class GdDateRangeSlider extends GDElement {
     @property({ attribute: 'date-format' })
     dateFormat: string = 'MM/dd/yyyy'
 
+    @watch(['startDate', 'endDate'])
+    updateSlider() {
+        this.renderSlider()
+    }
+
     firstUpdated() {
+        this.renderSlider()
+    }
+
+    renderSlider() {
+        if (!this.slider) {
+            // DOM for this component hasn't loaded yet
+            return
+        }
+
+        if (this.slider?.noUiSlider) {
+            // rendering the slider again will destroy the existing one
+            this.slider.noUiSlider.destroy()
+        }
+
         if (!isValidDate(this.minDate) || !isValidDate(this.maxDate)) {
             // at minimum, we need a minDate and maxDate to render the slider
             this.renderEmptySlider()
@@ -93,10 +113,14 @@ export default class GdDateRangeSlider extends GDElement {
 
         mergeTooltips(this.slider)
 
-        /*
-        this.slider.noUiSlider.on('update', function (values: any, handle: any) {
-            console.log(new Intl.DateTimeFormat().format(new Date(+values[handle])))
-        })*/
+        this.slider.noUiSlider.on('change', (values: any) => {
+            this.emit('gd-date-range-change', {
+                detail: {
+                    startDate: format(values[0], this.dateFormat),
+                    endDate: format(values[1], this.dateFormat),
+                },
+            })
+        })
     }
 
     renderEmptySlider() {

@@ -6,7 +6,14 @@ layout: component
 ---
 
 ```html:preview
-<gd-time-series collection="GPM_3IMERGHH_06" variable="precipitationCal"></gd-time-series>
+<gd-time-series
+    collection="GPM_3IMERGHH_06"
+    variable="precipitationCal"
+    min-date="06/01/2000"
+    max-date="09/30/2021"
+    start-date="01/01/2019"
+    end-date="01/01/2022"
+></gd-time-series>
 ```
 
 ## Examples

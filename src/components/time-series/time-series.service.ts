@@ -1,3 +1,4 @@
+import { format } from 'date-fns'
 import { compile } from 'handlebars'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
@@ -14,7 +15,11 @@ const timeSeriesUrlTemplate = compile(
  * given a variableEntryId (e.g. GPM_3IMERGHH_06_precipitationCal), fetches the time series data
  * TODO: when using Cloud Giovanni, we'll need to rework the URL to use the new API. CG uses a different syntax for the variable name
  */
-export async function fetchTimeSeries(variableEntryId: string) {
+export async function fetchTimeSeries(
+    variableEntryId: string,
+    startDate: Date,
+    endDate: Date
+) {
     // ex: GPM_3IMERGHH_06_precipitationCal
     const project = variableEntryId.split('_')[0] // GPM
     const dataset = variableEntryId.split('_').slice(0, -1).join('_') // GPM_3IMERGHH_06
@@ -23,10 +28,8 @@ export async function fetchTimeSeries(variableEntryId: string) {
     // construct a URL to fetch the time series data
     const url = timeSeriesUrlTemplate({
         variable: `${project}:${dataset}:${variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
-
-        // TODO: pass in the following values
-        startDate: '2019-01-01T00',
-        endDate: '2022-01-01T00',
+        startDate: format(startDate, 'yyyy-MM-dd') + 'T00',
+        endDate: format(endDate, 'yyyy-MM-dd') + 'T00',
         location: 'GEOM:POINT(-86.9375,%2033.9375)',
     })
 
