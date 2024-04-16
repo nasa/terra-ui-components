@@ -1,7 +1,9 @@
+/* eslint-disable */
+
 import * as L from 'leaflet'
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
-import { property, query } from 'lit/decorators.js'
+import { property, query, eventOptions } from 'lit/decorators.js'
 import GDElement from '../../internal/gd-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
@@ -122,8 +124,8 @@ export default class GdSpatialPicker extends GDElement {
 
         myMap.addControl(drawControl)
 
-        // I am currently getting an error in dev console when viewing component. Error states cannot read properties of undefined (reading 'Event')
-        // switched to use string value for now
+        /** I am currently getting an error in dev console when viewing component. Error states cannot read properties of undefined (reading 'Event')
+         *  switched to use string value for now  */
         myMap.on('draw:created', function (event) {
             editableLayers.clearLayers()
 
@@ -132,6 +134,14 @@ export default class GdSpatialPicker extends GDElement {
             console.log(layer)
 
             editableLayers.addLayer(layer)
+
+            this.dispatchEvent(new CustomEvent('draw-created', { detail: layer }));
+        })
+
+        myMap.on('draw:deleted', function (event) {
+            editableLayers.clearLayers()
+
+            this.dispatchEvent(new CustomEvent('draw-deleted', { detail: event }));
         })
     }
 
@@ -140,6 +150,21 @@ export default class GdSpatialPicker extends GDElement {
         //@ts-ignore
         console.log(L)
         this.initializeMap()
+    }
+
+
+    @eventOptions({ capture: true })
+    private onDrawCreated(event: L.DrawEvents.Created) {
+        const layer = event.layer;
+        console.log('Content is drawn:', layer);
+        // Your logic here
+    }
+
+    @eventOptions({ capture: true })
+    private onDrawDeleted(event: L.DrawEvents.Deleted) {
+        const layers = event.layers;
+        console.log('Content is cleared:', layers);
+        // Your logic here
     }
 
     render() {
