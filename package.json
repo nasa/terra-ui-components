@@ -73,6 +73,7 @@
     "composed-offset-position": "^0.0.4",
     "date-fns": "^3.6.0",
     "handlebars": "^4.7.8",
+    "idb": "^8.0.0",
     "lit": "^3.0.0",
     "nouislider": "^15.7.1",
     "plotly.js-dist-min": "^2.30.1",

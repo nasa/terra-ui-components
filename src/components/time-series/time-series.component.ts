@@ -90,8 +90,6 @@ export default class GdTimeSeries extends GDElement {
      * anytime the date range slider changes, update the start and end date and reload the time series data
      */
     private _handleDateRangeSliderChangeEvent(event: GdDateRangeChangeEvent) {
-        console.log('caught it ', event.detail)
-
         // update our start and end date based on the event detail
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
@@ -109,13 +107,6 @@ export default class GdTimeSeries extends GDElement {
             new Date(this.startDate),
             new Date(this.endDate)
         )
-
-        console.log(timeSeries)
-
-        this.startDate = timeSeries.metadata.begin_time.replace(/T00$/, '')
-        this.endDate = timeSeries.metadata.end_time.replace(/T00$/, '')
-
-        console.log('changing start date and end date ', this.startDate, this.endDate)
 
         // now that we have actual data, update the plot
         this.plot.data = [
