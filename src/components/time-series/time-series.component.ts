@@ -56,7 +56,7 @@ export default class GdTimeSeries extends GDElement {
     @property({ attribute: 'end-date' })
     endDate: string
 
-    @property()
+    @state()
     loading: boolean = false
 
     @state()
@@ -140,6 +140,7 @@ export default class GdTimeSeries extends GDElement {
                 max-date=${this.maxDate}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
+                .disabled=${this.loading}
                 @gd-date-range-change="${this._handleDateRangeSliderChangeEvent}"
             ></gd-date-range-slider>
         `

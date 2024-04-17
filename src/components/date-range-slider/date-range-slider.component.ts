@@ -48,9 +48,19 @@ export default class GdDateRangeSlider extends GDElement {
     @property({ attribute: 'date-format' })
     dateFormat: string = 'MM/dd/yyyy'
 
+    @property({ type: Boolean, reflect: true })
+    disabled: boolean = false
+
     @watch(['startDate', 'endDate'])
     updateSlider() {
         this.renderSlider()
+    }
+
+    @watch('disabled')
+    disabledChanged() {
+        this.disabled
+            ? this.slider?.noUiSlider?.disable()
+            : this.slider?.noUiSlider?.enable()
     }
 
     firstUpdated() {
@@ -63,10 +73,8 @@ export default class GdDateRangeSlider extends GDElement {
             return
         }
 
-        if (this.slider?.noUiSlider) {
-            // rendering the slider again will destroy the existing one
-            this.slider.noUiSlider.destroy()
-        }
+        // destroy any existing slider
+        this.slider.noUiSlider?.destroy()
 
         if (!isValidDate(this.minDate) || !isValidDate(this.maxDate)) {
             // at minimum, we need a minDate and maxDate to render the slider

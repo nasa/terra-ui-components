@@ -5,6 +5,54 @@ export default css`
         display: block;
     }
 
+    @keyframes animateDisabled {
+        0% {
+            background-position: 0 0;
+        }
+        100% {
+            background-position: 50px 50px;
+        }
+    }
+
+    .noUi-target[disabled] .noUi-connect {
+        background-color: rgb(119, 164, 238);
+        background-image: linear-gradient(
+            center bottom,
+            rgb(43, 194, 83) 37%,
+            rgb(84, 240, 84) 69%
+        );
+        box-shadow:
+            inset 0 2px 9px rgba(255, 255, 255, 0.3),
+            inset 0 -2px 6px rgba(0, 0, 0, 0.4);
+
+        &:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.2) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0.2) 75%,
+                transparent 75%,
+                transparent
+            );
+            z-index: 1;
+            background-size: 50px 50px;
+            animation: animateDisabled 2s linear infinite;
+            border-top-right-radius: 8px;
+            border-bottom-right-radius: 8px;
+            border-top-left-radius: 20px;
+            border-bottom-left-radius: 20px;
+            overflow: hidden;
+        }
+    }
+
     /* TODO: figure out how to import these styles from node_modules/nouislider/dist/nouislider.css */
     /* Functional styling;
  * These styles are required for noUiSlider to function.
@@ -93,10 +141,10 @@ export default css`
         height: 18px;
     }
     .noUi-horizontal .noUi-handle {
-        width: 34px;
-        height: 28px;
-        right: -17px;
-        top: -6px;
+        width: 30px;
+        height: 30px;
+        right: -15px;
+        top: -7px;
     }
     .noUi-vertical {
         width: 18px;
@@ -126,7 +174,7 @@ export default css`
         border-radius: 3px;
     }
     .noUi-connect {
-        background: #3fb8af;
+        background: rgb(119, 164, 238);
     }
     /* Handles and cursors;
  */
@@ -137,14 +185,11 @@ export default css`
         cursor: ns-resize;
     }
     .noUi-handle {
-        border: 1px solid #d9d9d9;
-        border-radius: 3px;
-        background: #fff;
+        background: #1c67e3;
+        border: 1px solid rgb(119, 164, 238);
+        border-radius: 99px;
         cursor: default;
-        box-shadow:
-            inset 0 0 1px #fff,
-            inset 0 1px 7px #ebebeb,
-            0 3px 6px -3px #bbb;
+        box-shadow:;
     }
     .noUi-active {
         box-shadow:
@@ -161,7 +206,6 @@ export default css`
         position: absolute;
         height: 14px;
         width: 1px;
-        background: #e8e7e6;
         left: 14px;
         top: 6px;
     }
