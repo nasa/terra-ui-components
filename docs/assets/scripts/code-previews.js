@@ -190,13 +190,6 @@
                 '.code-preview__source--react > pre > code'
             )?.textContent
             const isReact = flavor === 'react' && typeof reactExample === 'string'
-            const theme = document.documentElement.classList.contains('gd-theme-dark')
-                ? 'dark'
-                : 'light'
-            const prefersDark = window.matchMedia(
-                '(prefers-color-scheme: dark)'
-            ).matches
-            const isDark = theme === 'dark' || (theme === 'auto' && prefersDark)
             const editors = isReact ? '0010' : '1000'
             let htmlTemplate = ''
             let jsTemplate = ''
@@ -232,9 +225,7 @@
 
             // CSS templates
             cssTemplate =
-                `@import 'https://cdn.jsdelivr.net/npm/@gesdisc/components@${componentsVersion}/${cdndir}/themes/${
-                    isDark ? 'dark' : 'light'
-                }.css';\n` +
+                `@import 'https://cdn.jsdelivr.net/npm/@gesdisc/components@${componentsVersion}/${cdndir}/themes/horizon.css';\n` +
                 '\n' +
                 'body {\n' +
                 '  font: 16px sans-serif;\n' +
@@ -250,7 +241,7 @@
                 tags: ['ges disc', 'nasa', 'earthdata', 'web components'],
                 editors,
                 head: `<meta name="viewport" content="width=device-width">`,
-                html_classes: `gd-theme-${isDark ? 'dark' : 'light'}`,
+                html_classes: `gd-theme-horizon`,
                 css_external: ``,
                 js_external: ``,
                 js_module: true,
