@@ -7,6 +7,7 @@ layout: component
 
 ```html:preview
 <gd-date-range-slider
+    time-scale="half-hourly"
     min-date="1981-01-01"
     max-date="2024-01-01"
     start-date="1986-04-01"

@@ -5,59 +5,19 @@ export default css`
         display: block;
     }
 
-    @keyframes animateDisabled {
-        0% {
-            background-position: 0 0;
-        }
-        100% {
-            background-position: 50px 50px;
-        }
+    .hasPips {
+        padding-bottom: 80px;
     }
 
     .noUi-target[disabled] .noUi-connect {
         background-color: rgb(119, 164, 238);
-        background-image: linear-gradient(
-            center bottom,
-            rgb(43, 194, 83) 37%,
-            rgb(84, 240, 84) 69%
-        );
-        box-shadow:
-            inset 0 2px 9px rgba(255, 255, 255, 0.3),
-            inset 0 -2px 6px rgba(0, 0, 0, 0.4);
-
-        &:after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            background-image: linear-gradient(
-                -45deg,
-                rgba(255, 255, 255, 0.2) 25%,
-                transparent 25%,
-                transparent 50%,
-                rgba(255, 255, 255, 0.2) 50%,
-                rgba(255, 255, 255, 0.2) 75%,
-                transparent 75%,
-                transparent
-            );
-            z-index: 1;
-            background-size: 50px 50px;
-            animation: animateDisabled 2s linear infinite;
-            border-top-right-radius: 8px;
-            border-bottom-right-radius: 8px;
-            border-top-left-radius: 20px;
-            border-bottom-left-radius: 20px;
-            overflow: hidden;
-        }
     }
 
     /* TODO: figure out how to import these styles from node_modules/nouislider/dist/nouislider.css */
     /* Functional styling;
- * These styles are required for noUiSlider to function.
- * You don't need to change these rules to apply your design.
- */
+    * These styles are required for noUiSlider to function.
+    * You don't need to change these rules to apply your design.
+    */
     .noUi-target,
     .noUi-target * {
         -webkit-touch-callout: none;
@@ -140,6 +100,7 @@ export default css`
     .noUi-horizontal {
         height: 18px;
     }
+
     .noUi-horizontal .noUi-handle {
         width: 30px;
         height: 30px;
