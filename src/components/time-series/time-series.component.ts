@@ -134,14 +134,6 @@ export default class GdTimeSeries extends GDElement {
         return html`
             <div class="plot-container">
                 <gd-plot part="plot"></gd-plot>
-
-                <dialog open>
-                    <p>Greetings, one and all!</p>
-
-                    <form method="dialog">
-                        <button>Cancel</button>
-                    </form>
-                </dialog>
             </div>
 
             <gd-date-range-slider

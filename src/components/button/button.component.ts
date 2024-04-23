@@ -1,20 +1,27 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './button.styles.js'
-import { html, type CSSResultGroup } from 'lit'
-import GDElement, { type GDFormControl } from '../../internal/gd-element.js'
-import { property, query, state } from 'lit/decorators.js'
-import { literal } from 'lit/static-html.js'
-import { FormControlController, validValidityState } from '../../internal/form.js'
-import { watch } from '../../internal/watch.js'
 import { classMap } from 'lit/directives/class-map.js'
+import { FormControlController, validValidityState } from '../../internal/form.js'
 import { HasSlotController } from '../../internal/slot.js'
+import { html, literal } from 'lit/static-html.js'
 import { ifDefined } from 'lit/directives/if-defined.js'
+import { property, query, state } from 'lit/decorators.js'
+import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
+import GdElement, { type GDFormControl } from '../../internal/gd-element.js'
+import styles from './button.styles.js'
+import type { CSSResultGroup } from 'lit'
 
 /**
- * @summary Buttons are interactive elements that call attention to important actions that visitors can perform on a page.
- * @documentation https://disc.gsfc.nasa.gov/components/button
+ * @summary Buttons represent actions that are available to the user.
+ * @documentation https://shoelace.style/components/button
  * @status stable
- * @since 1.0
+ * @since 2.0
+ *
+ * @dependency sl-icon
+ * @dependency sl-spinner
+ *
+ * @event sl-blur - Emitted when the button loses focus.
+ * @event sl-focus - Emitted when the button gains focus.
+ * @event sl-invalid - Emitted when the form control has been checked for validity and its constraints aren't satisfied.
  *
  * @slot - The button's label.
  * @slot prefix - A presentational prefix icon or similar element.
@@ -24,15 +31,16 @@ import { ifDefined } from 'lit/directives/if-defined.js'
  * @csspart prefix - The container that wraps the prefix.
  * @csspart label - The button's label.
  * @csspart suffix - The container that wraps the suffix.
- * @csspart caret - The button's caret icon, a `<gd-icon>` element.
+ * @csspart caret - The button's caret icon, an `<sl-icon>` element.
  * @csspart spinner - The spinner that shows when the button is in the loading state.
  */
-export default class GdButton extends GDElement implements GDFormControl {
+export default class SlButton extends GdElement implements GDFormControl {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     private readonly formControlController = new FormControlController(this, {
         assumeInteractionOn: ['click'],
     })
+
     private readonly hasSlotController = new HasSlotController(
         this,
         '[default]',
@@ -40,7 +48,7 @@ export default class GdButton extends GDElement implements GDFormControl {
         'suffix'
     )
 
-    @query('[part~="button"]') button: HTMLButtonElement | HTMLLinkElement
+    @query('.button') button: HTMLButtonElement | HTMLLinkElement
 
     @state() private hasFocus = false
     @state() invalid = false
@@ -181,11 +189,13 @@ export default class GdButton extends GDElement implements GDFormControl {
 
     private handleClick() {
         if (this.type === 'submit') {
-            this.formControlController.submit(this as unknown as HTMLInputElement)
+            // @ts-ignore
+            this.formControlController.submit(this)
         }
 
         if (this.type === 'reset') {
-            this.formControlController.reset(this as unknown as HTMLInputElement)
+            // @ts-ignore
+            this.formControlController.reset(this)
         }
     }
 
@@ -196,6 +206,10 @@ export default class GdButton extends GDElement implements GDFormControl {
 
     private isButton() {
         return this.href ? false : true
+    }
+
+    private isLink() {
+        return this.href ? true : false
     }
 
     @watch('disabled', { waitUntilFirstUpdate: true })
@@ -252,14 +266,16 @@ export default class GdButton extends GDElement implements GDFormControl {
         }
     }
 
-    private isLink() {
-        return this.href ? true : false
-    }
-
     render() {
         const isLink = this.isLink()
         const tag = isLink ? literal`a` : literal`button`
-        const classes = {
+
+        /* eslint-disable lit/no-invalid-html */
+        /* eslint-disable lit/binding-positions */
+        return html`
+      <${tag}
+        part="base"
+        class=${classMap({
             button: true,
             'button--default': this.variant === 'default',
             'button--primary': this.variant === 'primary',
@@ -282,12 +298,7 @@ export default class GdButton extends GDElement implements GDFormControl {
             'button--has-label': this.hasSlotController.test('[default]'),
             'button--has-prefix': this.hasSlotController.test('prefix'),
             'button--has-suffix': this.hasSlotController.test('suffix'),
-        }
-
-        return html`
-        <${tag}
-        part="base"
-        
+        })}
         ?disabled=${ifDefined(isLink ? undefined : this.disabled)}
         type=${ifDefined(isLink ? undefined : this.type)}
         title=${
@@ -311,18 +322,7 @@ export default class GdButton extends GDElement implements GDFormControl {
         <slot name="prefix" part="prefix" class="button__prefix"></slot>
         <slot part="label" class="button__label"></slot>
         <slot name="suffix" part="suffix" class="button__suffix"></slot>
-        ${
-            this.caret
-                ? html`
-                      <sl-icon
-                          part="caret"
-                          class="button__caret"
-                          library="system"
-                          name="caret"
-                      ></sl-icon>
-                  `
-                : ''
-        }
-      </${tag}>`
+      </${tag}>
+    `
     }
 }
