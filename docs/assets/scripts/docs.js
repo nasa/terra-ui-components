@@ -100,9 +100,9 @@
     }
 
     function updateSelection() {
-        const menu = document.querySelector('#theme-selector gd-menu')
+        const menu = document.querySelector('#theme-selector sl-menu')
         if (!menu) return
-        ;[...menu.querySelectorAll('gd-menu-item')].map(
+        ;[...menu.querySelectorAll('sl-menu-item')].map(
             item => (item.checked = item.getAttribute('value') === theme)
         )
     }
@@ -110,15 +110,15 @@
     let theme = getTheme()
 
     // Selection is not preserved when changing page, so update when opening dropdown
-    document.addEventListener('gd-show', event => {
+    document.addEventListener('sl-show', event => {
         const themeSelector = event.target.closest('#theme-selector')
         if (!themeSelector) return
         updateSelection()
     })
 
     // Listen for selections
-    document.addEventListener('gd-select', event => {
-        const menu = event.target.closest('#theme-selector gd-menu')
+    document.addEventListener('sl-select', event => {
+        const menu = event.target.closest('#theme-selector sl-menu')
         if (!menu) return
         setTheme(event.detail.item.value)
     })
@@ -139,7 +139,7 @@
                 )
         ) {
             event.preventDefault()
-            setTheme(isDark() ? 'light' : 'dark')
+            setTheme('horizon')
         }
     })
 

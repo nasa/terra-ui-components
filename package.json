@@ -42,7 +42,8 @@
     "url": "https://github.com/gesdisc/components/issues"
   },
   "scripts": {
-    "start": "node scripts/build.js --serve",
+    "start": "npm-run-all -p local-dev-server serve",
+    "serve": "node scripts/build.js --serve",
     "build": "node scripts/build.js",
     "verify": "npm run prettier:check && npm run lint && npm run build && npm run test",
     "prepare": "npx playwright install",
@@ -55,7 +56,8 @@
     "test:watch": "web-test-runner --watch --group default",
     "spellcheck": "cspell \"**/*.{js,ts,json,html,css,md}\" --no-progress",
     "list-outdated-dependencies": "npm-check-updates --format repo --peer",
-    "update-dependencies": "npm-check-updates --peer -u && npm install"
+    "update-dependencies": "npm-check-updates --peer -u && npm install",
+    "local-dev-server": "node dev.server.js"
   },
   "engines": {
     "node": ">=14.17.0"
@@ -64,12 +66,18 @@
     "@ctrl/tinycolor": "^4.0.2",
     "@floating-ui/dom": "^1.5.3",
     "@lit/react": "^1.0.0",
+    "@lit/task": "^1.0.0",
     "@shoelace-style/animations": "^1.1.0",
     "@shoelace-style/localize": "^3.1.2",
     "@shoelace-style/shoelace": "^2.15.0",
     "composed-offset-position": "^0.0.4",
+    "date-fns": "^3.6.0",
+    "handlebars": "^4.7.8",
+    "idb": "^8.0.0",
     "lit": "^3.0.0",
-    "plotly.js-dist": "^2.30.1",
+    "nouislider": "^15.7.1",
+    "plotly.js": "^2.31.1",
+    "plotly.js-dist-min": "^2.30.1",
     "qr-creator": "^1.0.0"
   },
   "devDependencies": {
@@ -78,6 +86,7 @@
     "@gesdisc/prettier-config": "^1.2.0",
     "@open-wc/testing": "^3.2.0",
     "@types/mocha": "^10.0.2",
+    "@types/plotly.js-dist-min": "^2.3.4",
     "@types/react": "^18.2.28",
     "@web/dev-server-esbuild": "^0.3.6",
     "@web/test-runner": "^0.18.0",
@@ -97,6 +106,7 @@
     "download": "^8.0.0",
     "esbuild": "^0.19.4",
     "esbuild-plugin-replace": "^1.4.0",
+    "express": "^4.19.2",
     "front-matter": "^4.0.2",
     "get-port": "^7.0.0",
     "globby": "^13.2.2",
@@ -111,6 +121,7 @@
     "markdown-it-mark": "^3.0.1",
     "markdown-it-replace-it": "^1.0.0",
     "npm-check-updates": "^16.14.6",
+    "npm-run-all": "^4.1.5",
     "ora": "^7.0.1",
     "pascal-case": "^3.1.2",
     "plop": "^4.0.0",
