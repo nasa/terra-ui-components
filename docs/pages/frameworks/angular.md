@@ -32,7 +32,7 @@ Its also important to load the components by using a `<script>` tag into the ind
       ...
       "styles": [
         "src/styles.scss",
-        "@gesdisc/components/dist/themes/light.css"
+        "@gesdisc/components/dist/themes/horizon.css"
        ],
       "scripts": [
         "@gesdisc/components/dist/gesdisc-components.js"

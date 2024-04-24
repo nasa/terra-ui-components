@@ -34,8 +34,7 @@
     <meta property="og:image" content="{{ assetUrl(meta.image, true) }}" />
 
     {# GES DISC Components #}
-    <link rel="stylesheet" href="/dist/themes/light.css" />
-    <link rel="stylesheet" href="/dist/themes/dark.css" />
+    <link rel="stylesheet" href="/dist/themes/horizon.css" />
     <script type="module" src="/dist/gesdisc-components-autoloader.js"></script>
 
     {# Set the initial theme and menu states here to prevent flashing #}
@@ -82,20 +81,6 @@
       <a href="https://github.com/gesdisc/components" title="View GES DISC Components on GitHub">
         <sl-icon name="github"></sl-icon>
       </a>
-
-      {# Theme selector #}
-      <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
-        <sl-button slot="trigger" size="small" variant="text" caret title="Press \ to toggle">
-          <sl-icon class="only-light" name="sun-fill"></sl-icon>
-          <sl-icon class="only-dark" name="moon-fill"></sl-icon>
-        </sl-button>
-        <sl-menu>
-          <sl-menu-item type="checkbox" value="light">Light</sl-menu-item>
-          <sl-menu-item type="checkbox" value="dark">Dark</sl-menu-item>
-          <sl-divider></sl-divider>
-          <sl-menu-item type="checkbox" value="auto">System</sl-menu-item>
-        </sl-menu>
-      </sl-dropdown>
     </div>
 
     <aside id="sidebar" data-preserve-scroll>
