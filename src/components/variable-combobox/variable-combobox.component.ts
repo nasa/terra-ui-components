@@ -58,7 +58,7 @@ export default class GdVariableCombobox extends GDElement {
 
     /**
      * Label the combobox with this.
-     * @example Search All Varaibles
+     * @example Search All Variables
      */
     @property()
     label = 'Search for Variables'
@@ -362,7 +362,7 @@ export default class GdVariableCombobox extends GDElement {
                     initial: () =>
                         html`<li class="updating">Updating List of Variables</li>`,
                     pending: () =>
-                        html`<li class="updating">Updating List of Varaibles</li>`,
+                        html`<li class="updating">Updating List of Variables</li>`,
                     complete: list => {
                         this.#searchableList = list
 
