@@ -27,15 +27,13 @@ export default class GdTimeSeries extends GDElement {
     }
 
     /**
-     * a collection entry id
-     * @example GPM_3IMERGHH_06
+     * a collection entry id (ex: GPM_3IMERGHH_06)
      */
     @property()
     collection: string
 
     /**
-     * a variable short name to plot
-     * @example precipitationCal
+     * a variable short name to plot (ex: precipitationCal)
      */
     @property()
     variable: string // TODO: support multiple variables (non-MVP feature)
@@ -47,12 +45,14 @@ export default class GdTimeSeries extends GDElement {
     maxDate: string // TODO: this should be fetched from the variable itself, rather than passed in
 
     /**
-     * The start date for the time series plot.
-     * @example 2021-01-01
+     * The start date for the time series plot. (ex: 2021-01-01)
      */
     @property({ attribute: 'start-date' })
     startDate: string
 
+    /**
+     * The end date for the time series plot. (ex: 2021-01-01)
+     */
     @property({ attribute: 'end-date' })
     endDate: string
 
@@ -63,7 +63,7 @@ export default class GdTimeSeries extends GDElement {
     _plotConfig: Partial<PlotData> = {
         type: 'scatter',
         mode: 'lines',
-        line: { color: '#17BECF' },
+        line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
     }
 
     @query('[part~="plot"]') plot: GdPlot
@@ -120,6 +120,9 @@ export default class GdTimeSeries extends GDElement {
         this.loading = false
     }
 
+    /**
+     * rather than showing an empty square while we're waiting for data, we can show an empty plot
+     */
     private _renderEmptyPlot() {
         this.plot.data = [
             {
