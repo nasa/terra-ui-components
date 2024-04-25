@@ -1,5 +1,5 @@
 import { openDB, type IDBPDatabase } from 'idb'
-import type { TimeSeriesData } from './time-series.service.js'
+import type { TimeSeriesData } from './time-series.types.js'
 
 const INDEXEDDB_NAME = 'time-series'
 const STORE_NAME = 'time-series-data'
@@ -43,6 +43,8 @@ export async function withDb<T>(callback: (db: IDBPDatabase) => Promise<T>) {
 export function getDownloadDataForVariable(
     variableEntryId: string
 ): Promise<VariableDbEntry> {
+    console.log('look for ', variableEntryId)
+
     return withDb(async db => {
         return await db.get(STORE_NAME, variableEntryId)
     })
