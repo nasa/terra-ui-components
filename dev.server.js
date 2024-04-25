@@ -34,6 +34,18 @@ app.get('/hydro1/*', (req, res) => {
         })
 })
 
+app.get('/variables', (req, res) => {
+    fetch('https://dev.gesdisc.eosdis.nasa.gov/~baforshe/collection+variable.json')
+        .then(res => res.json())
+        .then(text => {
+            res.send(text)
+        })
+        .catch(err => {
+            console.error(err)
+            res.send('Failed to fetch')
+        })
+})
+
 app.listen(port, '127.0.0.1', () => {
     console.log('Server is running on http://127.0.0.1:' + port)
 })

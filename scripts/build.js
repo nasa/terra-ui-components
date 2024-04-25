@@ -281,6 +281,10 @@ if (serve) {
                 '/dist': './cdn',
             },
         },
+        https: {
+            key: 'certs/server.key',
+            cert: 'certs/server.crt',
+        },
     }
 
     // Launch browser sync

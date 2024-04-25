@@ -119,10 +119,6 @@ module.exports = function (eleventyConfig) {
         return tagName.replace(/^gd-/, '')
     })
 
-    eleventyConfig.addFilter('removeSlPrefix', tagName => {
-        return tagName.replace(/^sl-/, '').replace(/^gd-/, '')
-    })
-
     //
     // Transforms
     //
