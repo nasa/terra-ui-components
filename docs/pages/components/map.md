@@ -1,12 +1,12 @@
 ---
 meta:
-    title: Time Series Plot
+    title: Map
     description:
 layout: component
 ---
 
 ```html:preview
-<gd-time-series-plot></gd-time-series-plot>
+<gd-map></gd-map>
 ```
 
 ## Examples
@@ -19,4 +19,4 @@ TODO
 
 TODO
 
-[component-metadata:gd-time-series-plot]
+[component-metadata:gd-map]

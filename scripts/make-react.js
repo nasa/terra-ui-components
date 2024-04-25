@@ -6,8 +6,6 @@ import prettier from 'prettier'
 import { default as prettierConfig } from '@gesdisc/prettier-config/index.json' assert { type: 'json' }
 import { getAllComponents } from './shared.js'
 
-console.log(prettierConfig)
-
 const { outdir } = commandLineArgs({ name: 'outdir', type: String })
 
 const reactDir = path.join('./src/react')

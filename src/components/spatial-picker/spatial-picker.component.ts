@@ -1,31 +1,27 @@
 /* eslint-disable */
 
-import * as L from 'leaflet'
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
-import { property, query, eventOptions } from 'lit/decorators.js'
 import GDElement from '../../internal/gd-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
-// import './services/country-select.js'
-
 import 'leaflet-draw'
+import { property, state } from 'lit/decorators.js'
+import GdMap from '../map/map.component.js'
+import { parseBoundingBox } from '../map/services/leaflet-utils.js'
 
 // This is needed to fix the error: Uncaught ReferenceError: type is not defined
 // @ts-ignore
 window.type = ''
 
 /**
- * @summary Short summary of the component's intended use.
+ * @summary A component that allows input of coordinates and rendering of map --example - '-180, -90, 180, 90'
  * @documentation https://disc.gsfc.nasa.gov/components/spatial-picker
  * @status experimental
  * @since 1.0
  *
- * @dependency gd-example
- *
- * @slot - The default slot.
- * @slot example - An example slot.
+ * @dependency gd-map
  *
  * @csspart base - The component's base wrapper.
  *
@@ -33,157 +29,116 @@ window.type = ''
  */
 export default class GdSpatialPicker extends GDElement {
     static styles: CSSResultGroup = [componentStyles, styles]
-
-    @property() minZoom: number = 0
-    @property() maxZoom: number = 24
-    @property() zoom: number = 0
-    @property() latitude: number = 0
-    @property() longitude: number = 0
-    @property() fitWorld: boolean = false
-    @property() width: number
-    @property() height: number
-    @property() showNavigation: boolean = true
-
-    @query('#map')
-    mapElement!: HTMLDivElement
-
-    connectedCallback(): void {
-        super.connectedCallback()
-
-        console.log(this.mapElement)
+    static dependencies = {
+        'gd-map': GdMap,
     }
 
     /**
-     * The map initialization function
+     * Minimum zoom level of the map.
      */
-    initializeMap() {
-        const options = {
-            center: L.latLng(40.731253, -73.996139),
-            zoom: 3,
-        }
+    @property({ attribute: 'min-zoom', type: Number, reflect: true })
+    minZoom: number = 0
 
-        console.log('this.mapElement: ', this.mapElement)
-        let myMap = new L.Map(this.mapElement, options)
-        const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 24,
-            attribution:
-                '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        }).addTo(myMap)
+    /**
+     * Maximum zoom level of the map.
+     */
+    @property({ attribute: 'max-zoom', type: Number, reflect: true })
+    maxZoom: number = 23
 
-        // @ts-ignore
-        // const selectCountry = L.countrySelect()
+    /**
+     * Initial map zoom level
+     */
+    @property({ type: Number, reflect: true }) zoom: number = 1
 
-        // selectCountry.addTo(myMap)
+    /*
+     * width of the map
+     */
+    @property({ type: Number, reflect: true }) width: number
 
-        // selectCountry.on('change', function (e: any) {
-        //     if (e.feature === undefined) {
-        //         //Do nothing on title
-        //         console.log('select country on change', e)
-        //         return
-        //     }
-        //     let country = L.geoJson(e.feature)
+    /**
+     * height of the map
+     */
+    @property({ type: Number, reflect: true }) height: number = 336
 
-        //     console.log('country is found: ', country)
-        //     if (this.previousCountry != null) {
-        //         myMap.removeLayer(this.previousCountry)
-        //     }
-        //     this.previousCountry = country
+    /**
+     * show map navigation toolbar
+     */
+    @property({ attribute: 'show-navigation', type: Boolean, reflect: true })
+    showNavigation: boolean = true
 
-        //     myMap.addLayer(country)
-        //     myMap.fitBounds(country.getBounds())
-        // })
+    /**
+     * mouse coordinate tracker
+     */
+    @property({ attribute: 'mouse-position', type: Boolean, reflect: true })
+    mousePosition: boolean = true
 
-        let editableLayers = new L.FeatureGroup()
+    @state()
+    showMap: boolean = false
 
-        editableLayers.addTo(myMap)
+    @state()
+    mapValue: any
 
-        //// @ts-ignore
-        let drawControl = new L.Control.Draw({
-            position: 'topright',
-            draw: {
-                polyline: false,
-                polygon: false,
-                circle: false, // Turns off this drawing tool
-                circlemarker: false,
-                rectangle: {},
-                marker: {
-                    icon: L.icon({
-                        iconUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                        iconSize: [25, 41],
-                        shadowUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                        shadowSize: [41, 41],
-                    }),
-                },
-            },
-            edit: {
-                featureGroup: editableLayers, //REQUIRED!!
-            },
-        })
+    private _blur(e: Event) {
+        const boundingBox: any = parseBoundingBox(
+            (e.target as HTMLInputElement).value
+        )
 
-        myMap.addControl(drawControl)
-
-        /** I am currently getting an error in dev console when viewing component. Error states cannot read properties of undefined (reading 'Event')
-         *  switched to use string value for now  */
-        myMap.on('draw:created', function (event) {
-            editableLayers.clearLayers()
-
-            let layer = event.layer
-
-            console.log(layer)
-
-            editableLayers.addLayer(layer)
-
-            this.dispatchEvent(new CustomEvent('draw-created', { detail: layer }));
-        })
-
-        myMap.on('draw:deleted', function (event) {
-            editableLayers.clearLayers()
-
-            this.dispatchEvent(new CustomEvent('draw-deleted', { detail: event }));
-        })
+        this.mapValue = boundingBox
     }
 
-    firstUpdated() {
-        console.log(this.mapElement)
-        //@ts-ignore
-        console.log(L)
-        this.initializeMap()
+    private _click(e: Event) {
+        this.showMap = !this.showMap
     }
 
-
-    @eventOptions({ capture: true })
-    private onDrawCreated(event: L.DrawEvents.Created) {
-        const layer = event.layer;
-        console.log('Content is drawn:', layer);
-        // Your logic here
-    }
-
-    @eventOptions({ capture: true })
-    private onDrawDeleted(event: L.DrawEvents.Deleted) {
-        const layers = event.layers;
-        console.log('Content is cleared:', layers);
-        // Your logic here
+    renderMap() {
+        return html`<gd-map
+            min-zoom=${this.minZoom}
+            max-zoom=${this.maxZoom}
+            zoom=${this.zoom}
+            width=${this.width ? this.width : this.getBoundingClientRect().width - 64}
+            height=${this.height}
+            ?mouse-position=${this.mousePosition}
+            .value=${this.mapValue}
+        >
+        </gd-map>`
     }
 
     render() {
         return html`
+            <!-- @ts-ignore -->
             <style>
                 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
                 @import url('https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css');
             </style>
             <div class="spatial-picker">
-                <div class="spatial-picker__input_fields"></div>
-                <div class="spatial-picker__map">
-                    <div class="spatial-picker__map__container">
-                        <!-- "Map goes here" -->
-                        <div
-                            id="map"
-                            class="spatial-picker__map__container__map"
-                        ></div>
-                    </div>
+                <div class="spatial-picker__input_fields">
+                    <input
+                        type="text"
+                        class="spatial-picker__input form-control"
+                        placeholder="-180, -90, 180, 90"
+                        @blur=${this._blur}
+                    />
+                    <button
+                        class="spatial-picker__input_icon_button"
+                        @click=${this._click}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-6 h-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
+                            />
+                        </svg>
+                    </button>
                 </div>
+                ${this.showMap ? this.renderMap() : null}
             </div>
         `
     }

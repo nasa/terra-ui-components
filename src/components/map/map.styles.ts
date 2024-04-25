@@ -1,22 +1,27 @@
 import { css } from 'lit'
 
 export default css`
-    @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-    @import url('https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css');
-
     :host {
         display: block;
         padding: 16px;
-        max-width: 600px;
+        background: white;
     }
 
-    :host .spatial-picker__input_fields {
-        position: relative;
+    #map {
+        width: 100%;
+        height: 100%;
+        border: solid 1px gray;
     }
 
-    :host input {
-        box-shadow: none;
-        border-radius: 0 !important;
+    :host .leaflet-mouse-position-container {
+        color: #464646;
+        padding: 5px;
+        background-color: white;
+    }
+
+    :host .leaflet-mouse-position-text {
+        margin: 0;
+        font-weight: 700;
     }
 
     :host .form-control {
@@ -42,25 +47,11 @@ export default css`
             box-shadow ease-in-out 0.15s;
     }
 
-    :host .spatial-picker__input_icon_button {
-        display: inline-block;
-        height: 36px;
-        width: 36px;
-        padding: 0px;
-        position: absolute;
-        padding-top: 5px;
-        top: 0;
-        right: 0;
-        z-index: 2;
-        border: none;
-        cursor: pointer;
+    :host .map__select {
+        width: 100%;
+        /* height: 1.7rem; */
         box-shadow: none;
-        background-color: none;
-        background: black;
-    }
-
-    :host .spatial-picker__input_icon_button svg {
-        height: 28px;
-        color: white;
+        border-radius: 0 !important;
+        margin-bottom: 1rem;
     }
 `
