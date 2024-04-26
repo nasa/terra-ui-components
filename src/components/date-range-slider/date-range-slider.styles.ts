@@ -5,11 +5,19 @@ export default css`
         display: block;
     }
 
+    .hasPips {
+        padding-bottom: 80px;
+    }
+
+    .noUi-target[disabled] .noUi-connect {
+        background-color: rgb(119, 164, 238);
+    }
+
     /* TODO: figure out how to import these styles from node_modules/nouislider/dist/nouislider.css */
     /* Functional styling;
- * These styles are required for noUiSlider to function.
- * You don't need to change these rules to apply your design.
- */
+    * These styles are required for noUiSlider to function.
+    * You don't need to change these rules to apply your design.
+    */
     .noUi-target,
     .noUi-target * {
         -webkit-touch-callout: none;
@@ -92,11 +100,12 @@ export default css`
     .noUi-horizontal {
         height: 18px;
     }
+
     .noUi-horizontal .noUi-handle {
-        width: 34px;
-        height: 28px;
-        right: -17px;
-        top: -6px;
+        width: 30px;
+        height: 30px;
+        right: -15px;
+        top: -7px;
     }
     .noUi-vertical {
         width: 18px;
@@ -126,7 +135,7 @@ export default css`
         border-radius: 3px;
     }
     .noUi-connect {
-        background: #3fb8af;
+        background: rgb(119, 164, 238);
     }
     /* Handles and cursors;
  */
@@ -137,14 +146,11 @@ export default css`
         cursor: ns-resize;
     }
     .noUi-handle {
-        border: 1px solid #d9d9d9;
-        border-radius: 3px;
-        background: #fff;
+        background: #1c67e3;
+        border: 1px solid rgb(119, 164, 238);
+        border-radius: 99px;
         cursor: default;
-        box-shadow:
-            inset 0 0 1px #fff,
-            inset 0 1px 7px #ebebeb,
-            0 3px 6px -3px #bbb;
+        box-shadow:;
     }
     .noUi-active {
         box-shadow:
@@ -161,7 +167,6 @@ export default css`
         position: absolute;
         height: 14px;
         width: 1px;
-        background: #e8e7e6;
         left: 14px;
         top: 6px;
     }

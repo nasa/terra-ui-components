@@ -16,7 +16,7 @@ For component developers, built-in themes are also available as JavaScript modul
 
 ## Theme Basics
 
-All themes are scoped to classes using the `gd-theme-{name}` convention, where `{name}` is a lowercase, hyphen-delimited value representing the name of the theme. The included light and dark themes use `gd-theme-light` and `gd-theme-dark`, respectively. A custom theme called "Purple Power", for example, would use a class called `gd-theme-purple-power`
+All themes are scoped to classes using the `gd-theme-{name}` convention, where `{name}` is a lowercase, hyphen-delimited value representing the name of the theme. The included light and dark themes use `gd-theme-horizon` and `gd-theme-dark`, respectively. A custom theme called "Purple Power", for example, would use a class called `gd-theme-purple-power`
 
 All selectors must be scoped to the theme's class to ensure interoperability with other themes. You should also scope them to `:host` so they can be imported and applied to custom element shadow roots.
 
@@ -83,7 +83,7 @@ If you're customizing the light theme, you should scope your styles to the follo
 ```css
 :root,
 :host,
-.gd-theme-light {
+.gd-theme-horizon {
     /* your custom styles here */
 }
 ```

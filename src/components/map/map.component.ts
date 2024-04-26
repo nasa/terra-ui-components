@@ -100,13 +100,20 @@ export default class GdMap extends GDElement {
         })
 
         this.map.on('draw', (layer: any) =>
-            this.emit('gd-spatial-picker-draw-created', {
-                detail: layer,
+            this.emit('gd-map-change', {
+                detail: {
+                    cause: 'draw',
+                    ...layer,
+                },
             })
         )
 
         this.map.on('clear', (layer: any) =>
-            this.emit('gd-spatial-picker-draw-deleted')
+            this.emit('gd-map-change', {
+                detail: {
+                    cause: 'clear',
+                },
+            })
         )
     }
 

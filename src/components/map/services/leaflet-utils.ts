@@ -3,6 +3,13 @@ import * as L from 'leaflet'
 import 'leaflet-draw'
 import { fetchSelectedShape } from './shapes.js'
 
+export type MapEventDetail = {
+    cause: string
+    geoJson?: any
+    bounds?: any
+    latLng?: any
+}
+
 export function parseBoundingBox(inputString: string) {
     // Split the string by commas to create an array of strings
     const coords = inputString.split(',')

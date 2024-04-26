@@ -22,7 +22,7 @@
     <ul>
       {% for component in meta.components %}
         <li>
-          <a href="/components/{{ component.tagName | removeSlPrefix }}">
+          <a href="/components/{{ component.tagName | removeGdPrefix }}">
             {{ component.name | classNameToComponentName }}
           </a>
         </li>

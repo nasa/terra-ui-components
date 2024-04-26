@@ -38,16 +38,12 @@ app.get('/getProvisionedShapefiles', async (req, res) => {
     try {
         const { query } = req
 
-        console.log('getProvisionedShapefiles query', query)
-
         const url =
             'https://giovanni.gsfc.nasa.gov/giovanni/daac-bin/getProvisionedShapefiles.py'
 
         const response = await fetch(url)
 
         const data = await response.json()
-
-        console.log('Response: ', data)
 
         res.send(data)
     } catch (error) {
@@ -61,16 +57,11 @@ app.get('/getGeoJSON', async (req, res) => {
     try {
         const { query } = req
 
-        console.log('getGeoJSON query: ', query)
-
         const url = `https://giovanni.gsfc.nasa.gov/giovanni/daac-bin/getGeoJSON.py?shape=${query.shape}`
 
-        console.log('Url: ', url)
         const response = await fetch(url)
 
         const data = await response.json()
-
-        console.log('Response: ', data)
 
         res.send(data)
     } catch (error) {
@@ -78,6 +69,18 @@ app.get('/getGeoJSON', async (req, res) => {
         console.error('Error:', error)
         res.status(500).json({ error: 'Internal Server Error' })
     }
+})
+
+app.get('/variables', (req, res) => {
+    fetch('https://dev.gesdisc.eosdis.nasa.gov/~baforshe/collection+variable.json')
+        .then(res => res.json())
+        .then(text => {
+            res.send(text)
+        })
+        .catch(err => {
+            console.error(err)
+            res.send('Failed to fetch')
+        })
 })
 
 app.listen(port, '127.0.0.1', () => {
