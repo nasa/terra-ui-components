@@ -1,12 +1,10 @@
 //
 // This script downloads and generates icons and icon metadata.
 //
-import chalk from 'chalk'
 import commandLineArgs from 'command-line-args'
 import copy from 'recursive-copy'
 import { deleteAsync } from 'del'
 import download from 'download'
-import fm from 'front-matter'
 import fs from 'fs/promises'
 import { globby } from 'globby'
 import path from 'path'
@@ -15,43 +13,56 @@ const { outdir } = commandLineArgs({ name: 'outdir', type: String })
 const iconDir = path.join(outdir, '/assets/icons')
 
 const iconPackageData = JSON.parse(
-    await fs.readFile('./node_modules/bootstrap-icons/package.json', 'utf8')
+    await fs.readFile('./node_modules/heroicons/package.json', 'utf8')
 )
 
 const version = iconPackageData.version
-const srcPath = `./.cache/icons/icons-${version}`
-const url = `https://github.com/twbs/icons/archive/v${version}.zip`
+const srcPath = `./.cache/icons/heroicons-${version}`
 
+//* Hit cache at versioned `srcPath` to determine if we need to download.
 try {
-    await fs.stat(`${srcPath}/LICENSE.md`)
+    await fs.stat(`${srcPath}/LICENSE`)
 } catch {
     // Download the source from GitHub (since not everything is published to npm)
-    await download(url, './.cache/icons', { extract: true })
+    await download(
+        `https://github.com/tailwindlabs/heroicons/archive/v${version}.zip`,
+        './.cache/icons',
+        { extract: true }
+    )
 }
 
 // Copy icons
 await deleteAsync([iconDir])
 await fs.mkdir(iconDir, { recursive: true })
 await Promise.all([
-    copy(`${srcPath}/icons`, iconDir),
-    copy(`${srcPath}/LICENSE`, path.join(iconDir, 'LICENSE')),
-    copy(`${srcPath}/bootstrap-icons.svg`, './docs/assets/images/sprite.svg', {
-        overwrite: true,
+    copy(`${srcPath}/optimized/24/outline`, iconDir, {
+        rename: filePath => {
+            return filePath.endsWith('.svg') ? `outline-${filePath}` : filePath
+        },
     }),
+    copy(`${srcPath}/optimized/24/solid`, iconDir, {
+        rename: filePath => {
+            return filePath.endsWith('.svg') ? `solid-${filePath}` : filePath
+        },
+    }),
+    copy(`${srcPath}/LICENSE`, path.join(iconDir, 'LICENSE')),
 ])
 
 // Generate metadata
-const files = await globby(`${srcPath}/docs/content/icons/**/*.md`)
+const files = await globby(`${iconDir}/**/*.svg`)
 const metadata = await Promise.all(
     files.map(async file => {
         const name = path.basename(file, path.extname(file))
-        const data = fm(await fs.readFile(file, 'utf8')).attributes
+        const [variant, ...nameParts] = name.replaceAll('-', ' ').split(' ')
 
         return {
             name,
-            title: data.title,
-            categories: data.categories,
-            tags: data.tags,
+            variant,
+            title: nameParts
+                .map(part => {
+                    return `${part.charAt(0).toUpperCase()}${part.substring(1)}`
+                })
+                .join(' '),
         }
     })
 )
