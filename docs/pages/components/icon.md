@@ -64,6 +64,30 @@ Default icons are copied from Heroicons. You _can_ use the attribute `library="d
 <gd-icon name="solid-academic-cap"></gd-icon>
 ```
 
+The following icons are available for use as part of the default icon library:
+
+```html:preview
+<details>
+  <summary>Heroicons List</summary>
+  <ul id="heroicons-list">
+
+  </ul>
+</details>
+
+<script type="module">
+  import icons from '/dist/assets/icons/icons.json' with { type: 'json' }
+
+  const ul = document.querySelector('#heroicons-list')
+  let items = ``
+
+  for (const icon of icons) {
+    items += `<li><gd-icon style="margin-inline-end:1ch;" name=${icon.name}></gd-icon>${icon.name}</li>\n`
+  }
+
+  ul.innerHTML = items
+</script>
+```
+
 ### Customizing the Default Library
 
 The default icon library contains over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. These are the icons that display when you use `<gd-icon>` without the `library` attribute. If you prefer to have these icons resolve elsewhere or to a different icon library, register an icon library using the `default` name and a custom resolver.
