@@ -1,4 +1,4 @@
-import { Task, TaskStatus, initialState } from '@lit/task'
+import { Task, initialState } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import { compile } from 'handlebars'
 import type { ReactiveControllerHost } from 'lit'
@@ -91,10 +91,6 @@ export class TimeSeriesController {
         )
     }
 
-    get loading() {
-        return this.#task.status === TaskStatus.PENDING
-    }
-
     set collection(value: Collection) {
         this.#collection = value
         this.host.requestUpdate()
@@ -142,38 +138,37 @@ export class TimeSeriesController {
             this.startDate.getTime() >= new Date(existingData.startDate).getTime() &&
             this.endDate.getTime() <= new Date(existingData.endDate).getTime()
         ) {
-            console.log('aleady have the data downloaded!')
-
             // already have the data downloaded!
             return this.#getDataInRange(existingData)
         }
 
-        // ex: GPM_3IMERGHH_06_precipitationCal
-        const project = variableEntryId.split('_')[0] // GPM
-        const dataset = variableEntryId.split('_').slice(0, -1).join('_') // GPM_3IMERGHH_06
-        const variable = variableEntryId.split('_').pop() // precipitationCal
+        // the fetch request we send out may not contain the full date range the user requested
+        // we'll request only the data we don't currently have cached
+        let requestStartDate = this.startDate
+        let requestEndDate = this.endDate
 
-        let startDate = this.startDate
-        let endDate = this.endDate
-
-        // if we have some data, we want to make sure we don't request data we already have
         if (existingData) {
-            if (startDate.getTime() < new Date(existingData.startDate).getTime()) {
+            if (
+                requestStartDate.getTime() <
+                new Date(existingData.startDate).getTime()
+            ) {
                 // user has requested more data than what we have, move the endDate up
-                endDate = new Date(existingData.startDate)
+                requestEndDate = new Date(existingData.startDate)
             }
 
-            if (endDate.getTime() > new Date(existingData.endDate).getTime()) {
+            if (requestEndDate.getTime() > new Date(existingData.endDate).getTime()) {
                 // user has requested more data than what we have, move the startDate back
-                startDate = new Date(existingData.endDate)
+                requestStartDate = new Date(existingData.endDate)
             }
         }
 
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${project}:${dataset}:${variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
-            startDate: format(startDate, 'yyyy-MM-dd') + 'T00',
-            endDate: format(endDate, 'yyyy-MM-dd') + 'T00',
+            variable: `${variableEntryId.split('_')[0]}:${this.collection}:${
+                this.variable
+            }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
+            startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
+            endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
             location: 'GEOM:POINT(-86.9375,%2033.9375)',
         })
 

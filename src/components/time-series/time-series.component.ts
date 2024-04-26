@@ -48,13 +48,13 @@ export default class GdTimeSeries extends GDElement {
     /**
      * The start date for the time series plot. (ex: 2021-01-01)
      */
-    @property({ attribute: 'start-date' })
+    @property({ attribute: 'start-date', reflect: true })
     startDate: string
 
     /**
      * The end date for the time series plot. (ex: 2021-01-01)
      */
-    @property({ attribute: 'end-date' })
+    @property({ attribute: 'end-date', reflect: true })
     endDate: string
 
     @query('[part~="date-range-slider"]') dateRangeSlider: GdDateRangeSlider
@@ -74,6 +74,11 @@ export default class GdTimeSeries extends GDElement {
         // update our start and end date based on the event detail
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
+
+        // make sure the controller also gets updated
+        // TODO: try to remove this, couldn't get the task to respond to just the "@watch" above.
+        this.#timeSeriesController.startDate = new Date(event.detail.startDate)
+        this.#timeSeriesController.endDate = new Date(event.detail.endDate)
     }
 
     /**

@@ -34,8 +34,6 @@ export async function withDb<T>(callback: (db: IDBPDatabase) => Promise<T>) {
 }
 
 export function getDataByKey<T>(store: IndexedDbStores, key: string): Promise<T> {
-    console.log('look for ', key)
-
     return withDb(async db => {
         return await db.get(store, key)
     })
