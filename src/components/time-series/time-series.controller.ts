@@ -2,15 +2,25 @@ import { Task, TaskStatus, initialState } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import { compile } from 'handlebars'
 import type { ReactiveControllerHost } from 'lit'
-import { getDownloadDataForVariable, storeDataForVariable } from './time-series.db.js'
 import { format } from 'date-fns'
 import type { Data, PlotData } from 'plotly.js'
-import type { Collection, EndDate, StartDate, Variable } from './time-series.types.js'
+import type {
+    Collection,
+    EndDate,
+    StartDate,
+    Variable,
+    VariableDbEntry,
+} from './time-series.types.js'
 import type {
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
 } from './time-series.types.js'
+import {
+    IndexedDbStores,
+    getDataByKey,
+    storeDataByKey,
+} from '../../internal/indexeddb.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
 const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
@@ -122,7 +132,10 @@ export class TimeSeriesController {
         const variableEntryId = `${this.collection}_${this.variable}`
 
         // check the database for any existing data
-        const existingData = await getDownloadDataForVariable(variableEntryId)
+        const existingData = await getDataByKey<VariableDbEntry>(
+            IndexedDbStores.TIME_SERIES,
+            variableEntryId
+        )
 
         if (
             existingData &&
@@ -179,7 +192,16 @@ export class TimeSeriesController {
         parsedData.data = [...parsedData.data, ...(existingData?.data || [])]
 
         // save the new data to the database
-        await storeDataForVariable(variableEntryId, parsedData)
+        await storeDataByKey<VariableDbEntry>(
+            IndexedDbStores.TIME_SERIES,
+            variableEntryId,
+            {
+                variableEntryId,
+                startDate: parsedData.data[0].timestamp,
+                endDate: parsedData.data[parsedData.data.length - 1].timestamp,
+                ...parsedData,
+            }
+        )
 
         return this.#getDataInRange(parsedData)
     }

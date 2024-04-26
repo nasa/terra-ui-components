@@ -3,6 +3,12 @@ export type Variable = string
 export type StartDate = Date
 export type EndDate = Date
 
+export type VariableDbEntry = TimeSeriesData & {
+    variableEntryId: string
+    startDate: string
+    endDate: string
+}
+
 export type TimeSeriesData = {
     metadata: TimeSeriesMetadata
     data: TimeSeriesDataRow[]
