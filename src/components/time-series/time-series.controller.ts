@@ -52,7 +52,8 @@ export class TimeSeriesController {
         },
     ]
 
-    #task: Task<TaskArguments, Partial<Data>[]>
+    task: Task<TaskArguments, Partial<Data>[]>
+
     #collection: Collection
     #variable: Variable
     #startDate: StartDate
@@ -61,7 +62,7 @@ export class TimeSeriesController {
     constructor(host: ReactiveControllerHost) {
         this.host = host
 
-        this.#task = new Task<TaskArguments, Partial<Data>[]>(
+        this.task = new Task<TaskArguments, Partial<Data>[]>(
             host,
             async (
                 args: TaskArguments,
@@ -239,6 +240,6 @@ export class TimeSeriesController {
     }
 
     render(renderFunctions: StatusRenderer<Partial<Data>[]>) {
-        return this.#task.render(renderFunctions)
+        return this.task.render(renderFunctions)
     }
 }

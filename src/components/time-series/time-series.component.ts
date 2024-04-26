@@ -95,17 +95,13 @@ export default class GdTimeSeries extends GDElement {
     render() {
         return html`
             <div class="plot-container">
-                ${this.#timeSeriesController.render({
-                    complete: (result: any) => html`
-                        <gd-plot data="${JSON.stringify(result)}"></gd-plot>
-                    `,
-                    // render an empty plot while we wait for data
-                    initial: () => this._renderEmptyPlot(),
-                    pending: () => this._renderEmptyPlot(),
-
-                    // TODO: build a better error state
-                    error: (e: any) => html`<p>${e}</p>`,
-                })}
+                ${this.#timeSeriesController.task.value
+                    ? html`<gd-plot
+                          data="${JSON.stringify(
+                              this.#timeSeriesController.task.value
+                          )}"
+                      ></gd-plot>`
+                    : this._renderEmptyPlot()}
             </div>
 
             <gd-date-range-slider
