@@ -11,7 +11,8 @@ import type { CSSResultGroup } from 'lit'
 import { watch } from '../../internal/watch.js'
 import { Leaflet } from './services/leaflet-utils.js'
 
-// @ts-ignore
+// There is a leaflet bug with type sometimes being undefined. This is a temporary fix
+// @ts-expect-error
 window.type = ''
 
 /**
@@ -27,41 +28,47 @@ export default class GdMap extends GDElement {
     /**
      * Minimum zoom level of the map.
      */
-    @property({ attribute: 'min-zoom', type: Number, reflect: true })
+    @property({ attribute: 'min-zoom', type: Number })
     minZoom: number = 0
 
     /**
      * Maximum zoom level of the map.
      */
-    @property({ attribute: 'max-zoom', type: Number, reflect: true })
+    @property({ attribute: 'max-zoom', type: Number })
     maxZoom: number = 23
 
     /**
      * Initial map zoom level
      */
-    @property({ type: Number, reflect: true }) zoom: number = 1
+    @property({ type: Number }) zoom: number = 1
 
     /*
      * width of the map
      */
-    @property({ type: Number, reflect: true }) width: number = 504
+    @property({ type: Number }) width: number = 504
 
     /**
      * height of the map
      */
-    @property({ type: Number, reflect: true }) height: number = 336
+    @property({ type: Number }) height: number = 336
 
     /**
      * show map navigation toolbar
      */
-    @property({ attribute: 'show-navigation', type: Boolean, reflect: true })
-    showNavigation: boolean = true
+    @property({ attribute: 'show-navigation', type: Boolean })
+    showNavigation: boolean = false
 
     /**
-     * mouse coordinate tracker
+     * show coordinate tracker
      */
-    @property({ attribute: 'mouse-position', type: Boolean, reflect: true })
-    mousePosition: boolean = true
+    @property({ attribute: 'show-coord-tracker', type: Boolean })
+    showCoordTracker: boolean = false
+
+    /**
+     * show shape selector
+     */
+    @property({ attribute: 'show-shape-selector', type: Boolean })
+    showShapeSelector: boolean = false
 
     @property({ type: Array })
     value: any = []
@@ -87,7 +94,9 @@ export default class GdMap extends GDElement {
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
 
-        this.listOfShapes = await getShapeFiles()
+        if (this.showShapeSelector) {
+            this.listOfShapes = await getShapeFiles()
+        }
     }
 
     firstUpdated() {
@@ -95,7 +104,7 @@ export default class GdMap extends GDElement {
             zoom: this.zoom,
             minZoom: this.minZoom,
             maxZoom: this.maxZoom,
-            mousePosition: this.mousePosition,
+            showCoordTracker: this.showCoordTracker,
             showNavigation: this.showNavigation,
         })
 
@@ -119,25 +128,34 @@ export default class GdMap extends GDElement {
 
     selectTemplate() {
         return html`
-            ${this.listOfShapes?.available.map((parentShape: string) => {
-                const shapes = this.map.transformShapeData(
-                    this.listOfShapes?.info[parentShape]
-                )
-
-                return html`<optgroup
-                    label="${this.listOfShapes?.info[parentShape].title}"
+            <div>
+                <select
+                    class="map__select form-control"
+                    @change=${this.map.handleShapeSelect}
                 >
-                    ${shapes.map((shape: any) => {
-                        return html`
-                            <option
-                                value="shape=${shape.shapefileID}/${shape.gShapeID}"
-                            >
-                                ${shape.name}
-                            </option>
-                        `
+                    <option>Select a Shape...</option>
+
+                    ${this.listOfShapes?.available.map((parentShape: string) => {
+                        const shapes = this.map.transformShapeData(
+                            this.listOfShapes?.info[parentShape]
+                        )
+
+                        return html`<optgroup
+                            label="${this.listOfShapes?.info[parentShape].title}"
+                        >
+                            ${shapes.map((shape: any) => {
+                                return html`
+                                    <option
+                                        value="shape=${shape.shapefileID}/${shape.gShapeID}"
+                                    >
+                                        ${shape.name}
+                                    </option>
+                                `
+                            })}
+                        </optgroup> `
                     })}
-                </optgroup> `
-            })}
+                </select>
+            </div>
         `
     }
 
@@ -153,17 +171,10 @@ export default class GdMap extends GDElement {
                 }
             </style>
             <div class="map">
-                <div>
-                    <select
-                        class="map__select form-control"
-                        @change=${this.map.handleShapeSelect}
-                    >
-                        <option>Select a Shape...</option>
-                        ${this.selectTemplate()}
-                    </select>
-                </div>
+                <!-- select goes here -->
                 <div class="map__container">
                     <!-- "Map goes here" -->
+                    ${this.showShapeSelector ? this.selectTemplate() : null}
                     <div
                         id="map"
                         style="width:${this.width && this.width}px; height: ${this

@@ -5,18 +5,18 @@ meta:
 layout: component
 ---
 
+## Examples
+
+### Default Map
+
 ```html:preview
 <gd-map></gd-map>
 ```
 
-## Examples
+### Configured Map
 
-### First Example
-
-TODO
-
-### Second Example
-
-TODO
+```html:preview
+<gd-map show-navigation show-shape-selector show-coord-tracker></gd-map>
+```
 
 [component-metadata:gd-map]

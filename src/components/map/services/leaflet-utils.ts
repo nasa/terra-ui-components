@@ -43,7 +43,7 @@ export interface MapViewOptions {
     zoom: number
     minZoom: number
     maxZoom: number
-    mousePosition?: boolean
+    showCoordTracker?: boolean
     showNavigation?: boolean
 }
 
@@ -79,19 +79,20 @@ export class Leaflet implements Map {
             maxZoom: options.maxZoom,
         }).addTo(this.map)
 
-        // mouse position true, display mouse position tracker
-        if (options.mousePosition) {
-            this.addMousePosition()
+        // coord tracker true, display coord position tracker
+        if (options.showCoordTracker) {
+            this.addCoordTracker()
         }
 
+        console.log(options.showNavigation)
         if (options.showNavigation) {
             this.addDrawControl()
         }
     }
 
-    addMousePosition() {
-        // Mouse position extends leaflet controls
-        const MousePosition = L.Control.extend({
+    addCoordTracker() {
+        // coord tracker extends leaflet controls
+        const CoordTracker = L.Control.extend({
             options: {
                 position: 'bottomright',
                 title: 'Mouse Position',
@@ -123,9 +124,9 @@ export class Leaflet implements Map {
             },
         })
 
-        const mousePosition = new MousePosition()
+        const coordTracker = new CoordTracker()
 
-        mousePosition.addTo(this.map)
+        coordTracker.addTo(this.map)
     }
 
     addDrawControl() {

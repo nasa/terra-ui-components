@@ -1,22 +1,22 @@
 ---
 meta:
-  title: Spatial Picker
-  description:
+    title: Spatial Picker
+    description:
 layout: component
 ---
+
+## Examples
+
+### Default Spatial Picker
 
 ```html:preview
 <gd-spatial-picker></gd-spatial-picker>
 ```
 
-## Examples
+### Configured Spatial Picker
 
-### First Example
-
-TODO
-
-### Second Example
-
-TODO
+```html:preview
+<gd-spatial-picker show-navigation show-shape-selector show-coord-tracker></gd-spatial-picker>
+```
 
 [component-metadata:gd-spatial-picker]

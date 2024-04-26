@@ -16,16 +16,11 @@ import { parseBoundingBox } from '../map/services/leaflet-utils.js'
 window.type = ''
 
 /**
- * @summary A component that allows input of coordinates and rendering of map --example - '-180, -90, 180, 90'
+ * @summary A component that allows input of coordinates and rendering of map.
  * @documentation https://disc.gsfc.nasa.gov/components/spatial-picker
  * @status experimental
  * @since 1.0
  *
- * @dependency gd-map
- *
- * @csspart base - The component's base wrapper.
- *
- * @cssproperty --example - An example CSS custom property.
  */
 export default class GdSpatialPicker extends GDElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -36,41 +31,47 @@ export default class GdSpatialPicker extends GDElement {
     /**
      * Minimum zoom level of the map.
      */
-    @property({ attribute: 'min-zoom', type: Number, reflect: true })
+    @property({ attribute: 'min-zoom', type: Number })
     minZoom: number = 0
 
     /**
      * Maximum zoom level of the map.
      */
-    @property({ attribute: 'max-zoom', type: Number, reflect: true })
+    @property({ attribute: 'max-zoom', type: Number })
     maxZoom: number = 23
 
     /**
      * Initial map zoom level
      */
-    @property({ type: Number, reflect: true }) zoom: number = 1
+    @property({ type: Number }) zoom: number = 1
 
     /*
      * width of the map
      */
-    @property({ type: Number, reflect: true }) width: number
+    @property({ type: Number }) width: number
 
     /**
      * height of the map
      */
-    @property({ type: Number, reflect: true }) height: number = 336
+    @property({ type: Number }) height: number = 336
 
     /**
      * show map navigation toolbar
      */
-    @property({ attribute: 'show-navigation', type: Boolean, reflect: true })
+    @property({ attribute: 'show-navigation', type: Boolean })
     showNavigation: boolean = true
 
     /**
-     * mouse coordinate tracker
+     * show coordinate tracker
      */
-    @property({ attribute: 'mouse-position', type: Boolean, reflect: true })
-    mousePosition: boolean = true
+    @property({ attribute: 'show-coord-tracker', type: Boolean })
+    showCoordTracker: boolean = true
+
+    /**
+     * show shape selector
+     */
+    @property({ attribute: 'show-shape-selector', type: Boolean })
+    showShapeSelector: boolean = false
 
     @state()
     showMap: boolean = false
@@ -97,8 +98,10 @@ export default class GdSpatialPicker extends GDElement {
             zoom=${this.zoom}
             width=${this.width ? this.width : this.getBoundingClientRect().width - 64}
             height=${this.height}
-            ?mouse-position=${this.mousePosition}
+            ?show-coord-tracker=${this.showCoordTracker}
             .value=${this.mapValue}
+            ?show-navigation=${this.showNavigation}
+            ?show-shape-selector=${this.showShapeSelector}
         >
         </gd-map>`
     }
