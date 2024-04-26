@@ -54,10 +54,10 @@ export class TimeSeriesController {
 
     task: Task<TaskArguments, Partial<Data>[]>
 
-    #collection: Collection
-    #variable: Variable
-    #startDate: StartDate
-    #endDate: EndDate
+    collection: Collection
+    variable: Variable
+    startDate: StartDate
+    endDate: EndDate
 
     constructor(host: ReactiveControllerHost) {
         this.host = host
@@ -90,38 +90,6 @@ export class TimeSeriesController {
             },
             () => [this.collection, this.variable, this.startDate, this.endDate]
         )
-    }
-
-    set collection(value: Collection) {
-        this.#collection = value
-        this.host.requestUpdate()
-    }
-    get collection() {
-        return this.#collection
-    }
-
-    set variable(value: Variable) {
-        this.#variable = value
-        this.host.requestUpdate()
-    }
-    get variable() {
-        return this.#variable
-    }
-
-    set startDate(value: StartDate) {
-        this.#startDate = value
-        this.host.requestUpdate()
-    }
-    get startDate() {
-        return this.#startDate
-    }
-
-    set endDate(value: EndDate) {
-        this.#endDate = value
-        this.host.requestUpdate()
-    }
-    get endDate() {
-        return this.#endDate
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
