@@ -3,6 +3,5 @@ _site
 .DS_Store
 cdn
 dist
-docs/assets/images/sprite.svg
 node_modules
 src/react
