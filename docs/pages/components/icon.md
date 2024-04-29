@@ -15,13 +15,13 @@ Depending on how you're loading EDUX Components, you may need to copy icon asset
 
 <div style="font-size:4em;display:flex;">
   <span style="color:#1C67E3;font-size:2rem;display:flex;align-items:center;">
-    <gd-icon name="solid-rocket-launch" library="heroicons"></gd-icon>
+    <edux-icon name="solid-rocket-launch" library="heroicons"></edux-icon>
   </span>
 
-  <gd-icon name="nasa-logo"></gd-icon>
+  <edux-icon name="nasa-logo"></edux-icon>
 
   <span style="color:#F64137;font-size:2rem;display:flex;align-items:center;">
-    <gd-icon name="outline-rocket-launch" library="heroicons"></gd-icon>
+    <edux-icon name="outline-rocket-launch" library="heroicons"></edux-icon>
   </span>
 </div>
 
@@ -35,10 +35,10 @@ Default icons require no `library` attribute, but you _can_ use the attribute `l
 
 ```html:preview
 <!-- `library="default"` not required -->
-<gd-icon name="caret" library="default"></gd-icon>
-<gd-icon name="chevron-left-circle"></gd-icon>
-<gd-icon name="arrow-right-circle"></gd-icon>
-<gd-icon name="asteroid"></gd-icon>
+<edux-icon name="caret" library="default"></edux-icon>
+<edux-icon name="chevron-left-circle"></edux-icon>
+<edux-icon name="arrow-right-circle"></edux-icon>
+<edux-icon name="asteroid"></edux-icon>
 ```
 
 ### Customizing the Default Library
@@ -62,8 +62,8 @@ If you want to change the icons EDUX uses internally, you can register an icon l
 Heroicons (both outline and solid) are included as a pre-configured library.
 
 ```html:preview
-<gd-icon name="outline-academic-cap" library="heroicons"></gd-icon>
-<gd-icon name="solid-academic-cap" library="heroicons"></gd-icon>
+<edux-icon name="outline-academic-cap" library="heroicons"></edux-icon>
+<edux-icon name="solid-academic-cap" library="heroicons"></edux-icon>
 ```
 
 The following icons are available for use as part of the Heroicons icon library:
@@ -83,7 +83,7 @@ The following icons are available for use as part of the Heroicons icon library:
   let items = ``
 
   for (const icon of icons) {
-    items += `<li><gd-icon style="margin-inline-end:1ch;" name=${icon.name} library="heroicons"></gd-icon>${icon.name}</li>\n`
+    items += `<li><edux-icon style="margin-inline-end:1ch;" name=${icon.name} library="heroicons"></edux-icon>${icon.name}</li>\n`
   }
 
   ul.innerHTML = items
@@ -112,18 +112,18 @@ This example will load the same set of icons from the jsDelivr CDN instead of yo
 Custom icons can be loaded individually with the `src` attribute. Only SVGs on a local or CORS-enabled endpoint are supported. If you're using more than one custom icon, it might make sense to register a [custom icon library](#custom-icon-libraries).
 
 ```html:preview
-<gd-icon src="https://cdn.earthdata.nasa.gov/tophat2/NASA_logo.svg" font-size="18em"></gd-icon>
+<edux-icon src="https://cdn.earthdata.nasa.gov/tophat2/NASA_logo.svg" font-size="18em"></edux-icon>
 ```
 
 ### Colors
 
-Most icons inherit their color from the current text color (brand icons, like the NASA logo, do not). You can set the `color` property on the `<gd-icon>` element or style an ancestor to change the color.
+Most icons inherit their color from the current text color (brand icons, like the NASA logo, do not). You can set the `color` property on the `<edux-icon>` element or style an ancestor to change the color.
 
 ```html:preview
-<gd-icon name="outline-academic-cap" color="darkorange" library="heroicons"></gd-icon>
+<edux-icon name="outline-academic-cap" color="darkorange" library="heroicons"></edux-icon>
 
 <span style="color:rebeccapurple;">
-  <gd-icon name="solid-academic-cap" library="heroicons"></gd-icon>
+  <edux-icon name="solid-academic-cap" library="heroicons"></edux-icon>
 </span>
 ```
 
@@ -132,10 +132,10 @@ Most icons inherit their color from the current text color (brand icons, like th
 Icons are sized relative to the current font size. To change their size, set the `font-size` property on the icon itself or on a parent element as shown below.
 
 ```html:preview
-<gd-icon name="outline-academic-cap" library="heroicons" font-size="4em"></gd-icon>
+<edux-icon name="outline-academic-cap" library="heroicons" font-size="4em"></edux-icon>
 
 <span style="font-size:4em;">
-  <gd-icon name="solid-academic-cap" library="heroicons"></gd-icon>
+  <edux-icon name="solid-academic-cap" library="heroicons"></edux-icon>
 </span>
 ```
 
@@ -144,12 +144,12 @@ Icons are sized relative to the current font size. To change their size, set the
 For non-decorative icons, use the `label` attribute to announce it to assistive devices. Icons are otherwise set to `aria-hidden="true"`.
 
 ```html:preview
-<gd-icon name="outline-star" label="Add to favorites" library="heroicons"></gd-icon>
+<edux-icon name="outline-star" label="Add to favorites" library="heroicons"></edux-icon>
 ```
 
 ## Custom Icon Libraries
 
-You can register additional icons to use with the `<gd-icon>` component through icon libraries. Icon files can exist locally or on a CORS-enabled endpoint (e.g. a CDN). There is no limit to how many icon libraries you can register and there is no cost associated with registering them, as individual icons are only requested when they're used.
+You can register additional icons to use with the `<edux-icon>` component through icon libraries. Icon files can exist locally or on a CORS-enabled endpoint (e.g. a CDN). There is no limit to how many icon libraries you can register and there is no cost associated with registering them, as individual icons are only requested when they're used.
 
 EDUX ships with two built-in icon libraries, `default` and `heroicons`. The [default icon library](#customizing-the-default-library) contains a small subset of the icons from the HDS, though more will be added. The [Heroicon library](#customizing-the-heroicons-library) contains all of the icons from the Heroicon project.
 
@@ -170,11 +170,11 @@ Here's an example that registers an icon library located in the `/assets/icons` 
 </script>
 ```
 
-To display an icon, set the `library` and `name` attributes of an `<gd-icon>` element.
+To display an icon, set the `library` and `name` attributes of an `<edux-icon>` element.
 
 ```html
 <!-- This will show the icon located at /assets/icons/smile.svg -->
-<gd-icon library="my-icons" name="smile"></gd-icon>
+<edux-icon library="my-icons" name="smile"></edux-icon>
 ```
 
 If an icon is used before registration occurs, it will be empty initially but shown when registered.
@@ -196,10 +196,10 @@ This will register the [Bootstrap Icons](https://icons.getbootstrap.com/) librar
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="bootstrap" name="rocket"></gd-icon>
-  <gd-icon library="bootstrap" name="rocket-fill"></gd-icon>
-  <gd-icon library="bootstrap" name="rocket-takeoff"></gd-icon>
-  <gd-icon library="bootstrap" name="rocket-takeoff-fill"></gd-icon>
+  <edux-icon library="bootstrap" name="rocket"></edux-icon>
+  <edux-icon library="bootstrap" name="rocket-fill"></edux-icon>
+  <edux-icon library="bootstrap" name="rocket-takeoff"></edux-icon>
+  <edux-icon library="bootstrap" name="rocket-takeoff-fill"></edux-icon>
 </div>
 ```
 
@@ -225,26 +225,26 @@ Icons in this library are licensed under the [Creative Commons 4.0 License](http
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="boxicons" name="bx-bot"></gd-icon>
-  <gd-icon library="boxicons" name="bx-cookie"></gd-icon>
-  <gd-icon library="boxicons" name="bx-joystick"></gd-icon>
-  <gd-icon library="boxicons" name="bx-save"></gd-icon>
-  <gd-icon library="boxicons" name="bx-server"></gd-icon>
-  <gd-icon library="boxicons" name="bx-wine"></gd-icon>
+  <edux-icon library="boxicons" name="bx-bot"></edux-icon>
+  <edux-icon library="boxicons" name="bx-cookie"></edux-icon>
+  <edux-icon library="boxicons" name="bx-joystick"></edux-icon>
+  <edux-icon library="boxicons" name="bx-save"></edux-icon>
+  <edux-icon library="boxicons" name="bx-server"></edux-icon>
+  <edux-icon library="boxicons" name="bx-wine"></edux-icon>
   <br />
-  <gd-icon library="boxicons" name="bxs-bot"></gd-icon>
-  <gd-icon library="boxicons" name="bxs-cookie"></gd-icon>
-  <gd-icon library="boxicons" name="bxs-joystick"></gd-icon>
-  <gd-icon library="boxicons" name="bxs-save"></gd-icon>
-  <gd-icon library="boxicons" name="bxs-server"></gd-icon>
-  <gd-icon library="boxicons" name="bxs-wine"></gd-icon>
+  <edux-icon library="boxicons" name="bxs-bot"></edux-icon>
+  <edux-icon library="boxicons" name="bxs-cookie"></edux-icon>
+  <edux-icon library="boxicons" name="bxs-joystick"></edux-icon>
+  <edux-icon library="boxicons" name="bxs-save"></edux-icon>
+  <edux-icon library="boxicons" name="bxs-server"></edux-icon>
+  <edux-icon library="boxicons" name="bxs-wine"></edux-icon>
   <br />
-  <gd-icon library="boxicons" name="bxl-apple"></gd-icon>
-  <gd-icon library="boxicons" name="bxl-chrome"></gd-icon>
-  <gd-icon library="boxicons" name="bxl-edge"></gd-icon>
-  <gd-icon library="boxicons" name="bxl-firefox"></gd-icon>
-  <gd-icon library="boxicons" name="bxl-opera"></gd-icon>
-  <gd-icon library="boxicons" name="bxl-microsoft"></gd-icon>
+  <edux-icon library="boxicons" name="bxl-apple"></edux-icon>
+  <edux-icon library="boxicons" name="bxl-chrome"></edux-icon>
+  <edux-icon library="boxicons" name="bxl-edge"></edux-icon>
+  <edux-icon library="boxicons" name="bxl-firefox"></edux-icon>
+  <edux-icon library="boxicons" name="bxl-opera"></edux-icon>
+  <edux-icon library="boxicons" name="bxl-microsoft"></edux-icon>
 </div>
 ```
 
@@ -256,12 +256,12 @@ Icons in this library are licensed under the [MIT License](https://github.com/lu
 
 ```html:preview
 <div style="font-size: 24px;">
-  <gd-icon library="lucide" name="feather"></gd-icon>
-  <gd-icon library="lucide" name="pie-chart"></gd-icon>
-  <gd-icon library="lucide" name="settings"></gd-icon>
-  <gd-icon library="lucide" name="map-pin"></gd-icon>
-  <gd-icon library="lucide" name="printer"></gd-icon>
-  <gd-icon library="lucide" name="shopping-cart"></gd-icon>
+  <edux-icon library="lucide" name="feather"></edux-icon>
+  <edux-icon library="lucide" name="pie-chart"></edux-icon>
+  <edux-icon library="lucide" name="settings"></edux-icon>
+  <edux-icon library="lucide" name="map-pin"></edux-icon>
+  <edux-icon library="lucide" name="printer"></edux-icon>
+  <edux-icon library="lucide" name="shopping-cart"></edux-icon>
 </div>
 
 <script type="module">
@@ -296,26 +296,26 @@ Icons in this library are licensed under the [Font Awesome Free License](https:/
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="fa" name="far-bell"></gd-icon>
-  <gd-icon library="fa" name="far-comment"></gd-icon>
-  <gd-icon library="fa" name="far-hand-point-right"></gd-icon>
-  <gd-icon library="fa" name="far-hdd"></gd-icon>
-  <gd-icon library="fa" name="far-heart"></gd-icon>
-  <gd-icon library="fa" name="far-star"></gd-icon>
+  <edux-icon library="fa" name="far-bell"></edux-icon>
+  <edux-icon library="fa" name="far-comment"></edux-icon>
+  <edux-icon library="fa" name="far-hand-point-right"></edux-icon>
+  <edux-icon library="fa" name="far-hdd"></edux-icon>
+  <edux-icon library="fa" name="far-heart"></edux-icon>
+  <edux-icon library="fa" name="far-star"></edux-icon>
   <br />
-  <gd-icon library="fa" name="fas-archive"></gd-icon>
-  <gd-icon library="fa" name="fas-book"></gd-icon>
-  <gd-icon library="fa" name="fas-chess-knight"></gd-icon>
-  <gd-icon library="fa" name="fas-dice"></gd-icon>
-  <gd-icon library="fa" name="fas-pizza-slice"></gd-icon>
-  <gd-icon library="fa" name="fas-scroll"></gd-icon>
+  <edux-icon library="fa" name="fas-archive"></edux-icon>
+  <edux-icon library="fa" name="fas-book"></edux-icon>
+  <edux-icon library="fa" name="fas-chess-knight"></edux-icon>
+  <edux-icon library="fa" name="fas-dice"></edux-icon>
+  <edux-icon library="fa" name="fas-pizza-slice"></edux-icon>
+  <edux-icon library="fa" name="fas-scroll"></edux-icon>
   <br />
-  <gd-icon library="fa" name="fab-apple"></gd-icon>
-  <gd-icon library="fa" name="fab-chrome"></gd-icon>
-  <gd-icon library="fa" name="fab-edge"></gd-icon>
-  <gd-icon library="fa" name="fab-firefox"></gd-icon>
-  <gd-icon library="fa" name="fab-opera"></gd-icon>
-  <gd-icon library="fa" name="fab-microsoft"></gd-icon>
+  <edux-icon library="fa" name="fab-apple"></edux-icon>
+  <edux-icon library="fa" name="fab-chrome"></edux-icon>
+  <edux-icon library="fa" name="fab-edge"></edux-icon>
+  <edux-icon library="fa" name="fab-firefox"></edux-icon>
+  <edux-icon library="fa" name="fab-opera"></edux-icon>
+  <edux-icon library="fa" name="fab-microsoft"></edux-icon>
 </div>
 ```
 
@@ -335,12 +335,12 @@ Icons in this library are licensed under the [MIT License](https://github.com/lu
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="iconoir" name="check-circled-outline"></gd-icon>
-  <gd-icon library="iconoir" name="drawer"></gd-icon>
-  <gd-icon library="iconoir" name="keyframes"></gd-icon>
-  <gd-icon library="iconoir" name="headset-help"></gd-icon>
-  <gd-icon library="iconoir" name="color-picker"></gd-icon>
-  <gd-icon library="iconoir" name="wifi"></gd-icon>
+  <edux-icon library="iconoir" name="check-circled-outline"></edux-icon>
+  <edux-icon library="iconoir" name="drawer"></edux-icon>
+  <edux-icon library="iconoir" name="keyframes"></edux-icon>
+  <edux-icon library="iconoir" name="headset-help"></edux-icon>
+  <edux-icon library="iconoir" name="color-picker"></edux-icon>
+  <edux-icon library="iconoir" name="wifi"></edux-icon>
 </div>
 ```
 
@@ -366,26 +366,26 @@ Icons in this library are licensed under the [MIT License](https://github.com/io
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="ionicons" name="alarm"></gd-icon>
-  <gd-icon library="ionicons" name="american-football"></gd-icon>
-  <gd-icon library="ionicons" name="bug"></gd-icon>
-  <gd-icon library="ionicons" name="chatbubble"></gd-icon>
-  <gd-icon library="ionicons" name="settings"></gd-icon>
-  <gd-icon library="ionicons" name="warning"></gd-icon>
+  <edux-icon library="ionicons" name="alarm"></edux-icon>
+  <edux-icon library="ionicons" name="american-football"></edux-icon>
+  <edux-icon library="ionicons" name="bug"></edux-icon>
+  <edux-icon library="ionicons" name="chatbubble"></edux-icon>
+  <edux-icon library="ionicons" name="settings"></edux-icon>
+  <edux-icon library="ionicons" name="warning"></edux-icon>
   <br />
-  <gd-icon library="ionicons" name="alarm-outline"></gd-icon>
-  <gd-icon library="ionicons" name="american-football-outline"></gd-icon>
-  <gd-icon library="ionicons" name="bug-outline"></gd-icon>
-  <gd-icon library="ionicons" name="chatbubble-outline"></gd-icon>
-  <gd-icon library="ionicons" name="settings-outline"></gd-icon>
-  <gd-icon library="ionicons" name="warning-outline"></gd-icon>
+  <edux-icon library="ionicons" name="alarm-outline"></edux-icon>
+  <edux-icon library="ionicons" name="american-football-outline"></edux-icon>
+  <edux-icon library="ionicons" name="bug-outline"></edux-icon>
+  <edux-icon library="ionicons" name="chatbubble-outline"></edux-icon>
+  <edux-icon library="ionicons" name="settings-outline"></edux-icon>
+  <edux-icon library="ionicons" name="warning-outline"></edux-icon>
   <br />
-  <gd-icon library="ionicons" name="alarm-sharp"></gd-icon>
-  <gd-icon library="ionicons" name="american-football-sharp"></gd-icon>
-  <gd-icon library="ionicons" name="bug-sharp"></gd-icon>
-  <gd-icon library="ionicons" name="chatbubble-sharp"></gd-icon>
-  <gd-icon library="ionicons" name="settings-sharp"></gd-icon>
-  <gd-icon library="ionicons" name="warning-sharp"></gd-icon>
+  <edux-icon library="ionicons" name="alarm-sharp"></edux-icon>
+  <edux-icon library="ionicons" name="american-football-sharp"></edux-icon>
+  <edux-icon library="ionicons" name="bug-sharp"></edux-icon>
+  <edux-icon library="ionicons" name="chatbubble-sharp"></edux-icon>
+  <edux-icon library="ionicons" name="settings-sharp"></edux-icon>
+  <edux-icon library="ionicons" name="warning-sharp"></edux-icon>
 </div>
 ```
 
@@ -406,19 +406,19 @@ Icons in this library are licensed under the [MIT License](https://github.com/mi
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="jam" name="calendar"></gd-icon>
-  <gd-icon library="jam" name="camera"></gd-icon>
-  <gd-icon library="jam" name="filter"></gd-icon>
-  <gd-icon library="jam" name="leaf"></gd-icon>
-  <gd-icon library="jam" name="picture"></gd-icon>
-  <gd-icon library="jam" name="set-square"></gd-icon>
+  <edux-icon library="jam" name="calendar"></edux-icon>
+  <edux-icon library="jam" name="camera"></edux-icon>
+  <edux-icon library="jam" name="filter"></edux-icon>
+  <edux-icon library="jam" name="leaf"></edux-icon>
+  <edux-icon library="jam" name="picture"></edux-icon>
+  <edux-icon library="jam" name="set-square"></edux-icon>
   <br />
-  <gd-icon library="jam" name="calendar-f"></gd-icon>
-  <gd-icon library="jam" name="camera-f"></gd-icon>
-  <gd-icon library="jam" name="filter-f"></gd-icon>
-  <gd-icon library="jam" name="leaf-f"></gd-icon>
-  <gd-icon library="jam" name="picture-f"></gd-icon>
-  <gd-icon library="jam" name="set-square-f"></gd-icon>
+  <edux-icon library="jam" name="calendar-f"></edux-icon>
+  <edux-icon library="jam" name="camera-f"></edux-icon>
+  <edux-icon library="jam" name="filter-f"></edux-icon>
+  <edux-icon library="jam" name="leaf-f"></edux-icon>
+  <edux-icon library="jam" name="picture-f"></edux-icon>
+  <edux-icon library="jam" name="set-square-f"></edux-icon>
 </div>
 ```
 
@@ -442,26 +442,26 @@ Icons in this library are licensed under the [Apache 2.0 License](https://github
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="material" name="notifications"></gd-icon>
-  <gd-icon library="material" name="email"></gd-icon>
-  <gd-icon library="material" name="delete"></gd-icon>
-  <gd-icon library="material" name="volume_up"></gd-icon>
-  <gd-icon library="material" name="settings"></gd-icon>
-  <gd-icon library="material" name="shopping_basket"></gd-icon>
+  <edux-icon library="material" name="notifications"></edux-icon>
+  <edux-icon library="material" name="email"></edux-icon>
+  <edux-icon library="material" name="delete"></edux-icon>
+  <edux-icon library="material" name="volume_up"></edux-icon>
+  <edux-icon library="material" name="settings"></edux-icon>
+  <edux-icon library="material" name="shopping_basket"></edux-icon>
   <br />
-  <gd-icon library="material" name="notifications_round"></gd-icon>
-  <gd-icon library="material" name="email_round"></gd-icon>
-  <gd-icon library="material" name="delete_round"></gd-icon>
-  <gd-icon library="material" name="volume_up_round"></gd-icon>
-  <gd-icon library="material" name="settings_round"></gd-icon>
-  <gd-icon library="material" name="shopping_basket_round"></gd-icon>
+  <edux-icon library="material" name="notifications_round"></edux-icon>
+  <edux-icon library="material" name="email_round"></edux-icon>
+  <edux-icon library="material" name="delete_round"></edux-icon>
+  <edux-icon library="material" name="volume_up_round"></edux-icon>
+  <edux-icon library="material" name="settings_round"></edux-icon>
+  <edux-icon library="material" name="shopping_basket_round"></edux-icon>
   <br />
-  <gd-icon library="material" name="notifications_sharp"></gd-icon>
-  <gd-icon library="material" name="email_sharp"></gd-icon>
-  <gd-icon library="material" name="delete_sharp"></gd-icon>
-  <gd-icon library="material" name="volume_up_sharp"></gd-icon>
-  <gd-icon library="material" name="settings_sharp"></gd-icon>
-  <gd-icon library="material" name="shopping_basket_sharp"></gd-icon>
+  <edux-icon library="material" name="notifications_sharp"></edux-icon>
+  <edux-icon library="material" name="email_sharp"></edux-icon>
+  <edux-icon library="material" name="delete_sharp"></edux-icon>
+  <edux-icon library="material" name="volume_up_sharp"></edux-icon>
+  <edux-icon library="material" name="settings_sharp"></edux-icon>
+  <edux-icon library="material" name="shopping_basket_sharp"></edux-icon>
 </div>
 ```
 
@@ -486,19 +486,19 @@ Icons in this library are licensed under the [Apache 2.0 License](https://github
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="remixicon" name="business/cloud-line"></gd-icon>
-  <gd-icon library="remixicon" name="design/brush-line"></gd-icon>
-  <gd-icon library="remixicon" name="business/pie-chart-line"></gd-icon>
-  <gd-icon library="remixicon" name="development/bug-line"></gd-icon>
-  <gd-icon library="remixicon" name="media/image-line"></gd-icon>
-  <gd-icon library="remixicon" name="system/alert-line"></gd-icon>
+  <edux-icon library="remixicon" name="business/cloud-line"></edux-icon>
+  <edux-icon library="remixicon" name="design/brush-line"></edux-icon>
+  <edux-icon library="remixicon" name="business/pie-chart-line"></edux-icon>
+  <edux-icon library="remixicon" name="development/bug-line"></edux-icon>
+  <edux-icon library="remixicon" name="media/image-line"></edux-icon>
+  <edux-icon library="remixicon" name="system/alert-line"></edux-icon>
   <br />
-  <gd-icon library="remixicon" name="business/cloud-fill"></gd-icon>
-  <gd-icon library="remixicon" name="design/brush-fill"></gd-icon>
-  <gd-icon library="remixicon" name="business/pie-chart-fill"></gd-icon>
-  <gd-icon library="remixicon" name="development/bug-fill"></gd-icon>
-  <gd-icon library="remixicon" name="media/image-fill"></gd-icon>
-  <gd-icon library="remixicon" name="system/alert-fill"></gd-icon>
+  <edux-icon library="remixicon" name="business/cloud-fill"></edux-icon>
+  <edux-icon library="remixicon" name="design/brush-fill"></edux-icon>
+  <edux-icon library="remixicon" name="business/pie-chart-fill"></edux-icon>
+  <edux-icon library="remixicon" name="development/bug-fill"></edux-icon>
+  <edux-icon library="remixicon" name="media/image-fill"></edux-icon>
+  <edux-icon library="remixicon" name="system/alert-fill"></edux-icon>
 </div>
 ```
 
@@ -518,19 +518,19 @@ Icons in this library are licensed under the [MIT License](https://github.com/ta
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="tabler" name="alert-triangle"></gd-icon>
-  <gd-icon library="tabler" name="arrow-back"></gd-icon>
-  <gd-icon library="tabler" name="at"></gd-icon>
-  <gd-icon library="tabler" name="ball-baseball"></gd-icon>
-  <gd-icon library="tabler" name="cake"></gd-icon>
-  <gd-icon library="tabler" name="files"></gd-icon>
+  <edux-icon library="tabler" name="alert-triangle"></edux-icon>
+  <edux-icon library="tabler" name="arrow-back"></edux-icon>
+  <edux-icon library="tabler" name="at"></edux-icon>
+  <edux-icon library="tabler" name="ball-baseball"></edux-icon>
+  <edux-icon library="tabler" name="cake"></edux-icon>
+  <edux-icon library="tabler" name="files"></edux-icon>
   <br />
-  <gd-icon library="tabler" name="keyboard"></gd-icon>
-  <gd-icon library="tabler" name="moon"></gd-icon>
-  <gd-icon library="tabler" name="pig"></gd-icon>
-  <gd-icon library="tabler" name="printer"></gd-icon>
-  <gd-icon library="tabler" name="ship"></gd-icon>
-  <gd-icon library="tabler" name="toilet-paper"></gd-icon>
+  <edux-icon library="tabler" name="keyboard"></edux-icon>
+  <edux-icon library="tabler" name="moon"></edux-icon>
+  <edux-icon library="tabler" name="pig"></edux-icon>
+  <edux-icon library="tabler" name="printer"></edux-icon>
+  <edux-icon library="tabler" name="ship"></edux-icon>
+  <edux-icon library="tabler" name="toilet-paper"></edux-icon>
 </div>
 ```
 
@@ -556,20 +556,20 @@ Icons in this library are licensed under the [Apache 2.0 License](https://github
 </script>
 
 <div style="font-size: 24px;">
-  <gd-icon library="unicons" name="clock"></gd-icon>
-  <gd-icon library="unicons" name="graph-bar"></gd-icon>
-  <gd-icon library="unicons" name="padlock"></gd-icon>
-  <gd-icon library="unicons" name="polygon"></gd-icon>
-  <gd-icon library="unicons" name="rocket"></gd-icon>
-  <gd-icon library="unicons" name="star"></gd-icon>
+  <edux-icon library="unicons" name="clock"></edux-icon>
+  <edux-icon library="unicons" name="graph-bar"></edux-icon>
+  <edux-icon library="unicons" name="padlock"></edux-icon>
+  <edux-icon library="unicons" name="polygon"></edux-icon>
+  <edux-icon library="unicons" name="rocket"></edux-icon>
+  <edux-icon library="unicons" name="star"></edux-icon>
   <br />
-  <gd-icon library="unicons" name="clock-s"></gd-icon>
-  <gd-icon library="unicons" name="graph-bar-s"></gd-icon>
-  <gd-icon library="unicons" name="padlock-s"></gd-icon>
-  <gd-icon library="unicons" name="polygon-s"></gd-icon>
-  <gd-icon library="unicons" name="rocket-s"></gd-icon>
-  <gd-icon library="unicons" name="star-s"></gd-icon>
+  <edux-icon library="unicons" name="clock-s"></edux-icon>
+  <edux-icon library="unicons" name="graph-bar-s"></edux-icon>
+  <edux-icon library="unicons" name="padlock-s"></edux-icon>
+  <edux-icon library="unicons" name="polygon-s"></edux-icon>
+  <edux-icon library="unicons" name="rocket-s"></edux-icon>
+  <edux-icon library="unicons" name="star-s"></edux-icon>
 </div>
 ```
 
-[component-metadata:gd-icon]
+[component-metadata:edux-icon]
