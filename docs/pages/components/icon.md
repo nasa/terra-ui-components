@@ -5,7 +5,7 @@ meta:
 layout: component
 ---
 
-EDUX Components come bundled with two sets of icons: `system` and `default`. `system` icons are pulled from the [Horizon Design System](https://website.nasa.gov/hds/foundations/iconography/) (HDS), and `default` icons consist of over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. If you prefer, you can register [custom icon libraries](#icon-libraries) as well.
+EDUX Components come bundled with two sets of icons: `default` and `heroicons`. `default` icons are pulled from the [Horizon Design System](https://website.nasa.gov/hds/foundations/iconography/) (HDS), and `heroicons` icons consist of over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. If you prefer, you can register [custom icon libraries](#custom-icon-libraries) as well.
 
 :::tip
 Depending on how you're loading EDUX Components, you may need to copy icon assets and/or [set the base path](/getting-started/installation/#setting-the-base-path) so EDUX knows where to load them from. Otherwise, icons may not appear and you'll see <code>404 Not Found</code> errors in the dev console.
@@ -15,13 +15,13 @@ Depending on how you're loading EDUX Components, you may need to copy icon asset
 
 <div style="font-size:4em;display:flex;">
   <span style="color:#1C67E3;font-size:2rem;display:flex;align-items:center;">
-    <gd-icon name="solid-rocket-launch"></gd-icon>
+    <gd-icon name="solid-rocket-launch" library="heroicons"></gd-icon>
   </span>
 
-  <gd-icon name="nasa-logo" library="system"></gd-icon>
+  <gd-icon name="nasa-logo"></gd-icon>
 
   <span style="color:#F64137;font-size:2rem;display:flex;align-items:center;">
-    <gd-icon name="outline-rocket-launch"></gd-icon>
+    <gd-icon name="outline-rocket-launch" library="heroicons"></gd-icon>
   </span>
 </div>
 
@@ -29,43 +29,44 @@ Depending on how you're loading EDUX Components, you may need to copy icon asset
 
 ## Examples
 
-### Using System Icons
+### Using Default HDS Icons
 
-System icons require the attribute `library="system"`. If you're building something for NASA, you should use the `system` library to conform to the HDS.
+Default icons require no `library` attribute, but you _can_ use the attribute `library="default"`. If you're building something for NASA, you should use the `default` library to conform to the HDS.
 
 ```html:preview
-<gd-icon name="caret" library="system"></gd-icon>
-<gd-icon name="chevron-left-circle" library="system"></gd-icon>
-<gd-icon name="arrow-right-circle" library="system"></gd-icon>
-<gd-icon name="asteroid" library="system"></gd-icon>
+<!-- `library="default"` not required -->
+<gd-icon name="caret" library="default"></gd-icon>
+<gd-icon name="chevron-left-circle"></gd-icon>
+<gd-icon name="arrow-right-circle"></gd-icon>
+<gd-icon name="asteroid"></gd-icon>
 ```
 
-### Customizing the System Library
+### Customizing the Default Library
 
-The system library contains only the icons used internally by EDUX components. Unlike the default icon library, the system library does not rely on physical assets. Instead, its icons are hard-coded as data URIs into the resolver to ensure their availability.
+The default library contains only the icons used internally by EDUX components. Unlike the Heroicon icon library, the default library does not rely on physical assets. Instead, its icons are hard-coded as data URIs into the resolver to ensure their availability.
 
-If you want to change the icons EDUX uses internally, you can register an icon library using the `system` name and a custom resolver. If you choose to do this, it's your responsibility to provide all of the icons that are required by components. You can reference `src/components/library.system.ts` for a complete list of system icons used by EDUX.
+If you want to change the icons EDUX uses internally, you can register an icon library using the `default` name and a custom resolver. If you choose to do this, it's your responsibility to provide all of the icons that are required by components. You can reference `src/components/library.default.ts` for a complete list of system icons used by EDUX.
 
 ```html
 <script type="module">
     import { registerIconLibrary } from '/dist/utilities/icon-library.js'
 
-    registerIconLibrary('system', {
+    registerIconLibrary('default', {
         resolver: name => `/path/to/custom/icons/${name}.svg`,
     })
 </script>
 ```
 
-### Using Default Icons (Heroicons)
+### Using Heroicons
 
-Default icons are copied from Heroicons. You _can_ use the attribute `library="default"`, but the library attribute defaults to that value.
+Heroicons (both outline and solid) are included as a pre-configured library.
 
 ```html:preview
-<gd-icon name="outline-academic-cap"></gd-icon>
-<gd-icon name="solid-academic-cap"></gd-icon>
+<gd-icon name="outline-academic-cap" library="heroicons"></gd-icon>
+<gd-icon name="solid-academic-cap" library="heroicons"></gd-icon>
 ```
 
-The following icons are available for use as part of the default icon library:
+The following icons are available for use as part of the Heroicons icon library:
 
 ```html:preview
 <details>
@@ -82,16 +83,16 @@ The following icons are available for use as part of the default icon library:
   let items = ``
 
   for (const icon of icons) {
-    items += `<li><gd-icon style="margin-inline-end:1ch;" name=${icon.name}></gd-icon>${icon.name}</li>\n`
+    items += `<li><gd-icon style="margin-inline-end:1ch;" name=${icon.name} library="heroicons"></gd-icon>${icon.name}</li>\n`
   }
 
   ul.innerHTML = items
 </script>
 ```
 
-### Customizing the Default Library
+### Customizing the Heroicons Library
 
-The default icon library contains over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. These are the icons that display when you use `<gd-icon>` without the `library` attribute. If you prefer to have these icons resolve elsewhere or to a different icon library, register an icon library using the `default` name and a custom resolver.
+The `heroicons `icon library contains over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. If you prefer to have these icons resolve elsewhere or to a different icon library, register an icon library using the `heroicons` name and a custom resolver.
 
 This example will load the same set of icons from the jsDelivr CDN instead of your local assets folder.
 
@@ -99,11 +100,19 @@ This example will load the same set of icons from the jsDelivr CDN instead of yo
 <script type="module">
     import { registerIconLibrary } from '/dist/utilities/icon-library.js'
 
-    registerIconLibrary('default', {
+    registerIconLibrary('heroicons', {
         resolver: name =>
             `https://cdn.jsdelivr.net/npm/bootstrap-icons@1.0.0/icons/${name}.svg`,
     })
 </script>
+```
+
+### One-Off Custom Icons
+
+Custom icons can be loaded individually with the `src` attribute. Only SVGs on a local or CORS-enabled endpoint are supported. If you're using more than one custom icon, it might make sense to register a [custom icon library](#custom-icon-libraries).
+
+```html:preview
+<gd-icon src="https://cdn.earthdata.nasa.gov/tophat2/NASA_logo.svg" font-size="18em"></gd-icon>
 ```
 
 ### Colors
@@ -111,10 +120,10 @@ This example will load the same set of icons from the jsDelivr CDN instead of yo
 Most icons inherit their color from the current text color (brand icons, like the NASA logo, do not). You can set the `color` property on the `<gd-icon>` element or style an ancestor to change the color.
 
 ```html:preview
-<gd-icon name="outline-academic-cap" color="darkorange"></gd-icon>
+<gd-icon name="outline-academic-cap" color="darkorange" library="heroicons"></gd-icon>
 
 <span style="color:rebeccapurple;">
-  <gd-icon name="solid-academic-cap"></gd-icon>
+  <gd-icon name="solid-academic-cap" library="heroicons"></gd-icon>
 </span>
 ```
 
@@ -123,10 +132,10 @@ Most icons inherit their color from the current text color (brand icons, like th
 Icons are sized relative to the current font size. To change their size, set the `font-size` property on the icon itself or on a parent element as shown below.
 
 ```html:preview
-<gd-icon name="outline-academic-cap" font-size="4em"></gd-icon>
+<gd-icon name="outline-academic-cap" library="heroicons" font-size="4em"></gd-icon>
 
 <span style="font-size:4em;">
-  <gd-icon name="solid-academic-cap"></gd-icon>
+  <gd-icon name="solid-academic-cap" library="heroicons"></gd-icon>
 </span>
 ```
 
@@ -135,22 +144,14 @@ Icons are sized relative to the current font size. To change their size, set the
 For non-decorative icons, use the `label` attribute to announce it to assistive devices. Icons are otherwise set to `aria-hidden="true"`.
 
 ```html:preview
-<gd-icon name="outline-star" label="Add to favorites"></gd-icon>
+<gd-icon name="outline-star" label="Add to favorites" library="heroicons"></gd-icon>
 ```
 
-### Custom Icons
-
-Custom icons can be loaded individually with the `src` attribute. Only SVGs on a local or CORS-enabled endpoint are supported. If you're using more than one custom icon, it might make sense to register a [custom icon library](#icon-libraries).
-
-```html:preview
-<gd-icon src="https://cdn.earthdata.nasa.gov/tophat2/NASA_logo.svg" font-size="18em"></gd-icon>
-```
-
-## Icon Libraries
+## Custom Icon Libraries
 
 You can register additional icons to use with the `<gd-icon>` component through icon libraries. Icon files can exist locally or on a CORS-enabled endpoint (e.g. a CDN). There is no limit to how many icon libraries you can register and there is no cost associated with registering them, as individual icons are only requested when they're used.
 
-EDUX ships with two built-in icon libraries, `default` and `system`. The [default icon library](#customizing-the-default-library) contains all of the icons in the Heroicons project. The [system icon library](#customizing-the-system-library) contains only a small subset of icons that are used internally by EDUX components.
+EDUX ships with two built-in icon libraries, `default` and `heroicons`. The [default icon library](#customizing-the-default-library) contains a small subset of the icons from the HDS, though more will be added. The [Heroicon library](#customizing-the-heroicons-library) contains all of the icons from the Heroicon project.
 
 To register an additional icon library, use the `registerIconLibrary()` function that's exported from `utilities/icon-library.js`. At a minimum, you must provide a name and a resolver function. The resolver function translates an icon name to a URL where the corresponding SVG file exists. Refer to the examples below to better understand how it works.
 

@@ -57,7 +57,7 @@ export default class GdIcon extends GDElement {
     @property() label = ''
 
     /** The name of a registered custom icon library. */
-    @property({ reflect: true }) library = 'default'
+    @property({ reflect: true }) library: 'default' | 'heroicons' | string = 'default'
 
     /** The CSS color to assign to the SVG. */
     @property() color: string | null = null

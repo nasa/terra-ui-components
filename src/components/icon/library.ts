@@ -1,5 +1,5 @@
 import defaultLibrary from './library.default.js'
-import systemLibrary from './library.system.js'
+import heroiconLibrary from './library.heroicons.js'
 import type SlIcon from '../icon/icon.js'
 
 export type IconLibraryResolver = (name: string) => string
@@ -10,7 +10,7 @@ export interface IconLibrary {
     mutator?: IconLibraryMutator
 }
 
-let registry: IconLibrary[] = [defaultLibrary, systemLibrary]
+let registry: IconLibrary[] = [defaultLibrary, heroiconLibrary]
 let watchedIcons: SlIcon[] = []
 
 /** Adds an icon to the list of watched icons. */

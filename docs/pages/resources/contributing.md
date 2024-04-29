@@ -4,6 +4,8 @@ meta:
     description: Shoelace is an open source project, meaning everyone can use it and contribute to its development.
 ---
 
+<!-- TODO: Replace with our contributing guidelines. -->
+
 # Contributing
 
 Shoelace is an open source project, meaning everyone can use it and contribute to its development. When you join our community, you'll find a friendly group of enthusiasts at all experience levels who are willing to chat about anything and everything related to Shoelace.
