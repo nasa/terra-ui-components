@@ -1,9 +1,11 @@
 ---
 meta:
-  title: Button
-  description: Buttons represent actions that are available to the user.
+    title: Button
+    description: Buttons represent actions that are available to the user.
 layout: component
 ---
+
+<!-- TODO: @shoelace-style/shoelace/dist/react/button needs to be replaced with our dist -->
 
 ```html:preview
 <gd-button>Button</gd-button>
