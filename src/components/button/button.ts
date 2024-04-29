@@ -1,12 +1,12 @@
-import GdButton from './button.component.js';
+import EduxButton from './button.component.js'
 
-export * from './button.component.js';
-export default GdButton;
+export * from './button.component.js'
+export default EduxButton
 
-GdButton.define('gd-button');
+EduxButton.define('edux-button')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'gd-button': GdButton;
+        'edux-button': EduxButton
     }
 }

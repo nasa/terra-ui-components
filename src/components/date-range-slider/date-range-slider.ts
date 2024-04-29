@@ -1,12 +1,12 @@
-import GdDateRangeSlider from './date-range-slider.component.js';
+import EduxDateRangeSlider from './date-range-slider.component.js'
 
-export * from './date-range-slider.component.js';
-export default GdDateRangeSlider;
+export * from './date-range-slider.component.js'
+export default EduxDateRangeSlider
 
-GdDateRangeSlider.define('gd-date-range-slider');
+EduxDateRangeSlider.define('edux-date-range-slider')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'gd-date-range-slider': GdDateRangeSlider;
+        'edux-date-range-slider': EduxDateRangeSlider
     }
 }

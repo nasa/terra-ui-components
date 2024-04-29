@@ -97,18 +97,19 @@ export class TimeSeriesController {
         const variableEntryId = `${this.collection}_${this.variable}`
 
         // check the database for any existing data
-        const existingData = await getDataByKey<VariableDbEntry>(
+        const existinEduxata = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
             variableEntryId
         )
 
         if (
-            existingData &&
-            this.startDate.getTime() >= new Date(existingData.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existingData.endDate).getTime()
+            existinEduxata &&
+            this.startDate.getTime() >=
+                new Date(existinEduxata.startDate).getTime() &&
+            this.endDate.getTime() <= new Date(existinEduxata.endDate).getTime()
         ) {
             // already have the data downloaded!
-            return this.#getDataInRange(existingData)
+            return this.#getDataInRange(existinEduxata)
         }
 
         // the fetch request we send out may not contain the full date range the user requested
@@ -116,18 +117,20 @@ export class TimeSeriesController {
         let requestStartDate = this.startDate
         let requestEndDate = this.endDate
 
-        if (existingData) {
+        if (existinEduxata) {
             if (
                 requestStartDate.getTime() <
-                new Date(existingData.startDate).getTime()
+                new Date(existinEduxata.startDate).getTime()
             ) {
                 // user has requested more data than what we have, move the endDate up
-                requestEndDate = new Date(existingData.startDate)
+                requestEndDate = new Date(existinEduxata.startDate)
             }
 
-            if (requestEndDate.getTime() > new Date(existingData.endDate).getTime()) {
+            if (
+                requestEndDate.getTime() > new Date(existinEduxata.endDate).getTime()
+            ) {
                 // user has requested more data than what we have, move the startDate back
-                requestStartDate = new Date(existingData.endDate)
+                requestStartDate = new Date(existinEduxata.endDate)
             }
         }
 
@@ -152,8 +155,8 @@ export class TimeSeriesController {
 
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
-        // combined the new parsedData with any existingData
-        parsedData.data = [...parsedData.data, ...(existingData?.data || [])]
+        // combined the new parsedData with any existinEduxata
+        parsedData.data = [...parsedData.data, ...(existinEduxata?.data || [])]
 
         // save the new data to the database
         await storeDataByKey<VariableDbEntry>(

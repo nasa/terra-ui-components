@@ -69,7 +69,7 @@ export default {
                             importPath,
                             '.component.ts'
                         )
-                        const tagName = 'gd-' + tagNameWithoutPrefix
+                        const tagName = 'edux-' + tagNameWithoutPrefix
 
                         classDoc.tagNameWithoutPrefix = tagNameWithoutPrefix
                         classDoc.tagName = tagName
@@ -178,10 +178,10 @@ export default {
                             classDoc.events.forEach(event => {
                                 event.reactName = `on${pascalCase(
                                     event.name
-                                )}`.replace(/^Sl/, 'Gd')
+                                )}`.replace(/^Sl/, 'Edux')
                                 event.eventName = `${pascalCase(
                                     event.name
-                                )}Event`.replace(/^Sl/, 'Gd')
+                                )}Event`.replace(/^Sl/, 'Edux')
                             })
                         }
                     }
@@ -237,7 +237,7 @@ export default {
                 {
                     name: 'Documentation',
                     url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
-                        'gd-',
+                        'edux-',
                         ''
                     )}`,
                 },
@@ -252,7 +252,7 @@ export default {
                 return {
                     name: 'Documentation',
                     url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
-                        'gd-',
+                        'edux-',
                         ''
                     )}`,
                 }
@@ -263,8 +263,8 @@ export default {
             outdir: './dist/types/vue',
             fileName: 'index.d.ts',
             componentTypePath: (_, tag) =>
-                `../../components/${tag.replace('gd-', '')}/${tag.replace(
-                    'gd-',
+                `../../components/${tag.replace('edux-', '')}/${tag.replace(
+                    'edux-',
                     ''
                 )}.component.js`,
         }),

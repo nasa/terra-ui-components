@@ -2,7 +2,7 @@ import { property, query } from 'lit/decorators.js'
 import { html } from 'lit'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { newPlot, type Data, type Layout, type Config } from 'plotly.js-dist-min'
@@ -15,7 +15,7 @@ import { newPlot, type Data, type Layout, type Config } from 'plotly.js-dist-min
  *
  * @csspart base - The component's base wrapper.
  */
-export default class GdPlot extends GDElement {
+export default class EduxPlot extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     @query('[part~="base"]')

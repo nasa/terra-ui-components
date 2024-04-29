@@ -6,12 +6,12 @@ layout: component
 ---
 
 ```html:preview
-<gd-variable-combobox></gd-variable-combobox>
+<edux-variable-combobox></edux-variable-combobox>
 
 <script type="module">
-  const element = document.querySelector('gd-variable-combobox')
+  const element = document.querySelector('edux-variable-combobox')
 
-  element.addEventListener('gd-combobox-change', (e) => {
+  element.addEventListener('edux-combobox-change', (e) => {
     console.log(e)
   })
 </script>
@@ -22,13 +22,13 @@ layout: component
 ### Default Variable Combobox
 
 ```html:preview
-<gd-variable-combobox></gd-variable-combobox>
+<edux-variable-combobox></edux-variable-combobox>
 ```
 
 ### Configured Variable Combobox
 
 ```html:preview
-<gd-variable-combobox placeholder="Search for Variables: e.g., albedo" hide-label hide-help></gd-variable-combobox>
+<edux-variable-combobox placeholder="Search for Variables: e.g., albedo" hide-label hide-help></edux-variable-combobox>
 ```
 
-[component-metadata:gd-variable-combobox]
+[component-metadata:edux-variable-combobox]

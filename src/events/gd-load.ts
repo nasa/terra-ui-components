@@ -1,7 +1,7 @@
-export type GdLoadEvent = CustomEvent<Record<PropertyKey, never>>
+export type EduxLoadEvent = CustomEvent<Record<PropertyKey, never>>
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'gd-load': GdLoadEvent
+        'edux-load': EduxLoadEvent
     }
 }

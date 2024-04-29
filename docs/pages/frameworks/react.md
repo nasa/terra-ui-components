@@ -40,12 +40,12 @@ Preact users facing type errors using components may benefit from setting "paths
 
 ### Importing Components
 
-Every GES DISC component is available to import as a React component. Note that we're importing the `<SlButton>` _React component_ instead of the `<sl-button>` _custom element_ in the example below.
+Every GES DISC component is available to import as a React component. Note that we're importing the `<EduxButton>` _React component_ instead of the `<edux-button>` _custom element_ in the example below.
 
 ```jsx
-import SlButton from '@gesdisc/components/%NPMDIR%/react/button'
+import Button from '@gesdisc/components/%NPMDIR%/react/button'
 
-const MyComponent = () => <SlButton variant="primary">Click me</SlButton>
+const MyComponent = () => <EduxButton variant="primary">Click me</EduxButton>
 
 export default MyComponent
 ```
@@ -55,21 +55,21 @@ export default MyComponent
 Previously, it was recommended to import from a single entrypoint like so:
 
 ```jsx
-import { SlButton } from '@gesdisc/components/%NPMDIR%/react'
+import { EduxButton } from '@gesdisc/components/%NPMDIR%/react'
 ```
 
 However, tree-shaking extra Shoelace components proved to be a challenge. As a result, we now recommend cherry-picking components you want to use, rather than importing from a single entrypoint.
 
 ```diff
-- import { SlButton } from '@gesdisc/components/%NPMDIR%/react';
-+ import SlButton from '@gesdisc/components/%NPMDIR%/react/button';
+- import { EduxButton } from '@gesdisc/components/%NPMDIR%/react';
++ import EduxButton from '@gesdisc/components/%NPMDIR%/react/button';
 ```
 
 You can find a copy + paste import for each component in the "importing" section of its documentation.
 
 ### Event Handling
 
-Many Shoelace components emit [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). For example, the [input component](/components/input) emits the `gd-input` event when it receives input. In React, you can listen for the event using `onSlInput`.
+Many Shoelace components emit [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). For example, the [input component](/components/input) emits the `edux-input` event when it receives input. In React, you can listen for the event using `onSlInput`.
 
 Here's how you can bind the input's value to a state variable.
 

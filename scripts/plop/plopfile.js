@@ -1,5 +1,5 @@
 export default function (plop) {
-    plop.setHelper('tagWithoutPrefix', tag => tag.replace(/^gd-/, ''))
+    plop.setHelper('tagWithoutPrefix', tag => tag.replace(/^edux-/, ''))
 
     plop.setHelper('tagToTitle', tag => {
         const withoutPrefix = plop.getHelper('tagWithoutPrefix')
@@ -13,10 +13,10 @@ export default function (plop) {
             {
                 type: 'input',
                 name: 'tag',
-                message: 'Tag name? (e.g. gd-button)',
+                message: 'Tag name? (e.g. edux-button)',
                 validate: value => {
-                    // Start with gd- and include only a-z + dashes
-                    if (!/^gd-[a-z-+]+/.test(value)) {
+                    // Start with edux- and include only a-z + dashes
+                    if (!/^edux-[a-z-+]+/.test(value)) {
                         return false
                     }
 

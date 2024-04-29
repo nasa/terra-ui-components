@@ -37,7 +37,7 @@ Add the following code to your page.
 Now you have access to all of the GES DISC components! Try adding a button:
 
 ```html:preview:expanded:no-codepen
-<sl-button>Click me</sl-button>
+<edux-button>Click me</edux-button>
 ```
 
 :::tip

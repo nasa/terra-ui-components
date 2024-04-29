@@ -1,12 +1,12 @@
-import GdIcon from './icon.component.js';
+import EduxIcon from './icon.component.js'
 
-export * from './icon.component.js';
-export default GdIcon;
+export * from './icon.component.js'
+export default EduxIcon
 
-GdIcon.define('gd-icon');
+EduxIcon.define('edux-icon')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'gd-icon': GdIcon;
+        'edux-icon': EduxIcon
     }
 }

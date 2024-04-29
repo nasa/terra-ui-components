@@ -14,24 +14,24 @@ Shoelace makes use of several design tokens to provide a consistent appearance a
 
 Design tokens offer a high-level way to customize the library with minimal effort. There are no component-specific variables, however, as design tokens are intended to be generic and highly reusable. To customize an individual component, refer to the section entitled [CSS Parts](#css-parts).
 
-Design tokens are accessed through CSS custom properties that are defined in your theme. Because design tokens live at the page level, they're prefixed with `--gd-` to avoid collisions with other libraries.
+Design tokens are accessed through CSS custom properties that are defined in your theme. Because design tokens live at the page level, they're prefixed with `--edux-` to avoid collisions with other libraries.
 
 To customize a design token, simply override it in your stylesheet using a `:root` block. Here's an example that changes the primary theme to purple based on existing [color primitives](/tokens/color#primitives).
 
 ```css
 :root {
     /* Changes the primary theme color to purple using primitives */
-    --gd-color-primary-50: var(--gd-color-purple-50);
-    --gd-color-primary-100: var(--gd-color-purple-100);
-    --gd-color-primary-200: var(--gd-color-purple-200);
-    --gd-color-primary-300: var(--gd-color-purple-300);
-    --gd-color-primary-400: var(--gd-color-purple-400);
-    --gd-color-primary-500: var(--gd-color-purple-500);
-    --gd-color-primary-600: var(--gd-color-purple-600);
-    --gd-color-primary-700: var(--gd-color-purple-700);
-    --gd-color-primary-800: var(--gd-color-purple-800);
-    --gd-color-primary-900: var(--gd-color-purple-900);
-    --gd-color-primary-950: var(--gd-color-purple-950);
+    --edux-color-primary-50: var(--edux-color-purple-50);
+    --edux-color-primary-100: var(--edux-color-purple-100);
+    --edux-color-primary-200: var(--edux-color-purple-200);
+    --edux-color-primary-300: var(--edux-color-purple-300);
+    --edux-color-primary-400: var(--edux-color-purple-400);
+    --edux-color-primary-500: var(--edux-color-purple-500);
+    --edux-color-primary-600: var(--edux-color-purple-600);
+    --edux-color-primary-700: var(--edux-color-purple-700);
+    --edux-color-primary-800: var(--edux-color-purple-800);
+    --edux-color-primary-900: var(--edux-color-purple-900);
+    --edux-color-primary-950: var(--edux-color-purple-950);
 }
 ```
 
@@ -46,11 +46,11 @@ Shoelace components use a [shadow DOM](https://developer.mozilla.org/en-US/docs/
 Here's an example that modifies buttons with the `tomato-button` class.
 
 ```html:preview
-<sl-button class="tomato-button"> Tomato Button </sl-button>
+<edux-button class="tomato-button"> Tomato Button </edux-button>
 
 <style>
   .tomato-button::part(base) {
-    background: var(--gd-color-neutral-0);
+    background: var(--edux-color-neutral-0);
     border: solid 1px tomato;
   }
 
@@ -84,12 +84,12 @@ Most (but not all) components expose parts. You can find them in each component'
 
 ## Custom Properties
 
-For convenience, some components expose CSS custom properties you can override. These are not design tokens, nor do they have the same `--gd-` prefix since they're scoped to a component.
+For convenience, some components expose CSS custom properties you can override. These are not design tokens, nor do they have the same `--edux-` prefix since they're scoped to a component.
 
 You can set custom properties on a component in your stylesheet.
 
 ```css
-gd-avatar {
+edux-avatar {
     --size: 6rem;
 }
 ```
@@ -97,7 +97,7 @@ gd-avatar {
 This will also work if you need to target a subset of components with a specific class.
 
 ```css
-gd-avatar.your-class {
+edux-avatar.your-class {
     --size: 6rem;
 }
 ```

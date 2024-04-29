@@ -1,10 +1,10 @@
-import '../../../dist/gesdisc-components.js';
-import { expect, fixture, html } from '@open-wc/testing';
+import '../../../dist/gesdisc-components.js'
+import { expect, fixture, html } from '@open-wc/testing'
 
-describe('<gd-button>', () => {
+describe('<edux-button>', () => {
     it('should render a component', async () => {
-        const el = await fixture(html` <gd-button></gd-button> `);
+        const el = await fixture(html` <edux-button></edux-button> `)
 
-        expect(el).to.exist;
-    });
-});
+        expect(el).to.exist
+    })
+})

@@ -80,8 +80,8 @@ Once you have configured your application for custom elements, you should be abl
         margin: 0 auto;
     }
 
-    gd-input {
-        margin: var(--gd-spacing-large) 0;
+    edux-input {
+        margin: var(--edux-spacing-large) 0;
     }
 </style>
 ```
@@ -105,7 +105,7 @@ One caveat is there's currently [no support for v-model on custom elements](http
 <sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
 
-If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-gd-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
+If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-edux-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
 
 :::tip
 Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/vue.md)
@@ -126,7 +126,7 @@ Here is an example:
 >
     This drawer slides in from the start.
     <div slot="footer">
-        <sl-button variant="primary" @click=" drawerIsOpen = false">Close</sl-button>
+        <edux-button variant="primary" @click=" drawerIsOpen = false">Close</edux-button>
     </div>
 </sl-drawer>
 ```

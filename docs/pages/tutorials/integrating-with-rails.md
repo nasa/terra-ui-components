@@ -45,7 +45,7 @@ After importing the theme, you'll need to import the JavaScript files for Shoela
 
 ```js
 import '../stylesheets/application.scss'
-import { setBasePath, SlAlert, SlAnimation, SlButton, ... } from '@gesdisc/components'
+import { setBasePath, SlAlert, SlAnimation, EduxButton, ... } from '@gesdisc/components'
 
 // ...
 

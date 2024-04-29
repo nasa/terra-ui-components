@@ -43,7 +43,7 @@ The traditional CDN loader registers all Shoelace elements up front. Note that, 
 
 ### Dark Theme
 
-The code above will load the light theme. If you want to use the [dark theme](/getting-started/themes#dark-theme) instead, update the stylesheet as shown below and add `<html class="gd-theme-dark">` to your page.
+The code above will load the light theme. If you want to use the [dark theme](/getting-started/themes#dark-theme) instead, update the stylesheet as shown below and add `<html class="edux-theme-dark">` to your page.
 
 <!-- prettier-ignore -->
 ```html
@@ -64,7 +64,7 @@ If you want to load the light or dark theme based on the user's `prefers-color-s
     rel="stylesheet"
     media="(prefers-color-scheme:dark)"
     href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/dark.css"
-    onload="document.documentElement.classList.add('gd-theme-dark');"
+    onload="document.documentElement.classList.add('edux-theme-dark');"
 />
 ```
 
@@ -150,7 +150,7 @@ Here's an example that loads only the button component. Again, if you're not usi
 <script type="module" data-gesdisc-components="/path/to/shoelace/%NPMDIR%">
     import '@gesdisc/components/%NPMDIR%/components/button/button.js'
 
-    // <sl-button> is ready to use!
+    // <edux-button> is ready to use!
 </script>
 ```
 
@@ -192,7 +192,7 @@ import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path.js
 // Set the base path to the folder you copied Shoelace's assets to
 setBasePath('/path/to/shoelace/%NPMDIR%')
 
-// <sl-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
+// <edux-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
 ```
 
 :::warning
@@ -204,8 +204,8 @@ Component modules include side effects for registration purposes. Because of thi
 By default, imports to components will auto-register themselves. This may not be ideal in all cases. To import just the component's class without auto-registering it's tag we can do the following:
 
 ```diff
-- import SlButton from '@gesdisc/components/%NPMDIR%/components/button/button.js';
-+ import SlButton from '@gesdisc/components/%NPMDIR%/components/button/button.component.js';
+- import EduxButton from '@gesdisc/components/%NPMDIR%/components/button/button.js';
++ import EduxButton from '@gesdisc/components/%NPMDIR%/components/button/button.component.js';
 ```
 
 Notice how the import ends with `.component.js`. This is the current convention to convey the import does not register itself.

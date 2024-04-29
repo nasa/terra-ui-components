@@ -8,13 +8,13 @@ layout: component
 <!-- TODO: @shoelace-style/shoelace/dist/react/button needs to be replaced with our dist -->
 
 ```html:preview
-<gd-button>Button</gd-button>
+<edux-button>Button</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@gesdisc/components/dist/react/button';
+import EduxButton from '@gesdisc/components/dist/react/button';
 
-const App = () => <GdButton>Button</GdButton>;
+const App = () => <EduxButton>Button</EduxButton>;
 ```
 
 ## Examples
@@ -24,25 +24,25 @@ const App = () => <GdButton>Button</GdButton>;
 Use the `variant` attribute to set the button's variant.
 
 ```html:preview
-<gd-button variant="default">Default</gd-button>
-<gd-button variant="primary">Primary</gd-button>
-<gd-button variant="success">Success</gd-button>
-<gd-button variant="neutral">Neutral</gd-button>
-<gd-button variant="warning">Warning</gd-button>
-<gd-button variant="danger">Danger</gd-button>
+<edux-button variant="default">Default</edux-button>
+<edux-button variant="primary">Primary</edux-button>
+<edux-button variant="success">Success</edux-button>
+<edux-button variant="neutral">Neutral</edux-button>
+<edux-button variant="warning">Warning</edux-button>
+<edux-button variant="danger">Danger</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton variant="default">Default</GdButton>
-    <GdButton variant="primary">Primary</GdButton>
-    <GdButton variant="success">Success</GdButton>
-    <GdButton variant="neutral">Neutral</GdButton>
-    <GdButton variant="warning">Warning</GdButton>
-    <GdButton variant="danger">Danger</GdButton>
+    <EduxButton variant="default">Default</EduxButton>
+    <EduxButton variant="primary">Primary</EduxButton>
+    <EduxButton variant="success">Success</EduxButton>
+    <EduxButton variant="neutral">Neutral</EduxButton>
+    <EduxButton variant="warning">Warning</EduxButton>
+    <EduxButton variant="danger">Danger</EduxButton>
   </>
 );
 ```
@@ -52,19 +52,19 @@ const App = () => (
 Use the `size` attribute to change a button's size.
 
 ```html:preview
-<gd-button size="small">Small</gd-button>
-<gd-button size="medium">Medium</gd-button>
-<gd-button size="large">Large</gd-button>
+<edux-button size="small">Small</edux-button>
+<edux-button size="medium">Medium</edux-button>
+<edux-button size="large">Large</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton size="small">Small</GdButton>
-    <GdButton size="medium">Medium</GdButton>
-    <GdButton size="large">Large</GdButton>
+    <EduxButton size="small">Small</EduxButton>
+    <EduxButton size="medium">Medium</EduxButton>
+    <EduxButton size="large">Large</EduxButton>
   </>
 );
 ```
@@ -74,37 +74,37 @@ const App = () => (
 Use the `outline` attribute to draw outlined buttons with transparent backgrounds.
 
 ```html:preview
-<gd-button variant="default" outline>Default</gd-button>
-<gd-button variant="primary" outline>Primary</gd-button>
-<gd-button variant="success" outline>Success</gd-button>
-<gd-button variant="neutral" outline>Neutral</gd-button>
-<gd-button variant="warning" outline>Warning</gd-button>
-<gd-button variant="danger" outline>Danger</gd-button>
+<edux-button variant="default" outline>Default</edux-button>
+<edux-button variant="primary" outline>Primary</edux-button>
+<edux-button variant="success" outline>Success</edux-button>
+<edux-button variant="neutral" outline>Neutral</edux-button>
+<edux-button variant="warning" outline>Warning</edux-button>
+<edux-button variant="danger" outline>Danger</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton variant="default" outline>
+    <EduxButton variant="default" outline>
       Default
-    </GdButton>
-    <GdButton variant="primary" outline>
+    </EduxButton>
+    <EduxButton variant="primary" outline>
       Primary
-    </GdButton>
-    <GdButton variant="success" outline>
+    </EduxButton>
+    <EduxButton variant="success" outline>
       Success
-    </GdButton>
-    <GdButton variant="neutral" outline>
+    </EduxButton>
+    <EduxButton variant="neutral" outline>
       Neutral
-    </GdButton>
-    <GdButton variant="warning" outline>
+    </EduxButton>
+    <EduxButton variant="warning" outline>
       Warning
-    </GdButton>
-    <GdButton variant="danger" outline>
+    </EduxButton>
+    <EduxButton variant="danger" outline>
       Danger
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -114,25 +114,25 @@ const App = () => (
 Use the `pill` attribute to give buttons rounded edges.
 
 ```html:preview
-<gd-button size="small" pill>Small</gd-button>
-<gd-button size="medium" pill>Medium</gd-button>
-<gd-button size="large" pill>Large</gd-button>
+<edux-button size="small" pill>Small</edux-button>
+<edux-button size="medium" pill>Medium</edux-button>
+<edux-button size="large" pill>Large</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton size="small" pill>
+    <EduxButton size="small" pill>
       Small
-    </GdButton>
-    <GdButton size="medium" pill>
+    </EduxButton>
+    <EduxButton size="medium" pill>
       Medium
-    </GdButton>
-    <GdButton size="large" pill>
+    </EduxButton>
+    <EduxButton size="large" pill>
       Large
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -146,25 +146,25 @@ TODO
 Use the `text` variant to create text buttons that share the same size as regular buttons but don't have backgrounds or borders.
 
 ```html:preview
-<gd-button variant="text" size="small">Text</gd-button>
-<gd-button variant="text" size="medium">Text</gd-button>
-<gd-button variant="text" size="large">Text</gd-button>
+<edux-button variant="text" size="small">Text</edux-button>
+<edux-button variant="text" size="medium">Text</edux-button>
+<edux-button variant="text" size="large">Text</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton variant="text" size="small">
+    <EduxButton variant="text" size="small">
       Text
-    </GdButton>
-    <GdButton variant="text" size="medium">
+    </EduxButton>
+    <EduxButton variant="text" size="medium">
       Text
-    </GdButton>
-    <GdButton variant="text" size="large">
+    </EduxButton>
+    <EduxButton variant="text" size="large">
       Text
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -174,27 +174,27 @@ const App = () => (
 It's often helpful to have a button that works like a link. This is possible by setting the `href` attribute, which will make the component render an `<a>` under the hood. This gives you all the default link behavior the browser provides (e.g. [[CMD/CTRL/SHIFT]] + [[CLICK]]) and exposes the `target` and `download` attributes.
 
 ```html:preview
-<gd-button href="https://example.com/">Link</gd-button>
-<gd-button href="https://example.com/" target="_blank">New Window</gd-button>
-<gd-button href="/assets/images/wordmark.svg" download="shoelace.svg">Download</gd-button>
-<gd-button href="https://example.com/" disabled>Disabled</gd-button>
+<edux-button href="https://example.com/">Link</edux-button>
+<edux-button href="https://example.com/" target="_blank">New Window</edux-button>
+<edux-button href="/assets/images/wordmark.svg" download="shoelace.svg">Download</edux-button>
+<edux-button href="https://example.com/" disabled>Disabled</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton href="https://example.com/">Link</GdButton>
-    <GdButton href="https://example.com/" target="_blank">
+    <EduxButton href="https://example.com/">Link</EduxButton>
+    <EduxButton href="https://example.com/" target="_blank">
       New Window
-    </GdButton>
-    <GdButton href="/assets/images/wordmark.svg" download="shoelace.svg">
+    </EduxButton>
+    <EduxButton href="/assets/images/wordmark.svg" download="shoelace.svg">
       Download
-    </GdButton>
-    <GdButton href="https://example.com/" disabled>
+    </EduxButton>
+    <EduxButton href="https://example.com/" disabled>
       Disabled
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -208,27 +208,27 @@ When a `target` is set, the link will receive `rel="noreferrer noopener"` for [s
 As expected, buttons can be given a custom width by passing inline styles to the component (or using a class). This is useful for making buttons span the full width of their container on smaller screens.
 
 ```html:preview
-<gd-button variant="default" size="small" style="width: 100%; margin-bottom: 1rem;">Small</gd-button>
-<gd-button variant="default" size="medium" style="width: 100%; margin-bottom: 1rem;">Medium</gd-button>
-<gd-button variant="default" size="large" style="width: 100%;">Large</gd-button>
+<edux-button variant="default" size="small" style="width: 100%; margin-bottom: 1rem;">Small</edux-button>
+<edux-button variant="default" size="medium" style="width: 100%; margin-bottom: 1rem;">Medium</edux-button>
+<edux-button variant="default" size="large" style="width: 100%;">Large</edux-button>
 ```
 
 {% raw %}
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton variant="default" size="small" style={{ width: '100%', marginBottom: '1rem' }}>
+    <EduxButton variant="default" size="small" style={{ width: '100%', marginBottom: '1rem' }}>
       Small
-    </GdButton>
-    <GdButton variant="default" size="medium" style={{ width: '100%', marginBottom: '1rem' }}>
+    </EduxButton>
+    <EduxButton variant="default" size="medium" style={{ width: '100%', marginBottom: '1rem' }}>
       Medium
-    </GdButton>
-    <GdButton variant="default" size="large" style={{ width: '100%' }}>
+    </EduxButton>
+    <EduxButton variant="default" size="large" style={{ width: '100%' }}>
       Large
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -244,25 +244,25 @@ TODO
 Use the `caret` attribute to add a dropdown indicator when a button will trigger a dropdown, menu, or popover.
 
 ```html:preview
-<gd-button size="small" caret>Small</gd-button>
-<gd-button size="medium" caret>Medium</gd-button>
-<gd-button size="large" caret>Large</gd-button>
+<edux-button size="small" caret>Small</edux-button>
+<edux-button size="medium" caret>Medium</edux-button>
+<edux-button size="large" caret>Large</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton size="small" caret>
+    <EduxButton size="small" caret>
       Small
-    </GdButton>
-    <GdButton size="medium" caret>
+    </EduxButton>
+    <EduxButton size="medium" caret>
       Medium
-    </GdButton>
-    <GdButton size="large" caret>
+    </EduxButton>
+    <EduxButton size="large" caret>
       Large
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -272,37 +272,37 @@ const App = () => (
 Use the `loading` attribute to make a button busy. The width will remain the same as before, preventing adjacent elements from moving around.
 
 ```html:preview
-<gd-button variant="default" loading>Default</gd-button>
-<gd-button variant="primary" loading>Primary</gd-button>
-<gd-button variant="success" loading>Success</gd-button>
-<gd-button variant="neutral" loading>Neutral</gd-button>
-<gd-button variant="warning" loading>Warning</gd-button>
-<gd-button variant="danger" loading>Danger</gd-button>
+<edux-button variant="default" loading>Default</edux-button>
+<edux-button variant="primary" loading>Primary</edux-button>
+<edux-button variant="success" loading>Success</edux-button>
+<edux-button variant="neutral" loading>Neutral</edux-button>
+<edux-button variant="warning" loading>Warning</edux-button>
+<edux-button variant="danger" loading>Danger</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton variant="default" loading>
+    <EduxButton variant="default" loading>
       Default
-    </GdButton>
-    <GdButton variant="primary" loading>
+    </EduxButton>
+    <EduxButton variant="primary" loading>
       Primary
-    </GdButton>
-    <GdButton variant="success" loading>
+    </EduxButton>
+    <EduxButton variant="success" loading>
       Success
-    </GdButton>
-    <GdButton variant="neutral" loading>
+    </EduxButton>
+    <EduxButton variant="neutral" loading>
       Neutral
-    </GdButton>
-    <GdButton variant="warning" loading>
+    </EduxButton>
+    <EduxButton variant="warning" loading>
       Warning
-    </GdButton>
-    <GdButton variant="danger" loading>
+    </EduxButton>
+    <EduxButton variant="danger" loading>
       Danger
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
@@ -312,58 +312,58 @@ const App = () => (
 Use the `disabled` attribute to disable a button.
 
 ```html:preview
-<gd-button variant="default" disabled>Default</gd-button>
-<gd-button variant="primary" disabled>Primary</gd-button>
-<gd-button variant="success" disabled>Success</gd-button>
-<gd-button variant="neutral" disabled>Neutral</gd-button>
-<gd-button variant="warning" disabled>Warning</gd-button>
-<gd-button variant="danger" disabled>Danger</gd-button>
+<edux-button variant="default" disabled>Default</edux-button>
+<edux-button variant="primary" disabled>Primary</edux-button>
+<edux-button variant="success" disabled>Success</edux-button>
+<edux-button variant="neutral" disabled>Neutral</edux-button>
+<edux-button variant="warning" disabled>Warning</edux-button>
+<edux-button variant="danger" disabled>Danger</edux-button>
 ```
 
 ```jsx:react
-import GdButton from '@shoelace-style/shoelace/dist/react/button';
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <GdButton variant="default" disabled>
+    <EduxButton variant="default" disabled>
       Default
-    </GdButton>
+    </EduxButton>
 
-    <GdButton variant="primary" disabled>
+    <EduxButton variant="primary" disabled>
       Primary
-    </GdButton>
+    </EduxButton>
 
-    <GdButton variant="success" disabled>
+    <EduxButton variant="success" disabled>
       Success
-    </GdButton>
+    </EduxButton>
 
-    <GdButton variant="neutral" disabled>
+    <EduxButton variant="neutral" disabled>
       Neutral
-    </GdButton>
+    </EduxButton>
 
-    <GdButton variant="warning" disabled>
+    <EduxButton variant="warning" disabled>
       Warning
-    </GdButton>
+    </EduxButton>
 
-    <GdButton variant="danger" disabled>
+    <EduxButton variant="danger" disabled>
       Danger
-    </GdButton>
+    </EduxButton>
   </>
 );
 ```
 
 ### Styling Buttons
 
-This example demonstrates how to style buttons using a custom class. This is the recommended approach if you need to add additional variations. To customize an existing variation, modify the selector to target the button's `variant` attribute instead of a class (e.g. `gd-button[variant="primary"]`).
+This example demonstrates how to style buttons using a custom class. This is the recommended approach if you need to add additional variations. To customize an existing variation, modify the selector to target the button's `variant` attribute instead of a class (e.g. `edux-button[variant="primary"]`).
 
 ```html:preview
-<gd-button class="pink">Pink Button</gd-button>
+<edux-button class="pink">Pink Button</edux-button>
 
 <style>
-  gd-button.pink::part(base) {
+  edux-button.pink::part(base) {
     /* Set design tokens for height and border width */
-    --gd-input-height-medium: 48px;
-    --gd-input-border-width: 4px;
+    --edux-input-height-medium: 48px;
+    --edux-input-border-width: 4px;
 
     border-radius: 0;
     background-color: #ff1493;
@@ -374,14 +374,14 @@ This example demonstrates how to style buttons using a custom class. This is the
     color: white;
     font-size: 1.125rem;
     box-shadow: 0 2px 10px #0002;
-    transition: var(--gd-transition-medium) transform ease, var(--gd-transition-medium) border ease;
+    transition: var(--edux-transition-medium) transform ease, var(--edux-transition-medium) border ease;
   }
 
-  gd-button.pink::part(base):hover {
+  edux-button.pink::part(base):hover {
     transform: scale(1.05) rotate(-1deg);
   }
 
-  gd-button.pink::part(base):active {
+  edux-button.pink::part(base):active {
     border-top-color: #ad005c;
     border-right-color: #ff7ac1;
     border-bottom-color: #ff7ac1;
@@ -389,7 +389,7 @@ This example demonstrates how to style buttons using a custom class. This is the
     transform: scale(1.05) rotate(-1deg) translateY(2px);
   }
 
-  gd-button.pink::part(base):focus-visible {
+  edux-button.pink::part(base):focus-visible {
     outline: dashed 2px deeppink;
     outline-offset: 4px;
   }

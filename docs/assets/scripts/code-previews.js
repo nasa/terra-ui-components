@@ -229,8 +229,8 @@
                 '\n' +
                 'body {\n' +
                 '  font: 16px sans-serif;\n' +
-                '  background-color: var(--gd-color-neutral-0);\n' +
-                '  color: var(--gd-color-neutral-900);\n' +
+                '  background-color: var(--edux-color-neutral-0);\n' +
+                '  color: var(--edux-color-neutral-900);\n' +
                 '  padding: 1rem;\n' +
                 '}'
 
@@ -241,7 +241,7 @@
                 tags: ['ges disc', 'nasa', 'earthdata', 'web components'],
                 editors,
                 head: `<meta name="viewport" content="width=device-width">`,
-                html_classes: `gd-theme-horizon`,
+                html_classes: `edux-theme-horizon`,
                 css_external: ``,
                 js_external: ``,
                 js_module: true,

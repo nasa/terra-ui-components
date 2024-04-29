@@ -1,7 +1,7 @@
-export type GdErrorEvent = CustomEvent<{ status?: number }>
+export type EduxErrorEvent = CustomEvent<{ status?: number }>
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'gd-error': GdErrorEvent
+        'edux-error': EduxErrorEvent
     }
 }

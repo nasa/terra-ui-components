@@ -1,4 +1,4 @@
-import type { GDFormControl } from '../internal/gd-element.js'
+import type { EduxFormControl } from '../internal/edux-element.js'
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
 
 //
@@ -8,7 +8,7 @@ import type { ReactiveController, ReactiveControllerHost } from 'lit'
 //
 export const formCollections: WeakMap<
     HTMLFormElement,
-    Set<GDFormControl>
+    Set<EduxFormControl>
 > = new WeakMap()
 
 //
@@ -22,37 +22,37 @@ const checkValidityOverloads: WeakMap<HTMLFormElement, () => boolean> = new Weak
 // We store a Set of controls that users have interacted with. This allows us to determine the interaction state
 // without littering the DOM with additional data attributes.
 //
-const userInteractedControls: WeakSet<GDFormControl> = new WeakSet()
+const userInteractedControls: WeakSet<EduxFormControl> = new WeakSet()
 
 //
 // We store a WeakMap of interactions for each form control so we can track when all conditions are met for validation.
 //
-const interactions = new WeakMap<GDFormControl, string[]>()
+const interactions = new WeakMap<EduxFormControl, string[]>()
 
 export interface FormControlControllerOptions {
     /** A function that returns the form containing the form control. */
-    form: (input: GDFormControl) => HTMLFormElement | null
+    form: (input: EduxFormControl) => HTMLFormElement | null
     /** A function that returns the form control's name, which will be submitted with the form data. */
-    name: (input: GDFormControl) => string
+    name: (input: EduxFormControl) => string
     /** A function that returns the form control's current value. */
-    value: (input: GDFormControl) => unknown | unknown[]
+    value: (input: EduxFormControl) => unknown | unknown[]
     /** A function that returns the form control's default value. */
-    defaultValue: (input: GDFormControl) => unknown | unknown[]
+    defaultValue: (input: EduxFormControl) => unknown | unknown[]
     /** A function that returns the form control's current disabled state. If disabled, the value won't be submitted. */
-    disabled: (input: GDFormControl) => boolean
+    disabled: (input: EduxFormControl) => boolean
     /**
      * A function that maps to the form control's reportValidity() function. When the control is invalid, this will
      * prevent submission and trigger the browser's constraint violation warning.
      */
-    reportValidity: (input: GDFormControl) => boolean
+    reportValidity: (input: EduxFormControl) => boolean
 
     /**
      * A function that maps to the form control's `checkValidity()` function. When the control is invalid, this will return false.
      *   this is helpful is you want to check validation without triggering the native browser constraint violation warning.
      */
-    checkValidity: (input: GDFormControl) => boolean
+    checkValidity: (input: EduxFormControl) => boolean
     /** A function that sets the form control's value */
-    setValue: (input: GDFormControl, value: unknown) => void
+    setValue: (input: EduxFormControl, value: unknown) => void
     /**
      * An array of event names to listen to. When all events in the list are emitted, the control will receive validity
      * states such as user-valid and user-invalid.user interacted validity states. */
@@ -61,19 +61,19 @@ export interface FormControlControllerOptions {
 
 /** A reactive controller to allow form controls to participate in form submission, validation, etc. */
 export class FormControlController implements ReactiveController {
-    host: GDFormControl & ReactiveControllerHost
+    host: EduxFormControl & ReactiveControllerHost
     form?: HTMLFormElement | null
     options: FormControlControllerOptions
 
     constructor(
-        host: ReactiveControllerHost & GDFormControl,
+        host: ReactiveControllerHost & EduxFormControl,
         options?: Partial<FormControlControllerOptions>
     ) {
         ;(this.host = host).addController(this)
         this.options = {
             form: input => {
                 // If there's a form attribute, use it to find the target form by id
-                // Controls may not always reflect the 'form' property. For example, `<gd-button>` doesn't reflect.
+                // Controls may not always reflect the 'form' property. For example, `<edux-button>` doesn't reflect.
                 const formId = input.form
 
                 if (formId) {
@@ -103,7 +103,7 @@ export class FormControlController implements ReactiveController {
                     ? input.checkValidity()
                     : true,
             setValue: (input, value: string) => (input.value = value),
-            assumeInteractionOn: ['gd-input'],
+            assumeInteractionOn: ['edux-input'],
             ...options,
         }
     }
@@ -159,7 +159,7 @@ export class FormControlController implements ReactiveController {
             if (formCollections.has(this.form)) {
                 formCollections.get(this.form)!.add(this.host)
             } else {
-                formCollections.set(this.form, new Set<GDFormControl>([this.host]))
+                formCollections.set(this.form, new Set<EduxFormControl>([this.host]))
             }
 
             this.form.addEventListener('formdata', this.handleFormData)
@@ -228,7 +228,7 @@ export class FormControlController implements ReactiveController {
 
         // For buttons, we only submit the value if they were the submitter. This is currently done in doAction() by
         // injecting the name/value on a temporary button, so we can just skip them here.
-        const isButton = this.host.tagName.toLowerCase() === 'gd-button'
+        const isButton = this.host.tagName.toLowerCase() === 'edux-button'
 
         if (
             this.host.isConnected &&
@@ -353,7 +353,7 @@ export class FormControlController implements ReactiveController {
         return true
     }
 
-    private setUserInteracted(el: GDFormControl, hasInteracted: boolean) {
+    private setUserInteracted(el: EduxFormControl, hasInteracted: boolean) {
         if (hasInteracted) {
             userInteractedControls.add(el)
         } else {
@@ -447,15 +447,15 @@ export class FormControlController implements ReactiveController {
     }
 
     /**
-     * Dispatches a non-bubbling, cancelable custom event of type `gd-invalid`.
-     * If the `gd-invalid` event will be cancelled then the original `invalid`
+     * Dispatches a non-bubbling, cancelable custom event of type `edux-invalid`.
+     * If the `edux-invalid` event will be cancelled then the original `invalid`
      * event (which may have been passed as argument) will also be cancelled.
-     * If no original `invalid` event has been passed then the `gd-invalid`
+     * If no original `invalid` event has been passed then the `edux-invalid`
      * event will be cancelled before being dispatched.
      */
     emitInvalidEvent(originalInvalidEvent?: Event) {
         const slInvalidEvent = new CustomEvent<Record<PropertyKey, never>>(
-            'gd-invalid',
+            'edux-invalid',
             {
                 bubbles: false,
                 composed: false,

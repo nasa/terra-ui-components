@@ -14,9 +14,9 @@ export default css`
         justify-content: center;
         width: 100%;
         border-style: solid;
-        border-width: var(--gd-input-border-width);
-        font-family: var(--gd-input-font-family);
-        font-weight: var(--gd-font-weight-semibold);
+        border-width: var(--edux-input-border-width);
+        font-family: var(--edux-input-font-family);
+        font-weight: var(--edux-font-weight-semibold);
         text-decoration: none;
         user-select: none;
         -webkit-user-select: none;
@@ -24,10 +24,10 @@ export default css`
         vertical-align: middle;
         padding: 0;
         transition:
-            var(--gd-transition-x-fast) background-color,
-            var(--gd-transition-x-fast) color,
-            var(--gd-transition-x-fast) border,
-            var(--gd-transition-x-fast) box-shadow;
+            var(--edux-transition-x-fast) background-color,
+            var(--edux-transition-x-fast) color,
+            var(--edux-transition-x-fast) border,
+            var(--edux-transition-x-fast) box-shadow;
         cursor: inherit;
     }
 
@@ -40,8 +40,8 @@ export default css`
     }
 
     .button:focus-visible {
-        outline: var(--gd-focus-ring);
-        outline-offset: var(--gd-focus-ring-offset);
+        outline: var(--edux-focus-ring);
+        outline-offset: var(--edux-focus-ring-offset);
     }
 
     .button--disabled {
@@ -76,115 +76,115 @@ export default css`
 
     /* Default */
     .button--standard.button--default {
-        background-color: var(--gd-color-neutral-0);
-        border-color: var(--gd-color-neutral-300);
-        color: var(--gd-color-neutral-700);
+        background-color: var(--edux-color-neutral-0);
+        border-color: var(--edux-color-neutral-300);
+        color: var(--edux-color-neutral-700);
     }
 
     .button--standard.button--default:hover:not(.button--disabled) {
-        background-color: var(--gd-color-primary-50);
-        border-color: var(--gd-color-primary-300);
-        color: var(--gd-color-primary-700);
+        background-color: var(--edux-color-primary-50);
+        border-color: var(--edux-color-primary-300);
+        color: var(--edux-color-primary-700);
     }
 
     .button--standard.button--default:active:not(.button--disabled) {
-        background-color: var(--gd-color-primary-100);
-        border-color: var(--gd-color-primary-400);
-        color: var(--gd-color-primary-700);
+        background-color: var(--edux-color-primary-100);
+        border-color: var(--edux-color-primary-400);
+        color: var(--edux-color-primary-700);
     }
 
     /* Primary */
     .button--standard.button--primary {
-        background-color: var(--gd-color-primary-600);
-        border-color: var(--gd-color-primary-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-primary-600);
+        border-color: var(--edux-color-primary-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--primary:hover:not(.button--disabled) {
-        background-color: var(--gd-color-primary-500);
-        border-color: var(--gd-color-primary-500);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-primary-500);
+        border-color: var(--edux-color-primary-500);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--primary:active:not(.button--disabled) {
-        background-color: var(--gd-color-primary-600);
-        border-color: var(--gd-color-primary-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-primary-600);
+        border-color: var(--edux-color-primary-600);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Success */
     .button--standard.button--success {
-        background-color: var(--gd-color-success-600);
-        border-color: var(--gd-color-success-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-success-600);
+        border-color: var(--edux-color-success-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--success:hover:not(.button--disabled) {
-        background-color: var(--gd-color-success-500);
-        border-color: var(--gd-color-success-500);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-success-500);
+        border-color: var(--edux-color-success-500);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--success:active:not(.button--disabled) {
-        background-color: var(--gd-color-success-600);
-        border-color: var(--gd-color-success-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-success-600);
+        border-color: var(--edux-color-success-600);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Neutral */
     .button--standard.button--neutral {
-        background-color: var(--gd-color-neutral-600);
-        border-color: var(--gd-color-neutral-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-neutral-600);
+        border-color: var(--edux-color-neutral-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--neutral:hover:not(.button--disabled) {
-        background-color: var(--gd-color-neutral-500);
-        border-color: var(--gd-color-neutral-500);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-neutral-500);
+        border-color: var(--edux-color-neutral-500);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--neutral:active:not(.button--disabled) {
-        background-color: var(--gd-color-neutral-600);
-        border-color: var(--gd-color-neutral-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-neutral-600);
+        border-color: var(--edux-color-neutral-600);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Warning */
     .button--standard.button--warning {
-        background-color: var(--gd-color-warning-600);
-        border-color: var(--gd-color-warning-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-warning-600);
+        border-color: var(--edux-color-warning-600);
+        color: var(--edux-color-neutral-0);
     }
     .button--standard.button--warning:hover:not(.button--disabled) {
-        background-color: var(--gd-color-warning-500);
-        border-color: var(--gd-color-warning-500);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-warning-500);
+        border-color: var(--edux-color-warning-500);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--warning:active:not(.button--disabled) {
-        background-color: var(--gd-color-warning-600);
-        border-color: var(--gd-color-warning-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-warning-600);
+        border-color: var(--edux-color-warning-600);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Danger */
     .button--standard.button--danger {
-        background-color: var(--gd-color-danger-600);
-        border-color: var(--gd-color-danger-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-danger-600);
+        border-color: var(--edux-color-danger-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--danger:hover:not(.button--disabled) {
-        background-color: var(--gd-color-danger-500);
-        border-color: var(--gd-color-danger-500);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-danger-500);
+        border-color: var(--edux-color-danger-500);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--standard.button--danger:active:not(.button--disabled) {
-        background-color: var(--gd-color-danger-600);
-        border-color: var(--gd-color-danger-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-danger-600);
+        border-color: var(--edux-color-danger-600);
+        color: var(--edux-color-neutral-0);
     }
 
     /*
@@ -198,111 +198,111 @@ export default css`
 
     /* Default */
     .button--outline.button--default {
-        border-color: var(--gd-color-neutral-300);
-        color: var(--gd-color-neutral-700);
+        border-color: var(--edux-color-neutral-300);
+        color: var(--edux-color-neutral-700);
     }
 
     .button--outline.button--default:hover:not(.button--disabled),
     .button--outline.button--default.button--checked:not(.button--disabled) {
-        border-color: var(--gd-color-primary-600);
-        background-color: var(--gd-color-primary-600);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-primary-600);
+        background-color: var(--edux-color-primary-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--outline.button--default:active:not(.button--disabled) {
-        border-color: var(--gd-color-primary-700);
-        background-color: var(--gd-color-primary-700);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-primary-700);
+        background-color: var(--edux-color-primary-700);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Primary */
     .button--outline.button--primary {
-        border-color: var(--gd-color-primary-600);
-        color: var(--gd-color-primary-600);
+        border-color: var(--edux-color-primary-600);
+        color: var(--edux-color-primary-600);
     }
 
     .button--outline.button--primary:hover:not(.button--disabled),
     .button--outline.button--primary.button--checked:not(.button--disabled) {
-        background-color: var(--gd-color-primary-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-primary-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--outline.button--primary:active:not(.button--disabled) {
-        border-color: var(--gd-color-primary-700);
-        background-color: var(--gd-color-primary-700);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-primary-700);
+        background-color: var(--edux-color-primary-700);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Success */
     .button--outline.button--success {
-        border-color: var(--gd-color-success-600);
-        color: var(--gd-color-success-600);
+        border-color: var(--edux-color-success-600);
+        color: var(--edux-color-success-600);
     }
 
     .button--outline.button--success:hover:not(.button--disabled),
     .button--outline.button--success.button--checked:not(.button--disabled) {
-        background-color: var(--gd-color-success-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-success-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--outline.button--success:active:not(.button--disabled) {
-        border-color: var(--gd-color-success-700);
-        background-color: var(--gd-color-success-700);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-success-700);
+        background-color: var(--edux-color-success-700);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Neutral */
     .button--outline.button--neutral {
-        border-color: var(--gd-color-neutral-600);
-        color: var(--gd-color-neutral-600);
+        border-color: var(--edux-color-neutral-600);
+        color: var(--edux-color-neutral-600);
     }
 
     .button--outline.button--neutral:hover:not(.button--disabled),
     .button--outline.button--neutral.button--checked:not(.button--disabled) {
-        background-color: var(--gd-color-neutral-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-neutral-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--outline.button--neutral:active:not(.button--disabled) {
-        border-color: var(--gd-color-neutral-700);
-        background-color: var(--gd-color-neutral-700);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-neutral-700);
+        background-color: var(--edux-color-neutral-700);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Warning */
     .button--outline.button--warning {
-        border-color: var(--gd-color-warning-600);
-        color: var(--gd-color-warning-600);
+        border-color: var(--edux-color-warning-600);
+        color: var(--edux-color-warning-600);
     }
 
     .button--outline.button--warning:hover:not(.button--disabled),
     .button--outline.button--warning.button--checked:not(.button--disabled) {
-        background-color: var(--gd-color-warning-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-warning-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--outline.button--warning:active:not(.button--disabled) {
-        border-color: var(--gd-color-warning-700);
-        background-color: var(--gd-color-warning-700);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-warning-700);
+        background-color: var(--edux-color-warning-700);
+        color: var(--edux-color-neutral-0);
     }
 
     /* Danger */
     .button--outline.button--danger {
-        border-color: var(--gd-color-danger-600);
-        color: var(--gd-color-danger-600);
+        border-color: var(--edux-color-danger-600);
+        color: var(--edux-color-danger-600);
     }
 
     .button--outline.button--danger:hover:not(.button--disabled),
     .button--outline.button--danger.button--checked:not(.button--disabled) {
-        background-color: var(--gd-color-danger-600);
-        color: var(--gd-color-neutral-0);
+        background-color: var(--edux-color-danger-600);
+        color: var(--edux-color-neutral-0);
     }
 
     .button--outline.button--danger:active:not(.button--disabled) {
-        border-color: var(--gd-color-danger-700);
-        background-color: var(--gd-color-danger-700);
-        color: var(--gd-color-neutral-0);
+        border-color: var(--edux-color-danger-700);
+        background-color: var(--edux-color-danger-700);
+        color: var(--edux-color-neutral-0);
     }
 
     @media (forced-colors: active) {
@@ -318,25 +318,25 @@ export default css`
     .button--text {
         background-color: transparent;
         border-color: transparent;
-        color: var(--gd-color-primary-600);
+        color: var(--edux-color-primary-600);
     }
 
     .button--text:hover:not(.button--disabled) {
         background-color: transparent;
         border-color: transparent;
-        color: var(--gd-color-primary-500);
+        color: var(--edux-color-primary-500);
     }
 
     .button--text:focus-visible:not(.button--disabled) {
         background-color: transparent;
         border-color: transparent;
-        color: var(--gd-color-primary-500);
+        color: var(--edux-color-primary-500);
     }
 
     .button--text:active:not(.button--disabled) {
         background-color: transparent;
         border-color: transparent;
-        color: var(--gd-color-primary-700);
+        color: var(--edux-color-primary-700);
     }
 
     /*
@@ -345,32 +345,32 @@ export default css`
 
     .button--small {
         height: auto;
-        min-height: var(--gd-input-height-small);
-        font-size: var(--gd-button-font-size-small);
+        min-height: var(--edux-input-height-small);
+        font-size: var(--edux-button-font-size-small);
         line-height: calc(
-            var(--gd-input-height-small) - var(--gd-input-border-width) * 2
+            var(--edux-input-height-small) - var(--edux-input-border-width) * 2
         );
-        border-radius: var(--gd-input-border-radius-small);
+        border-radius: var(--edux-input-border-radius-small);
     }
 
     .button--medium {
         height: auto;
-        min-height: var(--gd-input-height-medium);
-        font-size: var(--gd-button-font-size-medium);
+        min-height: var(--edux-input-height-medium);
+        font-size: var(--edux-button-font-size-medium);
         line-height: calc(
-            var(--gd-input-height-medium) - var(--gd-input-border-width) * 2
+            var(--edux-input-height-medium) - var(--edux-input-border-width) * 2
         );
-        border-radius: var(--gd-input-border-radius-medium);
+        border-radius: var(--edux-input-border-radius-medium);
     }
 
     .button--large {
         height: auto;
-        min-height: var(--gd-input-height-large);
-        font-size: var(--gd-button-font-size-large);
+        min-height: var(--edux-input-height-large);
+        font-size: var(--edux-button-font-size-large);
         line-height: calc(
-            var(--gd-input-height-large) - var(--gd-input-border-width) * 2
+            var(--edux-input-height-large) - var(--edux-input-border-width) * 2
         );
-        border-radius: var(--gd-input-border-radius-large);
+        border-radius: var(--edux-input-border-radius-large);
     }
 
     /*
@@ -378,15 +378,15 @@ export default css`
    */
 
     .button--pill.button--small {
-        border-radius: var(--gd-input-height-small);
+        border-radius: var(--edux-input-height-small);
     }
 
     .button--pill.button--medium {
-        border-radius: var(--gd-input-height-medium);
+        border-radius: var(--edux-input-height-medium);
     }
 
     .button--pill.button--large {
-        border-radius: var(--gd-input-height-large);
+        border-radius: var(--edux-input-height-large);
     }
 
     /*
@@ -399,17 +399,17 @@ export default css`
     }
 
     .button--circle.button--small {
-        width: var(--gd-input-height-small);
+        width: var(--edux-input-height-small);
         border-radius: 50%;
     }
 
     .button--circle.button--medium {
-        width: var(--gd-input-height-medium);
+        width: var(--edux-input-height-medium);
         border-radius: 50%;
     }
 
     .button--circle.button--large {
-        width: var(--gd-input-height-large);
+        width: var(--edux-input-height-large);
         border-radius: 50%;
     }
 
@@ -480,69 +480,69 @@ export default css`
    */
 
     .button--has-label.button--small .button__label {
-        padding: 0 var(--gd-spacing-small);
+        padding: 0 var(--edux-spacing-small);
     }
 
     .button--has-label.button--medium .button__label {
-        padding: 0 var(--gd-spacing-medium);
+        padding: 0 var(--edux-spacing-medium);
     }
 
     .button--has-label.button--large .button__label {
-        padding: 0 var(--gd-spacing-large);
+        padding: 0 var(--edux-spacing-large);
     }
 
     .button--has-prefix.button--small {
-        padding-inline-start: var(--gd-spacing-x-small);
+        padding-inline-start: var(--edux-spacing-x-small);
     }
 
     .button--has-prefix.button--small .button__label {
-        padding-inline-start: var(--gd-spacing-x-small);
+        padding-inline-start: var(--edux-spacing-x-small);
     }
 
     .button--has-prefix.button--medium {
-        padding-inline-start: var(--gd-spacing-small);
+        padding-inline-start: var(--edux-spacing-small);
     }
 
     .button--has-prefix.button--medium .button__label {
-        padding-inline-start: var(--gd-spacing-small);
+        padding-inline-start: var(--edux-spacing-small);
     }
 
     .button--has-prefix.button--large {
-        padding-inline-start: var(--gd-spacing-small);
+        padding-inline-start: var(--edux-spacing-small);
     }
 
     .button--has-prefix.button--large .button__label {
-        padding-inline-start: var(--gd-spacing-small);
+        padding-inline-start: var(--edux-spacing-small);
     }
 
     .button--has-suffix.button--small,
     .button--caret.button--small {
-        padding-inline-end: var(--gd-spacing-x-small);
+        padding-inline-end: var(--edux-spacing-x-small);
     }
 
     .button--has-suffix.button--small .button__label,
     .button--caret.button--small .button__label {
-        padding-inline-end: var(--gd-spacing-x-small);
+        padding-inline-end: var(--edux-spacing-x-small);
     }
 
     .button--has-suffix.button--medium,
     .button--caret.button--medium {
-        padding-inline-end: var(--gd-spacing-small);
+        padding-inline-end: var(--edux-spacing-small);
     }
 
     .button--has-suffix.button--medium .button__label,
     .button--caret.button--medium .button__label {
-        padding-inline-end: var(--gd-spacing-small);
+        padding-inline-end: var(--edux-spacing-small);
     }
 
     .button--has-suffix.button--large,
     .button--caret.button--large {
-        padding-inline-end: var(--gd-spacing-small);
+        padding-inline-end: var(--edux-spacing-small);
     }
 
     .button--has-suffix.button--large .button__label,
     .button--caret.button--large .button__label {
-        padding-inline-end: var(--gd-spacing-small);
+        padding-inline-end: var(--edux-spacing-small);
     }
 
     /*
@@ -553,8 +553,8 @@ export default css`
    */
 
     :host(
-            [data-sl-button-group__button--first]:not(
-                    [data-sl-button-group__button--last]
+            [data-edux-button-group__button--first]:not(
+                    [data-edux-button-group__button--last]
                 )
         )
         .button {
@@ -562,13 +562,13 @@ export default css`
         border-end-end-radius: 0;
     }
 
-    :host([data-sl-button-group__button--inner]) .button {
+    :host([data-edux-button-group__button--inner]) .button {
         border-radius: 0;
     }
 
     :host(
-            [data-sl-button-group__button--last]:not(
-                    [data-sl-button-group__button--first]
+            [data-edux-button-group__button--last]:not(
+                    [data-edux-button-group__button--first]
                 )
         )
         .button {
@@ -577,15 +577,19 @@ export default css`
     }
 
     /* All except the first */
-    :host([data-sl-button-group__button]:not([data-sl-button-group__button--first])) {
-        margin-inline-start: calc(-1 * var(--gd-input-border-width));
+    :host(
+            [data-edux-button-group__button]:not(
+                    [data-edux-button-group__button--first]
+                )
+        ) {
+        margin-inline-start: calc(-1 * var(--edux-input-border-width));
     }
 
     /* Add a visual separator between solid buttons */
     :host(
-            [data-sl-button-group__button]:not(
-                    [data-sl-button-group__button--first],
-                    [data-sl-button-group__button--radio],
+            [data-edux-button-group__button]:not(
+                    [data-edux-button-group__button--first],
+                    [data-edux-button-group__button--radio],
                     [variant='default']
                 ):not(:hover)
         )
@@ -600,13 +604,13 @@ export default css`
     }
 
     /* Bump hovered, focused, and checked buttons up so their focus ring isn't clipped */
-    :host([data-sl-button-group__button--hover]) {
+    :host([data-edux-button-group__button--hover]) {
         z-index: 1;
     }
 
     /* Focus and checked are always on top */
-    :host([data-sl-button-group__button--focus]),
-    :host([data-sl-button-group__button][checked]) {
+    :host([data-edux-button-group__button--focus]),
+    :host([data-edux-button-group__button][checked]) {
         z-index: 2;
     }
 `

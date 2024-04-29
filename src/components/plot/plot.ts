@@ -1,12 +1,12 @@
-import GdPlot from './plot.component.js';
+import EduxPlot from './plot.component.js'
 
-export * from './plot.component.js';
-export default GdPlot;
+export * from './plot.component.js'
+export default EduxPlot
 
-GdPlot.define('gd-plot');
+EduxPlot.define('edux-plot')
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'gd-plot': GdPlot;
-  }
+    interface HTMLElementTagNameMap {
+        'edux-plot': EduxPlot
+    }
 }

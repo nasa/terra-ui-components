@@ -1,10 +1,10 @@
 import { expect, fixture } from '@open-wc/testing'
-import type { GDFormControl } from '../gd-element.js'
+import type { EduxFormControl } from '../edux-element.js'
 
-type CreateControlFn = () => Promise<GDFormControl>
+type CreateControlFn = () => Promise<EduxFormControl>
 
 /** Runs a set of generic tests for Shoelace form controls */
-export function runFormControlBaseTests<T extends GDFormControl = GDFormControl>(
+export function runFormControlBaseTests<T extends EduxFormControl = EduxFormControl>(
     tagNameOrConfig:
         | string
         | {
@@ -49,7 +49,7 @@ export function runFormControlBaseTests<T extends GDFormControl = GDFormControl>
 function runAllValidityTests(
     tagName: string, //
     displayName: string,
-    createControl: () => Promise<GDFormControl>
+    createControl: () => Promise<EduxFormControl>
 ) {
     // will be used later to retrieve meta information about the control
     describe(`Form validity base test for ${displayName}`, async () => {
@@ -104,17 +104,17 @@ function runAllValidityTests(
             expect(control.reportValidity()).to.equal(true)
         })
 
-        it('should not emit an `gd-invalid` event when `.checkValidity()` is called while valid', async () => {
+        it('should not emit an `edux-invalid` event when `.checkValidity()` is called while valid', async () => {
             const control = await createControl()
-            const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+            const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
                 control.checkValidity()
             )
             expect(emittedEvents.length).to.equal(0)
         })
 
-        it('should not emit an `gd-invalid` event when `.reportValidity()` is called while valid', async () => {
+        it('should not emit an `edux-invalid` event when `.reportValidity()` is called while valid', async () => {
             const control = await createControl()
-            const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+            const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
                 control.reportValidity()
             )
             expect(emittedEvents.length).to.equal(0)
@@ -122,25 +122,29 @@ function runAllValidityTests(
 
         // TODO: As soon as `SlRadioGroup` has a property `disabled` this
         // condition can be removed
-        if (tagName !== 'gd-radio-group') {
-            it('should not emit an `gd-invalid` event when `.checkValidity()` is called in custom error case while disabled', async () => {
+        if (tagName !== 'edux-radio-group') {
+            it('should not emit an `edux-invalid` event when `.checkValidity()` is called in custom error case while disabled', async () => {
                 const control = await createControl()
                 control.setCustomValidity('error')
                 control.disabled = true
                 await control.updateComplete
-                const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
-                    control.checkValidity()
+                const emittedEvents = checkEventEmissions(
+                    control,
+                    'edux-invalid',
+                    () => control.checkValidity()
                 )
                 expect(emittedEvents.length).to.equal(0)
             })
 
-            it('should not emit an `gd-invalid` event when `.reportValidity()` is called in custom error case while disabled', async () => {
+            it('should not emit an `edux-invalid` event when `.reportValidity()` is called in custom error case while disabled', async () => {
                 const control = await createControl()
                 control.setCustomValidity('error')
                 control.disabled = true
                 await control.updateComplete
-                const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
-                    control.reportValidity()
+                const emittedEvents = checkEventEmissions(
+                    control,
+                    'edux-invalid',
+                    () => control.reportValidity()
                 )
                 expect(emittedEvents.length).to.equal(0)
             })
@@ -171,10 +175,10 @@ function runAllValidityTests(
 
         const mode = getMode(await createControl())
 
-        if (mode === 'slButtonOfTypeButton') {
-            runSpecialTests_slButtonOfTypeButton(createControl)
-        } else if (mode === 'slButtonWithHRef') {
-            runSpecialTests_slButtonWithHref(createControl)
+        if (mode === 'EduxButtonOfTypeButton') {
+            runSpecialTests_EduxButtonOfTypeButton(createControl)
+        } else if (mode === 'EduxButtonWithHRef') {
+            runSpecialTests_EduxButtonWithHref(createControl)
         } else {
             runSpecialTests_standard(createControl)
         }
@@ -182,9 +186,9 @@ function runAllValidityTests(
 }
 
 //
-//  Special tests for <gd-button type="button">
+//  Special tests for <edux-button type="button">
 //
-function runSpecialTests_slButtonOfTypeButton(createControl: CreateControlFn) {
+function runSpecialTests_EduxButtonOfTypeButton(createControl: CreateControlFn) {
     it('should make sure that `.validity.valid` is `false` in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
@@ -203,23 +207,23 @@ function runSpecialTests_slButtonOfTypeButton(createControl: CreateControlFn) {
         expect(control.reportValidity()).to.equal(true)
     })
 
-    it('should not emit an `gd-invalid` event when `.checkValidity()` is called in custom error case, and not disabled', async () => {
+    it('should not emit an `edux-invalid` event when `.checkValidity()` is called in custom error case, and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
             control.checkValidity()
         )
         expect(emittedEvents.length).to.equal(0)
     })
 
-    it('should not emit an `gd-invalid` event when `.reportValidity()` is called in custom error case, and not disabled', async () => {
+    it('should not emit an `edux-invalid` event when `.reportValidity()` is called in custom error case, and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
             control.reportValidity()
         )
 
@@ -228,9 +232,9 @@ function runSpecialTests_slButtonOfTypeButton(createControl: CreateControlFn) {
 }
 
 //
-// Special tests for <gd-button href="...">
+// Special tests for <edux-button href="...">
 //
-function runSpecialTests_slButtonWithHref(createControl: CreateControlFn) {
+function runSpecialTests_EduxButtonWithHref(createControl: CreateControlFn) {
     it('should make sure that calling `.checkValidity()` will return `true` in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
@@ -243,21 +247,21 @@ function runSpecialTests_slButtonWithHref(createControl: CreateControlFn) {
         expect(control.reportValidity()).to.equal(true)
     })
 
-    it('should not emit an `gd-invalid` event when `.checkValidity()` is called in custom error case', async () => {
+    it('should not emit an `edux-invalid` event when `.checkValidity()` is called in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
             control.checkValidity()
         )
         expect(emittedEvents.length).to.equal(0)
     })
 
-    it('should not emit an `gd-invalid` event when `.reportValidity()` is called in custom error case', async () => {
+    it('should not emit an `edux-invalid` event when `.reportValidity()` is called in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
             control.reportValidity()
         )
         expect(emittedEvents.length).to.equal(0)
@@ -286,23 +290,23 @@ function runSpecialTests_standard(createControl: CreateControlFn) {
         expect(control.reportValidity()).to.equal(false)
     })
 
-    it('should emit an `gd-invalid` event when `.checkValidity()` is called in custom error case and not disabled', async () => {
+    it('should emit an `edux-invalid` event when `.checkValidity()` is called in custom error case and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
             control.checkValidity()
         )
         expect(emittedEvents.length).to.equal(1)
     })
 
-    it('should emit an `gd-invalid` event when `.reportValidity()` is called in custom error case and not disabled', async () => {
+    it('should emit an `edux-invalid` event when `.reportValidity()` is called in custom error case and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'gd-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
             control.reportValidity()
         )
         expect(emittedEvents.length).to.equal(1)
@@ -314,7 +318,7 @@ function runSpecialTests_standard(createControl: CreateControlFn) {
 //
 
 // Creates a testable Shoelace form control instance
-async function createFormControl<T extends GDFormControl = GDFormControl>(
+async function createFormControl<T extends EduxFormControl = EduxFormControl>(
     tagName: string
 ): Promise<T> {
     return await fixture<T>(`<${tagName}></${tagName}>`)
@@ -323,7 +327,7 @@ async function createFormControl<T extends GDFormControl = GDFormControl>(
 // Runs an action while listening for emitted events of a given type. Returns an array of all events of the given type
 // that have been been emitted while the action was running.
 function checkEventEmissions(
-    control: GDFormControl,
+    control: EduxFormControl,
     eventType: string,
     action: () => void
 ): Event[] {
@@ -343,22 +347,22 @@ function checkEventEmissions(
     return emittedEvents
 }
 
-// Component `gd-button` behaves quite different to the other components. To keep things simple we use simple conditions
-// here. `gd-button` might stay the only component in Shoelace core behaves that way, so we just hard code it here.
-function getMode(control: GDFormControl) {
+// Component `edux-button` behaves quite different to the other components. To keep things simple we use simple conditions
+// here. `edux-button` might stay the only component in Shoelace core behaves that way, so we just hard code it here.
+function getMode(control: EduxFormControl) {
     if (
-        control.localName === 'gd-button' && //
+        control.localName === 'edux-button' && //
         'href' in control &&
         'type' in control &&
         control.type === 'button' &&
         !control.href
     ) {
-        return 'slButtonOfTypeButton'
+        return 'EduxButtonOfTypeButton'
     }
 
-    // <gd-button href="...">
-    if (control.localName === 'gd-button' && 'href' in control && !!control.href) {
-        return 'slButtonWithHRef'
+    // <edux-button href="...">
+    if (control.localName === 'edux-button' && 'href' in control && !!control.href) {
+        return 'EduxButtonWithHRef'
     }
 
     // all other components

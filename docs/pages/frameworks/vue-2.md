@@ -35,13 +35,13 @@ If you'd rather not use the CDN for assets, you can create a build task that cop
 
 ## Configuration
 
-You'll need to tell Vue to ignore Shoelace components. This is pretty easy because they all start with `gd-`.
+You'll need to tell Vue to ignore Shoelace components. This is pretty easy because they all start with `edux-`.
 
 ```js
 import Vue from 'vue'
 import App from './App.vue'
 
-Vue.config.ignoredElements = [/gd-/]
+Vue.config.ignoredElements = [/edux-/]
 
 const app = new Vue({
     render: h => h(App),
@@ -73,21 +73,21 @@ One caveat is there's currently [no support for v-model on custom elements](http
 <sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
 
-If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-gd-model) adds a custom directive that will work just like `v-model` but for Shoelace components. To install it, use this command.
+If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-edux-model) adds a custom directive that will work just like `v-model` but for Shoelace components. To install it, use this command.
 
 ```bash
-npm install @shoelace-style/vue-gd-model@1
+npm install @shoelace-style/vue-edux-model@1
 ```
 
 Next, import the directive and enable it like this.
 
 ```js
 import Vue from 'vue'
-import ShoelaceModelDirective from '@shoelace-style/vue-gd-model'
+import ShoelaceModelDirective from '@shoelace-style/vue-edux-model'
 import App from './App.vue'
 
 Vue.use(ShoelaceModelDirective)
-Vue.config.ignoredElements = [/gd-/]
+Vue.config.ignoredElements = [/edux-/]
 
 const app = new Vue({
     render: h => h(App),
@@ -96,10 +96,10 @@ const app = new Vue({
 app.$mount('#app')
 ```
 
-Now you can use the `v-gd-model` directive to keep your data in sync!
+Now you can use the `v-edux-model` directive to keep your data in sync!
 
 ```html
-<sl-input v-gd-model="name"></sl-input>
+<sl-input v-edux-model="name"></sl-input>
 ```
 
 :::tip

@@ -32,10 +32,10 @@ npm run build
 
 ### Creating New Components
 
-To scaffold a new component, run the following command, replacing `gd-tag-name` with the desired tag name.
+To scaffold a new component, run the following command, replacing `edux-tag-name` with the desired tag name.
 
 ```bash
-npm run create gd-tag-name
+npm run create edux-tag-name
 ```
 
 This will generate a source file, a stylesheet, and a docs page for you. When you start the dev server, you'll find the new component in the "Components" section of the sidebar.

@@ -34,10 +34,10 @@ export function getFormControls(form: HTMLFormElement) {
     const allNodes = [...rootNode.querySelectorAll('*')]
     const formControls = [...form.elements]
     const collection = formCollections.get(form)
-    const GDFormControls = collection ? Array.from(collection) : []
+    const EduxFormControls = collection ? Array.from(collection) : []
 
     // To return form controls in the right order, we sort by DOM index
-    return [...formControls, ...GDFormControls].sort((a: Element, b: Element) => {
+    return [...formControls, ...EduxFormControls].sort((a: Element, b: Element) => {
         if (allNodes.indexOf(a) < allNodes.indexOf(b)) return -1
         if (allNodes.indexOf(a) > allNodes.indexOf(b)) return 1
         return 0

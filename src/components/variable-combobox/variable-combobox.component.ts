@@ -4,7 +4,7 @@ import { property, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import {
     clearSelection,
@@ -32,7 +32,7 @@ import styles from './variable-combobox.styles.js'
  * @cssproperty --help-height - The height of the search help element.
  * @cssproperty --label-height - The height of the input's label element.
  */
-export default class GdVariableCombobox extends GDElement {
+export default class EduxVariableCombobox extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     static shadowRootOptions = {
@@ -40,7 +40,7 @@ export default class GdVariableCombobox extends GDElement {
         delegatesFocus: true,
     }
 
-    static tagName = 'gd-variable-combobox'
+    static tagName = 'edux-variable-combobox'
 
     static initialQuery = ''
 
@@ -88,7 +88,7 @@ export default class GdVariableCombobox extends GDElement {
     isExpanded = false
 
     @state()
-    query = GdVariableCombobox.initialQuery
+    query = EduxVariableCombobox.initialQuery
 
     @state()
     searchResults: ListItem[] = []
@@ -107,7 +107,7 @@ export default class GdVariableCombobox extends GDElement {
     }
 
     #dispatchChange = (stringifiedData: string) => {
-        this.emit('gd-combobox-change', { detail: JSON.parse(stringifiedData) })
+        this.emit('edux-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
 
     #handleButtonClick = () => {
@@ -200,7 +200,7 @@ export default class GdVariableCombobox extends GDElement {
                 if (this.isExpanded) {
                     this.isExpanded = false
                 } else {
-                    this.query = GdVariableCombobox.initialQuery
+                    this.query = EduxVariableCombobox.initialQuery
                 }
 
                 break
@@ -216,7 +216,8 @@ export default class GdVariableCombobox extends GDElement {
         const path = event.composedPath()
         const containedThis = path.some(
             eventTarget =>
-                (eventTarget as HTMLElement).localName === GdVariableCombobox.tagName
+                (eventTarget as HTMLElement).localName ===
+                EduxVariableCombobox.tagName
         )
 
         if (!containedThis) {
@@ -379,7 +380,7 @@ export default class GdVariableCombobox extends GDElement {
                         html`<li class="error">${errorMessage}</li>`,
                 })}
                 ${cache(
-                    this.query === GdVariableCombobox.initialQuery
+                    this.query === EduxVariableCombobox.initialQuery
                         ? map(
                               removeEmptyCollections(
                                   groupDocsByCollection(this.#searchableList)
