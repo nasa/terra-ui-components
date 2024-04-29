@@ -6,6 +6,8 @@ export { default as GdPlot } from './components/plot/plot.js'
 export { default as GdSpatialPicker } from './components/spatial-picker/spatial-picker.js'
 export { default as GdTimeSeries } from './components/time-series/time-series.js'
 export { default as GdVariableCombobox } from './components/variable-combobox/variable-combobox.js'
+export { default as GdButton } from './components/button/button.js'
+export { default as GdIcon } from './components/icon/icon.js'
 /* plop:component */
 
 // Utilities

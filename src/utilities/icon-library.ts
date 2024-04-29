@@ -1,1 +1,4 @@
-export { registerIconLibrary, unregisterIconLibrary } from '@shoelace-style/shoelace'
+export {
+    registerIconLibrary,
+    unregisterIconLibrary,
+} from '../components/icon/library.js'

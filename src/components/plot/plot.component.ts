@@ -30,7 +30,7 @@ export default class GdPlot extends GDElement {
     @property()
     config?: Partial<Config>
 
-    @property()
+    @property({ type: Array })
     data: Array<Partial<Data>> = []
 
     @watch('data')
