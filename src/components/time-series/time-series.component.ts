@@ -1,15 +1,14 @@
 import { html } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
+import { property, query } from 'lit/decorators.js'
 import componentStyles from '../../styles/component.styles.js'
 import GDElement from '../../internal/gd-element.js'
 import styles from './time-series.styles.js'
 import type { CSSResultGroup } from 'lit'
 import GdPlot from '../plot/plot.component.js'
 import GdDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
-import { fetchTimeSeries } from './time-series.service.js'
-import type { PlotData } from 'plotly.js-dist-min'
 import { watch } from '../../internal/watch.js'
 import type { GdDateRangeChangeEvent } from '../../events/gd-date-range-change.js'
+import { TimeSeriesController } from './time-series.controller.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -25,6 +24,8 @@ export default class GdTimeSeries extends GDElement {
         'gd-plot': GdPlot,
         'gd-date-range-slider': GdDateRangeSlider,
     }
+
+    #timeSeriesController = new TimeSeriesController(this)
 
     /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
@@ -47,43 +48,23 @@ export default class GdTimeSeries extends GDElement {
     /**
      * The start date for the time series plot. (ex: 2021-01-01)
      */
-    @property({ attribute: 'start-date' })
+    @property({ attribute: 'start-date', reflect: true })
     startDate: string
 
     /**
      * The end date for the time series plot. (ex: 2021-01-01)
      */
-    @property({ attribute: 'end-date' })
+    @property({ attribute: 'end-date', reflect: true })
     endDate: string
 
-    @state()
-    loading: boolean = false
-
-    @state()
-    _plotConfig: Partial<PlotData> = {
-        type: 'scatter',
-        mode: 'lines',
-        line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
-    }
-
-    @query('[part~="plot"]') plot: GdPlot
     @query('[part~="date-range-slider"]') dateRangeSlider: GdDateRangeSlider
 
-    @watch('variable')
-    variableChanged() {
-        // add the variable name to the plot config
-        this._plotConfig = {
-            ...this._plotConfig,
-            name: this.variable,
-        }
-    }
-
-    /**
-     * on load, fetch the time series data and update the plot
-     */
-    firstUpdated() {
-        this._renderEmptyPlot() // render an empty plot while we wait for the time series data for the first time
-        this.loadTimeSeries()
+    @watch(['collection', 'variable', 'startDate', 'endDate'])
+    refreshTimeSeries() {
+        this.#timeSeriesController.collection = this.collection
+        this.#timeSeriesController.variable = this.variable
+        this.#timeSeriesController.startDate = new Date(this.startDate)
+        this.#timeSeriesController.endDate = new Date(this.endDate)
     }
 
     /**
@@ -94,49 +75,33 @@ export default class GdTimeSeries extends GDElement {
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
 
-        // and reload the time series data
-        this.loadTimeSeries()
-    }
-
-    async loadTimeSeries() {
-        this.loading = true
-
-        // fetch the time series data
-        const timeSeries = await fetchTimeSeries(
-            `${this.collection}_${this.variable}`,
-            new Date(this.startDate),
-            new Date(this.endDate)
-        )
-
-        // now that we have actual data, update the plot
-        this.plot.data = [
-            {
-                ...this._plotConfig,
-                x: timeSeries.data.map(row => row.timestamp),
-                y: timeSeries.data.map(row => row.value),
-            },
-        ]
-
-        this.loading = false
+        // make sure the controller also gets updated
+        // TODO: try to remove this, couldn't get the task to respond to just the "@watch" above.
+        this.#timeSeriesController.startDate = new Date(event.detail.startDate)
+        this.#timeSeriesController.endDate = new Date(event.detail.endDate)
     }
 
     /**
      * rather than showing an empty square while we're waiting for data, we can show an empty plot
      */
     private _renderEmptyPlot() {
-        this.plot.data = [
-            {
-                ...this._plotConfig,
-                x: [],
-                y: [],
-            },
-        ]
+        return html`
+            <gd-plot
+                data="${JSON.stringify(this.#timeSeriesController.emptyPlotData)}"
+            ></gd-plot>
+        `
     }
 
     render() {
         return html`
             <div class="plot-container">
-                <gd-plot part="plot"></gd-plot>
+                ${this.#timeSeriesController.task.value
+                    ? html`<gd-plot
+                          data="${JSON.stringify(
+                              this.#timeSeriesController.task.value
+                          )}"
+                      ></gd-plot>`
+                    : this._renderEmptyPlot()}
             </div>
 
             <gd-date-range-slider
@@ -145,7 +110,6 @@ export default class GdTimeSeries extends GDElement {
                 max-date=${this.maxDate}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
-                .disabled=${this.loading}
                 @gd-date-range-change="${this._handleDateRangeSliderChangeEvent}"
             ></gd-date-range-slider>
         `
