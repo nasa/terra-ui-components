@@ -89,8 +89,6 @@ export default class GdMap extends GDElement {
     @state()
     listOfShapes: any
 
-    addedGeoJson: any
-
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
 
@@ -172,9 +170,9 @@ export default class GdMap extends GDElement {
             </style>
             <div class="map">
                 <!-- select goes here -->
+                ${this.showShapeSelector ? this.selectTemplate() : null}
                 <div class="map__container">
                     <!-- "Map goes here" -->
-                    ${this.showShapeSelector ? this.selectTemplate() : null}
                     <div
                         id="map"
                         style="width:${this.width && this.width}px; height: ${this

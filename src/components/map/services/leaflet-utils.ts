@@ -84,7 +84,6 @@ export class Leaflet implements Map {
             this.addCoordTracker()
         }
 
-        console.log(options.showNavigation)
         if (options.showNavigation) {
             this.addDrawControl()
         }
