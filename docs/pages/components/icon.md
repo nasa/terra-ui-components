@@ -37,6 +37,7 @@ System icons require the attribute `library="system"`. If you're building someth
 <gd-icon name="caret" library="system"></gd-icon>
 <gd-icon name="chevron-left-circle" library="system"></gd-icon>
 <gd-icon name="arrow-right-circle" library="system"></gd-icon>
+<gd-icon name="asteroid" library="system"></gd-icon>
 ```
 
 ### Customizing the System Library
