@@ -2,7 +2,7 @@
 <html
   lang="en"
   data-layout="{{ layout }}"
-  data-gesdisc-components-version="{{ meta.version }}"
+  data-earthdata-ux-components-version="{{ meta.version }}"
 >
     <head>
         {# Metadata #}
@@ -24,7 +24,7 @@
 
         {# Twitter Cards #}
         <meta name="twitter:card" content="summary"/>
-        <meta name="twitter:creator" content="nasa_gesdisc"/>
+        <meta name="twitter:creator" content="nasa_earthdata-ux"/>
         <meta name="twitter:image" content="{{ assetUrl(meta.image, true) }}"/>
 
         {# OpenGraph #}
@@ -35,7 +35,7 @@
 
         {# GES DISC Components #}
         <link rel="stylesheet" href="/dist/themes/horizon.css"/>
-        <script type="module" src="/dist/gesdisc-components-autoloader.js"></script>
+        <script type="module" src="/dist/earthdata-ux-components-autoloader.js"></script>
 
         {# Set the initial theme and menu states here to prevent flashing #}
         <script>
@@ -83,7 +83,7 @@
         {# Icon toolbar #}
         <div id="icon-toolbar">
             {# GitHub #}
-            <a href="https://github.com/gesdisc/components" title="View GES DISC Components on GitHub">
+            <a href="https://github.com/earthdata-ux/components" title="View GES DISC Components on GitHub">
                 <sl-icon name="github"></sl-icon>
             </a>
         </div>
@@ -99,10 +99,10 @@
             </header>
 
             <div class="sidebar-buttons">
-                <edux-button size="small" class="repo-button repo-button--github" href="https://github.com/gesdisc/components" target="_blank">
+                <edux-button size="small" class="repo-button repo-button--github" href="https://github.com/earthdata-ux/components" target="_blank">
                     <sl-icon slot="prefix" name="github"></sl-icon> Code
         </edux-button>
-                <edux-button size="small" class="repo-button repo-button--star" href="https://github.com/gesdisc/components/stargazers" target="_blank">
+                <edux-button size="small" class="repo-button repo-button--star" href="https://github.com/earthdata-ux/components/stargazers" target="_blank">
                     <sl-icon slot="prefix" name="star-fill"></sl-icon> Star
         </edux-button>
             </div>

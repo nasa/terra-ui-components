@@ -30,8 +30,8 @@ Add the following code to your page.
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/horizon.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/gesdisc-components-autoloader.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/horizon.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/earthdata-ux-components-autoloader.js"></script>
 ```
 
 Now you have access to all of the GES DISC components! Try adding a button:

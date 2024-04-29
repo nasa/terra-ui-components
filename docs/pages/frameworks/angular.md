@@ -15,7 +15,7 @@ Angular [plays nice](https://custom-elements-everywhere.com/#angular) with custo
 To add GES DISC Components to your Angular app, install the package from npm.
 
 ```bash
-npm install @gesdisc/components
+npm install @nasa/earthdata-ux-components
 ```
 
 ### Update the Angular Configuration
@@ -32,10 +32,10 @@ Its also important to load the components by using a `<script>` tag into the ind
       ...
       "styles": [
         "src/styles.scss",
-        "@gesdisc/components/dist/themes/horizon.css"
+        "@nasa/earthdata-ux-components/dist/themes/horizon.css"
        ],
       "scripts": [
-        "@gesdisc/components/dist/gesdisc-components.js"
+        "@nasa/earthdata-ux-components/dist/earthdata-ux-components.js"
       ]
       ...
 ```
@@ -45,13 +45,13 @@ Its also important to load the components by using a `<script>` tag into the ind
 Next, set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets in the `main.ts`. In this example, we'll use the CDN as a base path.
 
 ```jsx
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path'
+import { setBasePath } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@gesdisc/components/%NPMDIR%/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/earthdata-ux-components/%NPMDIR%/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -77,7 +77,7 @@ export class AppModule {}
 ## Reference GES DISC Components in your Angular component code
 
 ```js
-import { SlDrawer } from '@gesdisc/components';
+import { SlDrawer } from '@nasa/earthdata-ux-components';
 
 @Component({
   selector: 'app-drawer-example',
@@ -109,5 +109,5 @@ export class DrawerExampleComponent implements OnInit {
 Now you can start using GES DISC Components in your app!
 
 :::tip
-Are you using GES DISC Components with Angular? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/angular.md)
+Are you using GES DISC Components with Angular? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/angular.md)
 :::

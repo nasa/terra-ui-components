@@ -17,7 +17,7 @@ layout: component
 ```
 
 ```jsx:react
-import EduxTimeSeries from '@gesdisc/components/dist/react/time-series'
+import EduxTimeSeries from '@nasa/earthdata-ux-components/dist/react/time-series'
 
 const App = () => <EduxTimeSeries 
     collection="GPM_3IMERGHH_06"

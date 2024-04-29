@@ -17,20 +17,20 @@ These instructions are for Vue 3 and above. If you're using Vue 2, please see th
 To add Shoelace to your Vue app, install the package from npm.
 
 ```bash
-npm install @gesdisc/components
+npm install @nasa/earthdata-ux-components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
-import '@gesdisc/components/dist/themes/light.css'
-import { setBasePath } from '@gesdisc/components/dist/utilities/base-path'
+import '@nasa/earthdata-ux-components/dist/themes/light.css'
+import { setBasePath } from '@nasa/earthdata-ux-components/dist/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@gesdisc/components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/earthdata-ux-components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -46,7 +46,7 @@ Once you have configured your application for custom elements, you should be abl
 ```json
 {
     "compilerOptions": {
-        "types": ["@gesdisc/components/dist/types/vue"]
+        "types": ["@nasa/earthdata-ux-components/dist/types/vue"]
     }
 }
 ```
@@ -68,8 +68,8 @@ Once you have configured your application for custom elements, you should be abl
 
 <script setup>
     import { ref } from 'vue'
-    import '@gesdisc/components/dist/components/qr-code/qr-code.js'
-    import '@gesdisc/components/dist/components/input/input.js'
+    import '@nasa/earthdata-ux-components/dist/components/qr-code/qr-code.js'
+    import '@nasa/earthdata-ux-components/dist/components/input/input.js'
 
     const qrCode = ref()
 </script>
@@ -108,7 +108,7 @@ One caveat is there's currently [no support for v-model on custom elements](http
 If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-edux-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
 
 :::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/vue.md)
+Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/vue.md)
 :::
 
 ### Slots

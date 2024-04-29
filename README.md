@@ -7,8 +7,8 @@ Intro
 Start by [forking the repo](https://github.com/gesdisc/components/fork) on GitHub, then clone it locally and install dependencies.
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/components gesdisc-components
-cd gesdisc-components
+git clone https://github.com/YOUR_GITHUB_USERNAME/components earthdata-ux-components
+cd earthdata-ux-components
 npm install
 ```
 

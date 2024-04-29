@@ -4,9 +4,9 @@ import { activeElements, getDeepestActiveElement } from './active-elements.js'
 import { clickOnElement } from './test.js'
 import { html } from 'lit'
 import { sendKeys } from '@web/test-runner-commands'
-import type { SlDialog } from '../gesdisc-components.js'
+import type { SlDialog } from '../earthdata-ux-components.js'
 
-import '../../../dist/gesdisc-components.js'
+import '../../../dist/earthdata-ux-components.js'
 
 async function holdShiftKey(callback: () => Promise<void>) {
     await sendKeys({ down: 'Shift' })

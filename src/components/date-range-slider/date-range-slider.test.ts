@@ -1,4 +1,4 @@
-import '../../../dist/gesdisc-components.js'
+import '../../../dist/earthdata-ux-components.js'
 import { expect, fixture, html } from '@open-wc/testing'
 
 describe('<edux-date-range-slider>', () => {

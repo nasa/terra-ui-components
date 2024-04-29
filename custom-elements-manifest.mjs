@@ -34,7 +34,7 @@ export default {
     plugins: [
         // Append package data
         {
-            name: 'gesdisc-components-package-data',
+            name: 'earthdata-ux-components-package-data',
             packageLinkPhase({ customElementsManifest }) {
                 customElementsManifest.package = {
                     name,
@@ -49,7 +49,7 @@ export default {
 
         // Infer tag names because we no longer use @customElement decorators.
         {
-            name: 'gesdisc-components-infer-tag-names',
+            name: 'earthdata-ux-components-infer-tag-names',
             analyzePhase({ ts, node, moduleDoc }) {
                 switch (node.kind) {
                     case ts.SyntaxKind.ClassDeclaration: {
@@ -83,7 +83,7 @@ export default {
 
         // Parse custom jsDoc tags
         {
-            name: 'gesdisc-components-custom-tags',
+            name: 'earthdata-ux-components-custom-tags',
             analyzePhase({ ts, node, moduleDoc }) {
                 switch (node.kind) {
                     case ts.SyntaxKind.ClassDeclaration: {
@@ -165,7 +165,7 @@ export default {
         },
 
         {
-            name: 'gesdisc-components-react-event-names',
+            name: 'earthdata-ux-components-react-event-names',
             analyzePhase({ ts, node, moduleDoc }) {
                 switch (node.kind) {
                     case ts.SyntaxKind.ClassDeclaration: {
@@ -190,7 +190,7 @@ export default {
         },
 
         {
-            name: 'gesdisc-components-translate-module-paths',
+            name: 'earthdata-ux-components-translate-module-paths',
             packageLinkPhase({ customElementsManifest }) {
                 customElementsManifest?.modules?.forEach(mod => {
                     //

@@ -1,9 +1,9 @@
-import '../../../dist/gesdisc-components.js'
+import '../../../dist/earthdata-ux-components.js'
 import sinon from 'sinon'
 
 import { expect, fixture, html, waitUntil } from '@open-wc/testing'
 
-// Reproduction of this issue: https://github.com/gesdisc/components/issues/1703
+// Reproduction of this issue: https://github.com/earthdata-ux/components/issues/1703
 it('Should still run form validations if an element is removed', async () => {
     const form = await fixture<HTMLFormElement>(html`
         <form>

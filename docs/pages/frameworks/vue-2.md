@@ -17,20 +17,20 @@ These instructions are for Vue 2. If you're using Vue 3 or above, please see the
 To add Shoelace to your Vue app, install the package from npm.
 
 ```bash
-npm install @gesdisc/components
+npm install @nasa/earthdata-ux-components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
-import '@gesdisc/components/%NPMDIR%/themes/light.css'
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path'
+import '@nasa/earthdata-ux-components/%NPMDIR%/themes/light.css'
+import { setBasePath } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@gesdisc/components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/earthdata-ux-components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -103,5 +103,5 @@ Now you can use the `v-edux-model` directive to keep your data in sync!
 ```
 
 :::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/vue-2.md)
+Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/vue-2.md)
 :::

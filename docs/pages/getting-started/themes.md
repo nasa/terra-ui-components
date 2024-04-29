@@ -129,7 +129,7 @@ To install the dark theme, add the following to the `<head>` section of your pag
 ```html
 <link
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/dark.css"
+    href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/dark.css"
 />
 ```
 

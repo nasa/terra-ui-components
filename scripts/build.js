@@ -99,9 +99,9 @@ async function buildTheSource() {
             // NOTE: Entry points must be mapped in package.json > exports, otherwise users won't be able to import them!
             //
             // The whole shebang
-            './src/gesdisc-components.ts',
+            './src/earthdata-ux-components.ts',
             // The auto-loader
-            './src/gesdisc-components-autoloader.ts',
+            './src/earthdata-ux-components-autoloader.ts',
             // Components
             ...(await globby('./src/components/**/!(*.(style|test)).ts')),
             // Translations
@@ -270,7 +270,7 @@ if (serve) {
         startPath: '/',
         port,
         logLevel: 'silent',
-        logPrefix: '[gesdisc-components]',
+        logPrefix: '[earthdata-ux-components]',
         logFileChanges: true,
         notify: false,
         single: false,

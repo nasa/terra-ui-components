@@ -57,7 +57,7 @@ export default function (plop) {
             },
             {
                 type: 'modify',
-                path: '../../src/gesdisc-components.ts',
+                path: '../../src/earthdata-ux-components.ts',
                 pattern: /\/\* plop:component \*\//,
                 template: `export { default as {{ properCase tag }} } from './components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.js';\n/* plop:component */`,
             },

@@ -12,7 +12,7 @@ layout: component
 ```
 
 ```jsx:react
-import EduxButton from '@gesdisc/components/dist/react/button';
+import EduxButton from '@nasa/earthdata-ux-components/dist/react/button';
 
 const App = () => <EduxButton>Button</EduxButton>;
 ```
