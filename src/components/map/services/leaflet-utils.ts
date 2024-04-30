@@ -259,7 +259,7 @@ export class Leaflet implements Map {
         })
     }
 
-    drawRectangle(bounds: any) {
+    drawRectangle(bounds: LatLngBoundsExpression) {
         this.editableLayers.clearLayers()
 
         L.rectangle(bounds, {
