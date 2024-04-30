@@ -74,7 +74,6 @@
     "@types/leaflet-draw": "^1.0.11",
     "composed-offset-position": "^0.0.4",
     "date-fns": "^3.6.0",
-    "fuse.js": "^7.0.0",
     "handlebars": "^4.7.8",
     "idb": "^8.0.0",
     "leaflet": "^1.9.4",
