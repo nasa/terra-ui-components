@@ -173,9 +173,9 @@ export default css`
     }
 
     .external-link {
-      fill: currentColor;
-      vertical-align: middle;
-}
+        fill: currentColor;
+        vertical-align: middle;
+    }
 
     .search-results {
         background-color: var(--edux-color-neutral--000, var(--color-neutral--000));
@@ -226,6 +226,10 @@ export default css`
     .listbox-option-group {
         padding-inline: 0.5rem;
         padding-block: 1rem 0.5rem;
+    }
+
+    .listbox-option-group:has(.clear-button) {
+        text-align: center;
     }
 
     .group-title {
@@ -294,6 +298,4 @@ export default css`
         white-space: nowrap;
         width: 1px;
     }
-
-    .external
 `
