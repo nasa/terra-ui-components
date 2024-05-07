@@ -20,7 +20,7 @@
         <link rel="stylesheet" href="{{ assetUrl('styles/search.css') }}"/>
 
         {# Favicons #}
-        <link rel="icon" href="{{ assetUrl('images/NASA_logo.svg') }}" type="image/x-icon"/>
+        <link rel="icon" href="{{ assetUrl('images/logo.white.png') }}" type="image/x-icon"/>
 
         {# Twitter Cards #}
         <meta name="twitter:card" content="summary"/>
@@ -91,7 +91,8 @@
         <aside id="sidebar" data-preserve-scroll>
             <header>
                 <a href="/" class="sidebar-logo">
-                    <div class="text-logo" style="font-size: 1.5rem">Earthdata UX Components</div>
+                    <img src="{{ assetUrl('images/logo.svg') }}" alt="Earthdata UX Components"/>
+                    Earthdata UX Components
                 </a>
                 <div class="sidebar-version">
                     {{ meta.version }}
