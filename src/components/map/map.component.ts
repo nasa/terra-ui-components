@@ -94,6 +94,8 @@ export default class GdMap extends GDElement {
 
         if (this.showShapeSelector) {
             this.listOfShapes = await getShapeFiles()
+
+            console.log('this.listOfShapes', this.listOfShapes)
         }
     }
 

@@ -1,21 +1,13 @@
 import Fuse from 'fuse.js'
 import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { cache } from 'lit/directives/cache.js'
-import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
 import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './combobox.styles.js'
 
-import {
-    clearSelection,
-    groupDocsByCollection,
-    removeEmptyCollections,
-    renderSearchResult,
-    walkToOption,
-} from '../variable-combobox/lib.js'
-import type { GroupedListItem, ListItem } from './type.js'
+import { clearSelection, walkToOption } from '../variable-combobox/lib.js'
+import type { GroupedListItem } from './type.js'
 
 /**
  * @summary Fuzzy-search for combobox with list autocomplete.
@@ -48,7 +40,7 @@ export default class EduxCombobox extends EduxElement {
 
     #listbox: HTMLUListElement | null = null
 
-    #searchEngine: Fuse<ListItem> | null = null
+    #searchEngine: Fuse<GroupedListItem> | null = null
 
     #walker: TreeWalker | null = null
 
@@ -64,6 +56,13 @@ export default class EduxCombobox extends EduxElement {
      */
     @property()
     label = 'Search for Variables'
+
+    /**
+     * name the combobox with this.
+     * @example Shapes
+     */
+    @property()
+    name = 'Item'
 
     /**
      * Set a placeholder for the combobox with this.
@@ -93,13 +92,43 @@ export default class EduxCombobox extends EduxElement {
     query = EduxCombobox.initialQuery
 
     @state()
-    searchResults: ListItem[] = []
+    searchResults: GroupedListItem[] = []
 
     connectedCallback() {
         super.connectedCallback()
 
         //* set a window-level event listener to detect clicks that should close the listbox
         globalThis.addEventListener('click', this.#manageListboxVisibility)
+
+        const data = [
+            {
+                name: 'Amos group',
+                items: [
+                    { name: 'Item 1', title: 'Title 1', value: 'Value 1' },
+                    { name: 'Item 2', title: 'Title 2', value: 'Value 2' },
+                ]
+            },
+            {
+                name: 'Ben group',
+                items: [
+                    { name: 'Item 3', title: 'Title 3', value: 'Value 3' },
+                    { name: 'Item 4', title: 'Title 4', value: 'Value 4' },
+                ]
+            }
+        ]
+
+        //* @see {@link https://www.fusejs.io/api/options.html}
+        this.#searchEngine = new Fuse(this.searchableList, {
+            //* @see https://www.fusejs.io/examples.html#nested-search
+            findAllMatches: true,
+            keys: [
+                'name', // to search in the name of the GroupedListItem
+                'items.name', // to search in the name of each ListItem
+                'items.title', // to search in the title of each ListItem
+                'items.value' // to search in the value of each ListItem
+            ],
+            useExtendedSearch: false,
+        })
     }
 
     disconnectedCallback() {
@@ -128,7 +157,9 @@ export default class EduxCombobox extends EduxElement {
 
         this.searchResults = this.#searchEngine
             ?.search(target.value)
-            .map(({ item }) => item) as ListItem[]
+            .map(({ item }) => item) as GroupedListItem[]
+
+        console.log('search results:', this.searchResults)
     }
 
     #handleOptionClick = (event: Event) => {
@@ -270,7 +301,7 @@ export default class EduxCombobox extends EduxElement {
                 <button
                     aria-controls="listbox"
                     aria-expanded=${this.isExpanded}
-                    aria-label="List of Searchable Variables"
+                    aria-label="List of Searchable Items"
                     class="combobox-button"
                     id="combobox-button"
                     part="button"
@@ -278,33 +309,18 @@ export default class EduxCombobox extends EduxElement {
                     type="button"
                     @click=${this.#handleButtonClick}
                 >
-                    ${['COMPLETE', 'ERROR'].includes(this.#fetchController.taskStatus)
-                        ? html`<svg
-                              aria-hidden="true"
-                              class="button-icon chevron"
-                              focusable="false"
-                              viewBox="0 0 400 400"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="currentColor"
-                          >
-                              <path
-                                  d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
-                              ></path>
-                          </svg> `
-                        : html`<svg
-                              class="button-icon spinner"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                          >
-                              <circle
-                                  cx="12"
-                                  cy="12"
-                                  r="9.5"
-                                  fill="none"
-                                  stroke-width="3"
-                              ></circle>
-                          </svg>`}
+                    <svg
+                        aria-hidden="true"
+                        class="button-icon chevron"
+                        focusable="false"
+                        viewBox="0 0 400 400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="currentColor"
+                    >
+                        <path
+                            d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
+                        ></path>
+                    </svg>
                 </button>
 
                 ${this.hideHelp
@@ -353,49 +369,13 @@ export default class EduxCombobox extends EduxElement {
                 ?open=${this.isExpanded}
                 @click=${this.#handleOptionClick}
                 aria-label=${this.query
-                    ? `Variables Matching ${this.query}`
-                    : 'Variables'}
+                    ? `${this.name} Matching ${this.query}`
+                    : this.name}
                 id="listbox"
                 part="listbox"
                 role="listbox"
                 class="search-results"
-            >
-                ${this.#fetchController.render({
-                    initial: () =>
-                        html`<li class="updating">Updating List of Variables</li>`,
-                    pending: () =>
-                        html`<li class="updating">Updating List of Variables</li>`,
-                    complete: list => {
-                        this.#searchableList = list
-
-                        //* @see {@link https://www.fusejs.io/api/options.html}
-                        this.#searchEngine = new Fuse(list, {
-                            //* @see https://www.fusejs.io/examples.html#nested-search
-                            findAllMatches: true,
-                            keys: ['longName', 'units'],
-                            useExtendedSearch: true,
-                        })
-                    },
-                    // TODO: Consider a more robust error strategy...like retry w/ backoff?
-                    error: errorMessage =>
-                        html`<li class="error">${errorMessage}</li>`,
-                })}
-                ${cache(
-                    this.query === EduxCombobox.initialQuery
-                        ? map(
-                              removeEmptyCollections(
-                                  groupDocsByCollection(this.#searchableList)
-                              ),
-                              renderSearchResult
-                          )
-                        : map(
-                              removeEmptyCollections(
-                                  groupDocsByCollection(this.searchResults)
-                              ),
-                              renderSearchResult
-                          )
-                )}
-            </ul>
+            ></ul>
         </search>`
     }
 }
