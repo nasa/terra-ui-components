@@ -73,7 +73,7 @@ export default class GdMap extends GDElement {
     @watch('value')
     valueChanged(oldValue: any, newValue: any) {
         if (newValue.length > 0) {
-            this.map.setValue(this.value)
+            this.map?.setValue(this.value)
         }
     }
 
@@ -90,13 +90,14 @@ export default class GdMap extends GDElement {
         }
     }
 
-    firstUpdated() {
-        this.map.initializeMap(this.mapElement, {
+    async firstUpdated() {
+        await this.map.initializeMap(this.mapElement, {
             zoom: this.zoom,
             minZoom: this.minZoom,
             maxZoom: this.maxZoom,
             showCoordTracker: this.showCoordTracker,
             showNavigation: this.showNavigation,
+            initialValue: this.value,
         })
 
         this.map.on('draw', (layer: any) =>

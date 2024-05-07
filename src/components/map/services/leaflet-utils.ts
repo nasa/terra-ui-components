@@ -10,6 +10,10 @@ export type MapEventDetail = {
     latLng?: any
 }
 
+// There is a leaflet bug with type sometimes being undefined. This is a temporary fix
+// @ts-expect-error
+window.type = ''
+
 export function parseBoundingBox(inputString: string) {
     // Split the string by commas to create an array of strings
     const coords = inputString.split(',')
@@ -45,6 +49,7 @@ export interface MapViewOptions {
     maxZoom: number
     showCoordTracker?: boolean
     showNavigation?: boolean
+    initialValue?: LatLngBoundsExpression
 }
 
 export interface Map {
@@ -61,6 +66,7 @@ export class Leaflet implements Map {
     editableLayers: any
     listeners: any = []
     selectedGeoJson: any
+    isMapReady: boolean = false
 
     // map initialization function
     initializeMap(container: HTMLElement, options: MapViewOptions) {
@@ -87,6 +93,22 @@ export class Leaflet implements Map {
         if (options.showNavigation) {
             this.addDrawControl()
         }
+
+        this.map.whenReady((e: any) => {
+            this.isMapReady = true
+            if (options.initialValue) {
+                L.rectangle(options.initialValue, {
+                    stroke: true,
+                    color: '#3388ff',
+                    weight: 4,
+                    opacity: 0.5,
+                    fill: true,
+                    fillOpacity: 0.2,
+                }).addTo(this.map)
+
+                this.map.fitBounds(options.initialValue)
+            }
+        })
     }
 
     addCoordTracker() {
@@ -273,7 +295,9 @@ export class Leaflet implements Map {
     }
 
     setValue(value: LatLngBoundsExpression) {
-        this.drawRectangle(value)
-        this.map.fitBounds(value)
+        if (this.isMapReady) {
+            this.drawRectangle(value)
+            this.map.fitBounds(value)
+        }
     }
 }
