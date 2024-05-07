@@ -6,11 +6,11 @@ meta:
 
 # Changelog
 
-GES DISC Components follow [Semantic Versioning](https://semver.org/). Breaking changes in components with the <sl-badge variant="primary" pill>Stable</sl-badge> badge will not be accepted until the next major version. As such, all contributions must consider the project's roadmap and take this into consideration. Features that are deemed no longer necessary will be deprecated but not removed.
+Earthdata UX Components follow [Semantic Versioning](https://semver.org/). Breaking changes in components with the <sl-badge variant="primary" pill>Stable</sl-badge> badge will not be accepted until the next major version. As such, all contributions must consider the project's roadmap and take this into consideration. Features that are deemed no longer necessary will be deprecated but not removed.
 
 Components with the <sl-badge variant="warning" pill>Experimental</sl-badge> badge should not be used in production. They are made available as release candidates for development and testing purposes. As such, changes to experimental components will not be subject to semantic versioning.
 
-New versions of GES DISC Components are released as-needed and generally occur when a critical mass of changes have accumulated.
+New versions of Earthdata UX Components are released as-needed and generally occur when a critical mass of changes have accumulated.
 
 ## 0.0.1
 

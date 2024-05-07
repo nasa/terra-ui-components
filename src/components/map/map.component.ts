@@ -1,7 +1,7 @@
 // import * as L from 'leaflet'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import GDElement from '../../internal/edux-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
 import { getShapeFiles } from './services/shapes.js'
@@ -22,7 +22,7 @@ window.type = ''
  * @since 1.0
  *
  */
-export default class GdMap extends GDElement {
+export default class EduxMap extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**

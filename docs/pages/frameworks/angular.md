@@ -1,18 +1,18 @@
 ---
 meta:
     title: Angular
-    description: Tips for using GES DISC Components in your Angular app.
+    description: Tips for using Earthdata UX Components in your Angular app.
 ---
 
 # Angular
 
-Angular [plays nice](https://custom-elements-everywhere.com/#angular) with custom elements, so you can use GES DISC Components in your Angular apps with ease.
+Angular [plays nice](https://custom-elements-everywhere.com/#angular) with custom elements, so you can use Earthdata UX Components in your Angular apps with ease.
 
 ## Installation
 
 ### Download the npm package
 
-To add GES DISC Components to your Angular app, install the package from npm.
+To add Earthdata UX Components to your Angular app, install the package from npm.
 
 ```bash
 npm install @nasa/earthdata-ux-components
@@ -74,7 +74,7 @@ import { AppComponent } from './app.component'
 export class AppModule {}
 ```
 
-## Reference GES DISC Components in your Angular component code
+## Reference Earthdata UX Components in your Angular component code
 
 ```js
 import { SlDrawer } from '@nasa/earthdata-ux-components';
@@ -100,14 +100,14 @@ export class DrawerExampleComponent implements OnInit {
   ...
 
   showDrawer() {
-    // use nativeElement to access GES DISC Components
+    // use nativeElement to access Earthdata UX Components
     this.drawer?.nativeElement.show();
   }
 }
 ```
 
-Now you can start using GES DISC Components in your app!
+Now you can start using Earthdata UX Components in your app!
 
 :::tip
-Are you using GES DISC Components with Angular? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/angular.md)
+Are you using Earthdata UX Components with Angular? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/angular.md)
 :::

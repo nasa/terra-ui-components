@@ -79,7 +79,6 @@
     "idb": "^8.0.0",
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
-    "fuse.js": "^7.0.0",
     "lit": "^3.0.0",
     "nouislider": "^15.7.1",
     "plotly.js": "^2.31.1",

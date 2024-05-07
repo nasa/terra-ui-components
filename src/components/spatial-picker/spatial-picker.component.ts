@@ -2,13 +2,13 @@
 
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
-import GDElement from '../../internal/edux-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
 import 'leaflet-draw'
 import { property, state } from 'lit/decorators.js'
-import GdMap from '../map/map.component.js'
+import EduxMap from '../map/map.component.js'
 import { parseBoundingBox } from '../map/services/leaflet-utils.js'
 
 // This is needed to fix the error: Uncaught ReferenceError: type is not defined
@@ -22,10 +22,10 @@ window.type = ''
  * @since 1.0
  *
  */
-export default class GdSpatialPicker extends GDElement {
+export default class EduxSpatialPicker extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'edux-map': GdMap,
+        'edux-map': EduxMap,
     }
 
     /**
