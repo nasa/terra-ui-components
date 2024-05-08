@@ -367,8 +367,6 @@ export default class EduxVariableCombobox extends EduxElement {
                     complete: list => {
                         this.#searchableList = list
 
-                        console.log(this.#searchableList)
-
                         //* @see {@link https://www.fusejs.io/api/options.html}
                         this.#searchEngine = new Fuse(list, {
                             //* @see https://www.fusejs.io/examples.html#nested-search
