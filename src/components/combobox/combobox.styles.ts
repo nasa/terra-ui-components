@@ -194,7 +194,7 @@ export default css`
         overflow-y: auto;
         overscroll-behavior: contain;
         padding-block: 0.5rem;
-        padding-inline: 0.5rem;
+        padding-inline: 0px;
         position: absolute;
         right: 0;
         visibility: hidden;
@@ -224,30 +224,31 @@ export default css`
     }
 
     .listbox-option-group {
-        padding-inline: 0.5rem;
-        padding-block: 1rem 0.5rem;
+        padding-block: 0.5rem 0rem;
     }
 
     .group-title {
+        padding-inline: 0.5rem;
         font-family: var(--edux-font-family--inter, var(--font-family--inter));
-        font-weight: 700;
+        color: var(--edux-color-gray-500, var( --color-neutral--500));
+        font-weight: 500;
         margin-block: 0;
+    }
+
+    .listbox-option-group ul {
+        padding-left: 0px;
     }
 
     .listbox-option {
         cursor: pointer;
-        list-style: disc;
+        list-style: none;
         position: relative;
+        padding-left: 2rem;
     }
 
-    .listbox-option:hover::before,
-    .listbox-option[aria-selected='true']::before {
-        block-size: 1rem;
-        content: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' fill='%231c67e3' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='16' cy='16' r='16'%3E%3C/circle%3E%3Cpath fill='%23ffffff' d='M8 16.956h12.604l-3.844 4.106 1.252 1.338L24 16l-5.988-6.4-1.252 1.338 3.844 4.106H8v1.912z' %3E%3C/path%3E%3C/svg%3E%0A");
-        inline-size: 1rem;
-        left: -2ch;
-        position: absolute;
-        top: 0.0625lh;
+    .listbox-option:hover, .listbox-option[aria-selected='true'] {
+        background-color: var(--edux-color-gray-200, var( --color-neutral--200));
+        transition: background-color 0.2s ease;
     }
 
     @media (prefers-reduced-motion) {

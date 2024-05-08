@@ -2,12 +2,15 @@ import Fuse from 'fuse.js'
 import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { ref } from 'lit/directives/ref.js'
+import { repeat } from 'lit/directives/repeat.js'
 import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './combobox.styles.js'
 
+import { cache } from 'lit/directives/cache.js'
+import { map } from 'lit/directives/map.js'
 import { clearSelection, walkToOption } from '../variable-combobox/lib.js'
-import type { GroupedListItem } from './type.js'
+import type { GroupedListItem, ListItem } from './type.js'
 
 /**
  * @summary Fuzzy-search for combobox with list autocomplete.
@@ -48,7 +51,7 @@ export default class EduxCombobox extends EduxElement {
      * data of searchable List
      */
     @property({ attribute: 'searchable-list', type: Array })
-    searchableList: GroupedListItem[] = []
+    searchableList: GroupedListItem[] | ListItem[] = []
 
     /**
      * Label the combobox with this.
@@ -92,7 +95,7 @@ export default class EduxCombobox extends EduxElement {
     query = EduxCombobox.initialQuery
 
     @state()
-    searchResults: GroupedListItem[] = []
+    searchResults: GroupedListItem[] | ListItem[] = []
 
     connectedCallback() {
         super.connectedCallback()
@@ -106,26 +109,40 @@ export default class EduxCombobox extends EduxElement {
                 items: [
                     { name: 'Item 1', title: 'Title 1', value: 'Value 1' },
                     { name: 'Item 2', title: 'Title 2', value: 'Value 2' },
-                ]
+                ],
             },
             {
                 name: 'Ben group',
                 items: [
                     { name: 'Item 3', title: 'Title 3', value: 'Value 3' },
                     { name: 'Item 4', title: 'Title 4', value: 'Value 4' },
-                ]
-            }
+                ],
+            },
+            {
+                name: 'Jon group',
+                items: [
+                    { name: 'Item 5', title: 'Title 5', value: 'Value 5' },
+                    { name: 'Item 6', title: 'Title 6', value: 'Value 6' },
+                ],
+            },
+            {
+                name: 'Krupa group',
+                items: [
+                    { name: 'Item 7', title: 'Title 7', value: 'Value 7' },
+                    { name: 'Item 8', title: 'Title 8', value: 'Value 8' },
+                ],
+            },
         ]
 
         //* @see {@link https://www.fusejs.io/api/options.html}
-        this.#searchEngine = new Fuse(this.searchableList, {
+        this.#searchEngine = new Fuse(data, {
             //* @see https://www.fusejs.io/examples.html#nested-search
             findAllMatches: true,
             keys: [
                 'name', // to search in the name of the GroupedListItem
                 'items.name', // to search in the name of each ListItem
                 'items.title', // to search in the title of each ListItem
-                'items.value' // to search in the value of each ListItem
+                'items.value', // to search in the value of each ListItem
             ],
             useExtendedSearch: false,
         })
@@ -135,6 +152,91 @@ export default class EduxCombobox extends EduxElement {
         super.disconnectedCallback()
 
         globalThis.addEventListener('click', this.#manageListboxVisibility)
+    }
+
+    #determineType = (searchableList: any): string | null => {
+        // Check if searchableList is a ListItem
+        function isListItem(data: any): data is ListItem {
+            return 'name' in data && 'value' in data
+        }
+
+        //Check if searchableList is a ListItem[]
+        function isArrayOfListItem(data: any): data is ListItem[] {
+            return (
+                Array.isArray(data) &&
+                'items' in data !== false &&
+                data.every(isListItem)
+            )
+        }
+
+        // Check if searchableList is a GroupedListItem[]
+        function isArrayOfGroupedListItem(data: any): data is GroupedListItem[] {
+            return (
+                Array.isArray(data) &&
+                data.every(
+                    group =>
+                        'name' in group &&
+                        Array.isArray(group.items) &&
+                        group.items.every(isListItem)
+                )
+            )
+        }
+
+        if (isArrayOfListItem(searchableList)) {
+            return 'ListItem'
+        } else if (isArrayOfGroupedListItem(searchableList)) {
+            return 'GroupedListItem'
+        }
+
+        return null // Return null if the data doesn't match any type
+    }
+
+    #renderListItem = (listItem: ListItem) => {
+        return html`
+            <li
+                class="listbox-option-group"
+                data-tree-walker="filter_skip"
+                data-name=${listItem.name}
+                data-event-detail=${JSON.stringify({
+                    name: listItem.name,
+                    value: listItem.value,
+                })}
+            >
+                ${listItem.name}
+            </li>
+        `
+    }
+
+    #renderGroupListItem = (groupListItem: GroupedListItem, index: number) => {
+        return html`
+            <li class="listbox-option-group" data-tree-walker="filter_skip">
+                <span class="group-title" data-tree-walker="filter_skip"
+                    >${groupListItem.name}</span
+                >
+                <ul data-tree-walker="filter_skip">
+                    ${repeat(
+                        groupListItem.items,
+                        item => `${item.name}_${item.value}`,
+                        (item, subIndex) => {
+                            return html`
+                                <li
+                                    id="listbox-option-${index}.${subIndex}"
+                                    role="option"
+                                    class="listbox-option"
+                                    data-name=${item.title ? item.title : item.name}
+                                    data-event-detail=${JSON.stringify({
+                                        name: item.name,
+                                        value: item.value,
+                                    })}
+                                >
+                                    ${item.title ? item.title : item.name}
+                                </li>
+                            `
+                        }
+                    )}
+                </ul>
+            </li>
+        `
     }
 
     #dispatchChange = (stringifiedData: string) => {
@@ -158,16 +260,19 @@ export default class EduxCombobox extends EduxElement {
         this.searchResults = this.#searchEngine
             ?.search(target.value)
             .map(({ item }) => item) as GroupedListItem[]
-
-        console.log('search results:', this.searchResults)
     }
 
     #handleOptionClick = (event: Event) => {
         const path = event.composedPath()
 
+        console.log('path: ', path)
+        console.log('event: ', path)
+
         const [target] = path.filter(
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
+
+        console.log('target: ', target)
 
         this.#selectOption(target as HTMLLIElement)
     }
@@ -258,9 +363,9 @@ export default class EduxCombobox extends EduxElement {
     }
 
     #selectOption = (option: HTMLLIElement) => {
-        const { longName, eventDetail } = option.dataset
+        const { name, eventDetail } = option.dataset
 
-        this.query = `${longName}`
+        this.query = `${name}`
         this.#dispatchChange(eventDetail as string)
 
         this.isExpanded = false
@@ -375,7 +480,33 @@ export default class EduxCombobox extends EduxElement {
                 part="listbox"
                 role="listbox"
                 class="search-results"
-            ></ul>
+            >
+                ${this.#determineType(this.searchableList) === 'ListItem'
+                    ? cache(
+                          this.query === EduxCombobox.initialQuery
+                              ? map(
+                                    this.searchableList as ListItem[],
+                                    this.#renderListItem
+                                )
+                              : map(
+                                    this.searchResults as ListItem[],
+                                    this.#renderListItem
+                                )
+                      )
+                    : this.#determineType(this.searchableList) === 'GroupedListItem'
+                      ? cache(
+                            this.query === EduxCombobox.initialQuery
+                                ? map(
+                                      this.searchableList as GroupedListItem[],
+                                      this.#renderGroupListItem
+                                  )
+                                : map(
+                                      this.searchResults as GroupedListItem[],
+                                      this.#renderGroupListItem
+                                  )
+                        )
+                      : null}
+            </ul>
         </search>`
     }
 }

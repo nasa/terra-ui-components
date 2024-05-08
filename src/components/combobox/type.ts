@@ -5,6 +5,6 @@ export interface GroupedListItem {
 
 export interface ListItem {
     name: string
-    title: string
+    title?: string
     value: string
 }
