@@ -18,14 +18,14 @@ import type { GroupedListItem, ListItem } from './type.js'
  * @status experimental
  * @since 1.0
  *
- * @dependency edux-example
+ * @csspart base - A `search` element, the component's base.
+ * @csspart combobox - An `input` element used for searching.
+ * @csspart button - A `button` used for toggling the listbox's visibility.
+ * @csspart listbox - A `ul` that holds the clickable options.
  *
- * @slot - The default slot.
- * @slot example - An example slot.
- *
- * @csspart base - The component's base wrapper.
- *
- * @cssproperty --example - An example CSS custom property.
+ * @cssproperty --host-height - The height of the host element.
+ * @cssproperty --help-height - The height of the search help element.
+ * @cssproperty --label-height - The height of the input's label element.
  */
 export default class EduxCombobox extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -43,7 +43,7 @@ export default class EduxCombobox extends EduxElement {
 
     #listbox: HTMLUListElement | null = null
 
-    #searchEngine: Fuse<GroupedListItem> | null = null
+    #searchEngine: Fuse<GroupedListItem | ListItem> | null = null
 
     #walker: TreeWalker | null = null
 
@@ -103,39 +103,8 @@ export default class EduxCombobox extends EduxElement {
         //* set a window-level event listener to detect clicks that should close the listbox
         globalThis.addEventListener('click', this.#manageListboxVisibility)
 
-        const data = [
-            {
-                name: 'Amos group',
-                items: [
-                    { name: 'Item 1', title: 'Title 1', value: 'Value 1' },
-                    { name: 'Item 2', title: 'Title 2', value: 'Value 2' },
-                ],
-            },
-            {
-                name: 'Ben group',
-                items: [
-                    { name: 'Item 3', title: 'Title 3', value: 'Value 3' },
-                    { name: 'Item 4', title: 'Title 4', value: 'Value 4' },
-                ],
-            },
-            {
-                name: 'Jon group',
-                items: [
-                    { name: 'Item 5', title: 'Title 5', value: 'Value 5' },
-                    { name: 'Item 6', title: 'Title 6', value: 'Value 6' },
-                ],
-            },
-            {
-                name: 'Krupa group',
-                items: [
-                    { name: 'Item 7', title: 'Title 7', value: 'Value 7' },
-                    { name: 'Item 8', title: 'Title 8', value: 'Value 8' },
-                ],
-            },
-        ]
-
         //* @see {@link https://www.fusejs.io/api/options.html}
-        this.#searchEngine = new Fuse(data, {
+        this.#searchEngine = new Fuse(this.searchableList as any, {
             //* @see https://www.fusejs.io/examples.html#nested-search
             findAllMatches: true,
             keys: [
@@ -265,14 +234,9 @@ export default class EduxCombobox extends EduxElement {
     #handleOptionClick = (event: Event) => {
         const path = event.composedPath()
 
-        console.log('path: ', path)
-        console.log('event: ', path)
-
         const [target] = path.filter(
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
-
-        console.log('target: ', target)
 
         this.#selectOption(target as HTMLLIElement)
     }
