@@ -71,7 +71,7 @@ export default class GdMap extends GDElement {
     mapElement!: HTMLDivElement
 
     @watch('value')
-    valueChanged(oldValue: any, newValue: any) {
+    valueChanged(_oldValue: any, newValue: any) {
         if (newValue.length > 0) {
             this.map?.setValue(this.value)
         }
@@ -109,7 +109,7 @@ export default class GdMap extends GDElement {
             })
         )
 
-        this.map.on('clear', (layer: any) =>
+        this.map.on('clear', (_e: any) =>
             this.emit('gd-map-change', {
                 detail: {
                     cause: 'clear',

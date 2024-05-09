@@ -12,7 +12,7 @@ export type MapEventDetail = {
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
 // @ts-expect-error
-window.type = ''
+globalThis.type = ''
 
 export function parseBoundingBox(inputString: string) {
     // Split the string by commas to create an array of strings
@@ -81,7 +81,7 @@ export class Leaflet implements Map {
             maxZoom: options.maxZoom,
         })
 
-        const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: options.maxZoom,
         }).addTo(this.map)
 
@@ -94,9 +94,9 @@ export class Leaflet implements Map {
             this.addDrawControl()
         }
 
-        this.map.whenReady((e: any) => {
+        this.map.whenReady((_e: any) => {
             this.isMapReady = true
-            if ((options.initialValue as LatLngBoundsLiteral).length > 0) {
+            if ((options.initialValue as LatLngBoundsLiteral)?.length > 0) {
                 L.rectangle(options.initialValue as LatLngBoundsExpression, {
                     stroke: true,
                     color: '#3388ff',
@@ -199,7 +199,7 @@ export class Leaflet implements Map {
             this.dispatch('draw', detail)
         })
 
-        this.map.on('draw:deleted', (event: any) => {
+        this.map.on('draw:deleted', (_event: any) => {
             this.editableLayers.clearLayers()
 
             this.dispatch('clear')

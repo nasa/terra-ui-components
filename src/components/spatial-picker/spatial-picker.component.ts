@@ -73,14 +73,12 @@ export default class GdSpatialPicker extends GDElement {
     mapValue: any
 
     private _blur(e: Event) {
-        const boundingBox: any = parseBoundingBox(
-            (e.target as HTMLInputElement).value
-        )
+        const inputValue = (e.target as HTMLInputElement).value
 
-        this.mapValue = boundingBox
+        this.mapValue = inputValue === '' ? [] : parseBoundingBox(inputValue)
     }
 
-    private _click(e: Event) {
+    private _click() {
         this.showMap = !this.showMap
     }
 
