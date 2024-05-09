@@ -1,4 +1,4 @@
-import type { LatLngBoundsExpression } from 'leaflet'
+import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import * as L from 'leaflet'
 import 'leaflet-draw'
 import { fetchSelectedShape } from './shapes.js'
@@ -96,8 +96,8 @@ export class Leaflet implements Map {
 
         this.map.whenReady((e: any) => {
             this.isMapReady = true
-            if (options.initialValue) {
-                L.rectangle(options.initialValue, {
+            if ((options.initialValue as LatLngBoundsLiteral).length > 0) {
+                L.rectangle(options.initialValue as LatLngBoundsExpression, {
                     stroke: true,
                     color: '#3388ff',
                     weight: 4,
