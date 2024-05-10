@@ -34,6 +34,43 @@ app.get('/hydro1/*', (req, res) => {
         })
 })
 
+app.get('/getProvisionedShapefiles', async (req, res) => {
+    try {
+        const { query } = req
+
+        const url =
+            'https://giovanni.gsfc.nasa.gov/giovanni/daac-bin/getProvisionedShapefiles.py'
+
+        const response = await fetch(url)
+
+        const data = await response.json()
+
+        res.send(data)
+    } catch (error) {
+        // If there's an error, send an error response
+        console.error('Error:', error)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
+app.get('/getGeoJSON', async (req, res) => {
+    try {
+        const { query } = req
+
+        const url = `https://giovanni.gsfc.nasa.gov/giovanni/daac-bin/getGeoJSON.py?shape=${query.shape}`
+
+        const response = await fetch(url)
+
+        const data = await response.json()
+
+        res.send(data)
+    } catch (error) {
+        // If there's an error, send an error response
+        console.error('Error:', error)
+        res.status(500).json({ error: 'Internal Server Error' })
+    }
+})
+
 app.get('/variables', (req, res) => {
     fetch('https://dev.gesdisc.eosdis.nasa.gov/~baforshe/collection+variable.json')
         .then(res => res.json())
