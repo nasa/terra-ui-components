@@ -1,19 +1,12 @@
-/* eslint-disable */
-
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
-import 'leaflet-draw'
 import { property, state } from 'lit/decorators.js'
 import EduxMap from '../map/map.component.js'
 import { parseBoundingBox } from '../map/services/leaflet-utils.js'
-
-// This is needed to fix the error: Uncaught ReferenceError: type is not defined
-// @ts-ignore
-window.type = ''
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -80,14 +73,12 @@ export default class EduxSpatialPicker extends EduxElement {
     mapValue: any
 
     private _blur(e: Event) {
-        const boundingBox: any = parseBoundingBox(
-            (e.target as HTMLInputElement).value
-        )
+        const inputValue = (e.target as HTMLInputElement).value
 
-        this.mapValue = boundingBox
+        this.mapValue = inputValue === '' ? [] : parseBoundingBox(inputValue)
     }
 
-    private _click(e: Event) {
+    private _click() {
         this.showMap = !this.showMap
     }
 
@@ -108,11 +99,6 @@ export default class EduxSpatialPicker extends EduxElement {
 
     render() {
         return html`
-            <!-- @ts-ignore -->
-            <style>
-                @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-                @import url('https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css');
-            </style>
             <div class="spatial-picker">
                 <div class="spatial-picker__input_fields">
                     <input

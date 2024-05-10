@@ -1,4 +1,4 @@
-import type { LatLngBoundsExpression } from 'leaflet'
+import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import * as L from 'leaflet'
 import 'leaflet-draw'
 import { fetchSelectedShape } from './shapes.js'
@@ -9,6 +9,10 @@ export type MapEventDetail = {
     bounds?: any
     latLng?: any
 }
+
+// There is a leaflet bug with type sometimes being undefined. This is a temporary fix
+// @ts-expect-error
+globalThis.type = ''
 
 export function parseBoundingBox(inputString: string) {
     // Split the string by commas to create an array of strings
@@ -45,6 +49,7 @@ export interface MapViewOptions {
     maxZoom: number
     showCoordTracker?: boolean
     showNavigation?: boolean
+    initialValue?: LatLngBoundsExpression
 }
 
 export interface Map {
@@ -61,6 +66,7 @@ export class Leaflet implements Map {
     editableLayers: any
     listeners: any = []
     selectedGeoJson: any
+    isMapReady: boolean = false
 
     // map initialization function
     initializeMap(container: HTMLElement, options: MapViewOptions) {
@@ -75,7 +81,7 @@ export class Leaflet implements Map {
             maxZoom: options.maxZoom,
         })
 
-        const osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: options.maxZoom,
         }).addTo(this.map)
 
@@ -87,6 +93,22 @@ export class Leaflet implements Map {
         if (options.showNavigation) {
             this.addDrawControl()
         }
+
+        this.map.whenReady((_e: any) => {
+            this.isMapReady = true
+            if ((options.initialValue as LatLngBoundsLiteral)?.length > 0) {
+                L.rectangle(options.initialValue as LatLngBoundsExpression, {
+                    stroke: true,
+                    color: '#3388ff',
+                    weight: 4,
+                    opacity: 0.5,
+                    fill: true,
+                    fillOpacity: 0.2,
+                }).addTo(this.map)
+
+                this.map.fitBounds(options.initialValue)
+            }
+        })
     }
 
     addCoordTracker() {
@@ -177,7 +199,7 @@ export class Leaflet implements Map {
             this.dispatch('draw', detail)
         })
 
-        this.map.on('draw:deleted', (event: any) => {
+        this.map.on('draw:deleted', (_event: any) => {
             this.editableLayers.clearLayers()
 
             this.dispatch('clear')
@@ -259,7 +281,7 @@ export class Leaflet implements Map {
         })
     }
 
-    drawRectangle(bounds: any) {
+    drawRectangle(bounds: LatLngBoundsExpression) {
         this.editableLayers.clearLayers()
 
         L.rectangle(bounds, {
@@ -273,7 +295,9 @@ export class Leaflet implements Map {
     }
 
     setValue(value: LatLngBoundsExpression) {
-        this.drawRectangle(value)
-        this.map.fitBounds(value)
+        if (this.isMapReady) {
+            this.drawRectangle(value)
+            this.map.fitBounds(value)
+        }
     }
 }
