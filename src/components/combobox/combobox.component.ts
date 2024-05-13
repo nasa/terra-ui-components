@@ -8,9 +8,15 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './combobox.styles.js'
 
 import { cache } from 'lit/directives/cache.js'
+import { choose } from 'lit/directives/choose.js'
 import { map } from 'lit/directives/map.js'
 import { clearSelection, walkToOption } from '../variable-combobox/lib.js'
-import type { GroupedListItem, ListItem } from './type.js'
+import {
+    SearchableListType,
+    type Content,
+    type GroupedListItem,
+    type ListItem,
+} from './type.js'
 
 /**
  * @summary Fuzzy-search for combobox with list autocomplete.
@@ -35,7 +41,7 @@ export default class EduxCombobox extends EduxElement {
         delegatesFocus: true,
     }
 
-    static tagName = 'edux-variable-combobox'
+    static tagName = 'edux-combobox'
 
     static initialQuery = ''
 
@@ -48,17 +54,11 @@ export default class EduxCombobox extends EduxElement {
     #walker: TreeWalker | null = null
 
     /**
-     * data of searchable List
-     */
-    @property({ attribute: 'searchable-list', type: Array })
-    searchableList: GroupedListItem[] | ListItem[] = []
-
-    /**
      * Label the combobox with this.
-     * @example Search All Variables
+     * @example Search All Items
      */
     @property()
-    label = 'Search for Variables'
+    label = 'Search for Items'
 
     /**
      * name the combobox with this.
@@ -88,6 +88,21 @@ export default class EduxCombobox extends EduxElement {
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel = false
 
+    /**
+     * status of the content
+     */
+    @property()
+    status: 'INITIAL' | 'PENDING' | 'COMPLETE' | 'ERROR' = 'INITIAL'
+
+    /**
+     * content or data of the combobox. This could be of type string | GroupedListItem[] | ListItem[] | undefined
+     */
+    @property({ type: Object })
+    content: Content = {
+        type: SearchableListType.GroupedListItem,
+        data: [],
+    }
+
     @state()
     isExpanded = false
 
@@ -103,8 +118,14 @@ export default class EduxCombobox extends EduxElement {
         //* set a window-level event listener to detect clicks that should close the listbox
         globalThis.addEventListener('click', this.#manageListboxVisibility)
 
+        const list =
+            this.content.type === 'GroupedListItem' ||
+            this.content.type === 'ListItem'
+                ? this.content.data
+                : []
+
         //* @see {@link https://www.fusejs.io/api/options.html}
-        this.#searchEngine = new Fuse(this.searchableList as any, {
+        this.#searchEngine = new Fuse(list as any, {
             //* @see https://www.fusejs.io/examples.html#nested-search
             findAllMatches: true,
             keys: [
@@ -123,48 +144,12 @@ export default class EduxCombobox extends EduxElement {
         globalThis.addEventListener('click', this.#manageListboxVisibility)
     }
 
-    #determineType = (searchableList: any): string | null => {
-        // Check if searchableList is a ListItem
-        function isListItem(data: any): data is ListItem {
-            return 'name' in data && 'value' in data
-        }
-
-        //Check if searchableList is a ListItem[]
-        function isArrayOfListItem(data: any): data is ListItem[] {
-            return (
-                Array.isArray(data) &&
-                'items' in data !== false &&
-                data.every(isListItem)
-            )
-        }
-
-        // Check if searchableList is a GroupedListItem[]
-        function isArrayOfGroupedListItem(data: any): data is GroupedListItem[] {
-            return (
-                Array.isArray(data) &&
-                data.every(
-                    group =>
-                        'name' in group &&
-                        Array.isArray(group.items) &&
-                        group.items.every(isListItem)
-                )
-            )
-        }
-
-        if (isArrayOfListItem(searchableList)) {
-            return 'ListItem'
-        } else if (isArrayOfGroupedListItem(searchableList)) {
-            return 'GroupedListItem'
-        }
-
-        return null // Return null if the data doesn't match any type
-    }
-
-    #renderListItem = (listItem: ListItem) => {
+    #renderListItem = (listItem: ListItem, index: number) => {
         return html`
             <li
-                class="listbox-option-group"
-                data-tree-walker="filter_skip"
+                id="listbox-option-${index}"
+                role="option"
+                class="listbox-option"
                 data-name=${listItem.name}
                 data-event-detail=${JSON.stringify({
                     name: listItem.name,
@@ -208,6 +193,35 @@ export default class EduxCombobox extends EduxElement {
         `
     }
 
+    #renderError = () => {
+        return html`
+            <li class="error listbox-option-group">${this.content.data}</li>
+        `
+    }
+
+    #renderLoading = () => {
+        return html`
+            <li class="skeleton listbox-option-group">
+                <span class="skeleton-title"></span>
+                <ul>
+                    <li class="listbox-option"></li>
+                </ul>
+            </li>
+            <li class="skeleton listbox-option-group">
+                <span class="skeleton-title"></span>
+                <ul>
+                    <li class="listbox-option"></li>
+                </ul>
+            </li>
+            <li class="skeleton listbox-option-group">
+                <span class="skeleton-title"></span>
+                <ul>
+                    <li class="listbox-option"></li>
+                </ul>
+            </li>
+        `
+    }
+
     #dispatchChange = (stringifiedData: string) => {
         this.emit('edux-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
@@ -237,6 +251,8 @@ export default class EduxCombobox extends EduxElement {
         const [target] = path.filter(
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
+
+        if (!target) return
 
         this.#selectOption(target as HTMLLIElement)
     }
@@ -378,18 +394,33 @@ export default class EduxCombobox extends EduxElement {
                     type="button"
                     @click=${this.#handleButtonClick}
                 >
-                    <svg
-                        aria-hidden="true"
-                        class="button-icon chevron"
-                        focusable="false"
-                        viewBox="0 0 400 400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="currentColor"
-                    >
-                        <path
-                            d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
-                        ></path>
-                    </svg>
+                    ${['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
+                        ? html`<svg
+                              aria-hidden="true"
+                              class="button-icon chevron"
+                              focusable="false"
+                              viewBox="0 0 400 400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="currentColor"
+                          >
+                              <path
+                                  d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
+                              ></path>
+                          </svg> `
+                        : html`<svg
+                              class="button-icon spinner"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                          >
+                              <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="9.5"
+                                  fill="none"
+                                  stroke-width="3"
+                              ></circle>
+                          </svg>`}
                 </button>
 
                 ${this.hideHelp
@@ -445,31 +476,44 @@ export default class EduxCombobox extends EduxElement {
                 role="listbox"
                 class="search-results"
             >
-                ${this.#determineType(this.searchableList) === 'ListItem'
-                    ? cache(
-                          this.query === EduxCombobox.initialQuery
-                              ? map(
-                                    this.searchableList as ListItem[],
-                                    this.#renderListItem
-                                )
-                              : map(
-                                    this.searchResults as ListItem[],
-                                    this.#renderListItem
-                                )
-                      )
-                    : this.#determineType(this.searchableList) === 'GroupedListItem'
-                      ? cache(
-                            this.query === EduxCombobox.initialQuery
-                                ? map(
-                                      this.searchableList as GroupedListItem[],
-                                      this.#renderGroupListItem
+                ${choose(this.status, [
+                    ['INITIAL', this.#renderLoading],
+                    ['PENDING', this.#renderLoading],
+                    [
+                        'COMPLETE',
+                        () => {
+                            return this.content.type === SearchableListType.ListItem
+                                ? cache(
+                                      this.query === EduxCombobox.initialQuery
+                                          ? map(
+                                                this.content.data as ListItem[],
+                                                this.#renderListItem
+                                            )
+                                          : map(
+                                                this.searchResults as ListItem[],
+                                                this.#renderListItem
+                                            )
                                   )
-                                : map(
-                                      this.searchResults as GroupedListItem[],
-                                      this.#renderGroupListItem
-                                  )
-                        )
-                      : null}
+                                : this.content.type ===
+                                    SearchableListType.GroupedListItem
+                                  ? cache(
+                                        this.query === EduxCombobox.initialQuery
+                                            ? map(
+                                                  this.content
+                                                      .data as GroupedListItem[],
+                                                  this.#renderGroupListItem
+                                              )
+                                            : map(
+                                                  this
+                                                      .searchResults as GroupedListItem[],
+                                                  this.#renderGroupListItem
+                                              )
+                                    )
+                                  : nothing
+                        },
+                    ],
+                    ['ERROR', this.#renderError],
+                ])}
             </ul>
         </search>`
     }
