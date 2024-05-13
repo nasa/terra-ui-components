@@ -1,33 +1,33 @@
 ---
 meta:
     title: React
-    description: Tips for using GES DISC Components in your React app.
+    description: Tips for using Earthdata UX Components in your React app.
 ---
 
 # React
 
-GES DISC Components offers a React version of every component to provide an idiomatic experience for React users. You can easily toggle between HTML and React examples throughout the documentation.
+Earthdata UX Components offers a React version of every component to provide an idiomatic experience for React users. You can easily toggle between HTML and React examples throughout the documentation.
 
 ## Installation
 
-To add GES DISC Components to your React app, install the package from npm.
+To add Earthdata UX Components to your React app, install the package from npm.
 
 ```bash
-npm install @gesdisc/components
+npm install @nasa/earthdata-ux-components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
 // App.jsx
-import '@gesdisc/components/%NPMDIR%/themes/light.css'
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path'
+import '@nasa/earthdata-ux-components/%NPMDIR%/themes/light.css'
+import { setBasePath } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a [build task](https://webpack.js.org/plugins/copy-webpack-plugin/) that copies `node_modules/@gesdisc/components/%NPMDIR%/assets` into your app's `public` directory. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a [build task](https://webpack.js.org/plugins/copy-webpack-plugin/) that copies `node_modules/@nasa/earthdata-ux-components/%NPMDIR%/assets` into your app's `public` directory. Then you can point the base path to that folder instead.
 :::
 
 Now you can start using components!
@@ -40,12 +40,12 @@ Preact users facing type errors using components may benefit from setting "paths
 
 ### Importing Components
 
-Every GES DISC component is available to import as a React component. Note that we're importing the `<SlButton>` _React component_ instead of the `<sl-button>` _custom element_ in the example below.
+Every Earthdata UX component is available to import as a React component. Note that we're importing the `<EduxButton>` _React component_ instead of the `<edux-button>` _custom element_ in the example below.
 
 ```jsx
-import SlButton from '@gesdisc/components/%NPMDIR%/react/button'
+import Button from '@nasa/earthdata-ux-components/%NPMDIR%/react/button'
 
-const MyComponent = () => <SlButton variant="primary">Click me</SlButton>
+const MyComponent = () => <EduxButton variant="primary">Click me</EduxButton>
 
 export default MyComponent
 ```
@@ -55,27 +55,27 @@ export default MyComponent
 Previously, it was recommended to import from a single entrypoint like so:
 
 ```jsx
-import { SlButton } from '@gesdisc/components/%NPMDIR%/react'
+import { EduxButton } from '@nasa/earthdata-ux-components/%NPMDIR%/react'
 ```
 
 However, tree-shaking extra Shoelace components proved to be a challenge. As a result, we now recommend cherry-picking components you want to use, rather than importing from a single entrypoint.
 
 ```diff
-- import { SlButton } from '@gesdisc/components/%NPMDIR%/react';
-+ import SlButton from '@gesdisc/components/%NPMDIR%/react/button';
+- import { EduxButton } from '@nasa/earthdata-ux-components/%NPMDIR%/react';
++ import EduxButton from '@nasa/earthdata-ux-components/%NPMDIR%/react/button';
 ```
 
 You can find a copy + paste import for each component in the "importing" section of its documentation.
 
 ### Event Handling
 
-Many Shoelace components emit [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). For example, the [input component](/components/input) emits the `gd-input` event when it receives input. In React, you can listen for the event using `onSlInput`.
+Many Shoelace components emit [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). For example, the [input component](/components/input) emits the `edux-input` event when it receives input. In React, you can listen for the event using `onSlInput`.
 
 Here's how you can bind the input's value to a state variable.
 
 ```jsx
 import { useState } from 'react'
-import SlInput from '@gesdisc/components/%NPMDIR%/react/input'
+import SlInput from '@nasa/earthdata-ux-components/%NPMDIR%/react/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
@@ -90,8 +90,8 @@ If you're using TypeScript, it's important to note that `event.target` will be a
 
 ```tsx
 import { useState } from 'react'
-import SlInput from '@gesdisc/components/%NPMDIR%/react/input'
-import type SlInputElement from '@gesdisc/components/%NPMDIR%/components/input/input'
+import SlInput from '@nasa/earthdata-ux-components/%NPMDIR%/react/input'
+import type SlInputElement from '@nasa/earthdata-ux-components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
@@ -111,8 +111,8 @@ You can also import the event type for use in your callbacks, shown below.
 
 ```tsx
 import { useCallback, useState } from 'react'
-import SlInput, { type SlInputEvent } from '@gesdisc/components/%NPMDIR%/react/input'
-import type SlInputElement from '@gesdisc/components/%NPMDIR%/components/input/input'
+import SlInput, { type SlInputEvent } from '@nasa/earthdata-ux-components/%NPMDIR%/react/input'
+import type SlInputElement from '@nasa/earthdata-ux-components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
@@ -198,5 +198,5 @@ These instructions are for apps created via Create React App. If you're using Je
 For more details, refer to Jest's [`transformIgnorePatterns` customization](https://jestjs.io/docs/tutorial-react-native#transformignorepatterns-customization) documentation.
 
 :::tip
-Are you using Shoelace with React? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/react.md)
+Are you using Shoelace with React? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/react.md)
 :::

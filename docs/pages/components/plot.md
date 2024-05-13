@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<gd-plot id="example" plotTitle="Example Plot"></gd-plot>
+<edux-plot id="example" plotTitle="Example Plot"></edux-plot>
 
 <script>
     document.getElementById('example').data = [
@@ -2431,4 +2431,4 @@ TODO
 
 TODO
 
-[component-metadata:gd-plot]
+[component-metadata:edux-plot]

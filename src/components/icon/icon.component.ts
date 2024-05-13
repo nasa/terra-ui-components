@@ -1,7 +1,7 @@
 import type { CSSResultGroup, HTMLTemplateResult } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { isTemplateResult } from 'lit/directive-helpers.js'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './icon.styles.js'
@@ -29,12 +29,12 @@ interface IconSource {
  * @status experimental
  * @since 1.0
  *
- * @event gd-load - Emitted when the icon has loaded.
- * @event gd-error - Emitted when the icon fails to load due to an error.
+ * @event edux-load - Emitted when the icon has loaded.
+ * @event edux-error - Emitted when the icon fails to load due to an error.
  *
  * @csspart svg - The internal SVG element.
  */
-export default class GdIcon extends GDElement {
+export default class EduxIcon extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     #initialRender = false
@@ -216,12 +216,12 @@ export default class GdIcon extends GDElement {
             case RETRYABLE_ERROR:
             case CACHEABLE_ERROR:
                 this.svg = null
-                this.emit('gd-error')
+                this.emit('edux-error')
                 break
             default:
                 this.svg = svg.cloneNode(true) as SVGElement
                 library?.mutator?.(this.svg)
-                this.emit('gd-load')
+                this.emit('edux-load')
         }
     }
 

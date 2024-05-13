@@ -2,11 +2,11 @@
 import { expect } from '@open-wc/testing'
 import { readFile } from '@web/test-runner-commands'
 
-import GdButton from '../../dist/components/button/button.component.js'
+import EduxButton from '../../dist/components/button/button.component.js'
 
-// We don't use GdElement directly because it shouldn't exist in the final bundle.
+// We don't use EduxElement directly because it shouldn't exist in the final bundle.
 /* eslint-disable */
-const GdElement = Object.getPrototypeOf(GdButton)
+const EduxElement = Object.getPrototypeOf(EduxButton)
 /* eslint-enable */
 
 // @ts-expect-error Isn't written in TS.
@@ -50,17 +50,17 @@ beforeEach(() => {
 })
 
 it('Should provide a console warning if attempting to register the same tag twice', () => {
-    class MyButton extends GdButton {
+    class MyButton extends EduxButton {
         static version = '0.4.5'
     }
 
     const stub = Sinon.stub(console, 'warn')
 
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.false
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
     /* eslint-disable */
-    GdButton.define('gd-button')
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.true
-    MyButton.define('gd-button')
+    EduxButton.define('edux-button')
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.true
+    MyButton.define('edux-button')
     /* eslint-enable */
 
     expect(stub).calledOnce
@@ -70,7 +70,7 @@ it('Should provide a console warning if attempting to register the same tag twic
     expect(warning).to.match(
         new RegExp(
             /* eslint-disable */
-            `Attempted to register <gd-button> v${MyButton.version}, but <gd-button> v${GdButton.version} has already been registered`
+            `Attempted to register <edux-button> v${MyButton.version}, but <edux-button> v${EduxButton.version} has already been registered`
             /* eslint-enable */
         ),
         'i'
@@ -78,15 +78,15 @@ it('Should provide a console warning if attempting to register the same tag twic
 })
 
 it('Should not provide a console warning if versions match', () => {
-    class MyButton extends GdButton {}
+    class MyButton extends EduxButton {}
 
     const stub = Sinon.stub(console, 'warn')
 
     /* eslint-disable */
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.false
-    GdButton.define('gd-button')
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.true
-    MyButton.define('gd-button')
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
+    EduxButton.define('edux-button')
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.true
+    MyButton.define('edux-button')
     /* eslint-enable */
 
     expect(stub).not.called
@@ -94,28 +94,28 @@ it('Should not provide a console warning if versions match', () => {
 
 it('Should register dependencies when the element is constructed the first time', () => {
     /* eslint-disable */
-    class MyElement extends GdElement {
-        static dependencies = { 'gd-button': GdButton }
+    class MyElement extends EduxElement {
+        static dependencies = { 'edux-button': EduxButton }
         static version = 'random-version'
     }
     /* eslint-enable */
 
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.false
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
 
     // eslint-disable
-    MyElement.define('gd-element')
+    MyElement.define('edux-element')
     // eslint-enable
 
     // this should be false until the constructor is called via new
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.false
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
 
     // We can call it directly since we know its registered.
     /* eslint-disable */
     // @ts-expect-error If its undefined, error.
-    new (window.customElements.get('gd-element'))()
+    new (window.customElements.get('edux-element'))()
     /* eslint-enable */
 
-    expect(Boolean(window.customElements.get('gd-button'))).to.be.true
+    expect(Boolean(window.customElements.get('edux-button'))).to.be.true
 })
 
 // This looks funky here. This grabs all of our components and tests for side effects.

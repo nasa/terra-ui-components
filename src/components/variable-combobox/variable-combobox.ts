@@ -1,12 +1,12 @@
-import GdVariableCombobox from './variable-combobox.component.js';
+import EduxVariableCombobox from './variable-combobox.component.js'
 
-export * from './variable-combobox.component.js';
-export default GdVariableCombobox;
+export * from './variable-combobox.component.js'
+export default EduxVariableCombobox
 
-GdVariableCombobox.define('gd-variable-combobox');
+EduxVariableCombobox.define('edux-variable-combobox')
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'gd-variable-combobox': GdVariableCombobox;
-  }
+    interface HTMLElementTagNameMap {
+        'edux-variable-combobox': EduxVariableCombobox
+    }
 }

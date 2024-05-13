@@ -10,13 +10,13 @@ layout: component
 ### Default Map
 
 ```html:preview
-<gd-map></gd-map>
+<edux-map></edux-map>
 ```
 
 ### Configured Map
 
 ```html:preview
-<gd-map show-navigation show-shape-selector show-coord-tracker></gd-map>
+<edux-map show-navigation show-shape-selector show-coord-tracker></edux-map>
 ```
 
-[component-metadata:gd-map]
+[component-metadata:edux-map]

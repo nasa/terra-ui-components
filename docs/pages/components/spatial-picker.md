@@ -10,13 +10,13 @@ layout: component
 ### Default Spatial Picker
 
 ```html:preview
-<gd-spatial-picker></gd-spatial-picker>
+<edux-spatial-picker></edux-spatial-picker>
 ```
 
 ### Configured Spatial Picker
 
 ```html:preview
-<gd-spatial-picker show-navigation show-shape-selector show-coord-tracker></gd-spatial-picker>
+<edux-spatial-picker show-navigation show-shape-selector show-coord-tracker></edux-spatial-picker>
 ```
 
-[component-metadata:gd-spatial-picker]
+[component-metadata:edux-spatial-picker]

@@ -25,7 +25,7 @@ This integration has been tested with the following:
 To get started using Shoelace with Rails, the following packages must be installed.
 
 ```bash
-yarn add @gesdisc/components copy-webpack-plugin
+yarn add @nasa/earthdata-ux-components copy-webpack-plugin
 ```
 
 ### Importing the Default Theme
@@ -33,8 +33,8 @@ yarn add @gesdisc/components copy-webpack-plugin
 The next step is to import Shoelace's default theme (stylesheet) in `app/javascript/stylesheets/application.scss`.
 
 ```css
-@import '@gesdisc/components/dist/themes/light';
-@import '@gesdisc/components/dist/themes/dark'; // Optional dark theme
+@import '@nasa/earthdata-ux-components/dist/themes/light';
+@import '@nasa/earthdata-ux-components/dist/themes/dark'; // Optional dark theme
 ```
 
 Fore more details about themes, please refer to [Theme Basics](/getting-started/themes#theme-basics).
@@ -45,7 +45,7 @@ After importing the theme, you'll need to import the JavaScript files for Shoela
 
 ```js
 import '../stylesheets/application.scss'
-import { setBasePath, SlAlert, SlAnimation, SlButton, ... } from '@gesdisc/components'
+import { setBasePath, SlAlert, SlAnimation, EduxButton, ... } from '@nasa/earthdata-ux-components'
 
 // ...
 
@@ -75,7 +75,7 @@ environment.plugins.append(
             {
                 from: path.resolve(
                     __dirname,
-                    '../../node_modules/@gesdisc/components/dist/assets'
+                    '../../node_modules/@nasa/earthdata-ux-components/dist/assets'
                 ),
                 to: path.resolve(__dirname, '../../public/packs/js/assets'),
             },

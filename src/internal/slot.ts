@@ -21,7 +21,7 @@ export class HasSlotController implements ReactiveController {
                 const tagName = el.tagName.toLowerCase()
 
                 // Ignore visually hidden elements since they aren't rendered
-                if (tagName === 'gd-visually-hidden') {
+                if (tagName === 'edux-visually-hidden') {
                     return false
                 }
 

@@ -1,11 +1,11 @@
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
 import { property, state } from 'lit/decorators.js'
-import GdMap from '../map/map.component.js'
+import EduxMap from '../map/map.component.js'
 import { parseBoundingBox } from '../map/services/leaflet-utils.js'
 
 /**
@@ -15,10 +15,10 @@ import { parseBoundingBox } from '../map/services/leaflet-utils.js'
  * @since 1.0
  *
  */
-export default class GdSpatialPicker extends GDElement {
+export default class EduxSpatialPicker extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'gd-map': GdMap,
+        'edux-map': EduxMap,
     }
 
     /**
@@ -83,7 +83,7 @@ export default class GdSpatialPicker extends GDElement {
     }
 
     renderMap() {
-        return html`<gd-map
+        return html`<edux-map
             min-zoom=${this.minZoom}
             max-zoom=${this.maxZoom}
             zoom=${this.zoom}
@@ -94,7 +94,7 @@ export default class GdSpatialPicker extends GDElement {
             ?show-navigation=${this.showNavigation}
             ?show-shape-selector=${this.showShapeSelector}
         >
-        </gd-map>`
+        </edux-map>`
     }
 
     render() {

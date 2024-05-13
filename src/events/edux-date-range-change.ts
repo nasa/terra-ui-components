@@ -1,10 +1,10 @@
-export type GdDateRangeChangeEvent = CustomEvent<{
+export type EduxDateRangeChangeEvent = CustomEvent<{
     startDate: string
     endDate: string
 }>
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'gd-date-range-change': GdDateRangeChangeEvent
+        'edux-date-range-change': EduxDateRangeChangeEvent
     }
 }

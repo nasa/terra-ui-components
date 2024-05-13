@@ -34,7 +34,7 @@ export default {
     plugins: [
         // Append package data
         {
-            name: 'gesdisc-components-package-data',
+            name: 'earthdata-ux-components-package-data',
             packageLinkPhase({ customElementsManifest }) {
                 customElementsManifest.package = {
                     name,
@@ -49,7 +49,7 @@ export default {
 
         // Infer tag names because we no longer use @customElement decorators.
         {
-            name: 'gesdisc-components-infer-tag-names',
+            name: 'earthdata-ux-components-infer-tag-names',
             analyzePhase({ ts, node, moduleDoc }) {
                 switch (node.kind) {
                     case ts.SyntaxKind.ClassDeclaration: {
@@ -69,7 +69,7 @@ export default {
                             importPath,
                             '.component.ts'
                         )
-                        const tagName = 'gd-' + tagNameWithoutPrefix
+                        const tagName = 'edux-' + tagNameWithoutPrefix
 
                         classDoc.tagNameWithoutPrefix = tagNameWithoutPrefix
                         classDoc.tagName = tagName
@@ -83,7 +83,7 @@ export default {
 
         // Parse custom jsDoc tags
         {
-            name: 'gesdisc-components-custom-tags',
+            name: 'earthdata-ux-components-custom-tags',
             analyzePhase({ ts, node, moduleDoc }) {
                 switch (node.kind) {
                     case ts.SyntaxKind.ClassDeclaration: {
@@ -165,7 +165,7 @@ export default {
         },
 
         {
-            name: 'gesdisc-components-react-event-names',
+            name: 'earthdata-ux-components-react-event-names',
             analyzePhase({ ts, node, moduleDoc }) {
                 switch (node.kind) {
                     case ts.SyntaxKind.ClassDeclaration: {
@@ -178,10 +178,10 @@ export default {
                             classDoc.events.forEach(event => {
                                 event.reactName = `on${pascalCase(
                                     event.name
-                                )}`.replace(/^Sl/, 'Gd')
+                                )}`.replace(/^Sl/, 'Edux')
                                 event.eventName = `${pascalCase(
                                     event.name
-                                )}Event`.replace(/^Sl/, 'Gd')
+                                )}Event`.replace(/^Sl/, 'Edux')
                             })
                         }
                     }
@@ -190,7 +190,7 @@ export default {
         },
 
         {
-            name: 'gesdisc-components-translate-module-paths',
+            name: 'earthdata-ux-components-translate-module-paths',
             packageLinkPhase({ customElementsManifest }) {
                 customElementsManifest?.modules?.forEach(mod => {
                     //
@@ -237,7 +237,7 @@ export default {
                 {
                     name: 'Documentation',
                     url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
-                        'gd-',
+                        'edux-',
                         ''
                     )}`,
                 },
@@ -252,7 +252,7 @@ export default {
                 return {
                     name: 'Documentation',
                     url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
-                        'gd-',
+                        'edux-',
                         ''
                     )}`,
                 }
@@ -263,8 +263,8 @@ export default {
             outdir: './dist/types/vue',
             fileName: 'index.d.ts',
             componentTypePath: (_, tag) =>
-                `../../components/${tag.replace('gd-', '')}/${tag.replace(
-                    'gd-',
+                `../../components/${tag.replace('edux-', '')}/${tag.replace(
+                    'edux-',
                     ''
                 )}.component.js`,
         }),

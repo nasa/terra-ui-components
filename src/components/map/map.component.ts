@@ -1,7 +1,7 @@
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
@@ -15,7 +15,7 @@ import { getShapeFiles } from './services/shapes.js'
  * @since 1.0
  *
  */
-export default class GdMap extends GDElement {
+export default class EduxMap extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
@@ -101,7 +101,7 @@ export default class GdMap extends GDElement {
         })
 
         this.map.on('draw', (layer: any) =>
-            this.emit('gd-map-change', {
+            this.emit('edux-map-change', {
                 detail: {
                     cause: 'draw',
                     ...layer,
@@ -110,7 +110,7 @@ export default class GdMap extends GDElement {
         )
 
         this.map.on('clear', (_e: any) =>
-            this.emit('gd-map-change', {
+            this.emit('edux-map-change', {
                 detail: {
                     cause: 'clear',
                 },

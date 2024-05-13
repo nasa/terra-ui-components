@@ -96,7 +96,7 @@
         updateSelection()
 
         // Toggle the dark mode class
-        document.documentElement.classList.toggle('gd-theme-dark', isDark())
+        document.documentElement.classList.toggle('edux-theme-dark', isDark())
     }
 
     function updateSelection() {

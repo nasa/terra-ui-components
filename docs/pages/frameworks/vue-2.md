@@ -17,31 +17,31 @@ These instructions are for Vue 2. If you're using Vue 3 or above, please see the
 To add Shoelace to your Vue app, install the package from npm.
 
 ```bash
-npm install @gesdisc/components
+npm install @nasa/earthdata-ux-components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
-import '@gesdisc/components/%NPMDIR%/themes/light.css'
-import { setBasePath } from '@gesdisc/components/%NPMDIR%/utilities/base-path'
+import '@nasa/earthdata-ux-components/%NPMDIR%/themes/light.css'
+import { setBasePath } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@gesdisc/components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/earthdata-ux-components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
 
-You'll need to tell Vue to ignore Shoelace components. This is pretty easy because they all start with `gd-`.
+You'll need to tell Vue to ignore Shoelace components. This is pretty easy because they all start with `edux-`.
 
 ```js
 import Vue from 'vue'
 import App from './App.vue'
 
-Vue.config.ignoredElements = [/gd-/]
+Vue.config.ignoredElements = [/edux-/]
 
 const app = new Vue({
     render: h => h(App),
@@ -73,21 +73,21 @@ One caveat is there's currently [no support for v-model on custom elements](http
 <sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
 
-If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-gd-model) adds a custom directive that will work just like `v-model` but for Shoelace components. To install it, use this command.
+If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-edux-model) adds a custom directive that will work just like `v-model` but for Shoelace components. To install it, use this command.
 
 ```bash
-npm install @shoelace-style/vue-gd-model@1
+npm install @shoelace-style/vue-edux-model@1
 ```
 
 Next, import the directive and enable it like this.
 
 ```js
 import Vue from 'vue'
-import ShoelaceModelDirective from '@shoelace-style/vue-gd-model'
+import ShoelaceModelDirective from '@shoelace-style/vue-edux-model'
 import App from './App.vue'
 
 Vue.use(ShoelaceModelDirective)
-Vue.config.ignoredElements = [/gd-/]
+Vue.config.ignoredElements = [/edux-/]
 
 const app = new Vue({
     render: h => h(App),
@@ -96,12 +96,12 @@ const app = new Vue({
 app.$mount('#app')
 ```
 
-Now you can use the `v-gd-model` directive to keep your data in sync!
+Now you can use the `v-edux-model` directive to keep your data in sync!
 
 ```html
-<sl-input v-gd-model="name"></sl-input>
+<sl-input v-edux-model="name"></sl-input>
 ```
 
 :::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/gesdisc/components/blob/next/docs/frameworks/vue-2.md)
+Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/vue-2.md)
 :::

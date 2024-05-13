@@ -3,7 +3,7 @@
         html = html
             .replace(
                 /@gesdisc\/components/g,
-                `https://esm.sh/@gesdisc/components@${componentsVersion}`
+                `https://esm.sh/@nasa/earthdata-ux-components@${componentsVersion}`
             )
             .replace(/from 'react'/g, `from 'https://esm.sh/react@${reactVersion}'`)
             .replace(/from "react"/g, `from "https://esm.sh/react@${reactVersion}"`)
@@ -70,7 +70,7 @@
     }
 
     const componentsVersion = document.documentElement.getAttribute(
-        'data-gesdisc-components-version'
+        'data-earthdata-ux-components-version'
     )
     const reactVersion = '18.2.0'
     const cdndir = 'cdn'
@@ -81,7 +81,7 @@
     // We need the version to open
     if (!componentsVersion) {
         throw new Error(
-            'The data-gesdisc-components-version attribute is missing from <html>.'
+            'The data-earthdata-ux-components-version attribute is missing from <html>.'
         )
     }
 
@@ -203,7 +203,7 @@
             // HTML templates
             if (!isReact) {
                 htmlTemplate =
-                    `<script type="module" src="https://cdn.jsdelivr.net/npm/@gesdisc/components@${componentsVersion}/${cdndir}/gesdisc-components.js"></script>\n` +
+                    `<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@${componentsVersion}/${cdndir}/earthdata-ux-components.js"></script>\n` +
                     `\n${htmlExample}`
                 jsTemplate = ''
             }
@@ -214,10 +214,10 @@
                 jsTemplate =
                     `import React from 'https://esm.sh/react@${reactVersion}';\n` +
                     `import ReactDOM from 'https://esm.sh/react-dom@${reactVersion}';\n` +
-                    `import { setBasePath } from 'https://esm.sh/@gesdisc/components@${componentsVersion}/${cdndir}/utilities/base-path';\n` +
+                    `import { setBasePath } from 'https://esm.sh/@nasa/earthdata-ux-components@${componentsVersion}/${cdndir}/utilities/base-path';\n` +
                     `\n` +
                     `// Set the base path for component assets\n` +
-                    `setBasePath('https://esm.sh/@gesdisc/components@${componentsVersion}/${npmdir}/')\n` +
+                    `setBasePath('https://esm.sh/@nasa/earthdata-ux-components@${componentsVersion}/${npmdir}/')\n` +
                     `\n${convertModuleLinks(reactExample)}\n` +
                     `\n` +
                     `ReactDOM.render(<App />, document.getElementById('root'));`
@@ -225,12 +225,12 @@
 
             // CSS templates
             cssTemplate =
-                `@import 'https://cdn.jsdelivr.net/npm/@gesdisc/components@${componentsVersion}/${cdndir}/themes/horizon.css';\n` +
+                `@import 'https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@${componentsVersion}/${cdndir}/themes/horizon.css';\n` +
                 '\n' +
                 'body {\n' +
                 '  font: 16px sans-serif;\n' +
-                '  background-color: var(--gd-color-neutral-0);\n' +
-                '  color: var(--gd-color-neutral-900);\n' +
+                '  background-color: var(--edux-color-neutral-0);\n' +
+                '  color: var(--edux-color-neutral-900);\n' +
                 '  padding: 1rem;\n' +
                 '}'
 
@@ -241,7 +241,7 @@
                 tags: ['ges disc', 'nasa', 'earthdata', 'web components'],
                 editors,
                 head: `<meta name="viewport" content="width=device-width">`,
-                html_classes: `gd-theme-horizon`,
+                html_classes: `edux-theme-horizon`,
                 css_external: ``,
                 js_external: ``,
                 js_module: true,

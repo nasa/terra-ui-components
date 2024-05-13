@@ -1,12 +1,12 @@
-import GdTimeSeries from './time-series.component.js'
+import EduxTimeSeries from './time-series.component.js'
 
 export * from './time-series.component.js'
-export default GdTimeSeries
+export default EduxTimeSeries
 
-GdTimeSeries.define('gd-time-series')
+EduxTimeSeries.define('edux-time-series')
 
 declare global {
     interface HTMLElementTagNameMap {
-        'gd-time-series': GdTimeSeries
+        'edux-time-series': EduxTimeSeries
     }
 }

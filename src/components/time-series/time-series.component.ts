@@ -1,13 +1,13 @@
 import { html } from 'lit'
 import { property, query } from 'lit/decorators.js'
 import componentStyles from '../../styles/component.styles.js'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import styles from './time-series.styles.js'
 import type { CSSResultGroup } from 'lit'
-import GdPlot from '../plot/plot.component.js'
-import GdDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import EduxPlot from '../plot/plot.component.js'
+import EduxDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
 import { watch } from '../../internal/watch.js'
-import type { GdDateRangeChangeEvent } from '../../events/gd-date-range-change.js'
+import type { EduxDateRangeChangeEvent } from '../../events/edux-date-range-change.js'
 import { TimeSeriesController } from './time-series.controller.js'
 
 /**
@@ -16,13 +16,13 @@ import { TimeSeriesController } from './time-series.controller.js'
  * @status mvp
  * @since 1.0
  *
- * @dependency gd-plot
+ * @dependency edux-plot
  */
-export default class GdTimeSeries extends GDElement {
+export default class EduxTimeSeries extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'gd-plot': GdPlot,
-        'gd-date-range-slider': GdDateRangeSlider,
+        'edux-plot': EduxPlot,
+        'edux-date-range-slider': EduxDateRangeSlider,
     }
 
     #timeSeriesController = new TimeSeriesController(this)
@@ -57,7 +57,7 @@ export default class GdTimeSeries extends GDElement {
     @property({ attribute: 'end-date', reflect: true })
     endDate: string
 
-    @query('[part~="date-range-slider"]') dateRangeSlider: GdDateRangeSlider
+    @query('[part~="date-range-slider"]') dateRangeSlider: EduxDateRangeSlider
 
     @watch(['collection', 'variable', 'startDate', 'endDate'])
     refreshTimeSeries() {
@@ -70,7 +70,7 @@ export default class GdTimeSeries extends GDElement {
     /**
      * anytime the date range slider changes, update the start and end date and reload the time series data
      */
-    private _handleDateRangeSliderChangeEvent(event: GdDateRangeChangeEvent) {
+    private _handleDateRangeSliderChangeEvent(event: EduxDateRangeChangeEvent) {
         // update our start and end date based on the event detail
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
@@ -86,9 +86,9 @@ export default class GdTimeSeries extends GDElement {
      */
     private _renderEmptyPlot() {
         return html`
-            <gd-plot
+            <edux-plot
                 data="${JSON.stringify(this.#timeSeriesController.emptyPlotData)}"
-            ></gd-plot>
+            ></edux-plot>
         `
     }
 
@@ -96,22 +96,22 @@ export default class GdTimeSeries extends GDElement {
         return html`
             <div class="plot-container">
                 ${this.#timeSeriesController.task.value
-                    ? html`<gd-plot
+                    ? html`<edux-plot
                           data="${JSON.stringify(
                               this.#timeSeriesController.task.value
                           )}"
-                      ></gd-plot>`
+                      ></edux-plot>`
                     : this._renderEmptyPlot()}
             </div>
 
-            <gd-date-range-slider
+            <edux-date-range-slider
                 part="date-range-slider"
                 min-date=${this.minDate}
                 max-date=${this.maxDate}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
-                @gd-date-range-change="${this._handleDateRangeSliderChangeEvent}"
-            ></gd-date-range-slider>
+                @edux-date-range-change="${this._handleDateRangeSliderChangeEvent}"
+            ></edux-date-range-slider>
         `
     }
 }

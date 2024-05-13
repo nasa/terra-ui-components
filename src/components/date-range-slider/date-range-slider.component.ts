@@ -1,7 +1,7 @@
 import { property, query } from 'lit/decorators.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
-import GDElement from '../../internal/gd-element.js'
+import EduxElement from '../../internal/edux-element.js'
 import styles from './date-range-slider.styles.js'
 import type { CSSResultGroup } from 'lit'
 import noUiSlider, {
@@ -30,7 +30,7 @@ export type TimeScale = 'half-hourly' | 'hourly' | 'daily'
  *
  * @cssproperty --example - An example CSS custom property.
  */
-export default class GdDateRangeSlider extends GDElement {
+export default class EduxDateRangeSlider extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     @query('[part~="slider"]')
@@ -141,7 +141,7 @@ export default class GdDateRangeSlider extends GDElement {
         mergeTooltips(this.slider)
 
         this.slider.noUiSlider.on('change', (values: any) => {
-            this.emit('gd-date-range-change', {
+            this.emit('edux-date-range-change', {
                 detail: {
                     startDate: this._formatDate(values[0]),
                     endDate: this._formatDate(values[1]),

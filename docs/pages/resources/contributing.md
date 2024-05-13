@@ -109,10 +109,10 @@ Alternatively, you can use [Gitpod](https://www.gitpod.io/) to setup a dev envir
 
 ### Creating New Components
 
-To scaffold a new component, run the following command, replacing `gd-tag-name` with the desired tag name.
+To scaffold a new component, run the following command, replacing `edux-tag-name` with the desired tag name.
 
 ```bash
-npm run create gd-tag-name
+npm run create edux-tag-name
 ```
 
 This will generate a source file, a stylesheet, and a docs page for you. When you start the dev server, you'll find the new component in the "Components" section of the sidebar.
@@ -340,13 +340,13 @@ This creates confusion because the part will be documented, but it won't work wh
 
 ### Custom Events
 
-Components must only emit custom events, and all custom events must start with `gd-` as a namespace. For compatibility with frameworks that utilize DOM templates, custom events must have lowercase, kebab-style names. For example, use `gd-change` instead of `slChange`.
+Components must only emit custom events, and all custom events must start with `edux-` as a namespace. For compatibility with frameworks that utilize DOM templates, custom events must have lowercase, kebab-style names. For example, use `edux-change` instead of `slChange`.
 
 This convention avoids the problem of browsers lowercasing attributes, causing some frameworks to be unable to listen to them. This problem isn't specific to one framework, but [Vue's documentation](https://vuejs.org/v2/guide/components-custom-events.html#Event-Names) provides a good explanation of the problem.
 
 ### Change Events
 
-When change events are emitted by Shoelace components, they should be named `gd-change` and they should only be emitted as a result of user input. Programmatic changes, such as setting `el.value = '…'` _should not_ result in a change event being emitted. This is consistent with how native form controls work.
+When change events are emitted by Shoelace components, they should be named `edux-change` and they should only be emitted as a result of user input. Programmatic changes, such as setting `el.value = '…'` _should not_ result in a change event being emitted. This is consistent with how native form controls work.
 
 ### CSS Custom Properties
 
@@ -354,12 +354,12 @@ To expose custom properties as part of a component's API, scope them to the `:ho
 
 ```css
 :host {
-    --color: var(--gd-color-primary-500);
-    --background-color: var(--gd-color-neutral-100);
+    --color: var(--edux-color-primary-500);
+    --background-color: var(--edux-color-neutral-100);
 }
 ```
 
-Then use the following syntax for comments so they appear in the generated docs. Do not use the `--gd-` prefix, as that is reserved for design tokens that live in the global scope.
+Then use the following syntax for comments so they appear in the generated docs. Do not use the `--edux-` prefix, as that is reserved for design tokens that live in the global scope.
 
 ```js
 /**
@@ -413,7 +413,7 @@ This results in a consistent, easy to understand structure for parts. In this ex
 
 TL;DR – a component is a dependency if and only if it's rendered inside another component's shadow root.
 
-Many Shoelace components use other Shoelace components internally. For example, `<sl-button>` uses both `<sl-icon>` and `<sl-spinner>` for its caret icon and loading state, respectively. Since these components appear in the button's shadow root, they are considered dependencies of Button. Since dependencies are automatically loaded, users only need to import the button and everything will work as expected.
+Many Shoelace components use other Shoelace components internally. For example, `<edux-button>` uses both `<sl-icon>` and `<sl-spinner>` for its caret icon and loading state, respectively. Since these components appear in the button's shadow root, they are considered dependencies of Button. Since dependencies are automatically loaded, users only need to import the button and everything will work as expected.
 
 Contrast this to `<sl-select>` and `<sl-option>`. At first, one might assume that Option is a dependency of Select. After all, you can't really use Select without slotting in at least one Option. However, Option _is not_ a dependency of Select! The reason is because no Option is rendered in the Select's shadow root. Since the options are provided by the user, it's up to them to import both components independently.
 

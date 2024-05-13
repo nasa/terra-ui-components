@@ -1,13 +1,13 @@
 ---
 meta:
-    title: 'GES DISC Components: A collection of web components for working with Earthdata services.'
+    title: 'Earthdata UX Components: A collection of web components for working with Earthdata services.'
     description: Hand-crafted Earthdata custom elements.
 toc: false
 ---
 
 <div class="splash">
 <div class="splash-start">
-  <div class="text-logo">GES DISC Components</div>
+  <div class="text-logo">Earthdata UX Components</div>
 
 -   Works with all frameworks 🧩
 -   Works with CDNs 🚛
@@ -30,18 +30,18 @@ Add the following code to your page.
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/themes/horizon.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@gesdisc/components@%VERSION%/%CDNDIR%/gesdisc-components-autoloader.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/horizon.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/earthdata-ux-components-autoloader.js"></script>
 ```
 
-Now you have access to all of the GES DISC components! Try adding a button:
+Now you have access to all of the Earthdata UX components! Try adding a button:
 
 ```html:preview:expanded:no-codepen
-<sl-button>Click me</sl-button>
+<edux-button>Click me</edux-button>
 ```
 
 :::tip
-This will activate GES DISC Components experimental autoloader, which registers components on the fly as you use them. To learn more about it, or for other ways to install GES DISC Components, refer to the [installation instructions](getting-started/installation).
+This will activate Earthdata UX Components experimental autoloader, which registers components on the fly as you use them. To learn more about it, or for other ways to install Earthdata UX Components, refer to the [installation instructions](getting-started/installation).
 :::
 
 ## New to Web Components?
@@ -56,13 +56,13 @@ Unfortunately, _framework-specific_ components fail us in a number of ways:
 
 Web components solve these problems. They're [supported by all modern browsers](https://caniuse.com/#feat=custom-elementsv1), they're framework-agnostic, and they're [part of the standard](https://developer.mozilla.org/en-US/docs/Web/Web_Components), so we know they'll be supported for many years to come.
 
-This is the technology that GES DISC Components is built on.
+This is the technology that Earthdata UX Components is built on.
 
 ## What Problem Does This Solve?
 
-GES DISC Components provides a collection of professionally designed, highly customizable UI components built on a framework agnostic technology.
+Earthdata UX Components provides a collection of professionally designed, highly customizable UI components built on a framework agnostic technology.
 
-With GES DISC Components, you can:
+With Earthdata UX Components, you can:
 
 -   Start building things faster (no need to roll your own code)
 -   Build multiple apps with different frameworks that all share the same UI components
@@ -72,7 +72,7 @@ With GES DISC Components, you can:
 
 ## Browser Support
 
-GES DISC Components is tested in the latest two versions of the following browsers.
+Earthdata UX Components is tested in the latest two versions of the following browsers.
 
 <img src="/assets/images/chrome.png" alt="Chrome" width="64" height="64">
 <img src="/assets/images/edge.png" alt="Edge" width="64" height="64">
@@ -82,4 +82,4 @@ GES DISC Components is tested in the latest two versions of the following browse
 
 Critical bug fixes in earlier versions will be addressed based on their severity and impact.
 
-If you need to support IE11 or pre-Chromium Edge, this library isn't for you. Although web components can (to some degree) be polyfilled for legacy browsers, supporting them is outside the scope of this project. If you're using GES DISC Components in such a browser, you're gonna have a bad time. ⛷
+If you need to support IE11 or pre-Chromium Edge, this library isn't for you. Although web components can (to some degree) be polyfilled for legacy browsers, supporting them is outside the scope of this project. If you're using Earthdata UX Components in such a browser, you're gonna have a bad time. ⛷

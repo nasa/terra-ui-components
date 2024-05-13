@@ -1,12 +1,12 @@
-import GdMap from './map.component.js';
+import EduxMap from './map.component.js'
 
-export * from './map.component.js';
-export default GdMap;
+export * from './map.component.js'
+export default EduxMap
 
-GdMap.define('gd-map');
+EduxMap.define('edux-map')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'gd-map': GdMap;
+        'edux-map': EduxMap
     }
 }

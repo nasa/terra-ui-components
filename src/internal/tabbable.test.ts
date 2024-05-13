@@ -4,9 +4,9 @@ import { activeElements, getDeepestActiveElement } from './active-elements.js'
 import { clickOnElement } from './test.js'
 import { html } from 'lit'
 import { sendKeys } from '@web/test-runner-commands'
-import type { SlDialog } from '../gesdisc-components.js'
+import type { SlDialog } from '../earthdata-ux-components.js'
 
-import '../../../dist/gesdisc-components.js'
+import '../../../dist/earthdata-ux-components.js'
 
 async function holdShiftKey(callback: () => Promise<void>) {
     await sendKeys({ down: 'Shift' })
@@ -34,13 +34,13 @@ window.customElements.define(
         }
         connectedCallback() {
             this.shadowRoot!.innerHTML = `
-      <gd-drawer>
+      <edux-drawer>
         <slot name="label" slot="label"></slot>
 
         <slot></slot>
 
         <slot name="footer" slot="footer"></slot>
-      </gd-drawer>
+      </edux-drawer>
     `
         }
     }
@@ -50,13 +50,13 @@ it('Should allow tabbing to slotted elements', async () => {
     const el = await fixture(html`
     <tab-test-1>
       <div slot="label">
-        <gd-button id="focus-1">Focus 1</gd-button>
+        <edux-button id="focus-1">Focus 1</edux-button>
       </div>
 
       <div>
-        <!-- Focus 2 lives as the close-button from <gd-drawer> -->
-        <gd-button id="focus-3">Focus 3</gd-button>
-        <button id="focus-4">Focus 4</gd-button>
+        <!-- Focus 2 lives as the close-button from <edux-drawer> -->
+        <edux-button id="focus-3">Focus 3</edux-button>
+        <button id="focus-4">Focus 4</edux-button>
         <input id="focus-5" value="Focus 5">
       </div>
 
@@ -67,7 +67,7 @@ it('Should allow tabbing to slotted elements', async () => {
     </tab-test-1>
   `)
 
-    const drawer = el.shadowRoot?.querySelector('gd-drawer')
+    const drawer = el.shadowRoot?.querySelector('edux-drawer')
 
     if (drawer === null || drawer === undefined)
         throw Error('Could not find drawer inside of the test element')
@@ -79,13 +79,13 @@ it('Should allow tabbing to slotted elements', async () => {
     const focusZero = drawer.shadowRoot?.querySelector("[role='dialog']")
 
     if (focusZero === null || focusZero === undefined)
-        throw Error('Could not find dialog panel inside <gd-drawer>')
+        throw Error('Could not find dialog panel inside <edux-drawer>')
 
     const focusOne = el.querySelector('#focus-1')
     const focusTwo = drawer.shadowRoot?.querySelector("[part~='close-button']")
 
     if (focusTwo === null || focusTwo === undefined)
-        throw Error('Could not find close button inside <gd-drawer>')
+        throw Error('Could not find close button inside <edux-drawer>')
 
     const focusThree = el.querySelector('#focus-3')
     const focusFour = el.querySelector('#focus-4')
@@ -153,16 +153,16 @@ it('Should allow tabbing to slotted elements', async () => {
 
 it.skip('Should account for when focus is changed from outside sources (like clicking)', async () => {
     const dialog = await fixture(html`
-        <gd-dialog open="" label="Dialog" class="dialog-overview">
+        <edux-dialog open="" label="Dialog" class="dialog-overview">
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-            <gd-input placeholder="tab to me"></gd-input>
-            <gd-button slot="footer" variant="primary">Close</gd-button>
-        </gd-dialog>
+            <edux-input placeholder="tab to me"></edux-input>
+            <edux-button slot="footer" variant="primary">Close</edux-button>
+        </edux-dialog>
     `)
 
-    const inputEl = dialog.querySelector('gd-input')!
-    const closeButton = dialog.shadowRoot!.querySelector('gd-icon-button')!
-    const footerButton = dialog.querySelector('gd-button')!
+    const inputEl = dialog.querySelector('edux-input')!
+    const closeButton = dialog.shadowRoot!.querySelector('edux-icon-button')!
+    const footerButton = dialog.querySelector('edux-button')!
 
     expect(activeElementsArray()).to.not.include(inputEl)
 
@@ -193,28 +193,28 @@ it('Should respect nested modal instances', async () => {
     /* eslint-disable */
     await fixture(html`
         <div>
-            <gd-button
+            <edux-button
                 id="open-dialog-1"
                 @click=${() => dialogOne().show()}
-            ></gd-button>
-            <gd-dialog id="dialog-1" label="Dialog 1">
-                <gd-button @click=${() => dialogTwo().show()} id="open-dialog-2"
-                    >Open Dialog 2</gd-button
+            ></edux-button>
+            <edux-dialog id="dialog-1" label="Dialog 1">
+                <edux-button @click=${() => dialogTwo().show()} id="open-dialog-2"
+                    >Open Dialog 2</edux-button
                 >
-                <gd-button slot="footer" variant="primary">Close</gd-button>
-            </gd-dialog>
+                <edux-button slot="footer" variant="primary">Close</edux-button>
+            </edux-dialog>
 
-            <gd-dialog id="dialog-2" label="Dialog 2">
-                <gd-input
+            <edux-dialog id="dialog-2" label="Dialog 2">
+                <edux-input
                     id="focus-1"
                     autofocus=""
                     placeholder="I will have focus when the dialog is opened"
-                ></gd-input>
-                <gd-input id="focus-2" placeholder="Second input"></gd-input>
-                <gd-button slot="footer" variant="primary" class="close-2"
-                    >Close</gd-button
+                ></edux-input>
+                <edux-input id="focus-2" placeholder="Second input"></edux-input>
+                <edux-button slot="footer" variant="primary" class="close-2"
+                    >Close</edux-button
                 >
-            </gd-dialog>
+            </edux-dialog>
         </div>
     `)
     /* eslint-enable */

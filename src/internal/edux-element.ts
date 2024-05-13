@@ -79,7 +79,7 @@ type ValidEventTypeMap =
     | EventTypesWithRequiredDetail
     | EventTypesWithoutRequiredDetail
 
-export default class GDElement extends LitElement {
+export default class EduxElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
@@ -122,7 +122,7 @@ export default class GDElement extends LitElement {
     ) {
         const currentlyRegisteredConstructor = customElements.get(name) as
             | CustomElementConstructor
-            | typeof GDElement
+            | typeof EduxElement
 
         if (!currentlyRegisteredConstructor) {
             customElements.define(
@@ -158,19 +158,19 @@ export default class GDElement extends LitElement {
         )
     }
 
-    static dependencies: Record<string, typeof GDElement> = {}
+    static dependencies: Record<string, typeof EduxElement> = {}
 
     constructor() {
         super()
-        Object.entries((this.constructor as typeof GDElement).dependencies).forEach(
+        Object.entries((this.constructor as typeof EduxElement).dependencies).forEach(
             ([name, component]) => {
-                ;(this.constructor as typeof GDElement).define(name, component)
+                ;(this.constructor as typeof EduxElement).define(name, component)
             }
         )
     }
 }
 
-export interface GDFormControl extends GDElement {
+export interface EduxFormControl extends EduxElement {
     // Form attributes
     name: string
     value: unknown

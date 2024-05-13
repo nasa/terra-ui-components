@@ -1,12 +1,12 @@
-import GdSpatialPicker from './spatial-picker.component.js';
+import EduxSpatialPicker from './spatial-picker.component.js'
 
-export * from './spatial-picker.component.js';
-export default GdSpatialPicker;
+export * from './spatial-picker.component.js'
+export default EduxSpatialPicker
 
-GdSpatialPicker.define('gd-spatial-picker');
+EduxSpatialPicker.define('edux-spatial-picker')
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'gd-spatial-picker': GdSpatialPicker;
-  }
+    interface HTMLElementTagNameMap {
+        'edux-spatial-picker': EduxSpatialPicker
+    }
 }
