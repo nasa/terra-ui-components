@@ -87,8 +87,6 @@ export default class EduxMap extends EduxElement {
 
         if (this.showShapeSelector) {
             this.listOfShapes = await getShapeFiles()
-
-            console.log('this.listOfShapes', this.listOfShapes)
         }
     }
 
