@@ -32,7 +32,7 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addGlobalData('layout', 'default') // make 'default' the default layout
     eleventyConfig.addGlobalData('toc', true) // enable the table of contents
     eleventyConfig.addGlobalData('meta', {
-        title: 'GES DISC Components',
+        title: 'Earthdata UX Components',
         description:
             'A collection of web components for working with Earthdata services.',
         image: 'images/og-image.png',

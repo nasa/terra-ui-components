@@ -760,7 +760,8 @@ pre:hover .copy-code-button,
 }
 
 #sidebar > header a {
-    display: block;
+    display: flex;
+    align-items: center;
 }
 
 #sidebar nav a {
@@ -807,9 +808,9 @@ pre:hover .copy-code-button,
 
 #sidebar > header img {
     display: block;
-    width: 100%;
+    width: 50px;
     height: auto;
-    margin: 0 auto;
+    margin-right: 8px;
 }
 
 @media screen and (max-width: 900px) {

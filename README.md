@@ -1,4 +1,4 @@
-# NASA GES DISC Components
+# Earthdata UX Components
 
 Intro
 
@@ -42,10 +42,10 @@ This will generate a source file, a stylesheet, and a docs page for you. When yo
 
 ### Contributing
 
-GES DISC Components is an open source project and contributions are encouraged! If you're interesting in contributing, please review the [contribution guidelines](CONTRIBUTING.md) first.
+Earthdata UX Components is an open source project and contributions are encouraged! If you're interesting in contributing, please review the [contribution guidelines](CONTRIBUTING.md) first.
 
 ## License
 
-GES DISC Components were created by the NASA GES DISC team, on top of the amazing library Shoelace.
+Earthdata UX Components were created by the NASA GES DISC team, on top of the amazing library Shoelace.
 
 Shoelace was created by [Cory LaViska](https://twitter.com/claviska) and is available under the terms of the MIT license.

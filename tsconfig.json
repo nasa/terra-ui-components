@@ -17,8 +17,8 @@
     "strictPropertyInitialization": false,
     "strictFunctionTypes": false,
     "noImplicitThis": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "esModuleInterop": true,
@@ -30,7 +30,6 @@
     "useUnknownInCatchVariables": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "resolveJsonModule": true,
     "types": [
       "mocha",
       "user-agent-data-types"

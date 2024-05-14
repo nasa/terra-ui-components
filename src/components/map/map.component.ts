@@ -1,19 +1,12 @@
-// import * as L from 'leaflet'
+import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import GDElement from '../../internal/edux-element.js'
+import EduxElement from '../../internal/edux-element.js'
+import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
-import { getShapeFiles } from './services/shapes.js'
-
-import 'leaflet-draw'
-import type { CSSResultGroup } from 'lit'
-import { watch } from '../../internal/watch.js'
 import { Leaflet } from './services/leaflet-utils.js'
-
-// There is a leaflet bug with type sometimes being undefined. This is a temporary fix
-// @ts-expect-error
-window.type = ''
+import { getShapeFiles } from './services/shapes.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -22,7 +15,7 @@ window.type = ''
  * @since 1.0
  *
  */
-export default class GdMap extends GDElement {
+export default class EduxMap extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
@@ -78,9 +71,9 @@ export default class GdMap extends GDElement {
     mapElement!: HTMLDivElement
 
     @watch('value')
-    valueChanged(oldValue: any, newValue: any) {
+    valueChanged(_oldValue: any, newValue: any) {
         if (newValue.length > 0) {
-            this.map.setValue(this.value)
+            this.map?.setValue(this.value)
         }
     }
 
@@ -99,13 +92,14 @@ export default class GdMap extends GDElement {
         }
     }
 
-    firstUpdated() {
-        this.map.initializeMap(this.mapElement, {
+    async firstUpdated() {
+        await this.map.initializeMap(this.mapElement, {
             zoom: this.zoom,
             minZoom: this.minZoom,
             maxZoom: this.maxZoom,
             showCoordTracker: this.showCoordTracker,
             showNavigation: this.showNavigation,
+            initialValue: this.value,
         })
 
         this.map.on('draw', (layer: any) =>
@@ -117,7 +111,7 @@ export default class GdMap extends GDElement {
             })
         )
 
-        this.map.on('clear', (layer: any) =>
+        this.map.on('clear', (_e: any) =>
             this.emit('edux-map-change', {
                 detail: {
                     cause: 'clear',
@@ -161,11 +155,16 @@ export default class GdMap extends GDElement {
 
     render() {
         return html`
-            <!-- @ts-ignore -->
-            <style>
-                @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-                @import url('https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css');
+            <link
+                rel="stylesheet"
+                href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            />
+            <link
+                rel="stylesheet"
+                href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"
+            />
 
+            <style>
                 :host {
                     width: ${this.width + 32}px;
                 }

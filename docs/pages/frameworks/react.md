@@ -1,16 +1,16 @@
 ---
 meta:
     title: React
-    description: Tips for using GES DISC Components in your React app.
+    description: Tips for using Earthdata UX Components in your React app.
 ---
 
 # React
 
-GES DISC Components offers a React version of every component to provide an idiomatic experience for React users. You can easily toggle between HTML and React examples throughout the documentation.
+Earthdata UX Components offers a React version of every component to provide an idiomatic experience for React users. You can easily toggle between HTML and React examples throughout the documentation.
 
 ## Installation
 
-To add GES DISC Components to your React app, install the package from npm.
+To add Earthdata UX Components to your React app, install the package from npm.
 
 ```bash
 npm install @nasa/earthdata-ux-components
@@ -40,7 +40,7 @@ Preact users facing type errors using components may benefit from setting "paths
 
 ### Importing Components
 
-Every GES DISC component is available to import as a React component. Note that we're importing the `<EduxButton>` _React component_ instead of the `<edux-button>` _custom element_ in the example below.
+Every Earthdata UX component is available to import as a React component. Note that we're importing the `<EduxButton>` _React component_ instead of the `<edux-button>` _custom element_ in the example below.
 
 ```jsx
 import Button from '@nasa/earthdata-ux-components/%NPMDIR%/react/button'
