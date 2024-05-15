@@ -6,6 +6,7 @@ export { default as EduxSpatialPicker } from './components/spatial-picker/spatia
 export { default as EduxVariableCombobox } from './components/variable-combobox/variable-combobox.js'
 export { default as EduxButton } from './components/button/button.js'
 export { default as EduxIcon } from './components/icon/icon.js'
+export { default as EduxLoader } from './components/loader/loader.js';
 /* plop:component */
 
 // Utilities
