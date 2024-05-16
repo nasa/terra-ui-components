@@ -20,8 +20,6 @@ import { classMap } from 'lit/directives/class-map.js'
  */
 export default class EduxLoader extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
-    @query('#progress') progressEl: HTMLElement
-    @query('#fg') foregroundEl: HTMLElement
 
     /** The loader's size */
     @property({ reflect: true }) size:
@@ -37,8 +35,6 @@ export default class EduxLoader extends EduxElement {
     @property({type: String}) 
     percent: string = '0'
 
-    @state() _currentPercent = 0
-
     formatPercent (percent: string) {
         if(parseInt(percent) > 100) {
             percent = '100'
@@ -47,7 +43,6 @@ export default class EduxLoader extends EduxElement {
     }
 
     render() {
-        this._currentPercent = parseInt(this.percent)
 
         return html` 
             <div 
