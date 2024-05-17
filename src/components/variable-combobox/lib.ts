@@ -58,12 +58,16 @@ function groupDocsByCollection(docs: ListItem[]): GroupedListItem[] {
 function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
     return docs.map(doc => {
         const renderableData = {
+            collectionBeginningDateTime: doc['Collection.BeginDateTime'],
+            collectionEndingDateTime: doc['Collection.EndDateTime'],
             collectionLongName: doc['Collection.LongName'],
             collectionShortName: doc['Collection.ShortName'],
             collectionVersion: doc['Collection.Version'],
+            name: doc['Variable.Name'],
             longName: doc['Variable.LongName'],
             standardName: doc['Variable.StandardName'],
             units: doc['Variable.Units'],
+            entryId: `${doc['Collection.ShortName']}_${doc['Collection.Version']}_${doc['Variable.Name']}`,
         }
 
         const eventDetail = JSON.stringify({
@@ -71,8 +75,10 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             collectionEndingDateTime: doc['Collection.EndDateTime'],
             collectionShortName: renderableData.collectionShortName,
             collectionVersion: renderableData.collectionVersion,
+            name: renderableData.name,
             longName: renderableData.longName,
             standardName: renderableData.standardName,
+            entryId: renderableData.entryId,
         })
 
         return { ...renderableData, eventDetail }

@@ -41,6 +41,7 @@ export default css`
         height: var(--edux-block-size, var(--host-height));
         inline-size: var(--edux-inline-size, 100%);
         position: relative;
+        z-index: 1;
     }
 
     :host([hide-help]) {
