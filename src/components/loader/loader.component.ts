@@ -1,4 +1,4 @@
-import { property, query, state } from 'lit/decorators.js'
+import { property} from 'lit/decorators.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import EduxElement from '../../internal/edux-element.js'
