@@ -10,13 +10,17 @@ layout: component
 ### Default Spatial Picker
 
 ```html:preview
-<edux-spatial-picker></edux-spatial-picker>
+<div style="height: 300px;">
+    <edux-spatial-picker initial-value="-100, -50, 30, 50" ></edux-spatial-picker>
+</div>
 ```
 
 ### Configured Spatial Picker
 
 ```html:preview
-<edux-spatial-picker show-navigation show-shape-selector show-coord-tracker></edux-spatial-picker>
+<div style="height: 300px;">
+<edux-spatial-picker has-navigation has-shape-selector has-coord-tracker></edux-spatial-picker>
+</div>
 ```
 
 [component-metadata:edux-spatial-picker]

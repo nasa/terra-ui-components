@@ -4,9 +4,9 @@ import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
-import { property, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
+import { StringifyBoundingBox, parseBoundingBox } from '../map/leaflet-utils.js'
 import EduxMap from '../map/map.component.js'
-import { parseBoundingBox } from '../map/services/leaflet-utils.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -49,28 +49,49 @@ export default class EduxSpatialPicker extends EduxElement {
     @property({ type: Number }) height: number = 336
 
     /**
-     * show map navigation toolbar
+     * has map navigation toolbar
      */
-    @property({ attribute: 'show-navigation', type: Boolean })
-    showNavigation: boolean = true
+    @property({ attribute: 'has-navigation', type: Boolean })
+    hasNavigation: boolean = true
 
     /**
-     * show coordinate tracker
+     * has coordinate tracker
      */
-    @property({ attribute: 'show-coord-tracker', type: Boolean })
-    showCoordTracker: boolean = true
+    @property({ attribute: 'has-coord-tracker', type: Boolean })
+    hasCoordTracker: boolean = true
 
     /**
-     * show shape selector
+     * has shape selector
      */
-    @property({ attribute: 'show-shape-selector', type: Boolean })
-    showShapeSelector: boolean = false
+    @property({ attribute: 'has-shape-selector', type: Boolean })
+    hasShapeSelector: boolean = false
+
+    /**
+     * initialValue of spatial picker
+     */
+    @property({ attribute: 'initial-value' })
+    initialValue: string = ''
+
+    /**
+     *  toggle display of spatial picker label
+     */
+    @property({ type: Boolean })
+    hideLabel: boolean = true
+
+    /**
+     *  spatial picker label
+     */
+    @property()
+    label: string = ''
 
     @state()
-    showMap: boolean = false
+    isExpanded: boolean = false
 
     @state()
     mapValue: any
+
+    @query('.spatial-picker__input')
+    spatialInput: HTMLInputElement
 
     private _blur(e: Event) {
         const inputValue = (e.target as HTMLInputElement).value
@@ -79,7 +100,45 @@ export default class EduxSpatialPicker extends EduxElement {
     }
 
     private _click() {
-        this.showMap = !this.showMap
+        this.isExpanded = !this.isExpanded
+    }
+
+    open() {
+        this.isExpanded = true
+    }
+
+    close() {
+        this.isExpanded = false
+    }
+
+    private _handleMapChange(event: CustomEvent) {
+        switch (event.detail.cause) {
+            case 'clear':
+                this.spatialInput.value = ''
+                break
+
+            case 'draw':
+                if (event.detail.bounds) {
+                    this.spatialInput.value = StringifyBoundingBox(
+                        event.detail.bounds
+                    )
+                } else if (event.detail.latLng) {
+                    this.spatialInput.value = StringifyBoundingBox(
+                        event.detail.latLng
+                    )
+                }
+                break
+
+            default:
+                break
+        }
+    }
+
+    firstUpdated() {
+        if (this.initialValue) {
+            this.mapValue =
+                this.initialValue === '' ? [] : parseBoundingBox(this.initialValue)
+        }
     }
 
     renderMap() {
@@ -89,10 +148,11 @@ export default class EduxSpatialPicker extends EduxElement {
             zoom=${this.zoom}
             width=${this.width ? this.width : this.getBoundingClientRect().width - 64}
             height=${this.height}
-            ?show-coord-tracker=${this.showCoordTracker}
+            ?has-coord-tracker=${this.hasCoordTracker}
             .value=${this.mapValue}
-            ?show-navigation=${this.showNavigation}
-            ?show-shape-selector=${this.showShapeSelector}
+            ?has-navigation=${this.hasNavigation}
+            ?has-shape-selector=${this.hasShapeSelector}
+            @edux-map-change=${this._handleMapChange}
         >
         </edux-map>`
     }
@@ -101,15 +161,30 @@ export default class EduxSpatialPicker extends EduxElement {
         return html`
             <div class="spatial-picker">
                 <div class="spatial-picker__input_fields">
+                    <label
+                        for="spatial-picker__input"
+                        class=${this.hideLabel
+                            ? 'sr-only'
+                            : 'spatial-picker__input_label'}
+                        >${this.label}</label
+                    >
                     <input
+                        id="spatial-picker__input"
+                        value=${this.initialValue}
                         type="text"
                         class="spatial-picker__input form-control"
                         placeholder="-180, -90, 180, 90"
+                        aria-controls="map"
+                        aria-expanded=${this.isExpanded}
                         @blur=${this._blur}
                     />
                     <button
+                        aria-controls="map"
+                        aria-expanded=${this.isExpanded}
+                        aria-label="Spatial picker map"
                         class="spatial-picker__input_icon_button"
                         @click=${this._click}
+                        type="button"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -127,7 +202,7 @@ export default class EduxSpatialPicker extends EduxElement {
                         </svg>
                     </button>
                 </div>
-                ${this.showMap ? this.renderMap() : null}
+                ${this.isExpanded ? this.renderMap() : null}
             </div>
         `
     }

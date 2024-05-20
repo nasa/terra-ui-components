@@ -1,4 +1,4 @@
-import type { MapEventDetail } from '../components/map/services/leaflet-utils.js'
+import type { MapEventDetail } from '../components/map/type.js'
 
 export type EduxMapEvent = CustomEvent<MapEventDetail>
 
