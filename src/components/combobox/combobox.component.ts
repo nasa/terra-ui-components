@@ -10,7 +10,7 @@ import styles from './combobox.styles.js'
 import { cache } from 'lit/directives/cache.js'
 import { choose } from 'lit/directives/choose.js'
 import { map } from 'lit/directives/map.js'
-import { clearSelection, walkToOption } from '../variable-combobox/lib.js'
+import { clearSelection, walkToOption } from '../combobox/lib.js'
 import {
     SearchableListType,
     type Content,
@@ -134,7 +134,7 @@ export default class EduxCombobox extends EduxElement {
                 'items.title', // to search in the title of each ListItem
                 'items.value', // to search in the value of each ListItem
             ],
-            useExtendedSearch: false,
+            useExtendedSearch: true,
         })
     }
 
@@ -477,7 +477,12 @@ export default class EduxCombobox extends EduxElement {
                 class="search-results"
             >
                 ${choose(this.status, [
-                    ['INITIAL', this.#renderLoading],
+                    [
+                        'INITIAL',
+                        () => {
+                            return html``
+                        },
+                    ],
                     ['PENDING', this.#renderLoading],
                     [
                         'COMPLETE',

@@ -301,10 +301,9 @@ export default css`
         width: 1px;
     }
 
-    .external
-
     /* General reset for skeleton elements */
-.skeleton, .skeleton * {
+    .skeleton,
+    .skeleton * {
         margin: 0;
         padding: 0;
         list-style: none;
