@@ -8,10 +8,6 @@ export default css`
         height: 100px;
     }
 
-    .root {
-        --border-color: 
-    }
-
     .loader {
         position: relative;
         width: var(--size);        
@@ -27,8 +23,7 @@ export default css`
 
     .loader--light {
         color: black;
-        background-color: white;
-    }
+        background-color: white;    }
 
     /* Loader sizes */
 
@@ -86,7 +81,6 @@ export default css`
         stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
         transition: stroke-dasharray 0.3s linear 0s;                      /* Defines how --dash value changes to stroke-dasharray are animated */
         stroke: #1c68e3;
-        /*stroke: #ccc; */
     }
 
     @property --progress {      /* Registers and describes the custom property and variable with the browser. */

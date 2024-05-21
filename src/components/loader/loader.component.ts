@@ -64,7 +64,6 @@ export default class EduxLoader extends EduxElement {
                 }
 
                 <svg 
-                    viewBox=${this.size == 'small' ? '0 0 30 30' : '0 0 52 52'} 
                     style="--progress: ${this.percent}" class="circular-progress">
                     <circle class="bg"></circle>
                     <circle class="fg"></circle>
