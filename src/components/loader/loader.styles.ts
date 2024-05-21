@@ -8,10 +8,6 @@ export default css`
         height: 100px;
     }
 
-    .root {
-        --border-color: 
-    }
-
     .loader {
         position: relative;
         width: var(--size);        
@@ -53,8 +49,6 @@ export default css`
         position: absolute;
         top: 17px;
         padding-left: 4px;
-        font-family: sans-serif;
-        font-size: 11px;
         letter-spacing: .1rem;
         text-align: center;
     }
@@ -77,7 +71,7 @@ export default css`
     }
 
     .circular-progress circle.bg {
-        stroke: #ccc;
+        stroke: var(--edux-color-carbon-20);
     }
 
     .circular-progress circle.fg {
@@ -85,8 +79,7 @@ export default css`
         transform-origin: var(--half-size) var(--half-size);
         stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
         transition: stroke-dasharray 0.3s linear 0s;                      /* Defines how --dash value changes to stroke-dasharray are animated */
-        stroke: #1c68e3;
-        /*stroke: #ccc; */
+        stroke: var(--edux-color-nasa-blue);
     }
 
     @property --progress {      /* Registers and describes the custom property and variable with the browser. */

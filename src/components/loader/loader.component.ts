@@ -61,7 +61,7 @@ export default class EduxLoader extends EduxElement {
             >
                 ${this.size === 'large'? 
                     html `
-                        <div class="percent">
+                        <div class="percent number-11">
                             ${this.formatPercent(this.percent)}
                         </div>
                     `
@@ -69,7 +69,6 @@ export default class EduxLoader extends EduxElement {
                 }
 
                 <svg 
-                    viewBox=${this.size == 'small' ? '0 0 30 30' : '0 0 52 52'} 
                     style="--progress: ${this.percent}" class="circular-progress">
                     <circle class="bg"></circle>
                     <circle class="fg"></circle>
