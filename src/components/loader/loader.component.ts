@@ -1,6 +1,5 @@
 import { property, query, state } from 'lit/decorators.js'
 import { html } from 'lit'
-import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import EduxElement from '../../internal/edux-element.js'
 import styles from './loader.styles.js'
@@ -48,7 +47,6 @@ export default class EduxLoader extends EduxElement {
     }
 
     render() {
-        const percentText = this.percent > '0' ? this.percent + '%' : ''
         this._currentPercent = parseInt(this.percent)
 
         return html` 

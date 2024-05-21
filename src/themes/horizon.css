@@ -1,3 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
+
 :root,
 :host,
 .edux-theme-horizon {
@@ -242,8 +246,63 @@
     --edux-color-rose-950: hsl(341.3 70.1% 17.1%);
 
     /*
-   * Theme Tokens
-   */
+    * Theme Tokens
+    */
+
+    /* Horizon Design System */
+
+    /* HDS Font  */
+    --edux-font-display: 'Inter', sans-serif;
+    --edux-font-heading: 'Inter', sans-serif;
+    --edux-font-body: 'Public Sans', sans-serif;
+    --edux-font-number-label: 'DM Mono', monospace;
+    
+    --edux-font-bold: 700;
+    --edux-font-semi-bold: 600;
+    --edux-font-normal: 400;
+    --edux-font-light: 300;
+
+    /* Primary Palette
+     * Our primary palette consists of black, white, red, and blue. These colors are used in 
+     * logical ways throughout the site to highlight actions when they are important. We use 
+     * a restricted palette to give attention and hierarchy to our content without distraction.
+     */
+    --edux-color-carbon-black: hsla(0, 0%, 0%, 1);
+    --edux-color-spacesuit-white: hsla(0, 100%, 100%, 1);
+    --edux-color-nasa-red: hsla(3, 91%, 59%, 1);
+    --edux-color-nasa-blue: hsla(217, 78%, 50%, 1);
+
+    /* Extended Palette 
+     * The extended palette consists of a tint and shade for the brand colors in the primary palette. 
+     * Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible. 
+     */
+    --edux-color-nasa-red-tint: hsla(3, 100%, 66%, 1);
+    --edux-color-nasa-red-shade: hsla(357, 99%, 36%, 1);
+    --edux-color-nasa-blue-tint: hsla(212, 100%, 58%, 1);
+    --edux-color-nasa-blue-shade: hsla(218, 86%, 31%, 1);
+
+    /* Neutrals
+     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+     */
+    --edux-color-carbon-90: hsla(240, 8%, 10%, 1);
+    --edux-color-carbon-80: hsla(240, 4%, 19%, 1);
+    --edux-color-carbon-70: hsla(240, 2%, 27%, 1);
+    --edux-color-carbon-60: hsla(240, 2%, 35%, 1);    /* Text color on White BG */
+    --edux-color-carbon-50: hsla(240, 1%, 47%, 1);
+    --edux-color-carbon-40: hsla(240, 2%, 59%, 1);
+    --edux-color-carbon-30: hsla(240, 1%, 73%, 1);
+    --edux-color-carbon-20: hsla(0, 0%, 82%, 1);
+    --edux-color-carbon-10: hsla(0, 0%, 89%, 1);
+    --edux-color-carbon-5: hsla(0, 0%, 96%, 1);
+
+    /* Additional Colors 
+     * International Orange and Active Green are colors that are used sparingly and intentionally.
+     */
+    --edux-color-international-orange: hsla(23, 83%, 53%, 1);
+    --edux-color-active-green: hsla(145, 67%, 57%, 1);
+
+    /* END - Horizon Design Systems
 
     /* Primary */
     --edux-color-primary-50: var(--edux-color-sky-50);
