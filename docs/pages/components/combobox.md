@@ -75,10 +75,14 @@ function cycleSearchableList() {
     // Update the searchableList property with the next type
     element.status = statuses[currentStatusIndex]
 
-    element.content = {
+    const content = {
         type: types[currentTypeIndex],
         ...(statuses[currentStatusIndex] === 'ERROR' ? {data: 'An Error Occurred'} : {data: data[currentTypeIndex]})
     };
+
+    element.content = content
+
+    console.log("element.content", JSON.stringify(content))
 
     document.querySelector("#cycleList").innerHTML = "Cycle Statuses" + " | " + statuses[currentStatusIndex]
 
@@ -108,7 +112,7 @@ button.addEventListener('click', cycleSearchableList);
 ### Default Combobox
 
 ```html:preview
-<edux-combobox></edux-combobox>
+<edux-combobox status='COMPLETE' content='{"type":"GroupedListItem","data":[{"name":"Group1","items":[{"name":"Item1","title":"Title1","value":"Value1"},{"name":"Item2","title":"Title2","value":"Value2"},{"name":"Item3","title":"Title3","value":"Value3"}]},{"name":"Group2","items":[{"name":"Item4","title":"Title4","value":"Value4"},{"name":"Item5","title":"Title5","value":"Value5"},{"name":"Item6","title":"Title6","value":"Value6"}]}]}'></edux-combobox>
 ```
 
 ### Configured Variable Combobox

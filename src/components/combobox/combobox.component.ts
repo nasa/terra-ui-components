@@ -10,6 +10,7 @@ import styles from './combobox.styles.js'
 import { cache } from 'lit/directives/cache.js'
 import { choose } from 'lit/directives/choose.js'
 import { map } from 'lit/directives/map.js'
+import { watch } from '../../internal/watch.js'
 import { clearSelection, walkToOption } from '../combobox/lib.js'
 import {
     SearchableListType,
@@ -97,7 +98,7 @@ export default class EduxCombobox extends EduxElement {
     /**
      * content or data of the combobox. This could be of type string | GroupedListItem[] | ListItem[] | undefined
      */
-    @property({ type: Object })
+    @property({ type: Object, reflect: true })
     content: Content = {
         type: SearchableListType.GroupedListItem,
         data: [],
@@ -142,6 +143,26 @@ export default class EduxCombobox extends EduxElement {
         super.disconnectedCallback()
 
         globalThis.addEventListener('click', this.#manageListboxVisibility)
+    }
+
+    @watch('content')
+    contentChanged(_oldValue: any, newValue: any) {
+        const list =
+            newValue.type === 'GroupedListItem' || newValue.type === 'ListItem'
+                ? newValue.data
+                : []
+
+        this.#searchEngine = new Fuse(list as any, {
+            //* @see https://www.fusejs.io/examples.html#nested-search
+            findAllMatches: true,
+            keys: [
+                'name', // to search in the name of the GroupedListItem
+                'items.name', // to search in the name of each ListItem
+                'items.title', // to search in the title of each ListItem
+                'items.value', // to search in the value of each ListItem
+            ],
+            useExtendedSearch: true,
+        })
     }
 
     #renderListItem = (listItem: ListItem, index: number) => {
@@ -242,7 +263,7 @@ export default class EduxCombobox extends EduxElement {
 
         this.searchResults = this.#searchEngine
             ?.search(target.value)
-            .map(({ item }) => item) as GroupedListItem[]
+            .map(({ item }) => item) as GroupedListItem[] | ListItem[]
     }
 
     #handleOptionClick = (event: Event) => {
@@ -480,7 +501,7 @@ export default class EduxCombobox extends EduxElement {
                     [
                         'INITIAL',
                         () => {
-                            return html``
+                            return
                         },
                     ],
                     ['PENDING', this.#renderLoading],
