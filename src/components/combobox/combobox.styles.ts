@@ -41,7 +41,6 @@ export default css`
         height: var(--edux-block-size, var(--host-height));
         inline-size: var(--edux-inline-size, 100%);
         position: relative;
-        z-index: 10;
     }
 
     :host([hide-help]) {
@@ -49,7 +48,9 @@ export default css`
     }
 
     :host([hide-label]) {
-        height: calc(var(--edux-block-size, var(--host-height)) - var(--label-height));
+        height: calc(
+            var(--edux-block-size, var(--host-height)) - var(--label-height)
+        );
     }
 
     :host([hide-help][hide-label]) {
@@ -118,12 +119,12 @@ export default css`
 
     .combobox-button {
         align-items: center;
-        background-color: var(--edux-color-neutral--500, var(--color-neutral--500));
+        background-color: var(--edux-color-neutral--700, var(--color-neutral--700));
         block-size: var(--edux-block-size, 2.1875rem);
         border-block: 2px solid
-            var(--edux-color-neutral--500, var(--color-neutral--500));
+            var(--edux-color-neutral--700, var(--color-neutral--700));
         border-inline-end: 2px solid
-            var(--edux-color-neutral--500, var(--color-neutral--500));
+            var(--edux-color-neutral--700, var(--color-neutral--700));
         border-inline-start: 0;
         color: var(--edux-color-neutral--000, var(--color-neutral--000));
         cursor: pointer;
@@ -195,7 +196,7 @@ export default css`
         overflow-y: auto;
         overscroll-behavior: contain;
         padding-block: 0.5rem;
-        padding-inline: 0.5rem;
+        padding-inline: 0px;
         position: absolute;
         right: 0;
         visibility: hidden;
@@ -222,37 +223,37 @@ export default css`
         color: var(--edux-color-red--500, var(--color-red--500));
         font-family: var(--edux-font-family--dm-mono, var(--font-family--dm-mono));
         padding-block: 2rem;
+        justify-content: center;
+        display: flex;
     }
 
     .listbox-option-group {
-        padding-inline: 0.5rem;
-        padding-block: 1rem 0.5rem;
-    }
-
-    .listbox-option-group:has(.clear-button) {
-        text-align: center;
+        padding-block: 0.5rem 0rem;
     }
 
     .group-title {
+        padding-inline: 0.5rem;
         font-family: var(--edux-font-family--inter, var(--font-family--inter));
-        font-weight: 700;
+        color: var(--edux-color-gray-500, var(--color-neutral--500));
+        font-weight: 500;
         margin-block: 0;
+    }
+
+    .listbox-option-group ul {
+        padding-left: 0px;
     }
 
     .listbox-option {
         cursor: pointer;
-        list-style: disc;
+        list-style: none;
         position: relative;
+        padding-left: 2rem;
     }
 
-    .listbox-option:hover::before,
-    .listbox-option[aria-selected='true']::before {
-        block-size: 1rem;
-        content: url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' fill='%231c67e3' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='16' cy='16' r='16'%3E%3C/circle%3E%3Cpath fill='%23ffffff' d='M8 16.956h12.604l-3.844 4.106 1.252 1.338L24 16l-5.988-6.4-1.252 1.338 3.844 4.106H8v1.912z' %3E%3C/path%3E%3C/svg%3E%0A");
-        inline-size: 1rem;
-        left: -2ch;
-        position: absolute;
-        top: 0.0625lh;
+    .listbox-option:hover,
+    .listbox-option[aria-selected='true'] {
+        background-color: var(--edux-color-gray-200, var(--color-neutral--200));
+        transition: background-color 0.2s ease;
     }
 
     @media (prefers-reduced-motion) {
@@ -298,5 +299,65 @@ export default css`
         position: absolute;
         white-space: nowrap;
         width: 1px;
+    }
+
+    /* General reset for skeleton elements */
+    .skeleton,
+    .skeleton * {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        box-sizing: border-box;
+    }
+
+    /* Styling for the skeleton groups */
+    .skeleton.listbox-option-group {
+        padding: 0.25rem;
+        margin: 0.5rem 0;
+        background: var(
+            --edux-color-neutral--100,
+            var(--color-neutral--100)
+        ); /* Light background for the group */
+    }
+
+    /* Styling for the title in each group */
+    .skeleton-title {
+        display: flex;
+        height: 1.25rem;
+        width: 80%; /* Slightly longer than before */
+        background-color: var(--edux-color-neutral--100, var(--color-neutral--100));
+        margin-bottom: 10px;
+    }
+
+    /* Styling for each option inside the group */
+    .skeleton .listbox-option {
+        height: 1rem;
+        width: 60%; /* Shorter width to differentiate from title */
+        background-color: var(--edux-color-neutral--200, var(--color-neutral--200));
+        margin-top: 5px;
+        margin-left: 1.5rem;
+    }
+
+    /* Keyframes for the animation */
+    @keyframes pulse {
+        0%,
+        100% {
+            background-color: var(
+                --edux-color-neutral--200,
+                var(--color-neutral--200)
+            );
+        }
+        50% {
+            background-color: var(
+                --edux-color-neutral--100,
+                var(--color-neutral--100)
+            );
+        }
+    }
+
+    /* Applying the animation to simulate loading */
+    .skeleton-title,
+    .skeleton .listbox-option {
+        animation: pulse 2s infinite ease-in-out;
     }
 `

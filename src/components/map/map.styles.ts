@@ -2,15 +2,35 @@ import { css } from 'lit'
 
 export default css`
     :host {
+        --color-blue--400: #007acc;
+        --color-blue--500: #1c67e3;
+        --color-blue--600: #0b3d91;
+
+        --color-red--400: #f64137;
+        --color-red--500: #b60109;
+
+        --color-neutral--000: #ffffff;
+        --color-neutral--100: #f7f7f7;
+        --color-neutral--200: #d1d1d1;
+        --color-neutral--300: #b9b9bb;
+        --color-neutral--400: #959599;
+        --color-neutral--500: #767676;
+        --color-neutral--600: #58585b;
+        --color-neutral--700: #2e2e32;
+        --color-neutral--800: #1b1b1b;
+
         display: block;
         padding: 16px;
         background: white;
+        border: solid 1px var(--edux-color-neutral--200, var(--color-neutral--200));
+
+        width: calc(var(--width) + 32px);
+        height: calc(var(--height) + 32px);
     }
 
     #map {
-        width: 100%;
-        height: 100%;
-        border: solid 1px gray;
+        width: var(--width);
+        height: var(--height);
     }
 
     :host .leaflet-mouse-position-container {
@@ -37,6 +57,7 @@ export default css`
         background-image: none;
         border: 1px solid #ccc;
         border-radius: 4px;
+        outline: 0 none;
         -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         -webkit-transition:
@@ -45,6 +66,10 @@ export default css`
         transition:
             border-color ease-in-out 0.15s,
             box-shadow ease-in-out 0.15s;
+    }
+
+    :host .form-control:focus {
+        border: 1px solid var(--edux-color-blue--600, var(--color-blue--600));
     }
 
     :host .map__select {

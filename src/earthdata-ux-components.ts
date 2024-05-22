@@ -1,5 +1,6 @@
 // Components
 export { default as EduxButton } from './components/button/button.js'
+export { default as EduxCombobox } from './components/combobox/combobox.js'
 export { default as EduxDateRangeSlider } from './components/date-range-slider/date-range-slider.js'
 export { default as EduxIcon } from './components/icon/icon.js'
 export { default as EduxMap } from './components/map/map.js'

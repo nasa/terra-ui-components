@@ -1,29 +1,28 @@
 import Fuse from 'fuse.js'
 import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { cache } from 'lit/directives/cache.js'
-import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
+import { repeat } from 'lit/directives/repeat.js'
 import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxButton from '../button/button.js'
-import {
-    clearSelection,
-    groupDocsByCollection,
-    removeEmptyCollections,
-    renderSearchResult,
-    walkToOption,
-} from './lib.js'
-import { FetchController, type ListItem } from './variable-combobox.controller.js'
-import styles from './variable-combobox.styles.js'
+import styles from './combobox.styles.js'
+
+import { cache } from 'lit/directives/cache.js'
+import { choose } from 'lit/directives/choose.js'
+import { map } from 'lit/directives/map.js'
 import { watch } from '../../internal/watch.js'
-import EduxIcon from '../icon/icon.js'
+import { clearSelection, walkToOption } from '../combobox/lib.js'
+import {
+    SearchableListType,
+    type Content,
+    type GroupedListItem,
+    type ListItem,
+} from './type.js'
 
 /**
- * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
- * @documentation https://disc.gsfc.nasa.gov/components/variable-combobox
- * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
- * @status MVP
+ * @summary Fuzzy-search for combobox with list autocomplete.
+ * @documentation https://disc.gsfc.nasa.gov/components/combobox
+ * @status experimental
  * @since 1.0
  *
  * @csspart base - A `search` element, the component's base.
@@ -34,42 +33,40 @@ import EduxIcon from '../icon/icon.js'
  * @cssproperty --host-height - The height of the host element.
  * @cssproperty --help-height - The height of the search help element.
  * @cssproperty --label-height - The height of the input's label element.
- *
- * @event edux-combobox-change - Emitted when an option is selected.
  */
-export default class EduxVariableCombobox extends EduxElement {
-    static dependencies = {
-        'edux-button': EduxButton,
-        'edux-icon': EduxIcon,
-    }
+export default class EduxCombobox extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
+
     static shadowRootOptions = {
         ...LitElement.shadowRootOptions,
         delegatesFocus: true,
     }
 
-    static tagName = 'edux-variable-combobox'
+    static tagName = 'edux-combobox'
 
     static initialQuery = ''
 
     #combobox: HTMLInputElement | null = null
 
-    #fetchController = new FetchController(this)
-
-    #searchableList: ListItem[] = []
-
     #listbox: HTMLUListElement | null = null
 
-    #searchEngine: Fuse<ListItem> | null = null
+    #searchEngine: Fuse<GroupedListItem | ListItem> | null = null
 
     #walker: TreeWalker | null = null
 
     /**
      * Label the combobox with this.
-     * @example Search All Variables
+     * @example Search All Items
      */
     @property()
-    label = 'Search for Variables'
+    label = 'Search for Items'
+
+    /**
+     * name the combobox with this.
+     * @example Shapes
+     */
+    @property()
+    name = 'Item'
 
     /**
      * Set a placeholder for the combobox with this.
@@ -92,37 +89,54 @@ export default class EduxVariableCombobox extends EduxElement {
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel = false
 
+    /**
+     * status of the content
+     */
     @property()
-    value: string
+    status: 'INITIAL' | 'PENDING' | 'COMPLETE' | 'ERROR' = 'INITIAL'
+
+    /**
+     * content or data of the combobox. This could be of type string | GroupedListItem[] | ListItem[] | undefined
+     */
+    @property({ type: Object })
+    content: Content = {
+        type: SearchableListType.GroupedListItem,
+        data: [],
+    }
 
     @state()
     isExpanded = false
 
     @state()
-    query = EduxVariableCombobox.initialQuery
+    query = EduxCombobox.initialQuery
 
     @state()
-    searchResults: ListItem[] = []
-
-    @watch('value')
-    async valueChanged() {
-        await this.#fetchController.taskComplete
-
-        const selectedVariable = this.#fetchController.value?.find(variable => {
-            return variable.entryId === this.value
-        })
-
-        if (selectedVariable) {
-            this.query = selectedVariable.longName
-            this.#dispatchChange(selectedVariable.eventDetail)
-        }
-    }
+    searchResults: GroupedListItem[] | ListItem[] = []
 
     connectedCallback() {
         super.connectedCallback()
 
         //* set a window-level event listener to detect clicks that should close the listbox
         globalThis.addEventListener('click', this.#manageListboxVisibility)
+
+        const list =
+            this.content.type === 'GroupedListItem' ||
+            this.content.type === 'ListItem'
+                ? this.content.data
+                : []
+
+        //* @see {@link https://www.fusejs.io/api/options.html}
+        this.#searchEngine = new Fuse(list as any, {
+            //* @see https://www.fusejs.io/examples.html#nested-search
+            findAllMatches: true,
+            keys: [
+                'name', // to search in the name of the GroupedListItem
+                'items.name', // to search in the name of each ListItem
+                'items.title', // to search in the title of each ListItem
+                'items.value', // to search in the value of each ListItem
+            ],
+            useExtendedSearch: true,
+        })
     }
 
     disconnectedCallback() {
@@ -131,16 +145,102 @@ export default class EduxVariableCombobox extends EduxElement {
         globalThis.addEventListener('click', this.#manageListboxVisibility)
     }
 
-    clear() {
-        this.query = EduxVariableCombobox.initialQuery
+    @watch('content')
+    contentChanged(_oldValue: any, newValue: any) {
+        const list =
+            newValue.type === 'GroupedListItem' || newValue.type === 'ListItem'
+                ? newValue.data
+                : []
+
+        this.#searchEngine = new Fuse(list as any, {
+            //* @see https://www.fusejs.io/examples.html#nested-search
+            findAllMatches: true,
+            keys: [
+                'name', // to search in the name of the GroupedListItem
+                'items.name', // to search in the name of each ListItem
+                'items.title', // to search in the title of each ListItem
+                'items.value', // to search in the value of each ListItem
+            ],
+            useExtendedSearch: true,
+        })
     }
 
-    close() {
-        this.isExpanded = false
+    #renderListItem = (listItem: ListItem, index: number) => {
+        return html`
+            <li
+                id="listbox-option-${index}"
+                role="option"
+                class="listbox-option"
+                data-name=${listItem.name}
+                data-event-detail=${JSON.stringify({
+                    name: listItem.name,
+                    value: listItem.value,
+                })}
+            >
+                ${listItem.name}
+            </li>
+        `
     }
 
-    toggle() {
-        this.isExpanded = !this.isExpanded
+    #renderGroupListItem = (groupListItem: GroupedListItem, index: number) => {
+        return html`
+            <li class="listbox-option-group" data-tree-walker="filter_skip">
+                <span class="group-title" data-tree-walker="filter_skip"
+                    >${groupListItem.name}</span
+                >
+                <ul data-tree-walker="filter_skip">
+                    ${repeat(
+                        groupListItem.items,
+                        item => `${item.name}_${item.value}`,
+                        (item, subIndex) => {
+                            return html`
+                                <li
+                                    id="listbox-option-${index}.${subIndex}"
+                                    role="option"
+                                    class="listbox-option"
+                                    data-name=${item.title ? item.title : item.name}
+                                    data-event-detail=${JSON.stringify({
+                                        name: item.name,
+                                        value: item.value,
+                                    })}
+                                >
+                                    ${item.title ? item.title : item.name}
+                                </li>
+                            `
+                        }
+                    )}
+                </ul>
+            </li>
+        `
+    }
+
+    #renderError = () => {
+        return html`
+            <li class="error listbox-option-group">${this.content.data}</li>
+        `
+    }
+
+    #renderLoading = () => {
+        return html`
+            <li class="skeleton listbox-option-group">
+                <span class="skeleton-title"></span>
+                <ul>
+                    <li class="listbox-option"></li>
+                </ul>
+            </li>
+            <li class="skeleton listbox-option-group">
+                <span class="skeleton-title"></span>
+                <ul>
+                    <li class="listbox-option"></li>
+                </ul>
+            </li>
+            <li class="skeleton listbox-option-group">
+                <span class="skeleton-title"></span>
+                <ul>
+                    <li class="listbox-option"></li>
+                </ul>
+            </li>
+        `
     }
 
     #dispatchChange = (stringifiedData: string) => {
@@ -163,7 +263,7 @@ export default class EduxVariableCombobox extends EduxElement {
 
         this.searchResults = this.#searchEngine
             ?.search(target.value)
-            .map(({ item }: any) => item) as ListItem[]
+            .map(({ item }) => item) as GroupedListItem[] | ListItem[]
     }
 
     #handleOptionClick = (event: Event) => {
@@ -173,10 +273,7 @@ export default class EduxVariableCombobox extends EduxElement {
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
 
-        // filter out anything not role="option"
-        if (!target) {
-            return
-        }
+        if (!target) return
 
         this.#selectOption(target as HTMLLIElement)
     }
@@ -241,11 +338,8 @@ export default class EduxVariableCombobox extends EduxElement {
 
                 if (this.isExpanded) {
                     this.isExpanded = false
-                    // dispatching a standard event b/c this is a standard DOM event
-                    // @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/cancel_event}
-                    this.dispatchEvent(new Event('cancel'))
                 } else {
-                    this.query = EduxVariableCombobox.initialQuery
+                    this.query = EduxCombobox.initialQuery
                 }
 
                 break
@@ -261,8 +355,7 @@ export default class EduxVariableCombobox extends EduxElement {
         const path = event.composedPath()
         const containedThis = path.some(
             eventTarget =>
-                (eventTarget as HTMLElement).localName ===
-                EduxVariableCombobox.tagName
+                (eventTarget as HTMLElement).localName === EduxCombobox.tagName
         )
 
         if (!containedThis) {
@@ -271,9 +364,9 @@ export default class EduxVariableCombobox extends EduxElement {
     }
 
     #selectOption = (option: HTMLLIElement) => {
-        const { longName, eventDetail } = option.dataset
+        const { name, eventDetail } = option.dataset
 
-        this.query = `${longName}`
+        this.query = `${name}`
         this.#dispatchChange(eventDetail as string)
 
         this.isExpanded = false
@@ -285,11 +378,6 @@ export default class EduxVariableCombobox extends EduxElement {
     }
 
     render() {
-        const searchHasNoMatches =
-            this.searchResults?.length === 0 &&
-            this.#searchableList?.length !== 0 &&
-            this.query !== EduxVariableCombobox.initialQuery
-
         return html`<search part="base" title="Search through the list.">
             <label
                 for="combobox"
@@ -319,7 +407,7 @@ export default class EduxVariableCombobox extends EduxElement {
                 <button
                     aria-controls="listbox"
                     aria-expanded=${this.isExpanded}
-                    aria-label="List of Searchable Variables"
+                    aria-label="List of Searchable Items"
                     class="combobox-button"
                     id="combobox-button"
                     part="button"
@@ -327,11 +415,19 @@ export default class EduxVariableCombobox extends EduxElement {
                     type="button"
                     @click=${this.#handleButtonClick}
                 >
-                    ${['COMPLETE', 'ERROR'].includes(this.#fetchController.taskStatus)
-                        ? html`<edux-icon
-                              class="chevron"
-                              name="chevron-down"
-                          ></edux-icon>`
+                    ${['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
+                        ? html`<svg
+                              aria-hidden="true"
+                              class="button-icon chevron"
+                              focusable="false"
+                              viewBox="0 0 400 400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="currentColor"
+                          >
+                              <path
+                                  d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
+                              ></path>
+                          </svg> `
                         : html`<svg
                               class="button-icon spinner"
                               stroke="currentColor"
@@ -355,7 +451,6 @@ export default class EduxVariableCombobox extends EduxElement {
                           <a
                               href="https://www.fusejs.io/examples.html#extended-search"
                               rel="noopener noreferrer"
-                              tabindex=${this.isExpanded ? '-1 ' : '0'}
                               target="_blank"
                               >extended search syntax
                               <svg
@@ -395,66 +490,56 @@ export default class EduxVariableCombobox extends EduxElement {
                 ?open=${this.isExpanded}
                 @click=${this.#handleOptionClick}
                 aria-label=${this.query
-                    ? `Variables Matching ${this.query}`
-                    : 'Variables'}
+                    ? `${this.name} Matching ${this.query}`
+                    : this.name}
                 id="listbox"
                 part="listbox"
                 role="listbox"
                 class="search-results"
             >
-                ${searchHasNoMatches
-                    ? html`<li
-                          class="listbox-option-group"
-                          data-tree-walker="filter_skip"
-                      >
-                          <edux-button
-                              @click=${() =>
-                                  (this.query = EduxVariableCombobox.initialQuery)}
-                              class="clear-button"
-                              data-tree-walker="filter_skip"
-                          >
-                              clear search
-                          </edux-button>
-                      </li>`
-                    : nothing}
-                ${this.#fetchController.render({
-                    initial: () =>
-                        html`<li class="updating">Updating List of Variables</li>`,
-                    pending: () =>
-                        html`<li class="updating">Updating List of Variables</li>`,
-                    complete: list => {
-                        this.#searchableList = list
-
-                        //* @see {@link https://www.fusejs.io/api/options.html}
-                        this.#searchEngine = new Fuse(this.#searchableList, {
-                            //* @see {@link https://www.fusejs.io/examples.html#nested-search}
-                            findAllMatches: true,
-                            keys: ['longName', 'units'],
-                            useExtendedSearch: true,
-                        })
-
-                        return cache(
-                            this.query === EduxVariableCombobox.initialQuery
-                                ? map(
-                                      removeEmptyCollections(
-                                          groupDocsByCollection(this.#searchableList)
-                                      ),
-                                      renderSearchResult
+                ${choose(this.status, [
+                    [
+                        'INITIAL',
+                        () => {
+                            return nothing
+                        },
+                    ],
+                    ['PENDING', this.#renderLoading],
+                    [
+                        'COMPLETE',
+                        () => {
+                            return this.content.type === SearchableListType.ListItem
+                                ? cache(
+                                      this.query === EduxCombobox.initialQuery
+                                          ? map(
+                                                this.content.data as ListItem[],
+                                                this.#renderListItem
+                                            )
+                                          : map(
+                                                this.searchResults as ListItem[],
+                                                this.#renderListItem
+                                            )
                                   )
-                                : map(
-                                      removeEmptyCollections(
-                                          groupDocsByCollection(this.searchResults)
-                                      ),
-                                      renderSearchResult
-                                  )
-                        )
-                    },
-                    // TODO: Consider a more robust error strategy...like retry w/ backoff?
-                    error: errorMessage =>
-                        html`<li class="error" data-tree-walker="filter_skip">
-                            ${errorMessage}
-                        </li>`,
-                })}
+                                : this.content.type ===
+                                    SearchableListType.GroupedListItem
+                                  ? cache(
+                                        this.query === EduxCombobox.initialQuery
+                                            ? map(
+                                                  this.content
+                                                      .data as GroupedListItem[],
+                                                  this.#renderGroupListItem
+                                              )
+                                            : map(
+                                                  this
+                                                      .searchResults as GroupedListItem[],
+                                                  this.#renderGroupListItem
+                                              )
+                                    )
+                                  : nothing
+                        },
+                    ],
+                    ['ERROR', this.#renderError],
+                ])}
             </ul>
         </search>`
     }

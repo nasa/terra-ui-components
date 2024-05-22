@@ -1,14 +1,7 @@
 import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import * as L from 'leaflet'
 import 'leaflet-draw'
-import { fetchSelectedShape } from './shapes.js'
-
-export type MapEventDetail = {
-    cause: string
-    geoJson?: any
-    bounds?: any
-    latLng?: any
-}
+import type { BoundingBox, LatLng } from './type.js'
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
 // @ts-expect-error
@@ -19,8 +12,18 @@ export function parseBoundingBox(inputString: string) {
     const coords = inputString.split(',')
 
     // Check if there are exactly four elements (two pairs of coordinates)
-    if (coords.length !== 4) {
-        throw new Error('Input string must contain exactly four numerical values.')
+    if (coords.length !== 2 && coords.length !== 4) {
+        throw new Error(
+            'Input string must contain exactly two or four numerical values. e.g "9.51, 21.80" or "52.03, -9.38, 96.33, 32.90"'
+        )
+    }
+
+    //Convert xy to latlng
+    if (coords.length == 2) {
+        return {
+            lat: parseFloat(coords[0]),
+            lng: parseFloat(coords[1]),
+        }
     }
 
     // Convert each string in the array to a number and validate each conversion
@@ -41,14 +44,28 @@ export function parseBoundingBox(inputString: string) {
     return leafletBounds
 }
 
+export function StringifyBoundingBox(input: LatLng | BoundingBox): string {
+    if ('_southWest' in input && '_northEast' in input) {
+        // It's a BoundingBox
+        return `${input._southWest.lng.toFixed(2)}, ${input._southWest.lat.toFixed(
+            2
+        )}, ${input._northEast.lng.toFixed(2)}, ${input._northEast.lat.toFixed(2)}`
+    } else if ('lat' in input && 'lng' in input) {
+        // It's a LatLng
+        return `${input.lat.toFixed(2)}, ${input.lng.toFixed(2)}`
+    } else {
+        throw new Error('Invalid input type')
+    }
+}
+
 export interface MapViewOptions {
     latitude?: number
     longitude?: number
     zoom: number
     minZoom: number
     maxZoom: number
-    showCoordTracker?: boolean
-    showNavigation?: boolean
+    hasCoordTracker?: boolean
+    hasNavigation?: boolean
     initialValue?: LatLngBoundsExpression
 }
 
@@ -86,16 +103,36 @@ export class Leaflet implements Map {
         }).addTo(this.map)
 
         // coord tracker true, display coord position tracker
-        if (options.showCoordTracker) {
+        if (options.hasCoordTracker) {
             this.addCoordTracker()
         }
 
-        if (options.showNavigation) {
+        if (options.hasNavigation) {
             this.addDrawControl()
         }
 
         this.map.whenReady((_e: any) => {
             this.isMapReady = true
+            if (
+                options.initialValue &&
+                'lat' in options.initialValue &&
+                'lng' in options.initialValue
+            ) {
+                L.marker(options.initialValue as LatLng, {
+                    icon: L.icon({
+                        iconUrl:
+                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                        iconAnchor: [15, 40],
+                        shadowUrl:
+                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                    }),
+                }).addTo(this.editableLayers)
+
+                this.map.setView(options.initialValue, 5)
+
+                return
+            }
+
             if ((options.initialValue as LatLngBoundsLiteral)?.length > 0) {
                 L.rectangle(options.initialValue as LatLngBoundsExpression, {
                     stroke: true,
@@ -104,7 +141,7 @@ export class Leaflet implements Map {
                     opacity: 0.5,
                     fill: true,
                     fillOpacity: 0.2,
-                }).addTo(this.map)
+                }).addTo(this.editableLayers)
 
                 this.map.fitBounds(options.initialValue)
             }
@@ -167,10 +204,9 @@ export class Leaflet implements Map {
                     icon: L.icon({
                         iconUrl:
                             'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                        iconSize: [25, 41],
+                        iconAnchor: [15, 40],
                         shadowUrl:
                             'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                        shadowSize: [41, 41],
                     }),
                 },
             },
@@ -189,6 +225,18 @@ export class Leaflet implements Map {
             const { layer, layerType } = event
 
             this.editableLayers.addLayer(layer)
+
+            const detail = {
+                geoJson: layer.toGeoJSON(),
+                ...(layerType === 'rectangle' && { bounds: layer.getBounds() }),
+                ...(layerType === 'marker' && { latLng: layer._latlng }),
+            }
+
+            this.dispatch('draw', detail)
+        })
+
+        this.map.on('draw:edited', (event: any) => {
+            const { layer, layerType } = event
 
             const detail = {
                 geoJson: layer.toGeoJSON(),
@@ -260,18 +308,41 @@ export class Leaflet implements Map {
         return transformedShapes
     }
 
+    async fetchSelectedShape(query: any) {
+        const url = new URL('http://localhost:9000/getGeoJSON')
+
+        // Assuming the query is formatted as 'key=value'
+        const [key, value] = query.split('=')
+        if (key && value) {
+            url.searchParams.append(key, encodeURIComponent(value))
+        }
+
+        const data = await fetch(url.toString(), {
+            method: 'GET',
+            mode: 'cors',
+        })
+
+        const shape = await data.json()
+
+        return shape
+    }
+
     async handleShapeSelect(event: any) {
         event.preventDefault()
 
         const selectedShape = event.target.value
 
-        const shapeGeoJson = await fetchSelectedShape(selectedShape)
+        if (!selectedShape) return
+
+        const shapeGeoJson = await this.fetchSelectedShape(selectedShape)
 
         if (this.selectedGeoJson?.hasLayer) {
             this.selectedGeoJson.remove()
         }
 
-        this.selectedGeoJson = L.geoJson(shapeGeoJson.features).addTo(this.map)
+        this.selectedGeoJson = L.geoJson(shapeGeoJson.features).addTo(
+            this.editableLayers
+        )
 
         this.map.fitBounds(this.selectedGeoJson.getBounds())
 
@@ -282,7 +353,7 @@ export class Leaflet implements Map {
     }
 
     drawRectangle(bounds: LatLngBoundsExpression) {
-        this.editableLayers.clearLayers()
+        this.clearLayers()
 
         L.rectangle(bounds, {
             stroke: true,
@@ -291,7 +362,7 @@ export class Leaflet implements Map {
             opacity: 0.5,
             fill: true,
             fillOpacity: 0.2,
-        }).addTo(this.map)
+        }).addTo(this.editableLayers)
     }
 
     setValue(value: LatLngBoundsExpression) {
@@ -299,5 +370,9 @@ export class Leaflet implements Map {
             this.drawRectangle(value)
             this.map.fitBounds(value)
         }
+    }
+
+    clearLayers() {
+        this.editableLayers.clearLayers()
     }
 }
