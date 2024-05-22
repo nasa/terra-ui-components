@@ -6,6 +6,7 @@ import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
 import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
+import EduxButton from '../button/button.js'
 import {
     clearSelection,
     groupDocsByCollection,
@@ -15,6 +16,7 @@ import {
 } from './lib.js'
 import { FetchController, type ListItem } from './variable-combobox.controller.js'
 import styles from './variable-combobox.styles.js'
+import EduxIcon from '../icon/icon.js'
 
 /**
  * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
@@ -31,10 +33,15 @@ import styles from './variable-combobox.styles.js'
  * @cssproperty --host-height - The height of the host element.
  * @cssproperty --help-height - The height of the search help element.
  * @cssproperty --label-height - The height of the input's label element.
+ *
+ * @event edux-combobox-change - Emitted when an option is selected.
  */
 export default class EduxVariableCombobox extends EduxElement {
+    static dependencies = {
+        'edux-button': EduxButton,
+        'edux-icon': EduxIcon,
+    }
     static styles: CSSResultGroup = [componentStyles, styles]
-
     static shadowRootOptions = {
         ...LitElement.shadowRootOptions,
         delegatesFocus: true,
@@ -106,6 +113,18 @@ export default class EduxVariableCombobox extends EduxElement {
         globalThis.addEventListener('click', this.#manageListboxVisibility)
     }
 
+    clear() {
+        this.query = EduxVariableCombobox.initialQuery
+    }
+
+    close() {
+        this.isExpanded = false
+    }
+
+    toggle() {
+        this.isExpanded = !this.isExpanded
+    }
+
     #dispatchChange = (stringifiedData: string) => {
         this.emit('edux-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
@@ -135,6 +154,11 @@ export default class EduxVariableCombobox extends EduxElement {
         const [target] = path.filter(
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
+
+        // filter out anything not role="option"
+        if (!target) {
+            return
+        }
 
         this.#selectOption(target as HTMLLIElement)
     }
@@ -199,6 +223,9 @@ export default class EduxVariableCombobox extends EduxElement {
 
                 if (this.isExpanded) {
                     this.isExpanded = false
+                    // dispatching a standard event b/c this is a standard DOM event
+                    // @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/cancel_event}
+                    this.dispatchEvent(new Event('cancel'))
                 } else {
                     this.query = EduxVariableCombobox.initialQuery
                 }
@@ -240,6 +267,11 @@ export default class EduxVariableCombobox extends EduxElement {
     }
 
     render() {
+        const searchHasNoMatches =
+            this.searchResults?.length === 0 &&
+            this.#searchableList?.length !== 0 &&
+            this.query !== EduxVariableCombobox.initialQuery
+
         return html`<search part="base" title="Search through the list.">
             <label
                 for="combobox"
@@ -278,18 +310,10 @@ export default class EduxVariableCombobox extends EduxElement {
                     @click=${this.#handleButtonClick}
                 >
                     ${['COMPLETE', 'ERROR'].includes(this.#fetchController.taskStatus)
-                        ? html`<svg
-                              aria-hidden="true"
-                              class="button-icon chevron"
-                              focusable="false"
-                              viewBox="0 0 400 400"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="currentColor"
-                          >
-                              <path
-                                  d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
-                              ></path>
-                          </svg> `
+                        ? html`<edux-icon
+                              class="chevron"
+                              name="chevron-down"
+                          ></edux-icon>`
                         : html`<svg
                               class="button-icon spinner"
                               stroke="currentColor"
@@ -313,6 +337,7 @@ export default class EduxVariableCombobox extends EduxElement {
                           <a
                               href="https://www.fusejs.io/examples.html#extended-search"
                               rel="noopener noreferrer"
+                              tabindex=${this.isExpanded ? '-1 ' : '0'}
                               target="_blank"
                               >extended search syntax
                               <svg
@@ -359,6 +384,21 @@ export default class EduxVariableCombobox extends EduxElement {
                 role="listbox"
                 class="search-results"
             >
+                ${searchHasNoMatches
+                    ? html`<li
+                          class="listbox-option-group"
+                          data-tree-walker="filter_skip"
+                      >
+                          <edux-button
+                              @click=${() =>
+                                  (this.query = EduxVariableCombobox.initialQuery)}
+                              class="clear-button"
+                              data-tree-walker="filter_skip"
+                          >
+                              clear search
+                          </edux-button>
+                      </li>`
+                    : nothing}
                 ${this.#fetchController.render({
                     initial: () =>
                         html`<li class="updating">Updating List of Variables</li>`,
@@ -368,32 +408,35 @@ export default class EduxVariableCombobox extends EduxElement {
                         this.#searchableList = list
 
                         //* @see {@link https://www.fusejs.io/api/options.html}
-                        this.#searchEngine = new Fuse(list, {
-                            //* @see https://www.fusejs.io/examples.html#nested-search
+                        this.#searchEngine = new Fuse(this.#searchableList, {
+                            //* @see {@link https://www.fusejs.io/examples.html#nested-search}
                             findAllMatches: true,
                             keys: ['longName', 'units'],
                             useExtendedSearch: true,
                         })
+
+                        return cache(
+                            this.query === EduxVariableCombobox.initialQuery
+                                ? map(
+                                      removeEmptyCollections(
+                                          groupDocsByCollection(this.#searchableList)
+                                      ),
+                                      renderSearchResult
+                                  )
+                                : map(
+                                      removeEmptyCollections(
+                                          groupDocsByCollection(this.searchResults)
+                                      ),
+                                      renderSearchResult
+                                  )
+                        )
                     },
                     // TODO: Consider a more robust error strategy...like retry w/ backoff?
                     error: errorMessage =>
-                        html`<li class="error">${errorMessage}</li>`,
+                        html`<li class="error" data-tree-walker="filter_skip">
+                            ${errorMessage}
+                        </li>`,
                 })}
-                ${cache(
-                    this.query === EduxVariableCombobox.initialQuery
-                        ? map(
-                              removeEmptyCollections(
-                                  groupDocsByCollection(this.#searchableList)
-                              ),
-                              renderSearchResult
-                          )
-                        : map(
-                              removeEmptyCollections(
-                                  groupDocsByCollection(this.searchResults)
-                              ),
-                              renderSearchResult
-                          )
-                )}
             </ul>
         </search>`
     }
