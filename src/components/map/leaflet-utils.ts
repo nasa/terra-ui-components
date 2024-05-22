@@ -13,7 +13,9 @@ export function parseBoundingBox(inputString: string) {
 
     // Check if there are exactly four elements (two pairs of coordinates)
     if (coords.length !== 2 && coords.length !== 4) {
-        throw new Error('Input string must contain exactly four numerical values.')
+        throw new Error(
+            'Input string must contain exactly two or four numerical values. e.g "9.51, 21.80" or "52.03, -9.38, 96.33, 32.90"'
+        )
     }
 
     //Convert xy to latlng
