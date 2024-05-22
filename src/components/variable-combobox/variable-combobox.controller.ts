@@ -4,9 +4,13 @@ import type { ReactiveControllerHost } from 'lit'
 import { cherryPickDocInfo } from './lib.js'
 
 export type ListItem = {
+    entryId: string
     collectionLongName: string
     collectionShortName: string
     collectionVersion: string
+    collectionBeginningDateTime: string
+    collectionEndingDateTime: string
+    name: string
     longName: string
     standardName: string
     units: string
@@ -45,6 +49,14 @@ export class FetchController {
             },
             args: () => [],
         })
+    }
+
+    get taskComplete() {
+        return this.#apiTask.taskComplete
+    }
+
+    get value() {
+        return this.#apiTask.value
     }
 
     get taskStatus() {

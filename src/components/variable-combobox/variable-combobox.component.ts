@@ -16,6 +16,7 @@ import {
 } from './lib.js'
 import { FetchController, type ListItem } from './variable-combobox.controller.js'
 import styles from './variable-combobox.styles.js'
+import { watch } from '../../internal/watch.js'
 import EduxIcon from '../icon/icon.js'
 
 /**
@@ -91,6 +92,9 @@ export default class EduxVariableCombobox extends EduxElement {
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel = false
 
+    @property()
+    value: string
+
     @state()
     isExpanded = false
 
@@ -99,6 +103,20 @@ export default class EduxVariableCombobox extends EduxElement {
 
     @state()
     searchResults: ListItem[] = []
+
+    @watch('value')
+    async valueChanged() {
+        await this.#fetchController.taskComplete
+
+        const selectedVariable = this.#fetchController.value?.find(variable => {
+            return variable.entryId === this.value
+        })
+
+        if (selectedVariable) {
+            this.query = selectedVariable.longName
+            this.#dispatchChange(selectedVariable.eventDetail)
+        }
+    }
 
     connectedCallback() {
         super.connectedCallback()
