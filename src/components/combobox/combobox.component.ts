@@ -98,7 +98,7 @@ export default class EduxCombobox extends EduxElement {
     /**
      * content or data of the combobox. This could be of type string | GroupedListItem[] | ListItem[] | undefined
      */
-    @property({ type: Object, reflect: true })
+    @property({ type: Object })
     content: Content = {
         type: SearchableListType.GroupedListItem,
         data: [],
@@ -501,7 +501,7 @@ export default class EduxCombobox extends EduxElement {
                     [
                         'INITIAL',
                         () => {
-                            return
+                            return nothing
                         },
                     ],
                     ['PENDING', this.#renderLoading],
