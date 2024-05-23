@@ -1,5 +1,5 @@
 import { property} from 'lit/decorators.js'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import EduxElement from '../../internal/edux-element.js'
 import styles from './loader.styles.js'
@@ -37,7 +37,7 @@ export default class EduxLoader extends EduxElement {
 
     /** A label used by a screen reader which describes the loader element (e.g., "Loading video of Tropical Storm Nepartak") */
     @property({type: String})
-    label: string = ''
+    label: string = 'Loading request'
 
     /** A message used by a screen reader to describe current value of loader element in a more human-understandable way (e.g, "12% of 45MB") */
     @property({type: String})
@@ -50,18 +50,7 @@ export default class EduxLoader extends EduxElement {
         return percent > 0 ? percent + '%' : ''
     }
 
-    renderLabel (label: string) {
-        console.log('label = ' + label)
-        if(label != '') {
-            console.log('label is NOT empty')
-            return 'aria-label="'+ label + '"'
-        }
-        return ''
-    }
-
-
     render() {    
-        console.log('test = ' + this.renderLabel(this.label))
         return html` 
             <div 
                 class=${classMap({
@@ -71,10 +60,12 @@ export default class EduxLoader extends EduxElement {
                     'loader--light': this.theme === 'light',
                     'loader--dark': this.theme === 'dark',
                 })}
-                ${this.renderLabel(this.label)}
+                arial-lable=${this.label}
+                aria-valuetext="${this.message || nothing}"
                 ${this.message != '' ? 'aria-valuetext=${this.message}' : ''}
                 aria-valuenow=${this.formatPercent(this.percent)}
                 role="progressbar"
+                tabindex="-1"
             >
                 ${this.size === 'large'? 
                     html `
