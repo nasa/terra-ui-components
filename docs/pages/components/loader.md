@@ -55,4 +55,20 @@ const App = () => (
 );
 ```
 
+### Aria label and message
+
+```html:preview
+<edux-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></edux-loader>
+```
+
+```jsx:react
+import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+
+const App = () => (
+    <>
+        <EduxLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></EduxLoader>
+    </>
+);
+```
+
 [component-metadata:edux-loader]

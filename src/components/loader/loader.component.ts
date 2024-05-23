@@ -32,18 +32,36 @@ export default class EduxLoader extends EduxElement {
         | 'dark'
 
     /** The percent complete for the loader to display */
-    @property({type: String}) 
-    percent: string = '0'
+    @property({type: Number}) 
+    percent: number = 0
 
-    formatPercent (percent: string) {
-        if(parseInt(percent) > 100) {
-            percent = '100'
+    /** A label used by a screen reader which describes the loader element (e.g., "Loading video of Tropical Storm Nepartak") */
+    @property({type: String})
+    label: string = ''
+
+    /** A message used by a screen reader to describe current value of loader element in a more human-understandable way (e.g, "12% of 45MB") */
+    @property({type: String})
+    message: string = ''
+
+    formatPercent (percent: number) {
+        if(percent > 100) {
+            percent = 100
         }
-        return percent > '0' ? percent + '%' : ''
+        return percent > 0 ? percent + '%' : ''
     }
 
-    render() {
+    renderLabel (label: string) {
+        console.log('label = ' + label)
+        if(label != '') {
+            console.log('label is NOT empty')
+            return 'aria-label="'+ label + '"'
+        }
+        return ''
+    }
 
+
+    render() {    
+        console.log('test = ' + this.renderLabel(this.label))
         return html` 
             <div 
                 class=${classMap({
@@ -53,6 +71,10 @@ export default class EduxLoader extends EduxElement {
                     'loader--light': this.theme === 'light',
                     'loader--dark': this.theme === 'dark',
                 })}
+                ${this.renderLabel(this.label)}
+                ${this.message != '' ? 'aria-valuetext=${this.message}' : ''}
+                aria-valuenow=${this.formatPercent(this.percent)}
+                role="progressbar"
             >
                 ${this.size === 'large'? 
                     html `
@@ -64,6 +86,7 @@ export default class EduxLoader extends EduxElement {
                 }
 
                 <svg 
+                    aria-hidden="true"
                     style="--progress: ${this.percent}" class="circular-progress">
                     <circle class="bg"></circle>
                     <circle class="fg"></circle>
