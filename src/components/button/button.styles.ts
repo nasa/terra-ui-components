@@ -15,8 +15,8 @@ export default css`
         width: 100%;
         border-style: solid;
         border-width: var(--edux-input-border-width);
-        font-family: var(--edux-input-font-family);
-        font-weight: var(--edux-font-weight-semibold);
+        font-family: var(--edux-font-display);
+        font-weight: var( --edux-font-bold);
         text-decoration: none;
         user-select: none;
         -webkit-user-select: none;
