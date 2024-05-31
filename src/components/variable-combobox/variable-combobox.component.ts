@@ -126,7 +126,7 @@ export default class EduxVariableCombobox extends EduxElement {
 
         this.searchResults = this.#searchEngine
             ?.search(target.value)
-            .map(({ item }) => item) as ListItem[]
+            .map(({ item }: any) => item) as ListItem[]
     }
 
     #handleOptionClick = (event: Event) => {
