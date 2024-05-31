@@ -63,6 +63,6 @@ export default class EduxPlot extends EduxElement {
     }
 
     render() {
-        return html` <div part="base"></div> `
+        return html`<div part="base"></div>`
     }
 }

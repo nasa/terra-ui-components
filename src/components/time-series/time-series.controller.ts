@@ -10,6 +10,7 @@ import type {
     StartDate,
     Variable,
     VariableDbEntry,
+    Location,
 } from './time-series.types.js'
 import type {
     TimeSeriesData,
@@ -23,7 +24,7 @@ import {
 } from '../../internal/indexeddb.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
-const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
+const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
 const timeSeriesUrlTemplate = compile(
     `${
         isLocalHost
@@ -40,7 +41,7 @@ export const plotlyDefaultData: Partial<PlotData> = {
     line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
 }
 
-type TaskArguments = [Collection, Variable, StartDate, EndDate]
+type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
 
 export class TimeSeriesController {
     host: ReactiveControllerHost
@@ -58,19 +59,22 @@ export class TimeSeriesController {
     variable: Variable
     startDate: StartDate
     endDate: EndDate
+    location: Location
 
     constructor(host: ReactiveControllerHost) {
         this.host = host
 
-        this.task = new Task<TaskArguments, Partial<Data>[]>(
-            host,
-            async (
-                args: TaskArguments,
-                { signal } // passing the signal in so the fetch request will be aborted when the task is aborted
-            ) => {
-                const [collection, variable, startDate, endDate] = args
-
-                if (!collection || !variable || !startDate || !endDate) {
+        this.task = new Task(host, {
+            autoRun: false,
+            // passing the signal in so the fetch request will be aborted when the task is aborted
+            task: async (_args, { signal }) => {
+                if (
+                    !this.collection ||
+                    !this.variable ||
+                    !this.startDate ||
+                    !this.endDate ||
+                    !this.location
+                ) {
                     // requirements not yet met to fetch the time series data
                     return initialState
                 }
@@ -88,8 +92,7 @@ export class TimeSeriesController {
                     },
                 ]
             },
-            () => [this.collection, this.variable, this.startDate, this.endDate]
-        )
+        })
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
@@ -97,40 +100,40 @@ export class TimeSeriesController {
         const variableEntryId = `${this.collection}_${this.variable}`
 
         // check the database for any existing data
-        const existinEduxata = await getDataByKey<VariableDbEntry>(
+        const existingEduxData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            variableEntryId
+            `${variableEntryId}_${this.location}`
         )
 
         if (
-            existinEduxata &&
+            existingEduxData &&
             this.startDate.getTime() >=
-                new Date(existinEduxata.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existinEduxata.endDate).getTime()
+                new Date(existingEduxData.startDate).getTime() &&
+            this.endDate.getTime() <= new Date(existingEduxData.endDate).getTime()
         ) {
             // already have the data downloaded!
-            return this.#getDataInRange(existinEduxata)
+            return this.#getDataInRange(existingEduxData)
         }
-
         // the fetch request we send out may not contain the full date range the user requested
         // we'll request only the data we don't currently have cached
         let requestStartDate = this.startDate
         let requestEndDate = this.endDate
 
-        if (existinEduxata) {
+        if (existingEduxData) {
             if (
                 requestStartDate.getTime() <
-                new Date(existinEduxata.startDate).getTime()
+                new Date(existingEduxData.startDate).getTime()
             ) {
                 // user has requested more data than what we have, move the endDate up
-                requestEndDate = new Date(existinEduxata.startDate)
+                requestEndDate = new Date(existingEduxData.startDate)
             }
 
             if (
-                requestEndDate.getTime() > new Date(existinEduxata.endDate).getTime()
+                requestEndDate.getTime() >
+                new Date(existingEduxData.endDate).getTime()
             ) {
                 // user has requested more data than what we have, move the startDate back
-                requestStartDate = new Date(existinEduxata.endDate)
+                requestStartDate = new Date(existingEduxData.endDate)
             }
         }
 
@@ -141,7 +144,7 @@ export class TimeSeriesController {
             }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
             startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
             endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
-            location: 'GEOM:POINT(-86.9375,%2033.9375)',
+            location: `GEOM:POINT(${this.location})`,
         })
 
         // fetch the time series as a CSV
@@ -156,14 +159,15 @@ export class TimeSeriesController {
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
         // combined the new parsedData with any existinEduxata
-        parsedData.data = [...parsedData.data, ...(existinEduxata?.data || [])]
+        parsedData.data = [...parsedData.data, ...(existingEduxData?.data || [])]
 
         // save the new data to the database
         await storeDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            variableEntryId,
+            `${variableEntryId}_${this.location}`,
             {
                 variableEntryId,
+                key: `${variableEntryId}_${this.location}`,
                 startDate: parsedData.data[0].timestamp,
                 endDate: parsedData.data[parsedData.data.length - 1].timestamp,
                 ...parsedData,

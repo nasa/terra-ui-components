@@ -49,7 +49,9 @@ export default css`
     }
 
     :host([hide-label]) {
-        height: calc(var(--edux-block-size, var(--host-height)) - var(--label-height));
+        height: calc(
+            var(--edux-block-size, var(--host-height)) - var(--label-height)
+        );
     }
 
     :host([hide-help][hide-label]) {
@@ -118,7 +120,7 @@ export default css`
 
     .combobox-button {
         align-items: center;
-        background-color: var(--edux-color-neutral--500, var(--color-neutral--500));
+        background-color: var(--edux-color-neutral--700, var(--color-neutral--700));
         block-size: var(--edux-block-size, 2.1875rem);
         border-block: 2px solid
             var(--edux-color-neutral--500, var(--color-neutral--500));
@@ -285,18 +287,5 @@ export default css`
             stroke-dasharray: 42 150;
             stroke-dashoffset: -59;
         }
-    }
-
-    /* UTILITY CSS */
-    .sr-only {
-        block-size: 1px;
-        border-width: 0;
-        clip: rect(0, 0, 0, 0);
-        margin: -1px;
-        overflow: hidden;
-        padding: 0;
-        position: absolute;
-        white-space: nowrap;
-        width: 1px;
     }
 `
