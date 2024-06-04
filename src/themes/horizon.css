@@ -245,13 +245,10 @@
     --edux-color-rose-900: hsl(341.5 75.5% 30.4%);
     --edux-color-rose-950: hsl(341.3 70.1% 17.1%);
 
-    /*
-    * Theme Tokens
-    */
-
     /* Horizon Design System */
 
-    /* HDS Font  */
+    /* HDS Fonts  */
+
     --edux-font-display: 'Inter', sans-serif;
     --edux-font-heading: 'Inter', sans-serif;
     --edux-font-body: 'Public Sans', sans-serif;
@@ -261,6 +258,8 @@
     --edux-font-semi-bold: 600;
     --edux-font-normal: 400;
     --edux-font-light: 300;
+
+    /* HDS Colors
 
     /* Primary Palette
      * Our primary palette consists of black, white, red, and blue. These colors are used in 
@@ -294,15 +293,57 @@
     --edux-color-carbon-30: hsla(240, 1%, 73%, 1);
     --edux-color-carbon-20: hsla(0, 0%, 82%, 1);
     --edux-color-carbon-10: hsla(0, 0%, 89%, 1);
-    --edux-color-carbon-5: hsla(0, 0%, 96%, 1);
+    --edux-color-carbon-5: hsl(0, 0%, 96%);
 
     /* Additional Colors 
      * International Orange and Active Green are colors that are used sparingly and intentionally.
      */
     --edux-color-international-orange: hsla(23, 83%, 53%, 1);
+    --edux-color-international-orange-tint: hsl(23, 82%, 61%);
+    --edux-color-international-orange-shade: hsla(24, 90%, 32%, 1);
     --edux-color-active-green: hsla(145, 67%, 57%, 1);
+    --edux-color-active-green-tint: hsl(145, 52%, 64%);
+    --edux-color-active-green-shade: hsla(144, 75%, 38%, 1);
+
+    /* HDS button styles */
+
+    --edux-button-border-width: 1px;
+
+    --edux-button-font-size-small: var(--edux-font-size-x-small);
+    --edux-button-font-size-medium: var(--edux-font-size-small);
+    --edux-button-font-size-large: var(--edux-font-size-medium);
+
+    --edux-button-height-small: 1.875rem; /* 30px */
+    --edux-button-height-medium: 2.5rem; /* 40px */
+    --edux-button-height-large: 3.125rem; /* 50px */
+
+    /*
+    * Border radii
+    */
+
+    --edux-border-radius-small: 0.125rem; /* 2px */
+    --edux-border-radius-medium: 0.25rem; /* 4px */
+    --edux-border-radius-large: 0.5rem; /* 8px */
+    --edux-border-radius-x-large: 1rem; /* 16px */
+
+    /* Forms */
+
+    /* Inputs */
+    --edux-input-font-family: var(--edux-font-body);
+    --edux-input-font-size: var(--edux-font-size-small);
+    --edux-input-font-weight: var(--edux-font-normal);
+    --edux-input-color: var(--edux-color-carbon-80);    
+    --edux-input-line-height: var(--edux-line-height-dense);
+    --edux-input-border-color: var(--edux-color-carbon-20);    
+    --edux-input-background-color: var(--edux-color-spacesuit-white);
+    --edux-input-border-width: 2px;
+    --edux-input-border-radius: var(--edux-border-radius-small);
 
     /* END - Horizon Design Systems
+
+    /*
+    * Theme Tokens
+    */
 
     /* Primary */
     --edux-color-primary-50: var(--edux-color-sky-50);
@@ -372,15 +413,6 @@
     /* Neutral one-offs */
     --edux-color-neutral-0: hsl(0, 0%, 100%);
     --edux-color-neutral-1000: hsl(0, 0%, 0%);
-
-    /*
-   * Border radii
-   */
-
-    --edux-border-radius-small: 0.1875rem; /* 3px */
-    --edux-border-radius-medium: 0.25rem; /* 4px */
-    --edux-border-radius-large: 0.5rem; /* 8px */
-    --edux-border-radius-x-large: 1rem; /* 16px */
 
     --edux-border-radius-circle: 50%;
     --edux-border-radius-pill: 9999px;
@@ -473,25 +505,18 @@
    * Forms
    */
 
-    /* Buttons */
-    --edux-button-font-size-small: var(--edux-font-size-x-small);
-    --edux-button-font-size-medium: var(--edux-font-size-small);
-    --edux-button-font-size-large: var(--edux-font-size-medium);
-
     /* Inputs */
     --edux-input-height-small: 1.875rem; /* 30px */
     --edux-input-height-medium: 2.5rem; /* 40px */
     --edux-input-height-large: 3.125rem; /* 50px */
 
-    --edux-input-background-color: var(--edux-color-neutral-0);
     --edux-input-background-color-hover: var(--edux-input-background-color);
     --edux-input-background-color-focus: var(--edux-input-background-color);
     --edux-input-background-color-disabled: var(--edux-color-neutral-100);
-    --edux-input-border-color: var(--edux-color-neutral-300);
     --edux-input-border-color-hover: var(--edux-color-neutral-400);
     --edux-input-border-color-focus: var(--edux-color-primary-500);
     --edux-input-border-color-disabled: var(--edux-color-neutral-300);
-    --edux-input-border-width: 1px;
+
     --edux-input-required-content: '*';
     --edux-input-required-content-offset: -2px;
     --edux-input-required-content-color: var(--edux-input-label-color);
@@ -500,14 +525,12 @@
     --edux-input-border-radius-medium: var(--edux-border-radius-medium);
     --edux-input-border-radius-large: var(--edux-border-radius-medium);
 
-    --edux-input-font-family: var(--edux-font-sans);
     --edux-input-font-weight: var(--edux-font-weight-normal);
     --edux-input-font-size-small: var(--edux-font-size-small);
     --edux-input-font-size-medium: var(--edux-font-size-medium);
     --edux-input-font-size-large: var(--edux-font-size-large);
     --edux-input-letter-spacing: var(--edux-letter-spacing-normal);
 
-    --edux-input-color: var(--edux-color-neutral-700);
     --edux-input-color-hover: var(--edux-color-neutral-700);
     --edux-input-color-focus: var(--edux-color-neutral-700);
     --edux-input-color-disabled: var(--edux-color-neutral-900);
