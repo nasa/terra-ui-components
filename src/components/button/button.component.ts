@@ -50,12 +50,12 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
     /** The button's theme variant. */
     @property({ reflect: true }) variant:
         | 'default'
-        | 'primary'
-        | 'success'
         | 'neutral'
+        | 'success'
         | 'warning'
         | 'danger'
-        | 'text' = 'default'
+        | 'text' 
+        | 'pagelink' = 'default'        /* Renders the button as bold text with a trailing red circled arrow icon to indicate navigation to a new page. Links to external content (outside NASA.gov) will render an arrow pointing to the upper right to indicate that the user will be leaving the NASA site. */
 
     /** The button's size. */
     @property({ reflect: true }) size: 'small' | 'medium' | 'large' = 'medium'
@@ -72,11 +72,8 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
     /** Draws an outlined button. */
     @property({ type: Boolean, reflect: true }) outline = false
 
-    /** Draws a pill-style button with rounded edges. */
-    @property({ type: Boolean, reflect: true }) pill = false
-
     /**
-     * Draws a circular icon button. When this attribute is present, the button expects a single `<sl-icon>` in the
+     * Draws a circular icon button. When this attribute is present, the button expects a single `<edux-icon>` in the
      * default slot.
      */
     @property({ type: Boolean, reflect: true }) circle = false
@@ -271,12 +268,12 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         class=${classMap({
             button: true,
             'button--default': this.variant === 'default',
-            'button--primary': this.variant === 'primary',
+            'button--neutral': this.variant === 'neutral',        
             'button--success': this.variant === 'success',
-            'button--neutral': this.variant === 'neutral',
             'button--warning': this.variant === 'warning',
             'button--danger': this.variant === 'danger',
             'button--text': this.variant === 'text',
+            'button--pagelink': this.variant === 'pagelink',
             'button--small': this.size === 'small',
             'button--medium': this.size === 'medium',
             'button--large': this.size === 'large',
@@ -287,7 +284,6 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
             'button--loading': this.loading,
             'button--standard': !this.outline,
             'button--outline': this.outline,
-            'button--pill': this.pill,
             'button--has-label': this.hasSlotController.test('[default]'),
             'button--has-prefix': this.hasSlotController.test('prefix'),
             'button--has-suffix': this.hasSlotController.test('suffix'),
@@ -314,7 +310,14 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
       >
         <slot name="prefix" part="prefix" class="button__prefix"></slot>
         <slot part="label" class="button__label"></slot>
-        <slot name="suffix" part="suffix" class="button__suffix"></slot>
+        <slot name="suffix" part="suffix" class="button__suffix">
+            ${this.variant == 'pagelink' ?
+                html `
+                    <edux-icon name="outline-arrow-right" library="heroicons"></edux-icon>
+                `
+                : ``
+            }
+        </slot>
       </${tag}>
     `
     }
