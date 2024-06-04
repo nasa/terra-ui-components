@@ -236,5 +236,21 @@ export default css`
         font-size: 0.688rem; /* 11px */
         font-weight: var(--edux-font-light);
         text-transform: uppercase;
-    }    
+    }
+
+    /* Forms */
+
+    /* Input Field */
+
+        .input {
+            font-family: var(--edux-input-font-family);
+            font-size: var(--edux-input-font-size);
+            font-weight: var(--edux-input-font-weight);
+            line-height: var(--edux-input-line-height);
+            color: var(--edux-input-color);
+            background-color: var(--edux-input-background-color);
+            border: var(--edux-input-border-width) solid var(--edux-input-border-color);
+            border-radius: var(--edux-input-border-radius);
+        }
+
 `
