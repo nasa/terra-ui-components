@@ -212,6 +212,8 @@ export default css`
         position: absolute;
         white-space: nowrap;
         text-align: center;
+        font-family: var(--edux-input-font-family);
+        font-size: var(--edux-font-size-medium);
     }
     .noUi-value-sub {
         color: #ccc;
@@ -291,11 +293,13 @@ export default css`
     .noUi-tooltip {
         display: block;
         position: absolute;
-        border: 1px solid #d9d9d9;
-        border-radius: 3px;
-        background: #fff;
-        color: #000;
-        padding: 5px;
+        font-family: var(--edux-input-font-family);
+        font-size: var(--edux-input-font-size);
+        color: var(--edux-input-font-weight);
+        border: var(--edux-input-border-width) solid var(--edux-input-border-color);
+        border-radius: var(--edux-input-border-radius);
+        background: var(--edux-input-background-color);
+        padding: 5px 10px;
         text-align: center;
         white-space: nowrap;
     }
