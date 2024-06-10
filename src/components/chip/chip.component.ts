@@ -22,7 +22,6 @@ export default class EduxChip extends EduxElement {
 
     render() {
         return html` 
-        <slot>
             <div id="chip" class="chip" >
                 <div class="chip-content">${this.content}</div>
                 <div class="chip-close" onclick="parentNode.remove(); ${this.action}">
@@ -31,7 +30,6 @@ export default class EduxChip extends EduxElement {
                     </svg>
                 
                 </div>
-            </div>
-        </slot> `
+            </div>`
     }
 }
