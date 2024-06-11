@@ -154,13 +154,13 @@ export default css`
     }
 
     /* Body Fonts */
-
+    
     .body-18 {
         font-family: var(--edux-font-family--public-sans);
         font-size: 1.125rem; /* 18px */
         font-weight: var(--edux-font-weight-normal);
     }
-    
+
     .body-16 {
         font-family: var(--edux-font-family--public-sans);
         font-size: 1rem; /* 16px */
