@@ -63,7 +63,10 @@ export default css`
     }
 
     .button__label {
-        display: inline-block;
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        pointer-events: none;    
     }
 
     .button__label::slotted(edux-icon) {
@@ -399,11 +402,6 @@ export default css`
     .button--circle {
         padding-left: 0;
         padding-right: 0;
-        & slot[part="label"] {
-            display:flex;
-            justify-content: center;
-            align-items: center;
-        }
     }
 
     .button--circle.button--small {

@@ -13,22 +13,14 @@ export default css`
 
     :host input {
         box-shadow: none;
-        border-radius: 0 !important;
     }
 
     :host .form-control {
         display: block;
-        border-radius: 0;
         width: 100%;
         height: 36px;
         padding: 6px 12px;
-        font-size: 14px;
-        line-height: 1.42857143;
-        color: #555555;
-        background-color: #fff;
         background-image: none;
-        border: 1px solid #ccc;
-        border-radius: 4px;
         -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         -webkit-transition:
@@ -40,24 +32,22 @@ export default css`
     }
 
     :host .spatial-picker__input_icon_button {
-        display: inline-block;
-        height: 36px;
-        width: 36px;
-        padding: 0px;
         position: absolute;
-        padding-top: 5px;
         top: 0;
         right: 0;
+        height: 36px;
+        padding: 0px;
         z-index: 2;
-        border: none;
-        cursor: pointer;
-        box-shadow: none;
-        background-color: none;
-        background: black;
+        margin-block: 0;
+        margin-inline: 0;
     }
 
     :host .spatial-picker__input_icon_button svg {
-        height: 28px;
-        color: white;
-    }
+        height: 1.4rem;
+        width: 1.4rem;    }
+
+    .button-icon {
+        height: 1rem;
+        width: 1rem;
+    }    
 `
