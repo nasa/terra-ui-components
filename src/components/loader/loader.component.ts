@@ -47,6 +47,11 @@ export default class EduxLoader extends EduxElement {
     }
 
     render() {
+        /* TODO: The svg viewbox attribute ideally should be a fixed size for both the large and small loaders. 
+         * Since the coordinates and dimension of the svg are dynamically set in the CSS this may be why 
+         * the scale of the rendered graphic does not match the calculated svg size when the viewport does not match.
+        */
+
         this._currentPercent = parseInt(this.percent)
 
         return html` 
@@ -69,6 +74,7 @@ export default class EduxLoader extends EduxElement {
                 }
 
                 <svg 
+                    viewBox=${this.size == 'small' ? '0 0 30 30' : '0 0 52 52'} 
                     style="--progress: ${this.percent}" class="circular-progress">
                     <circle class="bg"></circle>
                     <circle class="fg"></circle>
