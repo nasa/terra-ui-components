@@ -25,7 +25,7 @@ Use the `variant` attribute to set the button's variant.
 
 ```html:preview
 <edux-button variant="default">Default</edux-button>
-<edux-button variant="neutral">Neutral</edux-button>
+<edux-button variant="primary">Primary</edux-button>
 <edux-button variant="success">Success</edux-button>
 <edux-button variant="warning">Warning</edux-button>
 <edux-button variant="danger">Danger</edux-button>
@@ -37,7 +37,7 @@ import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 const App = () => (
   <>
     <EduxButton variant="default">Default</EduxButton>
-    <EduxButton variant="neutral">Neutral</EduxButton>    
+    <EduxButton variant="primary">Primary</EduxButton>    
     <EduxButton variant="success">Success</EduxButton>
     <EduxButton variant="warning">Warning</EduxButton>
     <EduxButton variant="danger">Danger</EduxButton>
@@ -73,7 +73,7 @@ Use the `outline` attribute to draw outlined buttons with transparent background
 
 ```html:preview
 <edux-button variant="default" outline>Default</edux-button>
-<edux-button variant="neutral" outline>Neutral</edux-button>
+<edux-button variant="primary" outline>Primary</edux-button>
 <edux-button variant="success" outline>Success</edux-button>
 <edux-button variant="warning" outline>Warning</edux-button>
 <edux-button variant="danger" outline>Danger</edux-button>
@@ -87,8 +87,8 @@ const App = () => (
     <EduxButton variant="default" outline>
       Default
     </EduxButton>
-    <EduxButton variant="neutral" outline>
-      Neutral
+    <EduxButton variant="primary" outline>
+      Primary
     </EduxButton>    
     <EduxButton variant="success" outline>
       Success
@@ -198,13 +198,32 @@ const App = () => (
 
 ### Page Link Buttons
 
-Use the `pagelink` variant to create text buttons that use bold text and a red circled arrow icon to indicate navigation to a new page. Links to external content (outside NASA.gov) will render an arrow pointing to the upper right to indicate that the user will be leaving the NASA site.
+Use the `pagelink` variant to create text buttons that use bold text and a red circled arrow icon to indicate navigation to a new page. Links to external content (outside of the hosting domain) will render an arrow pointing to the upper right to indicate that the user will be leaving the hosting site.
 
 ```html:preview
-<edux-button variant="pagelink" href="https://example.com/" target="_blank" size="small">Explore</edux-button>
-<edux-button variant="pagelink" href="https://nasa.gov/" size="medium">Explore</edux-button>
+<edux-button variant="pagelink" href="https://localhost/" target="_blank" size="small">Explore</edux-button>
+<edux-button variant="pagelink" href="https://localhost/" size="medium">Explore</edux-button>
 <edux-button variant="pagelink" href="https://example.com/" target="_blank" size="large">Explore</edux-button>
 ```
+
+```jsx:react
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+
+const App = () => (
+  <>
+    <EduxButton variant="pagelink" href="https://localhost/" target="_blank" size="small">
+      Explore
+    </EduxButton>
+    <EduxButton variant="pagelink" href="https://localhost/" size="medium">
+      Explore
+    </EduxButton>
+    <EduxButton variant="pagelink" href="https://example.com/" target="_blank" size="large">
+      Explore
+    </EduxButton>
+  </>
+);
+```
+
 
 ### Link Buttons
 
@@ -303,6 +322,34 @@ const App = () => (
   </>
 );
 ```
+
+### Shape
+
+Use the button `shape` attribute to override to radius. Useful for controlling the edge shape when button is not in a edux-button-group so button can be integrated into input form controls such as drop-down lists, search fields, etc.
+```html:preview
+<edux-button shape="square-right">Square-right</edux-button>
+<edux-button shape="square">Square</edux-button>
+<edux-button shape="square-left">Square-left</edux-button>
+```
+
+```jsx:react
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+
+const App = () => (
+  <>
+    <EduxButton shape="square-right">
+      Small
+    </EduxButton>
+    <EduxButton shape="square">
+      Medium
+    </EduxButton>
+    <EduxButton shape="square-left">
+      Large
+    </EduxButton>
+  </>
+);
+```
+
 
 ### Loading
 

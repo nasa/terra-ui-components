@@ -50,18 +50,21 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
     /** The button's theme variant. */
     @property({ reflect: true }) variant:
         | 'default'
-        | 'neutral'
+        | 'primary'
         | 'success'
         | 'warning'
         | 'danger'
         | 'text' 
-        | 'pagelink' = 'default'        /* Renders the button as bold text with a trailing red circled arrow icon to indicate navigation to a new page. Links to external content (outside NASA.gov) will render an arrow pointing to the upper right to indicate that the user will be leaving the NASA site. */
+        | 'pagelink' = 'primary'        /* Renders the button as bold text with a trailing red circled arrow icon to indicate navigation to a new page. Links to external content (outside NASA.gov) will render an arrow pointing to the upper right to indicate that the user will be leaving the NASA site. */
 
     /** The button's size. */
     @property({ reflect: true }) size: 'small' | 'medium' | 'large' = 'medium'
 
     /** Draws the button with a caret. Used to indicate that the button triggers a dropdown menu or similar behavior. */
     @property({ type: Boolean, reflect: true }) caret = false
+
+    /** The button's shape. Used to control the radius edge shape when button is not in a edux-button-group. */
+    @property({ reflect: true }) shape: 'square' | 'square-left' | 'square-right'
 
     /** Disables the button. */
     @property({ type: Boolean, reflect: true }) disabled = false
@@ -256,6 +259,39 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         }
     }
 
+    setPageLinkIcon(href: string): string {
+        /* Set icon for pageLink button based on whether link is internal or external */
+
+        const parsedUrl = new URL(href)
+        const linkDomain = parsedUrl.hostname
+        const hostDomain = window.location.hostname
+
+        return linkDomain === hostDomain ? 'outline-arrow-right' : 'outline-arrow-up-right'
+
+        if (linkDomain === hostDomain) {
+            return 'outline-arrow-right'
+        }
+        else {
+            return 'outline-arrow-up-right'
+        }
+    }
+
+    setFontSize(size: string): string {
+        /* Scale icon size based on pageLink button size. */
+
+        console.log('btn size = ' + size)
+        switch(size) {
+            case 'small':
+                return '.8rem'
+            case 'medium':
+                return '1.2rem'
+            case 'large':
+                return '1.5rem'
+            default:
+                return '1.5rem'
+        }
+    }
+
     render() {
         const isLink = this.isLink()
         const tag = isLink ? literal`a` : literal`button`
@@ -268,7 +304,7 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         class=${classMap({
             button: true,
             'button--default': this.variant === 'default',
-            'button--neutral': this.variant === 'neutral',        
+            'button--primary': this.variant === 'primary',        
             'button--success': this.variant === 'success',
             'button--warning': this.variant === 'warning',
             'button--danger': this.variant === 'danger',
@@ -278,6 +314,9 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
             'button--medium': this.size === 'medium',
             'button--large': this.size === 'large',
             'button--caret': this.caret,
+            'button--square-left': this.shape === 'square-left',
+            'button--square': this.shape === 'square',
+            'button--square-right': this.shape === 'square-right',
             'button--circle': this.circle,
             'button--disabled': this.disabled,
             'button--focused': this.hasFocus,
@@ -313,7 +352,9 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         <slot name="suffix" part="suffix" class="button__suffix">
             ${this.variant == 'pagelink' ?
                 html `
-                    <edux-icon name="outline-arrow-right" library="heroicons"></edux-icon>
+                    <span>
+                        <edux-icon name=${this.setPageLinkIcon(this.href)} library="heroicons" font-size=${this.setFontSize(this.size)}></edux-icon>
+                    </span>
                 `
                 : ``
             }

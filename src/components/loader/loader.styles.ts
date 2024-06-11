@@ -47,7 +47,7 @@ export default css`
         display: block;
         width: var(--size);
         position: absolute;
-        top: 17px;
+        top: 19px;
         padding-left: 4px;
         letter-spacing: .1rem;
         text-align: center;
