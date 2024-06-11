@@ -108,8 +108,10 @@ export default css`
         color: var(--edux-color-carbon-60);
         flex: 1 1 100%;
         font-size: var(--edux-font-size-small);
-        line-height: var(--edux-line-height-looser);
+        line-height: var(--edux-line-height-normal);
         margin-block: 0;
+        position: absolute;
+        bottom: -10px;
     }
 
     .external-link {
