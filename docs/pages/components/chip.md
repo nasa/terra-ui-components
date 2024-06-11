@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<edux-chip content="This is a chip!"></edux-chip>
+<edux-chip>This is a chip!</edux-chip>
 ```
 
 ## Examples
@@ -16,16 +16,16 @@ layout: component
 Customize the `content` property to alter the text on each chip.
 
 ```html:preview
-<edux-chip content="You"></edux-chip>
-<edux-chip content="Can"></edux-chip>
-<edux-chip content="Click"></edux-chip>
-<edux-chip content="the"></edux-chip>
-<edux-chip content="X"></edux-chip>
-<edux-chip content="and"></edux-chip>
-<edux-chip content="Make"></edux-chip>
-<edux-chip content="Each"></edux-chip>
-<edux-chip content="Chip"></edux-chip>
-<edux-chip content="Disappear"></edux-chip>
+<edux-chip>You</edux-chip>
+<edux-chip>Can</edux-chip>
+<edux-chip>Click</edux-chip>
+<edux-chip>the</edux-chip>
+<edux-chip>X</edux-chip>
+<edux-chip>and</edux-chip>
+<edux-chip>Make</edux-chip>
+<edux-chip>Each</edux-chip>
+<edux-chip>Chip</edux-chip>
+<edux-chip>Disappear</edux-chip>
 ```
 
 ```jsx:react
@@ -33,16 +33,16 @@ import EduxLoader from '@nasa/earthdata-ux-components/dist/react/chip';
 
 const App = () => (
     <>
-        <EduxChip content="You"></EduxChip>
-        <EduxChip content="Can"></EduxChip>
-        <EduxChip content="Click"></EduxChip>
-        <EduxChip content="the"></EduxChip>
-        <EduxChip content="X"></EduxChip>
-        <EduxChip content="and"></EduxChip>
-        <EduxChip content="Make"></EduxChip>
-        <EduxChip content="Each"></EduxChip>
-        <EduxChip content="Chip"></EduxChip>
-        <EduxChip content="Disappear"></EduxChip>
+        <EduxChip>You</EduxChip>
+        <EduxChip>Can</EduxChip>
+        <EduxChip>Click</EduxChip>
+        <EduxChip>the</EduxChip>
+        <EduxChip>X</EduxChip>
+        <EduxChip>and</EduxChip>
+        <EduxChip>Make</EduxChip>
+        <EduxChip>Each</EduxChip>
+        <EduxChip>Chip</EduxChip>
+        <EduxChip>Disappear</EduxChip>
     </>
 );
 ```
@@ -52,14 +52,27 @@ Customize actions by modifying the `action` property, which will not only make t
 
 This example makes the chip disappear and also produces an alert.
 ```html:preview
-<edux-chip content="Alert" action='alert("This chip has been removed")'></edux-chip>
+<edux-chip class="chip">Alert</edux-chip>
+<script>
+  const div = document.querySelector('.chip');
+
+  div.addEventListener('edux-remove', event => {
+    alert("This chip has been removed!");
+  });
+</script>
 ```
 
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/chip';
-const App = () => (
+import EduxLoader from '@nasa/earthdata-ux-components/dist/react/chip'
+const App = () => {
+  function handleRemove(event) {
+    alert("This chip has been removed");
+  }
+
+  return (
     <>
-        <EduxChip content="Alert" action='alert("This chip has been removed")'></EduxChip>
+        <EduxChip class="chip">Alert</EduxChip>
     </>
-);
+  );
+};
