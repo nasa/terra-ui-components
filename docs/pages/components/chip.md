@@ -13,7 +13,7 @@ layout: component
 
 ### Default behavior of chips
 
-Customize the `content` property to alter the text on each chip.
+Customize the text on each chip.
 
 ```html:preview
 <edux-chip>You</edux-chip>
@@ -46,11 +46,23 @@ const App = () => (
     </>
 );
 ```
+
+### Customizing Chip Sizes
+
+Use the "size" property to customize the size of the chip.
+
+```html:preview
+  <edux-chip size="small">Small</edux-chip>
+  <edux-chip size="medium">Medium</edux-chip>
+  <edux-chip size="large">Large</edux-chip>
+```
+
 ### Adding custom behaviors to chips
 
-Customize actions by modifying the `action` property, which will not only make the chip disappear, but also do a custom action. 
+Customize actions by modifying the `action` property, which will not only make the chip disappear, but also do a custom action.
 
 This example makes the chip disappear and also produces an alert.
+
 ```html:preview
 <edux-chip class="chip">Alert</edux-chip>
 <script>
@@ -61,7 +73,6 @@ This example makes the chip disappear and also produces an alert.
   });
 </script>
 ```
-
 
 ```jsx:react
 import EduxLoader from '@nasa/earthdata-ux-components/dist/react/chip'
@@ -76,3 +87,4 @@ const App = () => {
     </>
   );
 };
+```
