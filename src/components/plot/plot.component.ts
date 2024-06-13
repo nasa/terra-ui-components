@@ -13,6 +13,7 @@ interface plot {
     name: string
     x: Array<number>
     y: Array<number>
+    line: string
 }
 /**
  * @summary A web component for interactive graphs using Plotly.js.
@@ -24,6 +25,7 @@ interface plot {
  */
 export default class EduxPlot extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
+    plotData: Array<plot> = []
 
     @query('[part~="base"]')
     base: HTMLElement
@@ -85,7 +87,17 @@ export default class EduxPlot extends EduxElement {
         // I created a plot interface to define the x and y properties but data must be of type Array<Partial<Data>> to work with Plotly.
         // Code still works though.
         //const csvData = this.data.map((trace: plot) => {
-        const csvData = this.data.map(trace => {
+
+        var plotData: Array<plot> = []
+
+        // convert data object to plot object to resolve property references
+        var i = 0
+        this.data.forEach(plot => {
+            plotData[i] = plot as unknown as plot
+            i++
+        })
+
+        const csvData = plotData.map(trace => {
             return trace.x.map((x: any, i: number) => {
                 return {
                     x: x,
