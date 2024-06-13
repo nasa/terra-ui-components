@@ -83,11 +83,6 @@ export default class EduxPlot extends EduxElement {
     }
 
     downloadCSV() {
-        // TODO: properties x and y do not exist on data since it is of type Array<Partial<Data>> so they are flagged.
-        // I created a plot interface to define the x and y properties but data must be of type Array<Partial<Data>> to work with Plotly.
-        // Code still works though.
-        //const csvData = this.data.map((trace: plot) => {
-
         var plotData: Array<plot> = []
 
         // convert data object to plot object to resolve property references
@@ -97,6 +92,7 @@ export default class EduxPlot extends EduxElement {
             i++
         })
 
+        // Return x and y values for every data point in each plot line 
         const csvData = plotData.map(trace => {
             return trace.x.map((x: any, i: number) => {
                 return {
@@ -106,10 +102,13 @@ export default class EduxPlot extends EduxElement {
             });
         }).flat();
 
+        // Create CSV format, make it a Blob file and generate a link to it.
         const csv = this.convertToCSV(csvData);
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
+
+        // Create a hidden link element and click it to download the CSV, then remove the link.
         a.setAttribute('href', url);
         a.setAttribute('download', 'chart_data.csv');
         a.style.display = 'none';
