@@ -34,6 +34,30 @@
         <meta property="og:image" content="{{ assetUrl(meta.image, true) }}"/>
 
         {# Components #}
+        <script>
+        // If `prefers-color-scheme` is not supported, fall back to light mode.
+        // In this case, light.css will be downloaded with `highest` priority.
+        console.log("window.matchMedia('(prefers-color-scheme: dark)').media === 'not all' -----> " + window.matchMedia('(prefers-color-scheme: dark)').media === 'not all');
+        console.log("window.matchMedia('(prefers-color-scheme: dark)').media -----> " + window.matchMedia('(prefers-color-scheme: dark)').media);
+        console.log("window.matchMedia('(prefers-color-scheme: light)').media -----> " + window.matchMedia('(prefers-color-scheme: light)').media);
+
+        if (window.matchMedia('(prefers-color-scheme: dark)').media === 'not all') {
+            document.documentElement.style.display = 'none';
+            document.head.insertAdjacentHTML(
+            'beforeend',
+            '<link rel="stylesheet" href="/dist/themes/horizon-light.css" onload="document.documentElement.style.display = \'\'">',
+            );
+        }
+        </script>
+        <!--
+        Conditionally either load the light or the dark stylesheet. The matching file
+        will be downloaded with `highest`, the non-matching file with `lowest`
+        priority. If the browser doesn't support `prefers-color-scheme`, the media
+        query is unknown and the files are downloaded with `lowest` priority (but
+        above I already force `highest` priority for my default light experience).
+        -->
+        <link rel="stylesheet" href="/dist/themes/horizon-dark.css" media="(prefers-color-scheme: dark)" />
+        <link rel="stylesheet" href="/dist/themes/horizon-light.css" media="(prefers-color-scheme: light)" />        
         <link rel="stylesheet" href="/dist/themes/horizon.css"/>
         <script type="module" src="/dist/earthdata-ux-components-autoloader.js"></script>
 
