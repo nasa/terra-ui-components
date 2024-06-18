@@ -37,6 +37,26 @@ const App = () => (
 );
 ```
 
+### Indeterminate
+
+Use the `indeterminate` attribute to show a spinner.
+
+```html:preview
+<edux-loader indeterminate size='large'></edux-loader>
+<edux-loader indeterminate size='small'></edux-loader>
+```
+
+```jsx:react
+import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+
+const App = () => (
+    <>
+        <EduxLoader indeterminate size='large'></EduxLoader>
+        <EduxLoader indeterminate size='small'></EduxLoader>
+    </>
+);
+```
+
 ### Themes
 
 ```html:preview
