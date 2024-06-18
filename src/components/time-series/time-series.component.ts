@@ -11,6 +11,7 @@ import type { EduxDateRangeChangeEvent } from '../../events/edux-date-range-chan
 import { TimeSeriesController } from './time-series.controller.js'
 import EduxVariableCombobox from '../variable-combobox/variable-combobox.component.js'
 import type { EduxComboboxChangeEvent } from '../../earthdata-ux-components.js'
+import { TaskStatus } from '@lit/task'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -19,6 +20,8 @@ import type { EduxComboboxChangeEvent } from '../../earthdata-ux-components.js'
  * @since 1.0
  *
  * @dependency edux-plot
+ * @dependency edux-date-range-slider
+ * @dependency edux-variable-combobox
  */
 export default class EduxTimeSeries extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -137,6 +140,15 @@ export default class EduxTimeSeries extends EduxElement {
                 end-date=${this.endDate}
                 @edux-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
             ></edux-date-range-slider>
+
+            <dialog
+                open
+                class=${this.#timeSeriesController.task.status === TaskStatus.PENDING
+                    ? 'open'
+                    : ''}
+            >
+                Conditional Class Example
+            </dialog>
         `
     }
 }
