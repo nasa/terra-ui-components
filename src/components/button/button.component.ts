@@ -264,8 +264,7 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
 
         const parsedUrl = new URL(href)
         const linkDomain = parsedUrl.hostname
-        const hostDomain = window.location.hostname
-
+        const hostDomain = globalThis.location.hostname
         return linkDomain === hostDomain ? 'outline-arrow-right' : 'outline-arrow-up-right'
     }
 

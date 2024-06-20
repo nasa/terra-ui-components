@@ -242,7 +242,7 @@ export default css`
 
     /* Input Field */
 
-    .input {
+    input[type=text], input[type=password], select, .input {
         font-family: var(--edux-input-font-family);
         font-size: var(--edux-input-font-size);
         color: var(--edux-input-color);
@@ -253,7 +253,7 @@ export default css`
         border-radius: var(--edux-input-border-radius);
     }
 
-    .input-label {
+    label, .input-label {
         font-family: var(--edux-input-label-font-family);
         font-size: var(--edux-input-label-font-size);
         color: var(--edux-input-label-color);

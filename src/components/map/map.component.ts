@@ -122,7 +122,7 @@ export default class EduxMap extends EduxElement {
         return html`
             <div>
                 <select
-                    class="map__select form-control input"
+                    class="map__select form-control"
                     @change=${this.map.handleShapeSelect}
                 >
                     <option>Select a Shape...</option>

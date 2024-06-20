@@ -256,7 +256,7 @@ export default class EduxVariableCombobox extends EduxElement {
                     aria-autocomplete="list"
                     aria-controls="listbox"
                     aria-expanded=${this.isExpanded}
-                    class="combobox input"
+                    class="combobox"
                     id="combobox"
                     part="combobox"
                     role="combobox"

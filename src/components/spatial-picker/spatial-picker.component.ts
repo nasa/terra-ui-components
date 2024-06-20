@@ -103,7 +103,7 @@ export default class EduxSpatialPicker extends EduxElement {
                 <div class="spatial-picker__input_fields">
                     <input
                         type="text"
-                        class="spatial-picker__input form-control input"
+                        class="spatial-picker__input form-control"
                         placeholder="-180, -90, 180, 90"
                         @blur=${this._blur}
                     />
