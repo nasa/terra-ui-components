@@ -1,5 +1,41 @@
 import { css } from 'lit'
 
+console.log("window.matchMedia('(prefers-color-scheme: dark)').media === 'not all' -----> " + window.matchMedia('(prefers-color-scheme: dark)').media === 'not all');
+console.log("window.matchMedia('(prefers-color-scheme: dark)').media -----> " + window.matchMedia('(prefers-color-scheme: dark)').media);
+console.log("window.matchMedia('(prefers-color-scheme: light)').media -----> " + window.matchMedia('(prefers-color-scheme: light)').media);
+
+const darkModeCSS = '/dist/themes/horizon-dark.css';
+const lightModeCSS = '/dist/themes/horizon-light.css';
+
+function loadCSSFile(filename: string, media?: string, onloadCallback?: () => void): void {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = filename;
+    if (media) {
+        link.media = media;
+    }
+    if (onloadCallback) {
+        link.onload = onloadCallback;
+    }
+    document.head.appendChild(link);
+}
+
+// Load base component theme
+loadCSSFile('/dist/themes/horizon.css', '(prefers-color-scheme: dark)');
+
+// If `prefers-color-scheme` is not supported, fall back to light mode.
+// In this case, horizon-light.css will be downloaded with `highest` priority.
+if (window.matchMedia('(prefers-color-scheme: dark)').media === 'not all') {
+    document.documentElement.style.display = 'none';
+    loadCSSFile(lightModeCSS,'',() => { document.documentElement.style.display = '' });
+}
+
+// Load both light and dark theme CSS files with appropriate media queries. The matching 
+// file will be downloaded with `highest`, the non-matching file with `lowest` priority.
+loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
+loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
+
 export default css`
     :host {
         box-sizing: border-box;

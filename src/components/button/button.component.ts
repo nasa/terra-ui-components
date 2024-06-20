@@ -267,19 +267,11 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         const hostDomain = window.location.hostname
 
         return linkDomain === hostDomain ? 'outline-arrow-right' : 'outline-arrow-up-right'
-
-        if (linkDomain === hostDomain) {
-            return 'outline-arrow-right'
-        }
-        else {
-            return 'outline-arrow-up-right'
-        }
     }
 
     setFontSize(size: string): string {
         /* Scale icon size based on pageLink button size. */
 
-        console.log('btn size = ' + size)
         switch(size) {
             case 'small':
                 return '.8rem'
