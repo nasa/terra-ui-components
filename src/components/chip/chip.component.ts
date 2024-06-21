@@ -44,7 +44,7 @@ export default class EduxChip extends EduxElement {
                 >
                     <slot part="content" class="tag__content"></slot>
                 </div>
-                <div class="chip-close" @click="${this.#handleRemoveClick}">
+                <button class="chip-close" @click="${this.#handleRemoveClick}">
                     <svg
                         class=${classMap({
                             // Sizes
@@ -63,7 +63,7 @@ export default class EduxChip extends EduxElement {
                             transform="matrix(0.707107007504, 0.707107007504, -0.707107007504, 0.707107007504, -9.98393e-7, -0.000026419743)"
                         ></path>
                     </svg>
-                </div>
+                </button>
             </div>
         `
     }

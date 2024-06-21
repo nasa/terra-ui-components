@@ -103,7 +103,7 @@ export default css`
         color: #888888;
         cursor: pointer;
         height: auto;
-        margin: 3px 3px -3px -6px;
+        margin: 3px 3px 0px -6px;
         fill: currentColor;
         width: 0.75em;
         height: 0.75em;
@@ -117,7 +117,7 @@ export default css`
         color: #888888;
         cursor: pointer;
         height: auto;
-        margin: 4px 4px -4px -8px;
+        margin: 4px 4px 0px -8px;
         fill: currentColor;
         width: 1em;
         height: 1em;
@@ -132,7 +132,7 @@ export default css`
         color: #888888;
         cursor: pointer;
         height: auto;
-        margin: 6px 6px -6px -12px;
+        margin: 6px 6px 0px -12px;
         fill: currentColor;
         width: 1.4em;
         height: 1.4em;
@@ -153,5 +153,13 @@ export default css`
     .chip-svg--large:hover {
         visibility: 'visible';
         filter: invert(100%);
+    }
+    .chip-close {
+        padding: 0;
+        border: 0;
+        background: none;
+        box-shadow: none;
+        text-align: center;
+        vertical-align: middle;
     }
 `
