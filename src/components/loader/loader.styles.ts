@@ -14,18 +14,6 @@ export default css`
         height: var(--size);
     }
 
-    /* Theme modes */
-
-    .loader--dark {
-        color: white;
-        background-color: black;
-    }
-
-    .loader--light {
-        color: black;
-        background-color: white;
-    }
-
     /* Loader sizes */
 
     .loader--large {

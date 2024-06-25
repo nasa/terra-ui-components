@@ -12,7 +12,7 @@
     border-bottom: none;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    background-color: var(--edux-color-spacesuit-white);
+    background-color: var(--edux-color-carbon-5);
     min-width: 20rem;
     max-width: 100%;
     padding: 1.5rem 3.25rem 1.5rem 1.5rem;
@@ -42,7 +42,7 @@
     width: 1.75rem;
     font-size: 20px;
     color: var(--edux-color-carbon-60);
-    background-color: var(--edux-color-spacesuit-white);
+    background-color: var(--edux-color-carbon-5);
     border-left: solid 1px var(--edux-color-carbon-20);
     border-top-right-radius: 3px;
     cursor: ew-resize;
@@ -87,7 +87,7 @@
     min-width: 2.5rem;
     border: none;
     border-radius: 0;
-    background: var(--edux-color-spacesuit-white);
+    background: var(--edux-color-carbon-5);
     font: inherit;
     font-size: 0.7rem;
     font-weight: 500;

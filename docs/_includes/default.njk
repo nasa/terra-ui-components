@@ -85,6 +85,18 @@
             <a href="https://github.com/earthdata-ux/components" title="View Earthdata UX Components on GitHub">
                 <sl-icon name="github"></sl-icon>
             </a>
+            <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
+                <sl-button slot="trigger" size="small" variant="text" caret="" title="Press \ to toggle" data-optional="" data-valid="" data-user-valid="">
+                    <sl-icon class="only-light" name="sun-fill" aria-hidden="true" library="default"></sl-icon>
+                    <sl-icon class="only-dark" name="moon-fill" aria-hidden="true" library="default"></sl-icon>
+                </sl-button>
+                <sl-menu role="menu">
+                    <sl-menu-item type="checkbox" value="light" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Light</sl-menu-item>
+                    <sl-menu-item type="checkbox" value="dark" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Dark</sl-menu-item>
+                    <sl-divider role="separator" aria-orientation="horizontal"></sl-divider>
+                    <sl-menu-item type="checkbox" value="auto" tabindex="0" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">System</sl-menu-item>
+                </sl-menu>
+            </sl-dropdown>            
         </div>
 
         <aside id="sidebar" data-preserve-scroll>

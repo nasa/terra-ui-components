@@ -540,7 +540,7 @@ pre .token.italic {
     background-color: color-mix(
         in oklch,
         var(--edux-color-carbon-5),
-        var(--edux-color-carbon-black) 3%
+        var(--edux-color-carbon-90) 3%
     );
 }
 
@@ -548,7 +548,7 @@ pre .token.italic {
     background-color: color-mix(
         in oklch,
         var(--edux-color-carbon-5),
-        var(--edux-color-carbon-black) 6%
+        var(--edux-color-carbon-90) 6%
     );
 }
 
@@ -600,7 +600,7 @@ pre:hover .copy-code-button,
     justify-content: center;
     font-family: var(--edux-font-serif);
     font-weight: var(--edux-font-weight-bold);
-    color: var(--edux-color-spacesuit-white);
+    color: var(--edux-color-carbon-90);
     clip-path: circle(50% at 50% 50%);
 }
 
@@ -983,7 +983,7 @@ main {
         background: linear-gradient(
             90deg,
             rgba(0 0 0 / 0) 0%,
-            var(--edux-color-spacesuit-white) 100%
+            var(--edux-color-carbon-90) 100%
         );
     }
 
@@ -1016,7 +1016,7 @@ main {
     color: black;
     border: none;
     border-radius: 50%;
-    background: var(--edux-color-spacesuit-white);
+    background: var(--edux-color-carbon-90);
     padding: 0.5rem;
     margin: 0;
     cursor: pointer;
@@ -1058,8 +1058,8 @@ html.sidebar-open #menu-toggle {
     text-align: center;
     text-decoration: none;
     border-radius: 9999px;
-    background: var(--edux-color-spacesuit-white);
-    color: var(--edux-color-carbon-black);
+    background: var(--edux-color-carbon-90);
+    color: var(--edux-color-carbon-90);
     padding: 0.5rem;
 }
 
@@ -1087,7 +1087,7 @@ html.sidebar-open #menu-toggle {
     border: none;
     border-radius: var(--docs-border-radius);
     font-size: 1.25rem;
-    color: var(--edux-color-spacesuit-white);
+    color: var(--edux-color-carbon-90);
     text-decoration: none;
     padding: 0.5rem;
     margin: 0;
@@ -1109,7 +1109,7 @@ html.sidebar-open #menu-toggle {
 }
 
 #theme-selector edux-button::part(base) {
-    color: var(--edux-color-spacesuit-white);
+    color: var(--edux-color-carbon-90);
 }
 
 #theme-selector edux-button::part(label) {
@@ -1122,7 +1122,7 @@ html.sidebar-open #menu-toggle {
 }
 
 .edux-theme-dark #theme-selector edux-button::part(base) {
-    color: var(--edux-color-carbon-black);
+    color: var(--edux-color-carbon-90);
 }
 
 .edux-theme-dark #icon-toolbar {
@@ -1131,7 +1131,7 @@ html.sidebar-open #menu-toggle {
 
 .edux-theme-dark #icon-toolbar button,
 .edux-theme-dark #icon-toolbar a {
-    color: var(--edux-color-carbon-black);
+    color: var(--edux-color-carbon-90);
 }
 
 #icon-toolbar a:not(:last-child),
