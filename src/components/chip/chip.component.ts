@@ -27,32 +27,34 @@ export default class EduxChip extends EduxElement {
         return html`
             <div
                 id="chip"
-                class=${classMap({
+                class="${classMap({
                     // Sizes
                     'chip--small': this.size === 'small',
                     'chip--medium': this.size === 'medium',
                     'chip--large': this.size === 'large',
                 })}
+                chip"
             >
                 <div
-                    class=${classMap({
+                    class="${classMap({
                         // Sizes
                         'chip-content--small': this.size === 'small',
                         'chip-content--medium': this.size === 'medium',
                         'chip-content--large': this.size === 'large',
                     })}
+                    chip-content"
                 >
                     <slot part="content" class="tag__content"></slot>
                 </div>
                 <button class="chip-close" @click="${this.#handleRemoveClick}">
                     <svg
-                        class=${classMap({
+                        class="${classMap({
                             // Sizes
                             'chip-svg--small': this.size === 'small',
                             'chip-svg--medium': this.size === 'medium',
                             'chip-svg--large': this.size === 'large',
                         })}
-                        class="chip-svg"
+                        chip-svg"
                         focusable="false"
                         viewBox="0 0 500 500"
                         aria-hidden="true"
