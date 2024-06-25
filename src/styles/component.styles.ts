@@ -1,8 +1,8 @@
 import { css } from 'lit'
 
 console.log("window.matchMedia('(prefers-color-scheme: dark)').media === 'not all' -----> " + window.matchMedia('(prefers-color-scheme: dark)').media === 'not all');
-console.log("window.matchMedia('(prefers-color-scheme: dark)').media -----> " + window.matchMedia('(prefers-color-scheme: dark)').media);
-console.log("window.matchMedia('(prefers-color-scheme: light)').media -----> " + window.matchMedia('(prefers-color-scheme: light)').media);
+console.log("window.matchMedia('(prefers-color-scheme: dark)').matches -----> " + window.matchMedia('(prefers-color-scheme: dark)').matches);
+console.log("window.matchMedia('(prefers-color-scheme: light)').matches -----> " + window.matchMedia('(prefers-color-scheme: light)').matches);
 
 const darkModeCSS = '/dist/themes/horizon-dark.css';
 const lightModeCSS = '/dist/themes/horizon-light.css';
@@ -22,7 +22,7 @@ function loadCSSFile(filename: string, media?: string, onloadCallback?: () => vo
 }
 
 // Load base component theme
-loadCSSFile('/dist/themes/horizon.css', '(prefers-color-scheme: dark)');
+loadCSSFile('/dist/themes/horizon.css');
 
 // If `prefers-color-scheme` is not supported, fall back to light mode.
 // In this case, horizon-light.css will be downloaded with `highest` priority.
@@ -36,6 +36,14 @@ if (window.matchMedia('(prefers-color-scheme: dark)').media === 'not all') {
 loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
 loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
 
+// OPTION IF THE ABOVE DOESN'T WORK.
+// if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+//     loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
+// }
+// else {
+//     loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
+// }
+
 export default css`
     :host {
         box-sizing: border-box;
@@ -45,6 +53,11 @@ export default css`
     :host *::before,
     :host *::after {
         box-sizing: inherit;
+    }
+
+    :host {
+        background-color: var(--background-color);
+        color: var(--color);
     }
 
     [hidden] {
@@ -79,7 +92,7 @@ export default css`
         font-weight: var(--edux-font-weight-bold);
     }
 
-     .display-60 {
+    .display-60 {
         font-family: var(--edux-font-family--inter);
         font-size: 3.75rem; /* 60px */
         font-weight: var(--edux-font-weight-bold);

@@ -1,0 +1,16 @@
+/* :root, */
+:host,
+.edux-theme-dark {
+    color-scheme: dark;
+    
+    --edux-color-carbon-90: hsl(0, 0%, 96%);
+    --edux-color-carbon-80: hsla(0, 0%, 89%, 1);
+    --edux-color-carbon-70: hsla(0, 0%, 82%, 1);
+    --edux-color-carbon-60: hsla(240, 1%, 73%, 1);
+    --edux-color-carbon-50: hsla(240, 2%, 59%, 1);
+    --edux-color-carbon-40: hsla(240, 1%, 47%, 1);
+    --edux-color-carbon-30: hsla(240, 2%, 35%, 1);
+    --edux-color-carbon-20: hsla(240, 2%, 27%, 1);
+    --edux-color-carbon-10: hsla(240, 4%, 19%, 1);
+    --edux-color-carbon-5: hsla(240, 8%, 10%, 1);
+}
