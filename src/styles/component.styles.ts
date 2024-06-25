@@ -36,14 +36,6 @@ if (window.matchMedia('(prefers-color-scheme: dark)').media === 'not all') {
 loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
 loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
 
-// OPTION IF THE ABOVE DOESN'T WORK.
-// if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-//     loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
-// }
-// else {
-//     loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
-// }
-
 export default css`
     :host {
         box-sizing: border-box;
