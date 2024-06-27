@@ -1,5 +1,9 @@
 import { css } from 'lit'
 
+console.log("window.matchMedia('(prefers-color-scheme: dark)').media === 'not all' -----> " + window.matchMedia('(prefers-color-scheme: dark)').media === 'not all');
+console.log("window.matchMedia('(prefers-color-scheme: dark)').matches -----> " + window.matchMedia('(prefers-color-scheme: dark)').matches);
+console.log("window.matchMedia('(prefers-color-scheme: light)').matches -----> " + window.matchMedia('(prefers-color-scheme: light)').matches);
+
 const darkModeCSS = '/dist/themes/horizon-dark.css';
 const lightModeCSS = '/dist/themes/horizon-light.css';
 
@@ -20,7 +24,31 @@ function loadCSSFile(filename: string, media?: string, onloadCallback?: () => vo
 // Load base component theme
 loadCSSFile('/dist/themes/horizon.css');
 
-// Load both themes. The class rules in the theme CSS sets which theme applies. 
+// If `prefers-color-scheme` is not supported, fall back to light mode.
+// In this case, horizon-light.css will be downloaded with `highest` priority.
+if (window.matchMedia('(prefers-color-scheme: dark)').media === 'not all') {
+    document.documentElement.style.display = 'none';
+    loadCSSFile(lightModeCSS,'',() => { document.documentElement.style.display = '' });
+}
+
+// Load both light and dark theme CSS files with appropriate media queries. The matching 
+// file will be downloaded with `highest`, the non-matching file with `lowest` priority.
+//loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
+//loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
+
+// OPTION IF THE ABOVE DOESN'T WORK LOAD ONE or THE OTHER.
+// Problem with this is it doesn't allow for USER controlled override of OS theme 
+// unless you swap the CSS files out.
+// if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+//     loadCSSFile(darkModeCSS, '(prefers-color-scheme: dark)');
+// }
+// else {
+//     loadCSSFile(lightModeCSS, '(prefers-color-scheme: light)');
+// }
+
+// THIS APPROACH loads both themes and in the themes as EQUALS (no media query).
+// However the last CSS loaded overrides the first.
+// The class rules in the theme CSS sets which theme applies.
 loadCSSFile(lightModeCSS);
 loadCSSFile(darkModeCSS);
 
