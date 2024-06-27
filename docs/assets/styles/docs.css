@@ -11,8 +11,8 @@
 }
 
 :root {
-    --docs-background-color: var(--edux-color-neutral-0);
-    --docs-border-color: var(--edux-color-neutral-200);
+    --docs-background-color: var(--edux-color-carbon-5);
+    --docs-border-color: var(--edux-color-carbon-20);
     --docs-border-width: 1px;
     --docs-border-radius: var(--edux-border-radius-medium);
     --docs-content-max-width: 860px;
@@ -29,17 +29,17 @@
 :root {
     color-scheme: normal;
 
-    --edux-color-primary-50: var(--edux-color-sky-50);
-    --edux-color-primary-100: var(--edux-color-sky-100);
-    --edux-color-primary-200: var(--edux-color-sky-200);
-    --edux-color-primary-300: var(--edux-color-sky-300);
-    --edux-color-primary-400: var(--edux-color-sky-400);
-    --edux-color-primary-500: var(--edux-color-sky-500);
-    --edux-color-primary-600: var(--edux-color-sky-600);
-    --edux-color-primary-700: var(--edux-color-sky-700);
-    --edux-color-primary-800: var(--edux-color-sky-800);
-    --edux-color-primary-900: var(--edux-color-sky-900);
-    --edux-color-primary-950: var(--edux-color-sky-950);
+    --edux-color-primary-50: var(--sl-color-sky-50);
+    --edux-color-primary-100: var(--sl-color-sky-100);
+    --edux-color-primary-200: var(--sl-color-sky-200);
+    --edux-color-primary-300: var(--sl-color-sky-300);
+    --edux-color-primary-400: var(--sl-color-sky-400);
+    --edux-color-primary-500: var(--sl-color-sky-500);
+    --edux-color-primary-600: var(--sl-color-sky-600);
+    --edux-color-primary-700: var(--sl-color-sky-700);
+    --edux-color-primary-800: var(--sl-color-sky-800);
+    --edux-color-primary-900: var(--sl-color-sky-900);
+    --edux-color-primary-950: var(--sl-color-sky-950);
 
     --docs-overlay-color: hsl(240 3.8% 46.1% / 33%);
     --docs-shadow-x-small: 0 1px 2px hsl(240 3.8% 46.1% / 12%);
@@ -109,7 +109,7 @@ button:focus-visible {
 
 ::selection {
     background-color: var(--edux-color-primary-200);
-    color: var(--edux-color-neutral-900);
+    color: var(--edux-color-carbon-90);
 }
 
 /* Show custom elements only after they're registered */
@@ -133,11 +133,11 @@ html {
 
 body {
     height: 100%;
-    font: 16px var(--edux-font-sans);
+    font: 16px var(--edux-font-family--public-sans);
     font-weight: var(--edux-font-weight-normal);
     background-color: var(--docs-background-color);
     line-height: var(--edux-line-height-normal);
-    color: var(--edux-color-neutral-900);
+    color: var(--edux-color-carbon-90);
     padding: 0;
     margin: 0;
     overflow-x: hidden;
@@ -152,7 +152,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: var(--edux-font-sans);
+    font-family: var(--edux-font-family--public-sans);
     font-weight: var(--edux-font-weight-semibold);
     margin: 3rem 0 1.5rem 0;
 }
@@ -245,15 +245,15 @@ code {
 }
 
 kbd {
-    background: var(--edux-color-neutral-100);
-    border: solid 1px var(--edux-color-neutral-200);
+    background: var(--edux-color-carbon-10);
+    border: solid 1px var(--edux-color-carbon-20);
     box-shadow:
-        inset 0 1px 0 0 var(--edux-color-neutral-0),
-        inset 0 -1px 0 0 var(--edux-color-neutral-200);
+        inset 0 1px 0 0 var(--edux-color-carbon-5),
+        inset 0 -1px 0 0 var(--edux-color-carbon-20);
     font-family: var(--edux-font-mono);
     font-size: 0.9125em;
     border-radius: var(--docs-border-radius);
-    color: var(--edux-color-neutral-800);
+    color: var(--edux-color-carbon-80);
     padding: 0.125em 0.4em;
 }
 
@@ -291,10 +291,10 @@ blockquote {
     font-family: var(--edux-font-serif);
     font-size: 1.33rem;
     font-style: italic;
-    color: var(--edux-color-neutral-700);
-    background-color: var(--edux-color-neutral-100);
+    color: var(--edux-color-carbon-70);
+    background-color: var(--edux-color-carbon-10);
     border-radius: var(--docs-border-radius);
-    border-left: solid 6px var(--edux-color-neutral-300);
+    border-left: solid 6px var(--edux-color-carbon-30);
     padding: 1.5rem;
     margin: 0 0 1.5rem 0;
 }
@@ -425,16 +425,16 @@ th.table-description {
 /* Code blocks */
 pre {
     position: relative;
-    background-color: var(--edux-color-neutral-50);
+    background-color: var(--edux-color-carbon-5);
     font-family: var(--edux-font-mono);
-    color: var(--edux-color-neutral-900);
+    color: var(--edux-color-carbon-90);
     border-radius: var(--docs-border-radius);
     padding: 1rem;
     white-space: pre;
 }
 
 .edux-theme-dark pre {
-    background-color: var(--edux-color-neutral-50);
+    background-color: var(--edux-color-carbon-5);
 }
 
 pre:not(:last-child) {
@@ -454,7 +454,7 @@ pre > code {
 }
 
 pre .token.comment {
-    color: var(--edux-color-neutral-600);
+    color: var(--edux-color-carbon-60);
 }
 
 pre .token.prolog,
@@ -462,7 +462,7 @@ pre .token.doctype,
 pre .token.cdata,
 pre .token.operator,
 pre .token.punctuation {
-    color: var(--edux-color-neutral-700);
+    color: var(--edux-color-carbon-70);
 }
 
 .namespace {
@@ -524,14 +524,14 @@ pre .token.italic {
     top: 0;
     right: 0;
     white-space: normal;
-    color: var(--edux-color-neutral-800);
+    color: var(--edux-color-carbon-80);
     transition:
         150ms opacity,
         150ms scale;
 }
 
 .copy-code-button::part(button) {
-    background-color: var(--edux-color-neutral-50);
+    background-color: var(--edux-color-carbon-5);
     border-radius: 0 var(--docs-border-radius) 0 var(--docs-border-radius);
     padding: 0.75rem;
 }
@@ -539,16 +539,16 @@ pre .token.italic {
 .copy-code-button::part(button):hover {
     background-color: color-mix(
         in oklch,
-        var(--edux-color-neutral-50),
-        var(--edux-color-neutral-1000) 3%
+        var(--edux-color-carbon-5),
+        var(--edux-color-carbon-black) 3%
     );
 }
 
 .copy-code-button::part(button):active {
     background-color: color-mix(
         in oklch,
-        var(--edux-color-neutral-50),
-        var(--edux-color-neutral-1000) 6%
+        var(--edux-color-carbon-5),
+        var(--edux-color-carbon-black) 6%
     );
 }
 
@@ -566,10 +566,10 @@ pre:hover .copy-code-button,
 /* Callouts */
 .callout {
     position: relative;
-    background-color: var(--edux-color-neutral-100);
-    border-left: solid 4px var(--edux-color-neutral-500);
+    background-color: var(--edux-color-carbon-10);
+    border-left: solid 4px var(--edux-color-carbon-50);
     border-radius: var(--docs-border-radius);
-    color: var(--edux-color-neutral-800);
+    color: var(--edux-color-carbon-80);
     padding: 1.5rem 1.5rem 1.5rem 2rem;
     margin-bottom: var(--docs-content-vertical-spacing);
 }
@@ -600,7 +600,7 @@ pre:hover .copy-code-button,
     justify-content: center;
     font-family: var(--edux-font-serif);
     font-weight: var(--edux-font-weight-bold);
-    color: var(--edux-color-neutral-0);
+    color: var(--edux-color-spacesuit-white);
     clip-path: circle(50% at 50% 50%);
 }
 
@@ -645,7 +645,7 @@ pre:hover .copy-code-button,
     float: right;
     min-width: 300px;
     max-width: 50%;
-    background: var(--edux-color-neutral-100);
+    background: var(--edux-color-carbon-10);
     border-radius: var(--docs-border-radius);
     padding: 1rem;
     margin-left: 1rem;
@@ -671,7 +671,7 @@ pre:hover .copy-code-button,
 
 /* Details */
 .content details {
-    background-color: var(--edux-color-neutral-100);
+    background-color: var(--edux-color-carbon-10);
     border-radius: var(--docs-border-radius);
     padding: 1rem;
     margin: 0 0 var(--docs-content-vertical-spacing) 0;
@@ -744,11 +744,11 @@ pre:hover .copy-code-button,
 }
 
 #sidebar:hover::-webkit-scrollbar-thumb {
-    background: var(--edux-color-neutral-400);
+    background: var(--edux-color-carbon-40);
 }
 
 #sidebar:hover::-webkit-scrollbar-track {
-    background: var(--edux-color-neutral-100);
+    background: var(--edux-color-carbon-10);
 }
 
 #sidebar > header {
@@ -825,7 +825,7 @@ pre:hover .copy-code-button,
 
 .sidebar-version {
     font-size: var(--edux-font-size-x-small);
-    color: var(--edux-color-neutral-500);
+    color: var(--edux-color-carbon-50);
     text-align: right;
     margin-top: -0.5rem;
     margin-right: 1rem;
@@ -902,7 +902,7 @@ main {
     max-height: calc(100vh - 6rem);
     font-size: var(--edux-font-size-small);
     line-height: 1.33;
-    border-left: solid 1px var(--edux-color-neutral-200);
+    border-left: solid 1px var(--edux-color-carbon-20);
     list-style: none;
     padding: 1rem 0;
     margin: 0;
@@ -931,7 +931,7 @@ main {
 }
 
 .content__toc a {
-    color: var(--edux-color-neutral-700);
+    color: var(--edux-color-carbon-70);
     text-decoration: none;
 }
 
@@ -946,7 +946,7 @@ main {
 
 .content__toc .top a {
     font-weight: var(--edux-font-weight-semibold);
-    color: var(--edux-color-neutral-500);
+    color: var(--edux-color-carbon-50);
 }
 
 @media screen and (max-width: 1024px) {
@@ -966,7 +966,7 @@ main {
         gap: 1rem 1.5rem;
         position: static;
         border: none;
-        border-bottom: solid 1px var(--edux-color-neutral-200);
+        border-bottom: solid 1px var(--edux-color-carbon-20);
         border-radius: 0;
         padding: 1rem 1.5rem 1rem 0.5rem; /* extra right padding to hide the fade effect */
         margin-top: 1rem;
@@ -983,7 +983,7 @@ main {
         background: linear-gradient(
             90deg,
             rgba(0 0 0 / 0) 0%,
-            var(--edux-color-neutral-0) 100%
+            var(--edux-color-spacesuit-white) 100%
         );
     }
 
@@ -1016,7 +1016,7 @@ main {
     color: black;
     border: none;
     border-radius: 50%;
-    background: var(--edux-color-neutral-0);
+    background: var(--edux-color-spacesuit-white);
     padding: 0.5rem;
     margin: 0;
     cursor: pointer;
@@ -1058,8 +1058,8 @@ html.sidebar-open #menu-toggle {
     text-align: center;
     text-decoration: none;
     border-radius: 9999px;
-    background: var(--edux-color-neutral-0);
-    color: var(--edux-color-neutral-1000);
+    background: var(--edux-color-spacesuit-white);
+    color: var(--edux-color-carbon-black);
     padding: 0.5rem;
 }
 
@@ -1070,7 +1070,7 @@ html.sidebar-open #menu-toggle {
     top: 0;
     right: 1rem;
     z-index: 10;
-    background: var(--edux-color-neutral-800);
+    background: var(--edux-color-carbon-80);
     border-bottom-left-radius: calc(var(--docs-border-radius) * 2);
     border-bottom-right-radius: calc(var(--docs-border-radius) * 2);
     padding: 0.125rem 0.25rem;
@@ -1087,7 +1087,7 @@ html.sidebar-open #menu-toggle {
     border: none;
     border-radius: var(--docs-border-radius);
     font-size: 1.25rem;
-    color: var(--edux-color-neutral-0);
+    color: var(--edux-color-spacesuit-white);
     text-decoration: none;
     padding: 0.5rem;
     margin: 0;
@@ -1109,7 +1109,7 @@ html.sidebar-open #menu-toggle {
 }
 
 #theme-selector edux-button::part(base) {
-    color: var(--edux-color-neutral-0);
+    color: var(--edux-color-spacesuit-white);
 }
 
 #theme-selector edux-button::part(label) {
@@ -1122,16 +1122,16 @@ html.sidebar-open #menu-toggle {
 }
 
 .edux-theme-dark #theme-selector edux-button::part(base) {
-    color: var(--edux-color-neutral-1000);
+    color: var(--edux-color-carbon-black);
 }
 
 .edux-theme-dark #icon-toolbar {
-    background: var(--edux-color-neutral-200);
+    background: var(--edux-color-carbon-20);
 }
 
 .edux-theme-dark #icon-toolbar button,
 .edux-theme-dark #icon-toolbar a {
-    color: var(--edux-color-neutral-1000);
+    color: var(--edux-color-carbon-black);
 }
 
 #icon-toolbar a:not(:last-child),
@@ -1208,7 +1208,7 @@ html.sidebar-open #menu-toggle {
     }
 
     .code-preview__source-group {
-        border-bottom: solid 1px var(--edux-color-neutral-200);
+        border-bottom: solid 1px var(--edux-color-carbon-20);
         border-bottom-left-radius: var(--edux-border-radius-medium);
         border-bottom-right-radius: var(--edux-border-radius-medium);
     }
@@ -1307,7 +1307,7 @@ html.sidebar-open #menu-toggle {
 
 .component-header__tag code {
     background: none;
-    color: var(--edux-color-neutral-600);
+    color: var(--edux-color-carbon-60);
     font-size: var(--edux-font-size-large);
     padding: 0;
     margin: 0;
@@ -1335,7 +1335,7 @@ html.sidebar-open #menu-toggle {
 }
 
 .repo-button--github edux-icon {
-    color: var(--edux-color-neutral-700);
+    color: var(--edux-color-carbon-70);
 }
 
 .repo-button--star edux-icon {
@@ -1343,7 +1343,7 @@ html.sidebar-open #menu-toggle {
 }
 
 .repo-button--twitter edux-icon {
-    color: var(--edux-color-sky-500);
+    color: var(--sl-color-sky-500);
 }
 
 @media screen and (max-width: 400px) {
@@ -1368,7 +1368,7 @@ body[data-page^='/tokens/'] .table-wrapper td:first-child code {
 /* Transition demo */
 .transition-demo {
     position: relative;
-    background: var(--edux-color-neutral-200);
+    background: var(--edux-color-carbon-20);
     width: 8rem;
     height: 2rem;
 }
@@ -1434,7 +1434,7 @@ body[data-page^='/tokens/'] .table-wrapper td:first-child code {
 }
 
 .color-palette__swatch--border {
-    box-shadow: inset 0 0 0 1px var(--edux-color-neutral-300);
+    box-shadow: inset 0 0 0 1px var(--edux-color-carbon-30);
 }
 
 @media screen and (max-width: 1200px) {
