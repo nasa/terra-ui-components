@@ -5,9 +5,15 @@ import componentStyles from '../../styles/component.styles.js'
 import EduxElement from '../../internal/edux-element.js'
 import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
-import { newPlot, Icons, type Data, type Layout, type Config } from 'plotly.js-dist-min'
+import {
+    newPlot,
+    Icons,
+    type Data,
+    type Layout,
+    type Config,
+} from 'plotly.js-dist-min'
 
-interface plot {
+interface Plot {
     type: string
     mode: string
     name: string
@@ -25,7 +31,7 @@ interface plot {
  */
 export default class EduxPlot extends EduxElement {
     static styles: CSSResultGroup = [componentStyles, styles]
-    plotData: Array<plot> = []
+    plotData: Array<Plot> = []
 
     @query('[part~="base"]')
     base: HTMLElement
@@ -45,9 +51,9 @@ export default class EduxPlot extends EduxElement {
                 icon: Icons.disk,
                 click: () => {
                     this.downloadCSV()
-                }
-            }            
-        ]
+                },
+            },
+        ],
     }
 
     @property({ type: Array })
@@ -83,47 +89,46 @@ export default class EduxPlot extends EduxElement {
     }
 
     downloadCSV() {
-        var plotData: Array<plot> = []
+        let plotData: Array<Plot> = []
 
         // convert data object to plot object to resolve property references
-        var i = 0
-        this.data.forEach(plot => {
-            plotData[i] = plot as unknown as plot
-            i++
+        this.data.forEach((plot, index) => {
+            plotData[index] = plot as unknown as Plot
         })
 
-        // Return x and y values for every data point in each plot line 
-        const csvData = plotData.map(trace => {
-            return trace.x.map((x: any, i: number) => {
-                return {
-                    x: x,
-                    y: trace.y[i]
-                };
-            });
-        }).flat();
+        // Return x and y values for every data point in each plot line
+        const csvData = plotData
+            .map(trace => {
+                return trace.x.map((x: any, i: number) => {
+                    return {
+                        x: x,
+                        y: trace.y[i],
+                    }
+                })
+            })
+            .flat()
 
         // Create CSV format, make it a Blob file and generate a link to it.
-        const csv = this.convertToCSV(csvData);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const csv = this.convertToCSV(csvData)
+        const blob = new Blob([csv], { type: 'text/csv' })
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
 
         // Create a hidden link element and click it to download the CSV, then remove the link.
-        a.setAttribute('href', url);
-        a.setAttribute('download', 'chart_data.csv');
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        a.setAttribute('href', url)
+        a.setAttribute('download', 'chart_data.csv')
+        a.style.display = 'none'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
     }
 
     convertToCSV(data: any[]): string {
-    const header = Object.keys(data[0]).join(",") + "\n";
-    const rows = data.map(obj => Object.values(obj).join(",")).join("\n");
-    return header + rows;
-}
+        const header = Object.keys(data[0]).join(',') + '\n'
+        const rows = data.map(obj => Object.values(obj).join(',')).join('\n')
+        return header + rows
+    }
     render() {
-        return html` <div part="base"></div>
-        `
+        return html` <div part="base"></div> `
     }
 }
