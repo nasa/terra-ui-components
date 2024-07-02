@@ -4,19 +4,20 @@ export default css`
     :host {
         display: block;
         padding: 16px;
-        background: white;
+        background: var(--edux-map-background-color);
+        border: 1px solid var(--edux-map-border-color);
     }
 
     #map {
         width: 100%;
         height: 100%;
-        border: solid 1px gray;
+        border: solid 1px var(--edux-map-border-color);
     }
 
     :host .leaflet-mouse-position-container {
-        color: #464646;
+        color: var(--edux-input-color);
         padding: 5px;
-        background-color: white;
+        background-color: var(--edux-input-background-color);
     }
 
     :host .leaflet-mouse-position-text {
