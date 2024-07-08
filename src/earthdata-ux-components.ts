@@ -8,6 +8,8 @@ export { default as EduxPlot } from './components/plot/plot.js'
 export { default as EduxSpatialPicker } from './components/spatial-picker/spatial-picker.js'
 export { default as EduxTimeSeries } from './components/time-series/time-series.js'
 export { default as EduxVariableCombobox } from './components/variable-combobox/variable-combobox.js'
+export { default as EduxLoader } from './components/loader/loader.js';
+
 /* plop:component */
 
 // Utilities
