@@ -1,12 +1,12 @@
-import EduxChip from './chip.component.js';
+import EduxChip from './chip.component.js'
 
-export * from './chip.component.js';
-export default EduxChip;
+export * from './chip.component.js'
+export default EduxChip
 
-EduxChip.define('edux-chip');
+EduxChip.define('edux-chip')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'edux-chip': EduxChip;
+        'edux-chip': EduxChip
     }
 }
