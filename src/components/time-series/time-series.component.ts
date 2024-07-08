@@ -77,6 +77,14 @@ export default class EduxTimeSeries extends EduxElement {
     })
     location?: string
 
+    /**
+     * Units
+     */
+    @property({
+        reflect: true,
+    })
+    units?: string
+
     @query('edux-date-range-slider') dateRangeSlider: EduxDateRangeSlider
     @query('edux-plot') plot: EduxPlot
     @query('edux-spatial-picker') spatialPicker: EduxSpatialPicker
@@ -191,6 +199,7 @@ export default class EduxTimeSeries extends EduxElement {
 
         this.collection = `${event.detail.collectionShortName}_${event.detail.collectionVersion}`
         this.variable = event.detail.name as string
+        this.units = event.detail.name as string
     }
 
     #handleMapChange(event: CustomEvent) {
@@ -233,8 +242,19 @@ export default class EduxTimeSeries extends EduxElement {
                     this.#timeSeriesController.task.value ??
                         this.#timeSeriesController.emptyPlotData
                 )}"
+                .layout="${{
+                    title: this.variable,
+                    xaxis: {
+                        title: 'Time',
+                        showgrid: false,
+                        zeroline: false,
+                    },
+                    yaxis: {
+                        title: this.units,
+                        showline: false,
+                    },
+                }}"
             ></edux-plot>
-
             <edux-date-range-slider
                 exportparts="slider:date-range-slider__slider"
                 min-date=${this.collectionBeginningDateTime}
