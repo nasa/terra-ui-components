@@ -23,28 +23,24 @@ export default css`
         padding: 16px;
         background: white;
         border: solid 1px var(--edux-color-neutral--200, var(--color-neutral--200));
-
-        width: calc(var(--width) + 32px);
-        height: calc(var(--height) + 32px);
     }
 
-    #map {
-        width: var(--width);
-        height: var(--height);
+    .map {
+        aspect-ratio: 4 / 3;
     }
 
-    :host .leaflet-mouse-position-container {
+    .leaflet-mouse-position-container {
         color: #464646;
         padding: 5px;
         background-color: white;
     }
 
-    :host .leaflet-mouse-position-text {
+    .leaflet-mouse-position-text {
         margin: 0;
         font-weight: 700;
     }
 
-    :host .form-control {
+    .form-control {
         display: block;
         border-radius: 0;
         width: 100%;
@@ -68,13 +64,11 @@ export default css`
             box-shadow ease-in-out 0.15s;
     }
 
-    :host .form-control:focus {
+    .form-control:focus {
         border: 1px solid var(--edux-color-blue--600, var(--color-blue--600));
     }
 
-    :host .map__select {
-        width: 100%;
-        /* height: 1.7rem; */
+    .map__select {
         box-shadow: none;
         border-radius: 0 !important;
         margin-bottom: 1rem;

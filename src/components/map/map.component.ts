@@ -1,5 +1,5 @@
 import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
@@ -44,16 +44,6 @@ export default class EduxMap extends EduxElement {
      */
     @property({ type: Number }) zoom: number = 1
 
-    /*
-     * width of the map
-     */
-    @property({ type: Number }) width: number = 504
-
-    /**
-     * height of the map
-     */
-    @property({ type: Number }) height: number = 336
-
     /**
      * has map navigation toolbar
      */
@@ -85,20 +75,6 @@ export default class EduxMap extends EduxElement {
             this.map?.setValue(this.value)
         } else if (newValue.length === 0 && this.map.isMapReady) {
             this.map.clearLayers()
-        }
-    }
-
-    @watch('width')
-    widthChanged(_oldValue: any, newValue: any) {
-        this.style.setProperty('--width', `${newValue}px`)
-    }
-
-    @watch('height')
-    heightChanged(_oldValue: any, newValue: any) {
-        if (this.hasShapeSelector) {
-            this.style.setProperty('--height', `${newValue + 52}px`)
-        } else {
-            this.style.setProperty('--height', `${newValue}px`)
         }
     }
 
@@ -142,58 +118,75 @@ export default class EduxMap extends EduxElement {
                 },
             })
         )
+
+        this.#markDynamicLeafletContent()
+    }
+
+    #markDynamicLeafletContent() {
+        //* Add CSS parts to the following items that Leaflet dynamically inserts:
+        const parts = [
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-draw-rectangle'),
+                name: 'leaflet-bbox',
+            },
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-draw-marker'),
+                name: 'leaflet-point',
+            },
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-edit-edit'),
+                name: 'leaflet-edit',
+            },
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-edit-remove'),
+                name: 'leaflet-remove',
+            },
+        ]
+
+        parts.forEach(({ item, name }) => {
+            item?.setAttribute('part', name)
+        })
     }
 
     selectTemplate() {
         return html`
-            <div>
-                <select
-                    class="map__select form-control"
-                    @change=${this.map.handleShapeSelect}
-                >
-                    <option value="">Select a Shape...</option>
+            <select
+                class="map__select form-control"
+                @change=${this.map.handleShapeSelect}
+            >
+                <option value="">Select a Shape...</option>
 
-                    ${cache(
-                        map(this.shapes?.available, (parentShape: string) => {
-                            const shapes = this.map.transformShapeData(
-                                this.shapes?.info[parentShape]
-                            )
+                ${cache(
+                    map(this.shapes?.available, (parentShape: string) => {
+                        const shapes = this.map.transformShapeData(
+                            this.shapes?.info[parentShape]
+                        )
 
-                            return html`<optgroup
-                                label="${this.shapes?.info[parentShape].title}"
-                            >
-                                ${shapes.map((shape: any) => {
-                                    return html`
-                                        <option
-                                            value="shape=${shape.shapefileID}/${shape.gShapeID}"
-                                        >
-                                            ${shape.name}
-                                        </option>
-                                    `
-                                })}
-                            </optgroup> `
-                        })
-                    )}
-                </select>
-            </div>
+                        return html`<optgroup
+                            label="${this.shapes?.info[parentShape].title}"
+                        >
+                            ${shapes.map((shape: any) => {
+                                return html`
+                                    <option
+                                        value="shape=${shape.shapefileID}/${shape.gShapeID}"
+                                    >
+                                        ${shape.name}
+                                    </option>
+                                `
+                            })}
+                        </optgroup> `
+                    })
+                )}
+            </select>
         `
     }
 
     render() {
         return html`
-            <div class="map">
-                <!-- select goes here -->
-                ${this.hasShapeSelector ? this.selectTemplate() : null}
-                <div class="map__container">
-                    <!-- "Map goes here" -->
-                    <div
-                        id="map"
-                        style="width:${this.width && this.width}px; height: ${this
-                            .height && this.height}px;"
-                        class="map__container__map"
-                    ></div>
-                </div>
-            </div>
+            <!-- select goes here -->
+            ${this.hasShapeSelector ? this.selectTemplate() : nothing}
+            <!-- "Map goes here" -->
+            <div part="map" id="map" class="map"></div>
         `
     }
 }

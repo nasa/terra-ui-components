@@ -1,12 +1,19 @@
 export type Collection = string
 export type Variable = string
+/** epoch time */
+// export type StartDate = number
 export type StartDate = Date
+/** epoch time */
+// export type EndDate = number
 export type EndDate = Date
+export type Location = string
 
 export type VariableDbEntry = TimeSeriesData & {
     variableEntryId: string
     startDate: string
     endDate: string
+    /** unique key to identify unique record */
+    key: string
 }
 
 export type TimeSeriesData = {
