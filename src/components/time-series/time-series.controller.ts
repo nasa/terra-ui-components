@@ -98,11 +98,12 @@ export class TimeSeriesController {
     async #loadTimeSeries(signal: AbortSignal) {
         // create the variable identifer
         const variableEntryId = `${this.collection}_${this.variable}`
+        const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
         const existingEduxData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            `${variableEntryId}_${this.location}`
+            cacheKey
         )
 
         if (
@@ -162,17 +163,13 @@ export class TimeSeriesController {
         parsedData.data = [...parsedData.data, ...(existingEduxData?.data || [])]
 
         // save the new data to the database
-        await storeDataByKey<VariableDbEntry>(
-            IndexedDbStores.TIME_SERIES,
-            `${variableEntryId}_${this.location}`,
-            {
-                variableEntryId,
-                key: `${variableEntryId}_${this.location}`,
-                startDate: parsedData.data[0].timestamp,
-                endDate: parsedData.data[parsedData.data.length - 1].timestamp,
-                ...parsedData,
-            }
-        )
+        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
+            variableEntryId,
+            key: cacheKey,
+            startDate: parsedData.data[0].timestamp,
+            endDate: parsedData.data[parsedData.data.length - 1].timestamp,
+            ...parsedData,
+        })
 
         return this.#getDataInRange(parsedData)
     }
