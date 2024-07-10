@@ -55,6 +55,10 @@ export class TimeSeriesController {
 
     task: Task<TaskArguments, Partial<Data>[]>
 
+    //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
+    //? Lit behavior is to set the task.value to undefined when aborted
+    lastTaskValue: Partial<Data>[] | undefined
+
     collection: Collection
     variable: Variable
     startDate: StartDate
@@ -84,13 +88,15 @@ export class TimeSeriesController {
 
                 // now that we have actual data, map it to a Plotly plot definition
                 // see https://plotly.com/javascript/time-series/
-                return [
+                this.lastTaskValue = [
                     {
                         ...plotlyDefaultData,
                         x: timeSeries.data.map(row => row.timestamp),
                         y: timeSeries.data.map(row => row.value),
                     },
                 ]
+
+                return this.lastTaskValue
             },
         })
     }

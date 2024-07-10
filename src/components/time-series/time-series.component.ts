@@ -242,10 +242,19 @@ export default class EduxTimeSeries extends EduxElement {
             <edux-plot
                 exportparts="base:plot__base"
                 data="${JSON.stringify(
-                    this.#timeSeriesController.task.value ??
+                    this.#timeSeriesController.lastTaskValue ??
                         this.#timeSeriesController.emptyPlotData
                 )}"
             ></edux-plot>
+
+            <edux-date-range-slider
+                exportparts="slider:date-range-slider__slider"
+                min-date=${this.collectionBeginningDateTime}
+                max-date=${this.collectionEndingDateTime}
+                start-date=${this.startDate}
+                end-date=${this.endDate}
+                @edux-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
+            ></edux-date-range-slider>
 
             <dialog
                 open
@@ -257,15 +266,6 @@ export default class EduxTimeSeries extends EduxElement {
                 <p>Plotting ${this.collection} ${this.variable}...</p>
                 <edux-button @click=${this.#abortDataLoad}>Cancel</edux-button>
             </dialog>
-
-            <edux-date-range-slider
-                exportparts="slider:date-range-slider__slider"
-                min-date=${this.collectionBeginningDateTime}
-                max-date=${this.collectionEndingDateTime}
-                start-date=${this.startDate}
-                end-date=${this.endDate}
-                @edux-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
-            ></edux-date-range-slider>
         `
     }
 }
