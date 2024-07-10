@@ -10,6 +10,7 @@ import { watch } from '../../internal/watch.js'
 import type { EduxDateRangeChangeEvent } from '../../events/edux-date-range-change.js'
 import { TimeSeriesController } from './time-series.controller.js'
 import EduxVariableCombobox from '../variable-combobox/variable-combobox.component.js'
+import EduxLoader from '../loader/loader.component.js'
 import type { EduxComboboxChangeEvent } from '../../earthdata-ux-components.js'
 import { TaskStatus } from '@lit/task'
 
@@ -29,6 +30,7 @@ export default class EduxTimeSeries extends EduxElement {
         'edux-plot': EduxPlot,
         'edux-date-range-slider': EduxDateRangeSlider,
         'edux-variable-combobox': EduxVariableCombobox,
+        'edux-loader': EduxLoader,
     }
 
     #timeSeriesController = new TimeSeriesController(this)
@@ -130,6 +132,18 @@ export default class EduxTimeSeries extends EduxElement {
                           )}"
                       ></edux-plot>`
                     : this.#renderEmptyPlot()}
+
+                <dialog
+                    open
+                    class="${this.#timeSeriesController.task.status ===
+                    TaskStatus.PENDING
+                        ? 'open'
+                        : ''}"
+                >
+                    <edux-loader indeterminate></edux-loader>
+                    <p>Plotting ${this.collection} ${this.variable}...</p>
+                    <edux-button>Cancel</edux-button>
+                </dialog>
             </div>
 
             <edux-date-range-slider
@@ -140,15 +154,6 @@ export default class EduxTimeSeries extends EduxElement {
                 end-date=${this.endDate}
                 @edux-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
             ></edux-date-range-slider>
-
-            <dialog
-                open
-                class=${this.#timeSeriesController.task.status === TaskStatus.PENDING
-                    ? 'open'
-                    : ''}
-            >
-                Conditional Class Example
-            </dialog>
         `
     }
 }
