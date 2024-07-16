@@ -37,7 +37,7 @@ import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 const App = () => (
   <>
     <EduxButton variant="default">Default</EduxButton>
-    <EduxButton variant="primary">Primary</EduxButton>    
+    <EduxButton variant="primary">Primary</EduxButton>
     <EduxButton variant="success">Success</EduxButton>
     <EduxButton variant="warning">Warning</EduxButton>
     <EduxButton variant="danger">Danger</EduxButton>
@@ -89,7 +89,7 @@ const App = () => (
     </EduxButton>
     <EduxButton variant="primary" outline>
       Primary
-    </EduxButton>    
+    </EduxButton>
     <EduxButton variant="success" outline>
       Success
     </EduxButton>
@@ -157,12 +157,12 @@ const = App = () => (
       <slot name="label">
         <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></eduxIcon>
       </slot>
-    </eduxButton>   
+    </eduxButton>
     <eduxButton size="large" circle>
       <slot name="label">
         <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></eduxIcon>
       </slot>
-    </eduxButton>     
+    </eduxButton>
   </>
 )
 
@@ -223,7 +223,6 @@ const App = () => (
   </>
 );
 ```
-
 
 ### Link Buttons
 
@@ -325,7 +324,8 @@ const App = () => (
 
 ### Shape
 
-Use the button `shape` attribute to override to radius. Useful for controlling the edge shape when button is not in a edux-button-group so button can be integrated into input form controls such as drop-down lists, search fields, etc.
+Use the button `shape` attribute to override its radius. Useful for controlling the button's edge shape when it is next to an input form controls such as a drop-down list but not in a edux-button-group. The button will appear more integrated into input form controls such as drop-down lists, search fields, etc.
+
 ```html:preview
 <edux-button shape="square-right">Square-right</edux-button>
 <edux-button shape="square">Square</edux-button>
@@ -349,7 +349,6 @@ const App = () => (
   </>
 );
 ```
-
 
 ### Loading
 

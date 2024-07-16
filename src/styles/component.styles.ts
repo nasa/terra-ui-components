@@ -1,5 +1,31 @@
 import { css } from 'lit'
 
+const darkModeCSS = '/dist/themes/horizon-dark.css'
+
+function loadCSSFile(
+    filename: string,
+    media?: string,
+    onloadCallback?: () => void
+): void {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.type = 'text/css'
+    link.href = filename
+    if (media) {
+        link.media = media
+    }
+    if (onloadCallback) {
+        link.onload = onloadCallback
+    }
+    document.head.appendChild(link)
+}
+
+// Load base component theme
+loadCSSFile('/dist/themes/horizon.css')
+
+// Load dark theme. The class rules in horizon-dark.css determine if dark applies.
+loadCSSFile(darkModeCSS)
+
 export default css`
     :host {
         box-sizing: border-box;
@@ -11,11 +37,16 @@ export default css`
         box-sizing: inherit;
     }
 
+    :host {
+        background-color: var(--background-color);
+        color: var(--color);
+    }
+
     [hidden] {
         display: none !important;
     }
 
-/* Horizon Design System Font Classes */
+    /* Horizon Design System Font Classes */
 
     /* Display Fonts */
 
@@ -43,12 +74,12 @@ export default css`
         font-weight: var(--edux-font-weight-bold);
     }
 
-     .display-60 {
+    .display-60 {
         font-family: var(--edux-font-family--inter);
         font-size: 3.75rem; /* 60px */
         font-weight: var(--edux-font-weight-bold);
     }
-    
+
     .display-48 {
         font-family: var(--edux-font-family--inter);
         font-size: 3rem; /* 48px */
@@ -154,7 +185,7 @@ export default css`
     }
 
     /* Body Fonts */
-    
+
     .body-18 {
         font-family: var(--edux-font-family--public-sans);
         font-size: 1.125rem; /* 18px */
@@ -204,7 +235,7 @@ export default css`
         font-size: 3rem; /* 48px */
         font-weight: var(--edux-font-weight-light);
     }
-    
+
     .number-36 {
         font-family: var(--edux-font-family--dm-mono);
         font-size: 2.25rem; /* 36px */
@@ -238,7 +269,7 @@ export default css`
         text-transform: uppercase;
     }
 
-/* Forms */
+    /* Forms */
 
     /* Input Field */
 
@@ -259,16 +290,16 @@ export default css`
         color: var(--edux-input-label-color);
         font-weight: var(--edux-font-weight-semibold);
         line-height: var(--edux-input-label-line-height);
-    }  
+    }
 
-/* Elements */
+    /* Elements */
 
     a {
         text-decoration: underline;
         text-decoration-color: #585858;
         text-decoration-style: dashed;
-        text-decoration-thickness: .05em;
-        text-underline-offset: .25rem;
-        color: var(--edux-color-carbon-60);     
+        text-decoration-thickness: 0.05em;
+        text-underline-offset: 0.25rem;
+        color: var(--edux-color-carbon-60);
     }
 `

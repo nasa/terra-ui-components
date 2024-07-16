@@ -5,7 +5,7 @@
 :root,
 :host,
 .edux-theme-horizon {
-    color-scheme: light;
+    color-scheme: normal light;
 
     /* Horizon Design System */
 
@@ -30,21 +30,6 @@
     --edux-color-nasa-blue-tint: hsla(212, 100%, 58%, 1);
     --edux-color-nasa-blue-shade: hsla(218, 86%, 31%, 1);
 
-    /* Neutrals
-     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
-     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
-     */
-    --edux-color-carbon-90: hsla(240, 8%, 10%, 1);
-    --edux-color-carbon-80: hsla(240, 4%, 19%, 1);
-    --edux-color-carbon-70: hsla(240, 2%, 27%, 1);
-    --edux-color-carbon-60: hsla(240, 2%, 35%, 1);    /* Text color on White BG */
-    --edux-color-carbon-50: hsla(240, 1%, 47%, 1);
-    --edux-color-carbon-40: hsla(240, 2%, 59%, 1);
-    --edux-color-carbon-30: hsla(240, 1%, 73%, 1);
-    --edux-color-carbon-20: hsla(0, 0%, 82%, 1);
-    --edux-color-carbon-10: hsla(0, 0%, 89%, 1);
-    --edux-color-carbon-5: hsl(0, 0%, 96%);
-
     /* Additional Colors 
      * International Orange and Active Green are colors that are used sparingly and intentionally.
      */
@@ -52,11 +37,39 @@
     --edux-color-international-orange-tint: hsl(23, 82%, 61%);
     --edux-color-international-orange-shade: hsla(24, 90%, 32%, 1);
     --edux-color-active-green: hsla(145, 67%, 57%, 1);
-    --edux-color-active-green-tint: hsl(145, 52%, 64%);
+    --edux-color-active-green-tint: hsl(145, 52%, 64%, 1);
     --edux-color-active-green-shade: hsla(144, 75%, 38%, 1);
 
-    /* HDS button styles */
+    /* Neutrals
+     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+     */
+    --edux-color-carbon-90: hsla(240, 8%, 10%, 1);
+    --edux-color-carbon-80: hsla(240, 4%, 19%, 1);
+    --edux-color-carbon-70: hsla(240, 2%, 27%, 1);
+    --edux-color-carbon-60: hsla(240, 2%, 35%, 1);
+    --edux-color-carbon-50: hsla(240, 1%, 47%, 1);
+    --edux-color-carbon-40: hsla(240, 2%, 59%, 1);
+    --edux-color-carbon-30: hsla(240, 1%, 73%, 1);
+    --edux-color-carbon-20: hsla(0, 0%, 82%, 1);
+    --edux-color-carbon-10: hsla(0, 0%, 89%, 1);
+    --edux-color-carbon-5: hsl(0, 0%, 96%, 1);
 
+    /* Button BG colors TESTED for AA Accessibility of large text & graphical objects.
+    /* HDS colors failed tests when using white text on buttons. If we use dark text we can use original HDS colors.
+     */
+    --edux-color-success-green: hsl(145, 67%, 40%);
+    --edux-color-success-green-hover: hsl(145, 67%, 30%);
+    --edux-color-success-green-focus: hsl(145, 52%, 54%);
+
+    /* Default Button Color - not a defined color in the HDS theme
+     */
+    --edux-color-default-gray: hsla(240, 13%, 66%, 1);
+    --edux-color-default-gray-tint: hsla(240, 2%, 59%, 1);
+    --edux-color-default-gray-shade: hsl(240, 9%, 40%, 1);
+
+    /* HDS button styles
+    */
     --edux-button-border-width: 1px;
 
     --edux-button-font-size-small: var(--edux-font-size-x-small);
@@ -66,6 +79,11 @@
     --edux-button-height-small: 1.875rem; /* 30px */
     --edux-button-height-medium: 2.25rem; /* 36px */
     --edux-button-height-large: 3rem; /* 48px */
+
+    --edux-button-outline-text-color: var(--edux-color-carbon-black);
+    --edux-button-text-text-color: var(--edux-color-nasa-blue);
+    --edux-button-text-text-color-hover: var(--edux-color-nasa-blue-shade);
+    --edux-button-page-link-text-color: var(--edux-color-carbon-black);
 
     /*
     * Border radii
@@ -77,10 +95,10 @@
     --edux-border-radius-x-large: 1rem; /* 16px */
 
     /* Icon sizes */
-    --edux-icon-small: 1.2rem;  /* 19px */
-    --edux-icon-medium: 1.75rem;  /* 50px */
-    --edux-icon-large: 2.2rem;  /* 68px */
-    --edux-icon-x-large: 3rem;  /* 76px */    
+    --edux-icon-small: 1.2rem; /* 19px */
+    --edux-icon-medium: 1.75rem; /* 50px */
+    --edux-icon-large: 2.2rem; /* 68px */
+    --edux-icon-x-large: 3rem; /* 76px */
 
     /*
     * Theme Tokens
@@ -195,13 +213,18 @@
 
     --edux-input-font-family: var(--edux-font-family--public-sans);
     --edux-input-font-size: var(--edux-font-size-small);
-    --edux-input-color: var(--edux-color-carbon-80);
-    --edux-input-font-weight: var(--edux-font-weight-normal); 
+    --edux-input-color: hsla(
+        240,
+        4%,
+        19%,
+        1
+    ); /* Use same colorfor both light & dark theme - don't tie to Neutrals scale */
+    --edux-input-font-weight: var(--edux-font-weight-normal);
     --edux-input-line-height: var(--edux-line-height-loose);
-    --edux-input-border-color: var(--edux-color-carbon-20);    
+    --edux-input-border-color: var(--edux-color-carbon-20);
     --edux-input-background-color: var(--edux-color-spacesuit-white);
     --edux-input-border-width: 2px;
-    --edux-input-border-radius: var(--edux-border-radius-small);
+    --edux-input-border-radius: var(--edux-border-radius-medium);
 
     --edux-input-background-color-hover: var(--edux-input-background-color);
     --edux-input-background-color-focus: var(--edux-input-background-color);
@@ -255,6 +278,11 @@
     --edux-input-label-color: var(--edux-color-carbon-80);
     --edux-input-label-line-weight: var(var(--edux-font-weight-semibold));
     --edux-input-label-line-height: var(--edux-line-height-looser);
+
+    /* Map Component */
+
+    --edux-map-background-color: var(--edux-color-carbon-5);
+    --edux-map-border-color: var(--edux-color-carbon-20);
 
     /* Help text */
     --edux-input-help-text-font-size-small: var(--edux-font-size-x-small);
