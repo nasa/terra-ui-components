@@ -1,5 +1,30 @@
 import { css } from 'lit'
 
+const darkModeCSS = '/dist/themes/horizon-dark.css';
+const lightModeCSS = '/dist/themes/horizon-light.css';
+
+function loadCSSFile(filename: string, media?: string, onloadCallback?: () => void): void {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = filename;
+    if (media) {
+        link.media = media;
+    }
+    if (onloadCallback) {
+        link.onload = onloadCallback;
+    }
+    document.head.appendChild(link);
+}
+
+// Load base component theme
+loadCSSFile('/dist/themes/horizon.css');
+
+// Load both themes. The class rules in the theme CSS sets which theme applies. 
+loadCSSFile(lightModeCSS);
+loadCSSFile(darkModeCSS);
+
+
 export default css`
     :host {
         box-sizing: border-box;
@@ -9,6 +34,11 @@ export default css`
     :host *::before,
     :host *::after {
         box-sizing: inherit;
+    }
+
+    :host {
+        background-color: var(--background-color);
+        color: var(--color);
     }
 
     [hidden] {
@@ -43,7 +73,7 @@ export default css`
         font-weight: var(--edux-font-weight-bold);
     }
 
-     .display-60 {
+    .display-60 {
         font-family: var(--edux-font-family--inter);
         font-size: 3.75rem; /* 60px */
         font-weight: var(--edux-font-weight-bold);

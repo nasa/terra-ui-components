@@ -1,0 +1,19 @@
+:root,
+:host {
+    color-scheme: light;
+
+    /* Neutrals for light mode
+     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+     */
+    --edux-color-carbon-90: hsla(240, 8%, 10%, 1);
+    --edux-color-carbon-80: hsla(240, 4%, 19%, 1);
+    --edux-color-carbon-70: hsla(240, 2%, 27%, 1);
+    --edux-color-carbon-60: hsla(240, 2%, 35%, 1);    /* Text color on White BG */
+    --edux-color-carbon-50: hsla(240, 1%, 47%, 1);
+    --edux-color-carbon-40: hsla(240, 2%, 59%, 1);
+    --edux-color-carbon-30: hsla(240, 1%, 73%, 1);
+    --edux-color-carbon-20: hsla(0, 0%, 82%, 1);
+    --edux-color-carbon-10: hsla(0, 0%, 89%, 1);
+    --edux-color-carbon-5: hsl(0, 0%, 96%);    
+}

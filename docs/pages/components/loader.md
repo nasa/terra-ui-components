@@ -37,13 +37,6 @@ const App = () => (
 );
 ```
 
-### Themes
-
-```html:preview
-<edux-loader theme='light' percent='75'></edux-loader>
-<edux-loader theme='dark' percent='75'></edux-loader>
-```
-
 ```jsx:react
 import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
 

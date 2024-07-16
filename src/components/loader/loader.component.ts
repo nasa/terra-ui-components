@@ -28,11 +28,6 @@ export default class EduxLoader extends EduxElement {
         | 'small'
         | 'large' = 'large'
 
-    /** The loader's theme, light or dark mode */
-    @property({ reflect: true }) theme:
-        | 'light' 
-        | 'dark'
-
     /** The percent complete for the loader to display */
     @property({type: String}) 
     percent: string = '0'
@@ -60,8 +55,6 @@ export default class EduxLoader extends EduxElement {
                     loader: true,
                     'loader--small': this.size === 'small',
                     'loader--large': this.size === 'large',
-                    'loader--light': this.theme === 'light',
-                    'loader--dark': this.theme === 'dark',
                 })}
             >
                 ${this.size === 'large'? 
