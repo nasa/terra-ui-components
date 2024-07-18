@@ -242,6 +242,18 @@ export default css`
         font-weight: var(--edux-font-weight-light);
     }
 
+    .number-14 {
+        font-family: var(--edux-font-family--dm-mono);
+        font-size: 0.875rem; /* 14px */
+        font-weight: 500;
+    }
+
+    .number-11 {
+        font-family: var(--edux-font-family--dm-mono);
+        font-size: 0.688rem; /* 11px */
+        font-weight: 500;
+    }
+
     .number-11 {
         font-family: var(--edux-font-family--dm-mono);
         font-size: 0.688rem; /* 11px */

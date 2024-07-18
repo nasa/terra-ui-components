@@ -65,7 +65,11 @@ export default class EduxLoader extends EduxElement {
             >
                 ${this.variant === 'large' || this.variant === 'orbit'
                     ? html`
-                          <div class="percent number-11">
+                          <div
+                              class="percent ${this.variant == 'orbit'
+                                  ? 'number-14'
+                                  : 'number-11'}"
+                          >
                               ${this.formatPercent(this.percent)}
                           </div>
                       `
