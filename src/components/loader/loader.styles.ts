@@ -26,6 +26,30 @@ export default css`
         --stroke-width: 3.5px;
     }
 
+    .loader--orbit {
+        --size: 100px;
+    }
+
+    .planet {
+        fill: var(--edux-color-carbon-20);
+        cx: 80px;
+        cy: 80px;
+        r: 50px;
+    }
+
+    .moon {
+        fill: var(--edux-color-nasa-blue);
+        r: 5.5px;
+    }
+
+    #orbit {
+        /* total length of orbit ellipse = 298.2393493652344 */
+        stroke: var(--edux-color-nasa-blue);
+        stroke-width: 2.5px;
+        stroke-dasharray: 250 48;
+        fill: none;
+    }
+
     svg {
         width: var(--size);
         height: var(--size);
@@ -35,7 +59,7 @@ export default css`
         display: block;
         width: var(--size);
         position: absolute;
-        top: 19px;
+        top: calc((var(--size) / 2) - 10px);
         padding-left: 4px;
         letter-spacing: 0.1rem;
         text-align: center;
@@ -83,6 +107,15 @@ export default css`
         transform-origin: 50% 50%;
     }
 
+    @keyframes dash {
+        from {
+            stroke-dashoffset: 300;
+        }
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
     @keyframes spin {
         from {
             transform: rotate(-90deg);
@@ -92,6 +125,7 @@ export default css`
             transform: rotate(270deg);
         }
     }
+
     @property --progress {
         /* Registers and describes the custom property and variable with the browser. */
         syntax: '<number>';
