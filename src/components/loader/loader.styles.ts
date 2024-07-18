@@ -14,7 +14,7 @@ export default css`
         height: var(--size);
     }
 
-    /* Loader sizes */
+    /* Loader variations */
 
     .loader--large {
         --size: 52px;
