@@ -82,10 +82,10 @@ export default class EduxLoader extends EduxElement {
                               >
                                   <animate
                                       attributeName="stroke-dashoffset"
-                                      begin="-0.3s"
+                                      begin="-0.25s"
                                       from="300"
                                       to="0"
-                                      dur="2s"
+                                      dur="1.5s"
                                       repeatCount="indefinite"
                                   />
                               </path>
@@ -93,7 +93,7 @@ export default class EduxLoader extends EduxElement {
                               <circle class="moon">
                                   <animateMotion
                                       begin="0s"
-                                      dur="2s"
+                                      dur="1.5s"
                                       repeatCount="indefinite"
                                   >
                                       <mpath href="#orbit"></mpath>
