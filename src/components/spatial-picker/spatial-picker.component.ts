@@ -1,5 +1,5 @@
 import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import EduxElement from '../../internal/edux-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
@@ -38,16 +38,6 @@ export default class EduxSpatialPicker extends EduxElement {
      */
     @property({ type: Number }) zoom: number = 1
 
-    /*
-     * width of the map
-     */
-    @property({ type: Number }) width: number
-
-    /**
-     * height of the map
-     */
-    @property({ type: Number }) height: number = 336
-
     /**
      * has map navigation toolbar
      */
@@ -73,16 +63,17 @@ export default class EduxSpatialPicker extends EduxElement {
     initialValue: string = ''
 
     /**
-     *  toggle display of spatial picker label
+     * Hide the combobox's label text.
+     * When hidden, still presents to screen readers.
      */
-    @property({ type: Boolean })
-    hideLabel: boolean = true
+    @property({ attribute: 'hide-label', type: Boolean })
+    hideLabel = false
 
     /**
      *  spatial picker label
      */
     @property()
-    label: string = ''
+    label: string = 'Select Region'
 
     @state()
     isExpanded: boolean = false
@@ -143,11 +134,10 @@ export default class EduxSpatialPicker extends EduxElement {
 
     renderMap() {
         return html`<edux-map
+            exportparts="map, leaflet-bbox, leaflet-point, leaflet-edit, leaflet-remove"
             min-zoom=${this.minZoom}
             max-zoom=${this.maxZoom}
             zoom=${this.zoom}
-            width=${this.width ? this.width : this.getBoundingClientRect().width - 64}
-            height=${this.height}
             ?has-coord-tracker=${this.hasCoordTracker}
             .value=${this.mapValue}
             ?has-navigation=${this.hasNavigation}
@@ -160,14 +150,14 @@ export default class EduxSpatialPicker extends EduxElement {
     render() {
         return html`
             <div class="spatial-picker">
+                <label
+                    for="spatial-picker__input"
+                    class=${this.hideLabel
+                        ? 'sr-only'
+                        : 'spatial-picker__input_label'}
+                    >${this.label}</label
+                >
                 <div class="spatial-picker__input_fields">
-                    <label
-                        for="spatial-picker__input"
-                        class=${this.hideLabel
-                            ? 'sr-only'
-                            : 'spatial-picker__input_label'}
-                        >${this.label}</label
-                    >
                     <input
                         id="spatial-picker__input"
                         value=${this.initialValue}
@@ -202,7 +192,7 @@ export default class EduxSpatialPicker extends EduxElement {
                         </svg>
                     </button>
                 </div>
-                ${this.isExpanded ? this.renderMap() : null}
+                ${this.isExpanded ? this.renderMap() : nothing}
             </div>
         `
     }

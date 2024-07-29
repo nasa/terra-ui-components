@@ -19,7 +19,7 @@ export type ListItem = {
 }
 
 export type GroupedListItem = {
-    collectionLongName: string
+    collectionEntryId: string
     variables: ListItem[]
 }
 
@@ -47,7 +47,7 @@ export class FetchController {
 
                 return cherryPickDocInfo(docs)
             },
-            args: () => [],
+            args: (): any => [],
         })
     }
 

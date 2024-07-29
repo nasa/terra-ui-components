@@ -28,7 +28,6 @@ export default css`
         --host-height: 5.8125rem;
 
         display: block;
-        padding: 16px;
         position: relative;
         z-index: 1;
     }
@@ -102,8 +101,9 @@ export default css`
         color: white;
     }
 
-    :host edux-map {
+    edux-map {
         position: absolute;
-        top: calc(var(--edux-block-size, 2.1875rem) + 1rem);
+        left: 0;
+        right: 0;
     }
 `

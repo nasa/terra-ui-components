@@ -429,7 +429,13 @@ export default class EduxVariableCombobox extends EduxElement {
                         this.#searchEngine = new Fuse(this.#searchableList, {
                             //* @see {@link https://www.fusejs.io/examples.html#nested-search}
                             findAllMatches: true,
-                            keys: ['longName', 'units'],
+                            keys: [
+                                'entryId',
+                                'longName',
+                                'name',
+                                'standardName',
+                                'units',
+                            ],
                             useExtendedSearch: true,
                         })
 

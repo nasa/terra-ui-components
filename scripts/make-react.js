@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { deleteSync } from 'del'
 import prettier from 'prettier'
-import { default as prettierConfig } from '@gesdisc/prettier-config/index.json' assert { type: 'json' }
+import { default as prettierConfig } from '@gesdisc/prettier-config/index.json' with { type: 'json' }
 import { getAllComponents } from './shared.js'
 
 const { outdir } = commandLineArgs({ name: 'outdir', type: String })

@@ -5,7 +5,7 @@ import type { GroupedListItem, ListItem } from './variable-combobox.controller.j
 function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
         <span class="group-title" data-tree-walker="filter_skip"
-            >${listItem.collectionLongName}</span
+            >${listItem.collectionEntryId}</span
         >
         <ul data-tree-walker="filter_skip">
             ${repeat(
@@ -42,14 +42,16 @@ function groupDocsByCollection(docs: ListItem[]): GroupedListItem[] {
     const groupedDocs: Record<string, ListItem[]> = {}
 
     for (const doc of docs) {
-        Array.isArray(groupedDocs[doc.collectionLongName])
-            ? groupedDocs[doc.collectionLongName].push(doc)
-            : (groupedDocs[doc.collectionLongName] = [doc])
+        const key = `${doc.collectionShortName}_${doc.collectionVersion}`
+
+        Array.isArray(groupedDocs[key])
+            ? groupedDocs[key].push(doc)
+            : (groupedDocs[key] = [doc])
     }
 
-    return Object.entries(groupedDocs).map(([collectionLongName, variables]) => {
+    return Object.entries(groupedDocs).map(([collectionEntryId, variables]) => {
         return {
-            collectionLongName,
+            collectionEntryId,
             variables,
         }
     })
