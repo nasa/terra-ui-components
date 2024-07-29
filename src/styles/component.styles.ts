@@ -15,7 +15,6 @@ export default css`
         display: none !important;
     }
 
-    /* TODO: Move to a common theme file? */
     /* UTILITY CSS */
     .sr-only {
         block-size: 1px;
