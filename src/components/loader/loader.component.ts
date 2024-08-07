@@ -1,5 +1,5 @@
 import { property, query, state } from 'lit/decorators.js'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import EduxElement from '../../internal/edux-element.js'
 import styles from './loader.styles.js'
@@ -73,7 +73,7 @@ export default class EduxLoader extends EduxElement {
                               ${this.formatPercent(this.percent)}
                           </div>
                       `
-                    : ``}
+                    : nothing}
                 ${this.variant === 'orbit'
                     ? html`
                           <svg viewBox="0 0 160 160">
@@ -113,7 +113,7 @@ export default class EduxLoader extends EduxElement {
                               />
                           </svg>
                       `
-                    : ``}
+                    : nothing}
                 ${this.variant === 'small' || this.variant === 'large'
                     ? html`
                           <svg
@@ -130,7 +130,7 @@ export default class EduxLoader extends EduxElement {
                               <circle class="fg"></circle>
                           </svg>
                       `
-                    : ``}
+                    : nothing}
             </div>
         `
     }
