@@ -13,7 +13,7 @@ export async function getDb() {
     return await openDB(DB_NAME, 1, {
         upgrade(db) {
             db.createObjectStore(IndexedDbStores.TIME_SERIES, {
-                keyPath: 'variableEntryId',
+                keyPath: 'key',
             })
         },
     })

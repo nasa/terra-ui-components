@@ -61,7 +61,7 @@ export default class EduxDateRangeSlider extends EduxElement {
     @property({ type: Boolean, reflect: true, attribute: 'has-pips' })
     hasPips: boolean = true
 
-    @watch(['startDate', 'endDate'])
+    @watch(['startDate', 'endDate', 'minDate', 'maxDate'])
     updateSlider() {
         this.renderSlider()
     }

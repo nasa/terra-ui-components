@@ -27,8 +27,8 @@ export default css`
             border-color ease-in-out 0.15s,
             box-shadow ease-in-out 0.15s;
         transition:
-            border-color ease-in-out 0.15s,
-            box-shadow ease-in-out 0.15s;
+            background-color 0.2s ease,
+            border-color 0.2s ease;
     }
 
     :host .spatial-picker__input_icon_button {
@@ -44,10 +44,11 @@ export default css`
 
     :host .spatial-picker__input_icon_button svg {
         height: 1.4rem;
-        width: 1.4rem;    }
+        width: 1.4rem;
+    }
 
     .button-icon {
         height: 1rem;
         width: 1rem;
-    }    
+    }
 `

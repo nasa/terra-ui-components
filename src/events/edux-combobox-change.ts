@@ -1,7 +1,7 @@
 import type { ListItem } from '../components/variable-combobox/variable-combobox.controller.js'
 
 export type EduxComboboxChangeEvent = CustomEvent<
-    Partial<Exclude<ListItem, 'eventDetail'>>
+    Partial<Exclude<ListItem, 'collectionLongName' | 'eventDetail' | 'units'>>
 >
 
 declare global {

@@ -5,25 +5,40 @@ meta:
 layout: component
 ---
 
+## All Data Pre-Configured
+
 ```html:preview
 <edux-time-series
     collection="GPM_3IMERGHH_06"
     variable="precipitationCal"
-    min-date="06/01/2000"
-    max-date="09/30/2021"
     start-date="01/01/2019"
     end-date="09/01/2021"
+    location="39.002944230066724,-76.87690658569336"
+></edux-time-series>
+```
+
+## Collection and Variable Pre-Configured
+
+```html:preview
+<edux-time-series
+    collection="GPM_3IMERGHH_06"
+    variable="precipitationCal"
+></edux-time-series>
+```
+
+## No Pre-Configured Data
+
+```html:preview
+<edux-time-series
 ></edux-time-series>
 ```
 
 ```jsx:react
 import EduxTimeSeries from '@nasa/earthdata-ux-components/dist/react/time-series'
 
-const App = () => <EduxTimeSeries 
+const App = () => <EduxTimeSeries
     collection="GPM_3IMERGHH_06"
     variable="precipitationCal"
-    min-date="06/01/2000"
-    max-date="09/30/2021"
     start-date="01/01/2019"
     end-date="09/01/2021"></EduxTimeSeries>
 ```

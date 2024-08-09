@@ -72,7 +72,7 @@ app.get('/getGeoJSON', async (req, res) => {
 })
 
 app.get('/variables', (req, res) => {
-    fetch('https://dev.gesdisc.eosdis.nasa.gov/~baforshe/collection+variable.json')
+    fetch('https://dev.gesdisc.eosdis.nasa.gov/~jdcarlso/collection+variable.json')
         .then(res => res.json())
         .then(text => {
             res.send(text)

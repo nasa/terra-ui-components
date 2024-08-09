@@ -1,12 +1,16 @@
 import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
+import { cache } from 'lit/directives/cache.js'
+import { map } from 'lit/directives/map.js'
 import EduxElement from '../../internal/edux-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
+import leafletDrawStyles from './leaflet-draw.styles.js'
+import { Leaflet } from './leaflet-utils.js'
+import leafletStyles from './leaflet.styles.js'
+import { MapController } from './map.controller.js'
 import styles from './map.styles.js'
-import { Leaflet } from './services/leaflet-utils.js'
-import { getShapeFiles } from './services/shapes.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -16,7 +20,12 @@ import { getShapeFiles } from './services/shapes.js'
  *
  */
 export default class EduxMap extends EduxElement {
-    static styles: CSSResultGroup = [componentStyles, styles]
+    static styles: CSSResultGroup = [
+        componentStyles,
+        leafletStyles,
+        leafletDrawStyles,
+        styles,
+    ]
 
     /**
      * Minimum zoom level of the map.
@@ -35,33 +44,23 @@ export default class EduxMap extends EduxElement {
      */
     @property({ type: Number }) zoom: number = 1
 
-    /*
-     * width of the map
+    /**
+     * has map navigation toolbar
      */
-    @property({ type: Number }) width: number = 504
+    @property({ attribute: 'has-navigation', type: Boolean })
+    hasNavigation: boolean = false
 
     /**
-     * height of the map
+     * has coordinate tracker
      */
-    @property({ type: Number }) height: number = 336
+    @property({ attribute: 'has-coord-tracker', type: Boolean })
+    hasCoordTracker: boolean = false
 
     /**
-     * show map navigation toolbar
+     * has shape selector
      */
-    @property({ attribute: 'show-navigation', type: Boolean })
-    showNavigation: boolean = false
-
-    /**
-     * show coordinate tracker
-     */
-    @property({ attribute: 'show-coord-tracker', type: Boolean })
-    showCoordTracker: boolean = false
-
-    /**
-     * show shape selector
-     */
-    @property({ attribute: 'show-shape-selector', type: Boolean })
-    showShapeSelector: boolean = false
+    @property({ attribute: 'has-shape-selector', type: Boolean })
+    hasShapeSelector: boolean = false
 
     @property({ type: Array })
     value: any = []
@@ -74,20 +73,23 @@ export default class EduxMap extends EduxElement {
     valueChanged(_oldValue: any, newValue: any) {
         if (newValue.length > 0) {
             this.map?.setValue(this.value)
+        } else if (newValue.length === 0 && this.map.isMapReady) {
+            this.map.clearLayers()
         }
     }
 
     map: any = new Leaflet()
 
+    /**
+     * List of geojson shapes
+     */
     @state()
-    listOfShapes: any
+    shapes: any
+
+    _mapController: MapController = new MapController(this)
 
     async connectedCallback(): Promise<void> {
         super.connectedCallback()
-
-        if (this.showShapeSelector) {
-            this.listOfShapes = await getShapeFiles()
-        }
     }
 
     async firstUpdated() {
@@ -95,8 +97,8 @@ export default class EduxMap extends EduxElement {
             zoom: this.zoom,
             minZoom: this.minZoom,
             maxZoom: this.maxZoom,
-            showCoordTracker: this.showCoordTracker,
-            showNavigation: this.showNavigation,
+            hasCoordTracker: this.hasCoordTracker,
+            hasNavigation: this.hasNavigation,
             initialValue: this.value,
         })
 
@@ -116,24 +118,52 @@ export default class EduxMap extends EduxElement {
                 },
             })
         )
+
+        this.#markDynamicLeafletContent()
+    }
+
+    #markDynamicLeafletContent() {
+        //* Add CSS parts to the following items that Leaflet dynamically inserts:
+        const parts = [
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-draw-rectangle'),
+                name: 'leaflet-bbox',
+            },
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-draw-marker'),
+                name: 'leaflet-point',
+            },
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-edit-edit'),
+                name: 'leaflet-edit',
+            },
+            {
+                item: this.shadowRoot?.querySelector('.leaflet-draw-edit-remove'),
+                name: 'leaflet-remove',
+            },
+        ]
+
+        parts.forEach(({ item, name }) => {
+            item?.setAttribute('part', name)
+        })
     }
 
     selectTemplate() {
         return html`
-            <div>
-                <select
-                    class="map__select form-control"
-                    @change=${this.map.handleShapeSelect}
-                >
-                    <option>Select a Shape...</option>
+            <select
+                class="map__select form-control"
+                @change=${this.map.handleShapeSelect}
+            >
+                <option value="">Select a Shape...</option>
 
-                    ${this.listOfShapes?.available.map((parentShape: string) => {
+                ${cache(
+                    map(this.shapes?.available, (parentShape: string) => {
                         const shapes = this.map.transformShapeData(
-                            this.listOfShapes?.info[parentShape]
+                            this.shapes?.info[parentShape]
                         )
 
                         return html`<optgroup
-                            label="${this.listOfShapes?.info[parentShape].title}"
+                            label="${this.shapes?.info[parentShape].title}"
                         >
                             ${shapes.map((shape: any) => {
                                 return html`
@@ -145,41 +175,18 @@ export default class EduxMap extends EduxElement {
                                 `
                             })}
                         </optgroup> `
-                    })}
-                </select>
-            </div>
+                    })
+                )}
+            </select>
         `
     }
 
     render() {
         return html`
-            <link
-                rel="stylesheet"
-                href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-            />
-            <link
-                rel="stylesheet"
-                href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"
-            />
-
-            <style>
-                :host {
-                    width: ${this.width + 32}px;
-                }
-            </style>
-            <div class="map">
-                <!-- select goes here -->
-                ${this.showShapeSelector ? this.selectTemplate() : null}
-                <div class="map__container">
-                    <!-- "Map goes here" -->
-                    <div
-                        id="map"
-                        style="width:${this.width && this.width}px; height: ${this
-                            .height && this.height}px;"
-                        class="map__container__map"
-                    ></div>
-                </div>
-            </div>
+            <!-- select goes here -->
+            ${this.hasShapeSelector ? this.selectTemplate() : nothing}
+            <!-- "Map goes here" -->
+            <div part="map" id="map" class="map"></div>
         `
     }
 }
