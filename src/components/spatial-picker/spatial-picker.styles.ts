@@ -3,7 +3,7 @@ import { css } from 'lit'
 export default css`
     :host {
         display: block;
-        padding: 16px;
+        position: relative;
         max-width: 600px;
     }
 

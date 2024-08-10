@@ -18,6 +18,7 @@ export default css`
         height: var(--edux-block-size, var(--host-height));
         inline-size: var(--edux-inline-size, 100%);
         position: relative;
+        z-index: 10;
     }
 
     :host([hide-help]) {
@@ -25,7 +26,9 @@ export default css`
     }
 
     :host([hide-label]) {
-        height: calc(var(--edux-block-size, var(--host-height)) - var(--label-height));
+        height: calc(
+            var(--edux-block-size, var(--host-height)) - var(--label-height)
+        );
     }
 
     :host([hide-help][hide-label]) {
@@ -115,9 +118,9 @@ export default css`
     }
 
     .external-link {
-      fill: currentColor;
-      vertical-align: middle;
-}
+        fill: currentColor;
+        vertical-align: middle;
+    }
 
     .search-results {
         background-color: var(--edux-color-spacesuit-white);
@@ -168,6 +171,10 @@ export default css`
     .listbox-option-group {
         padding-inline: 0.5rem;
         padding-block: 1rem 0.5rem;
+    }
+
+    .listbox-option-group:has(.clear-button) {
+        text-align: center;
     }
 
     .group-title {
@@ -223,19 +230,4 @@ export default css`
             stroke-dashoffset: -59;
         }
     }
-
-    /* UTILITY CSS */
-    .sr-only {
-        block-size: 1px;
-        border-width: 0;
-        clip: rect(0, 0, 0, 0);
-        margin: -1px;
-        overflow: hidden;
-        padding: 0;
-        position: absolute;
-        white-space: nowrap;
-        width: 1px;
-    }
-
-    .external
 `

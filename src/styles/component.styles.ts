@@ -311,5 +311,17 @@ export default css`
         text-decoration-thickness: 0.05em;
         text-underline-offset: 0.25rem;
         color: var(--edux-color-carbon-60);
+        
+    /* UTILITY CSS */
+    .sr-only {
+        block-size: 1px;
+        border-width: 0;
+        clip: rect(0, 0, 0, 0);
+        margin: -1px;
+        overflow: hidden;
+        padding: 0;
+        position: absolute;
+        white-space: nowrap;
+        width: 1px;
     }
 `

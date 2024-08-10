@@ -81,6 +81,8 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             longName: renderableData.longName,
             standardName: renderableData.standardName,
             entryId: renderableData.entryId,
+            units: doc['Variable.Units'],
+
         })
 
         return { ...renderableData, eventDetail }
