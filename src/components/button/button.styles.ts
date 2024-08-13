@@ -15,7 +15,7 @@ export default css`
         width: 100%;
         border-style: solid;
         border-width: var(--edux-button-border-width);
-        font-family: var(--edux-font-display);
+        font-family: var(--edux-font-family--inter);
         font-weight: var(--edux-font-weight-bold);
         text-decoration: none;
         user-select: none;

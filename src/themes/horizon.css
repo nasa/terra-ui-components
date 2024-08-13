@@ -218,7 +218,7 @@
         4%,
         19%,
         1
-    ); /* Use same colorfor both light & dark theme - don't tie to Neutrals scale */
+    ); /* Use same color for both light & dark theme - don't tie to Neutrals scale */
     --edux-input-font-weight: var(--edux-font-weight-normal);
     --edux-input-line-height: var(--edux-line-height-loose);
     --edux-input-border-color: var(--edux-color-carbon-20);
