@@ -5,10 +5,6 @@ export default css`
         --color-neutral--100: #f7f7f7; /* Retain these 2 local color variables rather than HDS references because color-carbon-XX scale flips with light/dark theme */
         --color-neutral--200: #d1d1d1;
 
-        --font-family--inter: Inter, sans-serif;
-        --font-family--public-sans: 'Public Sans', sans-serif;
-        --font-family--dm-mono: 'DM Mono', monospace;
-
         --label-height: 1.8125rem;
         --help-height: 1.8125rem;
         --host-height: 5.8125rem;
