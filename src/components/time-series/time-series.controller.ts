@@ -23,13 +23,9 @@ import {
 } from '../../internal/indexeddb.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
-const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
+// const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
 const timeSeriesUrlTemplate = compile(
-    `${
-        isLocalHost
-            ? 'http://localhost:9000/hydro1'
-            : 'https://hydro1.earthdata-ux.eosdis.nasa.gov'
-    }/daac-bin/access/timeseries.cgi?variable={{variable}}&startDate={{startDate}}&endDate={{endDate}}&location={{location}}&type=asc2`
+    `https://api.giovanni.earthdata.nasa.gov/proxy-timeseries?variable={{variable}}&location={{location}}&time={{time}}`
 )
 
 export const plotlyDefaultData: Partial<PlotData> = {
@@ -91,7 +87,7 @@ export class TimeSeriesController {
             () => [this.collection, this.variable, this.startDate, this.endDate]
         )
     }
-
+  
     async #loadTimeSeries(signal: AbortSignal) {
         // create the variable identifer
         const variableEntryId = `${this.collection}_${this.variable}`
@@ -139,13 +135,14 @@ export class TimeSeriesController {
             variable: `${variableEntryId.split('_')[0]}:${this.collection}:${
                 this.variable
             }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
-            startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
-            endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
+            //startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
+            //endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
+            time: format(requestStartDate, 'yyyy-MM-dd') + 'T00' + '/' + format(requestEndDate, 'yyyy-MM-dd') + 'T00',
             location: 'GEOM:POINT(-86.9375,%2033.9375)',
         })
 
         // fetch the time series as a CSV
-        const response = await fetch(url, { mode: 'cors', signal })
+        const response = await fetch(url, { mode: 'cors', signal, headers: {authorizationtoken:"eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6ImtydXBhcmFtaTIwIiwiZXhwIjoxNzI4MjM4MzA4LCJpYXQiOjE3MjMwNTQzMDgsImlzcyI6IkVhcnRoZGF0YSBMb2dpbiJ9.MwV4HbS3N9SrkHaL-jJPCb6hgE3oelvFi3fqJnVB8Y4wJ_AWpyWLGgsXAQ2ln2mZpzMRpQUy2AbMDvbnfmwO7a30CeG_eAT7js5a8rrsVESANPr2CsxQQqdGBouQY8ukVhhrY_AwYN5YOoyiPr1VYu44WSMaWOA1ja_GkEp0wf4xD39uZ31CmF-1lxe6ihKzKk2sVPzBlzVTgMsnS5VSnFAtUW1tuZs4qyyK7GU0EUovTQDXx2JPsdTOfi5Cy9Bw-U-_aYaRXC-5KDTaAzeMo0GlUcPJO05CIaC1FjhzjPdNNLTrl5xqkMF_90me39InTHlzUqFCcKvG_BGvMuAn1g"} })
 
         if (!response.ok) {
             throw new Error(
