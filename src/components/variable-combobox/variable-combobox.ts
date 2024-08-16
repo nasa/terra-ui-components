@@ -1,12 +1,12 @@
-import EduxVariableCombobox from './variable-combobox.component.js'
+import TerraVariableCombobox from './variable-combobox.component.js'
 
 export * from './variable-combobox.component.js'
-export default EduxVariableCombobox
+export default TerraVariableCombobox
 
-EduxVariableCombobox.define('edux-variable-combobox')
+TerraVariableCombobox.define('terra-variable-combobox')
 
 declare global {
     interface HTMLElementTagNameMap {
-        'edux-variable-combobox': EduxVariableCombobox
+        'terra-variable-combobox': TerraVariableCombobox
     }
 }

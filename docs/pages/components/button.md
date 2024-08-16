@@ -8,13 +8,13 @@ layout: component
 <!-- TODO: @shoelace-style/shoelace/dist/react/button needs to be replaced with our dist -->
 
 ```html:preview
-<edux-button>Button</edux-button>
+<terra-button>Button</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@nasa/earthdata-ux-components/dist/react/button';
+import TerraButton from '@nasa/terra-ui-components/dist/react/button';
 
-const App = () => <EduxButton>Button</EduxButton>;
+const App = () => <TerraButton>Button</TerraButton>;
 ```
 
 ## Examples
@@ -24,25 +24,25 @@ const App = () => <EduxButton>Button</EduxButton>;
 Use the `variant` attribute to set the button's variant.
 
 ```html:preview
-<edux-button variant="default">Default</edux-button>
-<edux-button variant="primary">Primary</edux-button>
-<edux-button variant="success">Success</edux-button>
-<edux-button variant="neutral">Neutral</edux-button>
-<edux-button variant="warning">Warning</edux-button>
-<edux-button variant="danger">Danger</edux-button>
+<terra-button variant="default">Default</terra-button>
+<terra-button variant="primary">Primary</terra-button>
+<terra-button variant="success">Success</terra-button>
+<terra-button variant="neutral">Neutral</terra-button>
+<terra-button variant="warning">Warning</terra-button>
+<terra-button variant="danger">Danger</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton variant="default">Default</EduxButton>
-    <EduxButton variant="primary">Primary</EduxButton>
-    <EduxButton variant="success">Success</EduxButton>
-    <EduxButton variant="neutral">Neutral</EduxButton>
-    <EduxButton variant="warning">Warning</EduxButton>
-    <EduxButton variant="danger">Danger</EduxButton>
+    <TerraButton variant="default">Default</TerraButton>
+    <TerraButton variant="primary">Primary</TerraButton>
+    <TerraButton variant="success">Success</TerraButton>
+    <TerraButton variant="neutral">Neutral</TerraButton>
+    <TerraButton variant="warning">Warning</TerraButton>
+    <TerraButton variant="danger">Danger</TerraButton>
   </>
 );
 ```
@@ -52,19 +52,19 @@ const App = () => (
 Use the `size` attribute to change a button's size.
 
 ```html:preview
-<edux-button size="small">Small</edux-button>
-<edux-button size="medium">Medium</edux-button>
-<edux-button size="large">Large</edux-button>
+<terra-button size="small">Small</terra-button>
+<terra-button size="medium">Medium</terra-button>
+<terra-button size="large">Large</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton size="small">Small</EduxButton>
-    <EduxButton size="medium">Medium</EduxButton>
-    <EduxButton size="large">Large</EduxButton>
+    <TerraButton size="small">Small</TerraButton>
+    <TerraButton size="medium">Medium</TerraButton>
+    <TerraButton size="large">Large</TerraButton>
   </>
 );
 ```
@@ -74,37 +74,37 @@ const App = () => (
 Use the `outline` attribute to draw outlined buttons with transparent backgrounds.
 
 ```html:preview
-<edux-button variant="default" outline>Default</edux-button>
-<edux-button variant="primary" outline>Primary</edux-button>
-<edux-button variant="success" outline>Success</edux-button>
-<edux-button variant="neutral" outline>Neutral</edux-button>
-<edux-button variant="warning" outline>Warning</edux-button>
-<edux-button variant="danger" outline>Danger</edux-button>
+<terra-button variant="default" outline>Default</terra-button>
+<terra-button variant="primary" outline>Primary</terra-button>
+<terra-button variant="success" outline>Success</terra-button>
+<terra-button variant="neutral" outline>Neutral</terra-button>
+<terra-button variant="warning" outline>Warning</terra-button>
+<terra-button variant="danger" outline>Danger</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton variant="default" outline>
+    <TerraButton variant="default" outline>
       Default
-    </EduxButton>
-    <EduxButton variant="primary" outline>
+    </TerraButton>
+    <TerraButton variant="primary" outline>
       Primary
-    </EduxButton>
-    <EduxButton variant="success" outline>
+    </TerraButton>
+    <TerraButton variant="success" outline>
       Success
-    </EduxButton>
-    <EduxButton variant="neutral" outline>
+    </TerraButton>
+    <TerraButton variant="neutral" outline>
       Neutral
-    </EduxButton>
-    <EduxButton variant="warning" outline>
+    </TerraButton>
+    <TerraButton variant="warning" outline>
       Warning
-    </EduxButton>
-    <EduxButton variant="danger" outline>
+    </TerraButton>
+    <TerraButton variant="danger" outline>
       Danger
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -114,25 +114,25 @@ const App = () => (
 Use the `pill` attribute to give buttons rounded edges.
 
 ```html:preview
-<edux-button size="small" pill>Small</edux-button>
-<edux-button size="medium" pill>Medium</edux-button>
-<edux-button size="large" pill>Large</edux-button>
+<terra-button size="small" pill>Small</terra-button>
+<terra-button size="medium" pill>Medium</terra-button>
+<terra-button size="large" pill>Large</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton size="small" pill>
+    <TerraButton size="small" pill>
       Small
-    </EduxButton>
-    <EduxButton size="medium" pill>
+    </TerraButton>
+    <TerraButton size="medium" pill>
       Medium
-    </EduxButton>
-    <EduxButton size="large" pill>
+    </TerraButton>
+    <TerraButton size="large" pill>
       Large
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -146,25 +146,25 @@ TODO
 Use the `text` variant to create text buttons that share the same size as regular buttons but don't have backgrounds or borders.
 
 ```html:preview
-<edux-button variant="text" size="small">Text</edux-button>
-<edux-button variant="text" size="medium">Text</edux-button>
-<edux-button variant="text" size="large">Text</edux-button>
+<terra-button variant="text" size="small">Text</terra-button>
+<terra-button variant="text" size="medium">Text</terra-button>
+<terra-button variant="text" size="large">Text</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton variant="text" size="small">
+    <TerraButton variant="text" size="small">
       Text
-    </EduxButton>
-    <EduxButton variant="text" size="medium">
+    </TerraButton>
+    <TerraButton variant="text" size="medium">
       Text
-    </EduxButton>
-    <EduxButton variant="text" size="large">
+    </TerraButton>
+    <TerraButton variant="text" size="large">
       Text
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -174,27 +174,27 @@ const App = () => (
 It's often helpful to have a button that works like a link. This is possible by setting the `href` attribute, which will make the component render an `<a>` under the hood. This gives you all the default link behavior the browser provides (e.g. [[CMD/CTRL/SHIFT]] + [[CLICK]]) and exposes the `target` and `download` attributes.
 
 ```html:preview
-<edux-button href="https://example.com/">Link</edux-button>
-<edux-button href="https://example.com/" target="_blank">New Window</edux-button>
-<edux-button href="/assets/images/wordmark.svg" download="shoelace.svg">Download</edux-button>
-<edux-button href="https://example.com/" disabled>Disabled</edux-button>
+<terra-button href="https://example.com/">Link</terra-button>
+<terra-button href="https://example.com/" target="_blank">New Window</terra-button>
+<terra-button href="/assets/images/wordmark.svg" download="shoelace.svg">Download</terra-button>
+<terra-button href="https://example.com/" disabled>Disabled</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton href="https://example.com/">Link</EduxButton>
-    <EduxButton href="https://example.com/" target="_blank">
+    <TerraButton href="https://example.com/">Link</TerraButton>
+    <TerraButton href="https://example.com/" target="_blank">
       New Window
-    </EduxButton>
-    <EduxButton href="/assets/images/wordmark.svg" download="shoelace.svg">
+    </TerraButton>
+    <TerraButton href="/assets/images/wordmark.svg" download="shoelace.svg">
       Download
-    </EduxButton>
-    <EduxButton href="https://example.com/" disabled>
+    </TerraButton>
+    <TerraButton href="https://example.com/" disabled>
       Disabled
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -208,27 +208,27 @@ When a `target` is set, the link will receive `rel="noreferrer noopener"` for [s
 As expected, buttons can be given a custom width by passing inline styles to the component (or using a class). This is useful for making buttons span the full width of their container on smaller screens.
 
 ```html:preview
-<edux-button variant="default" size="small" style="width: 100%; margin-bottom: 1rem;">Small</edux-button>
-<edux-button variant="default" size="medium" style="width: 100%; margin-bottom: 1rem;">Medium</edux-button>
-<edux-button variant="default" size="large" style="width: 100%;">Large</edux-button>
+<terra-button variant="default" size="small" style="width: 100%; margin-bottom: 1rem;">Small</terra-button>
+<terra-button variant="default" size="medium" style="width: 100%; margin-bottom: 1rem;">Medium</terra-button>
+<terra-button variant="default" size="large" style="width: 100%;">Large</terra-button>
 ```
 
 {% raw %}
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton variant="default" size="small" style={{ width: '100%', marginBottom: '1rem' }}>
+    <TerraButton variant="default" size="small" style={{ width: '100%', marginBottom: '1rem' }}>
       Small
-    </EduxButton>
-    <EduxButton variant="default" size="medium" style={{ width: '100%', marginBottom: '1rem' }}>
+    </TerraButton>
+    <TerraButton variant="default" size="medium" style={{ width: '100%', marginBottom: '1rem' }}>
       Medium
-    </EduxButton>
-    <EduxButton variant="default" size="large" style={{ width: '100%' }}>
+    </TerraButton>
+    <TerraButton variant="default" size="large" style={{ width: '100%' }}>
       Large
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -244,25 +244,25 @@ TODO
 Use the `caret` attribute to add a dropdown indicator when a button will trigger a dropdown, menu, or popover.
 
 ```html:preview
-<edux-button size="small" caret>Small</edux-button>
-<edux-button size="medium" caret>Medium</edux-button>
-<edux-button size="large" caret>Large</edux-button>
+<terra-button size="small" caret>Small</terra-button>
+<terra-button size="medium" caret>Medium</terra-button>
+<terra-button size="large" caret>Large</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton size="small" caret>
+    <TerraButton size="small" caret>
       Small
-    </EduxButton>
-    <EduxButton size="medium" caret>
+    </TerraButton>
+    <TerraButton size="medium" caret>
       Medium
-    </EduxButton>
-    <EduxButton size="large" caret>
+    </TerraButton>
+    <TerraButton size="large" caret>
       Large
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -272,37 +272,37 @@ const App = () => (
 Use the `loading` attribute to make a button busy. The width will remain the same as before, preventing adjacent elements from moving around.
 
 ```html:preview
-<edux-button variant="default" loading>Default</edux-button>
-<edux-button variant="primary" loading>Primary</edux-button>
-<edux-button variant="success" loading>Success</edux-button>
-<edux-button variant="neutral" loading>Neutral</edux-button>
-<edux-button variant="warning" loading>Warning</edux-button>
-<edux-button variant="danger" loading>Danger</edux-button>
+<terra-button variant="default" loading>Default</terra-button>
+<terra-button variant="primary" loading>Primary</terra-button>
+<terra-button variant="success" loading>Success</terra-button>
+<terra-button variant="neutral" loading>Neutral</terra-button>
+<terra-button variant="warning" loading>Warning</terra-button>
+<terra-button variant="danger" loading>Danger</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton variant="default" loading>
+    <TerraButton variant="default" loading>
       Default
-    </EduxButton>
-    <EduxButton variant="primary" loading>
+    </TerraButton>
+    <TerraButton variant="primary" loading>
       Primary
-    </EduxButton>
-    <EduxButton variant="success" loading>
+    </TerraButton>
+    <TerraButton variant="success" loading>
       Success
-    </EduxButton>
-    <EduxButton variant="neutral" loading>
+    </TerraButton>
+    <TerraButton variant="neutral" loading>
       Neutral
-    </EduxButton>
-    <EduxButton variant="warning" loading>
+    </TerraButton>
+    <TerraButton variant="warning" loading>
       Warning
-    </EduxButton>
-    <EduxButton variant="danger" loading>
+    </TerraButton>
+    <TerraButton variant="danger" loading>
       Danger
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
@@ -312,58 +312,58 @@ const App = () => (
 Use the `disabled` attribute to disable a button.
 
 ```html:preview
-<edux-button variant="default" disabled>Default</edux-button>
-<edux-button variant="primary" disabled>Primary</edux-button>
-<edux-button variant="success" disabled>Success</edux-button>
-<edux-button variant="neutral" disabled>Neutral</edux-button>
-<edux-button variant="warning" disabled>Warning</edux-button>
-<edux-button variant="danger" disabled>Danger</edux-button>
+<terra-button variant="default" disabled>Default</terra-button>
+<terra-button variant="primary" disabled>Primary</terra-button>
+<terra-button variant="success" disabled>Success</terra-button>
+<terra-button variant="neutral" disabled>Neutral</terra-button>
+<terra-button variant="warning" disabled>Warning</terra-button>
+<terra-button variant="danger" disabled>Danger</terra-button>
 ```
 
 ```jsx:react
-import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <EduxButton variant="default" disabled>
+    <TerraButton variant="default" disabled>
       Default
-    </EduxButton>
+    </TerraButton>
 
-    <EduxButton variant="primary" disabled>
+    <TerraButton variant="primary" disabled>
       Primary
-    </EduxButton>
+    </TerraButton>
 
-    <EduxButton variant="success" disabled>
+    <TerraButton variant="success" disabled>
       Success
-    </EduxButton>
+    </TerraButton>
 
-    <EduxButton variant="neutral" disabled>
+    <TerraButton variant="neutral" disabled>
       Neutral
-    </EduxButton>
+    </TerraButton>
 
-    <EduxButton variant="warning" disabled>
+    <TerraButton variant="warning" disabled>
       Warning
-    </EduxButton>
+    </TerraButton>
 
-    <EduxButton variant="danger" disabled>
+    <TerraButton variant="danger" disabled>
       Danger
-    </EduxButton>
+    </TerraButton>
   </>
 );
 ```
 
 ### Styling Buttons
 
-This example demonstrates how to style buttons using a custom class. This is the recommended approach if you need to add additional variations. To customize an existing variation, modify the selector to target the button's `variant` attribute instead of a class (e.g. `edux-button[variant="primary"]`).
+This example demonstrates how to style buttons using a custom class. This is the recommended approach if you need to add additional variations. To customize an existing variation, modify the selector to target the button's `variant` attribute instead of a class (e.g. `terra-button[variant="primary"]`).
 
 ```html:preview
-<edux-button class="pink">Pink Button</edux-button>
+<terra-button class="pink">Pink Button</terra-button>
 
 <style>
-  edux-button.pink::part(base) {
+  terra-button.pink::part(base) {
     /* Set design tokens for height and border width */
-    --edux-input-height-medium: 48px;
-    --edux-input-border-width: 4px;
+    --terra-input-height-medium: 48px;
+    --terra-input-border-width: 4px;
 
     border-radius: 0;
     background-color: #ff1493;
@@ -374,14 +374,14 @@ This example demonstrates how to style buttons using a custom class. This is the
     color: white;
     font-size: 1.125rem;
     box-shadow: 0 2px 10px #0002;
-    transition: var(--edux-transition-medium) transform ease, var(--edux-transition-medium) border ease;
+    transition: var(--terra-transition-medium) transform ease, var(--terra-transition-medium) border ease;
   }
 
-  edux-button.pink::part(base):hover {
+  terra-button.pink::part(base):hover {
     transform: scale(1.05) rotate(-1deg);
   }
 
-  edux-button.pink::part(base):active {
+  terra-button.pink::part(base):active {
     border-top-color: #ad005c;
     border-right-color: #ff7ac1;
     border-bottom-color: #ff7ac1;
@@ -389,7 +389,7 @@ This example demonstrates how to style buttons using a custom class. This is the
     transform: scale(1.05) rotate(-1deg) translateY(2px);
   }
 
-  edux-button.pink::part(base):focus-visible {
+  terra-button.pink::part(base):focus-visible {
     outline: dashed 2px deeppink;
     outline-offset: 4px;
   }

@@ -1,11 +1,11 @@
 import type { MapEventDetail } from '../components/map/type.js'
 
-export type EduxMapEvent = CustomEvent<MapEventDetail>
+export type TerraMapEvent = CustomEvent<MapEventDetail>
 
-export type EduxSpatialPickerDrawDeletedEvent = CustomEvent<any>
+export type TerraSpatialPickerDrawDeletedEvent = CustomEvent<any>
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'edux-map-change': EduxMapEvent
+        'terra-map-change': TerraMapEvent
     }
 }

@@ -8,10 +8,10 @@ meta:
 
 Z-indexes are used to stack components in a logical manner.
 
-| Token                        | Value |
-| ---------------------------- | ----- |
-| `--edux-z-index-drawer`      | 700   |
-| `--edux-z-index-dialog`      | 800   |
-| `--edux-z-index-dropdown`    | 900   |
-| `--edux-z-index-alert-group` | 950   |
-| `--edux-z-index-tooltip`     | 1000  |
+| Token                         | Value |
+| ----------------------------- | ----- |
+| `--terra-z-index-drawer`      | 700   |
+| `--terra-z-index-dialog`      | 800   |
+| `--terra-z-index-dropdown`    | 900   |
+| `--terra-z-index-alert-group` | 950   |
+| `--terra-z-index-tooltip`     | 1000  |

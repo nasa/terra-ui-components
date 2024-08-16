@@ -2,7 +2,7 @@
 <html
   lang="en"
   data-layout="{{ layout }}"
-  data-earthdata-ux-components-version="{{ meta.version }}"
+  data-terra-ui-components-version="{{ meta.version }}"
 >
     <head>
         {# Metadata #}
@@ -24,7 +24,7 @@
 
         {# Twitter Cards #}
         <meta name="twitter:card" content="summary"/>
-        <meta name="twitter:creator" content="nasa_earthdata-ux"/>
+        <meta name="twitter:creator" content="nasa_terra-ui"/>
         <meta name="twitter:image" content="{{ assetUrl(meta.image, true) }}"/>
 
         {# OpenGraph #}
@@ -35,7 +35,7 @@
 
         {# Components #}
         <link rel="stylesheet" href="/dist/themes/horizon.css"/>
-        <script type="module" src="/dist/earthdata-ux-components-autoloader.js"></script>
+        <script type="module" src="/dist/terra-ui-components-autoloader.js"></script>
 
         {# Set the initial theme and menu states here to prevent flashing #}
         <script>
@@ -47,7 +47,7 @@
                 document
                     .documentElement
                     .classList
-                    .toggle('edux-theme-dark', theme === 'dark' || (theme === 'auto' && prefersDark));
+                    .toggle('terra-theme-dark', theme === 'dark' || (theme === 'auto' && prefersDark));
             })();
         </script>
 
@@ -83,7 +83,7 @@
         {# Icon toolbar #}
         <div id="icon-toolbar">
             {# GitHub #}
-            <a href="https://github.com/earthdata-ux/components" title="View Earthdata UX Components on GitHub">
+            <a href="https://github.com/terra-ui/components" title="View Terra UI Components on GitHub">
                 <sl-icon name="github"></sl-icon>
             </a>
         </div>
@@ -91,8 +91,8 @@
         <aside id="sidebar" data-preserve-scroll>
             <header>
                 <a href="/" class="sidebar-logo">
-                    <img src="{{ assetUrl('images/logo.svg') }}" alt="Earthdata UX Components"/>
-                    Earthdata UX Components
+                    <img src="{{ assetUrl('images/logo.svg') }}" alt="Terra UI Components"/>
+                    Terra UI Components
                 </a>
                 <div class="sidebar-version">
                     {{ meta.version }}
@@ -100,12 +100,12 @@
             </header>
 
             <div class="sidebar-buttons">
-                <edux-button size="small" class="repo-button repo-button--github" href="https://github.com/earthdata-ux/components" target="_blank">
+                <terra-button size="small" class="repo-button repo-button--github" href="https://github.com/terra-ui/components" target="_blank">
                     <sl-icon slot="prefix" name="github"></sl-icon> Code
-        </edux-button>
-                <edux-button size="small" class="repo-button repo-button--star" href="https://github.com/earthdata-ux/components/stargazers" target="_blank">
+        </terra-button>
+                <terra-button size="small" class="repo-button repo-button--star" href="https://github.com/terra-ui/components/stargazers" target="_blank">
                     <sl-icon slot="prefix" name="star-fill"></sl-icon> Star
-        </edux-button>
+        </terra-button>
             </div>
 
             <button class="search-box" type="button" title="Press / to search" aria-label="Search" data-plugin="search">

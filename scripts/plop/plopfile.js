@@ -1,5 +1,5 @@
 export default function (plop) {
-    plop.setHelper('tagWithoutPrefix', tag => tag.replace(/^edux-/, ''))
+    plop.setHelper('tagWithoutPrefix', tag => tag.replace(/^terra-/, ''))
 
     plop.setHelper('tagToTitle', tag => {
         const withoutPrefix = plop.getHelper('tagWithoutPrefix')
@@ -13,10 +13,10 @@ export default function (plop) {
             {
                 type: 'input',
                 name: 'tag',
-                message: 'Tag name? (e.g. edux-button)',
+                message: 'Tag name? (e.g. terra-button)',
                 validate: value => {
-                    // Start with edux- and include only a-z + dashes
-                    if (!/^edux-[a-z-+]+/.test(value)) {
+                    // Start with terra- and include only a-z + dashes
+                    if (!/^terra-[a-z-+]+/.test(value)) {
                         return false
                     }
 
@@ -57,7 +57,7 @@ export default function (plop) {
             },
             {
                 type: 'modify',
-                path: '../../src/earthdata-ux-components.ts',
+                path: '../../src/terra-ui-components.ts',
                 pattern: /\/\* plop:component \*\//,
                 template: `export { default as {{ properCase tag }} } from './components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.js';\n/* plop:component */`,
             },

@@ -1,31 +1,31 @@
 /* Search plugin */
 :root,
-:root.edux-theme-dark {
-    --docs-search-box-background: var(--edux-color-neutral-0);
+:root.terra-theme-dark {
+    --docs-search-box-background: var(--terra-color-neutral-0);
     --docs-search-box-border-width: 1px;
-    --docs-search-box-border-color: var(--edux-color-neutral-300);
-    --docs-search-box-color: var(--edux-color-neutral-600);
-    --docs-search-dialog-background: var(--edux-color-neutral-0);
+    --docs-search-box-border-color: var(--terra-color-neutral-300);
+    --docs-search-box-color: var(--terra-color-neutral-600);
+    --docs-search-dialog-background: var(--terra-color-neutral-0);
     --docs-search-border-width: var(--docs-border-width);
     --docs-search-border-color: var(--docs-border-color);
-    --docs-search-text-color: var(--edux-color-neutral-900);
-    --docs-search-text-color-muted: var(--edux-color-neutral-500);
-    --docs-search-font-weight-normal: var(--edux-font-weight-normal);
-    --docs-search-font-weight-semibold: var(--edux-font-weight-semibold);
+    --docs-search-text-color: var(--terra-color-neutral-900);
+    --docs-search-text-color-muted: var(--terra-color-neutral-500);
+    --docs-search-font-weight-normal: var(--terra-font-weight-normal);
+    --docs-search-font-weight-semibold: var(--terra-font-weight-semibold);
     --docs-search-border-radius: calc(2 * var(--docs-border-radius));
-    --docs-search-accent-color: var(--edux-color-primary-600);
-    --docs-search-icon-color: var(--edux-color-neutral-500);
-    --docs-search-icon-color-active: var(--edux-color-neutral-600);
+    --docs-search-accent-color: var(--terra-color-primary-600);
+    --docs-search-icon-color: var(--terra-color-neutral-500);
+    --docs-search-icon-color-active: var(--terra-color-neutral-600);
     --docs-search-shadow: var(--docs-shadow-x-large);
-    --docs-search-result-background-hover: var(--edux-color-neutral-100);
-    --docs-search-result-color-hover: var(--edux-color-neutral-900);
-    --docs-search-result-background-active: var(--edux-color-primary-600);
-    --docs-search-result-color-active: var(--edux-color-neutral-0);
-    --docs-search-focus-ring: var(--edux-focus-ring);
+    --docs-search-result-background-hover: var(--terra-color-neutral-100);
+    --docs-search-result-color-hover: var(--terra-color-neutral-900);
+    --docs-search-result-background-active: var(--terra-color-primary-600);
+    --docs-search-result-color-active: var(--terra-color-neutral-0);
+    --docs-search-focus-ring: var(--terra-focus-ring);
     --docs-search-overlay-background: rgb(0 0 0 / 0.33);
 }
 
-:root.edux-theme-dark {
+:root.terra-theme-dark {
     --docs-search-overlay-background: rgb(71 71 71 / 0.33);
 }
 
@@ -48,7 +48,7 @@ body.search-visible {
     font: inherit;
     color: var(--docs-search-box-color);
     padding: 0.75rem 1rem;
-    margin: var(--edux-spacing-large) 0;
+    margin: var(--terra-spacing-large) 0;
     cursor: pointer;
 }
 
@@ -151,7 +151,7 @@ body.search-visible {
     align-items: center;
 }
 
-.search__input-wrapper edux-icon {
+.search__input-wrapper terra-icon {
     width: 1.5rem;
     height: 1.5rem;
     flex: 0 0 auto;
@@ -173,7 +173,7 @@ body.search-visible {
     display: none;
 }
 
-.search__clear-button:active edux-icon {
+.search__clear-button:active terra-icon {
     color: var(--docs-search-icon-color-active);
 }
 
@@ -277,7 +277,7 @@ body.search-visible {
     color: var(--docs-search-text-color-muted);
 }
 
-.search__result-icon edux-icon {
+.search__result-icon terra-icon {
     font-size: 1.5rem;
 }
 

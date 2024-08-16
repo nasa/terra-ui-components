@@ -3,7 +3,7 @@ import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { ref } from 'lit/directives/ref.js'
 import { repeat } from 'lit/directives/repeat.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './combobox.styles.js'
 
@@ -34,7 +34,7 @@ import {
  * @cssproperty --help-height - The height of the search help element.
  * @cssproperty --label-height - The height of the input's label element.
  */
-export default class EduxCombobox extends EduxElement {
+export default class TerraCombobox extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     static shadowRootOptions = {
@@ -42,7 +42,7 @@ export default class EduxCombobox extends EduxElement {
         delegatesFocus: true,
     }
 
-    static tagName = 'edux-combobox'
+    static tagName = 'terra-combobox'
 
     static initialQuery = ''
 
@@ -108,7 +108,7 @@ export default class EduxCombobox extends EduxElement {
     isExpanded = false
 
     @state()
-    query = EduxCombobox.initialQuery
+    query = TerraCombobox.initialQuery
 
     @state()
     searchResults: GroupedListItem[] | ListItem[] = []
@@ -244,7 +244,7 @@ export default class EduxCombobox extends EduxElement {
     }
 
     #dispatchChange = (stringifiedData: string) => {
-        this.emit('edux-combobox-change', { detail: JSON.parse(stringifiedData) })
+        this.emit('terra-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
 
     #handleButtonClick = () => {
@@ -339,7 +339,7 @@ export default class EduxCombobox extends EduxElement {
                 if (this.isExpanded) {
                     this.isExpanded = false
                 } else {
-                    this.query = EduxCombobox.initialQuery
+                    this.query = TerraCombobox.initialQuery
                 }
 
                 break
@@ -355,7 +355,7 @@ export default class EduxCombobox extends EduxElement {
         const path = event.composedPath()
         const containedThis = path.some(
             eventTarget =>
-                (eventTarget as HTMLElement).localName === EduxCombobox.tagName
+                (eventTarget as HTMLElement).localName === TerraCombobox.tagName
         )
 
         if (!containedThis) {
@@ -510,7 +510,7 @@ export default class EduxCombobox extends EduxElement {
                         () => {
                             return this.content.type === SearchableListType.ListItem
                                 ? cache(
-                                      this.query === EduxCombobox.initialQuery
+                                      this.query === TerraCombobox.initialQuery
                                           ? map(
                                                 this.content.data as ListItem[],
                                                 this.#renderListItem
@@ -523,7 +523,7 @@ export default class EduxCombobox extends EduxElement {
                                 : this.content.type ===
                                     SearchableListType.GroupedListItem
                                   ? cache(
-                                        this.query === EduxCombobox.initialQuery
+                                        this.query === TerraCombobox.initialQuery
                                             ? map(
                                                   this.content
                                                       .data as GroupedListItem[],

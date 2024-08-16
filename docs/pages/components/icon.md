@@ -5,23 +5,23 @@ meta:
 layout: component
 ---
 
-EDUX Components come bundled with two sets of icons: `default` and `heroicons`. `default` icons are pulled from the [Horizon Design System](https://website.nasa.gov/hds/foundations/iconography/) (HDS), and `heroicons` icons consist of over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. If you prefer, you can register [custom icon libraries](#custom-icon-libraries) as well.
+Terra UI Components come bundled with two sets of icons: `default` and `heroicons`. `default` icons are pulled from the [Horizon Design System](https://website.nasa.gov/hds/foundations/iconography/) (HDS), and `heroicons` icons consist of over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. If you prefer, you can register [custom icon libraries](#custom-icon-libraries) as well.
 
 :::tip
-Depending on how you're loading EDUX Components, you may need to copy icon assets and/or [set the base path](/getting-started/installation/#setting-the-base-path) so EDUX knows where to load them from. Otherwise, icons may not appear and you'll see <code>404 Not Found</code> errors in the dev console.
+Depending on how you're loading Terra UI Components, you may need to copy icon assets and/or [set the base path](/getting-started/installation/#setting-the-base-path) so Terra UI knows where to load them from. Otherwise, icons may not appear and you'll see <code>404 Not Found</code> errors in the dev console.
 :::
 
 ```html:preview
 
 <div style="font-size:4em;display:flex;">
   <span style="color:#1C67E3;font-size:2rem;display:flex;align-items:center;">
-    <edux-icon name="solid-rocket-launch" library="heroicons"></edux-icon>
+    <terra-icon name="solid-rocket-launch" library="heroicons"></terra-icon>
   </span>
 
-  <edux-icon name="nasa-logo"></edux-icon>
+  <terra-icon name="nasa-logo"></terra-icon>
 
   <span style="color:#F64137;font-size:2rem;display:flex;align-items:center;">
-    <edux-icon name="outline-rocket-launch" library="heroicons"></edux-icon>
+    <terra-icon name="outline-rocket-launch" library="heroicons"></terra-icon>
   </span>
 </div>
 
@@ -35,17 +35,17 @@ Default icons require no `library` attribute, but you _can_ use the attribute `l
 
 ```html:preview
 <!-- `library="default"` not required -->
-<edux-icon name="caret" library="default"></edux-icon>
-<edux-icon name="chevron-left-circle"></edux-icon>
-<edux-icon name="arrow-right-circle"></edux-icon>
-<edux-icon name="asteroid"></edux-icon>
+<terra-icon name="caret" library="default"></terra-icon>
+<terra-icon name="chevron-left-circle"></terra-icon>
+<terra-icon name="arrow-right-circle"></terra-icon>
+<terra-icon name="asteroid"></terra-icon>
 ```
 
 ### Customizing the Default Library
 
-The default library contains only the icons used internally by EDUX components. Unlike the Heroicon icon library, the default library does not rely on physical assets. Instead, its icons are hard-coded as data URIs into the resolver to ensure their availability.
+The default library contains only the icons used internally by Terra UI components. Unlike the Heroicon icon library, the default library does not rely on physical assets. Instead, its icons are hard-coded as data URIs into the resolver to ensure their availability.
 
-If you want to change the icons EDUX uses internally, you can register an icon library using the `default` name and a custom resolver. If you choose to do this, it's your responsibility to provide all of the icons that are required by components. You can reference `src/components/library.default.ts` for a complete list of system icons used by EDUX.
+If you want to change the icons Terra UI uses internally, you can register an icon library using the `default` name and a custom resolver. If you choose to do this, it's your responsibility to provide all of the icons that are required by components. You can reference `src/components/library.default.ts` for a complete list of system icons used by Terra UI.
 
 ```html
 <script type="module">
@@ -62,8 +62,8 @@ If you want to change the icons EDUX uses internally, you can register an icon l
 Heroicons (both outline and solid) are included as a pre-configured library.
 
 ```html:preview
-<edux-icon name="outline-academic-cap" library="heroicons"></edux-icon>
-<edux-icon name="solid-academic-cap" library="heroicons"></edux-icon>
+<terra-icon name="outline-academic-cap" library="heroicons"></terra-icon>
+<terra-icon name="solid-academic-cap" library="heroicons"></terra-icon>
 ```
 
 The following icons are available for use as part of the Heroicons icon library:
@@ -83,7 +83,7 @@ The following icons are available for use as part of the Heroicons icon library:
   let items = ``
 
   for (const icon of icons) {
-    items += `<li><edux-icon style="margin-inline-end:1ch;" name=${icon.name} library="heroicons"></edux-icon>${icon.name}</li>\n`
+    items += `<li><terra-icon style="margin-inline-end:1ch;" name=${icon.name} library="heroicons"></terra-icon>${icon.name}</li>\n`
   }
 
   ul.innerHTML = items
@@ -112,18 +112,18 @@ This example will load the same set of icons from the jsDelivr CDN instead of yo
 Custom icons can be loaded individually with the `src` attribute. Only SVGs on a local or CORS-enabled endpoint are supported. If you're using more than one custom icon, it might make sense to register a [custom icon library](#custom-icon-libraries).
 
 ```html:preview
-<edux-icon src="https://cdn.earthdata.nasa.gov/tophat2/NASA_logo.svg" font-size="18em"></edux-icon>
+<terra-icon src="https://cdn.earthdata.nasa.gov/tophat2/NASA_logo.svg" font-size="18em"></terra-icon>
 ```
 
 ### Colors
 
-Most icons inherit their color from the current text color (brand icons, like the NASA logo, do not). You can set the `color` property on the `<edux-icon>` element or style an ancestor to change the color.
+Most icons inherit their color from the current text color (brand icons, like the NASA logo, do not). You can set the `color` property on the `<terra-icon>` element or style an ancestor to change the color.
 
 ```html:preview
-<edux-icon name="outline-academic-cap" color="darkorange" library="heroicons"></edux-icon>
+<terra-icon name="outline-academic-cap" color="darkorange" library="heroicons"></terra-icon>
 
 <span style="color:rebeccapurple;">
-  <edux-icon name="solid-academic-cap" library="heroicons"></edux-icon>
+  <terra-icon name="solid-academic-cap" library="heroicons"></terra-icon>
 </span>
 ```
 
@@ -132,10 +132,10 @@ Most icons inherit their color from the current text color (brand icons, like th
 Icons are sized relative to the current font size. To change their size, set the `font-size` property on the icon itself or on a parent element as shown below.
 
 ```html:preview
-<edux-icon name="outline-academic-cap" library="heroicons" font-size="4em"></edux-icon>
+<terra-icon name="outline-academic-cap" library="heroicons" font-size="4em"></terra-icon>
 
 <span style="font-size:4em;">
-  <edux-icon name="solid-academic-cap" library="heroicons"></edux-icon>
+  <terra-icon name="solid-academic-cap" library="heroicons"></terra-icon>
 </span>
 ```
 
@@ -144,14 +144,14 @@ Icons are sized relative to the current font size. To change their size, set the
 For non-decorative icons, use the `label` attribute to announce it to assistive devices. Icons are otherwise set to `aria-hidden="true"`.
 
 ```html:preview
-<edux-icon name="outline-star" label="Add to favorites" library="heroicons"></edux-icon>
+<terra-icon name="outline-star" label="Add to favorites" library="heroicons"></terra-icon>
 ```
 
 ## Custom Icon Libraries
 
-You can register additional icons to use with the `<edux-icon>` component through icon libraries. Icon files can exist locally or on a CORS-enabled endpoint (e.g. a CDN). There is no limit to how many icon libraries you can register and there is no cost associated with registering them, as individual icons are only requested when they're used.
+You can register additional icons to use with the `<terra-icon>` component through icon libraries. Icon files can exist locally or on a CORS-enabled endpoint (e.g. a CDN). There is no limit to how many icon libraries you can register and there is no cost associated with registering them, as individual icons are only requested when they're used.
 
-EDUX ships with two built-in icon libraries, `default` and `heroicons`. The [default icon library](#customizing-the-default-library) contains a small subset of the icons from the HDS, though more will be added. The [Heroicon library](#customizing-the-heroicons-library) contains all of the icons from the Heroicon project.
+Terra UI ships with two built-in icon libraries, `default` and `heroicons`. The [default icon library](#customizing-the-default-library) contains a small subset of the icons from the HDS, though more will be added. The [Heroicon library](#customizing-the-heroicons-library) contains all of the icons from the Heroicon project.
 
 To register an additional icon library, use the `registerIconLibrary()` function that's exported from `utilities/icon-library.js`. At a minimum, you must provide a name and a resolver function. The resolver function translates an icon name to a URL where the corresponding SVG file exists. Refer to the examples below to better understand how it works.
 
@@ -170,11 +170,11 @@ Here's an example that registers an icon library located in the `/assets/icons` 
 </script>
 ```
 
-To display an icon, set the `library` and `name` attributes of an `<edux-icon>` element.
+To display an icon, set the `library` and `name` attributes of an `<terra-icon>` element.
 
 ```html
 <!-- This will show the icon located at /assets/icons/smile.svg -->
-<edux-icon library="my-icons" name="smile"></edux-icon>
+<terra-icon library="my-icons" name="smile"></terra-icon>
 ```
 
 If an icon is used before registration occurs, it will be empty initially but shown when registered.
@@ -196,10 +196,10 @@ This will register the [Bootstrap Icons](https://icons.getbootstrap.com/) librar
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="bootstrap" name="rocket"></edux-icon>
-  <edux-icon library="bootstrap" name="rocket-fill"></edux-icon>
-  <edux-icon library="bootstrap" name="rocket-takeoff"></edux-icon>
-  <edux-icon library="bootstrap" name="rocket-takeoff-fill"></edux-icon>
+  <terra-icon library="bootstrap" name="rocket"></terra-icon>
+  <terra-icon library="bootstrap" name="rocket-fill"></terra-icon>
+  <terra-icon library="bootstrap" name="rocket-takeoff"></terra-icon>
+  <terra-icon library="bootstrap" name="rocket-takeoff-fill"></terra-icon>
 </div>
 ```
 
@@ -225,26 +225,26 @@ Icons in this library are licensed under the [Creative Commons 4.0 License](http
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="boxicons" name="bx-bot"></edux-icon>
-  <edux-icon library="boxicons" name="bx-cookie"></edux-icon>
-  <edux-icon library="boxicons" name="bx-joystick"></edux-icon>
-  <edux-icon library="boxicons" name="bx-save"></edux-icon>
-  <edux-icon library="boxicons" name="bx-server"></edux-icon>
-  <edux-icon library="boxicons" name="bx-wine"></edux-icon>
+  <terra-icon library="boxicons" name="bx-bot"></terra-icon>
+  <terra-icon library="boxicons" name="bx-cookie"></terra-icon>
+  <terra-icon library="boxicons" name="bx-joystick"></terra-icon>
+  <terra-icon library="boxicons" name="bx-save"></terra-icon>
+  <terra-icon library="boxicons" name="bx-server"></terra-icon>
+  <terra-icon library="boxicons" name="bx-wine"></terra-icon>
   <br />
-  <edux-icon library="boxicons" name="bxs-bot"></edux-icon>
-  <edux-icon library="boxicons" name="bxs-cookie"></edux-icon>
-  <edux-icon library="boxicons" name="bxs-joystick"></edux-icon>
-  <edux-icon library="boxicons" name="bxs-save"></edux-icon>
-  <edux-icon library="boxicons" name="bxs-server"></edux-icon>
-  <edux-icon library="boxicons" name="bxs-wine"></edux-icon>
+  <terra-icon library="boxicons" name="bxs-bot"></terra-icon>
+  <terra-icon library="boxicons" name="bxs-cookie"></terra-icon>
+  <terra-icon library="boxicons" name="bxs-joystick"></terra-icon>
+  <terra-icon library="boxicons" name="bxs-save"></terra-icon>
+  <terra-icon library="boxicons" name="bxs-server"></terra-icon>
+  <terra-icon library="boxicons" name="bxs-wine"></terra-icon>
   <br />
-  <edux-icon library="boxicons" name="bxl-apple"></edux-icon>
-  <edux-icon library="boxicons" name="bxl-chrome"></edux-icon>
-  <edux-icon library="boxicons" name="bxl-edge"></edux-icon>
-  <edux-icon library="boxicons" name="bxl-firefox"></edux-icon>
-  <edux-icon library="boxicons" name="bxl-opera"></edux-icon>
-  <edux-icon library="boxicons" name="bxl-microsoft"></edux-icon>
+  <terra-icon library="boxicons" name="bxl-apple"></terra-icon>
+  <terra-icon library="boxicons" name="bxl-chrome"></terra-icon>
+  <terra-icon library="boxicons" name="bxl-edge"></terra-icon>
+  <terra-icon library="boxicons" name="bxl-firefox"></terra-icon>
+  <terra-icon library="boxicons" name="bxl-opera"></terra-icon>
+  <terra-icon library="boxicons" name="bxl-microsoft"></terra-icon>
 </div>
 ```
 
@@ -256,12 +256,12 @@ Icons in this library are licensed under the [MIT License](https://github.com/lu
 
 ```html:preview
 <div style="font-size: 24px;">
-  <edux-icon library="lucide" name="feather"></edux-icon>
-  <edux-icon library="lucide" name="pie-chart"></edux-icon>
-  <edux-icon library="lucide" name="settings"></edux-icon>
-  <edux-icon library="lucide" name="map-pin"></edux-icon>
-  <edux-icon library="lucide" name="printer"></edux-icon>
-  <edux-icon library="lucide" name="shopping-cart"></edux-icon>
+  <terra-icon library="lucide" name="feather"></terra-icon>
+  <terra-icon library="lucide" name="pie-chart"></terra-icon>
+  <terra-icon library="lucide" name="settings"></terra-icon>
+  <terra-icon library="lucide" name="map-pin"></terra-icon>
+  <terra-icon library="lucide" name="printer"></terra-icon>
+  <terra-icon library="lucide" name="shopping-cart"></terra-icon>
 </div>
 
 <script type="module">
@@ -296,26 +296,26 @@ Icons in this library are licensed under the [Font Awesome Free License](https:/
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="fa" name="far-bell"></edux-icon>
-  <edux-icon library="fa" name="far-comment"></edux-icon>
-  <edux-icon library="fa" name="far-hand-point-right"></edux-icon>
-  <edux-icon library="fa" name="far-hdd"></edux-icon>
-  <edux-icon library="fa" name="far-heart"></edux-icon>
-  <edux-icon library="fa" name="far-star"></edux-icon>
+  <terra-icon library="fa" name="far-bell"></terra-icon>
+  <terra-icon library="fa" name="far-comment"></terra-icon>
+  <terra-icon library="fa" name="far-hand-point-right"></terra-icon>
+  <terra-icon library="fa" name="far-hdd"></terra-icon>
+  <terra-icon library="fa" name="far-heart"></terra-icon>
+  <terra-icon library="fa" name="far-star"></terra-icon>
   <br />
-  <edux-icon library="fa" name="fas-archive"></edux-icon>
-  <edux-icon library="fa" name="fas-book"></edux-icon>
-  <edux-icon library="fa" name="fas-chess-knight"></edux-icon>
-  <edux-icon library="fa" name="fas-dice"></edux-icon>
-  <edux-icon library="fa" name="fas-pizza-slice"></edux-icon>
-  <edux-icon library="fa" name="fas-scroll"></edux-icon>
+  <terra-icon library="fa" name="fas-archive"></terra-icon>
+  <terra-icon library="fa" name="fas-book"></terra-icon>
+  <terra-icon library="fa" name="fas-chess-knight"></terra-icon>
+  <terra-icon library="fa" name="fas-dice"></terra-icon>
+  <terra-icon library="fa" name="fas-pizza-slice"></terra-icon>
+  <terra-icon library="fa" name="fas-scroll"></terra-icon>
   <br />
-  <edux-icon library="fa" name="fab-apple"></edux-icon>
-  <edux-icon library="fa" name="fab-chrome"></edux-icon>
-  <edux-icon library="fa" name="fab-edge"></edux-icon>
-  <edux-icon library="fa" name="fab-firefox"></edux-icon>
-  <edux-icon library="fa" name="fab-opera"></edux-icon>
-  <edux-icon library="fa" name="fab-microsoft"></edux-icon>
+  <terra-icon library="fa" name="fab-apple"></terra-icon>
+  <terra-icon library="fa" name="fab-chrome"></terra-icon>
+  <terra-icon library="fa" name="fab-edge"></terra-icon>
+  <terra-icon library="fa" name="fab-firefox"></terra-icon>
+  <terra-icon library="fa" name="fab-opera"></terra-icon>
+  <terra-icon library="fa" name="fab-microsoft"></terra-icon>
 </div>
 ```
 
@@ -335,12 +335,12 @@ Icons in this library are licensed under the [MIT License](https://github.com/lu
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="iconoir" name="check-circled-outline"></edux-icon>
-  <edux-icon library="iconoir" name="drawer"></edux-icon>
-  <edux-icon library="iconoir" name="keyframes"></edux-icon>
-  <edux-icon library="iconoir" name="headset-help"></edux-icon>
-  <edux-icon library="iconoir" name="color-picker"></edux-icon>
-  <edux-icon library="iconoir" name="wifi"></edux-icon>
+  <terra-icon library="iconoir" name="check-circled-outline"></terra-icon>
+  <terra-icon library="iconoir" name="drawer"></terra-icon>
+  <terra-icon library="iconoir" name="keyframes"></terra-icon>
+  <terra-icon library="iconoir" name="headset-help"></terra-icon>
+  <terra-icon library="iconoir" name="color-picker"></terra-icon>
+  <terra-icon library="iconoir" name="wifi"></terra-icon>
 </div>
 ```
 
@@ -366,26 +366,26 @@ Icons in this library are licensed under the [MIT License](https://github.com/io
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="ionicons" name="alarm"></edux-icon>
-  <edux-icon library="ionicons" name="american-football"></edux-icon>
-  <edux-icon library="ionicons" name="bug"></edux-icon>
-  <edux-icon library="ionicons" name="chatbubble"></edux-icon>
-  <edux-icon library="ionicons" name="settings"></edux-icon>
-  <edux-icon library="ionicons" name="warning"></edux-icon>
+  <terra-icon library="ionicons" name="alarm"></terra-icon>
+  <terra-icon library="ionicons" name="american-football"></terra-icon>
+  <terra-icon library="ionicons" name="bug"></terra-icon>
+  <terra-icon library="ionicons" name="chatbubble"></terra-icon>
+  <terra-icon library="ionicons" name="settings"></terra-icon>
+  <terra-icon library="ionicons" name="warning"></terra-icon>
   <br />
-  <edux-icon library="ionicons" name="alarm-outline"></edux-icon>
-  <edux-icon library="ionicons" name="american-football-outline"></edux-icon>
-  <edux-icon library="ionicons" name="bug-outline"></edux-icon>
-  <edux-icon library="ionicons" name="chatbubble-outline"></edux-icon>
-  <edux-icon library="ionicons" name="settings-outline"></edux-icon>
-  <edux-icon library="ionicons" name="warning-outline"></edux-icon>
+  <terra-icon library="ionicons" name="alarm-outline"></terra-icon>
+  <terra-icon library="ionicons" name="american-football-outline"></terra-icon>
+  <terra-icon library="ionicons" name="bug-outline"></terra-icon>
+  <terra-icon library="ionicons" name="chatbubble-outline"></terra-icon>
+  <terra-icon library="ionicons" name="settings-outline"></terra-icon>
+  <terra-icon library="ionicons" name="warning-outline"></terra-icon>
   <br />
-  <edux-icon library="ionicons" name="alarm-sharp"></edux-icon>
-  <edux-icon library="ionicons" name="american-football-sharp"></edux-icon>
-  <edux-icon library="ionicons" name="bug-sharp"></edux-icon>
-  <edux-icon library="ionicons" name="chatbubble-sharp"></edux-icon>
-  <edux-icon library="ionicons" name="settings-sharp"></edux-icon>
-  <edux-icon library="ionicons" name="warning-sharp"></edux-icon>
+  <terra-icon library="ionicons" name="alarm-sharp"></terra-icon>
+  <terra-icon library="ionicons" name="american-football-sharp"></terra-icon>
+  <terra-icon library="ionicons" name="bug-sharp"></terra-icon>
+  <terra-icon library="ionicons" name="chatbubble-sharp"></terra-icon>
+  <terra-icon library="ionicons" name="settings-sharp"></terra-icon>
+  <terra-icon library="ionicons" name="warning-sharp"></terra-icon>
 </div>
 ```
 
@@ -406,19 +406,19 @@ Icons in this library are licensed under the [MIT License](https://github.com/mi
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="jam" name="calendar"></edux-icon>
-  <edux-icon library="jam" name="camera"></edux-icon>
-  <edux-icon library="jam" name="filter"></edux-icon>
-  <edux-icon library="jam" name="leaf"></edux-icon>
-  <edux-icon library="jam" name="picture"></edux-icon>
-  <edux-icon library="jam" name="set-square"></edux-icon>
+  <terra-icon library="jam" name="calendar"></terra-icon>
+  <terra-icon library="jam" name="camera"></terra-icon>
+  <terra-icon library="jam" name="filter"></terra-icon>
+  <terra-icon library="jam" name="leaf"></terra-icon>
+  <terra-icon library="jam" name="picture"></terra-icon>
+  <terra-icon library="jam" name="set-square"></terra-icon>
   <br />
-  <edux-icon library="jam" name="calendar-f"></edux-icon>
-  <edux-icon library="jam" name="camera-f"></edux-icon>
-  <edux-icon library="jam" name="filter-f"></edux-icon>
-  <edux-icon library="jam" name="leaf-f"></edux-icon>
-  <edux-icon library="jam" name="picture-f"></edux-icon>
-  <edux-icon library="jam" name="set-square-f"></edux-icon>
+  <terra-icon library="jam" name="calendar-f"></terra-icon>
+  <terra-icon library="jam" name="camera-f"></terra-icon>
+  <terra-icon library="jam" name="filter-f"></terra-icon>
+  <terra-icon library="jam" name="leaf-f"></terra-icon>
+  <terra-icon library="jam" name="picture-f"></terra-icon>
+  <terra-icon library="jam" name="set-square-f"></terra-icon>
 </div>
 ```
 
@@ -442,26 +442,26 @@ Icons in this library are licensed under the [Apache 2.0 License](https://github
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="material" name="notifications"></edux-icon>
-  <edux-icon library="material" name="email"></edux-icon>
-  <edux-icon library="material" name="delete"></edux-icon>
-  <edux-icon library="material" name="volume_up"></edux-icon>
-  <edux-icon library="material" name="settings"></edux-icon>
-  <edux-icon library="material" name="shopping_basket"></edux-icon>
+  <terra-icon library="material" name="notifications"></terra-icon>
+  <terra-icon library="material" name="email"></terra-icon>
+  <terra-icon library="material" name="delete"></terra-icon>
+  <terra-icon library="material" name="volume_up"></terra-icon>
+  <terra-icon library="material" name="settings"></terra-icon>
+  <terra-icon library="material" name="shopping_basket"></terra-icon>
   <br />
-  <edux-icon library="material" name="notifications_round"></edux-icon>
-  <edux-icon library="material" name="email_round"></edux-icon>
-  <edux-icon library="material" name="delete_round"></edux-icon>
-  <edux-icon library="material" name="volume_up_round"></edux-icon>
-  <edux-icon library="material" name="settings_round"></edux-icon>
-  <edux-icon library="material" name="shopping_basket_round"></edux-icon>
+  <terra-icon library="material" name="notifications_round"></terra-icon>
+  <terra-icon library="material" name="email_round"></terra-icon>
+  <terra-icon library="material" name="delete_round"></terra-icon>
+  <terra-icon library="material" name="volume_up_round"></terra-icon>
+  <terra-icon library="material" name="settings_round"></terra-icon>
+  <terra-icon library="material" name="shopping_basket_round"></terra-icon>
   <br />
-  <edux-icon library="material" name="notifications_sharp"></edux-icon>
-  <edux-icon library="material" name="email_sharp"></edux-icon>
-  <edux-icon library="material" name="delete_sharp"></edux-icon>
-  <edux-icon library="material" name="volume_up_sharp"></edux-icon>
-  <edux-icon library="material" name="settings_sharp"></edux-icon>
-  <edux-icon library="material" name="shopping_basket_sharp"></edux-icon>
+  <terra-icon library="material" name="notifications_sharp"></terra-icon>
+  <terra-icon library="material" name="email_sharp"></terra-icon>
+  <terra-icon library="material" name="delete_sharp"></terra-icon>
+  <terra-icon library="material" name="volume_up_sharp"></terra-icon>
+  <terra-icon library="material" name="settings_sharp"></terra-icon>
+  <terra-icon library="material" name="shopping_basket_sharp"></terra-icon>
 </div>
 ```
 
@@ -486,19 +486,19 @@ Icons in this library are licensed under the [Apache 2.0 License](https://github
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="remixicon" name="business/cloud-line"></edux-icon>
-  <edux-icon library="remixicon" name="design/brush-line"></edux-icon>
-  <edux-icon library="remixicon" name="business/pie-chart-line"></edux-icon>
-  <edux-icon library="remixicon" name="development/bug-line"></edux-icon>
-  <edux-icon library="remixicon" name="media/image-line"></edux-icon>
-  <edux-icon library="remixicon" name="system/alert-line"></edux-icon>
+  <terra-icon library="remixicon" name="business/cloud-line"></terra-icon>
+  <terra-icon library="remixicon" name="design/brush-line"></terra-icon>
+  <terra-icon library="remixicon" name="business/pie-chart-line"></terra-icon>
+  <terra-icon library="remixicon" name="development/bug-line"></terra-icon>
+  <terra-icon library="remixicon" name="media/image-line"></terra-icon>
+  <terra-icon library="remixicon" name="system/alert-line"></terra-icon>
   <br />
-  <edux-icon library="remixicon" name="business/cloud-fill"></edux-icon>
-  <edux-icon library="remixicon" name="design/brush-fill"></edux-icon>
-  <edux-icon library="remixicon" name="business/pie-chart-fill"></edux-icon>
-  <edux-icon library="remixicon" name="development/bug-fill"></edux-icon>
-  <edux-icon library="remixicon" name="media/image-fill"></edux-icon>
-  <edux-icon library="remixicon" name="system/alert-fill"></edux-icon>
+  <terra-icon library="remixicon" name="business/cloud-fill"></terra-icon>
+  <terra-icon library="remixicon" name="design/brush-fill"></terra-icon>
+  <terra-icon library="remixicon" name="business/pie-chart-fill"></terra-icon>
+  <terra-icon library="remixicon" name="development/bug-fill"></terra-icon>
+  <terra-icon library="remixicon" name="media/image-fill"></terra-icon>
+  <terra-icon library="remixicon" name="system/alert-fill"></terra-icon>
 </div>
 ```
 
@@ -518,19 +518,19 @@ Icons in this library are licensed under the [MIT License](https://github.com/ta
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="tabler" name="alert-triangle"></edux-icon>
-  <edux-icon library="tabler" name="arrow-back"></edux-icon>
-  <edux-icon library="tabler" name="at"></edux-icon>
-  <edux-icon library="tabler" name="ball-baseball"></edux-icon>
-  <edux-icon library="tabler" name="cake"></edux-icon>
-  <edux-icon library="tabler" name="files"></edux-icon>
+  <terra-icon library="tabler" name="alert-triangle"></terra-icon>
+  <terra-icon library="tabler" name="arrow-back"></terra-icon>
+  <terra-icon library="tabler" name="at"></terra-icon>
+  <terra-icon library="tabler" name="ball-baseball"></terra-icon>
+  <terra-icon library="tabler" name="cake"></terra-icon>
+  <terra-icon library="tabler" name="files"></terra-icon>
   <br />
-  <edux-icon library="tabler" name="keyboard"></edux-icon>
-  <edux-icon library="tabler" name="moon"></edux-icon>
-  <edux-icon library="tabler" name="pig"></edux-icon>
-  <edux-icon library="tabler" name="printer"></edux-icon>
-  <edux-icon library="tabler" name="ship"></edux-icon>
-  <edux-icon library="tabler" name="toilet-paper"></edux-icon>
+  <terra-icon library="tabler" name="keyboard"></terra-icon>
+  <terra-icon library="tabler" name="moon"></terra-icon>
+  <terra-icon library="tabler" name="pig"></terra-icon>
+  <terra-icon library="tabler" name="printer"></terra-icon>
+  <terra-icon library="tabler" name="ship"></terra-icon>
+  <terra-icon library="tabler" name="toilet-paper"></terra-icon>
 </div>
 ```
 
@@ -556,20 +556,20 @@ Icons in this library are licensed under the [Apache 2.0 License](https://github
 </script>
 
 <div style="font-size: 24px;">
-  <edux-icon library="unicons" name="clock"></edux-icon>
-  <edux-icon library="unicons" name="graph-bar"></edux-icon>
-  <edux-icon library="unicons" name="padlock"></edux-icon>
-  <edux-icon library="unicons" name="polygon"></edux-icon>
-  <edux-icon library="unicons" name="rocket"></edux-icon>
-  <edux-icon library="unicons" name="star"></edux-icon>
+  <terra-icon library="unicons" name="clock"></terra-icon>
+  <terra-icon library="unicons" name="graph-bar"></terra-icon>
+  <terra-icon library="unicons" name="padlock"></terra-icon>
+  <terra-icon library="unicons" name="polygon"></terra-icon>
+  <terra-icon library="unicons" name="rocket"></terra-icon>
+  <terra-icon library="unicons" name="star"></terra-icon>
   <br />
-  <edux-icon library="unicons" name="clock-s"></edux-icon>
-  <edux-icon library="unicons" name="graph-bar-s"></edux-icon>
-  <edux-icon library="unicons" name="padlock-s"></edux-icon>
-  <edux-icon library="unicons" name="polygon-s"></edux-icon>
-  <edux-icon library="unicons" name="rocket-s"></edux-icon>
-  <edux-icon library="unicons" name="star-s"></edux-icon>
+  <terra-icon library="unicons" name="clock-s"></terra-icon>
+  <terra-icon library="unicons" name="graph-bar-s"></terra-icon>
+  <terra-icon library="unicons" name="padlock-s"></terra-icon>
+  <terra-icon library="unicons" name="polygon-s"></terra-icon>
+  <terra-icon library="unicons" name="rocket-s"></terra-icon>
+  <terra-icon library="unicons" name="star-s"></terra-icon>
 </div>
 ```
 
-[component-metadata:edux-icon]
+[component-metadata:terra-icon]

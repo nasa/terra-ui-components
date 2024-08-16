@@ -6,12 +6,12 @@ layout: component
 ---
 
 ```html:preview
-<edux-variable-combobox></edux-variable-combobox>
+<terra-variable-combobox></terra-variable-combobox>
 
 <script type="module">
-  const element = document.querySelector('edux-variable-combobox')
+  const element = document.querySelector('terra-variable-combobox')
 
-  element.addEventListener('edux-combobox-change', (e) => {
+  element.addEventListener('terra-combobox-change', (e) => {
     console.log(e)
   })
 </script>
@@ -22,13 +22,13 @@ layout: component
 ### Default Variable Combobox
 
 ```html:preview
-<edux-variable-combobox></edux-variable-combobox>
+<terra-variable-combobox></terra-variable-combobox>
 ```
 
 ### Configured Variable Combobox
 
 ```html:preview
-<edux-variable-combobox placeholder="Search for Variables: e.g., albedo" hide-label hide-help></edux-variable-combobox>
+<terra-variable-combobox placeholder="Search for Variables: e.g., albedo" hide-label hide-help></terra-variable-combobox>
 ```
 
-[component-metadata:edux-variable-combobox]
+[component-metadata:terra-variable-combobox]

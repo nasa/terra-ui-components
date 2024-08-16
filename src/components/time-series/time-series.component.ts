@@ -4,15 +4,15 @@ import timezone from 'dayjs/plugin/timezone.js'
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import type { EduxComboboxChangeEvent } from '../../earthdata-ux-components.js'
-import type { EduxDateRangeChangeEvent } from '../../events/edux-date-range-change.js'
-import EduxElement from '../../internal/edux-element.js'
+import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
-import EduxPlot from '../plot/plot.component.js'
-import EduxSpatialPicker from '../spatial-picker/spatial-picker.js'
-import EduxVariableCombobox from '../variable-combobox/variable-combobox.component.js'
+import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import TerraPlot from '../plot/plot.component.js'
+import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
+import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
 import { TimeSeriesController } from './time-series.controller.js'
 import styles from './time-series.styles.js'
 
@@ -26,15 +26,15 @@ dayjs.tz.setDefault('Etc/GMT')
  * @status mvp
  * @since 1.0
  *
- * @dependency edux-plot
+ * @dependency terra-plot
  */
-export default class EduxTimeSeries extends EduxElement {
+export default class TerraTimeSeries extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'edux-plot': EduxPlot,
-        'edux-date-range-slider': EduxDateRangeSlider,
-        'edux-spatial-picker': EduxSpatialPicker,
-        'edux-variable-combobox': EduxVariableCombobox,
+        'terra-plot': TerraPlot,
+        'terra-date-range-slider': TerraDateRangeSlider,
+        'terra-spatial-picker': TerraSpatialPicker,
+        'terra-variable-combobox': TerraVariableCombobox,
     }
 
     #timeSeriesController = new TimeSeriesController(this)
@@ -85,10 +85,10 @@ export default class EduxTimeSeries extends EduxElement {
     })
     units?: string
 
-    @query('edux-date-range-slider') dateRangeSlider: EduxDateRangeSlider
-    @query('edux-plot') plot: EduxPlot
-    @query('edux-spatial-picker') spatialPicker: EduxSpatialPicker
-    @query('edux-variable-combobo') variableCombobox: EduxVariableCombobox
+    @query('terra-date-range-slider') dateRangeSlider: TerraDateRangeSlider
+    @query('terra-plot') plot: TerraPlot
+    @query('terra-spatial-picker') spatialPicker: TerraSpatialPicker
+    @query('terra-variable-combobo') variableCombobox: TerraVariableCombobox
 
     /**
      * holds the start date for the earliest available data for the collection
@@ -187,7 +187,7 @@ export default class EduxTimeSeries extends EduxElement {
         this.endDate = dayjs.utc(this.collectionEndingDateTime).format()
     }
 
-    #handleVariableChange(event: EduxComboboxChangeEvent) {
+    #handleVariableChange(event: TerraComboboxChangeEvent) {
         this.collectionBeginningDateTime = dayjs
             .utc()
             .format(event.detail.collectionBeginningDateTime)
@@ -216,27 +216,27 @@ export default class EduxTimeSeries extends EduxElement {
     /**
      * anytime the date range slider changes, update the start and end date
      */
-    #handleDateRangeSliderChangeEvent(event: EduxDateRangeChangeEvent) {
+    #handleDateRangeSliderChangeEvent(event: TerraDateRangeChangeEvent) {
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
     }
 
     render() {
         return html`
-            <edux-variable-combobox
+            <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 value=${`${this.collection}_${this.variable}`}
-                @edux-combobox-change="${this.#handleVariableChange}"
-            ></edux-variable-combobox>
+                @terra-combobox-change="${this.#handleVariableChange}"
+            ></terra-variable-combobox>
 
-            <edux-spatial-picker
+            <terra-spatial-picker
                 initial-value=${this.location}
                 exportparts="map:spatial-picker__map, leaflet-bbox:spatial-picker__leaflet-bbox, leaflet-point:spatial-picker__leaflet-point"
                 label="Select Point"
-                @edux-map-change=${this.#handleMapChange}
-            ></edux-spatial-picker>
+                @terra-map-change=${this.#handleMapChange}
+            ></terra-spatial-picker>
 
-            <edux-plot
+            <terra-plot
                 exportparts="base:plot__base"
                 data="${JSON.stringify(
                     this.#timeSeriesController.task.value ??
@@ -254,15 +254,15 @@ export default class EduxTimeSeries extends EduxElement {
                         showline: false,
                     },
                 }}"
-            ></edux-plot>
-            <edux-date-range-slider
+            ></terra-plot>
+            <terra-date-range-slider
                 exportparts="slider:date-range-slider__slider"
                 min-date=${this.collectionBeginningDateTime}
                 max-date=${this.collectionEndingDateTime}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
-                @edux-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
-            ></edux-date-range-slider>
+                @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
+            ></terra-date-range-slider>
         `
     }
 }

@@ -11,25 +11,25 @@ export default css`
         grid-template-columns: 1fr 1fr;
     }
 
-    edux-variable-combobox {
+    terra-variable-combobox {
         grid-area: variable;
     }
 
-    edux-spatial-picker {
+    terra-spatial-picker {
         grid-area: spatial;
     }
 
-    edux-plot {
+    terra-plot {
         grid-area: plot;
     }
 
-    edux-date-range-slider {
+    terra-date-range-slider {
         grid-area: time;
     }
 
     /* The current Giovanni API doesn't accept bounding box subsetting. */
-    edux-spatial-picker::part(leaflet-bbox),
-    edux-spatial-picker::part(leaflet-edit) {
+    terra-spatial-picker::part(leaflet-bbox),
+    terra-spatial-picker::part(leaflet-edit) {
         display: none;
     }
 `

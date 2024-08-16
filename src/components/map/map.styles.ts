@@ -22,7 +22,7 @@ export default css`
         display: block;
         padding: 16px;
         background: white;
-        border: solid 1px var(--edux-color-neutral--200, var(--color-neutral--200));
+        border: solid 1px var(--terra-color-neutral--200, var(--color-neutral--200));
     }
 
     .map {
@@ -65,7 +65,7 @@ export default css`
     }
 
     .form-control:focus {
-        border: 1px solid var(--edux-color-blue--600, var(--color-blue--600));
+        border: 1px solid var(--terra-color-blue--600, var(--color-blue--600));
     }
 
     .map__select {

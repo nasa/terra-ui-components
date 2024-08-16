@@ -6,13 +6,13 @@ layout: component
 ---
 
 ```html:preview
-<edux-loader percent='50'></edux-loader>
+<terra-loader percent='50'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
 
-const App = () => <EduxLoader></EduxLoader>;
+const App = () => <TerraLoader></TerraLoader>;
 ```
 
 ## Examples
@@ -22,17 +22,17 @@ const App = () => <EduxLoader></EduxLoader>;
 Use the `size` attribute to change a button's size.
 
 ```html:preview
-<edux-loader size='large' percent='33'></edux-loader>
-<edux-loader size='small' percent='33'></edux-loader>
+<terra-loader size='large' percent='33'></terra-loader>
+<terra-loader size='small' percent='33'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader size="large" percent='33'></EduxLoader>
-        <EduxLoader size="small" percent='33'></EduxLoader>
+        <TerraLoader size="large" percent='33'></TerraLoader>
+        <TerraLoader size="small" percent='33'></TerraLoader>
     </>
 );
 ```
@@ -40,17 +40,17 @@ const App = () => (
 ### Themes
 
 ```html:preview
-<edux-loader theme='light' percent='75'></edux-loader>
-<edux-loader theme='dark' percent='75'></edux-loader>
+<terra-loader theme='light' percent='75'></terra-loader>
+<terra-loader theme='dark' percent='75'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader theme="light" percent='75'></EduxLoader>
-        <EduxLoader theme="dark" percent='75'></EduxLoader>
+        <TerraLoader theme="light" percent='75'></TerraLoader>
+        <TerraLoader theme="dark" percent='75'></TerraLoader>
     </>
 );
 ```
@@ -58,17 +58,17 @@ const App = () => (
 ### Aria label and message
 
 ```html:preview
-<edux-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></edux-loader>
+<terra-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></EduxLoader>
+        <TerraLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></TerraLoader>
     </>
 );
 ```
 
-[component-metadata:edux-loader]
+[component-metadata:terra-loader]

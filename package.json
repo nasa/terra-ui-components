@@ -1,5 +1,5 @@
 {
-  "name": "@nasa/earthdata-ux-components",
+  "name": "@nasa/terra-ui-components",
   "description": "A collection of NASA Earthdata components",
   "version": "0.0.0",
   "homepage": "https://github.com/gesdisc/components",
@@ -8,16 +8,16 @@
   "customElements": "dist/custom-elements.json",
   "web-types": "./dist/web-types.json",
   "type": "module",
-  "types": "dist/earthdata-ux-components.d.ts",
-  "jsdelivr": "./cdn/earthdata-ux-components-autoloader.js",
+  "types": "dist/terra-ui-components.d.ts",
+  "jsdelivr": "./cdn/terra-ui-components-autoloader.js",
   "exports": {
     ".": {
-      "types": "./dist/earthdata-ux-components.d.ts",
-      "import": "./dist/earthdata-ux-components.js"
+      "types": "./dist/terra-ui-components.d.ts",
+      "import": "./dist/terra-ui-components.js"
     },
     "./dist/custom-elements.json": "./dist/custom-elements.json",
-    "./dist/earthdata-ux-components.js": "./dist/earthdata-ux-components.js",
-    "./dist/earthdata-ux-components-autoloader.js": "./dist/earthdata-ux-components-autoloader.js",
+    "./dist/terra-ui-components.js": "./dist/terra-ui-components.js",
+    "./dist/terra-ui-components-autoloader.js": "./dist/terra-ui-components-autoloader.js",
     "./dist/themes/*": "./dist/themes/*",
     "./dist/components/*": "./dist/components/*",
     "./dist/utilities/*": "./dist/utilities/*",

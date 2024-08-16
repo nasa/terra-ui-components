@@ -25,7 +25,7 @@ This integration has been tested with the following:
 To get started using Shoelace with NextJS, the following packages must be installed.
 
 ```bash
-yarn add @nasa/earthdata-ux-components copy-webpack-plugin next-compose-plugins next-transpile-modules
+yarn add @nasa/terra-ui-components copy-webpack-plugin next-compose-plugins next-transpile-modules
 ```
 
 ### Enabling ESM
@@ -44,7 +44,7 @@ There's one more step to enable ESM in NextJS, but we'll tackle that in our Next
 The next step is to import Shoelace's default theme (stylesheet) in your `_app.js` file:
 
 ```css
-import '@nasa/earthdata-ux-components/dist/themes/light.css';
+import '@nasa/terra-ui-components/dist/themes/light.css';
 ```
 
 ### Defining Custom Elements
@@ -63,15 +63,15 @@ function CustomEls({ URL }) {
             return
         }
 
-        import('@nasa/earthdata-ux-components/dist/utilities/base-path').then(
+        import('@nasa/terra-ui-components/dist/utilities/base-path').then(
             ({ setBasePath }) => {
                 setBasePath(`${URL}/static/static`)
 
                 // This imports all components
-                import('@nasa/earthdata-ux-components/dist/react')
+                import('@nasa/terra-ui-components/dist/react')
                 // If you're wanting to selectively import components, replace this line with your own definitions
 
-                // import("@nasa/earthdata-ux-components/dist/components/button/button");
+                // import("@nasa/terra-ui-components/dist/components/button/button");
                 customEls.current = true
             }
         )
@@ -82,7 +82,7 @@ function CustomEls({ URL }) {
 ```
 
 :::tip
-If we use `useEffect` instead of `useLayoutEffect`, the initial render will occur with the expected `edux-` props applied, but the subsequent render (caused by the `useEffect`) will remove those props as the custom components initialize. We _must_ use `useLayoutEffect` to have expected behavior
+If we use `useEffect` instead of `useLayoutEffect`, the initial render will occur with the expected `terra-` props applied, but the subsequent render (caused by the `useEffect`) will remove those props as the custom components initialize. We _must_ use `useLayoutEffect` to have expected behavior
 :::
 
 :::tip
@@ -142,7 +142,7 @@ import CopyPlugin from 'copy-webpack-plugin'
 import withPlugins from 'next-compose-plugins'
 import withTM from 'next-transpile-modules'
 
-const withTMCompiled = withTM(['@nasa/earthdata-ux-components'])
+const withTMCompiled = withTM(['@nasa/terra-ui-components'])
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -156,7 +156,7 @@ export default withPlugins([withTMCompiled], {
                     {
                         from: resolve(
                             __dirname,
-                            'node_modules/@nasa/earthdata-ux-components/dist/assets/icons'
+                            'node_modules/@nasa/terra-ui-components/dist/assets/icons'
                         ),
                         to: resolve(__dirname, 'static/icons'),
                     },

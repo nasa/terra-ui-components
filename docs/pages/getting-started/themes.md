@@ -16,13 +16,13 @@ For component developers, built-in themes are also available as JavaScript modul
 
 ## Theme Basics
 
-All themes are scoped to classes using the `edux-theme-{name}` convention, where `{name}` is a lowercase, hyphen-delimited value representing the name of the theme. The included light and dark themes use `edux-theme-horizon` and `edux-theme-dark`, respectively. A custom theme called "Purple Power", for example, would use a class called `edux-theme-purple-power`
+All themes are scoped to classes using the `terra-theme-{name}` convention, where `{name}` is a lowercase, hyphen-delimited value representing the name of the theme. The included light and dark themes use `terra-theme-horizon` and `terra-theme-dark`, respectively. A custom theme called "Purple Power", for example, would use a class called `terra-theme-purple-power`
 
 All selectors must be scoped to the theme's class to ensure interoperability with other themes. You should also scope them to `:host` so they can be imported and applied to custom element shadow roots.
 
 ```css
 :host,
-.edux-theme-purple-power {
+.terra-theme-purple-power {
     /* ... */
 }
 ```
@@ -32,7 +32,7 @@ All selectors must be scoped to the theme's class to ensure interoperability wit
 To activate a theme, import it and apply the theme's class to the `<html>` element. This example imports and activates the built-in dark theme.
 
 ```html
-<html class="edux-theme-dark">
+<html class="terra-theme-dark">
     <head>
         <link rel="stylesheet" href="path/to/shoelace/%NPMDIR%/themes/dark.css" />
     </head>
@@ -59,7 +59,7 @@ You can activate themes on various containers throughout the page. This example 
     </head>
 
     <body>
-        <nav class="edux-theme-dark">
+        <nav class="terra-theme-dark">
             <!-- dark-themed sidebar -->
         </nav>
 
@@ -83,7 +83,7 @@ If you're customizing the light theme, you should scope your styles to the follo
 ```css
 :root,
 :host,
-.edux-theme-horizon {
+.terra-theme-horizon {
     /* your custom styles here */
 }
 ```
@@ -92,7 +92,7 @@ If you're customizing the dark theme, you should scope your styles to the follow
 
 ```css
 :host,
-.edux-theme-dark {
+.terra-theme-dark {
     /* your custom styles here */
 }
 ```
@@ -109,7 +109,7 @@ Start by changing the selector to match your theme's name. Assuming your new the
 
 ```css
 :host,
-.edux-theme-purple-power {
+.terra-theme-purple-power {
     /* your custom styles here */
 }
 ```
@@ -129,14 +129,14 @@ To install the dark theme, add the following to the `<head>` section of your pag
 ```html
 <link
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/dark.css"
+    href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/dark.css"
 />
 ```
 
-To activate the theme, apply the `edux-theme-dark` class to the `<html>` element.
+To activate the theme, apply the `terra-theme-dark` class to the `<html>` element.
 
 ```html
-<html class="edux-theme-dark">
+<html class="terra-theme-dark">
     ...
 </html>
 ```

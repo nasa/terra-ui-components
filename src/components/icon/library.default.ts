@@ -4,7 +4,7 @@ import type { IconLibrary } from './library.js'
  * The default icons are a separate library to ensure they're always available, regardless of how the default icon library is
  * configured or if its icons resolve properly.
  *
- * All EDUX components must use the default library. For visual consistency, these icons are pulled from the Horizon Design System.
+ * All Terra UI components must use the default library. For visual consistency, these icons are pulled from the Horizon Design System.
  */
 
 const defaultIcons = {

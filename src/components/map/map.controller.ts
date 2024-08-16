@@ -1,10 +1,10 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
-import type EduxMap from './map.js'
+import type TerraMap from './map.js'
 
 export class MapController implements ReactiveController {
-    private host: ReactiveControllerHost & EduxMap
+    private host: ReactiveControllerHost & TerraMap
 
-    constructor(host: ReactiveControllerHost & EduxMap) {
+    constructor(host: ReactiveControllerHost & TerraMap) {
         this.host = host
 
         this.host.addController(this)

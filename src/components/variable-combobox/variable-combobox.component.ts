@@ -4,9 +4,9 @@ import { property, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxButton from '../button/button.js'
+import TerraButton from '../button/button.js'
 import {
     clearSelection,
     groupDocsByCollection,
@@ -17,7 +17,7 @@ import {
 import { FetchController, type ListItem } from './variable-combobox.controller.js'
 import styles from './variable-combobox.styles.js'
 import { watch } from '../../internal/watch.js'
-import EduxIcon from '../icon/icon.js'
+import TerraIcon from '../icon/icon.js'
 
 /**
  * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
@@ -35,12 +35,12 @@ import EduxIcon from '../icon/icon.js'
  * @cssproperty --help-height - The height of the search help element.
  * @cssproperty --label-height - The height of the input's label element.
  *
- * @event edux-combobox-change - Emitted when an option is selected.
+ * @event terra-combobox-change - Emitted when an option is selected.
  */
-export default class EduxVariableCombobox extends EduxElement {
+export default class TerraVariableCombobox extends TerraElement {
     static dependencies = {
-        'edux-button': EduxButton,
-        'edux-icon': EduxIcon,
+        'terra-button': TerraButton,
+        'terra-icon': TerraIcon,
     }
     static styles: CSSResultGroup = [componentStyles, styles]
     static shadowRootOptions = {
@@ -48,7 +48,7 @@ export default class EduxVariableCombobox extends EduxElement {
         delegatesFocus: true,
     }
 
-    static tagName = 'edux-variable-combobox'
+    static tagName = 'terra-variable-combobox'
 
     static initialQuery = ''
 
@@ -99,7 +99,7 @@ export default class EduxVariableCombobox extends EduxElement {
     isExpanded = false
 
     @state()
-    query = EduxVariableCombobox.initialQuery
+    query = TerraVariableCombobox.initialQuery
 
     @state()
     searchResults: ListItem[] = []
@@ -132,7 +132,7 @@ export default class EduxVariableCombobox extends EduxElement {
     }
 
     clear() {
-        this.query = EduxVariableCombobox.initialQuery
+        this.query = TerraVariableCombobox.initialQuery
     }
 
     close() {
@@ -144,7 +144,7 @@ export default class EduxVariableCombobox extends EduxElement {
     }
 
     #dispatchChange = (stringifiedData: string) => {
-        this.emit('edux-combobox-change', { detail: JSON.parse(stringifiedData) })
+        this.emit('terra-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
 
     #handleButtonClick = () => {
@@ -245,7 +245,7 @@ export default class EduxVariableCombobox extends EduxElement {
                     // @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/cancel_event}
                     this.dispatchEvent(new Event('cancel'))
                 } else {
-                    this.query = EduxVariableCombobox.initialQuery
+                    this.query = TerraVariableCombobox.initialQuery
                 }
 
                 break
@@ -262,7 +262,7 @@ export default class EduxVariableCombobox extends EduxElement {
         const containedThis = path.some(
             eventTarget =>
                 (eventTarget as HTMLElement).localName ===
-                EduxVariableCombobox.tagName
+                TerraVariableCombobox.tagName
         )
 
         if (!containedThis) {
@@ -288,7 +288,7 @@ export default class EduxVariableCombobox extends EduxElement {
         const searchHasNoMatches =
             this.searchResults?.length === 0 &&
             this.#searchableList?.length !== 0 &&
-            this.query !== EduxVariableCombobox.initialQuery
+            this.query !== TerraVariableCombobox.initialQuery
 
         return html`<search part="base" title="Search through the list.">
             <label
@@ -328,10 +328,10 @@ export default class EduxVariableCombobox extends EduxElement {
                     @click=${this.#handleButtonClick}
                 >
                     ${['COMPLETE', 'ERROR'].includes(this.#fetchController.taskStatus)
-                        ? html`<edux-icon
+                        ? html`<terra-icon
                               class="chevron"
                               name="chevron-down"
-                          ></edux-icon>`
+                          ></terra-icon>`
                         : html`<svg
                               class="button-icon spinner"
                               stroke="currentColor"
@@ -407,14 +407,14 @@ export default class EduxVariableCombobox extends EduxElement {
                           class="listbox-option-group"
                           data-tree-walker="filter_skip"
                       >
-                          <edux-button
+                          <terra-button
                               @click=${() =>
-                                  (this.query = EduxVariableCombobox.initialQuery)}
+                                  (this.query = TerraVariableCombobox.initialQuery)}
                               class="clear-button"
                               data-tree-walker="filter_skip"
                           >
                               clear search
-                          </edux-button>
+                          </terra-button>
                       </li>`
                     : nothing}
                 ${this.#fetchController.render({
@@ -440,7 +440,7 @@ export default class EduxVariableCombobox extends EduxElement {
                         })
 
                         return cache(
-                            this.query === EduxVariableCombobox.initialQuery
+                            this.query === TerraVariableCombobox.initialQuery
                                 ? map(
                                       removeEmptyCollections(
                                           groupDocsByCollection(this.#searchableList)

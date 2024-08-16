@@ -1,12 +1,12 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
 import { property, query, state } from 'lit/decorators.js'
 import { StringifyBoundingBox, parseBoundingBox } from '../map/leaflet-utils.js'
-import EduxMap from '../map/map.component.js'
+import TerraMap from '../map/map.component.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -15,10 +15,10 @@ import EduxMap from '../map/map.component.js'
  * @since 1.0
  *
  */
-export default class EduxSpatialPicker extends EduxElement {
+export default class TerraSpatialPicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'edux-map': EduxMap,
+        'terra-map': TerraMap,
     }
 
     /**
@@ -133,7 +133,7 @@ export default class EduxSpatialPicker extends EduxElement {
     }
 
     renderMap() {
-        return html`<edux-map
+        return html`<terra-map
             exportparts="map, leaflet-bbox, leaflet-point, leaflet-edit, leaflet-remove"
             min-zoom=${this.minZoom}
             max-zoom=${this.maxZoom}
@@ -142,9 +142,9 @@ export default class EduxSpatialPicker extends EduxElement {
             .value=${this.mapValue}
             ?has-navigation=${this.hasNavigation}
             ?has-shape-selector=${this.hasShapeSelector}
-            @edux-map-change=${this._handleMapChange}
+            @terra-map-change=${this._handleMapChange}
         >
-        </edux-map>`
+        </terra-map>`
     }
 
     render() {

@@ -15,13 +15,13 @@ const observer = new MutationObserver(mutations => {
  */
 export async function discover(root: Element | ShadowRoot) {
     const rootTagName = root instanceof Element ? root.tagName.toLowerCase() : ''
-    const rootIsEduxElement = rootTagName?.startsWith('edux-')
+    const rootIsTerraElement = rootTagName?.startsWith('terra-')
     const tags = [...root.querySelectorAll(':not(:defined)')]
         .map(el => el.tagName.toLowerCase())
-        .filter(tag => tag.startsWith('edux-'))
+        .filter(tag => tag.startsWith('terra-'))
 
-    // If the root element is an undefined Edux component, add it to the list
-    if (rootIsEduxElement && !customElements.get(rootTagName)) {
+    // If the root element is an undefined Terra component, add it to the list
+    if (rootIsTerraElement && !customElements.get(rootTagName)) {
         tags.push(rootTagName)
     }
 
@@ -40,7 +40,7 @@ function register(tagName: string): Promise<void> {
         return Promise.resolve()
     }
 
-    const tagWithoutPrefix = tagName.replace(/^edux-/i, '')
+    const tagWithoutPrefix = tagName.replace(/^terra-/i, '')
     const path = getBasePath(`components/${tagWithoutPrefix}/${tagWithoutPrefix}.js`)
 
     // Register it

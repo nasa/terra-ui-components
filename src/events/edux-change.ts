@@ -1,7 +1,7 @@
-export type EduxChangeEvent = CustomEvent<Record<PropertyKey, never>>
+export type TerraChangeEvent = CustomEvent<Record<PropertyKey, never>>
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'edux-change': EduxChangeEvent
+        'terra-change': TerraChangeEvent
     }
 }

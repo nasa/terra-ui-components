@@ -22,8 +22,8 @@ While convenient, autoloading may lead to a [Flash of Undefined Custom Elements]
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/light.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/earthdata-ux-components-autoloader.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/light.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
 ```
 
 </sl-tab-panel>
@@ -34,8 +34,8 @@ The traditional CDN loader registers all Shoelace elements up front. Note that, 
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/light.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/shoelace.js" ></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/light.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/shoelace.js" ></script>
 ```
 
 </sl-tab-panel>
@@ -43,11 +43,11 @@ The traditional CDN loader registers all Shoelace elements up front. Note that, 
 
 ### Dark Theme
 
-The code above will load the light theme. If you want to use the [dark theme](/getting-started/themes#dark-theme) instead, update the stylesheet as shown below and add `<html class="edux-theme-dark">` to your page.
+The code above will load the light theme. If you want to use the [dark theme](/getting-started/themes#dark-theme) instead, update the stylesheet as shown below and add `<html class="terra-theme-dark">` to your page.
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/dark.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/dark.css" />
 ```
 
 ### Light & Dark Theme
@@ -58,13 +58,13 @@ If you want to load the light or dark theme based on the user's `prefers-color-s
 <link
     rel="stylesheet"
     media="(prefers-color-scheme:light)"
-    href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/light.css"
+    href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/light.css"
 />
 <link
     rel="stylesheet"
     media="(prefers-color-scheme:dark)"
-    href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/dark.css"
-    onload="document.documentElement.classList.add('edux-theme-dark');"
+    href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/dark.css"
+    onload="document.documentElement.classList.add('terra-theme-dark');"
 />
 ```
 
@@ -75,10 +75,10 @@ Now you can [start using Shoelace!](/getting-started/usage)
 If you don't want to use the CDN, you can install Shoelace from npm with the following command.
 
 ```bash
-npm install @nasa/earthdata-ux-components
+npm install @nasa/terra-ui-components
 ```
 
-It's up to you to make the source files available to your app. One way to do this is to create a route in your app called `/shoelace` that serves static files from `node_modules/@nasa/earthdata-ux-components`.
+It's up to you to make the source files available to your app. One way to do this is to create a route in your app called `/shoelace` that serves static files from `node_modules/@nasa/terra-ui-components`.
 
 Once you've done that, add the following tags to your page. Make sure to update `href` and `src` so they point to the route you created.
 
@@ -90,23 +90,23 @@ Once you've done that, add the following tags to your page. Make sure to update 
 Alternatively, [you can use a bundler](#bundling).
 
 :::tip
-For clarity, the docs will usually show imports from `@nasa/earthdata-ux-components`. If you're not using a module resolver or bundler, you'll need to adjust these paths to point to the folder Shoelace is in.
+For clarity, the docs will usually show imports from `@nasa/terra-ui-components`. If you're not using a module resolver or bundler, you'll need to adjust these paths to point to the folder Shoelace is in.
 :::
 
 ## Setting the Base Path
 
-Some components rely on assets (icons, images, etc.) and Shoelace needs to know where they're located. For convenience, Shoelace will try to auto-detect the correct location based on the script you've loaded it from. This assumes assets are colocated with `earthdata-ux-components.js` or `earthdata-ux-components-autoloader.js` and will "just work" for most users.
+Some components rely on assets (icons, images, etc.) and Shoelace needs to know where they're located. For convenience, Shoelace will try to auto-detect the correct location based on the script you've loaded it from. This assumes assets are colocated with `terra-ui-components.js` or `terra-ui-components-autoloader.js` and will "just work" for most users.
 
 However, if you're [cherry picking](#cherry-picking) or [bundling](#bundling) Shoelace, you'll need to set the base path. You can do this one of two ways.
 
 ```html
-<!-- Option 1: the data-earthdata-ux-components attribute -->
-<script src="bundle.js" data-earthdata-ux-components="/path/to/shoelace/%NPMDIR%"></script>
+<!-- Option 1: the data-terra-ui-components attribute -->
+<script src="bundle.js" data-terra-ui-components="/path/to/shoelace/%NPMDIR%"></script>
 
 <!-- Option 2: the setBasePath() method -->
 <script src="bundle.js"></script>
 <script type="module">
-    import { setBasePath } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path.js'
+    import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path.js'
     setBasePath('/path/to/shoelace/%NPMDIR%')
 </script>
 ```
@@ -124,7 +124,7 @@ Most of the magic behind assets is handled internally by Shoelace, but if you ne
     import {
         getBasePath,
         setBasePath,
-    } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path.js'
+    } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path.js'
 
     setBasePath('/path/to/assets')
 
@@ -147,10 +147,10 @@ Here's an example that loads only the button component. Again, if you're not usi
 ```html
 <link rel="stylesheet" href="/path/to/shoelace/%NPMDIR%/themes/light.css" />
 
-<script type="module" data-earthdata-ux-components="/path/to/shoelace/%NPMDIR%">
-    import '@nasa/earthdata-ux-components/%NPMDIR%/components/button/button.js'
+<script type="module" data-terra-ui-components="/path/to/shoelace/%NPMDIR%">
+    import '@nasa/terra-ui-components/%NPMDIR%/components/button/button.js'
 
-    // <edux-button> is ready to use!
+    // <terra-button> is ready to use!
 </script>
 ```
 
@@ -171,7 +171,7 @@ Shoelace is distributed as a collection of standard ES modules that [all modern 
 To use Shoelace with a bundler, first install Shoelace along with your bundler of choice.
 
 ```bash
-npm install @nasa/earthdata-ux-components
+npm install @nasa/terra-ui-components
 ```
 
 Now it's time to configure your bundler. Configurations vary for each tool, but here are some examples to help you get started.
@@ -182,21 +182,21 @@ Now it's time to configure your bundler. Configurations vary for each tool, but 
 Once your bundler is configured, you'll be able to import Shoelace components and utilities.
 
 ```js
-import '@nasa/earthdata-ux-components/%NPMDIR%/themes/light.css'
-import '@nasa/earthdata-ux-components/%NPMDIR%/components/button/button.js'
-import '@nasa/earthdata-ux-components/%NPMDIR%/components/icon/icon.js'
-import '@nasa/earthdata-ux-components/%NPMDIR%/components/input/input.js'
-import '@nasa/earthdata-ux-components/%NPMDIR%/components/rating/rating.js'
-import { setBasePath } from '@nasa/earthdata-ux-components/%NPMDIR%/utilities/base-path.js'
+import '@nasa/terra-ui-components/%NPMDIR%/themes/light.css'
+import '@nasa/terra-ui-components/%NPMDIR%/components/button/button.js'
+import '@nasa/terra-ui-components/%NPMDIR%/components/icon/icon.js'
+import '@nasa/terra-ui-components/%NPMDIR%/components/input/input.js'
+import '@nasa/terra-ui-components/%NPMDIR%/components/rating/rating.js'
+import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path.js'
 
 // Set the base path to the folder you copied Shoelace's assets to
 setBasePath('/path/to/shoelace/%NPMDIR%')
 
-// <edux-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
+// <terra-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
 ```
 
 :::warning
-Component modules include side effects for registration purposes. Because of this, importing directly from `@nasa/earthdata-ux-components` may result in a larger bundle size than necessary. For optimal tree shaking, always cherry pick, i.e. import components and utilities from their respective files, as shown above.
+Component modules include side effects for registration purposes. Because of this, importing directly from `@nasa/terra-ui-components` may result in a larger bundle size than necessary. For optimal tree shaking, always cherry pick, i.e. import components and utilities from their respective files, as shown above.
 :::
 
 ### Avoiding auto-registering imports
@@ -204,8 +204,8 @@ Component modules include side effects for registration purposes. Because of thi
 By default, imports to components will auto-register themselves. This may not be ideal in all cases. To import just the component's class without auto-registering it's tag we can do the following:
 
 ```diff
-- import EduxButton from '@nasa/earthdata-ux-components/%NPMDIR%/components/button/button.js';
-+ import EduxButton from '@nasa/earthdata-ux-components/%NPMDIR%/components/button/button.component.js';
+- import TerraButton from '@nasa/terra-ui-components/%NPMDIR%/components/button/button.js';
++ import TerraButton from '@nasa/terra-ui-components/%NPMDIR%/components/button/button.component.js';
 ```
 
 Notice how the import ends with `.component.js`. This is the current convention to convey the import does not register itself.
@@ -220,7 +220,7 @@ You'll notice that the CDN links all start with `/%CDNDIR%/<path>` and npm impor
 
 TL;DR:
 
--   `@nasa/earthdata-ux-components/%CDNDIR%` is for CDN users
--   `@nasa/earthdata-ux-components/%NPMDIR%` is for npm users
+-   `@nasa/terra-ui-components/%CDNDIR%` is for CDN users
+-   `@nasa/terra-ui-components/%NPMDIR%` is for npm users
 
 This change was introduced in `v2.5.0` to address issues around installations from npm loading multiple versions of libraries (such as the Lit) that Shoelace uses internally.

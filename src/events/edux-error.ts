@@ -1,7 +1,7 @@
-export type EduxErrorEvent = CustomEvent<{ status?: number }>
+export type TerraErrorEvent = CustomEvent<{ status?: number }>
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'edux-error': EduxErrorEvent
+        'terra-error': TerraErrorEvent
     }
 }

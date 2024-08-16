@@ -79,7 +79,7 @@ type ValidEventTypeMap =
     | EventTypesWithRequiredDetail
     | EventTypesWithoutRequiredDetail
 
-export default class EduxElement extends LitElement {
+export default class TerraElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
@@ -122,7 +122,7 @@ export default class EduxElement extends LitElement {
     ) {
         const currentlyRegisteredConstructor = customElements.get(name) as
             | CustomElementConstructor
-            | typeof EduxElement
+            | typeof TerraElement
 
         if (!currentlyRegisteredConstructor) {
             customElements.define(
@@ -158,19 +158,19 @@ export default class EduxElement extends LitElement {
         )
     }
 
-    static dependencies: Record<string, typeof EduxElement> = {}
+    static dependencies: Record<string, typeof TerraElement> = {}
 
     constructor() {
         super()
-        Object.entries((this.constructor as typeof EduxElement).dependencies).forEach(
-            ([name, component]) => {
-                ;(this.constructor as typeof EduxElement).define(name, component)
-            }
-        )
+        Object.entries(
+            (this.constructor as typeof TerraElement).dependencies
+        ).forEach(([name, component]) => {
+            ;(this.constructor as typeof TerraElement).define(name, component)
+        })
     }
 }
 
-export interface EduxFormControl extends EduxElement {
+export interface TerraFormControl extends TerraElement {
     // Form attributes
     name: string
     value: unknown

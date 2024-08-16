@@ -1,12 +1,12 @@
-import EduxPlot from './plot.component.js'
+import TerraPlot from './plot.component.js'
 
 export * from './plot.component.js'
-export default EduxPlot
+export default TerraPlot
 
-EduxPlot.define('edux-plot')
+TerraPlot.define('terra-plot')
 
 declare global {
     interface HTMLElementTagNameMap {
-        'edux-plot': EduxPlot
+        'terra-plot': TerraPlot
     }
 }

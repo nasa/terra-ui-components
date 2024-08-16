@@ -10,13 +10,13 @@ layout: component
 ### Default Map
 
 ```html:preview
-<edux-map></edux-map>
+<terra-map></terra-map>
 ```
 
 ### Configured Map
 
 ```html:preview
-<edux-map has-navigation has-shape-selector has-coord-tracker></edux-map>
+<terra-map has-navigation has-shape-selector has-coord-tracker></terra-map>
 ```
 
-[component-metadata:edux-map]
+[component-metadata:terra-map]

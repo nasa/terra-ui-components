@@ -27,36 +27,38 @@ export default css`
         --help-height: 1.8125rem;
         --host-height: 5.8125rem;
 
-        block-size: var(--edux-block-size, 2.1875rem);
+        block-size: var(--terra-block-size, 2.1875rem);
         box-sizing: border-box;
-        color: var(--edux-color-neutral--700, var(--color-neutral--700));
+        color: var(--terra-color-neutral--700, var(--color-neutral--700));
         contain: layout size style;
-        contain-intrinsic-size: var(--edux-inline-size, 100%)
-            calc(33vh + var(--edux-block-size, 2.1875rem));
+        contain-intrinsic-size: var(--terra-inline-size, 100%)
+            calc(33vh + var(--terra-block-size, 2.1875rem));
         display: block;
         font-family: var(
-            --edux-font-family--public-sans,
+            --terra-font-family--public-sans,
             var(--font-family--public-sans)
         );
-        height: var(--edux-block-size, var(--host-height));
-        inline-size: var(--edux-inline-size, 100%);
+        height: var(--terra-block-size, var(--host-height));
+        inline-size: var(--terra-inline-size, 100%);
         position: relative;
         z-index: 10;
     }
 
     :host([hide-help]) {
-        height: calc(var(--edux-block-size, var(--host-height)) - var(--help-height));
+        height: calc(
+            var(--terra-block-size, var(--host-height)) - var(--help-height)
+        );
     }
 
     :host([hide-label]) {
         height: calc(
-            var(--edux-block-size, var(--host-height)) - var(--label-height)
+            var(--terra-block-size, var(--host-height)) - var(--label-height)
         );
     }
 
     :host([hide-help][hide-label]) {
         height: calc(
-            var(--edux-block-size, var(--host-height)) - var(--help-height) - var(
+            var(--terra-block-size, var(--host-height)) - var(--help-height) - var(
                     --label-height
                 )
         );
@@ -67,7 +69,7 @@ export default css`
     }
 
     .search-input-label {
-        font-family: var(--edux-font-family--inter, var(--font-family--inter));
+        font-family: var(--terra-font-family--inter, var(--font-family--inter));
         font-weight: 600;
         line-height: 1.1875rem;
     }
@@ -79,13 +81,13 @@ export default css`
     }
 
     .combobox {
-        background-color: var(--edux-color-neutral--100, var(--color-neutral--100));
-        block-size: var(--edux-block-size, 2.1875rem);
+        background-color: var(--terra-color-neutral--100, var(--color-neutral--100));
+        block-size: var(--terra-block-size, 2.1875rem);
         border-block: 2px solid
-            var(--edux-color-neutral--200, var(--color-neutral--200));
+            var(--terra-color-neutral--200, var(--color-neutral--200));
         border-inline-end: 0;
         border-inline-start: 2px solid
-            var(--edux-color-neutral--200, var(--color-neutral--200));
+            var(--terra-color-neutral--200, var(--color-neutral--200));
         color: currentColor;
         flex: 1 1 auto;
         font-size: 1rem;
@@ -96,38 +98,41 @@ export default css`
     }
 
     .combobox::placeholder {
-        color: var(--edux-color-neutral--600, var(--color-neutral--600));
+        color: var(--terra-color-neutral--600, var(--color-neutral--600));
     }
 
     .combobox:focus {
-        background-color: var(--edux-color-neutral--000, var(--color-neutral--000));
-        border-color: var(--edux-color-neutral--400, var(--color-neutral--400));
+        background-color: var(--terra-color-neutral--000, var(--color-neutral--000));
+        border-color: var(--terra-color-neutral--400, var(--color-neutral--400));
         outline: 0;
     }
 
     .combobox:focus + .combobox-button {
-        background-color: var(--edux-color-neutral--800, var(--color-neutral--800));
-        border-block-color: var(--edux-color-neutral--400, var(--color-neutral--400));
+        background-color: var(--terra-color-neutral--800, var(--color-neutral--800));
+        border-block-color: var(
+            --terra-color-neutral--400,
+            var(--color-neutral--400)
+        );
         border-inline-end-color: var(
-            --edux-color-neutral--400,
+            --terra-color-neutral--400,
             var(--color-neutral--400)
         );
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
-        border-color: var(--edux-color-neutral--200, var(--color-neutral--200));
+        border-color: var(--terra-color-neutral--200, var(--color-neutral--200));
     }
 
     .combobox-button {
         align-items: center;
-        background-color: var(--edux-color-neutral--700, var(--color-neutral--700));
-        block-size: var(--edux-block-size, 2.1875rem);
+        background-color: var(--terra-color-neutral--700, var(--color-neutral--700));
+        block-size: var(--terra-block-size, 2.1875rem);
         border-block: 2px solid
-            var(--edux-color-neutral--500, var(--color-neutral--500));
+            var(--terra-color-neutral--500, var(--color-neutral--500));
         border-inline-end: 2px solid
-            var(--edux-color-neutral--500, var(--color-neutral--500));
+            var(--terra-color-neutral--500, var(--color-neutral--500));
         border-inline-start: 0;
-        color: var(--edux-color-neutral--000, var(--color-neutral--000));
+        color: var(--terra-color-neutral--000, var(--color-neutral--000));
         cursor: pointer;
         display: flex;
         flex: 0 0 auto;
@@ -168,7 +173,7 @@ export default css`
 
     .search-help {
         bottom: 0;
-        color: var(--edux-color-neutral--600, var(--color-neutral--600));
+        color: var(--terra-color-neutral--600, var(--color-neutral--600));
         flex: 1 1 100%;
         font-size: 0.875rem;
         margin-block: 0;
@@ -181,13 +186,13 @@ export default css`
     }
 
     .search-results {
-        background-color: var(--edux-color-neutral--000, var(--color-neutral--000));
-        block-size: calc(33vh - var(--edux-block-size, 2.1875rem));
+        background-color: var(--terra-color-neutral--000, var(--color-neutral--000));
+        block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
         contain: strict;
-        contain-intrinsic-size: var(--edux-inline-size, 100%)
-            calc(33vh - var(--edux-block-size, 2.1875rem));
+        contain-intrinsic-size: var(--terra-inline-size, 100%)
+            calc(33vh - var(--terra-block-size, 2.1875rem));
         content-visibility: hidden;
         left: 0;
         margin-block: 0;
@@ -207,9 +212,9 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--edux-color-neutral--400, var(--color-neutral--400));
+        border-color: var(--terra-color-neutral--400, var(--color-neutral--400));
         content-visibility: auto;
-        max-height: calc(33vh - var(--edux-block-size, 2.1875rem));
+        max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;
         visibility: visible;
     }
@@ -221,8 +226,8 @@ export default css`
     }
 
     .search-results .error {
-        color: var(--edux-color-red--500, var(--color-red--500));
-        font-family: var(--edux-font-family--dm-mono, var(--font-family--dm-mono));
+        color: var(--terra-color-red--500, var(--color-red--500));
+        font-family: var(--terra-font-family--dm-mono, var(--font-family--dm-mono));
         padding-block: 2rem;
     }
 
@@ -236,7 +241,7 @@ export default css`
     }
 
     .group-title {
-        font-family: var(--edux-font-family--inter, var(--font-family--inter));
+        font-family: var(--terra-font-family--inter, var(--font-family--inter));
         font-weight: 700;
         margin-block: 0;
     }

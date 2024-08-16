@@ -99,9 +99,9 @@ async function buildTheSource() {
             // NOTE: Entry points must be mapped in package.json > exports, otherwise users won't be able to import them!
             //
             // The whole shebang
-            './src/earthdata-ux-components.ts',
+            './src/terra-ui-components.ts',
             // The auto-loader
-            './src/earthdata-ux-components-autoloader.ts',
+            './src/terra-ui-components-autoloader.ts',
             // Components
             ...(await globby('./src/components/**/!(*.(style|test)).ts')),
             // Translations
@@ -270,7 +270,7 @@ if (serve) {
         startPath: '/',
         port,
         logLevel: 'silent',
-        logPrefix: '[earthdata-ux-components]',
+        logPrefix: '[terra-ui-components]',
         logFileChanges: true,
         notify: false,
         single: false,

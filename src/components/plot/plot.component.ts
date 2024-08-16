@@ -2,7 +2,7 @@ import { property, query } from 'lit/decorators.js'
 import { html } from 'lit'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
 import {
@@ -29,7 +29,7 @@ interface Plot {
  *
  * @csspart base - The component's base wrapper.
  */
-export default class EduxPlot extends EduxElement {
+export default class TerraPlot extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     plotData: Array<Plot> = []
 

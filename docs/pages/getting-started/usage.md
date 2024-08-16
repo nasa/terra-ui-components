@@ -15,13 +15,13 @@ If you're new to custom elements, often referred to as "web components," this se
 Many components have properties that can be set using attributes. For example, buttons accept a `size` attribute that maps to the `size` property which dictates the button's size.
 
 ```html
-<edux-button size="small">Click me</edux-button>
+<terra-button size="small">Click me</terra-button>
 ```
 
 Some properties are boolean, so they only have true/false values. To activate a boolean property, add the corresponding attribute without a value.
 
 ```html
-<edux-button disabled>Click me</edux-button>
+<terra-button disabled>Click me</terra-button>
 ```
 
 In rare cases, a property may require an array, an object, or a function. For example, to customize the color picker's list of preset swatches, you set the `swatches` property to an array of colors. This must be done with JavaScript.
@@ -30,7 +30,7 @@ In rare cases, a property may require an array, an object, or a function. For ex
 <sl-color-picker></sl-color-picker>
 
 <script>
-    const colorPicker = document.querySelector('edux-color-picker')
+    const colorPicker = document.querySelector('terra-color-picker')
     colorPicker.swatches = ['red', 'orange', 'yellow', 'green', 'blue', 'purple']
 </script>
 ```
@@ -41,20 +41,20 @@ Refer to a component's documentation for a complete list of its properties.
 
 You can listen for standard events such as `click`, `mouseover`, etc. as you normally would. However, it's important to note that many events emitted within a component's shadow root will be [retargeted](https://dom.spec.whatwg.org/#retarget) to the host element. This may result in, for example, multiple `click` handlers executing even if the user clicks just once. Furthermore, `event.target` will point to the host element, making things even more confusing.
 
-As a result, you should almost always listen for custom events instead. For example, instead of listening to `click` to determine when an `<sl-checkbox>` gets toggled, listen to `edux-change`.
+As a result, you should almost always listen for custom events instead. For example, instead of listening to `click` to determine when an `<sl-checkbox>` gets toggled, listen to `terra-change`.
 
 ```html
 <sl-checkbox>Check me</sl-checkbox>
 
 <script>
-    const checkbox = document.querySelector('edux-checkbox')
-    checkbox.addEventListener('edux-change', event => {
+    const checkbox = document.querySelector('terra-checkbox')
+    checkbox.addEventListener('terra-change', event => {
         console.log(event.target.checked ? 'checked' : 'not checked')
     })
 </script>
 ```
 
-All custom events are prefixed with `edux-` to prevent collisions with standard events and other libraries. Refer to a component's documentation for a complete list of its custom events.
+All custom events are prefixed with `terra-` to prevent collisions with standard events and other libraries. Refer to a component's documentation for a complete list of its custom events.
 
 ## Methods
 
@@ -64,7 +64,7 @@ Some components have methods you can call to trigger various behaviors. For exam
 <sl-input></sl-input>
 
 <script>
-    const input = document.querySelector('edux-input')
+    const input = document.querySelector('terra-input')
     input.focus()
 </script>
 ```
@@ -78,16 +78,16 @@ Many components use slots to accept content inside of them. The most common slot
 For example, a button's default slot is used to populate its label.
 
 ```html
-<edux-button>Click me</edux-button>
+<terra-button>Click me</terra-button>
 ```
 
 Some components also have _named_ slots. A named slot can be populated by adding a child element with the appropriate `slot` attribute. Notice how the icon below has the `slot="prefix"` attribute? This tells the component to place the icon into its `prefix` slot.
 
 ```html
-<edux-button>
+<terra-button>
     <sl-icon slot="prefix" name="gear"></sl-icon>
     Settings
-</edux-button>
+</terra-button>
 ```
 
 The location of a named slot doesn't matter. You can put it anywhere inside the component and the browser will move it to the right place automatically!
@@ -110,7 +110,7 @@ Custom elements cannot have self-closing tags. Similar to `<script>` and `<texta
 
 You might expect similarly named elements to share the same API as native HTML elements, but this is not always the case. Shoelace components **are not** designed to be one-to-one replacements for their HTML counterparts. While they usually share the same API, there may be subtle differences.
 
-For example, `<button>` and `<edux-button>` both have a `type` attribute, but the native one defaults to `submit` while the Shoelace one defaults to `button` since this is a better default for most users.
+For example, `<button>` and `<terra-button>` both have a `type` attribute, but the native one defaults to `submit` while the Shoelace one defaults to `button` since this is a better default for most users.
 
 :::tip
 **Don't make assumptions about a component's API!** To prevent unexpected behaviors, please take the time to review the documentation and make sure you understand what each attribute, property, method, and event is intended to do.
@@ -148,9 +148,9 @@ A clever way to use this method is to hide the `<body>` with `opacity: 0` and ad
 
 <script type="module">
     await Promise.allSettled([
-        customElements.whenDefined('edux-button'),
-        customElements.whenDefined('edux-card'),
-        customElements.whenDefined('edux-rating'),
+        customElements.whenDefined('terra-button'),
+        customElements.whenDefined('terra-card'),
+        customElements.whenDefined('terra-rating'),
     ])
 
     // Button, card, and rating are registered now! Add
@@ -168,7 +168,7 @@ To optimize performance and reduce re-renders, Lit batches component updates. Th
 Consider this example. We're going to change the `checked` property of the checkbox and observe its corresponding `checked` attribute, which happens to reflect.
 
 ```js
-const checkbox = document.querySelector('edux-checkbox')
+const checkbox = document.querySelector('terra-checkbox')
 checkbox.checked = true
 
 console.log(checkbox.hasAttribute('checked')) // false
@@ -177,7 +177,7 @@ console.log(checkbox.hasAttribute('checked')) // false
 Most developers will expect this to be `true` instead of `false`, but the component hasn't had a chance to re-render yet so the attribute doesn't exist when `hasAttribute()` is called. Since changes are batched, we need to wait for the update before proceeding. This can be done using the `updateComplete` property, which is available on all Lit-based components.
 
 ```js
-const checkbox = document.querySelector('edux-checkbox')
+const checkbox = document.querySelector('terra-checkbox')
 checkbox.checked = true
 
 checkbox.updateComplete.then(() => {
@@ -204,7 +204,7 @@ Shoelace ships with a file called `vscode.html-custom-data.json` that can be use
 
 ```js
 {
-  "html.customData": ["./node_modules/@nasa/earthdata-ux-components/dist/vscode.html-custom-data.json"]
+  "html.customData": ["./node_modules/@nasa/terra-ui-components/dist/vscode.html-custom-data.json"]
 }
 ```
 
@@ -214,7 +214,7 @@ If `settings.json` already exists, simply add the above line to the root of the 
 
 If you are using a [JetBrains IDE](https://www.jetbrains.com/) and you are installing Shoelace from NPM, the editor will automatically detect the `web-types.json` file from the package and you should immediately see component information in your editor.
 
-If you are installing from the CDN, you can [download a local copy](https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components/dist/web-types.json) and add it to the root of your project. Be sure to add a reference to the `web-types.json` file in your `package.json` in order for your editor to properly detect it.
+If you are installing from the CDN, you can [download a local copy](https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components/dist/web-types.json) and add it to the root of your project. Be sure to add a reference to the `web-types.json` file in your `package.json` in order for your editor to properly detect it.
 
 ```json
 {

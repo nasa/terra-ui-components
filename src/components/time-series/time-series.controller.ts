@@ -29,7 +29,7 @@ const timeSeriesUrlTemplate = compile(
     `${
         isLocalHost
             ? 'http://localhost:9000/hydro1'
-            : 'https://hydro1.earthdata-ux.eosdis.nasa.gov'
+            : 'https://hydro1.terra-ui.eosdis.nasa.gov'
     }/daac-bin/access/timeseries.cgi?variable={{variable}}&startDate={{startDate}}&endDate={{endDate}}&location={{location}}&type=asc2`
 )
 
@@ -100,40 +100,40 @@ export class TimeSeriesController {
         const variableEntryId = `${this.collection}_${this.variable}`
 
         // check the database for any existing data
-        const existingEduxData = await getDataByKey<VariableDbEntry>(
+        const existingTerraData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
             `${variableEntryId}_${this.location}`
         )
 
         if (
-            existingEduxData &&
+            existingTerraData &&
             this.startDate.getTime() >=
-                new Date(existingEduxData.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existingEduxData.endDate).getTime()
+                new Date(existingTerraData.startDate).getTime() &&
+            this.endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
         ) {
             // already have the data downloaded!
-            return this.#getDataInRange(existingEduxData)
+            return this.#getDataInRange(existingTerraData)
         }
         // the fetch request we send out may not contain the full date range the user requested
         // we'll request only the data we don't currently have cached
         let requestStartDate = this.startDate
         let requestEndDate = this.endDate
 
-        if (existingEduxData) {
+        if (existingTerraData) {
             if (
                 requestStartDate.getTime() <
-                new Date(existingEduxData.startDate).getTime()
+                new Date(existingTerraData.startDate).getTime()
             ) {
                 // user has requested more data than what we have, move the endDate up
-                requestEndDate = new Date(existingEduxData.startDate)
+                requestEndDate = new Date(existingTerraData.startDate)
             }
 
             if (
                 requestEndDate.getTime() >
-                new Date(existingEduxData.endDate).getTime()
+                new Date(existingTerraData.endDate).getTime()
             ) {
                 // user has requested more data than what we have, move the startDate back
-                requestStartDate = new Date(existingEduxData.endDate)
+                requestStartDate = new Date(existingTerraData.endDate)
             }
         }
 
@@ -158,8 +158,8 @@ export class TimeSeriesController {
 
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
-        // combined the new parsedData with any existinEduxata
-        parsedData.data = [...parsedData.data, ...(existingEduxData?.data || [])]
+        // combined the new parsedData with any existinTerraata
+        parsedData.data = [...parsedData.data, ...(existingTerraData?.data || [])]
 
         // save the new data to the database
         await storeDataByKey<VariableDbEntry>(

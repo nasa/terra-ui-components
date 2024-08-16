@@ -1,13 +1,13 @@
 ---
 meta:
-    title: 'Earthdata UX Components: A collection of web components for working with Earthdata services.'
+    title: 'Terra UI Components: A collection of web components for working with Earthdata services.'
     description: Hand-crafted Earthdata custom elements.
 toc: false
 ---
 
 <div class="splash">
 <div class="splash-start">
-  <div class="text-logo">Earthdata UX Components</div>
+  <div class="text-logo">Terra UI Components</div>
 
 -   Works with all frameworks 🧩
 -   Works with CDNs 🚛
@@ -30,18 +30,18 @@ Add the following code to your page.
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/themes/horizon.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/earthdata-ux-components-autoloader.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/horizon.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
 ```
 
-Now you have access to all of the Earthdata UX components! Try adding a button:
+Now you have access to all of the Terra UI Components! Try adding a button:
 
 ```html:preview:expanded:no-codepen
-<edux-button>Click me</edux-button>
+<terra-button>Click me</terra-button>
 ```
 
 :::tip
-This will activate Earthdata UX Components experimental autoloader, which registers components on the fly as you use them. To learn more about it, or for other ways to install Earthdata UX Components, refer to the [installation instructions](getting-started/installation).
+This will activate Terra UI Components experimental autoloader, which registers components on the fly as you use them. To learn more about it, or for other ways to install Terra UI Components, refer to the [installation instructions](getting-started/installation).
 :::
 
 ## New to Web Components?
@@ -56,13 +56,13 @@ Unfortunately, _framework-specific_ components fail us in a number of ways:
 
 Web components solve these problems. They're [supported by all modern browsers](https://caniuse.com/#feat=custom-elementsv1), they're framework-agnostic, and they're [part of the standard](https://developer.mozilla.org/en-US/docs/Web/Web_Components), so we know they'll be supported for many years to come.
 
-This is the technology that Earthdata UX Components is built on.
+This is the technology that Terra UI Components is built on.
 
 ## What Problem Does This Solve?
 
-Earthdata UX Components provides a collection of professionally designed, highly customizable UI components built on a framework agnostic technology.
+Terra UI Components provides a collection of professionally designed, highly customizable UI components built on a framework agnostic technology.
 
-With Earthdata UX Components, you can:
+With Terra UI Components, you can:
 
 -   Start building things faster (no need to roll your own code)
 -   Build multiple apps with different frameworks that all share the same UI components
@@ -72,7 +72,7 @@ With Earthdata UX Components, you can:
 
 ## Browser Support
 
-Earthdata UX Components is tested in the latest two versions of the following browsers.
+Terra UI Components is tested in the latest two versions of the following browsers.
 
 <img src="/assets/images/chrome.png" alt="Chrome" width="64" height="64">
 <img src="/assets/images/edge.png" alt="Edge" width="64" height="64">
@@ -82,4 +82,4 @@ Earthdata UX Components is tested in the latest two versions of the following br
 
 Critical bug fixes in earlier versions will be addressed based on their severity and impact.
 
-If you need to support IE11 or pre-Chromium Edge, this library isn't for you. Although web components can (to some degree) be polyfilled for legacy browsers, supporting them is outside the scope of this project. If you're using Earthdata UX Components in such a browser, you're gonna have a bad time. ⛷
+If you need to support IE11 or pre-Chromium Edge, this library isn't for you. Although web components can (to some degree) be polyfilled for legacy browsers, supporting them is outside the scope of this project. If you're using Terra UI Components in such a browser, you're gonna have a bad time. ⛷

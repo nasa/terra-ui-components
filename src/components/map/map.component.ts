@@ -3,7 +3,7 @@ import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import leafletDrawStyles from './leaflet-draw.styles.js'
@@ -19,7 +19,7 @@ import styles from './map.styles.js'
  * @since 1.0
  *
  */
-export default class EduxMap extends EduxElement {
+export default class TerraMap extends TerraElement {
     static styles: CSSResultGroup = [
         componentStyles,
         leafletStyles,
@@ -103,7 +103,7 @@ export default class EduxMap extends EduxElement {
         })
 
         this.map.on('draw', (layer: any) =>
-            this.emit('edux-map-change', {
+            this.emit('terra-map-change', {
                 detail: {
                     cause: 'draw',
                     ...layer,
@@ -112,7 +112,7 @@ export default class EduxMap extends EduxElement {
         )
 
         this.map.on('clear', (_e: any) =>
-            this.emit('edux-map-change', {
+            this.emit('terra-map-change', {
                 detail: {
                     cause: 'clear',
                 },

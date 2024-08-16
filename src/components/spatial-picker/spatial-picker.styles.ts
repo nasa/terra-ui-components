@@ -42,7 +42,7 @@ export default css`
     }
 
     .spatial-picker__input_label {
-        font-family: var(--edux-font-family--inter, var(--font-family--inter));
+        font-family: var(--terra-font-family--inter, var(--font-family--inter));
         font-weight: 600;
         line-height: 1.1875rem;
     }
@@ -55,13 +55,13 @@ export default css`
         font-size: 0.85rem;
         line-height: 1.42857143;
         color: currentColor;
-        background-color: var(--edux-color-neutral--100, var(--color-neutral--100));
-        block-size: var(--edux-block-size, 2.1875rem);
+        background-color: var(--terra-color-neutral--100, var(--color-neutral--100));
+        block-size: var(--terra-block-size, 2.1875rem);
         border-block: 2px solid
-            var(--edux-color-neutral--200, var(--color-neutral--200));
+            var(--terra-color-neutral--200, var(--color-neutral--200));
         border-inline-end: 0;
         border-inline-start: 2px solid
-            var(--edux-color-neutral--200, var(--color-neutral--200));
+            var(--terra-color-neutral--200, var(--color-neutral--200));
         border-radius: 4px;
         outline: 0;
         transition:
@@ -71,15 +71,15 @@ export default css`
 
     .form-control:focus {
         border-radius: 4px;
-        border: 2px solid var(--edux-color-blue--500, var(--color-blue--500));
+        border: 2px solid var(--terra-color-blue--500, var(--color-blue--500));
     }
 
     .form-control:focus + .spatial-picker__input_icon_button {
-        background-color: var(--edux-color-neutral--800, var(--color-neutral--800));
+        background-color: var(--terra-color-neutral--800, var(--color-neutral--800));
     }
 
     .spatial-picker__input_icon_button {
-        block-size: var(--edux-block-size, 2.1875rem);
+        block-size: var(--terra-block-size, 2.1875rem);
         padding-inline: 0.5rem;
         position: absolute;
         padding-top: 5px;
@@ -89,7 +89,7 @@ export default css`
         border: none;
         cursor: pointer;
         box-shadow: none;
-        background-color: var(--edux-color-neutral--700, var(--color-neutral--700));
+        background-color: var(--terra-color-neutral--700, var(--color-neutral--700));
         transition:
             background-color 0.2s ease,
             border-color 0.2s ease;
@@ -101,7 +101,7 @@ export default css`
         color: white;
     }
 
-    edux-map {
+    terra-map {
         position: absolute;
         left: 0;
         right: 0;
