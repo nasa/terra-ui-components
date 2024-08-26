@@ -15,7 +15,7 @@ Angular [plays nice](https://custom-elements-everywhere.com/#angular) with custo
 To add Terra UI Components to your Angular app, install the package from npm.
 
 ```bash
-npm install @nasa/terra-ui-components
+npm install @nasa-terra/components
 ```
 
 ### Update the Angular Configuration
@@ -32,10 +32,10 @@ Its also important to load the components by using a `<script>` tag into the ind
       ...
       "styles": [
         "src/styles.scss",
-        "@nasa/terra-ui-components/dist/themes/horizon.css"
+        "@nasa-terra/components/dist/themes/horizon.css"
        ],
       "scripts": [
-        "@nasa/terra-ui-components/dist/terra-ui-components.js"
+        "@nasa-terra/components/dist/terra-ui-components.js"
       ]
       ...
 ```
@@ -45,15 +45,13 @@ Its also important to load the components by using a `<script>` tag into the ind
 Next, set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets in the `main.ts`. In this example, we'll use the CDN as a base path.
 
 ```jsx
-import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path'
+import { setBasePath } from '@nasa-terra/components/%NPMDIR%/utilities/base-path'
 
-setBasePath(
-    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
-)
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/terra-ui-components/%NPMDIR%/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa-terra/components/%NPMDIR%/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -79,7 +77,7 @@ export class AppModule {}
 ## Reference Terra UI Components in your Angular component code
 
 ```js
-import { SlDrawer } from '@nasa/terra-ui-components';
+import { SlDrawer } from '@nasa-terra/components';
 
 @Component({
   selector: 'app-drawer-example',

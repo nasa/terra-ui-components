@@ -30,8 +30,8 @@ Add the following code to your page.
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/themes/horizon.css" />
-<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
 ```
 
 Now you have access to all of the Terra UI Components! Try adding a button:

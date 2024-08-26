@@ -29,7 +29,7 @@ Customize the text on each chip.
 ```
 
 ```jsx:react
-import TerraLoader from '@nasa/terra-ui-components/dist/react/chip';
+import TerraLoader from '@nasa-terra/components/dist/react/chip';
 
 const App = () => (
     <>
@@ -75,7 +75,7 @@ This example makes the chip disappear and also produces an alert.
 ```
 
 ```jsx:react
-import TerraLoader from '@nasa/terra-ui-components/dist/react/chip'
+import TerraLoader from '@nasa-terra/components/dist/react/chip'
 const App = () => {
   function handleRemove(event) {
     alert("This chip has been removed");

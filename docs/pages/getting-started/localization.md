@@ -31,8 +31,8 @@ Shoelace ships with a number of translations. The default is English (US), which
 
 The location of translations depends on how you're consuming Shoelace.
 
--   If you're using the CDN, [import them from the CDN](https://www.jsdelivr.com/package/npm/@nasa/terra-ui-components?path=%CDNDIR%%2Ftranslations)
--   If you're using a bundler, import them from `@nasa/terra-ui-components/%NPMDIR%/translations/[lang].js`
+-   If you're using the CDN, [import them from the CDN](https://www.jsdelivr.com/package/npm/@nasa-terra/components?path=%CDNDIR%%2Ftranslations)
+-   If you're using a bundler, import them from `@nasa-terra/components/%NPMDIR%/translations/[lang].js`
 
 You do not need to load translations up front. You can import them dynamically even after updating the `lang` attribute. Once a translation is registered, localized components will update automatically.
 
@@ -104,8 +104,8 @@ You can provide your own translations if you have specific needs or if you don't
 Let's create a Spanish translation as an example. The following assumes you're using TypeScript, but you can also create translations with regular JavaScript.
 
 ```js
-import { registerTranslation } from '@nasa/terra-ui-components/dist/utilities/localize';
-import type { Translation } from '@nasa/terra-ui-components/dist/utilities/localize';
+import { registerTranslation } from '@nasa-terra/components/dist/utilities/localize';
+import type { Translation } from '@nasa-terra/components/dist/utilities/localize';
 
 const translation: Translation = {
   $code: 'es',

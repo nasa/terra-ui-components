@@ -12,7 +12,7 @@ layout: component
 ```
 
 ```jsx:react
-import TerraButton from '@nasa/terra-ui-components/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => <TerraButton>Button</TerraButton>;
 ```

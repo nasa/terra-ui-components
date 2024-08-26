@@ -34,7 +34,7 @@ layout: component
 ```
 
 ```jsx:react
-import TerraTimeSeries from '@nasa/terra-ui-components/dist/react/time-series'
+import TerraTimeSeries from '@nasa-terra/components/dist/react/time-series'
 
 const App = () => <TerraTimeSeries
     collection="GPM_3IMERGHH_06"

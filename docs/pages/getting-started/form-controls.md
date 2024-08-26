@@ -30,7 +30,7 @@ const data = new FormData(form)
 However, some folks find `FormData` tricky to work with or they need to pass a JSON payload to their server. To accommodate this, Shoelace offers a serialization utility that gathers form data and returns a simple JavaScript object instead.
 
 ```js
-import { serialize } from '@nasa/terra-ui-components/dist/utilities/form.js'
+import { serialize } from '@nasa-terra/components/dist/utilities/form.js'
 
 const form = document.querySelector('form')
 const data = serialize(form)
@@ -99,12 +99,12 @@ The form will not be submitted if a required field is incomplete.
 ```
 
 ```jsx:react
-import TerraButton from '@nasa/terra-ui-components/dist/react/button';
-import SlCheckbox from '@nasa/terra-ui-components/dist/react/checkbox';
-import SlInput from '@nasa/terra-ui-components/dist/react/input';
-import SlMenuItem from '@nasa/terra-ui-components/dist/react/menu-item';
-import SlSelect from '@nasa/terra-ui-components/dist/react/select';
-import SlTextarea from '@nasa/terra-ui-components/dist/react/textarea';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlCheckbox from '@nasa-terra/components/dist/react/checkbox';
+import SlInput from '@nasa-terra/components/dist/react/input';
+import SlMenuItem from '@nasa-terra/components/dist/react/menu-item';
+import SlSelect from '@nasa-terra/components/dist/react/select';
+import SlTextarea from '@nasa-terra/components/dist/react/textarea';
 
 const App = () => {
   function handleSubmit(event) {
@@ -165,8 +165,8 @@ To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/
 ```
 
 ```jsx:react
-import TerraButton from '@nasa/terra-ui-components/dist/react/button';
-import SlInput from '@nasa/terra-ui-components/dist/react/input';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   function handleSubmit(event) {
@@ -217,8 +217,8 @@ Some input types will automatically trigger constraints, such as `email` and `ur
 ```
 
 ```jsx:react
-import TerraButton from '@nasa/terra-ui-components/dist/react/button';
-import SlInput from '@nasa/terra-ui-components/dist/react/input';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   function handleSubmit(event) {
@@ -279,8 +279,8 @@ To create a custom validation error, pass a non-empty string to the `setCustomVa
 
 ```jsx:react
 import { useRef, useState } from 'react';
-import TerraButton from '@nasa/terra-ui-components/dist/react/button';
-import SlInput from '@nasa/terra-ui-components/dist/react/input';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   const input = useRef(null);
@@ -557,7 +557,7 @@ This example is meant to demonstrate the concept of providing your own error mes
 At this time, using [`HTMLFormElement.elements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/elements) will not return Shoelace form controls because the browser is unaware of their status as custom element form controls. Fortunately, Shoelace provides an `elements()` function that does something very similar. However, instead of returning an [`HTMLFormControlsCollection`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection), it returns an array of HTML and Shoelace form controls in the order they appear in the DOM.
 
 ```js
-import { getFormControls } from '@nasa/terra-ui-components/dist/utilities/form.js'
+import { getFormControls } from '@nasa-terra/components/dist/utilities/form.js'
 
 const form = document.querySelector('#my-form')
 const formControls = getFormControls(form)

@@ -3,7 +3,7 @@
         html = html
             .replace(
                 /@gesdisc\/components/g,
-                `https://esm.sh/@nasa/terra-ui-components@${componentsVersion}`
+                `https://esm.sh/@nasa-terra/components@${componentsVersion}`
             )
             .replace(/from 'react'/g, `from 'https://esm.sh/react@${reactVersion}'`)
             .replace(/from "react"/g, `from "https://esm.sh/react@${reactVersion}"`)
@@ -203,7 +203,7 @@
             // HTML templates
             if (!isReact) {
                 htmlTemplate =
-                    `<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@${componentsVersion}/${cdndir}/terra-ui-components.js"></script>\n` +
+                    `<script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@${componentsVersion}/${cdndir}/terra-ui-components.js"></script>\n` +
                     `\n${htmlExample}`
                 jsTemplate = ''
             }
@@ -214,10 +214,10 @@
                 jsTemplate =
                     `import React from 'https://esm.sh/react@${reactVersion}';\n` +
                     `import ReactDOM from 'https://esm.sh/react-dom@${reactVersion}';\n` +
-                    `import { setBasePath } from 'https://esm.sh/@nasa/terra-ui-components@${componentsVersion}/${cdndir}/utilities/base-path';\n` +
+                    `import { setBasePath } from 'https://esm.sh/@nasa-terra/components@${componentsVersion}/${cdndir}/utilities/base-path';\n` +
                     `\n` +
                     `// Set the base path for component assets\n` +
-                    `setBasePath('https://esm.sh/@nasa/terra-ui-components@${componentsVersion}/${npmdir}/')\n` +
+                    `setBasePath('https://esm.sh/@nasa-terra/components@${componentsVersion}/${npmdir}/')\n` +
                     `\n${convertModuleLinks(reactExample)}\n` +
                     `\n` +
                     `ReactDOM.render(<App />, document.getElementById('root'));`
@@ -225,7 +225,7 @@
 
             // CSS templates
             cssTemplate =
-                `@import 'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@${componentsVersion}/${cdndir}/themes/horizon.css';\n` +
+                `@import 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@${componentsVersion}/${cdndir}/themes/horizon.css';\n` +
                 '\n' +
                 'body {\n' +
                 '  font: 16px sans-serif;\n' +

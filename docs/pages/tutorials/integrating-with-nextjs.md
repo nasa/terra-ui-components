@@ -25,7 +25,7 @@ This integration has been tested with the following:
 To get started using Shoelace with NextJS, the following packages must be installed.
 
 ```bash
-yarn add @nasa/terra-ui-components copy-webpack-plugin next-compose-plugins next-transpile-modules
+yarn add @nasa-terra/components copy-webpack-plugin next-compose-plugins next-transpile-modules
 ```
 
 ### Enabling ESM
@@ -44,7 +44,7 @@ There's one more step to enable ESM in NextJS, but we'll tackle that in our Next
 The next step is to import Shoelace's default theme (stylesheet) in your `_app.js` file:
 
 ```css
-import '@nasa/terra-ui-components/dist/themes/light.css';
+import '@nasa-terra/components/dist/themes/light.css';
 ```
 
 ### Defining Custom Elements
@@ -63,15 +63,15 @@ function CustomEls({ URL }) {
             return
         }
 
-        import('@nasa/terra-ui-components/dist/utilities/base-path').then(
+        import('@nasa-terra/components/dist/utilities/base-path').then(
             ({ setBasePath }) => {
                 setBasePath(`${URL}/static/static`)
 
                 // This imports all components
-                import('@nasa/terra-ui-components/dist/react')
+                import('@nasa-terra/components/dist/react')
                 // If you're wanting to selectively import components, replace this line with your own definitions
 
-                // import("@nasa/terra-ui-components/dist/components/button/button");
+                // import("@nasa-terra/components/dist/components/button/button");
                 customEls.current = true
             }
         )
@@ -142,7 +142,7 @@ import CopyPlugin from 'copy-webpack-plugin'
 import withPlugins from 'next-compose-plugins'
 import withTM from 'next-transpile-modules'
 
-const withTMCompiled = withTM(['@nasa/terra-ui-components'])
+const withTMCompiled = withTM(['@nasa-terra/components'])
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -156,7 +156,7 @@ export default withPlugins([withTMCompiled], {
                     {
                         from: resolve(
                             __dirname,
-                            'node_modules/@nasa/terra-ui-components/dist/assets/icons'
+                            'node_modules/@nasa-terra/components/dist/assets/icons'
                         ),
                         to: resolve(__dirname, 'static/icons'),
                     },

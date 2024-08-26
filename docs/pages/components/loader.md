@@ -10,7 +10,7 @@ layout: component
 ```
 
 ```jsx:react
-import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => <TerraLoader></TerraLoader>;
 ```
@@ -27,7 +27,7 @@ Use the `size` attribute to change a button's size.
 ```
 
 ```jsx:react
-import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => (
     <>
@@ -45,7 +45,7 @@ const App = () => (
 ```
 
 ```jsx:react
-import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => (
     <>
@@ -62,7 +62,7 @@ const App = () => (
 ```
 
 ```jsx:react
-import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => (
     <>

@@ -17,22 +17,20 @@ These instructions are for Vue 2. If you're using Vue 3 or above, please see the
 To add Shoelace to your Vue app, install the package from npm.
 
 ```bash
-npm install @nasa/terra-ui-components
+npm install @nasa-terra/components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
-import '@nasa/terra-ui-components/%NPMDIR%/themes/light.css'
-import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path'
+import '@nasa-terra/components/%NPMDIR%/themes/light.css'
+import { setBasePath } from '@nasa-terra/components/%NPMDIR%/utilities/base-path'
 
-setBasePath(
-    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
-)
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/terra-ui-components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa-terra/components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration

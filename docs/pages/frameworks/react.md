@@ -13,23 +13,21 @@ Terra UI Components offers a React version of every component to provide an idio
 To add Terra UI Components to your React app, install the package from npm.
 
 ```bash
-npm install @nasa/terra-ui-components
+npm install @nasa-terra/components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
 // App.jsx
-import '@nasa/terra-ui-components/%NPMDIR%/themes/light.css'
-import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path'
+import '@nasa-terra/components/%NPMDIR%/themes/light.css'
+import { setBasePath } from '@nasa-terra/components/%NPMDIR%/utilities/base-path'
 
-setBasePath(
-    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
-)
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a [build task](https://webpack.js.org/plugins/copy-webpack-plugin/) that copies `node_modules/@nasa/terra-ui-components/%NPMDIR%/assets` into your app's `public` directory. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a [build task](https://webpack.js.org/plugins/copy-webpack-plugin/) that copies `node_modules/@nasa-terra/components/%NPMDIR%/assets` into your app's `public` directory. Then you can point the base path to that folder instead.
 :::
 
 Now you can start using components!
@@ -45,7 +43,7 @@ Preact users facing type errors using components may benefit from setting "paths
 Every Terra UI component is available to import as a React component. Note that we're importing the `<TerraButton>` _React component_ instead of the `<terra-button>` _custom element_ in the example below.
 
 ```jsx
-import Button from '@nasa/terra-ui-components/%NPMDIR%/react/button'
+import Button from '@nasa-terra/components/%NPMDIR%/react/button'
 
 const MyComponent = () => <TerraButton variant="primary">Click me</TerraButton>
 
@@ -57,14 +55,14 @@ export default MyComponent
 Previously, it was recommended to import from a single entrypoint like so:
 
 ```jsx
-import { TerraButton } from '@nasa/terra-ui-components/%NPMDIR%/react'
+import { TerraButton } from '@nasa-terra/components/%NPMDIR%/react'
 ```
 
 However, tree-shaking extra Shoelace components proved to be a challenge. As a result, we now recommend cherry-picking components you want to use, rather than importing from a single entrypoint.
 
 ```diff
-- import { TerraButton } from '@nasa/terra-ui-components/%NPMDIR%/react';
-+ import TerraButton from '@nasa/terra-ui-components/%NPMDIR%/react/button';
+- import { TerraButton } from '@nasa-terra/components/%NPMDIR%/react';
++ import TerraButton from '@nasa-terra/components/%NPMDIR%/react/button';
 ```
 
 You can find a copy + paste import for each component in the "importing" section of its documentation.
@@ -77,7 +75,7 @@ Here's how you can bind the input's value to a state variable.
 
 ```jsx
 import { useState } from 'react'
-import SlInput from '@nasa/terra-ui-components/%NPMDIR%/react/input'
+import SlInput from '@nasa-terra/components/%NPMDIR%/react/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
@@ -92,8 +90,8 @@ If you're using TypeScript, it's important to note that `event.target` will be a
 
 ```tsx
 import { useState } from 'react'
-import SlInput from '@nasa/terra-ui-components/%NPMDIR%/react/input'
-import type SlInputElement from '@nasa/terra-ui-components/%NPMDIR%/components/input/input'
+import SlInput from '@nasa-terra/components/%NPMDIR%/react/input'
+import type SlInputElement from '@nasa-terra/components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
@@ -115,8 +113,8 @@ You can also import the event type for use in your callbacks, shown below.
 import { useCallback, useState } from 'react'
 import SlInput, {
     type SlInputEvent,
-} from '@nasa/terra-ui-components/%NPMDIR%/react/input'
-import type SlInputElement from '@nasa/terra-ui-components/%NPMDIR%/components/input/input'
+} from '@nasa-terra/components/%NPMDIR%/react/input'
+import type SlInputElement from '@nasa-terra/components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
