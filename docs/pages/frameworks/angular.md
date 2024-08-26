@@ -47,7 +47,9 @@ Next, set the [base path](/getting-started/installation#setting-the-base-path) f
 ```jsx
 import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/')
+setBasePath(
+    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
+)
 ```
 
 :::tip

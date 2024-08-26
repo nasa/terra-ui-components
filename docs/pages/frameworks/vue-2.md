@@ -26,7 +26,9 @@ Next, [include a theme](/getting-started/themes) and set the [base path](/gettin
 import '@nasa/terra-ui-components/%NPMDIR%/themes/light.css'
 import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/')
+setBasePath(
+    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
+)
 ```
 
 :::tip

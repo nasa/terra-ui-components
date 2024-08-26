@@ -101,7 +101,10 @@ However, if you're [cherry picking](#cherry-picking) or [bundling](#bundling) Sh
 
 ```html
 <!-- Option 1: the data-terra-ui-components attribute -->
-<script src="bundle.js" data-terra-ui-components="/path/to/shoelace/%NPMDIR%"></script>
+<script
+    src="bundle.js"
+    data-terra-ui-components="/path/to/shoelace/%NPMDIR%"
+></script>
 
 <!-- Option 2: the setBasePath() method -->
 <script src="bundle.js"></script>

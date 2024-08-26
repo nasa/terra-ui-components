@@ -26,7 +26,9 @@ Next, [include a theme](/getting-started/themes) and set the [base path](/gettin
 import '@nasa/terra-ui-components/dist/themes/light.css'
 import { setBasePath } from '@nasa/terra-ui-components/dist/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/')
+setBasePath(
+    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
+)
 ```
 
 :::tip
@@ -126,7 +128,9 @@ Here is an example:
 >
     This drawer slides in from the start.
     <div slot="footer">
-        <terra-button variant="primary" @click=" drawerIsOpen = false">Close</terra-button>
+        <terra-button variant="primary" @click=" drawerIsOpen = false"
+            >Close</terra-button
+        >
     </div>
 </sl-drawer>
 ```

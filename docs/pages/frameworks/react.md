@@ -23,7 +23,9 @@ Next, [include a theme](/getting-started/themes) and set the [base path](/gettin
 import '@nasa/terra-ui-components/%NPMDIR%/themes/light.css'
 import { setBasePath } from '@nasa/terra-ui-components/%NPMDIR%/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/')
+setBasePath(
+    'https://cdn.jsdelivr.net/npm/@nasa/terra-ui-components@%VERSION%/%CDNDIR%/'
+)
 ```
 
 :::tip
@@ -111,7 +113,9 @@ You can also import the event type for use in your callbacks, shown below.
 
 ```tsx
 import { useCallback, useState } from 'react'
-import SlInput, { type SlInputEvent } from '@nasa/terra-ui-components/%NPMDIR%/react/input'
+import SlInput, {
+    type SlInputEvent,
+} from '@nasa/terra-ui-components/%NPMDIR%/react/input'
 import type SlInputElement from '@nasa/terra-ui-components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
