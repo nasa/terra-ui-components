@@ -40,7 +40,7 @@ export class FetchController {
                 const response = await fetch(
                     isLocalHost
                         ? 'http://localhost:9000/variables'
-                        : 'https://dev.gesdisc.eosdis.nasa.gov/~jdcarlso/collection+variable.json'
+                        : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/dev/~jdcarlso/collection+variable.json'
                 )
 
                 if (!response.ok) {
