@@ -29,7 +29,7 @@ const timeSeriesUrlTemplate = compile(
     `${
         isLocalHost
             ? 'http://localhost:9000/hydro1'
-            : 'https://hydro1.terra-ui.eosdis.nasa.gov'
+            : 'https://hydro1.gesdisc.eosdis.nasa.gov'
     }/daac-bin/access/timeseries.cgi?variable={{variable}}&startDate={{startDate}}&endDate={{endDate}}&location={{location}}&type=asc2`
 )
 
