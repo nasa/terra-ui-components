@@ -109,7 +109,14 @@ export default class TerraVariableCombobox extends TerraElement {
         await this.#fetchController.taskComplete
 
         const selectedVariable = this.#fetchController.value?.find(variable => {
-            return variable.entryId === this.value
+            // TODO: don't commit this
+            const lastUnderscoreIndex = this.value.lastIndexOf('_')
+            const collection = this.value.substring(0, lastUnderscoreIndex)
+            const variableName = this.value.substring(lastUnderscoreIndex + 1)
+            const modifiedCollection = collection.replace(/_v(?=[^_]*$)/, '_')
+            const fixedValue = `${modifiedCollection}_${variableName}`
+
+            return variable.entryId === fixedValue
         })
 
         if (selectedVariable) {
