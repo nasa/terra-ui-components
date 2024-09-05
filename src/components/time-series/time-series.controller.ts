@@ -55,6 +55,10 @@ export class TimeSeriesController {
 
     task: Task<TaskArguments, Partial<Data>[]>
 
+    //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
+    //? Lit behavior is to set the task.value to undefined when aborted
+    lastTaskValue: Partial<Data>[] | undefined
+
     collection: Collection
     variable: Variable
     startDate: StartDate
@@ -84,13 +88,15 @@ export class TimeSeriesController {
 
                 // now that we have actual data, map it to a Plotly plot definition
                 // see https://plotly.com/javascript/time-series/
-                return [
+                this.lastTaskValue = [
                     {
                         ...plotlyDefaultData,
                         x: timeSeries.data.map(row => row.timestamp),
                         y: timeSeries.data.map(row => row.value),
                     },
                 ]
+
+                return this.lastTaskValue
             },
         })
     }
@@ -98,11 +104,12 @@ export class TimeSeriesController {
     async #loadTimeSeries(signal: AbortSignal) {
         // create the variable identifer
         const variableEntryId = `${this.collection}_${this.variable}`
+        const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
         const existingTerraData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            `${variableEntryId}_${this.location}`
+            cacheKey
         )
 
         if (
@@ -166,17 +173,13 @@ export class TimeSeriesController {
         parsedData.data = [...parsedData.data, ...(existingTerraData?.data || [])]
 
         // save the new data to the database
-        await storeDataByKey<VariableDbEntry>(
-            IndexedDbStores.TIME_SERIES,
-            `${variableEntryId}_${this.location}`,
-            {
-                variableEntryId,
-                key: `${variableEntryId}_${this.location}`,
-                startDate: parsedData.data[0].timestamp,
-                endDate: parsedData.data[parsedData.data.length - 1].timestamp,
-                ...parsedData,
-            }
-        )
+        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
+            variableEntryId,
+            key: cacheKey,
+            startDate: parsedData.data[0].timestamp,
+            endDate: parsedData.data[parsedData.data.length - 1].timestamp,
+            ...parsedData,
+        })
 
         return this.#getDataInRange(parsedData)
     }

@@ -13,6 +13,8 @@ import TerraDateRangeSlider from '../date-range-slider/date-range-slider.compone
 import TerraPlot from '../plot/plot.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
+import TerraLoader from '../loader/loader.component.js'
+import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
 import styles from './time-series.styles.js'
 
@@ -27,6 +29,8 @@ dayjs.tz.setDefault('Etc/GMT')
  * @since 1.0
  *
  * @dependency terra-plot
+ * @dependency terra-date-range-slider
+ * @dependency terra-variable-combobox
  */
 export default class TerraTimeSeries extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -35,6 +39,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-date-range-slider': TerraDateRangeSlider,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-variable-combobox': TerraVariableCombobox,
+        'terra-loader': TerraLoader,
     }
 
     #timeSeriesController = new TimeSeriesController(this)
@@ -221,6 +226,13 @@ export default class TerraTimeSeries extends TerraElement {
         this.endDate = event.detail.endDate
     }
 
+    /**
+     * aborts the underlying data loading task, which cancels the network request
+     */
+    #abortDataLoad() {
+        this.#timeSeriesController.task?.abort()
+    }
+
     render() {
         return html`
             <terra-variable-combobox
@@ -239,7 +251,7 @@ export default class TerraTimeSeries extends TerraElement {
             <terra-plot
                 exportparts="base:plot__base"
                 data="${JSON.stringify(
-                    this.#timeSeriesController.task.value ??
+                    this.#timeSeriesController.lastTaskValue ??
                         this.#timeSeriesController.emptyPlotData
                 )}"
                 .layout="${{
@@ -263,6 +275,17 @@ export default class TerraTimeSeries extends TerraElement {
                 end-date=${this.endDate}
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
             ></terra-date-range-slider>
+
+            <dialog
+                open
+                class="${this.#timeSeriesController.task.status === TaskStatus.PENDING
+                    ? 'open'
+                    : ''}"
+            >
+                <terra-loader indeterminate></terra-loader>
+                <p>Plotting ${this.collection} ${this.variable}...</p>
+                <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
+            </dialog>
         `
     }
 }

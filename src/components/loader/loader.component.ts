@@ -31,6 +31,10 @@ export default class TerraLoader extends TerraElement {
     @property({ type: Number })
     percent: number = 0
 
+    /** an indeterminate loader has an unknown progress and will show a spinner */
+    @property({ type: Boolean })
+    indeterminate: boolean = false
+
     /** A label used by a screen reader which describes the loader element (e.g., "Loading video of Tropical Storm Nepartak") */
     @property({ type: String })
     label: string = 'Loading request'
@@ -79,7 +83,9 @@ export default class TerraLoader extends TerraElement {
                     viewBox=${this.size == 'small' ? '0 0 30 30' : '0 0 52 52'}
                     aria-hidden="true"
                     style="--progress: ${this.percent}"
-                    class="circular-progress"
+                    class="circular-progress ${this.indeterminate
+                        ? 'indeterminate'
+                        : ''}"
                 >
                     <circle class="bg"></circle>
                     <circle class="fg"></circle>

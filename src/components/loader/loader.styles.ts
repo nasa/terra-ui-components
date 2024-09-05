@@ -63,6 +63,9 @@ export default css`
         --dash: calc(
             (var(--progress) * var(--circumference)) / 100
         ); /* Calculate the length of the dash based on the progress percentage */
+        --indeterminate-dash: calc(
+            (25 * var(--circumference)) / 100
+        ); /* force progress to 25% for an indeterminate loader */
     }
 
     .circular-progress circle {
@@ -84,6 +87,24 @@ export default css`
         stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
         transition: stroke-dasharray 0.3s linear 0s; /* Defines how --dash value changes to stroke-dasharray are animated */
         stroke: #1c68e3;
+    }
+
+    .circular-progress.indeterminate circle.fg {
+        stroke-dasharray: var(--indeterminate-dash)
+            calc(var(--circumference) - var(--indeterminate-dash));
+        animation: 0.8s spin infinite;
+        animation-timing-function: linear;
+        transform-origin: 50% 50%;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(-90deg);
+        }
+
+        to {
+            transform: rotate(270deg);
+        }
     }
 
     @property --progress {

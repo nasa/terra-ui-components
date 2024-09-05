@@ -37,6 +37,26 @@ const App = () => (
 );
 ```
 
+### Indeterminate
+
+Use the `indeterminate` attribute to show a spinner.
+
+```html:preview
+<terra-loader indeterminate size='large'></terra-loader>
+<terra-loader indeterminate size='small'></terra-loader>
+```
+
+```jsx:react
+import TerraLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+
+const App = () => (
+    <>
+        <TerraLoader indeterminate size='large'></TerraLoader>
+        <TerraLoader indeterminate size='small'></TerraLoader>
+    </>
+);
+```
+
 ### Themes
 
 ```html:preview
