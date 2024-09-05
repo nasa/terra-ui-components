@@ -102,8 +102,13 @@ export class TimeSeriesController {
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
+        const collection = this.collection.replace(
+            'NLDAS_FORA0125_H_2.0',
+            'NLDAS_FORA0125_H_v2.0'
+        )
+
         // create the variable identifer
-        const variableEntryId = `${this.collection}_${this.variable}`
+        const variableEntryId = `${collection}_${this.variable}`
         const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
@@ -152,7 +157,7 @@ export class TimeSeriesController {
 
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${variableGroup}:${this.collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
+            variable: `${variableGroup}:${collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
             startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
             endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
             location: `GEOM:POINT(${this.location})`,
