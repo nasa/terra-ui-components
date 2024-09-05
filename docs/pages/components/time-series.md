@@ -9,11 +9,11 @@ layout: component
 
 ```html:preview
 <terra-time-series
-    collection="GPM_3IMERGHH_06"
-    variable="precipitationCal"
+    collection="NLDAS_FORA0125_H_v2.0"
+    variable="LWdown"
     start-date="01/01/2019"
-    end-date="09/01/2021"
-    location="39.002944230066724,-76.87690658569336"
+    end-date="03/01/2019"
+    location="33.9375,-86.9375"
 ></terra-time-series>
 ```
 

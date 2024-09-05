@@ -137,11 +137,15 @@ export class TimeSeriesController {
             }
         }
 
+        // on-prem, some of the URLs have a different start prefix
+        // this is a hack for UWG that should be removed
+        const variableGroup = variableEntryId.startsWith('NLDAS_')
+            ? 'NLDAS2'
+            : variableEntryId.split('_')[0]
+
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${variableEntryId.split('_')[0]}:${this.collection}:${
-                this.variable
-            }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
+            variable: `${variableGroup}:${this.collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
             startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
             endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
             location: `GEOM:POINT(${this.location})`,
