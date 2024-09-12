@@ -293,7 +293,7 @@ export default class EduxVariableCombobox extends EduxElement {
         return html`<search part="base" title="Search through the list.">
             <label
                 for="combobox"
-                class=${this.hideLabel ? 'sr-only' : 'search-input-label'}
+                class=${this.hideLabel ? 'sr-only' : 'input-label'}
                 >${this.label}</label
             >
             <div class="search-input-group">
@@ -316,7 +316,8 @@ export default class EduxVariableCombobox extends EduxElement {
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
                 />
-                <button
+                <edux-button
+                    shape="square-left"
                     aria-controls="listbox"
                     aria-expanded=${this.isExpanded}
                     aria-label="List of Searchable Variables"
@@ -346,7 +347,7 @@ export default class EduxVariableCombobox extends EduxElement {
                                   stroke-width="3"
                               ></circle>
                           </svg>`}
-                </button>
+                </edux-button>
 
                 ${this.hideHelp
                     ? nothing

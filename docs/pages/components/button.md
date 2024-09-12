@@ -27,7 +27,6 @@ Use the `variant` attribute to set the button's variant.
 <edux-button variant="default">Default</edux-button>
 <edux-button variant="primary">Primary</edux-button>
 <edux-button variant="success">Success</edux-button>
-<edux-button variant="neutral">Neutral</edux-button>
 <edux-button variant="warning">Warning</edux-button>
 <edux-button variant="danger">Danger</edux-button>
 ```
@@ -40,7 +39,6 @@ const App = () => (
     <EduxButton variant="default">Default</EduxButton>
     <EduxButton variant="primary">Primary</EduxButton>
     <EduxButton variant="success">Success</EduxButton>
-    <EduxButton variant="neutral">Neutral</EduxButton>
     <EduxButton variant="warning">Warning</EduxButton>
     <EduxButton variant="danger">Danger</EduxButton>
   </>
@@ -77,7 +75,6 @@ Use the `outline` attribute to draw outlined buttons with transparent background
 <edux-button variant="default" outline>Default</edux-button>
 <edux-button variant="primary" outline>Primary</edux-button>
 <edux-button variant="success" outline>Success</edux-button>
-<edux-button variant="neutral" outline>Neutral</edux-button>
 <edux-button variant="warning" outline>Warning</edux-button>
 <edux-button variant="danger" outline>Danger</edux-button>
 ```
@@ -96,9 +93,6 @@ const App = () => (
     <EduxButton variant="success" outline>
       Success
     </EduxButton>
-    <EduxButton variant="neutral" outline>
-      Neutral
-    </EduxButton>
     <EduxButton variant="warning" outline>
       Warning
     </EduxButton>
@@ -109,37 +103,70 @@ const App = () => (
 );
 ```
 
-### Pill Buttons
-
-Use the `pill` attribute to give buttons rounded edges.
+### Circle Buttons
 
 ```html:preview
-<edux-button size="small" pill>Small</edux-button>
-<edux-button size="medium" pill>Medium</edux-button>
-<edux-button size="large" pill>Large</edux-button>
+<edux-button circle>
+  <slot name="label">
+    <edux-icon name="solid-play" library="heroicons" font-size="1.5em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button variant="danger" circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button outline circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button size="small" circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button size="large" circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></edux-icon>
+  </slot>
+</edux-button>
 ```
 
 ```jsx:react
 import EduxButton from '@shoelace-style/shoelace/dist/react/button';
 
-const App = () => (
+const = App = () => (
   <>
-    <EduxButton size="small" pill>
-      Small
-    </EduxButton>
-    <EduxButton size="medium" pill>
-      Medium
-    </EduxButton>
-    <EduxButton size="large" pill>
-      Large
-    </EduxButton>
+    <eduxButton circle>
+      <slot name="label">
+        <eduxIcon name="solid-play" library="heroicons" font-size="1.5em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton variant="danger" circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton outline circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton size="small" circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton size="large" circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></eduxIcon>
+      </slot>
+    </eduxButton>
   </>
-);
+)
+
 ```
-
-### Circle Buttons
-
-TODO
 
 ### Text Buttons
 
@@ -164,6 +191,34 @@ const App = () => (
     </EduxButton>
     <EduxButton variant="text" size="large">
       Text
+    </EduxButton>
+  </>
+);
+```
+
+### Page Link Buttons
+
+Use the `pagelink` variant to create text buttons that use bold text and a red circled arrow icon to indicate navigation to a new page. Links to external content (outside of the hosting domain) will render an arrow pointing to the upper right to indicate that the user will be leaving the hosting site.
+
+```html:preview
+<edux-button variant="pagelink" href="https://localhost/" target="_blank" size="small">Explore</edux-button>
+<edux-button variant="pagelink" href="https://localhost/" size="medium">Explore</edux-button>
+<edux-button variant="pagelink" href="https://example.com/" target="_blank" size="large">Explore</edux-button>
+```
+
+```jsx:react
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+
+const App = () => (
+  <>
+    <EduxButton variant="pagelink" href="https://localhost/" target="_blank" size="small">
+      Explore
+    </EduxButton>
+    <EduxButton variant="pagelink" href="https://localhost/" size="medium">
+      Explore
+    </EduxButton>
+    <EduxButton variant="pagelink" href="https://example.com/" target="_blank" size="large">
+      Explore
     </EduxButton>
   </>
 );
@@ -267,15 +322,41 @@ const App = () => (
 );
 ```
 
+### Shape
+
+Use the button `shape` attribute to override its radius. Useful for controlling the button's edge shape when it is next to an input form controls such as a drop-down list but not in a edux-button-group. The button will appear more integrated into input form controls such as drop-down lists, search fields, etc.
+
+```html:preview
+<edux-button shape="square-right">Square-right</edux-button>
+<edux-button shape="square">Square</edux-button>
+<edux-button shape="square-left">Square-left</edux-button>
+```
+
+```jsx:react
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+
+const App = () => (
+  <>
+    <EduxButton shape="square-right">
+      Small
+    </EduxButton>
+    <EduxButton shape="square">
+      Medium
+    </EduxButton>
+    <EduxButton shape="square-left">
+      Large
+    </EduxButton>
+  </>
+);
+```
+
 ### Loading
 
 Use the `loading` attribute to make a button busy. The width will remain the same as before, preventing adjacent elements from moving around.
 
 ```html:preview
 <edux-button variant="default" loading>Default</edux-button>
-<edux-button variant="primary" loading>Primary</edux-button>
 <edux-button variant="success" loading>Success</edux-button>
-<edux-button variant="neutral" loading>Neutral</edux-button>
 <edux-button variant="warning" loading>Warning</edux-button>
 <edux-button variant="danger" loading>Danger</edux-button>
 ```
@@ -288,14 +369,8 @@ const App = () => (
     <EduxButton variant="default" loading>
       Default
     </EduxButton>
-    <EduxButton variant="primary" loading>
-      Primary
-    </EduxButton>
     <EduxButton variant="success" loading>
       Success
-    </EduxButton>
-    <EduxButton variant="neutral" loading>
-      Neutral
     </EduxButton>
     <EduxButton variant="warning" loading>
       Warning
@@ -313,9 +388,7 @@ Use the `disabled` attribute to disable a button.
 
 ```html:preview
 <edux-button variant="default" disabled>Default</edux-button>
-<edux-button variant="primary" disabled>Primary</edux-button>
 <edux-button variant="success" disabled>Success</edux-button>
-<edux-button variant="neutral" disabled>Neutral</edux-button>
 <edux-button variant="warning" disabled>Warning</edux-button>
 <edux-button variant="danger" disabled>Danger</edux-button>
 ```
@@ -329,16 +402,8 @@ const App = () => (
       Default
     </EduxButton>
 
-    <EduxButton variant="primary" disabled>
-      Primary
-    </EduxButton>
-
     <EduxButton variant="success" disabled>
       Success
-    </EduxButton>
-
-    <EduxButton variant="neutral" disabled>
-      Neutral
     </EduxButton>
 
     <EduxButton variant="warning" disabled>
