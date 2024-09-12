@@ -1,27 +1,27 @@
 /* Search plugin */
 :root,
-:root.edux-theme-dark {
-    --docs-search-box-background: var(--edux-color-carbon-5);
+:root.terra-theme-dark {
+    --docs-search-box-background: var(--terra-color-carbon-5);
     --docs-search-box-border-width: 1px;
-    --docs-search-box-border-color: var(--edux-color-carbon-30);
-    --docs-search-box-color: var(--edux-color-carbon-60);
-    --docs-search-dialog-background: var(--edux-color-carbon-5);
+    --docs-search-box-border-color: var(--terra-color-carbon-30);
+    --docs-search-box-color: var(--terra-color-carbon-60);
+    --docs-search-dialog-background: var(--terra-color-carbon-5);
     --docs-search-border-width: var(--docs-border-width);
     --docs-search-border-color: var(--docs-border-color);
-    --docs-search-text-color: var(--edux-color-carbon-90);
-    --docs-search-text-color-muted: var(--edux-color-carbon-50);
-    --docs-search-font-weight-normal: var(--edux-font-weight-normal);
-    --docs-search-font-weight-semibold: var(--edux-font-weight-semibold);
+    --docs-search-text-color: var(--terra-color-carbon-90);
+    --docs-search-text-color-muted: var(--terra-color-carbon-50);
+    --docs-search-font-weight-normal: var(--terra-font-weight-normal);
+    --docs-search-font-weight-semibold: var(--terra-font-weight-semibold);
     --docs-search-border-radius: calc(2 * var(--docs-border-radius));
-    --docs-search-accent-color: var(--edux-color-nasa-blue);
-    --docs-search-icon-color: var(--edux-color-carbon-50);
-    --docs-search-icon-color-active: var(--edux-color-carbon-60);
+    --docs-search-accent-color: var(--terra-color-nasa-blue);
+    --docs-search-icon-color: var(--terra-color-carbon-50);
+    --docs-search-icon-color-active: var(--terra-color-carbon-60);
     --docs-search-shadow: var(--docs-shadow-x-large);
-    --docs-search-result-background-hover: var(--edux-color-carbon-10);
-    --docs-search-result-color-hover: var(--edux-color-carbon-90);
-    --docs-search-result-background-active: var(--edux-color-nasa-blue);
-    --docs-search-result-color-active: var(--edux-color-carbon-5);
-    --docs-search-focus-ring: var(--edux-focus-ring);
+    --docs-search-result-background-hover: var(--terra-color-carbon-10);
+    --docs-search-result-color-hover: var(--terra-color-carbon-90);
+    --docs-search-result-background-active: var(--terra-color-nasa-blue);
+    --docs-search-result-color-active: var(--terra-color-carbon-5);
+    --docs-search-focus-ring: var(--terra-focus-ring);
     --docs-search-overlay-background: rgb(0 0 0 / 0.33);
 }
 

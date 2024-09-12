@@ -31,20 +31,20 @@ export default css`
     }
 
     .planet {
-        fill: var(--edux-color-carbon-20);
+        fill: var(--terra-color-carbon-20);
         cx: 80px;
         cy: 80px;
         r: 50px;
     }
 
     .moon {
-        fill: var(--edux-color-nasa-blue);
+        fill: var(--terra-color-nasa-blue);
         r: 5.5px;
     }
 
     #orbit {
         /* total length of orbit ellipse = 298.2393493652344 */
-        stroke: var(--edux-color-nasa-blue);
+        stroke: var(--terra-color-nasa-blue);
         stroke-width: 2.5px;
         stroke-dasharray: 250 48;
         fill: none;
@@ -88,7 +88,7 @@ export default css`
     }
 
     .circular-progress circle.bg {
-        stroke: var(--edux-color-carbon-20);
+        stroke: var(--terra-color-carbon-20);
     }
 
     .circular-progress circle.fg {
@@ -96,7 +96,7 @@ export default css`
         transform-origin: var(--half-size) var(--half-size);
         stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
         transition: stroke-dasharray 0.3s linear 0s; /* Defines how --dash value changes to stroke-dasharray are animated */
-        stroke: var(--edux-color-nasa-blue);
+        stroke: var(--terra-color-nasa-blue);
     }
 
     .circular-progress.indeterminate circle.fg {

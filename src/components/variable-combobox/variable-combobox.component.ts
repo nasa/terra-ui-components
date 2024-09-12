@@ -298,9 +298,7 @@ export default class TerraVariableCombobox extends TerraElement {
             this.query !== TerraVariableCombobox.initialQuery
 
         return html`<search part="base" title="Search through the list.">
-            <label
-                for="combobox"
-                class=${this.hideLabel ? 'sr-only' : 'input-label'}
+            <label for="combobox" class=${this.hideLabel ? 'sr-only' : 'input-label'}
                 >${this.label}</label
             >
             <div class="search-input-group">
@@ -323,7 +321,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
                 />
-                <edux-button
+                <terra-button
                     shape="square-left"
                     aria-controls="listbox"
                     aria-expanded=${this.isExpanded}
@@ -354,7 +352,7 @@ export default class TerraVariableCombobox extends TerraElement {
                                   stroke-width="3"
                               ></circle>
                           </svg>`}
-                </edux-button>
+                </terra-button>
 
                 ${this.hideHelp
                     ? nothing

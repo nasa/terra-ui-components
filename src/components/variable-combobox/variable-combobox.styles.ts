@@ -13,9 +13,9 @@ export default css`
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh + var(--terra-block-size, 2.1875rem));
         display: block;
-        font-family: var(--edux-font-family--public-sans);
-        height: var(--edux-block-size, var(--host-height));
-        inline-size: var(--edux-inline-size, 100%);
+        font-family: var(--terra-font-family--public-sans);
+        height: var(--terra-block-size, var(--host-height));
+        inline-size: var(--terra-inline-size, 100%);
         position: relative;
         z-index: 10;
     }
@@ -51,7 +51,7 @@ export default css`
     }
 
     .combobox {
-        block-size: var(--edux-block-size, 2.25rem);
+        block-size: var(--terra-block-size, 2.25rem);
         flex: 1 1 auto;
         padding-inline: 0.5rem;
         transition:
@@ -60,16 +60,16 @@ export default css`
     }
 
     .combobox::placeholder {
-        color: var(--edux-color-carbon-60);
+        color: var(--terra-color-carbon-60);
     }
 
     .combobox:focus {
-        border-color: var(--edux-color-carbon-40);
+        border-color: var(--terra-color-carbon-40);
         outline: 0;
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
-        border-color: var(--edux-color-carbon-30);
+        border-color: var(--terra-color-carbon-30);
     }
 
     .combobox-button {
@@ -109,10 +109,10 @@ export default css`
     }
 
     .search-help {
-        color: var(--edux-color-carbon-60);
+        color: var(--terra-color-carbon-60);
         flex: 1 1 100%;
-        font-size: var(--edux-font-size-small);
-        line-height: var(--edux-line-height-normal);
+        font-size: var(--terra-font-size-small);
+        line-height: var(--terra-line-height-normal);
         margin-block: 0;
         position: absolute;
         bottom: -10px;
@@ -124,8 +124,8 @@ export default css`
     }
 
     .search-results {
-        background-color: var(--edux-color-spacesuit-white);
-        block-size: calc(33vh - var(--edux-block-size, 2.1875rem));
+        background-color: var(--terra-color-spacesuit-white);
+        block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
         contain: strict;
@@ -150,7 +150,7 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--edux-color-carbon-40);
+        border-color: var(--terra-color-carbon-40);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;
@@ -158,14 +158,14 @@ export default css`
     }
 
     .search-results .updating {
-        font-size: var(--edux-font-size-x-large);
+        font-size: var(--terra-font-size-x-large);
         padding-block: 4rem;
         text-align: center;
     }
 
     .search-results .error {
-        color: var(--edux-color-nasa-red);
-        font-family: var(--edux-font-family--dm-mono);
+        color: var(--terra-color-nasa-red);
+        font-family: var(--terra-font-family--dm-mono);
         padding-block: 2rem;
     }
 
@@ -179,7 +179,7 @@ export default css`
     }
 
     .group-title {
-        font-family: var(--edux-font-family--inter);
+        font-family: var(--terra-font-family--inter);
         font-weight: 700;
         margin-block: 0;
     }

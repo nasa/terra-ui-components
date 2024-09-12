@@ -4,7 +4,7 @@
 
 :root,
 :host,
-.edux-theme-horizon {
+.terra-theme-horizon {
     color-scheme: normal light;
 
     /* Horizon Design System */
@@ -16,95 +16,95 @@
      * logical ways throughout the site to highlight actions when they are important. We use 
      * a restricted palette to give attention and hierarchy to our content without distraction.
      */
-    --edux-color-carbon-black: hsla(0, 0%, 0%, 1);
-    --edux-color-spacesuit-white: hsla(0, 100%, 100%, 1);
-    --edux-color-nasa-red: hsla(3, 91%, 59%, 1);
-    --edux-color-nasa-blue: hsla(217, 78%, 50%, 1);
+    --terra-color-carbon-black: hsla(0, 0%, 0%, 1);
+    --terra-color-spacesuit-white: hsla(0, 100%, 100%, 1);
+    --terra-color-nasa-red: hsla(3, 91%, 59%, 1);
+    --terra-color-nasa-blue: hsla(217, 78%, 50%, 1);
 
     /* Extended Palette 
      * The extended palette consists of a tint and shade for the brand colors in the primary palette. 
      * Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible. 
      */
-    --edux-color-nasa-red-tint: hsla(3, 100%, 66%, 1);
-    --edux-color-nasa-red-shade: hsla(357, 99%, 36%, 1);
-    --edux-color-nasa-blue-tint: hsla(212, 100%, 58%, 1);
-    --edux-color-nasa-blue-shade: hsla(218, 86%, 31%, 1);
+    --terra-color-nasa-red-tint: hsla(3, 100%, 66%, 1);
+    --terra-color-nasa-red-shade: hsla(357, 99%, 36%, 1);
+    --terra-color-nasa-blue-tint: hsla(212, 100%, 58%, 1);
+    --terra-color-nasa-blue-shade: hsla(218, 86%, 31%, 1);
 
     /* Additional Colors 
      * International Orange and Active Green are colors that are used sparingly and intentionally.
      */
-    --edux-color-international-orange: hsla(23, 83%, 53%, 1);
-    --edux-color-international-orange-tint: hsl(23, 82%, 61%);
-    --edux-color-international-orange-shade: hsla(24, 90%, 32%, 1);
-    --edux-color-active-green: hsla(145, 67%, 57%, 1);
-    --edux-color-active-green-tint: hsl(145, 52%, 64%, 1);
-    --edux-color-active-green-shade: hsla(144, 75%, 38%, 1);
+    --terra-color-international-orange: hsla(23, 83%, 53%, 1);
+    --terra-color-international-orange-tint: hsl(23, 82%, 61%);
+    --terra-color-international-orange-shade: hsla(24, 90%, 32%, 1);
+    --terra-color-active-green: hsla(145, 67%, 57%, 1);
+    --terra-color-active-green-tint: hsl(145, 52%, 64%, 1);
+    --terra-color-active-green-shade: hsla(144, 75%, 38%, 1);
 
     /* Neutrals
      * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
      * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
      */
-    --edux-color-carbon-90: hsla(240, 8%, 10%, 1);
-    --edux-color-carbon-80: hsla(240, 4%, 19%, 1);
-    --edux-color-carbon-70: hsla(240, 2%, 27%, 1);
-    --edux-color-carbon-60: hsla(240, 2%, 35%, 1);
-    --edux-color-carbon-50: hsla(240, 1%, 47%, 1);
-    --edux-color-carbon-40: hsla(240, 2%, 59%, 1);
-    --edux-color-carbon-30: hsla(240, 1%, 73%, 1);
-    --edux-color-carbon-20: hsla(0, 0%, 82%, 1);
-    --edux-color-carbon-10: hsla(0, 0%, 89%, 1);
-    --edux-color-carbon-5: hsl(0, 0%, 96%, 1);
+    --terra-color-carbon-90: hsla(240, 8%, 10%, 1);
+    --terra-color-carbon-80: hsla(240, 4%, 19%, 1);
+    --terra-color-carbon-70: hsla(240, 2%, 27%, 1);
+    --terra-color-carbon-60: hsla(240, 2%, 35%, 1);
+    --terra-color-carbon-50: hsla(240, 1%, 47%, 1);
+    --terra-color-carbon-40: hsla(240, 2%, 59%, 1);
+    --terra-color-carbon-30: hsla(240, 1%, 73%, 1);
+    --terra-color-carbon-20: hsla(0, 0%, 82%, 1);
+    --terra-color-carbon-10: hsla(0, 0%, 89%, 1);
+    --terra-color-carbon-5: hsl(0, 0%, 96%, 1);
 
     /* Button BG colors TESTED for AA Accessibility of large text & graphical objects.
     /* HDS colors failed tests when using white text on buttons. If we use dark text we can use original HDS colors.
      */
-    --edux-color-success-green: hsl(145, 67%, 40%);
-    --edux-color-success-green-hover: hsl(145, 67%, 30%);
-    --edux-color-success-green-focus: hsl(145, 52%, 54%);
+    --terra-color-success-green: hsl(145, 67%, 40%);
+    --terra-color-success-green-hover: hsl(145, 67%, 30%);
+    --terra-color-success-green-focus: hsl(145, 52%, 54%);
 
     /* Default Button Color - not a defined color in the HDS theme
      */
-    --edux-color-default-gray: hsla(240, 13%, 66%, 1);
-    --edux-color-default-gray-tint: hsla(240, 2%, 59%, 1);
-    --edux-color-default-gray-shade: hsl(240, 9%, 40%, 1);
+    --terra-color-default-gray: hsla(240, 13%, 66%, 1);
+    --terra-color-default-gray-tint: hsla(240, 2%, 59%, 1);
+    --terra-color-default-gray-shade: hsl(240, 9%, 40%, 1);
 
     /* HDS button styles
     */
-    --edux-button-border-width: 1px;
+    --terra-button-border-width: 1px;
 
-    --edux-button-font-size-small: var(--edux-font-size-x-small);
-    --edux-button-font-size-medium: var(--edux-font-size-small);
-    --edux-button-font-size-large: var(--edux-font-size-medium);
+    --terra-button-font-size-small: var(--terra-font-size-x-small);
+    --terra-button-font-size-medium: var(--terra-font-size-small);
+    --terra-button-font-size-large: var(--terra-font-size-medium);
 
-    --edux-button-height-small: 1.875rem; /* 30px */
-    --edux-button-height-medium: 2.25rem; /* 36px */
-    --edux-button-height-large: 3rem; /* 48px */
+    --terra-button-height-small: 1.875rem; /* 30px */
+    --terra-button-height-medium: 2.25rem; /* 36px */
+    --terra-button-height-large: 3rem; /* 48px */
 
-    --edux-button-outline-text-color: var(--edux-color-carbon-black);
-    --edux-button-text-text-color: var(--edux-color-nasa-blue);
-    --edux-button-text-text-color-hover: var(--edux-color-nasa-blue-shade);
-    --edux-button-page-link-text-color: var(--edux-color-carbon-black);
+    --terra-button-outline-text-color: var(--terra-color-carbon-black);
+    --terra-button-text-text-color: var(--terra-color-nasa-blue);
+    --terra-button-text-text-color-hover: var(--terra-color-nasa-blue-shade);
+    --terra-button-page-link-text-color: var(--terra-color-carbon-black);
 
     /*
     * Border radii
     */
 
-    --edux-border-radius-small: 0.125rem; /* 2px */
-    --edux-border-radius-medium: 0.25rem; /* 4px */
-    --edux-border-radius-large: 0.5rem; /* 8px */
-    --edux-border-radius-x-large: 1rem; /* 16px */
+    --terra-border-radius-small: 0.125rem; /* 2px */
+    --terra-border-radius-medium: 0.25rem; /* 4px */
+    --terra-border-radius-large: 0.5rem; /* 8px */
+    --terra-border-radius-x-large: 1rem; /* 16px */
 
     /* Icon sizes */
-    --edux-icon-small: 1.2rem; /* 19px */
-    --edux-icon-medium: 1.75rem; /* 50px */
-    --edux-icon-large: 2.2rem; /* 68px */
-    --edux-icon-x-large: 3rem; /* 76px */
+    --terra-icon-small: 1.2rem; /* 19px */
+    --terra-icon-medium: 1.75rem; /* 50px */
+    --terra-icon-large: 2.2rem; /* 68px */
+    --terra-icon-x-large: 3rem; /* 76px */
 
     /*
     * Theme Tokens
     */
 
-    --edux-border-radius-circle: 50%;
+    --terra-border-radius-circle: 50%;
 
     /*
    * Elevations
@@ -146,9 +146,9 @@
    */
 
     /* Fonts */
-    --edux-font-family--inter: 'Inter', sans-serif;
-    --edux-font-family--public-sans: 'Public Sans', sans-serif;
-    --edux-font-family--dm-mono: 'DM Mono', monospace;
+    --terra-font-family--inter: 'Inter', sans-serif;
+    --terra-font-family--public-sans: 'Public Sans', sans-serif;
+    --terra-font-family--dm-mono: 'DM Mono', monospace;
 
     /* Font sizes */
     --terra-font-size-2x-small: 0.625rem; /* 10px */
@@ -162,10 +162,10 @@
     --terra-font-size-4x-large: 4.5rem; /* 72px */
 
     /* Font weights */
-    --edux-font-weight-light: 300;
-    --edux-font-weight-normal: 400;
-    --edux-font-weight-semibold: 600;
-    --edux-font-weight-bold: 700;
+    --terra-font-weight-light: 300;
+    --terra-font-weight-normal: 400;
+    --terra-font-weight-semibold: 600;
+    --terra-font-weight-bold: 700;
 
     /* Letter spacings */
     --terra-letter-spacing-denser: -0.03em;
@@ -188,11 +188,11 @@
         181.818%; 
     */
 
-    --edux-line-height-denser: 1;
-    --edux-line-height-dense: 1.4;
-    --edux-line-height-normal: 1.8;
-    --edux-line-height-loose: 2.2;
-    --edux-line-height-looser: 2.6;
+    --terra-line-height-denser: 1;
+    --terra-line-height-dense: 1.4;
+    --terra-line-height-normal: 1.8;
+    --terra-line-height-loose: 2.2;
+    --terra-line-height-looser: 2.6;
 
     /* Focus rings */
     --terra-focus-ring-color: var(--terra-color-primary-600);
@@ -207,88 +207,88 @@
    */
 
     /* Inputs */
-    --edux-input-height-small: 1.875rem; /* 30px */
-    --edux-input-height-medium: 2.5rem; /* 40px */
-    --edux-input-height-large: 3.125rem; /* 50px */
+    --terra-input-height-small: 1.875rem; /* 30px */
+    --terra-input-height-medium: 2.5rem; /* 40px */
+    --terra-input-height-large: 3.125rem; /* 50px */
 
-    --edux-input-font-family: var(--edux-font-family--public-sans);
-    --edux-input-font-size: var(--edux-font-size-small);
-    --edux-input-color: hsla(
+    --terra-input-font-family: var(--terra-font-family--public-sans);
+    --terra-input-font-size: var(--terra-font-size-small);
+    --terra-input-color: hsla(
         240,
         4%,
         19%,
         1
     ); /* Use same colorfor both light & dark theme - don't tie to Neutrals scale */
-    --edux-input-font-weight: var(--edux-font-weight-normal);
-    --edux-input-line-height: var(--edux-line-height-loose);
-    --edux-input-border-color: var(--edux-color-carbon-20);
-    --edux-input-background-color: var(--edux-color-spacesuit-white);
-    --edux-input-border-width: 2px;
-    --edux-input-border-radius: var(--edux-border-radius-medium);
+    --terra-input-font-weight: var(--terra-font-weight-normal);
+    --terra-input-line-height: var(--terra-line-height-loose);
+    --terra-input-border-color: var(--terra-color-carbon-20);
+    --terra-input-background-color: var(--terra-color-spacesuit-white);
+    --terra-input-border-width: 2px;
+    --terra-input-border-radius: var(--terra-border-radius-medium);
 
-    --edux-input-background-color-hover: var(--edux-input-background-color);
-    --edux-input-background-color-focus: var(--edux-input-background-color);
-    --edux-input-background-color-disabled: var(--edux-color-carbon-10);
-    --edux-input-border-color-hover: var(--edux-color-carbon-40);
-    --edux-input-border-color-focus: var(--edux-color-primary-50);
-    --edux-input-border-color-disabled: var(--edux-color-carbon-30);
+    --terra-input-background-color-hover: var(--terra-input-background-color);
+    --terra-input-background-color-focus: var(--terra-input-background-color);
+    --terra-input-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-input-border-color-hover: var(--terra-color-carbon-40);
+    --terra-input-border-color-focus: var(--terra-color-primary-50);
+    --terra-input-border-color-disabled: var(--terra-color-carbon-30);
 
-    --edux-input-required-content: '*';
-    --edux-input-required-content-offset: -2px;
-    --edux-input-required-content-color: var(--edux-input-label-color);
+    --terra-input-required-content: '*';
+    --terra-input-required-content-offset: -2px;
+    --terra-input-required-content-color: var(--terra-input-label-color);
 
-    --edux-input-border-radius-small: var(--edux-border-radius-medium);
-    --edux-input-border-radius-medium: var(--edux-border-radius-medium);
-    --edux-input-border-radius-large: var(--edux-border-radius-medium);
+    --terra-input-border-radius-small: var(--terra-border-radius-medium);
+    --terra-input-border-radius-medium: var(--terra-border-radius-medium);
+    --terra-input-border-radius-large: var(--terra-border-radius-medium);
 
-    --edux-input-font-weight: var(--edux-font-weight-normal);
-    --edux-input-font-size-small: var(--edux-font-size-small);
-    --edux-input-font-size-medium: var(--edux-font-size-medium);
-    --edux-input-font-size-large: var(--edux-font-size-large);
-    --edux-input-letter-spacing: var(--edux-letter-spacing-normal);
+    --terra-input-font-weight: var(--terra-font-weight-normal);
+    --terra-input-font-size-small: var(--terra-font-size-small);
+    --terra-input-font-size-medium: var(--terra-font-size-medium);
+    --terra-input-font-size-large: var(--terra-font-size-large);
+    --terra-input-letter-spacing: var(--terra-letter-spacing-normal);
 
-    --edux-input-color-hover: var(--edux-color-carbon-70);
-    --edux-input-color-focus: var(--edux-color-carbon-70);
-    --edux-input-color-disabled: var(--edux-color-carbon-90);
-    --edux-input-icon-color: var(--edux-color-carbon-50);
-    --edux-input-icon-color-hover: var(--edux-color-carbon-60);
-    --edux-input-icon-color-focus: var(--edux-color-carbon-60);
-    --edux-input-placeholder-color: var(--edux-color-carbon-50);
-    --edux-input-placeholder-color-disabled: var(--edux-color-carbon-60);
-    --edux-input-spacing-small: var(--edux-spacing-small);
-    --edux-input-spacing-medium: var(--edux-spacing-medium);
-    --edux-input-spacing-large: var(--edux-spacing-large);
+    --terra-input-color-hover: var(--terra-color-carbon-70);
+    --terra-input-color-focus: var(--terra-color-carbon-70);
+    --terra-input-color-disabled: var(--terra-color-carbon-90);
+    --terra-input-icon-color: var(--terra-color-carbon-50);
+    --terra-input-icon-color-hover: var(--terra-color-carbon-60);
+    --terra-input-icon-color-focus: var(--terra-color-carbon-60);
+    --terra-input-placeholder-color: var(--terra-color-carbon-50);
+    --terra-input-placeholder-color-disabled: var(--terra-color-carbon-60);
+    --terra-input-spacing-small: var(--terra-spacing-small);
+    --terra-input-spacing-medium: var(--terra-spacing-medium);
+    --terra-input-spacing-large: var(--terra-spacing-large);
 
-    --edux-input-focus-ring-color: hsl(198.6 88.7% 48.4% / 40%);
-    --edux-input-focus-ring-offset: 0;
+    --terra-input-focus-ring-color: hsl(198.6 88.7% 48.4% / 40%);
+    --terra-input-focus-ring-offset: 0;
 
-    --edux-input-filled-background-color: var(--edux-color-carbon-10);
-    --edux-input-filled-background-color-hover: var(--edux-color-carbon-10);
-    --edux-input-filled-background-color-focus: var(--edux-color-carbon-10);
-    --edux-input-filled-background-color-disabled: var(--edux-color-carbon-10);
-    --edux-input-filled-color: var(--edux-color-carbon-80);
-    --edux-input-filled-color-hover: var(--edux-color-carbon-80);
-    --edux-input-filled-color-focus: var(--edux-color-carbon-70);
-    --edux-input-filled-color-disabled: var(--edux-color-carbon-80);
+    --terra-input-filled-background-color: var(--terra-color-carbon-10);
+    --terra-input-filled-background-color-hover: var(--terra-color-carbon-10);
+    --terra-input-filled-background-color-focus: var(--terra-color-carbon-10);
+    --terra-input-filled-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-input-filled-color: var(--terra-color-carbon-80);
+    --terra-input-filled-color-hover: var(--terra-color-carbon-80);
+    --terra-input-filled-color-focus: var(--terra-color-carbon-70);
+    --terra-input-filled-color-disabled: var(--terra-color-carbon-80);
 
     /* Labels */
 
-    --edux-input-label-font-family: var(--edux-font-family--inter);
-    --edux-input-label-font-size: var(--edux-font-size-small);
-    --edux-input-label-color: var(--edux-color-carbon-80);
-    --edux-input-label-line-weight: var(var(--edux-font-weight-semibold));
-    --edux-input-label-line-height: var(--edux-line-height-looser);
+    --terra-input-label-font-family: var(--terra-font-family--inter);
+    --terra-input-label-font-size: var(--terra-font-size-small);
+    --terra-input-label-color: var(--terra-color-carbon-80);
+    --terra-input-label-line-weight: var(var(--terra-font-weight-semibold));
+    --terra-input-label-line-height: var(--terra-line-height-looser);
 
     /* Map Component */
 
-    --edux-map-background-color: var(--edux-color-carbon-5);
-    --edux-map-border-color: var(--edux-color-carbon-20);
+    --terra-map-background-color: var(--terra-color-carbon-5);
+    --terra-map-border-color: var(--terra-color-carbon-20);
 
     /* Help text */
-    --edux-input-help-text-font-size-small: var(--edux-font-size-x-small);
-    --edux-input-help-text-font-size-medium: var(--edux-font-size-small);
-    --edux-input-help-text-font-size-large: var(--edux-font-size-medium);
-    --edux-input-help-text-color: var(--edux-color-carbon-50);
+    --terra-input-help-text-font-size-small: var(--terra-font-size-x-small);
+    --terra-input-help-text-font-size-medium: var(--terra-font-size-small);
+    --terra-input-help-text-font-size-large: var(--terra-font-size-medium);
+    --terra-input-help-text-color: var(--terra-color-carbon-50);
 
     /* Toggles (checkboxes, radios, switches) */
     --terra-toggle-size-small: 0.875rem; /* 14px */
@@ -305,23 +305,24 @@
    * Panels
    */
 
-    --edux-panel-background-color: var(--edux-color-spacesuit-white);
-    --edux-panel-border-color: var(--edux-color-carbon-20);
-    --edux-panel-border-width: 1px;
+    --terra-panel-background-color: var(--terra-color-spacesuit-white);
+    --terra-panel-border-color: var(--terra-color-carbon-20);
+    --terra-panel-border-width: 1px;
 
     /*
    * Tooltips
    */
 
-    --edux-tooltip-border-radius: var(--edux-border-radius-medium);
-    --edux-tooltip-background-color: var(--edux-color-carbon-80);
-    --edux-tooltip-color: var(--edux-color-spacesuit-white);
-    --edux-tooltip-font-family: var(--edux-font-family--public-sans);
-    --edux-tooltip-font-weight: var(--edux-font-weight-normal);
-    --edux-tooltip-font-size: var(--edux-font-size-small);
-    --edux-tooltip-line-height: var(--edux-line-height-looser);
-    --edux-tooltip-padding: var(--edux-spacing-2x-small) var(--edux-spacing-x-small);
-    --edux-tooltip-arrow-size: 6px;
+    --terra-tooltip-border-radius: var(--terra-border-radius-medium);
+    --terra-tooltip-background-color: var(--terra-color-carbon-80);
+    --terra-tooltip-color: var(--terra-color-spacesuit-white);
+    --terra-tooltip-font-family: var(--terra-font-family--public-sans);
+    --terra-tooltip-font-weight: var(--terra-font-weight-normal);
+    --terra-tooltip-font-size: var(--terra-font-size-small);
+    --terra-tooltip-line-height: var(--terra-line-height-looser);
+    --terra-tooltip-padding: var(--terra-spacing-2x-small)
+        var(--terra-spacing-x-small);
+    --terra-tooltip-arrow-size: 6px;
 
     /*
    * Z-indexes
