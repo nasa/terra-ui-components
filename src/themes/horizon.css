@@ -218,7 +218,7 @@
         4%,
         19%,
         1
-    ); /* Use same colorfor both light & dark theme - don't tie to Neutrals scale */
+    ); /* Use same color for both light & dark theme - don't tie to Neutrals scale */
     --terra-input-font-weight: var(--terra-font-weight-normal);
     --terra-input-line-height: var(--terra-line-height-loose);
     --terra-input-border-color: var(--terra-color-carbon-20);

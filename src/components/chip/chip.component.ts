@@ -26,7 +26,6 @@ export default class TerraChip extends TerraElement {
     render() {
         return html`
             <div
-                id="chip"
                 class="${classMap({
                     // Sizes
                     'chip--small': this.size === 'small',
@@ -61,7 +60,7 @@ export default class TerraChip extends TerraElement {
                     >
                         <path
                             d="M 227 56.036 H 265 V 227.037 H 436 V 265.036 H 265 V 436.036 H 227 V 265.036 H 56 V 227.037 H 227 Z"
-                            style="fill: #909090; paint-order: fill; fill-rule: nonzero; stroke-width: 0px; transform-origin: 246px 246.036px;"
+                            style="paint-order: fill; fill-rule: nonzero; stroke-width: 0px; transform-origin: 246px 246.036px;"
                             transform="matrix(0.707107007504, 0.707107007504, -0.707107007504, 0.707107007504, -9.98393e-7, -0.000026419743)"
                         ></path>
                     </svg>

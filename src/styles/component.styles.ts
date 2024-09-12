@@ -311,7 +311,8 @@ export default css`
         text-decoration-thickness: 0.05em;
         text-underline-offset: 0.25rem;
         color: var(--terra-color-carbon-60);
-        
+    }
+
     /* UTILITY CSS */
     .sr-only {
         block-size: 1px;

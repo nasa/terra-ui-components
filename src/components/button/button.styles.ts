@@ -15,7 +15,7 @@ export default css`
         width: 100%;
         border-style: solid;
         border-width: var(--terra-button-border-width);
-        font-family: var(--terra-font-display);
+        font-family: var(--terra-font-family--inter);
         font-weight: var(--terra-font-weight-bold);
         text-decoration: none;
         user-select: none;

@@ -4,37 +4,49 @@ export default css`
     .chip {
         display: inline-flex;
         flex-direction: row;
-        background-color: #ffffff;
-        border: blue;
+        background-color: var(--edux-color-carbon-5);
+        border: 1.5px solid var(--edux-color-nasa-blue);
         cursor: default;
-        outline: #0090f0;
-        outline-style: solid;
-        outline-width: 2px;
-        border-radius: 2px;
+        border-radius: var(--edux-border-radius-medium);
         padding: 0;
         margin: 5px;
-        font-weight: bold;
-        color: #909090;
-        font-family: 'Open Sans', sans-serif;
+        color: var(--edux-color-carbon-50);
+        font-family: var(--edux-font-family--inter);
+        font-weight: var(--edux-font-weight-bold);
         white-space: nowrap;
         align-items: center;
         vertical-align: middle;
         text-decoration: none;
         justify-content: center;
     }
-    .chip--small {
-        height: 22px;
-        font-size: 11px;
+
+    .chip:hover {
+        color: var(--edux-color-carbon-90);
     }
+
+    .chip:focus {
+        text-decoration: underline;
+        text-decoration-style: dotted;
+    }
+
+    .chip--small {
+        height: auto;
+        min-height: 1.375rem;
+        font-size: var(--edux-font-size-x-small);
+    }
+
     .chip--medium {
-        height: 30px;
-        font-size: 15px;
+        height: auto;
+        min-height: 1.875rem;
+        font-size: var(--edux-font-size-small);
     }
 
     .chip--large {
-        height: 38px;
-        font-size: 20px;
+        height: auto;
+        min-height: 2.5rem;
+        font-size: var(--edux-font-size-large);
     }
+
     .chip-content {
         cursor: inherit;
         display: flex;
@@ -42,34 +54,39 @@ export default css`
         user-select: none;
         white-space: nowrap;
     }
+
     .chip-content--small {
         padding-left: 8px;
         padding-right: 8px;
     }
+
     .chip-content--medium {
         padding-left: 12px;
         padding-right: 12px;
     }
+
     .chip-content--large {
         padding-left: 15px;
         padding-right: 15px;
     }
+
     .chip-svg {
-        color: #888888;
         cursor: pointer;
         height: auto;
-        fill: currentColor;
+        fill: var(--edux-color-carbon-50);
         display: inline-block;
         transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
         user-select: none;
         flex-shrink: 0;
     }
+
     .chip-svg--small {
         margin: 3px 3px 0px -6px;
         width: 0.75em;
         height: 0.75em;
         font-size: 20px;
     }
+
     .chip-svg--medium {
         margin: 4px 4px 0px -8px;
         width: 1em;
@@ -83,10 +100,11 @@ export default css`
         height: 1.4em;
         font-size: 24px;
     }
-    .chip-svg:hover {
-        visibility: 'visible';
-        filter: invert(100%);
+
+    .chip:hover .chip-svg {
+        fill: var(--edux-color-carbon-90);
     }
+
     .chip-close {
         padding: 0;
         border: 0;
