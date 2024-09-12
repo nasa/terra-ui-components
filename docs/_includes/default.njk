@@ -34,7 +34,6 @@
         <meta property="og:image" content="{{ assetUrl(meta.image, true) }}"/>
 
         {# Components #}
-        <link rel="stylesheet" href="/dist/themes/horizon.css"/>
         <script type="module" src="/dist/terra-ui-components-autoloader.js"></script>
 
         {# Set the initial theme and menu states here to prevent flashing #}
@@ -63,7 +62,6 @@
         <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Inter&family=Public+Sans&display=swap" rel="stylesheet">
 
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/themes/light.css"/>
         <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"></script>
     </head>
     <body>
@@ -86,6 +84,18 @@
             <a href="https://github.com/terra-ui/components" title="View Terra UI Components on GitHub">
                 <sl-icon name="github"></sl-icon>
             </a>
+            <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
+                <edux-button slot="trigger" size="large" variant="text" caret="" title="Press \ to toggle" data-optional="" data-valid="" data-user-valid="">
+                    <sl-icon class="only-light" name="sun-fill" aria-hidden="true" library="default"></sl-icon>
+                    <sl-icon class="only-dark" name="moon-fill" aria-hidden="true" library="default"></sl-icon>
+                </edux-button>
+                <sl-menu role="menu">
+                    <sl-menu-item type="checkbox" value="light" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Light</sl-menu-item>
+                    <sl-menu-item type="checkbox" value="dark" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Dark</sl-menu-item>
+                    <sl-divider role="separator" aria-orientation="horizontal"></sl-divider>
+                    <sl-menu-item type="checkbox" value="auto" tabindex="0" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">System</sl-menu-item>
+                </sl-menu>
+            </sl-dropdown>
         </div>
 
         <aside id="sidebar" data-preserve-scroll>

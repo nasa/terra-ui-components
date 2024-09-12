@@ -139,7 +139,7 @@
                 )
         ) {
             event.preventDefault()
-            setTheme('horizon')
+            setTheme(isDark() ? 'light' : 'dark');
         }
     })
 

@@ -24,12 +24,11 @@ const App = () => <TerraButton>Button</TerraButton>;
 Use the `variant` attribute to set the button's variant.
 
 ```html:preview
-<terra-button variant="default">Default</terra-button>
-<terra-button variant="primary">Primary</terra-button>
-<terra-button variant="success">Success</terra-button>
-<terra-button variant="neutral">Neutral</terra-button>
-<terra-button variant="warning">Warning</terra-button>
-<terra-button variant="danger">Danger</terra-button>
+<edux-button variant="default">Default</edux-button>
+<edux-button variant="primary">Primary</edux-button>
+<edux-button variant="success">Success</edux-button>
+<edux-button variant="warning">Warning</edux-button>
+<edux-button variant="danger">Danger</edux-button>
 ```
 
 ```jsx:react
@@ -37,12 +36,11 @@ import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const App = () => (
   <>
-    <TerraButton variant="default">Default</TerraButton>
-    <TerraButton variant="primary">Primary</TerraButton>
-    <TerraButton variant="success">Success</TerraButton>
-    <TerraButton variant="neutral">Neutral</TerraButton>
-    <TerraButton variant="warning">Warning</TerraButton>
-    <TerraButton variant="danger">Danger</TerraButton>
+    <EduxButton variant="default">Default</EduxButton>
+    <EduxButton variant="primary">Primary</EduxButton>
+    <EduxButton variant="success">Success</EduxButton>
+    <EduxButton variant="warning">Warning</EduxButton>
+    <EduxButton variant="danger">Danger</EduxButton>
   </>
 );
 ```
@@ -74,12 +72,11 @@ const App = () => (
 Use the `outline` attribute to draw outlined buttons with transparent backgrounds.
 
 ```html:preview
-<terra-button variant="default" outline>Default</terra-button>
-<terra-button variant="primary" outline>Primary</terra-button>
-<terra-button variant="success" outline>Success</terra-button>
-<terra-button variant="neutral" outline>Neutral</terra-button>
-<terra-button variant="warning" outline>Warning</terra-button>
-<terra-button variant="danger" outline>Danger</terra-button>
+<edux-button variant="default" outline>Default</edux-button>
+<edux-button variant="primary" outline>Primary</edux-button>
+<edux-button variant="success" outline>Success</edux-button>
+<edux-button variant="warning" outline>Warning</edux-button>
+<edux-button variant="danger" outline>Danger</edux-button>
 ```
 
 ```jsx:react
@@ -95,11 +92,8 @@ const App = () => (
     </TerraButton>
     <TerraButton variant="success" outline>
       Success
-    </TerraButton>
-    <TerraButton variant="neutral" outline>
-      Neutral
-    </TerraButton>
-    <TerraButton variant="warning" outline>
+    </EduxButton>
+    <EduxButton variant="warning" outline>
       Warning
     </TerraButton>
     <TerraButton variant="danger" outline>
@@ -109,37 +103,70 @@ const App = () => (
 );
 ```
 
-### Pill Buttons
-
-Use the `pill` attribute to give buttons rounded edges.
+### Circle Buttons
 
 ```html:preview
-<terra-button size="small" pill>Small</terra-button>
-<terra-button size="medium" pill>Medium</terra-button>
-<terra-button size="large" pill>Large</terra-button>
+<edux-button circle>
+  <slot name="label">
+    <edux-icon name="solid-play" library="heroicons" font-size="1.5em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button variant="danger" circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button outline circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button size="small" circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></edux-icon>
+  </slot>
+</edux-button>
+<edux-button size="large" circle>
+  <slot name="label">
+    <edux-icon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></edux-icon>
+  </slot>
+</edux-button>
 ```
 
 ```jsx:react
 import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
-const App = () => (
+const = App = () => (
   <>
-    <TerraButton size="small" pill>
-      Small
-    </TerraButton>
-    <TerraButton size="medium" pill>
-      Medium
-    </TerraButton>
-    <TerraButton size="large" pill>
-      Large
-    </TerraButton>
+    <eduxButton circle>
+      <slot name="label">
+        <eduxIcon name="solid-play" library="heroicons" font-size="1.5em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton variant="danger" circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton outline circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton size="small" circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></eduxIcon>
+      </slot>
+    </eduxButton>
+    <eduxButton size="large" circle>
+      <slot name="label">
+        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></eduxIcon>
+      </slot>
+    </eduxButton>
   </>
-);
+)
+
 ```
-
-### Circle Buttons
-
-TODO
 
 ### Text Buttons
 
@@ -165,6 +192,34 @@ const App = () => (
     <TerraButton variant="text" size="large">
       Text
     </TerraButton>
+  </>
+);
+```
+
+### Page Link Buttons
+
+Use the `pagelink` variant to create text buttons that use bold text and a red circled arrow icon to indicate navigation to a new page. Links to external content (outside of the hosting domain) will render an arrow pointing to the upper right to indicate that the user will be leaving the hosting site.
+
+```html:preview
+<edux-button variant="pagelink" href="https://localhost/" target="_blank" size="small">Explore</edux-button>
+<edux-button variant="pagelink" href="https://localhost/" size="medium">Explore</edux-button>
+<edux-button variant="pagelink" href="https://example.com/" target="_blank" size="large">Explore</edux-button>
+```
+
+```jsx:react
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+
+const App = () => (
+  <>
+    <EduxButton variant="pagelink" href="https://localhost/" target="_blank" size="small">
+      Explore
+    </EduxButton>
+    <EduxButton variant="pagelink" href="https://localhost/" size="medium">
+      Explore
+    </EduxButton>
+    <EduxButton variant="pagelink" href="https://example.com/" target="_blank" size="large">
+      Explore
+    </EduxButton>
   </>
 );
 ```
@@ -267,17 +322,43 @@ const App = () => (
 );
 ```
 
+### Shape
+
+Use the button `shape` attribute to override its radius. Useful for controlling the button's edge shape when it is next to an input form controls such as a drop-down list but not in a edux-button-group. The button will appear more integrated into input form controls such as drop-down lists, search fields, etc.
+
+```html:preview
+<edux-button shape="square-right">Square-right</edux-button>
+<edux-button shape="square">Square</edux-button>
+<edux-button shape="square-left">Square-left</edux-button>
+```
+
+```jsx:react
+import EduxButton from '@shoelace-style/shoelace/dist/react/button';
+
+const App = () => (
+  <>
+    <EduxButton shape="square-right">
+      Small
+    </EduxButton>
+    <EduxButton shape="square">
+      Medium
+    </EduxButton>
+    <EduxButton shape="square-left">
+      Large
+    </EduxButton>
+  </>
+);
+```
+
 ### Loading
 
 Use the `loading` attribute to make a button busy. The width will remain the same as before, preventing adjacent elements from moving around.
 
 ```html:preview
-<terra-button variant="default" loading>Default</terra-button>
-<terra-button variant="primary" loading>Primary</terra-button>
-<terra-button variant="success" loading>Success</terra-button>
-<terra-button variant="neutral" loading>Neutral</terra-button>
-<terra-button variant="warning" loading>Warning</terra-button>
-<terra-button variant="danger" loading>Danger</terra-button>
+<edux-button variant="default" loading>Default</edux-button>
+<edux-button variant="success" loading>Success</edux-button>
+<edux-button variant="warning" loading>Warning</edux-button>
+<edux-button variant="danger" loading>Danger</edux-button>
 ```
 
 ```jsx:react
@@ -287,17 +368,11 @@ const App = () => (
   <>
     <TerraButton variant="default" loading>
       Default
-    </TerraButton>
-    <TerraButton variant="primary" loading>
-      Primary
-    </TerraButton>
-    <TerraButton variant="success" loading>
+    </EduxButton>
+    <EduxButton variant="success" loading>
       Success
-    </TerraButton>
-    <TerraButton variant="neutral" loading>
-      Neutral
-    </TerraButton>
-    <TerraButton variant="warning" loading>
+    </EduxButton>
+    <EduxButton variant="warning" loading>
       Warning
     </TerraButton>
     <TerraButton variant="danger" loading>
@@ -312,12 +387,10 @@ const App = () => (
 Use the `disabled` attribute to disable a button.
 
 ```html:preview
-<terra-button variant="default" disabled>Default</terra-button>
-<terra-button variant="primary" disabled>Primary</terra-button>
-<terra-button variant="success" disabled>Success</terra-button>
-<terra-button variant="neutral" disabled>Neutral</terra-button>
-<terra-button variant="warning" disabled>Warning</terra-button>
-<terra-button variant="danger" disabled>Danger</terra-button>
+<edux-button variant="default" disabled>Default</edux-button>
+<edux-button variant="success" disabled>Success</edux-button>
+<edux-button variant="warning" disabled>Warning</edux-button>
+<edux-button variant="danger" disabled>Danger</edux-button>
 ```
 
 ```jsx:react
@@ -329,19 +402,11 @@ const App = () => (
       Default
     </TerraButton>
 
-    <TerraButton variant="primary" disabled>
-      Primary
-    </TerraButton>
-
-    <TerraButton variant="success" disabled>
+    <EduxButton variant="success" disabled>
       Success
     </TerraButton>
 
-    <TerraButton variant="neutral" disabled>
-      Neutral
-    </TerraButton>
-
-    <TerraButton variant="warning" disabled>
+    <EduxButton variant="warning" disabled>
       Warning
     </TerraButton>
 

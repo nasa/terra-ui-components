@@ -14,19 +14,7 @@ export default css`
         height: var(--size);
     }
 
-    /* Theme modes */
-
-    .loader--dark {
-        color: white;
-        background-color: black;
-    }
-
-    .loader--light {
-        color: black;
-        background-color: white;
-    }
-
-    /* Loader sizes */
+    /* Loader variations */
 
     .loader--large {
         --size: 52px;
@@ -38,6 +26,30 @@ export default css`
         --stroke-width: 3.5px;
     }
 
+    .loader--orbit {
+        --size: 100px;
+    }
+
+    .planet {
+        fill: var(--edux-color-carbon-20);
+        cx: 80px;
+        cy: 80px;
+        r: 50px;
+    }
+
+    .moon {
+        fill: var(--edux-color-nasa-blue);
+        r: 5.5px;
+    }
+
+    #orbit {
+        /* total length of orbit ellipse = 298.2393493652344 */
+        stroke: var(--edux-color-nasa-blue);
+        stroke-width: 2.5px;
+        stroke-dasharray: 250 48;
+        fill: none;
+    }
+
     svg {
         width: var(--size);
         height: var(--size);
@@ -47,10 +59,8 @@ export default css`
         display: block;
         width: var(--size);
         position: absolute;
-        top: 17px;
+        top: calc((var(--size) / 2) - 10px);
         padding-left: 4px;
-        font-family: sans-serif;
-        font-size: 11px;
         letter-spacing: 0.1rem;
         text-align: center;
     }
@@ -78,7 +88,7 @@ export default css`
     }
 
     .circular-progress circle.bg {
-        stroke: #ccc;
+        stroke: var(--edux-color-carbon-20);
     }
 
     .circular-progress circle.fg {
@@ -86,7 +96,7 @@ export default css`
         transform-origin: var(--half-size) var(--half-size);
         stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
         transition: stroke-dasharray 0.3s linear 0s; /* Defines how --dash value changes to stroke-dasharray are animated */
-        stroke: #1c68e3;
+        stroke: var(--edux-color-nasa-blue);
     }
 
     .circular-progress.indeterminate circle.fg {
@@ -95,6 +105,15 @@ export default css`
         animation: 0.8s spin infinite;
         animation-timing-function: linear;
         transform-origin: 50% 50%;
+    }
+
+    @keyframes dash {
+        from {
+            stroke-dashoffset: 300;
+        }
+        to {
+            stroke-dashoffset: 0;
+        }
     }
 
     @keyframes spin {
