@@ -38,7 +38,7 @@ export default class TerraLoader extends TerraElement {
         if (parseInt(percent) > 100) {
             percent = '100'
         }
-        return percent > 0 ? percent + '%' : ''
+        return parseInt(percent) > 0 ? percent + '%' : ''
     }
 
     render() {
