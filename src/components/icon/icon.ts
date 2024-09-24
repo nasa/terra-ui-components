@@ -1,12 +1,12 @@
-import EduxIcon from './icon.component.js'
+import TerraIcon from './icon.component.js'
 
 export * from './icon.component.js'
-export default EduxIcon
+export default TerraIcon
 
-EduxIcon.define('edux-icon')
+TerraIcon.define('terra-icon')
 
 declare global {
     interface HTMLElementTagNameMap {
-        'edux-icon': EduxIcon
+        'terra-icon': TerraIcon
     }
 }

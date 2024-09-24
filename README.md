@@ -1,4 +1,4 @@
-# Earthdata UX Components
+# Terra UI Components
 
 Intro
 
@@ -7,8 +7,8 @@ Intro
 Start by [forking the repo](https://github.com/gesdisc/components/fork) on GitHub, then clone it locally and install dependencies.
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/components earthdata-ux-components
-cd earthdata-ux-components
+git clone https://github.com/YOUR_GITHUB_USERNAME/components terra-ui-components
+cd terra-ui-components
 npm install
 ```
 
@@ -32,20 +32,20 @@ npm run build
 
 ### Creating New Components
 
-To scaffold a new component, run the following command, replacing `edux-tag-name` with the desired tag name.
+To scaffold a new component, run the following command, replacing `terra-tag-name` with the desired tag name.
 
 ```bash
-npm run create edux-tag-name
+npm run create terra-tag-name
 ```
 
 This will generate a source file, a stylesheet, and a docs page for you. When you start the dev server, you'll find the new component in the "Components" section of the sidebar.
 
 ### Contributing
 
-Earthdata UX Components is an open source project and contributions are encouraged! If you're interesting in contributing, please review the [contribution guidelines](CONTRIBUTING.md) first.
+Terra UI Components is an open source project and contributions are encouraged! If you're interesting in contributing, please review the [contribution guidelines](CONTRIBUTING.md) first.
 
 ## License
 
-Earthdata UX Components were created by the NASA GES DISC team, on top of the amazing library Shoelace.
+Terra UI Components were created by the NASA GES DISC team, on top of the amazing library Shoelace.
 
 Shoelace was created by [Cory LaViska](https://twitter.com/claviska) and is available under the terms of the MIT license.

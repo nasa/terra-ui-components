@@ -1,10 +1,12 @@
 import { expect, fixture } from '@open-wc/testing'
-import type { EduxFormControl } from '../edux-element.js'
+import type { TerraFormControl } from '../terra-element.js'
 
-type CreateControlFn = () => Promise<EduxFormControl>
+type CreateControlFn = () => Promise<TerraFormControl>
 
 /** Runs a set of generic tests for Shoelace form controls */
-export function runFormControlBaseTests<T extends EduxFormControl = EduxFormControl>(
+export function runFormControlBaseTests<
+    T extends TerraFormControl = TerraFormControl,
+>(
     tagNameOrConfig:
         | string
         | {
@@ -49,7 +51,7 @@ export function runFormControlBaseTests<T extends EduxFormControl = EduxFormCont
 function runAllValidityTests(
     tagName: string, //
     displayName: string,
-    createControl: () => Promise<EduxFormControl>
+    createControl: () => Promise<TerraFormControl>
 ) {
     // will be used later to retrieve meta information about the control
     describe(`Form validity base test for ${displayName}`, async () => {
@@ -104,17 +106,17 @@ function runAllValidityTests(
             expect(control.reportValidity()).to.equal(true)
         })
 
-        it('should not emit an `edux-invalid` event when `.checkValidity()` is called while valid', async () => {
+        it('should not emit an `terra-invalid` event when `.checkValidity()` is called while valid', async () => {
             const control = await createControl()
-            const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+            const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
                 control.checkValidity()
             )
             expect(emittedEvents.length).to.equal(0)
         })
 
-        it('should not emit an `edux-invalid` event when `.reportValidity()` is called while valid', async () => {
+        it('should not emit an `terra-invalid` event when `.reportValidity()` is called while valid', async () => {
             const control = await createControl()
-            const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+            const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
                 control.reportValidity()
             )
             expect(emittedEvents.length).to.equal(0)
@@ -122,28 +124,28 @@ function runAllValidityTests(
 
         // TODO: As soon as `SlRadioGroup` has a property `disabled` this
         // condition can be removed
-        if (tagName !== 'edux-radio-group') {
-            it('should not emit an `edux-invalid` event when `.checkValidity()` is called in custom error case while disabled', async () => {
+        if (tagName !== 'terra-radio-group') {
+            it('should not emit an `terra-invalid` event when `.checkValidity()` is called in custom error case while disabled', async () => {
                 const control = await createControl()
                 control.setCustomValidity('error')
                 control.disabled = true
                 await control.updateComplete
                 const emittedEvents = checkEventEmissions(
                     control,
-                    'edux-invalid',
+                    'terra-invalid',
                     () => control.checkValidity()
                 )
                 expect(emittedEvents.length).to.equal(0)
             })
 
-            it('should not emit an `edux-invalid` event when `.reportValidity()` is called in custom error case while disabled', async () => {
+            it('should not emit an `terra-invalid` event when `.reportValidity()` is called in custom error case while disabled', async () => {
                 const control = await createControl()
                 control.setCustomValidity('error')
                 control.disabled = true
                 await control.updateComplete
                 const emittedEvents = checkEventEmissions(
                     control,
-                    'edux-invalid',
+                    'terra-invalid',
                     () => control.reportValidity()
                 )
                 expect(emittedEvents.length).to.equal(0)
@@ -175,10 +177,10 @@ function runAllValidityTests(
 
         const mode = getMode(await createControl())
 
-        if (mode === 'EduxButtonOfTypeButton') {
-            runSpecialTests_EduxButtonOfTypeButton(createControl)
-        } else if (mode === 'EduxButtonWithHRef') {
-            runSpecialTests_EduxButtonWithHref(createControl)
+        if (mode === 'TerraButtonOfTypeButton') {
+            runSpecialTests_TerraButtonOfTypeButton(createControl)
+        } else if (mode === 'TerraButtonWithHRef') {
+            runSpecialTests_TerraButtonWithHref(createControl)
         } else {
             runSpecialTests_standard(createControl)
         }
@@ -186,9 +188,9 @@ function runAllValidityTests(
 }
 
 //
-//  Special tests for <edux-button type="button">
+//  Special tests for <terra-button type="button">
 //
-function runSpecialTests_EduxButtonOfTypeButton(createControl: CreateControlFn) {
+function runSpecialTests_TerraButtonOfTypeButton(createControl: CreateControlFn) {
     it('should make sure that `.validity.valid` is `false` in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
@@ -207,23 +209,23 @@ function runSpecialTests_EduxButtonOfTypeButton(createControl: CreateControlFn) 
         expect(control.reportValidity()).to.equal(true)
     })
 
-    it('should not emit an `edux-invalid` event when `.checkValidity()` is called in custom error case, and not disabled', async () => {
+    it('should not emit an `terra-invalid` event when `.checkValidity()` is called in custom error case, and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
             control.checkValidity()
         )
         expect(emittedEvents.length).to.equal(0)
     })
 
-    it('should not emit an `edux-invalid` event when `.reportValidity()` is called in custom error case, and not disabled', async () => {
+    it('should not emit an `terra-invalid` event when `.reportValidity()` is called in custom error case, and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
             control.reportValidity()
         )
 
@@ -232,9 +234,9 @@ function runSpecialTests_EduxButtonOfTypeButton(createControl: CreateControlFn) 
 }
 
 //
-// Special tests for <edux-button href="...">
+// Special tests for <terra-button href="...">
 //
-function runSpecialTests_EduxButtonWithHref(createControl: CreateControlFn) {
+function runSpecialTests_TerraButtonWithHref(createControl: CreateControlFn) {
     it('should make sure that calling `.checkValidity()` will return `true` in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
@@ -247,21 +249,21 @@ function runSpecialTests_EduxButtonWithHref(createControl: CreateControlFn) {
         expect(control.reportValidity()).to.equal(true)
     })
 
-    it('should not emit an `edux-invalid` event when `.checkValidity()` is called in custom error case', async () => {
+    it('should not emit an `terra-invalid` event when `.checkValidity()` is called in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
             control.checkValidity()
         )
         expect(emittedEvents.length).to.equal(0)
     })
 
-    it('should not emit an `edux-invalid` event when `.reportValidity()` is called in custom error case', async () => {
+    it('should not emit an `terra-invalid` event when `.reportValidity()` is called in custom error case', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
             control.reportValidity()
         )
         expect(emittedEvents.length).to.equal(0)
@@ -290,23 +292,23 @@ function runSpecialTests_standard(createControl: CreateControlFn) {
         expect(control.reportValidity()).to.equal(false)
     })
 
-    it('should emit an `edux-invalid` event when `.checkValidity()` is called in custom error case and not disabled', async () => {
+    it('should emit an `terra-invalid` event when `.checkValidity()` is called in custom error case and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
             control.checkValidity()
         )
         expect(emittedEvents.length).to.equal(1)
     })
 
-    it('should emit an `edux-invalid` event when `.reportValidity()` is called in custom error case and not disabled', async () => {
+    it('should emit an `terra-invalid` event when `.reportValidity()` is called in custom error case and not disabled', async () => {
         const control = await createControl()
         control.setCustomValidity('error')
         control.disabled = false
         await control.updateComplete
-        const emittedEvents = checkEventEmissions(control, 'edux-invalid', () =>
+        const emittedEvents = checkEventEmissions(control, 'terra-invalid', () =>
             control.reportValidity()
         )
         expect(emittedEvents.length).to.equal(1)
@@ -318,7 +320,7 @@ function runSpecialTests_standard(createControl: CreateControlFn) {
 //
 
 // Creates a testable Shoelace form control instance
-async function createFormControl<T extends EduxFormControl = EduxFormControl>(
+async function createFormControl<T extends TerraFormControl = TerraFormControl>(
     tagName: string
 ): Promise<T> {
     return await fixture<T>(`<${tagName}></${tagName}>`)
@@ -327,7 +329,7 @@ async function createFormControl<T extends EduxFormControl = EduxFormControl>(
 // Runs an action while listening for emitted events of a given type. Returns an array of all events of the given type
 // that have been been emitted while the action was running.
 function checkEventEmissions(
-    control: EduxFormControl,
+    control: TerraFormControl,
     eventType: string,
     action: () => void
 ): Event[] {
@@ -347,22 +349,22 @@ function checkEventEmissions(
     return emittedEvents
 }
 
-// Component `edux-button` behaves quite different to the other components. To keep things simple we use simple conditions
-// here. `edux-button` might stay the only component in Shoelace core behaves that way, so we just hard code it here.
-function getMode(control: EduxFormControl) {
+// Component `terra-button` behaves quite different to the other components. To keep things simple we use simple conditions
+// here. `terra-button` might stay the only component in Shoelace core behaves that way, so we just hard code it here.
+function getMode(control: TerraFormControl) {
     if (
-        control.localName === 'edux-button' && //
+        control.localName === 'terra-button' && //
         'href' in control &&
         'type' in control &&
         control.type === 'button' &&
         !control.href
     ) {
-        return 'EduxButtonOfTypeButton'
+        return 'TerraButtonOfTypeButton'
     }
 
-    // <edux-button href="...">
-    if (control.localName === 'edux-button' && 'href' in control && !!control.href) {
-        return 'EduxButtonWithHRef'
+    // <terra-button href="...">
+    if (control.localName === 'terra-button' && 'href' in control && !!control.href) {
+        return 'TerraButtonWithHRef'
     }
 
     // all other components

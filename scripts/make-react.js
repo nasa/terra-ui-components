@@ -22,7 +22,7 @@ const components = getAllComponents(metadata)
 const index = []
 
 for await (const component of components) {
-    const tagWithoutPrefix = component.tagName.replace(/^edux-/, '')
+    const tagWithoutPrefix = component.tagName.replace(/^terra-/, '')
     const componentDir = path.join(reactDir, tagWithoutPrefix)
     const componentFile = path.join(componentDir, 'index.ts')
     const importPath = component.path.replace(/\.js$/, '.component.js')

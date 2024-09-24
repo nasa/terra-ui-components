@@ -1,7 +1,7 @@
 import { property, state } from 'lit/decorators.js'
 import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import styles from './loader.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { classMap } from 'lit/directives/class-map.js'
@@ -18,7 +18,7 @@ import { classMap } from 'lit/directives/class-map.js'
  *
  * @cssproperty --example - An example CSS custom property.
  */
-export default class EduxLoader extends EduxElement {
+export default class TerraLoader extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /** The loader's variant */
@@ -38,7 +38,7 @@ export default class EduxLoader extends EduxElement {
         if (parseInt(percent) > 100) {
             percent = '100'
         }
-        return percent > 0 ? percent + '%' : ''
+        return parseInt(percent) > 0 ? percent + '%' : ''
     }
 
     render() {

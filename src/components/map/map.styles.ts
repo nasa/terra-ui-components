@@ -4,19 +4,19 @@ export default css`
     :host {
         display: block;
         padding: 16px;
-        background: var(--edux-map-background-color);
-        border: 1px solid var(--edux-map-border-color);
+        background: var(--terra-map-background-color);
+        border: 1px solid var(--terra-map-border-color);
     }
 
     .map {
         aspect-ratio: 4 / 3;
-        border: solid 1px var(--edux-map-border-color);
+        border: solid 1px var(--terra-map-border-color);
     }
 
     .leaflet-mouse-position-container {
-        color: var(--edux-input-color);
+        color: var(--terra-input-color);
         padding: 5px;
-        background-color: var(--edux-input-background-color);
+        background-color: var(--terra-input-background-color);
     }
 
     .leaflet-mouse-position-text {

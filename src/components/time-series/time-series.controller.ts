@@ -29,7 +29,7 @@ const timeSeriesUrlTemplate = compile(
     `${
         isLocalHost
             ? 'http://localhost:9000/hydro1'
-            : 'https://hydro1.earthdata-ux.eosdis.nasa.gov'
+            : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/hydro1'
     }/daac-bin/access/timeseries.cgi?variable={{variable}}&startDate={{startDate}}&endDate={{endDate}}&location={{location}}&type=asc2`
 )
 
@@ -54,6 +54,10 @@ export class TimeSeriesController {
     ]
 
     task: Task<TaskArguments, Partial<Data>[]>
+
+    //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
+    //? Lit behavior is to set the task.value to undefined when aborted
+    lastTaskValue: Partial<Data>[] | undefined
 
     collection: Collection
     variable: Variable
@@ -84,64 +88,76 @@ export class TimeSeriesController {
 
                 // now that we have actual data, map it to a Plotly plot definition
                 // see https://plotly.com/javascript/time-series/
-                return [
+                this.lastTaskValue = [
                     {
                         ...plotlyDefaultData,
                         x: timeSeries.data.map(row => row.timestamp),
                         y: timeSeries.data.map(row => row.value),
                     },
                 ]
+
+                return this.lastTaskValue
             },
         })
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
+        const collection = this.collection.replace(
+            'NLDAS_FORA0125_H_2.0',
+            'NLDAS_FORA0125_H_v2.0'
+        )
+
         // create the variable identifer
-        const variableEntryId = `${this.collection}_${this.variable}`
+        const variableEntryId = `${collection}_${this.variable}`
+        const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
-        const existingEduxData = await getDataByKey<VariableDbEntry>(
+        const existingTerraData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            `${variableEntryId}_${this.location}`
+            cacheKey
         )
 
         if (
-            existingEduxData &&
+            existingTerraData &&
             this.startDate.getTime() >=
-                new Date(existingEduxData.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existingEduxData.endDate).getTime()
+                new Date(existingTerraData.startDate).getTime() &&
+            this.endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
         ) {
             // already have the data downloaded!
-            return this.#getDataInRange(existingEduxData)
+            return this.#getDataInRange(existingTerraData)
         }
         // the fetch request we send out may not contain the full date range the user requested
         // we'll request only the data we don't currently have cached
         let requestStartDate = this.startDate
         let requestEndDate = this.endDate
 
-        if (existingEduxData) {
+        if (existingTerraData) {
             if (
                 requestStartDate.getTime() <
-                new Date(existingEduxData.startDate).getTime()
+                new Date(existingTerraData.startDate).getTime()
             ) {
                 // user has requested more data than what we have, move the endDate up
-                requestEndDate = new Date(existingEduxData.startDate)
+                requestEndDate = new Date(existingTerraData.startDate)
             }
 
             if (
                 requestEndDate.getTime() >
-                new Date(existingEduxData.endDate).getTime()
+                new Date(existingTerraData.endDate).getTime()
             ) {
                 // user has requested more data than what we have, move the startDate back
-                requestStartDate = new Date(existingEduxData.endDate)
+                requestStartDate = new Date(existingTerraData.endDate)
             }
         }
 
+        // on-prem, some of the URLs have a different start prefix
+        // this is a hack for UWG that should be removed
+        const variableGroup = variableEntryId.startsWith('NLDAS_')
+            ? 'NLDAS2'
+            : variableEntryId.split('_')[0]
+
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${variableEntryId.split('_')[0]}:${this.collection}:${
-                this.variable
-            }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
+            variable: `${variableGroup}:${collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
             startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
             endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
             location: `GEOM:POINT(${this.location})`,
@@ -158,21 +174,17 @@ export class TimeSeriesController {
 
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
-        // combined the new parsedData with any existinEduxata
-        parsedData.data = [...parsedData.data, ...(existingEduxData?.data || [])]
+        // combined the new parsedData with any existinTerraata
+        parsedData.data = [...parsedData.data, ...(existingTerraData?.data || [])]
 
         // save the new data to the database
-        await storeDataByKey<VariableDbEntry>(
-            IndexedDbStores.TIME_SERIES,
-            `${variableEntryId}_${this.location}`,
-            {
-                variableEntryId,
-                key: `${variableEntryId}_${this.location}`,
-                startDate: parsedData.data[0].timestamp,
-                endDate: parsedData.data[parsedData.data.length - 1].timestamp,
-                ...parsedData,
-            }
-        )
+        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
+            variableEntryId,
+            key: cacheKey,
+            startDate: parsedData.data[0].timestamp,
+            endDate: parsedData.data[parsedData.data.length - 1].timestamp,
+            ...parsedData,
+        })
 
         return this.#getDataInRange(parsedData)
     }

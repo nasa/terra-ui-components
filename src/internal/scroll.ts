@@ -32,12 +32,12 @@ export function lockBodyScrolling(lockingEl: HTMLElement) {
 
     // When the first lock is created, set the scroll lock size to match the scrollbar's width to prevent content from
     // shifting. We only do this on the first lock because the scrollbar width will measure zero after overflow is hidden.
-    if (!document.documentElement.classList.contains('edux-scroll-lock')) {
+    if (!document.documentElement.classList.contains('terra-scroll-lock')) {
         /** Scrollbar width + body padding calculation can go away once Safari has scrollbar-gutter support. */
-        const scrollbarWidth = getScrollbarWidth() + getExistingBodyPadding() // must be measured before the `edux-scroll-lock` class is applied
-        document.documentElement.classList.add('edux-scroll-lock')
+        const scrollbarWidth = getScrollbarWidth() + getExistingBodyPadding() // must be measured before the `terra-scroll-lock` class is applied
+        document.documentElement.classList.add('terra-scroll-lock')
         document.documentElement.style.setProperty(
-            '--edux-scroll-lock-size',
+            '--terra-scroll-lock-size',
             `${scrollbarWidth}px`
         )
     }
@@ -50,8 +50,8 @@ export function unlockBodyScrolling(lockingEl: HTMLElement) {
     locks.delete(lockingEl)
 
     if (locks.size === 0) {
-        document.documentElement.classList.remove('edux-scroll-lock')
-        document.documentElement.style.removeProperty('--edux-scroll-lock-size')
+        document.documentElement.classList.remove('terra-scroll-lock')
+        document.documentElement.style.removeProperty('--terra-scroll-lock-size')
     }
 }
 

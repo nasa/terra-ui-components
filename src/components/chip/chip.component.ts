@@ -1,7 +1,7 @@
 import { property } from 'lit/decorators.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import styles from './chip.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { classMap } from 'lit/directives/class-map.js'
@@ -14,13 +14,13 @@ import { classMap } from 'lit/directives/class-map.js'
  *
  * @slot - The chip's label.
  */
-export default class EduxChip extends EduxElement {
+export default class TerraChip extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     @property({ reflect: true }) size: 'small' | 'medium' | 'large' = 'medium'
 
     #handleRemoveClick = () => {
-        this.emit('edux-remove')
+        this.emit('terra-remove')
         this.remove()
     }
     render() {

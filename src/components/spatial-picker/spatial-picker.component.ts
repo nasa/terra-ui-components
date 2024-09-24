@@ -1,12 +1,12 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 
 import { property, query, state } from 'lit/decorators.js'
 import { StringifyBoundingBox, parseBoundingBox } from '../map/leaflet-utils.js'
-import EduxMap from '../map/map.component.js'
+import TerraMap from '../map/map.component.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -15,10 +15,10 @@ import EduxMap from '../map/map.component.js'
  * @since 1.0
  *
  */
-export default class EduxSpatialPicker extends EduxElement {
+export default class TerraSpatialPicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'edux-map': EduxMap,
+        'terra-map': TerraMap,
     }
 
     /**
@@ -133,7 +133,7 @@ export default class EduxSpatialPicker extends EduxElement {
     }
 
     renderMap() {
-        return html`<edux-map
+        return html`<terra-map
             exportparts="map, leaflet-bbox, leaflet-point, leaflet-edit, leaflet-remove"
             min-zoom=${this.minZoom}
             max-zoom=${this.maxZoom}
@@ -142,9 +142,9 @@ export default class EduxSpatialPicker extends EduxElement {
             .value=${this.mapValue}
             ?has-navigation=${this.hasNavigation}
             ?has-shape-selector=${this.hasShapeSelector}
-            @edux-map-change=${this._handleMapChange}
+            @terra-map-change=${this._handleMapChange}
         >
-        </edux-map>`
+        </terra-map>`
     }
 
     render() {
@@ -168,7 +168,7 @@ export default class EduxSpatialPicker extends EduxElement {
                         aria-expanded=${this.isExpanded}
                         @blur=${this._blur}
                     />
-                    <edux-button
+                    <terra-button
                         shape="square-left"
                         class="spatial-picker__input_icon_button"
                         @click=${this._click}
@@ -188,7 +188,7 @@ export default class EduxSpatialPicker extends EduxElement {
                                 d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
                             />
                         </svg>
-                    </edux-button>
+                    </terra-button>
                 </div>
                 ${this.isExpanded ? this.renderMap() : nothing}
             </div>

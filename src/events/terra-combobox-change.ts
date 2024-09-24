@@ -1,11 +1,11 @@
 import type { ListItem } from '../components/variable-combobox/variable-combobox.controller.js'
 
-export type EduxComboboxChangeEvent = CustomEvent<
+export type TerraComboboxChangeEvent = CustomEvent<
     Partial<Exclude<ListItem, 'collectionLongName' | 'eventDetail' | 'units'>>
 >
 
 declare global {
     interface GlobalEventHandlersEventMap {
-        'edux-combobox-change': EduxComboboxChangeEvent
+        'terra-combobox-change': TerraComboboxChangeEvent
     }
 }

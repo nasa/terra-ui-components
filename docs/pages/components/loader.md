@@ -6,13 +6,13 @@ layout: component
 ---
 
 ```html:preview
-<edux-loader percent='50'></edux-loader>
+<terra-loader percent='50'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
-const App = () => <EduxLoader></EduxLoader>;
+const App = () => <TerraLoader></TerraLoader>;
 ```
 
 ## Examples
@@ -22,19 +22,19 @@ const App = () => <EduxLoader></EduxLoader>;
 Use the `variant` attribute to change the style of the loader.
 
 ```html:preview
-<edux-loader variant='small' percent='33'></edux-loader>
-<edux-loader variant='large' percent='33'></edux-loader>
-<edux-loader variant='orbit' percent='33'></edux-loader>
+<terra-loader variant='small' percent='33'></terra-loader>
+<terra-loader variant='large' percent='33'></terra-loader>
+<terra-loader variant='orbit' percent='33'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader varaiant="small" percent='33'></EduxLoader>
-        <EduxLoader variant="large" percent='33'></EduxLoader>
-        <EduxLoader variant="orbit" percent='33'></EduxLoader>
+        <TerraLoader varaiant="small" percent='33'></TerraLoader>
+        <TerraLoader variant="large" percent='33'></TerraLoader>
+        <TerraLoader variant="orbit" percent='33'></TerraLoader>
     </>
 );
 ```
@@ -44,19 +44,19 @@ const App = () => (
 Use the `indeterminate` attribute to show a spinner.
 
 ```html:preview
-<edux-loader indeterminate variant='small'></edux-loader>
-<edux-loader indeterminate variant='large'></edux-loader>
-<edux-loader indeterminate variant='orbit'></edux-loader>
+<terra-loader indeterminate variant='small'></terra-loader>
+<terra-loader indeterminate variant='large'></terra-loader>
+<terra-loader indeterminate variant='orbit'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader indeterminate size='small'></EduxLoader>
-        <EduxLoader indeterminate size='large'></EduxLoader>
-        <EduxLoader indeterminate size='orbit'></EduxLoader>
+        <TerraLoader indeterminate size='small'></TerraLoader>
+        <TerraLoader indeterminate size='large'></TerraLoader>
+        <TerraLoader indeterminate size='orbit'></TerraLoader>
     </>
 );
 ```
@@ -64,15 +64,15 @@ const App = () => (
 ### Aria label and message
 
 ```html:preview
-<edux-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></edux-loader>
+<terra-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa/terra-ui-components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></EduxLoader>
+        <TerraLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></TerraLoader>
     </>
 );
 ```
@@ -80,17 +80,17 @@ const App = () => (
 ### Aria label and message
 
 ```html:preview
-<edux-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></edux-loader>
+<terra-loader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></terra-loader>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/loader';
+import TerraLoader from '@nasa-terra/components/dist/react/loader';
 
 const App = () => (
     <>
-        <EduxLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></EduxLoader>
+        <TerraLoader label='Loading video of Tropical Storm Nepartak' message='25% completed (262.5 MB of 350 MB remaining)' percent='25'></TerraLoader>
     </>
 );
 ```
 
-[component-metadata:edux-loader]
+[component-metadata:terra-loader]

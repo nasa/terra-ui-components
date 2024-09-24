@@ -33,9 +33,15 @@ export class FetchController {
     #apiTask: Task<[], ListItem[]>
 
     constructor(host: ReactiveControllerHost) {
+        const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
+
         this.#apiTask = new Task(host, {
             task: async () => {
-                const response = await fetch('http://localhost:9000/variables')
+                const response = await fetch(
+                    isLocalHost
+                        ? 'http://localhost:9000/variables'
+                        : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/dev/~jdcarlso/collection+variable.json'
+                )
 
                 if (!response.ok) {
                     throw apiError

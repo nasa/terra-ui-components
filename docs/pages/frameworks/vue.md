@@ -17,20 +17,20 @@ These instructions are for Vue 3 and above. If you're using Vue 2, please see th
 To add Shoelace to your Vue app, install the package from npm.
 
 ```bash
-npm install @nasa/earthdata-ux-components
+npm install @nasa-terra/components
 ```
 
 Next, [include a theme](/getting-started/themes) and set the [base path](/getting-started/installation#setting-the-base-path) for icons and other assets. In this example, we'll import the light theme and use the CDN as a base path.
 
 ```jsx
-import '@nasa/earthdata-ux-components/dist/themes/light.css'
-import { setBasePath } from '@nasa/earthdata-ux-components/dist/utilities/base-path'
+import '@nasa-terra/components/dist/themes/light.css'
+import { setBasePath } from '@nasa-terra/components/dist/utilities/base-path'
 
-setBasePath('https://cdn.jsdelivr.net/npm/@nasa/earthdata-ux-components@%VERSION%/%CDNDIR%/')
+setBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/')
 ```
 
 :::tip
-If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa/earthdata-ux-components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
+If you'd rather not use the CDN for assets, you can create a build task that copies `node_modules/@nasa-terra/components/dist/assets` into a public folder in your app. Then you can point the base path to that folder instead.
 :::
 
 ## Configuration
@@ -46,7 +46,7 @@ Once you have configured your application for custom elements, you should be abl
 ```json
 {
     "compilerOptions": {
-        "types": ["@nasa/earthdata-ux-components/dist/types/vue"]
+        "types": ["@nasa-terra/components/dist/types/vue"]
     }
 }
 ```
@@ -68,8 +68,8 @@ Once you have configured your application for custom elements, you should be abl
 
 <script setup>
     import { ref } from 'vue'
-    import '@nasa/earthdata-ux-components/dist/components/qr-code/qr-code.js'
-    import '@nasa/earthdata-ux-components/dist/components/input/input.js'
+    import '@nasa-terra/components/dist/components/qr-code/qr-code.js'
+    import '@nasa-terra/components/dist/components/input/input.js'
 
     const qrCode = ref()
 </script>
@@ -80,8 +80,8 @@ Once you have configured your application for custom elements, you should be abl
         margin: 0 auto;
     }
 
-    edux-input {
-        margin: var(--edux-spacing-large) 0;
+    terra-input {
+        margin: var(--terra-spacing-large) 0;
     }
 </style>
 ```
@@ -105,10 +105,10 @@ One caveat is there's currently [no support for v-model on custom elements](http
 <sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
 
-If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-edux-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
+If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-terra-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
 
 :::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/earthdata-ux/components/blob/next/docs/frameworks/vue.md)
+Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/terra-ui/components/blob/next/docs/frameworks/vue.md)
 :::
 
 ### Slots
@@ -126,7 +126,9 @@ Here is an example:
 >
     This drawer slides in from the start.
     <div slot="footer">
-        <edux-button variant="primary" @click=" drawerIsOpen = false">Close</edux-button>
+        <terra-button variant="primary" @click=" drawerIsOpen = false"
+            >Close</terra-button
+        >
     </div>
 </sl-drawer>
 ```

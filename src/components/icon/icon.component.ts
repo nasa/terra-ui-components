@@ -1,7 +1,7 @@
 import type { CSSResultGroup, HTMLTemplateResult } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { isTemplateResult } from 'lit/directive-helpers.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './icon.styles.js'
@@ -29,12 +29,12 @@ interface IconSource {
  * @status experimental
  * @since 1.0
  *
- * @event edux-load - Emitted when the icon has loaded.
- * @event edux-error - Emitted when the icon fails to load due to an error.
+ * @event terra-load - Emitted when the icon has loaded.
+ * @event terra-error - Emitted when the icon fails to load due to an error.
  *
  * @csspart svg - The internal SVG element.
  */
-export default class EduxIcon extends EduxElement {
+export default class TerraIcon extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     #initialRender = false
@@ -216,12 +216,12 @@ export default class EduxIcon extends EduxElement {
             case RETRYABLE_ERROR:
             case CACHEABLE_ERROR:
                 this.svg = null
-                this.emit('edux-error')
+                this.emit('terra-error')
                 break
             default:
                 this.svg = svg.cloneNode(true) as SVGElement
                 library?.mutator?.(this.svg)
-                this.emit('edux-load')
+                this.emit('terra-load')
         }
     }
 

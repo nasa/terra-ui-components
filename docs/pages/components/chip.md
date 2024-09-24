@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<edux-chip>This is a chip!</edux-chip>
+<terra-chip>This is a chip!</terra-chip>
 ```
 
 ## Examples
@@ -16,33 +16,33 @@ layout: component
 Customize the text on each chip.
 
 ```html:preview
-<edux-chip>You</edux-chip>
-<edux-chip>Can</edux-chip>
-<edux-chip>Click</edux-chip>
-<edux-chip>the</edux-chip>
-<edux-chip>X</edux-chip>
-<edux-chip>and</edux-chip>
-<edux-chip>Make</edux-chip>
-<edux-chip>Each</edux-chip>
-<edux-chip>Chip</edux-chip>
-<edux-chip>Disappear</edux-chip>
+<terra-chip>You</terra-chip>
+<terra-chip>Can</terra-chip>
+<terra-chip>Click</terra-chip>
+<terra-chip>the</terra-chip>
+<terra-chip>X</terra-chip>
+<terra-chip>and</terra-chip>
+<terra-chip>Make</terra-chip>
+<terra-chip>Each</terra-chip>
+<terra-chip>Chip</terra-chip>
+<terra-chip>Disappear</terra-chip>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/chip';
+import TerraLoader from '@nasa-terra/components/dist/react/chip';
 
 const App = () => (
     <>
-        <EduxChip>You</EduxChip>
-        <EduxChip>Can</EduxChip>
-        <EduxChip>Click</EduxChip>
-        <EduxChip>the</EduxChip>
-        <EduxChip>X</EduxChip>
-        <EduxChip>and</EduxChip>
-        <EduxChip>Make</EduxChip>
-        <EduxChip>Each</EduxChip>
-        <EduxChip>Chip</EduxChip>
-        <EduxChip>Disappear</EduxChip>
+        <TerraChip>You</TerraChip>
+        <TerraChip>Can</TerraChip>
+        <TerraChip>Click</TerraChip>
+        <TerraChip>the</TerraChip>
+        <TerraChip>X</TerraChip>
+        <TerraChip>and</TerraChip>
+        <TerraChip>Make</TerraChip>
+        <TerraChip>Each</TerraChip>
+        <TerraChip>Chip</TerraChip>
+        <TerraChip>Disappear</TerraChip>
     </>
 );
 ```
@@ -52,9 +52,9 @@ const App = () => (
 Use the "size" property to customize the size of the chip.
 
 ```html:preview
-  <edux-chip size="small">Small</edux-chip>
-  <edux-chip size="medium">Medium</edux-chip>
-  <edux-chip size="large">Large</edux-chip>
+  <terra-chip size="small">Small</terra-chip>
+  <terra-chip size="medium">Medium</terra-chip>
+  <terra-chip size="large">Large</terra-chip>
 ```
 
 ### Adding custom behaviors to chips
@@ -64,18 +64,18 @@ Customize actions by modifying the `action` property, which will not only make t
 This example makes the chip disappear and also produces an alert.
 
 ```html:preview
-<edux-chip class="chip">Alert</edux-chip>
+<terra-chip class="chip">Alert</terra-chip>
 <script>
   const div = document.querySelector('.chip');
 
-  div.addEventListener('edux-remove', event => {
+  div.addEventListener('terra-remove', event => {
     alert("This chip has been removed!");
   });
 </script>
 ```
 
 ```jsx:react
-import EduxLoader from '@nasa/earthdata-ux-components/dist/react/chip'
+import TerraLoader from '@nasa-terra/components/dist/react/chip'
 const App = () => {
   function handleRemove(event) {
     alert("This chip has been removed");
@@ -83,7 +83,7 @@ const App = () => {
 
   return (
     <>
-        <EduxChip class="chip">Alert</EduxChip>
+        <TerraChip class="chip">Alert</TerraChip>
     </>
   );
 };

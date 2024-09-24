@@ -2,11 +2,11 @@
 import { expect } from '@open-wc/testing'
 import { readFile } from '@web/test-runner-commands'
 
-import EduxButton from '../../dist/components/button/button.component.js'
+import TerraButton from '../../dist/components/button/button.component.js'
 
-// We don't use EduxElement directly because it shouldn't exist in the final bundle.
+// We don't use TerraElement directly because it shouldn't exist in the final bundle.
 /* eslint-disable */
-const EduxElement = Object.getPrototypeOf(EduxButton)
+const TerraElement = Object.getPrototypeOf(TerraButton)
 /* eslint-enable */
 
 // @ts-expect-error Isn't written in TS.
@@ -50,17 +50,17 @@ beforeEach(() => {
 })
 
 it('Should provide a console warning if attempting to register the same tag twice', () => {
-    class MyButton extends EduxButton {
+    class MyButton extends TerraButton {
         static version = '0.4.5'
     }
 
     const stub = Sinon.stub(console, 'warn')
 
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.false
     /* eslint-disable */
-    EduxButton.define('edux-button')
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.true
-    MyButton.define('edux-button')
+    TerraButton.define('terra-button')
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.true
+    MyButton.define('terra-button')
     /* eslint-enable */
 
     expect(stub).calledOnce
@@ -70,7 +70,7 @@ it('Should provide a console warning if attempting to register the same tag twic
     expect(warning).to.match(
         new RegExp(
             /* eslint-disable */
-            `Attempted to register <edux-button> v${MyButton.version}, but <edux-button> v${EduxButton.version} has already been registered`
+            `Attempted to register <terra-button> v${MyButton.version}, but <terra-button> v${TerraButton.version} has already been registered`
             /* eslint-enable */
         ),
         'i'
@@ -78,15 +78,15 @@ it('Should provide a console warning if attempting to register the same tag twic
 })
 
 it('Should not provide a console warning if versions match', () => {
-    class MyButton extends EduxButton {}
+    class MyButton extends TerraButton {}
 
     const stub = Sinon.stub(console, 'warn')
 
     /* eslint-disable */
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
-    EduxButton.define('edux-button')
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.true
-    MyButton.define('edux-button')
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.false
+    TerraButton.define('terra-button')
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.true
+    MyButton.define('terra-button')
     /* eslint-enable */
 
     expect(stub).not.called
@@ -94,28 +94,28 @@ it('Should not provide a console warning if versions match', () => {
 
 it('Should register dependencies when the element is constructed the first time', () => {
     /* eslint-disable */
-    class MyElement extends EduxElement {
-        static dependencies = { 'edux-button': EduxButton }
+    class MyElement extends TerraElement {
+        static dependencies = { 'terra-button': TerraButton }
         static version = 'random-version'
     }
     /* eslint-enable */
 
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.false
 
     // eslint-disable
-    MyElement.define('edux-element')
+    MyElement.define('terra-element')
     // eslint-enable
 
     // this should be false until the constructor is called via new
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.false
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.false
 
     // We can call it directly since we know its registered.
     /* eslint-disable */
     // @ts-expect-error If its undefined, error.
-    new (window.customElements.get('edux-element'))()
+    new (window.customElements.get('terra-element'))()
     /* eslint-enable */
 
-    expect(Boolean(window.customElements.get('edux-button'))).to.be.true
+    expect(Boolean(window.customElements.get('terra-button'))).to.be.true
 })
 
 // This looks funky here. This grabs all of our components and tests for side effects.
