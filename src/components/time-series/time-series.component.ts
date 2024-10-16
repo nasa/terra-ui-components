@@ -1,22 +1,27 @@
+import { TaskStatus } from '@lit/task'
+import { nothing } from 'lit'
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc.js'
 import timezone from 'dayjs/plugin/timezone.js'
+import utc from 'dayjs/plugin/utc.js'
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
+import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
+import TerraButton from '../button/button.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import TerraIcon from '../icon/icon.component.js'
+import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
-import TerraLoader from '../loader/loader.component.js'
-import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
 import styles from './time-series.styles.js'
+import { downloadImage } from 'plotly.js-dist-min'
+import type { MenuItems } from './time-series.types.js'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -40,6 +45,8 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-variable-combobox': TerraVariableCombobox,
         'terra-loader': TerraLoader,
+        'terra-icon': TerraIcon,
+        'terra-button': TerraButton,
     }
 
     #timeSeriesController = new TimeSeriesController(this)
@@ -94,6 +101,7 @@ export default class TerraTimeSeries extends TerraElement {
     @query('terra-plot') plot: TerraPlot
     @query('terra-spatial-picker') spatialPicker: TerraSpatialPicker
     @query('terra-variable-combobo') variableCombobox: TerraVariableCombobox
+    @query('#menu') menu: HTMLMenuElement
 
     /**
      * holds the start date for the earliest available data for the collection
@@ -106,6 +114,12 @@ export default class TerraTimeSeries extends TerraElement {
      */
     @state()
     collectionEndingDateTime?: string
+
+    /**
+     *
+     */
+    @state()
+    activeMenuItem: MenuItems = null
 
     @watch('collection')
     handleCollectionUpdate(_oldValue: string, newValue: string) {
@@ -130,6 +144,15 @@ export default class TerraTimeSeries extends TerraElement {
     @watch('location')
     handleLocationUpdate(_oldValue: string, newValue: string) {
         this.#adaptPropertyToController('location', newValue)
+    }
+
+    @watch('activeMenuItem')
+    handleFocus(_oldValue: MenuItems, newValue: MenuItems) {
+        if (newValue === null) {
+            return
+        }
+
+        this.menu.focus()
     }
 
     #adaptPropertyToController(
@@ -233,7 +256,82 @@ export default class TerraTimeSeries extends TerraElement {
         this.#timeSeriesController.task?.abort()
     }
 
+    /**
+     * TODO:
+     * [ ]
+     * [x] So maybe what I do is pass in a configuration to disable the download button.
+     * I make the toolbar here (don't pass in title), and add the information button and the download button. I'll have to lift up the download functionality.
+     * - Add an information icon and an information panel. Panel should contain variable longname, shortname, units, dataset link, and a full citation for the variable and the data rods hydrology tool itself (perhaps this thing should have a DOI)
+     * - Add a download icon and a download panel. The panel should contain the option to get the CSV and to get a PNG of the panel. I'll need to pull up the download CSV function to this component.
+     * For the panel, maybe animate the height of the grid row?
+     */
+
+    #downloadCSV(_event: Event) {
+        //
+        //     let plotData: Array<Plot> = []
+        //
+        //     // convert data object to plot object to resolve property references
+        //     this.data.forEach((plot, index) => {
+        //         plotData[index] = plot as unknown as Plot
+        //     })
+        //
+        //     // Return x and y values for every data point in each plot line
+        //     const csvData = plotData
+        //         .map(trace => {
+        //             return trace.x.map((x: any, i: number) => {
+        //                 return {
+        //                     x: x,
+        //                     y: trace.y[i],
+        //                 }
+        //             })
+        //         })
+        //         .flat()
+        //
+        //     // Create CSV format, make it a Blob file and generate a link to it.
+        //     const csv = this.#convertToCSV(csvData)
+        //     const blob = new Blob([csv], { type: 'text/csv' })
+        //     const url = window.URL.createObjectURL(blob)
+        //     const a = document.createElement('a')
+        //
+        //     // Create a hidden link element and click it to download the CSV, then remove the link.
+        //     a.setAttribute('href', url)
+        //     a.setAttribute('download', 'chart_data.csv')
+        //     a.style.display = 'none'
+        //     document.body.appendChild(a)
+        //     a.click()
+        //     document.body.removeChild(a)
+    }
+
+    // #convertToCSV(data: any[]): string {
+    //     const header = Object.keys(data[0]).join(',') + '\n'
+    //     const rows = data.map(obj => Object.values(obj).join(',')).join('\n')
+    //     return header + rows
+    // }
+
+    #downloadPNG(_event: Event) {
+        downloadImage(this.plot?.base, {
+            filename: `${this.collection}_${this.variable}`,
+            format: 'png',
+            width: 1920,
+            height: 1080,
+        })
+    }
+
+    #handleActiveMenuItem(event: Event) {
+        const button = event.currentTarget as HTMLButtonElement
+        const menuItem = button.dataset.menuItem as MenuItems
+
+        // Tooggle to `null` or set the menu item as active.
+        this.activeMenuItem = menuItem === this.activeMenuItem ? null : menuItem
+        console.dir(
+            this.#timeSeriesController.lastTaskValue ??
+                this.#timeSeriesController.emptyPlotData
+        )
+    }
+
     render() {
+        console.log(this.collection)
+        console.log(this.variable)
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
@@ -248,25 +346,159 @@ export default class TerraTimeSeries extends TerraElement {
                 @terra-map-change=${this.#handleMapChange}
             ></terra-spatial-picker>
 
-            <terra-plot
-                exportparts="base:plot__base"
-                data="${JSON.stringify(
-                    this.#timeSeriesController.lastTaskValue ??
-                        this.#timeSeriesController.emptyPlotData
-                )}"
-                .layout="${{
-                    title: this.variable,
-                    xaxis: {
-                        title: 'Time',
-                        showgrid: false,
-                        zeroline: false,
-                    },
-                    yaxis: {
-                        title: this.units,
-                        showline: false,
-                    },
-                }}"
-            ></terra-plot>
+            <div class="plot-container">
+                <header>
+                    <h2 class="title">
+                        ${this.collection && this.variable
+                            ? `${this.collection}_${this.variable}`
+                            : nothing}
+                    </h2>
+
+                    <div class="toggles">
+                        <terra-button
+                            circle
+                            outline
+                            aria-expanded=${this.activeMenuItem === 'information'}
+                            aria-controls="menu"
+                            aria-haspopup="true"
+                            class="toggle"
+                            @click=${this.#handleActiveMenuItem}
+                            data-menu-item="information"
+                        >
+                            <span class="sr-only">
+                                Information for
+                                ${this.collection}_${this.variable}</span
+                            >
+                            <terra-icon
+                                name="outline-information-circle"
+                                library="heroicons"
+                                font-size="1.5em"
+                            ></terra-icon>
+                        </terra-button>
+
+                        <terra-button
+                            circle
+                            outline
+                            aria-expanded=${this.activeMenuItem === 'download'}
+                            aria-controls="menu"
+                            aria-haspopup="true"
+                            role="menuitem"
+                            class="toggle"
+                            @click=${this.#handleActiveMenuItem}
+                            data-menu-item="download"
+                        >
+                            <span class="sr-only">
+                                Download options for
+                                ${this.collection}_${this.variable}</span
+                            >
+                            <terra-icon
+                                name="outline-arrow-down-tray"
+                                library="heroicons"
+                                font-size="1.5em"
+                            ></terra-icon>
+                        </terra-button>
+                    </div>
+                </header>
+
+                <menu
+                    role="menu"
+                    id="menu"
+                    data-expanded=${this.activeMenuItem !== null}
+                    tabindex="-1"
+                >
+                    <li
+                        role="menuitem"
+                        ?hidden=${this.activeMenuItem !== 'information'}
+                    >
+                        <dl>
+                            <dt>variable longname</dt>
+                            <dd>
+                                I think we pass in the shortname, so this needs to be
+                                gathered from elsewhere?
+                            </dd>
+
+                            <dt>variable shortname</dt>
+                            <dd>${this.variable}</dd>
+
+                            <dt>units</dt>
+                            <dd>What units?</dd>
+
+                            <dt>dataset link</dt>
+                            <dd>To the DSL?</dd>
+
+                            <dt>citation</dt>
+                            <dd>
+                                for both variable and data rods hydrology tool itself
+                            </dd>
+
+                            <dt>
+                                <abbr title="Digital Object Identifier">DOI</abbr>
+                            </dt>
+                            <dd>This needs to be gathered from elsewhere.</dd>
+                        </dl>
+                    </li>
+
+                    <li role="none" ?hidden=${this.activeMenuItem !== 'download'}>
+                        <p>Plot data can be downloaded as either a PNG or CSV.</p>
+
+                        <terra-button
+                            outline
+                            variant="default"
+                            role="menuitem"
+                            @click=${this.#downloadPNG}
+                        >
+                            <span class="sr-only">Download Plot Data as </span>
+                            PNG
+                            <terra-icon
+                                slot="prefix"
+                                name="outline-photo"
+                                library="heroicons"
+                                font-size="1.5em"
+                            ></terra-icon>
+                        </terra-button>
+
+                        <terra-button
+                            outline
+                            variant="default"
+                            role="menuitem"
+                            @click=${this.#downloadCSV}
+                        >
+                            <span class="sr-only">Download Plot Data as </span>
+                            CSV
+                            <terra-icon
+                                slot="prefix"
+                                name="outline-document"
+                                library="heroicons"
+                                font-size="1.5em"
+                            ></terra-icon>
+                        </terra-button>
+                    </li>
+                </menu>
+
+                <terra-plot
+                    exportparts="base:plot__base"
+                    .data=${this.#timeSeriesController.lastTaskValue ??
+                    this.#timeSeriesController.emptyPlotData}
+                    .layout="${{
+                        xaxis: {
+                            title: 'Time',
+                            showgrid: false,
+                            zeroline: false,
+                        },
+                        yaxis: {
+                            title: this.units,
+                            showline: false,
+                        },
+                    }}"
+                    .config=${{
+                        displayModeBar: true,
+                        displaylogo: false,
+                        modeBarButtonsToRemove: ['toImage', 'zoom2d'],
+                        responsive: true,
+                    }}
+                ></terra-plot>
+            </div>
+
             <terra-date-range-slider
                 exportparts="slider:date-range-slider__slider"
                 min-date=${this.collectionBeginningDateTime}

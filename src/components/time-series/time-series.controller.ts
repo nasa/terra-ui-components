@@ -3,7 +3,7 @@ import type { StatusRenderer } from '@lit/task'
 import { compile } from 'handlebars'
 import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
-import type { Data, PlotData } from 'plotly.js'
+import type { Data, PlotData } from 'plotly.js-dist-min'
 import type {
     Collection,
     EndDate,
@@ -158,6 +158,7 @@ export class TimeSeriesController {
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
             variable: `${variableGroup}:${collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
+            // variable: `GPM:GPM_3IMERGHH_07:precipitationQualityIndex`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
             startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
             endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
             location: `GEOM:POINT(${this.location})`,
