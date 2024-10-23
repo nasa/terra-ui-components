@@ -1,11 +1,12 @@
 import { TaskStatus } from '@lit/task'
-import { nothing } from 'lit'
 import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone.js'
 import utc from 'dayjs/plugin/utc.js'
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
+import { cache } from 'lit/directives/cache.js'
+import { downloadImage } from 'plotly.js-dist-min'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
@@ -16,12 +17,12 @@ import TerraDateRangeSlider from '../date-range-slider/date-range-slider.compone
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
+import type { Plot } from '../plot/plot.types.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
 import { TimeSeriesController } from './time-series.controller.js'
 import styles from './time-series.styles.js'
-import { downloadImage } from 'plotly.js-dist-min'
-import type { MenuItems } from './time-series.types.js'
+import type { MenuNames } from './time-series.types.js'
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -58,10 +59,28 @@ export default class TerraTimeSeries extends TerraElement {
     collection?: string
 
     /**
+     * the dataset landing page for the collection
+     */
+    @property({ reflect: true })
+    datasetLandingPage?: string // TODO: support multiple variables (non-MVP feature)
+
+    /**
      * a variable short name to plot (ex: precipitationCal)
      */
     @property({ reflect: true })
     variable?: string // TODO: support multiple variables (non-MVP feature)
+
+    /**
+     * the variable landing page
+     */
+    @property({ reflect: true })
+    variableLandingPage?: string // TODO: support multiple variables (non-MVP feature)
+
+    /**
+     * a variable long name to plot (e.g., "Longwave radiation flux downwards (surface)")
+     */
+    @property({ reflect: true })
+    variableLongName?: string // TODO: support multiple variables (non-MVP feature)
 
     /**
      * The start date for the time series plot. (ex: 2021-01-01)
@@ -119,7 +138,7 @@ export default class TerraTimeSeries extends TerraElement {
      *
      */
     @state()
-    activeMenuItem: MenuItems = null
+    activeMenuItem: MenuNames = null
 
     @watch('collection')
     handleCollectionUpdate(_oldValue: string, newValue: string) {
@@ -147,7 +166,7 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     @watch('activeMenuItem')
-    handleFocus(_oldValue: MenuItems, newValue: MenuItems) {
+    handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
         if (newValue === null) {
             return
         }
@@ -226,8 +245,11 @@ export default class TerraTimeSeries extends TerraElement {
         this.#maybeSliceTimeForStartEnd()
 
         this.collection = `${event.detail.collectionShortName}_${event.detail.collectionVersion}`
-        this.variable = event.detail.name as string
-        this.units = event.detail.name as string
+        this.datasetLandingPage = event.detail.datasetLandingPage
+        this.units = event.detail.units
+        this.variable = event.detail.name
+        this.variableLandingPage = event.detail.variableLandingPage
+        this.variableLongName = event.detail.longName
     }
 
     #handleMapChange(event: CustomEvent) {
@@ -237,7 +259,8 @@ export default class TerraTimeSeries extends TerraElement {
         if (type === 'Point') {
             const { latLng } = event.detail
 
-            this.location = `${latLng.lng},${latLng.lat}`
+            // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
+            this.location = `${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)}`
         }
     }
 
@@ -258,55 +281,64 @@ export default class TerraTimeSeries extends TerraElement {
 
     /**
      * TODO:
-     * [ ]
-     * [x] So maybe what I do is pass in a configuration to disable the download button.
-     * I make the toolbar here (don't pass in title), and add the information button and the download button. I'll have to lift up the download functionality.
-     * - Add an information icon and an information panel. Panel should contain variable longname, shortname, units, dataset link, and a full citation for the variable and the data rods hydrology tool itself (perhaps this thing should have a DOI)
-     * - Add a download icon and a download panel. The panel should contain the option to get the CSV and to get a PNG of the panel. I'll need to pull up the download CSV function to this component.
-     * For the panel, maybe animate the height of the grid row?
+     * [x] re-enable downloads here
+     * [x] get live data from Giovanni
+     * [x] display required information in information menuitem
+     * [x] ask about adding help links
+     * [ ] see what can be simplified from downloadCSV
      */
 
     #downloadCSV(_event: Event) {
+        // const controllerData = this.#timeSeriesController.toPlotlyData()
+        const controllerData =
+            this.#timeSeriesController.lastTaskValue ??
+            this.#timeSeriesController.emptyPlotData
+
+        let plotData: Array<Plot> = []
+
+        // console.log(controllerData)
+
+        // convert data object to plot object to resolve property references
+        controllerData.forEach((plot: any, index: number) => {
+            plotData[index] = plot as unknown as Plot
+        })
+
+        // Return x and y values for every data point in each plot line
+        const csvData = plotData
+            .map(trace => {
+                return trace.x.map((x: any, i: number) => {
+                    return {
+                        x: x,
+                        y: trace.y[i],
+                    }
+                })
+            })
+            .flat()
+
+        // console.log(csvData)
+
+        // Create CSV format, make it a Blob file and generate a link to it.
+        const csv = this.#convertToCSV(csvData)
+        csv
+        // console.log(csv)
+        // const blob = new Blob([csv], { type: 'text/csv' })
+        // const url = window.URL.createObjectURL(blob)
+        // const a = document.createElement('a')
         //
-        //     let plotData: Array<Plot> = []
-        //
-        //     // convert data object to plot object to resolve property references
-        //     this.data.forEach((plot, index) => {
-        //         plotData[index] = plot as unknown as Plot
-        //     })
-        //
-        //     // Return x and y values for every data point in each plot line
-        //     const csvData = plotData
-        //         .map(trace => {
-        //             return trace.x.map((x: any, i: number) => {
-        //                 return {
-        //                     x: x,
-        //                     y: trace.y[i],
-        //                 }
-        //             })
-        //         })
-        //         .flat()
-        //
-        //     // Create CSV format, make it a Blob file and generate a link to it.
-        //     const csv = this.#convertToCSV(csvData)
-        //     const blob = new Blob([csv], { type: 'text/csv' })
-        //     const url = window.URL.createObjectURL(blob)
-        //     const a = document.createElement('a')
-        //
-        //     // Create a hidden link element and click it to download the CSV, then remove the link.
-        //     a.setAttribute('href', url)
-        //     a.setAttribute('download', 'chart_data.csv')
-        //     a.style.display = 'none'
-        //     document.body.appendChild(a)
-        //     a.click()
-        //     document.body.removeChild(a)
+        // // Create a hidden link element and click it to download the CSV, then remove the link.
+        // a.setAttribute('href', url)
+        // a.setAttribute('download', `${this.collection}_${this.variable}.csv`)
+        // a.style.display = 'none'
+        // document.body.appendChild(a)
+        // a.click()
+        // document.body.removeChild(a)
     }
 
-    // #convertToCSV(data: any[]): string {
-    //     const header = Object.keys(data[0]).join(',') + '\n'
-    //     const rows = data.map(obj => Object.values(obj).join(',')).join('\n')
-    //     return header + rows
-    // }
+    #convertToCSV(data: any[]): string {
+        const header = Object.keys(data[0]).join(',') + '\n'
+        const rows = data.map(obj => Object.values(obj).join(',')).join('\n')
+        return header + rows
+    }
 
     #downloadPNG(_event: Event) {
         downloadImage(this.plot?.base, {
@@ -319,19 +351,14 @@ export default class TerraTimeSeries extends TerraElement {
 
     #handleActiveMenuItem(event: Event) {
         const button = event.currentTarget as HTMLButtonElement
-        const menuItem = button.dataset.menuItem as MenuItems
+        const menuName = button.dataset.menuName as MenuNames
 
         // Tooggle to `null` or set the menu item as active.
-        this.activeMenuItem = menuItem === this.activeMenuItem ? null : menuItem
-        console.dir(
-            this.#timeSeriesController.lastTaskValue ??
-                this.#timeSeriesController.emptyPlotData
-        )
+        this.activeMenuItem = menuName === this.activeMenuItem ? null : menuName
     }
 
     render() {
-        console.log(this.collection)
-        console.log(this.variable)
+        // console.log(this.#timeSeriesController.task.value)
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
@@ -347,136 +374,224 @@ export default class TerraTimeSeries extends TerraElement {
             ></terra-spatial-picker>
 
             <div class="plot-container">
-                <header>
-                    <h2 class="title">
-                        ${this.collection && this.variable
-                            ? `${this.collection}_${this.variable}`
-                            : nothing}
-                    </h2>
+                ${cache(
+                    this.variable
+                        ? html`
+                              <header>
+                                  <h2 class="title">
+                                      ${this.collection}_${this.variable}
+                                  </h2>
 
-                    <div class="toggles">
-                        <terra-button
-                            circle
-                            outline
-                            aria-expanded=${this.activeMenuItem === 'information'}
-                            aria-controls="menu"
-                            aria-haspopup="true"
-                            class="toggle"
-                            @click=${this.#handleActiveMenuItem}
-                            data-menu-item="information"
-                        >
-                            <span class="sr-only">
-                                Information for
-                                ${this.collection}_${this.variable}</span
-                            >
-                            <terra-icon
-                                name="outline-information-circle"
-                                library="heroicons"
-                                font-size="1.5em"
-                            ></terra-icon>
-                        </terra-button>
+                                  <div class="toggles">
+                                      <terra-button
+                                          circle
+                                          outline
+                                          aria-expanded=${
+                                              this.activeMenuItem === 'information'
+                                          }
+                                          aria-controls="menu"
+                                          aria-haspopup="true"
+                                          class="toggle"
+                                          @click=${this.#handleActiveMenuItem}
+                                          data-menu-name="information"
+                                      >
+                                          <span class="sr-only">
+                                              Information for
+                                              ${this.collection}_${
+                                                  this.variable
+                                              }</span
+                                          >
+                                          <terra-icon
+                                              name="outline-information-circle"
+                                              library="heroicons"
+                                              font-size="1.5em"
+                                          ></terra-icon>
+                                      </terra-button>
 
-                        <terra-button
-                            circle
-                            outline
-                            aria-expanded=${this.activeMenuItem === 'download'}
-                            aria-controls="menu"
-                            aria-haspopup="true"
-                            role="menuitem"
-                            class="toggle"
-                            @click=${this.#handleActiveMenuItem}
-                            data-menu-item="download"
-                        >
-                            <span class="sr-only">
-                                Download options for
-                                ${this.collection}_${this.variable}</span
-                            >
-                            <terra-icon
-                                name="outline-arrow-down-tray"
-                                library="heroicons"
-                                font-size="1.5em"
-                            ></terra-icon>
-                        </terra-button>
-                    </div>
-                </header>
+                                      <terra-button
+                                          circle
+                                          outline
+                                          aria-expanded=${
+                                              this.activeMenuItem === 'download'
+                                          }
+                                          aria-controls="menu"
+                                          aria-haspopup="true"
+                                          class="toggle"
+                                          @click=${this.#handleActiveMenuItem}
+                                          data-menu-name="download"
+                                      >
+                                          <span class="sr-only">
+                                              Download options for
+                                              ${this.collection}_${
+                                                  this.variable
+                                              }</span
+                                          >
+                                          <terra-icon
+                                              name="outline-arrow-down-tray"
+                                              library="heroicons"
+                                              font-size="1.5em"
+                                          ></terra-icon>
+                                      </terra-button>
 
-                <menu
-                    role="menu"
-                    id="menu"
-                    data-expanded=${this.activeMenuItem !== null}
-                    tabindex="-1"
-                >
-                    <li
-                        role="menuitem"
-                        ?hidden=${this.activeMenuItem !== 'information'}
-                    >
-                        <dl>
-                            <dt>variable longname</dt>
-                            <dd>
-                                I think we pass in the shortname, so this needs to be
-                                gathered from elsewhere?
-                            </dd>
+                                      <terra-button
+                                          circle
+                                          outline
+                                          aria-expanded=${
+                                              this.activeMenuItem === 'help'
+                                          }
+                                          aria-controls="menu"
+                                          aria-haspopup="true"
+                                          class="toggle"
+                                          @click=${this.#handleActiveMenuItem}
+                                          data-menu-name="help"
+                                      >
+                                          <span class="sr-only">
+                                              Help link for
+                                              ${this.collection}_${
+                                                  this.variable
+                                              }</span
+                                          >
+                                          <terra-icon
+                                              name="outline-question-mark-circle"
+                                              library="heroicons"
+                                              font-size="1.5em"
+                                          ></terra-icon>
+                                      </terra-button>
+                                  </div>
+                              </header>
 
-                            <dt>variable shortname</dt>
-                            <dd>${this.variable}</dd>
+                              <menu
+                                  role="menu"
+                                  id="menu"
+                                  data-expanded=${this.activeMenuItem !== null}
+                                  tabindex="-1"
+                              >
+                                  <li
+                                      role="menuitem"
+                                      ?hidden=${this.activeMenuItem !== 'information'}
+                                  >
+                                      <h3 class="sr-only">Information</h3>
 
-                            <dt>units</dt>
-                            <dd>What units?</dd>
+                                      <dl>
+                                          <dt>Variable Longname</dt>
+                                          <dd>${this.variableLongName}</dd>
 
-                            <dt>dataset link</dt>
-                            <dd>To the DSL?</dd>
+                                          <dt>Variable Shortname</dt>
+                                          <dd>${this.variable}</dd>
 
-                            <dt>citation</dt>
-                            <dd>
-                                for both variable and data rods hydrology tool itself
-                            </dd>
+                                          <dt>Units</dt>
+                                          <dd>
+                                              <code>${this.units}</code>
+                                          </dd>
 
-                            <dt>
-                                <abbr title="Digital Object Identifier">DOI</abbr>
-                            </dt>
-                            <dd>This needs to be gathered from elsewhere.</dd>
-                        </dl>
-                    </li>
+                                          <dt>Dataset Information</dt>
+                                          <dd>
+                                              <a
+                                                  href=${this.datasetLandingPage}
+                                                  rel="noopener noreffer"
+                                                  target="_blank"
+                                                  >dataset summary
 
-                    <li role="none" ?hidden=${this.activeMenuItem !== 'download'}>
-                        <p>Plot data can be downloaded as either a PNG or CSV.</p>
+                                                  <terra-icon
+                                                      name="outline-arrow-top-right-on-square"
+                                                      library="heroicons"
+                                                  ></terra-icon>
+                                              </a>
+                                          </dd>
 
-                        <terra-button
-                            outline
-                            variant="default"
-                            role="menuitem"
-                            @click=${this.#downloadPNG}
-                        >
-                            <span class="sr-only">Download Plot Data as </span>
-                            PNG
-                            <terra-icon
-                                slot="prefix"
-                                name="outline-photo"
-                                library="heroicons"
-                                font-size="1.5em"
-                            ></terra-icon>
-                        </terra-button>
+                                          <dt>Variable Information</dt>
+                                          <dd>
+                                              <a
+                                                  href=${this.variableLandingPage}
+                                                  rel="noopener noreffer"
+                                                  target="_blank"
+                                                  >variable glossary
 
-                        <terra-button
-                            outline
-                            variant="default"
-                            role="menuitem"
-                            @click=${this.#downloadCSV}
-                        >
-                            <span class="sr-only">Download Plot Data as </span>
-                            CSV
-                            <terra-icon
-                                slot="prefix"
-                                name="outline-document"
-                                library="heroicons"
-                                font-size="1.5em"
-                            ></terra-icon>
-                        </terra-button>
-                    </li>
-                </menu>
+                                                  <terra-icon
+                                                      name="outline-arrow-top-right-on-square"
+                                                      library="heroicons"
+                                                  ></terra-icon>
+                                              </a>
+                                          </dd>
+                                      </dl>
+                                  </li>
+
+                                  <li
+                                      role="menuitem"
+                                      ?hidden=${this.activeMenuItem !== 'download'}
+                                  >
+                                      <h3 class="sr-only">Download Options</h3>
+
+                                      <p>
+                                          This plot can be downloaded as either a
+                                          <abbr title="Portable Network Graphic"
+                                              >PNG</abbr
+                                          >
+                                          image or
+                                          <abbr title="Comma-Separated Value"
+                                              >CSV</abbr
+                                          >
+                                          data.
+                                      </p>
+
+                                      <terra-button
+                                          outline
+                                          variant="default"
+                                          @click=${this.#downloadPNG}
+                                      >
+                                          <span class="sr-only"
+                                              >Download Plot Data as
+                                          </span>
+                                          PNG
+                                          <terra-icon
+                                              slot="prefix"
+                                              name="outline-photo"
+                                              library="heroicons"
+                                              font-size="1.5em"
+                                          ></terra-icon>
+                                      </terra-button>
+
+                                      <terra-button
+                                          outline
+                                          variant="default"
+                                          @click=${this.#downloadCSV}
+                                      >
+                                          <span class="sr-only"
+                                              >Download Plot Data as
+                                          </span>
+                                          CSV
+                                          <terra-icon
+                                              slot="prefix"
+                                              name="outline-document-chart-bar"
+                                              library="heroicons"
+                                              font-size="1.5em"
+                                          ></terra-icon>
+                                      </terra-button>
+                                  </li>
+
+                                  <li
+                                      role="menuitem"
+                                      ?hidden=${this.activeMenuItem !== 'help'}
+                                  >
+                                      <h3 class="sr-only">Help Links</h3>
+                                      <ul>
+                                          <li>
+                                              <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
+                                                  <terra-icon
+                                                      name="outline-arrow-top-right-on-square"
+                                                      library="heroicons"
+                                                  ></terra-icon>
+                                              </a>
+                                          </li>
+                                      </ul>
+                                  </li>
+                              </menu>
+                          `
+                        : html`<div class="spacer"></div>`
+                )}
 
                 <terra-plot
-                    exportparts="base:plot__base"
+                    exportparts="base:plot__base, plot-title:plot__title"
                     .data=${this.#timeSeriesController.lastTaskValue ??
                     this.#timeSeriesController.emptyPlotData}
                     .layout="${{
@@ -486,14 +601,23 @@ export default class TerraTimeSeries extends TerraElement {
                             zeroline: false,
                         },
                         yaxis: {
-                            title: this.units,
+                            title:
+                                this.variableLongName && this.units
+                                    ? `${this.variableLongName}, ${this.units}`
+                                    : null,
                             showline: false,
+                        },
+                        title: {
+                            text:
+                                this.collection && this.location
+                                    ? `${this.collection} @ ${this.location}`
+                                    : null,
                         },
                     }}"
                     .config=${{
                         displayModeBar: true,
                         displaylogo: false,
-                        modeBarButtonsToRemove: ['toImage', 'zoom2d'],
+                        modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
                         responsive: true,
                     }}
                 ></terra-plot>
@@ -509,13 +633,10 @@ export default class TerraTimeSeries extends TerraElement {
             ></terra-date-range-slider>
 
             <dialog
-                open
-                class="${this.#timeSeriesController.task.status === TaskStatus.PENDING
-                    ? 'open'
-                    : ''}"
+                ?open=${this.#timeSeriesController.task.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
-                <p>Plotting ${this.collection} ${this.variable}...</p>
+                <p>Plotting ${this.collection} ${this.variable}&hellip;</p>
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
         `

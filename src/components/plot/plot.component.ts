@@ -84,4 +84,9 @@ export default class TerraPlot extends TerraElement {
     render() {
         return html`<div part="base"></div>`
     }
+
+    updated() {
+        // If present, define the Plot Title as a part for styling.
+        this.shadowRoot?.querySelector('.gtitle')?.part.add('plot-title')
+    }
 }

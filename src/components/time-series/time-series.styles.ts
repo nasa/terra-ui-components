@@ -20,6 +20,10 @@ export default css`
         grid-column: 1 / 3;
     }
 
+    .spacer {
+        padding-block: 1.375rem;
+    }
+
     header {
         display: flex;
         flex-wrap: wrap;
@@ -62,15 +66,22 @@ export default css`
     }
 
     menu[data-expanded='true'] {
+        margin-block: 0.75em;
         max-height: 85dvh;
         overflow-y: auto;
-        padding-block: 1em;
     }
 
-    menu li {
+    menu [role='menuitem'] {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0em 1em;
         list-style: none;
         margin: 0;
         padding: 0;
+    }
+
+    [role='menuitem'] p {
+        flex: 1 0 100%;
     }
 
     menu dt {
@@ -92,26 +103,18 @@ export default css`
         display: none;
     }
 
-    .plot-container {
-        position: relative;
+    /* Set the plot title to transparent, which makes it not visible on the page but visible on download. */
+    terra-plot::part(plot-title) {
+        opacity: 0;
     }
 
     dialog {
-        opacity: 0;
-        transition: all 0.15s ease-out;
-        transition-delay: 0.4s; /* a short delay, to allow local results to be displayed without a loading icon */
-        position: absolute;
-        top: 20%;
-        left: 0;
-        z-index: 100;
-    }
-
-    dialog.open {
         opacity: 1;
-    }
+        transition: opacity 0.3s ease-out 0.4s; /* a short delay, to allow local results to be displayed without a loading icon */
+        place-self: center;
+        z-index: var(--terra-z-index-dialog);
 
-    @starting-style {
-        dialog.open {
+        @starting-style {
             opacity: 0;
         }
     }

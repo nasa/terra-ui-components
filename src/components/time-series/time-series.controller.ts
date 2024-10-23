@@ -117,6 +117,8 @@ export class TimeSeriesController {
             cacheKey
         )
 
+        console.log(existingTerraData)
+
         if (
             existingTerraData &&
             this.startDate.getTime() >=

@@ -34,4 +34,4 @@ export type TimeSeriesMetadata = {
     [key: string]: string | number
 }
 
-export type MenuItems = 'information' | 'download' | null
+export type MenuNames = 'download' | 'help' | 'information' | null
