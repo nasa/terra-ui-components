@@ -379,7 +379,7 @@ export default class TerraTimeSeries extends TerraElement {
                         ? html`
                               <header>
                                   <h2 class="title">
-                                      ${this.collection}_${this.variable}
+                                      ${this.variableLongName}
                                   </h2>
 
                                   <div class="toggles">
@@ -395,12 +395,8 @@ export default class TerraTimeSeries extends TerraElement {
                                           @click=${this.#handleActiveMenuItem}
                                           data-menu-name="information"
                                       >
-                                          <span class="sr-only">
-                                              Information for
-                                              ${this.collection}_${
-                                                  this.variable
-                                              }</span
-                                          >
+                                          <span class="sr-only">Information for ${this.variableLongName}</span>
+
                                           <terra-icon
                                               name="outline-information-circle"
                                               library="heroicons"
@@ -420,12 +416,8 @@ export default class TerraTimeSeries extends TerraElement {
                                           @click=${this.#handleActiveMenuItem}
                                           data-menu-name="download"
                                       >
-                                          <span class="sr-only">
-                                              Download options for
-                                              ${this.collection}_${
-                                                  this.variable
-                                              }</span
-                                          >
+                                          <span class="sr-only">Download options for ${this.variableLongName}</span>
+
                                           <terra-icon
                                               name="outline-arrow-down-tray"
                                               library="heroicons"
@@ -445,12 +437,8 @@ export default class TerraTimeSeries extends TerraElement {
                                           @click=${this.#handleActiveMenuItem}
                                           data-menu-name="help"
                                       >
-                                          <span class="sr-only">
-                                              Help link for
-                                              ${this.collection}_${
-                                                  this.variable
-                                              }</span
-                                          >
+                                          <span class="sr-only">Help link for ${this.variableLongName}</span>
+
                                           <terra-icon
                                               name="outline-question-mark-circle"
                                               library="heroicons"
@@ -490,7 +478,7 @@ export default class TerraTimeSeries extends TerraElement {
                                                   href=${this.datasetLandingPage}
                                                   rel="noopener noreffer"
                                                   target="_blank"
-                                                  >dataset summary
+                                                  >Dataset Summary
 
                                                   <terra-icon
                                                       name="outline-arrow-top-right-on-square"
@@ -505,7 +493,7 @@ export default class TerraTimeSeries extends TerraElement {
                                                   href=${this.variableLandingPage}
                                                   rel="noopener noreffer"
                                                   target="_blank"
-                                                  >variable glossary
+                                                  >Variable Glossary
 
                                                   <terra-icon
                                                       name="outline-arrow-top-right-on-square"
