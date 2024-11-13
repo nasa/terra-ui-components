@@ -402,7 +402,7 @@ export default class TerraCombobox extends TerraElement {
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
                 />
-                <edux-button
+                <terra-button
                     shape="square-left"
                     aria-controls="listbox"
                     aria-expanded=${this.isExpanded}
@@ -441,7 +441,7 @@ export default class TerraCombobox extends TerraElement {
                                   stroke-width="3"
                               ></circle>
                           </svg>`}
-                </edux-button>
+                </terra-button>
 
                 ${this.hideHelp
                     ? nothing

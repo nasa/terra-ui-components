@@ -138,31 +138,31 @@ import TerraButton from '@shoelace-style/shoelace/dist/react/button';
 
 const = App = () => (
   <>
-    <eduxButton circle>
+    <TerraButton circle>
       <slot name="label">
-        <eduxIcon name="solid-play" library="heroicons" font-size="1.5em"></eduxIcon>
+        <TerraIcon name="solid-play" library="heroicons" font-size="1.5em"></TerraIcon>
       </slot>
-    </eduxButton>
-    <eduxButton variant="danger" circle>
+    </TerraButton>
+    <TerraButton variant="danger" circle>
       <slot name="label">
-        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></eduxIcon>
+        <TerraIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></TerraIcon>
       </slot>
-    </eduxButton>
-    <eduxButton outline circle>
+    </TerraButton>
+    <TerraButton outline circle>
       <slot name="label">
-        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></eduxIcon>
+        <TerraIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.5em"></TerraIcon>
       </slot>
-    </eduxButton>
-    <eduxButton size="small" circle>
+    </TerraButton>
+    <TerraButton size="small" circle>
       <slot name="label">
-        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></eduxIcon>
+        <TerraIcon name="outline-arrow-down-tray" library="heroicons" font-size="1.3em"></TerraIcon>
       </slot>
-    </eduxButton>
-    <eduxButton size="large" circle>
+    </TerraButton>
+    <TerraButton size="large" circle>
       <slot name="label">
-        <eduxIcon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></eduxIcon>
+        <TerraIcon name="outline-arrow-down-tray" library="heroicons" font-size="2em"></TerraIcon>
       </slot>
-    </eduxButton>
+    </TerraButton>
   </>
 )
 
