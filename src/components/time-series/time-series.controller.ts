@@ -3,7 +3,7 @@ import type { StatusRenderer } from '@lit/task'
 import { compile } from 'handlebars'
 import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
-import type { Data, PlotData } from 'plotly.js'
+import type { Data, PlotData } from 'plotly.js-dist-min'
 import type {
     Collection,
     EndDate,

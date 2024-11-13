@@ -33,3 +33,5 @@ export type TimeSeriesMetadata = {
     lon: number
     [key: string]: string | number
 }
+
+export type MenuNames = 'download' | 'help' | 'information' | null

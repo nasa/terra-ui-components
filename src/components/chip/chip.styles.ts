@@ -4,15 +4,15 @@ export default css`
     .chip {
         display: inline-flex;
         flex-direction: row;
-        background-color: var(--edux-color-carbon-5);
-        border: 1.5px solid var(--edux-color-nasa-blue);
+        background-color: var(--terra-color-carbon-5);
+        border: 1.5px solid var(--terra-color-nasa-blue);
         cursor: default;
-        border-radius: var(--edux-border-radius-medium);
+        border-radius: var(--terra-border-radius-medium);
         padding: 0;
         margin: 5px;
-        color: var(--edux-color-carbon-50);
-        font-family: var(--edux-font-family--inter);
-        font-weight: var(--edux-font-weight-bold);
+        color: var(--terra-color-carbon-50);
+        font-family: var(--terra-font-family--inter);
+        font-weight: var(--terra-font-weight-bold);
         white-space: nowrap;
         align-items: center;
         vertical-align: middle;
@@ -21,7 +21,7 @@ export default css`
     }
 
     .chip:hover {
-        color: var(--edux-color-carbon-90);
+        color: var(--terra-color-carbon-90);
     }
 
     .chip:focus {
@@ -32,19 +32,19 @@ export default css`
     .chip--small {
         height: auto;
         min-height: 1.375rem;
-        font-size: var(--edux-font-size-x-small);
+        font-size: var(--terra-font-size-x-small);
     }
 
     .chip--medium {
         height: auto;
         min-height: 1.875rem;
-        font-size: var(--edux-font-size-small);
+        font-size: var(--terra-font-size-small);
     }
 
     .chip--large {
         height: auto;
         min-height: 2.5rem;
-        font-size: var(--edux-font-size-large);
+        font-size: var(--terra-font-size-large);
     }
 
     .chip-content {
@@ -73,7 +73,7 @@ export default css`
     .chip-svg {
         cursor: pointer;
         height: auto;
-        fill: var(--edux-color-carbon-50);
+        fill: var(--terra-color-carbon-50);
         display: inline-block;
         transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
         user-select: none;
@@ -102,7 +102,7 @@ export default css`
     }
 
     .chip:hover .chip-svg {
-        fill: var(--edux-color-carbon-90);
+        fill: var(--terra-color-carbon-90);
     }
 
     .chip-close {

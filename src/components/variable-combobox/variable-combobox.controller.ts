@@ -2,28 +2,7 @@ import { Task, TaskStatus } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import { cherryPickDocInfo } from './lib.js'
-
-export type ListItem = {
-    entryId: string
-    collectionLongName: string
-    collectionShortName: string
-    collectionVersion: string
-    collectionBeginningDateTime: string
-    collectionEndingDateTime: string
-    name: string
-    longName: string
-    standardName: string
-    units: string
-    /* data used to emit event detail when option is selected */
-    eventDetail: string
-}
-
-export type GroupedListItem = {
-    collectionEntryId: string
-    variables: ListItem[]
-}
-
-export type ReadableTaskStatus = 'INITIAL' | 'PENDING' | 'COMPLETE' | 'ERROR'
+import type { ListItem, ReadableTaskStatus } from './variable-combobox.types.js'
 
 const apiError = new Error(
     'Failed to fetch the data required to make a list of searchable items.'

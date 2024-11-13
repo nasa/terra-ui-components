@@ -1,6 +1,6 @@
 import { html } from 'lit'
 import { repeat } from 'lit/directives/repeat.js'
-import type { GroupedListItem, ListItem } from './variable-combobox.controller.js'
+import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
 function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
@@ -65,27 +65,23 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             collectionLongName: doc['Collection.LongName'],
             collectionShortName: doc['Collection.ShortName'],
             collectionVersion: doc['Collection.Version'],
-            name: doc['Variable.Name'],
+            entryId: `${doc['Collection.ShortName']}_${doc['Collection.Version']}_${doc['Variable.Name']}`,
             longName: doc['Variable.LongName'],
+            name: doc['Variable.Name'],
             standardName: doc['Variable.StandardName'],
             units: doc['Variable.Units'],
-            entryId: `${doc['Collection.ShortName']}_${doc['Collection.Version']}_${doc['Variable.Name']}`,
         }
 
-        const eventDetail = JSON.stringify({
-            collectionBeginningDateTime: doc['Collection.BeginDateTime'],
-            collectionEndingDateTime: doc['Collection.EndDateTime'],
-            collectionShortName: renderableData.collectionShortName,
-            collectionVersion: renderableData.collectionVersion,
-            name: renderableData.name,
-            longName: renderableData.longName,
-            standardName: renderableData.standardName,
-            entryId: renderableData.entryId,
-            units: doc['Variable.Units'],
+        const { collectionLongName, ...eventDetails } = renderableData
 
-        })
-
-        return { ...renderableData, eventDetail }
+        return {
+            ...renderableData,
+            eventDetail: JSON.stringify({
+                ...eventDetails,
+                datasetLandingPage: doc['Collection.DescriptionUrl'],
+                variableLandingPage: doc['Variable.DescriptionUrl'],
+            }),
+        }
     })
 }
 
