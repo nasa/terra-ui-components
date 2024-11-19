@@ -123,6 +123,7 @@ export default class TerraDateRangeSlider extends TerraElement {
                 min: minDate.getTime(),
                 max: maxDate.getTime(),
             },
+            behaviour: 'drag',
             step: this._getStep(),
             start: [startDate.getTime(), endDate.getTime()], // defaults to either the given start/end dates or the full date range (min/max date)
             tooltips: [true, true], // for each handle, choose whether to show a tooltip
