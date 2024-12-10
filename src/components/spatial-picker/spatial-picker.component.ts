@@ -75,6 +75,12 @@ export default class TerraSpatialPicker extends TerraElement {
     @property()
     label: string = 'Select Region'
 
+    /**
+     * Spatial constraints for the map (default: '-180, -90, 180, 90')
+     */
+    @property({ attribute: 'spatial-constraints' })
+    spatialConstraints: string = '-180, -90, 180, 90'
+
     @state()
     isExpanded: boolean = false
 
@@ -106,6 +112,8 @@ export default class TerraSpatialPicker extends TerraElement {
         switch (event.detail.cause) {
             case 'clear':
                 this.spatialInput.value = ''
+                // Reset spatial constraints to default value on map clear
+                this.spatialConstraints = '-180, -90, 180, 90'
                 break
 
             case 'draw':
@@ -163,7 +171,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         value=${this.initialValue}
                         type="text"
                         class="spatial-picker__input form-control"
-                        placeholder="-180, -90, 180, 90"
+                        placeholder="${this.spatialConstraints}"
                         aria-controls="map"
                         aria-expanded=${this.isExpanded}
                         @blur=${this._blur}
