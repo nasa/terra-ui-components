@@ -69,10 +69,6 @@ export default css`
         z-index: 2;
     }
 
-    .search-button {
-        // right: 3.25rem;
-    }
-
     .search-button::part(base) {
         border-color: transparent;
     }

@@ -203,7 +203,6 @@ export default class TerraGiovanniSearch extends TerraElement {
             case 'Enter': {
                 const currentNode = this.#walker?.currentNode as HTMLLIElement
                 //* Only select options. We manage listbox visibility and the options are not always rendered; the TreeWalker defaults to root node when in this state.
-                // this.#selectOption(currentNode)
                 if (currentNode.role === 'option') {
                     //* Pressing 'Enter' is like clicking an option; we choose it, not just walk to it.
                     this.#selectOption(currentNode)
