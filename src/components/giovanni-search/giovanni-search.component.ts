@@ -14,34 +14,6 @@ import type { ListItem } from './giovanni-search.types.js'
 import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
 
 /**
- * Keith:
- The biggest difference between what data rods has and what we want for variable picker is that the auto-complete in variable picker uses keywords, not just variable names. Perhaps we will want to include variable names in the auto-complete, but we will need to be able to determine what vocabulary from the catalog the search uses (i.e., be able to enable some categories vs. others - at least, that would be ideal).
-
- * AC:
- - There is a text-entry search field that supports auto-complete
- - Select a term from the auto-complete populates the search field
- - Clicking 'magnifying glass' icon invokes search for variables
- - Enter carriage-return invokes search for variables
-
- * TODO:
- - [x] Figure out the endpoint we're goign to be using for this variable keyword search. Modify the controller / lib as necessary to adapt the data shape to what we need.
- - [x] Search when clicking the magnifying glass; autocomplete otherwise. Basically, emit the value of the combobox when the search button (magnifying glass) is clicked.
- - [x] Also search variables (emit event) on enter (is this already done through terra-combobox-change?).
- - [x] Make fuze externally configurable if it isn't already? We'll need this to select which fields are searchable in the new keyword list.
- - [x] Adjust styles for TreeWalker selections to be highlights, like in Figma.
- - [x] Use https://giovanni.gsfc.nasa.gov/giovanni/daac-bin/aesir_proxy.pl/terms?terms.fl=dataFieldKeywords&terms.limit=-1&wt=json to figure out AESIR and also finish search component. We want to eventually make an AESIR wrapper of our own, so look at aesir_proxy.pl.
-  - [x] Talk to Ed Seiler about using AESIR (temporarily) to get keywords. Explain that we'll be building a proxy that ingests from AESIR a couple times a day and serves the data.
- - [x] Disable "help" feature.
- - [x] When near complete (maybe even PR) show popup control for listbox, explaning that it's part of the WCAG example.
-  - Keith would like it gone.
- - [x] Figure out if there's a better way to handle clearing the search results than the "Clear Search" button.
-  - Gone with the "toggle listbox" functionality.
- - [ ] If possible, combine duplicate functionality from variable search and keyword seaerch into the underlying "combobox" component.
-  - Controllers are different, to a degree, because data from API is different.
-  - Rendering is different, since this component does not group by dataset.
- */
-
-/**
  * @summary Fuzzy-search for dataset keywords in combobox with list autocomplete.
  * @documentation https://disc.gsfc.nasa.gov/components/giovanni-serch
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
