@@ -83,6 +83,20 @@ app.get('/variables', (req, res) => {
         })
 })
 
+app.get('/keywords', (req, res) => {
+    fetch(
+        'https://giovanni.gsfc.nasa.gov/giovanni/daac-bin/aesir_proxy.pl/terms?terms.fl=dataFieldKeywords&terms.limit=-1&wt=json&terms.sort=count'
+    )
+        .then(res => res.json())
+        .then(text => {
+            res.send(text)
+        })
+        .catch(err => {
+            console.error(err)
+            res.send('Failed to fetch')
+        })
+})
+
 app.listen(port, '127.0.0.1', () => {
     console.log('Server is running on http://127.0.0.1:' + port)
 })
