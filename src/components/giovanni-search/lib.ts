@@ -10,13 +10,6 @@ function renderSearchResult(listItem: ListItem) {
     `
 }
 
-function adaptReponse(docs: Record<string, any> = []): ListItem[] {
-    return docs.terms?.dataFieldKeywords.flatMap((doc: string, index: number) => {
-        /** data shape like ['MERRA', 283, 'Monthly', 179] */
-        return index % 2 === 0 ? [{ id: doc }] : []
-    })
-}
-
 function clearSelection(combobox: HTMLInputElement, listbox: HTMLUListElement) {
     combobox.removeAttribute('aria-activedescendant')
 
@@ -52,4 +45,4 @@ function walkToOption(
     })
 }
 
-export { adaptReponse, walkToOption, clearSelection, renderSearchResult, whenIdle }
+export { walkToOption, clearSelection, renderSearchResult, whenIdle }
