@@ -12,6 +12,7 @@ export { default as TerraVariableCombobox } from './components/variable-combobox
 export { default as TerraLoader } from './components/loader/loader.js'
 
 export { default as TerraGiovanniSearch } from './components/giovanni-search/giovanni-search.js';
+export { default as TerraGiovanniBrowse } from './components/giovanni-browse/giovanni-browse.js';
 /* plop:component */
 
 // Utilities
