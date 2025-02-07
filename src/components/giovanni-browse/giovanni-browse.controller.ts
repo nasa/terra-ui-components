@@ -2,7 +2,12 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 
-type Facets = {
+export type SelectedFacetField = {
+    facet: string
+    field: string
+}
+
+export type Facets = {
     depths: FacetField[]
     disciplines: FacetField[]
     measurements: FacetField[]
@@ -15,13 +20,13 @@ type Facets = {
     wavelengths: FacetField[]
 }
 
-type FacetField = {
+export type FacetField = {
     name: string
     count: number
 }
 
 //? there are quite a few more properties available, look at the response directly
-type Variable = {
+export type Variable = {
     dataProductShortName: string
     dataProductVersion: string
     dataFieldShortName: string
@@ -44,6 +49,7 @@ export class GiovanniBrowseController {
     #task: Task<[], any[]>
 
     constructor(host: ReactiveControllerHost) {
+        // TODO: add dependencies to task for the search query and selected facet filter
         this.#task = new Task(host, {
             task: async (_args, { signal }) => {
                 const response = await fetch(

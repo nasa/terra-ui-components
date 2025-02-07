@@ -1,9 +1,13 @@
 import componentStyles from '../../styles/component.styles.js'
 import styles from './giovanni-browse.styles.js'
 import TerraElement from '../../internal/terra-element.js'
-import { GiovanniBrowseController } from './giovanni-browse.controller.js'
 import { html } from 'lit'
 import { property, state } from 'lit/decorators.js'
+import {
+    GiovanniBrowseController,
+    type FacetField,
+    type SelectedFacetField,
+} from './giovanni-browse.controller.js'
 import type { CSSResultGroup } from 'lit'
 
 /**
@@ -25,10 +29,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
     searchQuery: string
 
     @state()
-    selectedFacet?: {
-        facet: string
-        field: string
-    }
+    selectedFacetField?: SelectedFacetField
 
     #controller = new GiovanniBrowseController(this)
 
@@ -40,7 +41,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
             return
         }
 
-        this.selectedFacet = {
+        this.selectedFacetField = {
             facet: target.dataset.facet,
             field: target.innerText.trim(),
         }
@@ -104,70 +105,101 @@ export default class TerraGiovanniBrowse extends TerraElement {
         </div>`
     }
 
+    #renderFacet(title: string, fields?: FacetField[], open?: boolean) {
+        return html`<details ?open=${open}>
+            <summary>${title}</summary>
+
+            ${(fields ?? []).map(
+                field => html`
+                    <div>
+                        <label
+                            ><input type="checkbox" /> ${field.name}
+                            (${field.count})</label
+                        >
+                    </div>
+                `
+            )}
+        </details>`
+    }
+
     #renderVariablesBrowse() {
         return html`<div class="variables-container">
-            <!-- Sidebar with Accessible Filters -->
             <aside class="sidebar">
                 <h2>Filter</h2>
-                <details open>
-                    <summary>Observations</summary>
-                    <label><input type="checkbox" /> Reanalysis</label>
-                </details>
-                <details open>
-                    <summary>Temporal Resolution</summary>
-                    <label><input type="checkbox" /> Hourly (12)</label>
-                    <label><input type="checkbox" /> Monthly (10)</label>
-                </details>
+
+                ${this.#renderFacet(
+                    'Observations',
+                    this.#controller.facets?.observations,
+                    true
+                )}
+                ${this.#renderFacet(
+                    'Disciplines',
+                    this.#controller.facets?.disciplines
+                )}
+                ${this.#renderFacet(
+                    'Measurements',
+                    this.#controller.facets?.measurements
+                )}
+                ${this.#renderFacet(
+                    'Platform / Instrument',
+                    this.#controller.facets?.platformInstruments
+                )}
+                ${this.#renderFacet(
+                    'Spatial Resolutions',
+                    this.#controller.facets?.spatialResolutions
+                )}
+                ${this.#renderFacet(
+                    'Temporal Resolutions',
+                    this.#controller.facets?.temporalResolutions
+                )}
+                ${this.#renderFacet(
+                    'Wavelengths',
+                    this.#controller.facets?.wavelengths
+                )}
+                ${this.#renderFacet('Depths', this.#controller.facets?.depths)}
+                ${this.#renderFacet(
+                    'Special Features',
+                    this.#controller.facets?.specialFeatures
+                )}
+                ${this.#renderFacet('Portal', this.#controller.facets?.portals)}
             </aside>
 
-            <!-- Main Content -->
             <main class="content">
-                <!-- Group: Aerosol Index -->
                 <section class="group">
-                    <h3>Aerosol Index</h3>
+                    <h3>Category</h3>
+
                     <ul class="variable-list">
-                        <li tabindex="0" aria-selected="false">
-                            <input type="checkbox" />
-                            <strong
-                                >Total Column Mass Density - PM2.5, time
-                                average</strong
-                            >
-                            <span class="meta">MERRA-2 • Monthly • kg-m2</span>
-                            <div class="details-panel">
-                                <h4>
-                                    Science Name: Total Column Mass Density - PM2.5
-                                </h4>
-                                <p>
-                                    <strong>Spatial Resolution:</strong> 0.5 x 0.625
-                                    deg.
-                                </p>
-                                <p>
-                                    <strong>Temporal Coverage:</strong> 1980-01-01 -
-                                    2024-01-01
-                                </p>
-                                <p><strong>Region Coverage:</strong> Global</p>
-                                <p><strong>Dataset:</strong> MERRA-2</p>
-                            </div>
-                        </li>
-                        <li tabindex="0" aria-selected="false">
-                            <input type="checkbox" /> Total Surface Mass Concentration
-                            - PM2.5, time average
-                            <div class="details-panel">
-                                <h4>
-                                    Science Name: Total Surface Mass Concentration -
-                                    PM2.5
-                                </h4>
-                                <p>
-                                    <strong>Spatial Resolution:</strong> 0.5 x 0.625
-                                    deg.
-                                </p>
-                                <p>
-                                    <strong>Temporal Coverage:</strong> 1990-01-01 -
-                                    2024-01-01
-                                </p>
-                                <p><strong>Region Coverage:</strong> Global</p>
-                            </div>
-                        </li>
+                        ${this.#controller.variables?.map(
+                            variable => html`
+                                <li tabindex="0" aria-selected="false">
+                                    <input type="checkbox" />
+                                    <strong>${variable.dataFieldLongName}</strong>
+                                    <span class="meta"
+                                        >MERRA-2 • ${variable.dataProductTimeInterval}
+                                        • kg-m2</span
+                                    >
+                                    <div class="details-panel">
+                                        <h4>
+                                            Science Name:
+                                            ${variable.dataFieldLongName}
+                                        </h4>
+                                        <p>
+                                            <strong>Spatial Resolution:</strong>
+                                            ${variable.dataProductSpatialResolution}
+                                        </p>
+                                        <p>
+                                            <strong>Temporal Coverage:</strong>
+                                            ${variable.dataProductBeginDateTime} -
+                                            ${variable.dataProductEndDateTime}
+                                        </p>
+                                        <p>
+                                            <strong>Region Coverage:</strong> Global
+                                        </p>
+                                        <p><strong>Dataset:</strong> MERRA-2</p>
+                                    </div>
+                                </li>
+                            `
+                        )}
                     </ul>
                 </section>
             </main>
@@ -175,7 +207,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
     }
 
     render() {
-        return this.selectedFacet
+        return this.selectedFacetField
             ? this.#renderVariablesBrowse()
             : this.#renderCategorySelect()
     }
