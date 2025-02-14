@@ -68,7 +68,7 @@ export default function (plop) {
                 },
             },
         ],
-        actions: [
+        actions: data => [
             // Existing component actions
             {
                 type: 'add',
@@ -113,8 +113,12 @@ export default function (plop) {
                 path: '../../src/terra_ui_components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.py',
                 templateFile: 'templates/widget/widget.py.hbs',
                 data: {
-                    name: '{{ tagWithoutPrefix tag }}',
-                    className: '{{ properCase tag }}',
+                    name: plop.getHelper('tagWithoutPrefix')(data.tag),
+                    className:
+                        'Terra' +
+                        plop.getHelper('properCase')(
+                            plop.getHelper('tagWithoutPrefix')(data.tag)
+                        ),
                 },
             },
             // Update root __init__.py

@@ -20,19 +20,8 @@ class {{className}}(anywidget.AnyWidget):
 
         // create an instance of the component
         let component = document.createElement('terra-{{name}}')
-        
-        // Set initial property values from the component's @property decorators
-        // Properties will be populated here once the component is created
-        
         el.appendChild(component)
-
-        // Event listeners will be added here once the component is created
-        
-        // Property change handlers will be added here once the component is created
     }
 
     export default { render };
     """
-
-    # Properties will be automatically added here based on the component's @property decorators
-    value = traitlets.Unicode('').tag(sync=True)
