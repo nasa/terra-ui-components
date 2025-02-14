@@ -50,7 +50,7 @@
     "prepublishOnly": "npm run verify",
     "prettier": "prettier --write --log-level=warn .",
     "prettier:check": "prettier --check --log-level=warn .",
-    "create-component": "plop component --plopfile scripts/plop/plopfile.js",
+    "create": "plop component --plopfile scripts/plop/plopfile.js",
     "update-widget": "plop update-widget --plopfile scripts/plop/plopfile.js",
     "test": "web-test-runner --group default",
     "test:component": "web-test-runner -- --watch --group",
