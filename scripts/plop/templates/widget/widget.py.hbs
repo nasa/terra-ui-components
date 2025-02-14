@@ -1,0 +1,53 @@
+import importlib.metadata
+
+import anywidget
+import traitlets
+
+try:
+    __version__ = importlib.metadata.version("terra-{{name}}")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "unknown"
+
+
+class Terra{{pascalCase name}}(anywidget.AnyWidget):
+    _esm = """
+    function render({ model, el }) {
+        // load the component library in the <head> tag
+        let terraAutoloader = document.createElement('script')
+        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.7/cdn/terra-ui-components-autoloader.js"
+        terraAutoloader.type = 'module'
+        document.querySelector('head').appendChild(terraAutoloader)
+
+        // create an instance of the component
+        let component = document.createElement('terra-{{name}}')
+        
+        // Set initial property values
+        {{#each properties}}
+        component.{{name}} = model.get('{{name}}')
+        {{/each}}
+        
+        el.appendChild(component)
+
+        // Add event listeners
+        {{#each events}}
+        component.addEventListener('{{this}}', (e) => {
+            // Placeholder for event handling
+            // model.set('{{this}}_triggered', true)
+            // model.save_changes()
+        })
+        {{/each}}
+
+        // Set up property change handlers
+        {{#each properties}}
+        model.on('change:{{name}}', () => {
+            component.{{name}} = model.get('{{name}}')
+        })
+        {{/each}}
+    }
+
+    export default { render };
+    """
+
+    {{#each properties}}
+    {{name}} = traitlets.Unicode('').tag(sync=True)
+    {{/each}}
