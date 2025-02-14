@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 export default function (plop) {
     // Existing helpers
@@ -24,13 +25,20 @@ export default function (plop) {
     // Add helpers for property and event extraction
     plop.setHelper('extractProperties', function (content) {
         const properties = []
-        const propertyRegex = /@property\([^)]*\)\s+(\w+):\s*([^=\n]+)/g
+        // Match @property(...) followed by property name and optional type
+        const propertyRegex = /@property\([^)]*\)\s+(\w+)(?::\s*([^=\n]+))?/g
         let match
 
         while ((match = propertyRegex.exec(content)) !== null) {
+            const name = match[1]
+            let type = match[2] || 'string' // default to string if no type specified
+
+            // Clean up any type by taking first part before any union types or whitespace
+            type = type.split('|')[0].trim()
+
             properties.push({
-                name: match[1],
-                type: match[2].trim(),
+                name,
+                type,
             })
         }
 
@@ -137,13 +145,69 @@ export default function (plop) {
         ],
     })
 
+    // Add this new generator after your existing ones
+    plop.setGenerator('update-widget', {
+        description: 'Update a specific widget with current properties and events',
+        prompts: [
+            {
+                type: 'input',
+                name: 'tag',
+                message: 'Component tag name? (e.g. terra-button)',
+                validate: value => {
+                    if (!/^terra-[a-z-+]+/.test(value)) {
+                        return false
+                    }
+                    if (value.includes('--') || value.endsWith('-')) {
+                        return false
+                    }
+                    return true
+                },
+            },
+        ],
+        actions: data => {
+            const componentName = plop.getHelper('tagWithoutPrefix')(data.tag)
+            const componentPath = path.join(
+                path.dirname(fileURLToPath(import.meta.url)),
+                '../../src/components',
+                componentName,
+                `${componentName}.component.ts`
+            )
+
+            console.log(componentPath, fs.existsSync(componentPath))
+
+            try {
+                const content = fs.readFileSync(componentPath, 'utf-8')
+                return [
+                    {
+                        type: 'add',
+                        path: `../../src/terra_ui_components/${componentName}/${componentName}.py`,
+                        templateFile: 'templates/widget/widget.py.hbs',
+                        data: {
+                            name: componentName,
+                            className:
+                                'Terra' + plop.getHelper('properCase')(componentName),
+                            properties: plop.getHelper('extractProperties')(content),
+                            events: plop.getHelper('extractEvents')(content),
+                        },
+                        force: true, // we want to overwrite this file if it already exists
+                    },
+                ]
+            } catch (error) {
+                throw new Error(`Could not find component: ${componentPath}`)
+            }
+        },
+    })
+
     // Widgets Generator
     plop.setGenerator('widgets', {
         description: 'Update Python widgets for all Terra components',
         prompts: [],
         actions: function () {
             // Read all component files
-            const componentsDir = path.join(__dirname, '../../src/components')
+            const componentsDir = path.join(
+                path.dirname(fileURLToPath(import.meta.url)),
+                '../../src/components'
+            )
             const components = fs
                 .readdirSync(componentsDir)
                 .filter(file =>
