@@ -1,23 +1,16 @@
 import importlib.metadata
-
-import anywidget
 import traitlets
+from ..base import TerraBaseWidget
 
 try:
-    __version__ = importlib.metadata.version("terra-{{name}}")
+    __version__ = importlib.metadata.version("terra_{{pythonName}}")
 except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 
-class {{className}}(anywidget.AnyWidget):
-    _esm = """
+class {{className}}(TerraBaseWidget):
+    _esm = TerraBaseWidget.get_autoloader() + """
     function render({ model, el }) {
-        // load the component library in the <head> tag
-        let terraAutoloader = document.createElement('script')
-        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/terra-ui-components-autoloader.js"
-        terraAutoloader.type = 'module'
-        document.querySelector('head').appendChild(terraAutoloader)
-
         // create an instance of the component
         let component = document.createElement('terra-{{name}}')
         
@@ -32,7 +25,7 @@ class {{className}}(anywidget.AnyWidget):
         component.{{name}} = model.get('{{name}}')
         {{/each}}
         {{/if}}
-        
+
         /**
          * add the component to the cell
          * it should now be visible in the notebook!
@@ -77,6 +70,6 @@ class {{className}}(anywidget.AnyWidget):
     # While we have properties in the component, we also need to tell Python about them as well. 
     # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
     {{#each properties}}
-    {{name}} = traitlets.{{propertyType type}}('').tag(sync=True)
+    {{name}} = traitlets.{{propertyType type}}({{defaultValue type}}).tag(sync=True)
     {{/each}}
     {{/if}}

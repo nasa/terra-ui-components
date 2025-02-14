@@ -38,11 +38,17 @@ To scaffold a new component, run the following command, replacing `terra-tag-nam
 npm run create terra-tag-name
 ```
 
-This will generate a source file, a stylesheet, and a docs page for you. When you start the dev server, you'll find the new component in the "Components" section of the sidebar.
+This will generate source files, a stylesheet, a Jupyter widget, and a docs page for you. When you start the dev server, you'll find the new component in the "Components" section of the sidebar. Do a `git status` to see all the changes this command made.
 
-### Contributing
+### Testing Components in Jupyter Lab
 
-Terra UI Components is an open source project and contributions are encouraged! If you're interesting in contributing, please review the [contribution guidelines](CONTRIBUTING.md) first.
+Install the `uv` package manager (https://github.com/astral-sh/uv), it's a lightweight tool that makes working with virtual environments and packages much easier. 
+
+Then run the following:
+* `uv venv` - create a virtual environment (only have to do this the first time)
+* `source .venv/bin/activate` - activate it
+* `uv pip install -e ".[dev]"` - install dependencies (see pyproject.toml)
+* `./.venv/bin/jupyter lab` - spins up Jupyter lab and should open the browser for you
 
 ## License
 

@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import Handlebars from 'handlebars'
 
 export default function (plop) {
     // Existing helpers
@@ -12,6 +13,10 @@ export default function (plop) {
         return titleCase(withoutPrefix(tag).replace(/-/g, ' '))
     })
 
+    plop.setHelper('tagToUnderscore', tag =>
+        tag.replace(/^terra-/, '').replace(/-/g, '_')
+    )
+
     // Add helper for property type mapping
     plop.setHelper('propertyType', type => {
         const typeMap = {
@@ -20,6 +25,15 @@ export default function (plop) {
             number: 'Float',
         }
         return typeMap[type.toLowerCase()] || 'Unicode'
+    })
+
+    plop.setHelper('defaultValue', type => {
+        const defaultValues = {
+            string: "''",
+            boolean: 'False',
+            number: '0.0', // Assuming float is the default number type
+        }
+        return new Handlebars.SafeString(defaultValues[type.toLowerCase()] || "''")
     })
 
     // Add helpers for property and event extraction
@@ -112,17 +126,17 @@ export default function (plop) {
             // Widget scaffolding with proper __init__.py files
             {
                 type: 'add',
-                path: '../../src/terra_ui_components/{{ tagWithoutPrefix tag }}/__init__.py',
+                path: '../../src/terra_ui_components/{{ tagToUnderscore tag }}/__init__.py',
                 template:
-                    'from .{{ tagWithoutPrefix tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n\n__all__ = ["Terra{{ properCase (tagWithoutPrefix tag) }}"]',
+                    'from .{{ tagToUnderscore tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n\n__all__ = ["Terra{{ properCase (tagWithoutPrefix tag) }}"]',
             },
             {
                 type: 'add',
-                path: '../../src/terra_ui_components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.py',
+                path: '../../src/terra_ui_components/{{ tagToUnderscore tag }}/{{ tagToUnderscore tag }}.py',
                 templateFile: 'templates/widget/widget.py.hbs',
                 data: () => {
-                    console.log(data)
                     const componentName = plop.getHelper('tagWithoutPrefix')(data.tag)
+                    const pythonName = plop.getHelper('tagToUnderscore')(data.tag)
                     const componentPath = path.join(
                         path.dirname(fileURLToPath(import.meta.url)),
                         '../../src/components',
@@ -133,6 +147,7 @@ export default function (plop) {
                     const content = fs.readFileSync(componentPath, 'utf-8')
                     return {
                         name: componentName,
+                        pythonName,
                         className:
                             'Terra' + plop.getHelper('properCase')(componentName),
                         properties: plop.getHelper('extractProperties')(content),
@@ -145,7 +160,75 @@ export default function (plop) {
                 type: 'modify',
                 path: '../../src/terra_ui_components/__init__.py',
                 pattern: /(from[\s\S]*?)(__all__\s*=\s*\[[\s\S]*?\])/,
-                template: `$1from .{{ tagWithoutPrefix tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n$2`,
+                template: `$1from .{{ tagToUnderscore tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n$2`,
+            },
+            {
+                type: 'modify',
+                path: '../../src/terra_ui_components/__init__.py',
+                pattern: /(__all__\s*=\s*\[[\s\S]*?)\]/,
+                template: `$1, "Terra{{ properCase (tagWithoutPrefix tag) }}"]`,
+            },
+        ],
+    })
+
+    // Allows you to create a widget from a pre-existing component
+    plop.setGenerator('create-widget', {
+        description: 'Generate a new widget from an existing component',
+        prompts: [
+            {
+                type: 'input',
+                name: 'tag',
+                message: 'Tag name? (e.g. terra-button)',
+                validate: value => {
+                    if (!/^terra-[a-z-+]+/.test(value)) {
+                        return false
+                    }
+                    if (value.includes('--') || value.endsWith('-')) {
+                        return false
+                    }
+                    return true
+                },
+            },
+        ],
+        actions: data => [
+            // Widget scaffolding with proper __init__.py files
+            {
+                type: 'add',
+                path: '../../src/terra_ui_components/{{ tagToUnderscore tag }}/__init__.py',
+                template:
+                    'from .{{ tagToUnderscore tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n\n__all__ = ["Terra{{ properCase (tagWithoutPrefix tag) }}"]',
+            },
+            {
+                type: 'add',
+                path: '../../src/terra_ui_components/{{ tagToUnderscore tag }}/{{ tagToUnderscore tag }}.py',
+                templateFile: 'templates/widget/widget.py.hbs',
+                data: () => {
+                    const componentName = plop.getHelper('tagWithoutPrefix')(data.tag)
+                    const pythonName = plop.getHelper('tagToUnderscore')(data.tag)
+                    const componentPath = path.join(
+                        path.dirname(fileURLToPath(import.meta.url)),
+                        '../../src/components',
+                        componentName,
+                        `${componentName}.component.ts`
+                    )
+
+                    const content = fs.readFileSync(componentPath, 'utf-8')
+                    return {
+                        name: componentName,
+                        pythonName,
+                        className:
+                            'Terra' + plop.getHelper('properCase')(componentName),
+                        properties: plop.getHelper('extractProperties')(content),
+                        events: plop.getHelper('extractEvents')(content),
+                    }
+                },
+            },
+            // Update root __init__.py
+            {
+                type: 'modify',
+                path: '../../src/terra_ui_components/__init__.py',
+                pattern: /(from[\s\S]*?)(__all__\s*=\s*\[[\s\S]*?\])/,
+                template: `$1from .{{ tagToUnderscore tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n$2`,
             },
             {
                 type: 'modify',
@@ -177,6 +260,7 @@ export default function (plop) {
         ],
         actions: data => {
             const componentName = plop.getHelper('tagWithoutPrefix')(data.tag)
+            const pythonName = plop.getHelper('tagToUnderscore')(data.tag)
             const componentPath = path.join(
                 path.dirname(fileURLToPath(import.meta.url)),
                 '../../src/components',
@@ -184,17 +268,16 @@ export default function (plop) {
                 `${componentName}.component.ts`
             )
 
-            console.log(componentPath, fs.existsSync(componentPath))
-
             try {
                 const content = fs.readFileSync(componentPath, 'utf-8')
                 return [
                     {
                         type: 'add',
-                        path: `../../src/terra_ui_components/${componentName}/${componentName}.py`,
+                        path: `../../src/terra_ui_components/${pythonName}/${pythonName}.py`,
                         templateFile: 'templates/widget/widget.py.hbs',
                         data: {
                             name: componentName,
+                            pythonName,
                             className:
                                 'Terra' + plop.getHelper('properCase')(componentName),
                             properties: plop.getHelper('extractProperties')(content),
