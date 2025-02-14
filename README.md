@@ -42,13 +42,14 @@ This will generate source files, a stylesheet, a Jupyter widget, and a docs page
 
 ### Testing Components in Jupyter Lab
 
-Install the `uv` package manager (https://github.com/astral-sh/uv), it's a lightweight tool that makes working with virtual environments and packages much easier. 
+Install the `uv` package manager (https://github.com/astral-sh/uv), it's a lightweight tool that makes working with virtual environments and packages much easier.
 
 Then run the following:
-* `uv venv` - create a virtual environment (only have to do this the first time)
-* `source .venv/bin/activate` - activate it
-* `uv pip install -e ".[dev]"` - install dependencies (see pyproject.toml)
-* `./.venv/bin/jupyter lab` - spins up Jupyter lab and should open the browser for you
+
+-   `uv venv` - create a virtual environment (only have to do this the first time)
+-   `source .venv/bin/activate` - activate it
+-   `uv pip install -e ".[dev]"` - install dependencies (see pyproject.toml)
+-   `./.venv/bin/jupyter lab` - spins up Jupyter lab and should open the browser for you
 
 ## License
 
