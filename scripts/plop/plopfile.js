@@ -145,7 +145,7 @@ export default function (plop) {
         ],
     })
 
-    // Add this new generator after your existing ones
+    // Update Widget Generator
     plop.setGenerator('update-widget', {
         description: 'Update a specific widget with current properties and events',
         prompts: [
@@ -195,64 +195,6 @@ export default function (plop) {
             } catch (error) {
                 throw new Error(`Could not find component: ${componentPath}`)
             }
-        },
-    })
-
-    // Widgets Generator
-    plop.setGenerator('widgets', {
-        description: 'Update Python widgets for all Terra components',
-        prompts: [],
-        actions: function () {
-            // Read all component files
-            const componentsDir = path.join(
-                path.dirname(fileURLToPath(import.meta.url)),
-                '../../src/components'
-            )
-            const components = fs
-                .readdirSync(componentsDir)
-                .filter(file =>
-                    fs.statSync(path.join(componentsDir, file)).isDirectory()
-                )
-                .map(dir => ({
-                    name: dir,
-                    content: fs.readFileSync(
-                        path.join(componentsDir, dir, `${dir}.component.ts`),
-                        'utf-8'
-                    ),
-                }))
-
-            const actions = []
-
-            components.forEach(component => {
-                const componentDir = `../../src/terra_ui_components/${component.name}`
-                const className = `Terra${plop.getHelper('properCase')(component.name)}`
-
-                // Create/update component's __init__.py
-                actions.push({
-                    type: 'add',
-                    path: `${componentDir}/__init__.py`,
-                    template: `from .${component.name} import ${className}\n\n__all__ = ["${className}"]`,
-                    skipIfExists: false,
-                })
-
-                // Update widget file with extracted properties and events
-                actions.push({
-                    type: 'add',
-                    path: `${componentDir}/${component.name}.py`,
-                    templateFile: 'templates/widget/widget.py.hbs',
-                    data: {
-                        name: component.name,
-                        className,
-                        properties: plop.getHelper('extractProperties')(
-                            component.content
-                        ),
-                        events: plop.getHelper('extractEvents')(component.content),
-                    },
-                    skipIfExists: false,
-                })
-            })
-
-            return actions
         },
     })
 }
