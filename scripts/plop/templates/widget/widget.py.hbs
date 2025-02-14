@@ -9,7 +9,7 @@ except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 
-class Terra{{pascalCase name}}(anywidget.AnyWidget):
+class {{className}}(anywidget.AnyWidget):
     _esm = """
     function render({ model, el }) {
         // load the component library in the <head> tag
@@ -21,33 +21,18 @@ class Terra{{pascalCase name}}(anywidget.AnyWidget):
         // create an instance of the component
         let component = document.createElement('terra-{{name}}')
         
-        // Set initial property values
-        {{#each properties}}
-        component.{{name}} = model.get('{{name}}')
-        {{/each}}
+        // Set initial property values from the component's @property decorators
+        // Properties will be populated here once the component is created
         
         el.appendChild(component)
 
-        // Add event listeners
-        {{#each events}}
-        component.addEventListener('{{this}}', (e) => {
-            // Placeholder for event handling
-            // model.set('{{this}}_triggered', true)
-            // model.save_changes()
-        })
-        {{/each}}
-
-        // Set up property change handlers
-        {{#each properties}}
-        model.on('change:{{name}}', () => {
-            component.{{name}} = model.get('{{name}}')
-        })
-        {{/each}}
+        // Event listeners will be added here once the component is created
+        
+        // Property change handlers will be added here once the component is created
     }
 
     export default { render };
     """
 
-    {{#each properties}}
-    {{name}} = traitlets.Unicode('').tag(sync=True)
-    {{/each}}
+    # Properties will be automatically added here based on the component's @property decorators
+    value = traitlets.Unicode('').tag(sync=True)

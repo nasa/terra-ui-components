@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 export default function (plop) {
+    // Existing helpers
     plop.setHelper('tagWithoutPrefix', tag => tag.replace(/^terra-/, ''))
 
     plop.setHelper('tagToTitle', tag => {
@@ -10,14 +11,17 @@ export default function (plop) {
         return titleCase(withoutPrefix(tag).replace(/-/g, ' '))
     })
 
-    // New helpers for widget generation
-    plop.setHelper('pascalCase', function (str) {
-        return str
-            .split('-')
-            .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-            .join('')
+    // Add helper for property type mapping
+    plop.setHelper('propertyType', type => {
+        const typeMap = {
+            string: 'Unicode',
+            boolean: 'Bool',
+            number: 'Float',
+        }
+        return typeMap[type.toLowerCase()] || 'Unicode'
     })
 
+    // Add helpers for property and event extraction
     plop.setHelper('extractProperties', function (content) {
         const properties = []
         const propertyRegex = /@property\([^)]*\)\s+(\w+):\s*([^=\n]+)/g
@@ -45,7 +49,7 @@ export default function (plop) {
         return events
     })
 
-    // Your existing component generator
+    // Component Generator
     plop.setGenerator('component', {
         description: 'Generate a new component',
         prompts: [
@@ -54,21 +58,18 @@ export default function (plop) {
                 name: 'tag',
                 message: 'Tag name? (e.g. terra-button)',
                 validate: value => {
-                    // Start with terra- and include only a-z + dashes
                     if (!/^terra-[a-z-+]+/.test(value)) {
                         return false
                     }
-
-                    // No double dashes or ending dash
                     if (value.includes('--') || value.endsWith('-')) {
                         return false
                     }
-
                     return true
                 },
             },
         ],
         actions: [
+            // Existing component actions
             {
                 type: 'add',
                 path: '../../src/components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.ts',
@@ -100,12 +101,41 @@ export default function (plop) {
                 pattern: /\/\* plop:component \*\//,
                 template: `export { default as {{ properCase tag }} } from './components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.js';\n/* plop:component */`,
             },
+            // Widget scaffolding with proper __init__.py files
+            {
+                type: 'add',
+                path: '../../src/terra_ui_components/{{ tagWithoutPrefix tag }}/__init__.py',
+                template:
+                    'from .{{ tagWithoutPrefix tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n\n__all__ = ["Terra{{ properCase (tagWithoutPrefix tag) }}"]',
+            },
+            {
+                type: 'add',
+                path: '../../src/terra_ui_components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.py',
+                templateFile: 'templates/widget/widget.py.hbs',
+                data: {
+                    name: '{{ tagWithoutPrefix tag }}',
+                    className: '{{ properCase tag }}',
+                },
+            },
+            // Update root __init__.py
+            {
+                type: 'modify',
+                path: '../../src/terra_ui_components/__init__.py',
+                pattern: /(from[\s\S]*?)(__all__\s*=\s*\[[\s\S]*?\])/,
+                template: `$1from .{{ tagWithoutPrefix tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n$2`,
+            },
+            {
+                type: 'modify',
+                path: '../../src/terra_ui_components/__init__.py',
+                pattern: /(__all__\s*=\s*\[[\s\S]*?)\]/,
+                template: `$1, "Terra{{ properCase (tagWithoutPrefix tag) }}"]`,
+            },
         ],
     })
 
-    // New widget generator
+    // Widgets Generator
     plop.setGenerator('widgets', {
-        description: 'Generate Python widgets for all Terra components',
+        description: 'Update Python widgets for all Terra components',
         prompts: [],
         actions: function () {
             // Read all component files
@@ -127,21 +157,24 @@ export default function (plop) {
 
             components.forEach(component => {
                 const componentDir = `../../src/terra_ui_components/${component.name}`
+                const className = `Terra${plop.getHelper('properCase')(component.name)}`
 
-                // Create component directory
+                // Create/update component's __init__.py
                 actions.push({
                     type: 'add',
                     path: `${componentDir}/__init__.py`,
-                    template: '',
+                    template: `from .${component.name} import ${className}\n\n__all__ = ["${className}"]`,
+                    skipIfExists: false,
                 })
 
-                // Create widget file
+                // Update widget file with extracted properties and events
                 actions.push({
                     type: 'add',
                     path: `${componentDir}/${component.name}.py`,
                     templateFile: 'templates/widget/widget.py.hbs',
                     data: {
                         name: component.name,
+                        className,
                         properties: plop.getHelper('extractProperties')(
                             component.content
                         ),
