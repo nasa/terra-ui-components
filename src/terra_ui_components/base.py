@@ -1,5 +1,4 @@
 import anywidget
-import traitlets
 
 
 class TerraBaseWidget(anywidget.AnyWidget):
@@ -19,7 +18,7 @@ class TerraBaseWidget(anywidget.AnyWidget):
         if (!document.querySelector('#terra-autoloader')) {{
             let terraAutoloader = document.createElement('script')
             terraAutoloader.id = 'terra-autoloader'
-            
+
             terraAutoloader.src = {str(cls.use_local).lower()}
                 ? "/files/dist/terra-ui-components-autoloader.js"
                 : "https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/terra-ui-components-autoloader.js"
