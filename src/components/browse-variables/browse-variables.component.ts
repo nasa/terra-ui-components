@@ -1,24 +1,21 @@
 import componentStyles from '../../styles/component.styles.js'
-import styles from './giovanni-browse.styles.js'
+import styles from './browse-variables.styles.js'
 import TerraElement from '../../internal/terra-element.js'
+import { BrowseVariablesController } from './browse-variables.controller.js'
 import { html } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import {
-    GiovanniBrowseController,
-    type FacetField,
-    type SelectedFacetField,
-} from './giovanni-browse.controller.js'
 import type { CSSResultGroup } from 'lit'
+import type { FacetField, SelectedFacetField } from './browse-variables.types.js'
 
 /**
  * @summary Browse through the Giovanni catalog.
- * @documentation https://disc.gsfc.nasa.gov/components/giovanni-browse
+ * @documentation https://disc.gsfc.nasa.gov/components/browse-variables
  * @status MVP
  * @since 1.0
  *
  * @csspart base - The component's base wrapper.
  */
-export default class TerraGiovanniBrowse extends TerraElement {
+export default class TerraBrowseVariables extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
@@ -28,10 +25,17 @@ export default class TerraGiovanniBrowse extends TerraElement {
     @property()
     searchQuery: string
 
-    @state()
-    selectedFacetField?: SelectedFacetField
+    /**
+     * Allows the user to switch the catalog between different providers
+     * TODO: add support for CMR catalog and make it the default
+     */
+    @property()
+    catalog: 'giovanni' = 'giovanni'
 
-    #controller = new GiovanniBrowseController(this)
+    @state()
+    selectedFacetFields: SelectedFacetField[] = []
+
+    #controller = new BrowseVariablesController(this)
 
     handleFacetSelect = (event: Event) => {
         const target = event.target as HTMLLIElement
@@ -41,10 +45,10 @@ export default class TerraGiovanniBrowse extends TerraElement {
             return
         }
 
-        this.selectedFacetField = {
+        this.selectedFacetFields.push({
             facet: target.dataset.facet,
             field: target.innerText.trim(),
-        }
+        })
     }
 
     #renderCategorySelect() {
@@ -52,7 +56,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
             <div class="column">
                 <h2>Research Areas</h2>
                 <ul role="list">
-                    ${this.#controller.facets?.disciplines?.map(
+                    ${this.#controller.facetsByCategory?.disciplines?.map(
                         field =>
                             html`<li
                                 role="button"
@@ -70,7 +74,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
             <div class="column">
                 <h2>Measurements</h2>
                 <ul role="list">
-                    ${this.#controller.facets?.measurements?.map(
+                    ${this.#controller.facetsByCategory?.measurements?.map(
                         field =>
                             html`<li
                                 role="button"
@@ -88,7 +92,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
             <div class="column">
                 <h2>Sources</h2>
                 <ul role="list">
-                    ${this.#controller.facets?.platformInstruments?.map(
+                    ${this.#controller.facetsByCategory?.platformInstruments?.map(
                         field =>
                             html`<li
                                 role="button"
@@ -129,39 +133,45 @@ export default class TerraGiovanniBrowse extends TerraElement {
 
                 ${this.#renderFacet(
                     'Observations',
-                    this.#controller.facets?.observations,
+                    this.#controller.facetsByCategory?.observations,
                     true
                 )}
                 ${this.#renderFacet(
                     'Disciplines',
-                    this.#controller.facets?.disciplines
+                    this.#controller.facetsByCategory?.disciplines
                 )}
                 ${this.#renderFacet(
                     'Measurements',
-                    this.#controller.facets?.measurements
+                    this.#controller.facetsByCategory?.measurements
                 )}
                 ${this.#renderFacet(
                     'Platform / Instrument',
-                    this.#controller.facets?.platformInstruments
+                    this.#controller.facetsByCategory?.platformInstruments
                 )}
                 ${this.#renderFacet(
                     'Spatial Resolutions',
-                    this.#controller.facets?.spatialResolutions
+                    this.#controller.facetsByCategory?.spatialResolutions
                 )}
                 ${this.#renderFacet(
                     'Temporal Resolutions',
-                    this.#controller.facets?.temporalResolutions
+                    this.#controller.facetsByCategory?.temporalResolutions
                 )}
                 ${this.#renderFacet(
                     'Wavelengths',
-                    this.#controller.facets?.wavelengths
+                    this.#controller.facetsByCategory?.wavelengths
                 )}
-                ${this.#renderFacet('Depths', this.#controller.facets?.depths)}
+                ${this.#renderFacet(
+                    'Depths',
+                    this.#controller.facetsByCategory?.depths
+                )}
                 ${this.#renderFacet(
                     'Special Features',
-                    this.#controller.facets?.specialFeatures
+                    this.#controller.facetsByCategory?.specialFeatures
                 )}
-                ${this.#renderFacet('Portal', this.#controller.facets?.portals)}
+                ${this.#renderFacet(
+                    'Portal',
+                    this.#controller.facetsByCategory?.portals
+                )}
             </aside>
 
             <main class="content">
@@ -207,7 +217,7 @@ export default class TerraGiovanniBrowse extends TerraElement {
     }
 
     render() {
-        return this.selectedFacetField
+        return this.selectedFacetFields.length
             ? this.#renderVariablesBrowse()
             : this.#renderCategorySelect()
     }

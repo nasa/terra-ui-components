@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<terra-giovanni-browse></terra-giovanni-browse>
+<terra-browse-variables></terra-browse-variables>
 ```
 
 ## Examples
@@ -19,4 +19,4 @@ TODO
 
 TODO
 
-[component-metadata:terra-giovanni-browse]
+[component-metadata:terra-browse-variables]

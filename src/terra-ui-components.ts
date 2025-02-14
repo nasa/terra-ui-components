@@ -11,8 +11,8 @@ export { default as TerraTimeSeries } from './components/time-series/time-series
 export { default as TerraVariableCombobox } from './components/variable-combobox/variable-combobox.js'
 export { default as TerraLoader } from './components/loader/loader.js'
 
-export { default as TerraGiovanniSearch } from './components/giovanni-search/giovanni-search.js';
-export { default as TerraGiovanniBrowse } from './components/giovanni-browse/giovanni-browse.js';
+export { default as TerraGiovanniSearch } from './components/giovanni-search/giovanni-search.js'
+export { default as TerraBrowseVariables } from './components/browse-variables/browse-variables.js'
 /* plop:component */
 
 // Utilities
