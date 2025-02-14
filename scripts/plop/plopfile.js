@@ -120,13 +120,24 @@ export default function (plop) {
                 type: 'add',
                 path: '../../src/terra_ui_components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.py',
                 templateFile: 'templates/widget/widget.py.hbs',
-                data: {
-                    name: plop.getHelper('tagWithoutPrefix')(data.tag),
-                    className:
-                        'Terra' +
-                        plop.getHelper('properCase')(
-                            plop.getHelper('tagWithoutPrefix')(data.tag)
-                        ),
+                data: () => {
+                    console.log(data)
+                    const componentName = plop.getHelper('tagWithoutPrefix')(data.tag)
+                    const componentPath = path.join(
+                        path.dirname(fileURLToPath(import.meta.url)),
+                        '../../src/components',
+                        componentName,
+                        `${componentName}.component.ts`
+                    )
+
+                    const content = fs.readFileSync(componentPath, 'utf-8')
+                    return {
+                        name: componentName,
+                        className:
+                            'Terra' + plop.getHelper('properCase')(componentName),
+                        properties: plop.getHelper('extractProperties')(content),
+                        events: plop.getHelper('extractEvents')(content),
+                    }
                 },
             },
             // Update root __init__.py
