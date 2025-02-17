@@ -8,3 +8,4 @@ src/react
 .venv
 __pycache__
 .ipynb_checkpoints
+.pypirc
