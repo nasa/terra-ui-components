@@ -14,14 +14,14 @@ class TerraBaseWidget(anywidget.AnyWidget):
     @classmethod
     def get_autoloader(cls):
         return f"""
-        // Only add autoloader if it hasn't been added yet
-        if (!document.querySelector('#terra-autoloader')) {{
-            let terraAutoloader = document.createElement('script')
-            terraAutoloader.id = 'terra-autoloader'
+        const terraStyles = document.createElement('link')
+        terraStyles.rel = 'stylesheet'
+        terraStyles.href = 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/themes/horizon.css'
+        document.head.appendChild(terraStyles)
 
-            terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/terra-ui-components-autoloader.js"
-                
-            terraAutoloader.type = 'module'
-            document.querySelector('head').appendChild(terraAutoloader)
-        }}
+        const terraAutoloader = document.createElement('script')
+        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/terra-ui-components-autoloader.js"
+        //terraAutoloader.src = "https://localhost:4000/dist/terra-ui-components-autoloader.js"
+        terraAutoloader.type = 'module'
+        document.head.appendChild(terraAutoloader)
         """

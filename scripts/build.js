@@ -285,6 +285,15 @@ if (serve) {
             key: 'certs/server.key',
             cert: 'certs/server.crt',
         },
+        middleware: function (req, res, next) {
+            res.setHeader('Access-Control-Allow-Origin', '*')
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            res.setHeader(
+                'Access-Control-Allow-Headers',
+                'Origin, Content-Type, Accept'
+            )
+            next()
+        },
     }
 
     // Launch browser sync
