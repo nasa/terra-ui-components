@@ -5,13 +5,10 @@ build-backend = "hatchling.build"
 [project]
 name = "terra_ui_components"
 dependencies = ["anywidget"]
+version = "0.0.13"
 readme = "README.md"
 description = "NASA Terra UI Components Library"
 requires-python = ">=3.8"
-dynamic = ["version"]
-
-[tool.hatch.version]
-path = "VERSION"
 
 # For projects not using `uv`, you can install these development dependencies with:
 # `pip install -e ".[dev]"`

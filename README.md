@@ -24,10 +24,10 @@ This will spin up the dev server. After the initial build, a browser will open a
 
 ### Building
 
-To generate a production build, run the following command.
+To generate a production build, run the following commands.
 
 ```bash
-npm run build
+npm run build # to build the Lit components
 ```
 
 ### Creating New Components
@@ -50,6 +50,19 @@ Then run the following:
 -   `source .venv/bin/activate` - activate it
 -   `uv pip install -e ".[dev]"` - install dependencies (see pyproject.toml)
 -   `./.venv/bin/jupyter lab` - spins up Jupyter lab and should open the browser for you
+
+### Publishing to NPM and PyPI
+
+The Lit components are available on NPM at: https://www.npmjs.com/package/@nasa-terra/components
+The Python widgets are available on PyPI: 
+
+To build a new version and publish it, you can use NPM commands. The Python equivalents will be run automatically for you (see the "scripts" in package.json for details). You will need access to both repositories in order to publish.
+
+```bash
+# commit all your changes first
+npm version patch # bump the version, you can use "major", "minor", "patch", etc.
+npm publish --scope=public
+```
 
 ## License
 
