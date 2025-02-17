@@ -19,9 +19,7 @@ class TerraBaseWidget(anywidget.AnyWidget):
             let terraAutoloader = document.createElement('script')
             terraAutoloader.id = 'terra-autoloader'
 
-            terraAutoloader.src = {str(cls.use_local).lower()}
-                ? "/files/dist/terra-ui-components-autoloader.js"
-                : "https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/terra-ui-components-autoloader.js"
+            terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/cdn/terra-ui-components-autoloader.js"
                 
             terraAutoloader.type = 'module'
             document.querySelector('head').appendChild(terraAutoloader)
