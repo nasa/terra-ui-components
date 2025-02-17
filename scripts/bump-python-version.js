@@ -1,4 +1,4 @@
-const { execSync } = require('child_process')
+import { execSync } from 'child_process'
 
 // Get the latest tag from npm version commit
 const latestTag = execSync('git describe --tags --abbrev=0').toString().trim()
