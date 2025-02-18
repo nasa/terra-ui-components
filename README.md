@@ -54,7 +54,7 @@ Then run the following:
 ### Publishing to NPM and PyPI
 
 The Lit components are available on NPM at: https://www.npmjs.com/package/@nasa-terra/components
-The Python widgets are available on PyPI: 
+The Python widgets are available on PyPI:
 
 To build a new version and publish it, you can use NPM commands. The Python equivalents will be run automatically for you (see the "scripts" in package.json for details). You will need access to both repositories in order to publish.
 
