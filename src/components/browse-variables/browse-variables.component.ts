@@ -5,7 +5,11 @@ import { BrowseVariablesController } from './browse-variables.controller.js'
 import { html } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
-import type { FacetField, SelectedFacetField } from './browse-variables.types.js'
+import type {
+    FacetField,
+    FacetsByCategory,
+    SelectedFacetField,
+} from './browse-variables.types.js'
 
 /**
  * @summary Browse through the Giovanni catalog.
@@ -45,66 +49,50 @@ export default class TerraBrowseVariables extends TerraElement {
             return
         }
 
-        this.selectedFacetFields.push({
-            facet: target.dataset.facet,
-            field: target.innerText.trim(),
-        })
+        // currently in the design it appears you can only select one facet field at a time
+        this.selectedFacetFields = [
+            {
+                facet: target.dataset.facet,
+                field: target.innerText.trim(),
+            },
+        ]
     }
 
     #renderCategorySelect() {
+        const columns: {
+            title: string
+            facetKey: keyof FacetsByCategory
+        }[] = [
+            { title: 'Research Areas', facetKey: 'disciplines' },
+            { title: 'Measurements', facetKey: 'measurements' },
+            { title: 'Sources', facetKey: 'platformInstruments' },
+        ]
+
         return html`<div class="initial-browse-container">
-            <div class="column">
-                <h2>Research Areas</h2>
-                <ul role="list">
-                    ${this.#controller.facetsByCategory?.disciplines?.map(
-                        field =>
-                            html`<li
-                                role="button"
-                                tabindex="0"
-                                aria-selected="false"
-                                data-facet="disciplines"
-                                @click=${this.handleFacetSelect}
-                            >
-                                ${field.name}
-                            </li>`
-                    )}
-                </ul>
-            </div>
-
-            <div class="column">
-                <h2>Measurements</h2>
-                <ul role="list">
-                    ${this.#controller.facetsByCategory?.measurements?.map(
-                        field =>
-                            html`<li
-                                role="button"
-                                tabindex="0"
-                                aria-selected="false"
-                                data-facet="measurements"
-                                @click=${this.handleFacetSelect}
-                            >
-                                ${field.name}
-                            </li>`
-                    )}
-                </ul>
-            </div>
-
-            <div class="column">
-                <h2>Sources</h2>
-                <ul role="list">
-                    ${this.#controller.facetsByCategory?.platformInstruments?.map(
-                        field =>
-                            html`<li
-                                role="button"
-                                tabindex="0"
-                                aria-selected="false"
-                                data-facet="platformInstruments"
-                                @click=${this.handleFacetSelect}
-                            >
-                                ${field.name}
-                            </li>`
-                    )}
-                </ul>
+            <div class="scroll-container">
+                ${columns.map(
+                    column => html`
+                        <div class="column">
+                            <h2>${column.title}</h2>
+                            <ul role="list">
+                                ${this.#controller.facetsByCategory?.[
+                                    column.facetKey
+                                ]?.map(
+                                    field =>
+                                        html`<li
+                                            role="button"
+                                            tabindex="0"
+                                            aria-selected="false"
+                                            data-facet="disciplines"
+                                            @click=${this.handleFacetSelect}
+                                        >
+                                            ${field.name}
+                                        </li>`
+                                )}
+                            </ul>
+                        </div>
+                    `
+                )}
             </div>
         </div>`
     }
@@ -127,92 +115,79 @@ export default class TerraBrowseVariables extends TerraElement {
     }
 
     #renderVariablesBrowse() {
+        const facets: {
+            title: string
+            facetKey: keyof FacetsByCategory
+            open?: boolean
+        }[] = [
+            { title: 'Observations', facetKey: 'observations', open: true },
+            { title: 'Disciplines', facetKey: 'disciplines' },
+            { title: 'Measurements', facetKey: 'measurements' },
+            { title: 'Platform / Instrument', facetKey: 'platformInstruments' },
+            { title: 'Spatial Resolutions', facetKey: 'spatialResolutions' },
+            { title: 'Temporal Resolutions', facetKey: 'temporalResolutions' },
+            { title: 'Wavelengths', facetKey: 'wavelengths' },
+            { title: 'Depths', facetKey: 'depths' },
+            { title: 'Special Features', facetKey: 'specialFeatures' },
+            { title: 'Portal', facetKey: 'portals' },
+        ]
+
         return html`<div class="variables-container">
-            <aside class="sidebar">
-                <h2>Filter</h2>
+            <div class="scroll-container">
+                <aside class="sidebar">
+                    <h2>Filter</h2>
 
-                ${this.#renderFacet(
-                    'Observations',
-                    this.#controller.facetsByCategory?.observations,
-                    true
-                )}
-                ${this.#renderFacet(
-                    'Disciplines',
-                    this.#controller.facetsByCategory?.disciplines
-                )}
-                ${this.#renderFacet(
-                    'Measurements',
-                    this.#controller.facetsByCategory?.measurements
-                )}
-                ${this.#renderFacet(
-                    'Platform / Instrument',
-                    this.#controller.facetsByCategory?.platformInstruments
-                )}
-                ${this.#renderFacet(
-                    'Spatial Resolutions',
-                    this.#controller.facetsByCategory?.spatialResolutions
-                )}
-                ${this.#renderFacet(
-                    'Temporal Resolutions',
-                    this.#controller.facetsByCategory?.temporalResolutions
-                )}
-                ${this.#renderFacet(
-                    'Wavelengths',
-                    this.#controller.facetsByCategory?.wavelengths
-                )}
-                ${this.#renderFacet(
-                    'Depths',
-                    this.#controller.facetsByCategory?.depths
-                )}
-                ${this.#renderFacet(
-                    'Special Features',
-                    this.#controller.facetsByCategory?.specialFeatures
-                )}
-                ${this.#renderFacet(
-                    'Portal',
-                    this.#controller.facetsByCategory?.portals
-                )}
-            </aside>
+                    ${facets.map(facet =>
+                        this.#renderFacet(
+                            facet.title,
+                            this.#controller.facetsByCategory?.[facet.facetKey],
+                            facet.open
+                        )
+                    )}
+                </aside>
 
-            <main class="content">
-                <section class="group">
-                    <h3>Category</h3>
+                <main class="content">
+                    <section class="group">
+                        <h3>Category</h3>
 
-                    <ul class="variable-list">
-                        ${this.#controller.variables?.map(
-                            variable => html`
-                                <li tabindex="0" aria-selected="false">
-                                    <input type="checkbox" />
-                                    <strong>${variable.dataFieldLongName}</strong>
-                                    <span class="meta"
-                                        >MERRA-2 • ${variable.dataProductTimeInterval}
-                                        • kg-m2</span
-                                    >
-                                    <div class="details-panel">
-                                        <h4>
-                                            Science Name:
-                                            ${variable.dataFieldLongName}
-                                        </h4>
-                                        <p>
-                                            <strong>Spatial Resolution:</strong>
-                                            ${variable.dataProductSpatialResolution}
-                                        </p>
-                                        <p>
-                                            <strong>Temporal Coverage:</strong>
-                                            ${variable.dataProductBeginDateTime} -
-                                            ${variable.dataProductEndDateTime}
-                                        </p>
-                                        <p>
-                                            <strong>Region Coverage:</strong> Global
-                                        </p>
-                                        <p><strong>Dataset:</strong> MERRA-2</p>
-                                    </div>
-                                </li>
-                            `
-                        )}
-                    </ul>
-                </section>
-            </main>
+                        <ul class="variable-list">
+                            ${this.#controller.variables?.map(
+                                variable => html`
+                                    <li tabindex="0" aria-selected="false">
+                                        <input type="checkbox" />
+                                        <strong>${variable.dataFieldLongName}</strong>
+                                        <span class="meta"
+                                            >MERRA-2 •
+                                            ${variable.dataProductTimeInterval} •
+                                            kg-m2</span
+                                        >
+                                        <div class="details-panel">
+                                            <h4>
+                                                Science Name:
+                                                ${variable.dataFieldLongName}
+                                            </h4>
+                                            <p>
+                                                <strong>Spatial Resolution:</strong>
+                                                ${variable.dataProductSpatialResolution}
+                                            </p>
+                                            <p>
+                                                <strong>Temporal Coverage:</strong>
+                                                ${variable.dataProductBeginDateTime} -
+                                                ${variable.dataProductEndDateTime}
+                                            </p>
+                                            <p>
+                                                <strong>Region Coverage:</strong>
+                                                Global
+                                            </p>
+                                            <p><strong>Dataset:</strong> MERRA-2</p>
+                                        </div>
+                                    </li>
+                                `
+                            )}
+                        </ul>
+                    </section>
+                </main>
+            </div>
         </div>`
     }
 
