@@ -1,27 +1,26 @@
-import { Task, initialState } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
+import { Task, initialState } from '@lit/task'
+import { format } from 'date-fns'
 import { compile } from 'handlebars'
 import type { ReactiveControllerHost } from 'lit'
-import { format } from 'date-fns'
 import type { Data, PlotData } from 'plotly.js-dist-min'
-import type {
-    Collection,
-    EndDate,
-    StartDate,
-    Variable,
-    VariableDbEntry,
-    Location,
-} from './time-series.types.js'
-import type {
-    TimeSeriesData,
-    TimeSeriesDataRow,
-    TimeSeriesMetadata,
-} from './time-series.types.js'
 import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
 } from '../../internal/indexeddb.js'
+import type {
+    Collection,
+    EndDate,
+    Location,
+    MaybeBearerToken,
+    StartDate,
+    TimeSeriesData,
+    TimeSeriesDataRow,
+    TimeSeriesMetadata,
+    Variable,
+    VariableDbEntry,
+} from './time-series.types.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
 const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
@@ -44,6 +43,8 @@ export const plotlyDefaultData: Partial<PlotData> = {
 type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
 
 export class TimeSeriesController {
+    #bearerToken: MaybeBearerToken = null
+
     host: ReactiveControllerHost
     emptyPlotData: Partial<Data>[] = [
         {
@@ -65,7 +66,9 @@ export class TimeSeriesController {
     endDate: EndDate
     location: Location
 
-    constructor(host: ReactiveControllerHost) {
+    constructor(host: ReactiveControllerHost, bearerToken: MaybeBearerToken) {
+        this.#bearerToken = bearerToken
+
         this.host = host
 
         this.task = new Task(host, {
@@ -164,7 +167,16 @@ export class TimeSeriesController {
         })
 
         // fetch the time series as a CSV
-        const response = await fetch(url, { mode: 'cors', signal })
+        const response = await fetch(url, {
+            mode: 'cors',
+            signal,
+            headers: {
+                Accept: 'application/json',
+                ...(this.#bearerToken
+                    ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                    : {}),
+            },
+        })
 
         if (!response.ok) {
             throw new Error(
