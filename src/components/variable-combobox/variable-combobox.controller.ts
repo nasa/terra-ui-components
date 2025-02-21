@@ -12,10 +12,6 @@ const apiError = new Error(
     'Failed to fetch the data required to make a list of searchable items.'
 )
 
-// TODO: here and in time-series controller
-// - [] add header for bearer token IF PRESENT
-// - [] add property for token to both components
-
 export class FetchController {
     #apiTask: Task<[], ListItem[]>
     #bearerToken: MaybeBearerToken = null

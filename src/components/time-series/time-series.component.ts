@@ -185,7 +185,7 @@ export default class TerraTimeSeries extends TerraElement {
     connectedCallback(): void {
         super.connectedCallback()
 
-        //* instantiate the fetch contoller maybe with a token
+        //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
     }
 
