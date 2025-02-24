@@ -124,4 +124,8 @@ export default css`
     .variables-container aside {
         padding: 0 15px;
     }
+
+    .facet {
+        margin-left: 10px;
+    }
 `

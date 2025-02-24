@@ -111,7 +111,9 @@ export default class TerraBrowseVariables extends TerraElement {
         const existingFields = this.selectedFacets[facet] || []
 
         if (existingFields.includes(field)) {
-            return // already selected this field, do nothing
+            // already selected, unselect it
+            this.#unselectFacetField(facet, field)
+            return
         }
 
         this.selectedFacets = {
@@ -126,7 +128,6 @@ export default class TerraBrowseVariables extends TerraElement {
         this.selectedFacets = remainingFacets
     }
 
-    /*
     #unselectFacetField(facet: string, field: string) {
         if (!this.selectedFacets[facet]) {
             return // facet has no fields that have been selected
@@ -144,7 +145,7 @@ export default class TerraBrowseVariables extends TerraElement {
             ...this.selectedFacets,
             [facet]: filteredFields,
         }
-    }*/
+    }
 
     #renderCategorySelect() {
         const columns: {
@@ -230,17 +231,32 @@ export default class TerraBrowseVariables extends TerraElement {
         `
     }
 
-    #renderFacet(title: string, fields?: FacetField[], open?: boolean) {
+    #renderFacet(
+        facetKey: string,
+        title: string,
+        fields?: FacetField[],
+        open?: boolean
+    ) {
         return html`<details ?open=${open}>
             <summary>${title}</summary>
 
             ${(fields ?? []).map(field =>
                 field.count > 0
                     ? html`
-                          <div>
+                          <div class="facet">
                               <label
-                                  ><input type="checkbox" /> ${field.name}
-                                  (${field.count})</label
+                                  ><input
+                                      type="checkbox"
+                                      @change=${() =>
+                                          this.#selectFacetField(
+                                              facetKey,
+                                              field.name
+                                          )}
+                                      ?checked=${this.selectedFacets[
+                                          facetKey
+                                      ]?.includes(field.name)}
+                                  />
+                                  ${field.name} (${field.count})</label
                               >
                           </div>
                       `
@@ -273,6 +289,7 @@ export default class TerraBrowseVariables extends TerraElement {
 
                 ${facets.map(facet =>
                     this.#renderFacet(
+                        facet.facetKey,
                         facet.title,
                         this.#controller.facetsByCategory?.[facet.facetKey],
                         facet.open
