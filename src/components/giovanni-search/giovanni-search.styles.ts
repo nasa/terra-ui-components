@@ -3,7 +3,6 @@ import { css } from 'lit'
 export default css`
     :host {
         --label-height: 1.8125rem;
-        --host-height: 5.8125rem;
 
         block-size: var(--terra-block-size, 2.1875rem);
         box-sizing: border-box;
@@ -13,16 +12,9 @@ export default css`
             calc(33vh + var(--terra-block-size, 2.1875rem));
         display: block;
         font-family: var(--terra-font-family--public-sans);
-        height: var(--terra-block-size, var(--host-height));
         inline-size: var(--terra-inline-size, 100%);
         position: relative;
         z-index: 10;
-    }
-
-    :host([hide-label]) {
-        height: calc(
-            var(--terra-block-size, var(--host-height)) - var(--label-height)
-        );
     }
 
     * {

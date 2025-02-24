@@ -2,192 +2,126 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        display: block;
-        background-color: #1e3a5f;
+        --light-blue-color: color-mix(
+            in hsl,
+            var(--terra-color-nasa-blue-tint) 65%,
+            white
+        ); /* this color doesn't exist in HDS, perhaps the design should change? */
+
+        background-color: var(--terra-color-nasa-blue-dark);
         color: white;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-            Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
-    }
-
-    .initial-browse-container {
-        display: flex;
-        flex-wrap: wrap;
-        width: 100%;
-        position: relative;
+        display: block;
         padding-bottom: 55%;
-        margin: auto;
-        overflow: hidden;
+        position: relative;
+        width: 100%;
     }
 
-    .scroll-container {
+    h3 {
+        color: var(--light-blue-color);
+        margin-bottom: 1rem;
+    }
+
+    dialog {
+        position: absolute;
+        z-index: 999;
+        width: 100px;
+        height: 100px;
+        padding: 0;
+        place-self: center;
+    }
+
+    .container {
         position: absolute;
         top: 0;
-        left: 0;
         right: 0;
         bottom: 0;
+        left: 0;
+        display: grid;
+        grid-template-rows: auto 1fr;
+    }
+
+    .scrollable {
         overflow-y: auto;
-        padding: 20px;
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        grid-column: span 2;
+        width: 100%;
+    }
+
+    header {
+        border-bottom: 1px solid var(--terra-color-nasa-blue-shade);
+        grid-column: span 2;
+        padding: 15px;
+        padding-bottom: 25px;
         display: flex;
-        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    header button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .browse-by-category aside {
+        padding: 0 15px;
+    }
+
+    .browse-by-category main {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        gap: 2rem;
+        min-width: 800px;
+        overflow-x: auto;
     }
 
     .column {
-        flex: 1;
-        min-width: 200px;
-        padding: 20px;
+        min-width: 0; /* Prevents overflow issues */
     }
 
-    .column h2 {
-        font-size: 1.5em;
-        margin-bottom: 20px;
-        color: white;
-        font-weight: 500;
-    }
-
-    ul {
+    .browse-by-category ul {
         list-style: none;
         padding: 0;
     }
 
-    li {
-        margin: 8px 0;
-        cursor: pointer;
-        padding: 8px;
+    .browse-by-category li {
         border-radius: 4px;
-        transition: background-color 0.2s;
+        cursor: pointer;
+        margin: 0;
+        margin-bottom: 0.5rem;
+        padding: 8px;
+        transition: background-color 0.15s;
     }
 
-    li:hover {
+    .browse-by-category li:hover {
         background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .browse-by-category terra-button {
+        margin-top: 15px;
+    }
+
+    .browse-by-category terra-button::part(base) {
+        color: white;
+    }
+
+    label {
+        color: white;
+        display: flex;
+        align-items: center;
     }
 
     input[type='radio'] {
         margin-right: 10px;
-        accent-color: white;
     }
 
-    .radio-group {
-        display: flex;
-        gap: 8px;
+    .variables-container main {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+        gap: 2rem;
+        overflow-x: auto;
     }
 
-    .radio-group label {
-        display: flex;
-        align-items: center;
-        padding: 8px;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-
-    .radio-group label:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .view-all {
-        background: none;
-        border: 2px solid white;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: all 0.2s;
-    }
-
-    .view-all:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    @media (max-width: 768px) {
-        .initial-browse-container {
-            flex-direction: column;
-        }
-        .column {
-            min-width: 100%;
-        }
-    }
-
-    .variables-container {
-        display: flex;
-        width: 100%;
-        position: relative;
-        padding-bottom: 55%;
-        margin: auto;
-        background-color: #1e3a5f;
-        overflow: hidden;
-    }
-
-    .variables-container > * {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-    }
-
-    .sidebar {
-        width: 250px;
-        flex-shrink: 0;
-        padding: 20px;
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-        overflow-y: auto;
-        height: 100%;
-    }
-
-    .sidebar h2 {
-        color: white;
-        font-size: 1.2em;
-        margin-bottom: 20px;
-    }
-
-    details {
-        margin-bottom: 15px;
-    }
-
-    summary {
-        cursor: pointer;
-        padding: 8px 0;
-        color: white;
-        font-weight: 500;
-    }
-
-    details div {
-        margin-left: 15px;
-        padding: 5px 0;
-    }
-
-    .content {
-        flex-grow: 1;
-        padding: 20px;
-        overflow-y: auto;
-    }
-
-    input[type='checkbox'] {
-        accent-color: white;
-        margin-right: 8px;
-    }
-
-    .variable-list li {
-        background-color: rgba(255, 255, 255, 0.05);
-        margin-bottom: 8px;
-        padding: 12px;
-        border-radius: 4px;
-    }
-
-    .variable-list li:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .meta {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.9em;
-        margin-top: 4px;
-    }
-
-    .details-panel {
-        background-color: #234270;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 4px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    .variables-container aside {
+        padding: 0 15px;
     }
 `

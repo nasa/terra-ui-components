@@ -5,7 +5,7 @@ export interface CatalogRepositoryInterface {
      */
     searchVariablesAndFacets(
         query?: string,
-        selectedFacetFields?: SelectedFacetField[],
+        selectedFacets?: SelectedFacets,
         options?: SearchOptions
     ): Promise<SearchResponse>
 }
@@ -19,9 +19,8 @@ export type SearchResponse = {
     variables: Variable[]
 }
 
-export type SelectedFacetField = {
-    facet: string
-    field: string
+export type SelectedFacets = {
+    [facetName: string]: string[]
 }
 
 export type FacetsByCategory = {

@@ -1,7 +1,7 @@
 import type {
     CatalogRepositoryInterface,
     SearchOptions,
-    SelectedFacetField,
+    SelectedFacets,
 } from '../browse-variables.types.js'
 
 const GIOVANNI_CATALOG_URL =
@@ -9,11 +9,26 @@ const GIOVANNI_CATALOG_URL =
 
 export class GiovanniRepository implements CatalogRepositoryInterface {
     async searchVariablesAndFacets(
-        _query?: string,
-        _selectedFacetFields?: SelectedFacetField[],
+        query?: string,
+        selectedFacets?: SelectedFacets,
         options?: SearchOptions
     ) {
-        const response = await fetch(GIOVANNI_CATALOG_URL, {
+        const url = new URL(GIOVANNI_CATALOG_URL)
+
+        if (query) {
+            url.searchParams.append('q', query)
+        }
+
+        if (selectedFacets) {
+            Object.keys(selectedFacets).forEach(facet => {
+                url.searchParams.append(
+                    `filter[${facet}]`,
+                    selectedFacets[facet].toString()
+                )
+            })
+        }
+
+        const response = await fetch(url.toString(), {
             signal: options?.signal ?? null,
         })
 

@@ -1,15 +1,23 @@
 import componentStyles from '../../styles/component.styles.js'
 import styles from './browse-variables.styles.js'
+import TerraButton from '../button/button.component.js'
 import TerraElement from '../../internal/terra-element.js'
+import TerraGiovanniSearch from '../giovanni-search/giovanni-search.component.js'
+import TerraIcon from '../icon/icon.component.js'
+import TerraLoader from '../loader/loader.component.js'
+import TerraSkeleton from '../skeleton/skeleton.component.js'
 import { BrowseVariablesController } from './browse-variables.controller.js'
-import { html } from 'lit'
+import { getRandomIntInclusive } from '../../utilities/number.js'
+import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
+import { TaskStatus } from '@lit/task'
 import type { CSSResultGroup } from 'lit'
 import type {
     FacetField,
     FacetsByCategory,
-    SelectedFacetField,
+    SelectedFacets,
 } from './browse-variables.types.js'
+import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 
 /**
  * @summary Browse through the Giovanni catalog.
@@ -17,17 +25,20 @@ import type {
  * @status MVP
  * @since 1.0
  *
- * @csspart base - The component's base wrapper.
+ * @dependency terra-giovanni-search
+ * @dependency terra-button
+ * @dependency terra-skeleton
+ * @dependency terra-loader
  */
 export default class TerraBrowseVariables extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
-
-    /**
-     * Filters the catalog categories and facets by the given searchQuery
-     * If not provided, all categories and facets will be available to browse
-     */
-    @property()
-    searchQuery: string
+    static dependencies = {
+        'terra-giovanni-search': TerraGiovanniSearch,
+        'terra-button': TerraButton,
+        'terra-skeleton': TerraSkeleton,
+        'terra-icon': TerraIcon,
+        'terra-loader': TerraLoader,
+    }
 
     /**
      * Allows the user to switch the catalog between different providers
@@ -37,11 +48,37 @@ export default class TerraBrowseVariables extends TerraElement {
     catalog: 'giovanni' = 'giovanni'
 
     @state()
-    selectedFacetFields: SelectedFacetField[] = []
+    searchQuery: string
+
+    @state()
+    selectedFacets: SelectedFacets = {}
+
+    @state()
+    showVariablesBrowse: boolean = false
 
     #controller = new BrowseVariablesController(this)
 
-    handleFacetSelect = (event: Event) => {
+    reset() {
+        // reset state back to it's defaults
+        this.searchQuery = ''
+        this.selectedFacets = {}
+        this.showVariablesBrowse = false
+    }
+
+    handleObservationChange() {
+        const selectedObservation =
+            this.shadowRoot?.querySelector<HTMLInputElement>(
+                'input[name="observation"]:checked'
+            )?.value ?? 'All'
+
+        if (selectedObservation === 'All') {
+            this.#clearFacet('observations')
+        } else {
+            this.#selectFacetField('observations', selectedObservation, true)
+        }
+    }
+
+    toggleFacetSelect(event: Event) {
         const target = event.target as HTMLLIElement
 
         if (!target.dataset.facet) {
@@ -49,14 +86,65 @@ export default class TerraBrowseVariables extends TerraElement {
             return
         }
 
-        // currently in the design it appears you can only select one facet field at a time
-        this.selectedFacetFields = [
-            {
-                facet: target.dataset.facet,
-                field: target.innerText.trim(),
-            },
-        ]
+        this.#selectFacetField(target.dataset.facet, target.innerText.trim())
+        this.showVariablesBrowse = true
     }
+
+    handleSearchChange(e: TerraGiovanniSearchChangeEvent) {
+        // to mimic on-prem Giovanni behavior, we will reset all facets when the search keyword changes
+        this.selectedFacets = {}
+
+        this.searchQuery = e.detail
+
+        console.log('search cahnged to ', e.detail)
+    }
+
+    /**
+     * given a field, ex: "observations": "Model", will add the field to any existing selected facets
+     * if "selectedOneFieldAtATime" is true, then we will only select that one field
+     */
+    #selectFacetField(
+        facet: string,
+        field: string,
+        selectOneFieldAtATime: boolean = false
+    ) {
+        const existingFields = this.selectedFacets[facet] || []
+
+        if (existingFields.includes(field)) {
+            return // already selected this field, do nothing
+        }
+
+        this.selectedFacets = {
+            ...this.selectedFacets,
+            [facet]: selectOneFieldAtATime ? [field] : [...existingFields, field],
+        }
+    }
+
+    #clearFacet(facet: string) {
+        const { [facet]: _, ...remainingFacets } = this.selectedFacets
+
+        this.selectedFacets = remainingFacets
+    }
+
+    /*
+    #unselectFacetField(facet: string, field: string) {
+        if (!this.selectedFacets[facet]) {
+            return // facet has no fields that have been selected
+        }
+
+        const filteredFields = this.selectedFacets[facet].filter(f => f !== field) // remove the given field
+
+        if (!filteredFields.length) {
+            // no fields left, just clear the facet
+            this.#clearFacet(facet)
+            return
+        }
+
+        this.selectedFacets = {
+            ...this.selectedFacets,
+            [facet]: filteredFields,
+        }
+    }*/
 
     #renderCategorySelect() {
         const columns: {
@@ -68,48 +156,95 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Sources', facetKey: 'platformInstruments' },
         ]
 
-        return html`<div class="initial-browse-container">
-            <div class="scroll-container">
-                ${columns.map(
-                    column => html`
-                        <div class="column">
-                            <h2>${column.title}</h2>
-                            <ul role="list">
-                                ${this.#controller.facetsByCategory?.[
-                                    column.facetKey
-                                ]?.map(
-                                    field =>
-                                        html`<li
-                                            role="button"
-                                            tabindex="0"
-                                            aria-selected="false"
-                                            data-facet="disciplines"
-                                            @click=${this.handleFacetSelect}
-                                        >
-                                            ${field.name}
-                                        </li>`
-                                )}
-                            </ul>
-                        </div>
-                    `
-                )}
+        return html`
+            <div class="scrollable browse-by-category">
+                <aside>
+                    <h3>Observations</h3>
+
+                    ${this.#controller.facetsByCategory?.observations.length
+                        ? html`
+                              <label>
+                                  <input
+                                      type="radio"
+                                      name="observation"
+                                      value="All"
+                                      @change=${this.handleObservationChange}
+                                      checked
+                                  />
+                                  All</label
+                              >
+
+                              ${this.#controller.facetsByCategory?.observations.map(
+                                  field =>
+                                      html`<label>
+                                          <input
+                                              type="radio"
+                                              name="observation"
+                                              value=${field.name}
+                                              @change=${this.handleObservationChange}
+                                          />
+                                          ${field.name}
+                                      </label>`
+                              )}
+                          `
+                        : html`<terra-skeleton
+                              rows="4"
+                              variableWidths
+                          ></terra-skeleton>`}
+
+                    <terra-button variant="text" size>View All Now</terra-button>
+                </aside>
+
+                <main>
+                    ${columns.map(
+                        column => html`
+                            <div class="column">
+                                <h3>${column.title}</h3>
+                                <ul role="list">
+                                    ${this.#controller.facetsByCategory?.[
+                                        column.facetKey
+                                    ]
+                                        ?.filter(field => field.count > 0)
+                                        .map(
+                                            field =>
+                                                html`<li
+                                                    role="button"
+                                                    tabindex="0"
+                                                    aria-selected="false"
+                                                    data-facet="disciplines"
+                                                    @click=${this.toggleFacetSelect}
+                                                >
+                                                    ${field.name}
+                                                </li>`
+                                        ) ??
+                                    html`<terra-skeleton
+                                        rows=${getRandomIntInclusive(8, 12)}
+                                        variableWidths
+                                    ></terra-skeleton>`}
+                                </ul>
+                            </div>
+                        `
+                    )}
+                </main>
             </div>
-        </div>`
+        `
     }
 
     #renderFacet(title: string, fields?: FacetField[], open?: boolean) {
         return html`<details ?open=${open}>
             <summary>${title}</summary>
 
-            ${(fields ?? []).map(
-                field => html`
-                    <div>
-                        <label
-                            ><input type="checkbox" /> ${field.name}
-                            (${field.count})</label
-                        >
-                    </div>
-                `
+            ${(fields ?? []).map(field =>
+                field.count > 0
+                    ? html`
+                          <div>
+                              <label
+                                  ><input type="checkbox" /> ${field.name}
+                                  (${field.count})</label
+                              >
+                          </div>
+                      `
+                    : nothing
             )}
         </details>`
     }
@@ -132,68 +267,94 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Portal', facetKey: 'portals' },
         ]
 
-        return html`<div class="variables-container">
-            <div class="scroll-container">
-                <aside class="sidebar">
-                    <h2>Filter</h2>
+        return html`<div class="scrollable browse-by-category">
+            <aside>
+                <h3>Filter</h3>
 
-                    ${facets.map(facet =>
-                        this.#renderFacet(
-                            facet.title,
-                            this.#controller.facetsByCategory?.[facet.facetKey],
-                            facet.open
-                        )
-                    )}
-                </aside>
+                ${facets.map(facet =>
+                    this.#renderFacet(
+                        facet.title,
+                        this.#controller.facetsByCategory?.[facet.facetKey],
+                        facet.open
+                    )
+                )}
+            </aside>
 
-                <main class="content">
-                    <section class="group">
-                        <h3>Category</h3>
+            <main>
+                <section class="group">
+                    <ul class="variable-list">
+                        ${this.#controller.variables.map(
+                            variable => html`
+                                <!-- Just dumping some data here that may be useful in the details popup -->
+                                <li tabindex="0" aria-selected="false">
+                                    <strong>${variable.dataFieldLongName}</strong>
+                                    <span
+                                        >MERRA-2 • ${variable.dataProductTimeInterval}
+                                        • kg-m2</span
+                                    >
 
-                        <ul class="variable-list">
-                            ${this.#controller.variables?.map(
-                                variable => html`
-                                    <li tabindex="0" aria-selected="false">
-                                        <input type="checkbox" />
-                                        <strong>${variable.dataFieldLongName}</strong>
-                                        <span class="meta"
-                                            >MERRA-2 •
-                                            ${variable.dataProductTimeInterval} •
-                                            kg-m2</span
-                                        >
-                                        <div class="details-panel">
-                                            <h4>
-                                                Science Name:
-                                                ${variable.dataFieldLongName}
-                                            </h4>
-                                            <p>
-                                                <strong>Spatial Resolution:</strong>
-                                                ${variable.dataProductSpatialResolution}
-                                            </p>
-                                            <p>
-                                                <strong>Temporal Coverage:</strong>
-                                                ${variable.dataProductBeginDateTime} -
-                                                ${variable.dataProductEndDateTime}
-                                            </p>
-                                            <p>
-                                                <strong>Region Coverage:</strong>
-                                                Global
-                                            </p>
-                                            <p><strong>Dataset:</strong> MERRA-2</p>
-                                        </div>
-                                    </li>
-                                `
-                            )}
-                        </ul>
-                    </section>
-                </main>
-            </div>
+                                    <div class="details-panel">
+                                        <h4>
+                                            Science Name:
+                                            ${variable.dataFieldLongName}
+                                        </h4>
+                                        <p>
+                                            <strong>Spatial Resolution:</strong>
+                                            ${variable.dataProductSpatialResolution}
+                                        </p>
+                                        <p>
+                                            <strong>Temporal Coverage:</strong>
+                                            ${variable.dataProductBeginDateTime} -
+                                            ${variable.dataProductEndDateTime}
+                                        </p>
+                                        <p>
+                                            <strong>Region Coverage:</strong>
+                                            Global
+                                        </p>
+                                        <p><strong>Dataset:</strong> MERRA-2</p>
+                                    </div>
+                                </li>
+                            `
+                        )}
+                    </ul>
+                </section>
+            </main>
         </div>`
     }
 
     render() {
-        return this.selectedFacetFields.length
-            ? this.#renderVariablesBrowse()
-            : this.#renderCategorySelect()
+        const showLoader =
+            this.#controller.task.status === TaskStatus.PENDING && // only show the loader when doing a fetch
+            this.#controller.facetsByCategory // we won't show the loader initially, we'll show skeleton loading instead
+
+        return html`
+            <div class="container">
+                <header>
+                    ${this.showVariablesBrowse
+                        ? html`
+                              <terra-button @click=${this.reset}>
+                                  <terra-icon
+                                      name="solid-chevron-left"
+                                      library="heroicons"
+                                      font-size="1.5em"
+                                  ></terra-icon>
+                              </terra-button>
+                          `
+                        : nothing}
+
+                    <terra-giovanni-search
+                        @terra-giovanni-search-change=${this.handleSearchChange}
+                    />
+                </header>
+
+                ${this.showVariablesBrowse
+                    ? this.#renderVariablesBrowse()
+                    : this.#renderCategorySelect()}
+
+                <dialog ?open=${showLoader}>
+                    <terra-loader indeterminate></terra-loader>
+                </dialog>
+            </div>
+        `
     }
 }

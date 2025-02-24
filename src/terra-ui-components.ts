@@ -13,6 +13,7 @@ export { default as TerraLoader } from './components/loader/loader.js'
 
 export { default as TerraGiovanniSearch } from './components/giovanni-search/giovanni-search.js'
 export { default as TerraBrowseVariables } from './components/browse-variables/browse-variables.js'
+export { default as TerraSkeleton } from './components/skeleton/skeleton.js';
 /* plop:component */
 
 // Utilities

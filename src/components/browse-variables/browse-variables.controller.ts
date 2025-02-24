@@ -11,39 +11,41 @@ import type {
 import type TerraBrowseVariables from './browse-variables.component.js'
 
 export class BrowseVariablesController {
-    facetsByCategory: FacetsByCategory
-    variables: Variable[]
+    task: Task<[string | undefined], SearchResponse>
 
     #host: ReactiveControllerHost & TerraBrowseVariables
-    #task: Task<[], SearchResponse>
     #catalog: CatalogRepositoryInterface
 
     constructor(host: ReactiveControllerHost & TerraBrowseVariables) {
         this.#host = host
         this.#catalog = this.#getCatalogRepository()
 
-        // TODO: add dependencies to task for the search query and selected facet filter
-        this.#task = new Task(host, {
-            task: async (_args, { signal }) => {
+        this.task = new Task(host, {
+            task: async ([searchQuery, selectedFacets], { signal }) => {
                 const searchResponse = await this.#catalog.searchVariablesAndFacets(
-                    undefined,
-                    undefined,
+                    searchQuery,
+                    selectedFacets,
                     {
                         signal,
                     }
                 )
 
-                this.facetsByCategory = searchResponse.facetsByCategory
-                this.variables = searchResponse.variables
-
                 return searchResponse
             },
-            args: (): any => [],
+            args: (): any => [this.#host.searchQuery, this.#host.selectedFacets],
         })
     }
 
+    get facetsByCategory(): FacetsByCategory | undefined {
+        return this.task.value?.facetsByCategory
+    }
+
+    get variables(): Variable[] {
+        return this.task.value?.variables ?? []
+    }
+
     render(renderFunctions: StatusRenderer<any>) {
-        return this.#task.render(renderFunctions)
+        return this.task.render(renderFunctions)
     }
 
     #getCatalogRepository() {
