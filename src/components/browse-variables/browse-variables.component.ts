@@ -20,7 +20,7 @@ import type {
 import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 
 /**
- * @summary Browse through the Giovanni catalog.
+ * @summary Browse through the NASA CMR or Giovanni catalogs.
  * @documentation https://disc.gsfc.nasa.gov/components/browse-variables
  * @status MVP
  * @since 1.0
@@ -28,6 +28,7 @@ import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni
  * @dependency terra-giovanni-search
  * @dependency terra-button
  * @dependency terra-skeleton
+ * @dependency terra-icon
  * @dependency terra-loader
  */
 export default class TerraBrowseVariables extends TerraElement {
@@ -193,7 +194,12 @@ export default class TerraBrowseVariables extends TerraElement {
                               variableWidths
                           ></terra-skeleton>`}
 
-                    <terra-button variant="text" size>View All Now</terra-button>
+                    <terra-button
+                        variant="text"
+                        size
+                        @click=${() => (this.showVariablesBrowse = true)}
+                        >View All Now</terra-button
+                    >
                 </aside>
 
                 <main>

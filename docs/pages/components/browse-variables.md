@@ -1,7 +1,7 @@
 ---
 meta:
-    title: Giovanni Browse
-    description:
+    title: Browse Earthdata Variables
+    description: Browse through the NASA CMR or Giovanni variable catalogs
     toc: false
 layout: component
 ---
@@ -10,14 +10,22 @@ layout: component
 <terra-browse-variables></terra-browse-variables>
 ```
 
+```jsx:react
+import TerraBrowseVariables from '@nasa-terra/components/dist/react/browse-variables';
+
+const App = () => <TerraBrowseVariables></TerraBrowseVariables>;
+```
+
 ## Examples
 
-### First Example
+### Browse the CMR catalog
 
 TODO
 
-### Second Example
+### Browse the Giovanni catalog
 
-TODO
+```html:preview
+<terra-browse-variables></terra-browse-variables>
+```
 
 [component-metadata:terra-browse-variables]
