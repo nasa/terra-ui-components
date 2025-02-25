@@ -2,6 +2,7 @@
 meta:
     title: Giovanni Browse
     description:
+    toc: false
 layout: component
 ---
 
