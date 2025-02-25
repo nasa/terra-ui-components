@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js'
-import { LitElement, html, type CSSResultGroup } from 'lit'
+import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
@@ -127,10 +127,6 @@ export default class TerraGiovanniSearch extends TerraElement {
         this.isExpanded = !this.isExpanded
     }
 
-    #dispatchChange = (data: string) => {
-        this.emit('terra-giovanni-search-change', { detail: data })
-    }
-
     #handleComboboxChange = (event: Event) => {
         const target = event.target as HTMLInputElement
         this.query = target.value
@@ -252,7 +248,7 @@ export default class TerraGiovanniSearch extends TerraElement {
 
     #selectOption = (option: HTMLLIElement) => {
         this.query = option.id
-        this.#dispatchChange(option.id)
+        this.emit('terra-giovanni-search-change', { detail: option.id })
 
         this.isExpanded = false
 
@@ -268,12 +264,44 @@ export default class TerraGiovanniSearch extends TerraElement {
         }
     }
 
+    #clearSearch() {
+        this.query = TerraGiovanniSearch.initialQuery
+        this.emit('terra-search', { detail: this.query })
+
+        clearSelection(
+            this.#combobox as HTMLInputElement,
+            this.#listbox as HTMLUListElement
+        )
+
+        this.#combobox?.focus()
+    }
+
     render() {
         return html`<search part="base" title="Search through the list.">
             <label for="combobox" class=${this.hideLabel ? 'sr-only' : 'input-label'}
                 >${this.label}</label
             >
             <div class="search-input-group">
+                <terra-button
+                    @click=${() => this.#handleSearch(this.query)}
+                    aria-label=${this.query
+                        ? `Search for ${this.query}.`
+                        : 'Enter search term to enable search.'}
+                    circle
+                    class="search-button search-input-button"
+                    outline
+                    tabindex="-1"
+                    type="button"
+                >
+                    <slot name="label">
+                        <terra-icon
+                            font-size="1.5em"
+                            library="heroicons"
+                            name="outline-magnifying-glass"
+                        ></terra-icon>
+                    </slot>
+                </terra-button>
+
                 <input
                     ${ref(el => {
                         if (el) {
@@ -295,25 +323,26 @@ export default class TerraGiovanniSearch extends TerraElement {
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
                 />
-                <terra-button
-                    @click=${() => this.#handleSearch(this.query)}
-                    aria-label=${this.query
-                        ? `Search for ${this.query}.`
-                        : 'Enter search term to enable search.'}
-                    circle
-                    class="search-button search-input-button"
-                    outline
-                    tabindex="-1"
-                    type="button"
-                >
-                    <slot name="label">
-                        <terra-icon
-                            font-size="1.5em"
-                            library="heroicons"
-                            name="solid-magnifying-glass"
-                        ></terra-icon>
-                    </slot>
-                </terra-button>
+
+                ${this.query.length
+                    ? html`<terra-button
+                          @click=${() => this.#clearSearch()}
+                          aria-label="Clear the searched term and start over."
+                          circle
+                          class="clear-button search-input-button"
+                          outline
+                          tabindex="-1"
+                          type="button"
+                      >
+                          <slot name="label">
+                              <terra-icon
+                                  font-size="1.5em"
+                                  library="heroicons"
+                                  name="outline-x-circle"
+                              ></terra-icon>
+                          </slot>
+                      </terra-button>`
+                    : nothing}
             </div>
 
             <ul

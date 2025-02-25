@@ -1,23 +1,23 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './browse-variables.styles.js'
-import TerraButton from '../button/button.component.js'
+import { TaskStatus } from '@lit/task'
+import type { CSSResultGroup } from 'lit'
+import { html, nothing } from 'lit'
+import { property, state } from 'lit/decorators.js'
+import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 import TerraElement from '../../internal/terra-element.js'
+import componentStyles from '../../styles/component.styles.js'
+import { getRandomIntInclusive } from '../../utilities/number.js'
+import TerraButton from '../button/button.component.js'
 import TerraGiovanniSearch from '../giovanni-search/giovanni-search.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
 import { BrowseVariablesController } from './browse-variables.controller.js'
-import { getRandomIntInclusive } from '../../utilities/number.js'
-import { html, nothing } from 'lit'
-import { property, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
-import type { CSSResultGroup } from 'lit'
+import styles from './browse-variables.styles.js'
 import type {
     FacetField,
     FacetsByCategory,
     SelectedFacets,
 } from './browse-variables.types.js'
-import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 
 /**
  * @summary Browse through the NASA CMR or Giovanni catalogs.
@@ -91,7 +91,7 @@ export default class TerraBrowseVariables extends TerraElement {
         this.showVariablesBrowse = true
     }
 
-    handleSearchChange(e: TerraGiovanniSearchChangeEvent) {
+    handleSearch(e: TerraGiovanniSearchChangeEvent) {
         // to mimic on-prem Giovanni behavior, we will reset all facets when the search keyword changes
         this.selectedFacets = {}
 
@@ -312,6 +312,7 @@ export default class TerraBrowseVariables extends TerraElement {
                 <section class="group">
                     <ul class="variable-list">
                         ${this.#controller.variables.map(
+                            // TODO: checkbox, details + summary
                             variable => html`
                                 <!-- Just dumping some data here that may be useful in the details popup -->
                                 <li tabindex="0" aria-selected="false">
@@ -371,8 +372,8 @@ export default class TerraBrowseVariables extends TerraElement {
                         : nothing}
 
                     <terra-giovanni-search
-                        @terra-giovanni-search-change=${this.handleSearchChange}
-                    />
+                        @terra-search=${this.handleSearch}
+                    ></terra-giovanni-search>
                 </header>
 
                 ${this.showVariablesBrowse
