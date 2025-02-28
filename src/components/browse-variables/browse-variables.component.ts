@@ -96,8 +96,6 @@ export default class TerraBrowseVariables extends TerraElement {
         this.selectedFacets = {}
 
         this.searchQuery = e.detail
-
-        console.log('search cahnged to ', e.detail)
     }
 
     /**
