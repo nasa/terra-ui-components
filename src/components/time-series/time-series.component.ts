@@ -50,7 +50,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-button': TerraButton,
     }
 
-    #timeSeriesController = new TimeSeriesController(this)
+    #timeSeriesController: TimeSeriesController
 
     /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
@@ -116,6 +116,14 @@ export default class TerraTimeSeries extends TerraElement {
     })
     units?: string
 
+    /**
+     * The token to be used for authentication with remote servers.
+     * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
+     * The property's value will be inserted after "Bearer" (the authentication scheme).
+     */
+    @property({ attribute: 'bearer-token', reflect: false })
+    bearerToken: string
+
     @query('terra-date-range-slider') dateRangeSlider: TerraDateRangeSlider
     @query('terra-plot') plot: TerraPlot
     @query('terra-spatial-picker') spatialPicker: TerraSpatialPicker
@@ -172,6 +180,13 @@ export default class TerraTimeSeries extends TerraElement {
         }
 
         this.menu.focus()
+    }
+
+    connectedCallback(): void {
+        super.connectedCallback()
+
+        //* instantiate the time series contoller maybe with a token
+        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
     }
 
     #adaptPropertyToController(
@@ -363,6 +378,7 @@ export default class TerraTimeSeries extends TerraElement {
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 value=${`${this.collection}_${this.variable}`}
+                .bearerToken=${this.bearerToken ?? null}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
