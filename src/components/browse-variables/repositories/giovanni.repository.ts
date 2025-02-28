@@ -43,6 +43,7 @@ export class GiovanniRepository implements CatalogRepositoryInterface {
         return {
             facetsByCategory: result.facets,
             variables: result.variables,
+            total: result.total,
         }
     }
 }

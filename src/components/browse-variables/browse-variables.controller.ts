@@ -44,6 +44,10 @@ export class BrowseVariablesController {
         return this.task.value?.variables ?? []
     }
 
+    get total(): number {
+        return this.task.value?.total ?? 0
+    }
+
     render(renderFunctions: StatusRenderer<any>) {
         return this.task.render(renderFunctions)
     }

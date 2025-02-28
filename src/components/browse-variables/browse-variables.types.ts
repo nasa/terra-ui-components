@@ -17,6 +17,7 @@ export type SearchOptions = {
 export type SearchResponse = {
     facetsByCategory: FacetsByCategory
     variables: Variable[]
+    total: number
 }
 
 export type SelectedFacets = {
@@ -56,4 +57,5 @@ export type Variable = {
     dataProductSpatialResolution: string
     dataProductBeginDateTime: string
     dataProductEndDateTime: string
+    dataFieldKeywords: string[]
 }

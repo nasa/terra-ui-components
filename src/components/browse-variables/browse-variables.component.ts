@@ -289,7 +289,14 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Portal', facetKey: 'portals' },
         ]
 
-        return html`<div class="scrollable browse-by-category">
+        return html`<div class="scrollable variables-container">
+            <header>
+                Showing ${this.#controller.total}
+                variables${this.searchQuery
+                    ? ` associated with '${this.searchQuery}'`
+                    : ''}
+            </header>
+
             <aside>
                 <h3>Filter</h3>
 
@@ -352,7 +359,7 @@ export default class TerraBrowseVariables extends TerraElement {
 
         return html`
             <div class="container">
-                <header>
+                <header class="search">
                     ${this.showVariablesBrowse
                         ? html`
                               <terra-button @click=${this.reset}>

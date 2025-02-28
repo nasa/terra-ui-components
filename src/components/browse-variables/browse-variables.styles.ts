@@ -48,7 +48,7 @@ export default css`
         width: 100%;
     }
 
-    header {
+    header.search {
         border-bottom: 1px solid var(--terra-color-nasa-blue-shade);
         grid-column: span 2;
         padding: 15px;
@@ -57,7 +57,7 @@ export default css`
         gap: 10px;
     }
 
-    header button {
+    header.search button {
         width: 36px;
         height: 36px;
     }
@@ -114,15 +114,33 @@ export default css`
         margin-right: 10px;
     }
 
+    .variables-container {
+        display: grid;
+        grid-template-areas:
+            'header header'
+            'aside main';
+        grid-template-columns: 250px 1fr;
+        grid-template-rows: auto 1fr;
+    }
+
+    .variables-container header {
+        grid-area: header;
+        padding: 15px;
+        padding-bottom: 0;
+    }
+
+    .variables-container aside {
+        grid-area: aside;
+        padding: 15px;
+    }
+
     .variables-container main {
+        grid-area: main;
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
         gap: 2rem;
         overflow-x: auto;
-    }
-
-    .variables-container aside {
-        padding: 0 15px;
+        padding: 15px;
     }
 
     .facet {
