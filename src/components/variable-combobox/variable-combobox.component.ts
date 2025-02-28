@@ -136,7 +136,7 @@ export default class TerraVariableCombobox extends TerraElement {
     disconnectedCallback() {
         super.disconnectedCallback()
 
-        globalThis.addEventListener('click', this.#manageListboxVisibility)
+        globalThis.removeEventListener('click', this.#manageListboxVisibility)
     }
 
     clear() {
@@ -177,11 +177,11 @@ export default class TerraVariableCombobox extends TerraElement {
     #handleOptionClick = (event: Event) => {
         const path = event.composedPath()
 
+        // filter out anything not role="option"
         const [target] = path.filter(
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
 
-        // filter out anything not role="option"
         if (!target) {
             return
         }
@@ -311,6 +311,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     })}
                     aria-autocomplete="list"
                     aria-controls="listbox"
+                    aria-haspopup="list"
                     aria-expanded=${this.isExpanded}
                     class="combobox"
                     id="combobox"
