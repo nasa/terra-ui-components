@@ -131,8 +131,9 @@
         {# Content #}
         <main>
             <a id="main-content"></a>
-            <article id="content" class="content{% if toc %} content--with-toc{% endif %}">
-                {% if toc %}
+            <article id="content" class="content{% if (meta.toc is defined and meta.toc) or (meta.toc is not defined and toc) %} content--with-toc{% endif %}">
+                {% if (meta.toc is defined and meta.toc) 
+                    or(meta.toc is not defined and toc) %}
                     <div class="content__toc">
                         <ul>
                             <li class="top">
