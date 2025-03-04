@@ -5,5 +5,7 @@ cdn
 dist
 node_modules
 src/react
-.ipynb_checkpoints
+.venv
 __pycache__
+.ipynb_checkpoints
+.pypirc
