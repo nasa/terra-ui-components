@@ -93,7 +93,24 @@ export default class TerraSpatialPicker extends TerraElement {
     private _blur(e: Event) {
         const inputValue = (e.target as HTMLInputElement).value
 
-        this.mapValue = inputValue === '' ? [] : parseBoundingBox(inputValue)
+        if (inputValue === '') {
+            this.mapValue = [];
+        } else {
+            const parsedValue = parseBoundingBox(inputValue);
+    
+            if (Array.isArray(parsedValue)) {
+                this.mapValue = parsedValue.map((coordArray: number[]) => {
+                    // Round each number in the inner array (lat, lng) to 2 decimal places
+                    return coordArray.map((coord: number) => parseFloat(coord.toFixed(2)));
+                });
+            } else if (parsedValue && typeof parsedValue === 'object' && 'lat' in parsedValue && 'lng' in parsedValue) {
+                // Handle lat/lng object
+                const { lat, lng } = parsedValue;
+                this.mapValue = { lat: parseFloat(lat.toFixed(2)), lng: parseFloat(lng.toFixed(2)) };
+            } else {
+                this.mapValue = [];
+            }
+        }
     }
 
     private _click() {
@@ -126,7 +143,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         event.detail.latLng
                     )
                 }
-                break
+                break   
 
             default:
                 break
