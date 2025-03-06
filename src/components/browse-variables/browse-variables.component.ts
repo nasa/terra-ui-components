@@ -287,12 +287,61 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Portal', facetKey: 'portals' },
         ]
 
+        // TODO: create "sort by" menu and "group by" menu
+        // MVP sort TBD but must include alpha, reverse-alpha, start data and end date, based on Variable Long Name
+        // MVP group TBD but must include 'Measurements' and 'Dataset'
         return html`<div class="scrollable variables-container">
             <header>
                 Showing ${this.#controller.total}
                 variables${this.searchQuery
                     ? ` associated with '${this.searchQuery}'`
                     : ''}
+                <!-- Sorting and Grouping feature still needs a UI / UX feature discussion.
+                <menu>
+                    <li>
+                        <sl-dropdown class="list-menu-dropdown">
+                            <sl-button slot="trigger" caret>Sort By</sl-button>
+                            <sl-menu>
+                                <sl-menu-item value="aToZ">A&hellip;Z</sl-menu-item>
+                                <sl-menu-item value="zToA">Z&hellip;A</sl-menu-item>
+                            </sl-menu>
+                        </sl-dropdown>
+                    </li>
+                    <li>
+                        <sl-dropdown class="list-menu-dropdown">
+                            <sl-button slot="trigger" caret>Group By</sl-button>
+                            <sl-menu>
+                                <sl-menu-item value="depths">Depths</sl-menu-item>
+                                <sl-menu-item value="disciplines"
+                                    >Disciplines</sl-menu-item
+                                >
+                                <sl-menu-item value="measurements"
+                                    >Measurements</sl-menu-item
+                                >
+                                <sl-menu-item value="observations"
+                                    >Observations</sl-menu-item
+                                >
+                                <sl-menu-item value="platformInstruments"
+                                    >Platform Instruments</sl-menu-item
+                                >
+                                <sl-menu-item value="portals">Portals</sl-menu-item>
+                                <sl-menu-item value="spatialResolutions"
+                                    >Spatial Resolutions</sl-menu-item
+                                >
+                                <sl-menu-item value="specialFeatures"
+                                    >Special Features</sl-menu-item
+                                >
+                                <sl-menu-item value="temporalResolutions"
+                                    >Temporal Resolutions</sl-menu-item
+                                >
+                                <sl-menu-item value="wavelengths"
+                                    >Wavelengths</sl-menu-item
+                                >
+                            </sl-menu>
+                        </sl-dropdown>
+                    </li>
+                </menu>
+                -->}
             </header>
 
             <aside>
@@ -311,40 +360,113 @@ export default class TerraBrowseVariables extends TerraElement {
             <main>
                 <section class="group">
                     <ul class="variable-list">
-                        ${this.#controller.variables.map(
-                            // TODO: checkbox, details + summary
-                            variable => html`
-                                <!-- Just dumping some data here that may be useful in the details popup -->
-                                <li tabindex="0" aria-selected="false">
-                                    <strong>${variable.dataFieldLongName}</strong>
-                                    <span
-                                        >MERRA-2 • ${variable.dataProductTimeInterval}
-                                        • kg-m2</span
-                                    >
+                        ${this.#controller.variables.map(variable => {
+                            return html`
+                                <li
+                                    aria-selected=${false}
+                                    class="variable-list-item"
+                                    @click=${(event: Event) => {
+                                        const target =
+                                            event.currentTarget as HTMLLIElement
+                                        const targetCheckbox = target.querySelector(
+                                            'input[type="checkbox"]'
+                                        ) as HTMLInputElement | null
 
-                                    <div class="details-panel">
-                                        <h4>
-                                            Science Name:
-                                            ${variable.dataFieldLongName}
-                                        </h4>
-                                        <p>
-                                            <strong>Spatial Resolution:</strong>
-                                            ${variable.dataProductSpatialResolution}
-                                        </p>
-                                        <p>
-                                            <strong>Temporal Coverage:</strong>
-                                            ${variable.dataProductBeginDateTime} -
-                                            ${variable.dataProductEndDateTime}
-                                        </p>
-                                        <p>
-                                            <strong>Region Coverage:</strong>
-                                            Global
-                                        </p>
-                                        <p><strong>Dataset:</strong> MERRA-2</p>
-                                    </div>
+                                        if (!targetCheckbox) {
+                                            return
+                                        }
+
+                                        console.log('variable-list-item')
+                                        console.log(target, targetCheckbox)
+
+                                        targetCheckbox.checked =
+                                            !targetCheckbox.checked
+
+                                        target?.setAttribute(
+                                            'aria-selected',
+                                            `${targetCheckbox.checked}`
+                                        )
+                                    }}
+                                >
+                                    <details
+                                        class="variable"
+                                        name="variable"
+                                        @mouseover=${(event: Event) => {
+                                            const summary =
+                                                event.currentTarget as HTMLElement
+
+                                            if (!summary) {
+                                                return
+                                            }
+
+                                            summary.setAttribute('open', '')
+                                        }}
+                                        @mouseout=${(event: Event) => {
+                                            const summary =
+                                                event.currentTarget as HTMLElement
+
+                                            if (!summary) {
+                                                return
+                                            }
+
+                                            summary.removeAttribute('open')
+                                        }}
+                                    >
+                                        <summary tabindex="-1">
+                                            <label>
+                                                <input
+                                                    type="checkbox"
+                                                    tabindex="0"
+                                                    @click=${(e: any) => {
+                                                        console.log('checkbox')
+                                                        console.log(
+                                                            e.currentTarget,
+                                                            e.target
+                                                        )
+                                                        console.log(e)
+                                                    }}
+                                                />
+                                                <strong
+                                                    >${variable.dataFieldLongName}</strong
+                                                >
+                                                <span
+                                                    >MERRA-2 &bull;
+                                                    ${variable.dataProductTimeInterval}
+                                                    &bull; kg-m2</span
+                                                >
+                                            </label>
+                                        </summary>
+
+                                        <div class="details-panel">
+                                            <h4>
+                                                Science Name
+                                                ${variable.dataFieldLongName}
+                                            </h4>
+                                            <p>
+                                                <strong>Spatial Resolution</strong>
+                                                ${variable.dataProductSpatialResolution}
+                                            </p>
+                                            <p>
+                                                <strong>Temporal Coverage</strong>
+                                                ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
+                                            </p>
+                                            <p>
+                                                <strong>Region Coverage</strong>
+                                                ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
+                                            </p>
+                                            <p>
+                                                <strong>Dataset</strong>
+                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                            </p>
+                                            <p>
+                                                <strong>Particulate Matter</strong>
+                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                            </p>
+                                        </div>
+                                    </details>
                                 </li>
                             `
-                        )}
+                        })}
                     </ul>
                 </section>
             </main>

@@ -1,6 +1,35 @@
 import { css } from 'lit'
 
 export default css`
+    @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+        :host {
+            /* interpolate-size is currently Chromium only. */
+            interpolate-size: allow-keywords; /* Opt-in the component to interpolate sizes to/from keywords */
+        }
+
+        /* ::details-content is currently Chromium only. This could replace the div.details-panel. */
+        [open]::details-content {
+            height: auto;
+        }
+
+        /* ::details-content is currently Chromium only. This could replace the div.details-panel. */
+        ::details-content {
+            transition:
+                height 0.125s ease 0.125s,
+                content-visibility 0.125s ease allow-discrete 0.125s;
+            height: 0;
+            overflow: clip;
+        }
+
+        @media (prefers-reduced-motion) {
+            ::details-content {
+                transition:
+                    height 0s ease,
+                    content-visibility 0s ease allow-discrete;
+            }
+        }
+    }
+
     :host {
         --light-blue-color: color-mix(
             in hsl,
@@ -79,8 +108,11 @@ export default css`
     }
 
     .browse-by-category ul {
-        list-style: none;
         padding: 0;
+    }
+
+    .browse-by-category ul ::marker {
+        font-size: 0; /*Safari removes the semantic meaning / role of the list if we remove the list style. */
     }
 
     .browse-by-category li {
@@ -127,6 +159,25 @@ export default css`
         grid-area: header;
         padding: 15px;
         padding-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .variables-container header menu {
+        display: inline-flex;
+        padding: 0;
+        margin: 0;
+        min-width: 24em;
+        justify-content: space-evenly;
+    }
+
+    .variables-container header menu ::marker {
+        font-size: 0;
+    }
+
+    .list-menu-dropdown sl-button::part(base) {
+        border-color: transparent;
+        font-weight: 700;
     }
 
     .variables-container aside {
@@ -145,5 +196,52 @@ export default css`
 
     .facet {
         margin-left: 10px;
+    }
+
+    .variable-list {
+        margin: 0;
+        padding: 0;
+    }
+
+    .variable-list-item,
+    .variable,
+    .variable summary {
+        cursor: pointer;
+    }
+
+    .variable-list-item::marker,
+    .variable summary::-webkit-details-marker,
+    .variable summary::marker {
+        font-size: 0;
+    }
+
+    .variable[open] .details-panel {
+        height: max-content;
+    }
+
+    .variable input[type='checkbox'] {
+        margin-block: 0.25em;
+        margin-inline: 0 0.5em;
+    }
+
+    .variable summary {
+        display: inline-flex;
+    }
+
+    /* Very useful: https://css-tricks.com/using-styling-the-details-element/*/
+    .variable summary::-webkit-details-marker,
+    .variable summary::marker {
+        content: '';
+    }
+
+    .details-panel {
+        background-color: var(--terra-color-nasa-blue);
+        border: 0.0625em solid var(--terra-color-carbon-10);
+        padding-block: 0.75em 0.5em;
+        padding-inline: 1.5em 0.5em;
+    }
+
+    .details-panel > * {
+        margin-block-start: 0;
     }
 `
