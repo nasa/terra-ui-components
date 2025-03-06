@@ -203,15 +203,10 @@ export default css`
         padding: 0;
     }
 
-    .variable-list-item,
-    .variable,
-    .variable summary {
-        cursor: pointer;
+    .variable-list-item {
     }
 
-    .variable-list-item::marker,
-    .variable summary::-webkit-details-marker,
-    .variable summary::marker {
+    .variable-list-item::marker {
         font-size: 0;
     }
 
@@ -224,24 +219,34 @@ export default css`
         margin-inline: 0 0.5em;
     }
 
-    .variable summary {
-        display: inline-flex;
+    .variable {
     }
 
-    /* Very useful: https://css-tricks.com/using-styling-the-details-element/*/
-    .variable summary::-webkit-details-marker,
-    .variable summary::marker {
-        content: '';
+    .variable sl-tooltip[open] {
+        position: relative;
+        z-index: 100;
+    }
+
+    .variable label {
+        cursor: pointer;
+        display: block;
+        font-weight: 400;
     }
 
     .details-panel {
         background-color: var(--terra-color-nasa-blue);
         border: 0.0625em solid var(--terra-color-carbon-10);
-        padding-block: 0.75em 0.5em;
-        padding-inline: 1.5em 0.5em;
+        padding: 0.25em;
+
+        position: relative;
+        z-index: 100;
     }
 
     .details-panel > * {
         margin-block-start: 0;
+    }
+
+    .details-panel h4 {
+        font-weight: 400;
     }
 `

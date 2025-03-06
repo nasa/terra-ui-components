@@ -292,10 +292,8 @@ export default class TerraBrowseVariables extends TerraElement {
         // MVP group TBD but must include 'Measurements' and 'Dataset'
         return html`<div class="scrollable variables-container">
             <header>
-                Showing ${this.#controller.total}
-                variables${this.searchQuery
-                    ? ` associated with '${this.searchQuery}'`
-                    : ''}
+                Showing ${this.#controller.total} variables
+                ${this.searchQuery ? `associated with '${this.searchQuery}'` : ''}
                 <!-- Sorting and Grouping feature still needs a UI / UX feature discussion.
                 <menu>
                     <li>
@@ -341,7 +339,7 @@ export default class TerraBrowseVariables extends TerraElement {
                         </sl-dropdown>
                     </li>
                 </menu>
-                -->}
+                -->
             </header>
 
             <aside>
@@ -363,7 +361,7 @@ export default class TerraBrowseVariables extends TerraElement {
                         ${this.#controller.variables.map(variable => {
                             return html`
                                 <li
-                                    aria-selected=${false}
+                                    aria-selected="false"
                                     class="variable-list-item"
                                     @click=${(event: Event) => {
                                         const target =
@@ -376,19 +374,13 @@ export default class TerraBrowseVariables extends TerraElement {
                                             return
                                         }
 
-                                        console.log('variable-list-item')
-                                        console.log(target, targetCheckbox)
-
-                                        targetCheckbox.checked =
-                                            !targetCheckbox.checked
-
                                         target?.setAttribute(
                                             'aria-selected',
                                             `${targetCheckbox.checked}`
                                         )
                                     }}
                                 >
-                                    <details
+                                    <div
                                         class="variable"
                                         name="variable"
                                         @mouseover=${(event: Event) => {
@@ -412,58 +404,54 @@ export default class TerraBrowseVariables extends TerraElement {
                                             summary.removeAttribute('open')
                                         }}
                                     >
-                                        <summary tabindex="-1">
+                                        <sl-tooltip hoist>
                                             <label>
-                                                <input
-                                                    type="checkbox"
-                                                    tabindex="0"
-                                                    @click=${(e: any) => {
-                                                        console.log('checkbox')
-                                                        console.log(
-                                                            e.currentTarget,
-                                                            e.target
-                                                        )
-                                                        console.log(e)
-                                                    }}
-                                                />
+                                                <input type="checkbox" tabindex="0" />
                                                 <strong
                                                     >${variable.dataFieldLongName}</strong
-                                                >
+                                                ><br />
                                                 <span
-                                                    >MERRA-2 &bull;
+                                                    >${variable.dataProductShortName}
+                                                    &bull;
                                                     ${variable.dataProductTimeInterval}
-                                                    &bull; kg-m2</span
+                                                    &bull;
+                                                    ${variable.dataProductSpatialResolution}</span
                                                 >
                                             </label>
-                                        </summary>
 
-                                        <div class="details-panel">
-                                            <h4>
-                                                Science Name
-                                                ${variable.dataFieldLongName}
-                                            </h4>
-                                            <p>
-                                                <strong>Spatial Resolution</strong>
-                                                ${variable.dataProductSpatialResolution}
-                                            </p>
-                                            <p>
-                                                <strong>Temporal Coverage</strong>
-                                                ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
-                                            </p>
-                                            <p>
-                                                <strong>Region Coverage</strong>
-                                                ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
-                                            </p>
-                                            <p>
-                                                <strong>Dataset</strong>
-                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                            </p>
-                                            <p>
-                                                <strong>Particulate Matter</strong>
-                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                            </p>
-                                        </div>
-                                    </details>
+                                            <div class="details-panel" slot="content">
+                                                <h4>
+                                                    <strong>Science Name</strong
+                                                    ><br />
+                                                    ${variable.dataFieldLongName}
+                                                </h4>
+                                                <p>
+                                                    <strong>Spatial Resolution</strong
+                                                    ><br />
+                                                    ${variable.dataProductSpatialResolution}
+                                                </p>
+                                                <p>
+                                                    <strong>Temporal Coverage</strong
+                                                    ><br />
+                                                    ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
+                                                </p>
+                                                <p>
+                                                    <strong>Region Coverage</strong
+                                                    ><br />
+                                                    ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
+                                                </p>
+                                                <p>
+                                                    <strong>Dataset</strong><br />
+                                                    ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                                </p>
+                                                <p>
+                                                    <strong>Particulate Matter</strong
+                                                    ><br />
+                                                    ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                                </p>
+                                            </div>
+                                        </sl-tooltip>
+                                    </div>
                                 </li>
                             `
                         })}
