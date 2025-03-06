@@ -220,11 +220,8 @@ export default css`
     }
 
     .variable {
-    }
-
-    .variable sl-tooltip[open] {
-        position: relative;
-        z-index: 100;
+        display: flex;
+        justify-content: space-between;
     }
 
     .variable label {
@@ -233,20 +230,55 @@ export default css`
         font-weight: 400;
     }
 
-    .details-panel {
-        background-color: var(--terra-color-nasa-blue);
-        border: 0.0625em solid var(--terra-color-carbon-10);
-        padding: 0.25em;
-
-        position: relative;
-        z-index: 100;
+    .variable sl-drawer {
+        font-style: italic;
     }
 
-    .details-panel > * {
+    .variable sl-drawer::part(base) {
+        --body-spacing: 0.25em;
+        --header-spacing: 0.25em;
+        --footer-spacing: 1em 0;
+    }
+
+    .variable sl-drawer::part(header-actions) {
+        --header-spacing: 0.25em;
+
+        align-items: flex-start;
+        margin-block-start: 1em;
+        margin-inline-end: 0.5em;
+    }
+
+    .variable sl-drawer::part(close-button__base) {
+        --sl-focus-ring: var(--terra-focus-ring);
+        --sl-focus-ring-offset: var(--terra-focus-ring-offset);
+    }
+
+    .variable sl-drawer::part(panel) {
+        background-color: var(--terra-color-nasa-blue-shade);
+        border: 0.0625em solid var(--terra-color-carbon-10);
+        left: auto;
+        right: 0;
+        top: 4.25rem;
+    }
+
+    .variable sl-drawer::part(body) {
+        padding-block-end: 6em;
+    }
+
+    .variable sl-drawer > * {
         margin-block-start: 0;
     }
 
-    .details-panel h4 {
+    .variable sl-drawer h4 {
         font-weight: 400;
+    }
+
+    .variable-details-button {
+        position: static;
+    }
+
+    .variable-details-button::part(base) {
+        border-color: transparent;
+        color: var(--spacesuit-white);
     }
 `

@@ -18,6 +18,7 @@ import type {
     FacetsByCategory,
     SelectedFacets,
 } from './browse-variables.types.js'
+import type { SlDrawer } from '@shoelace-style/shoelace'
 
 /**
  * @summary Browse through the NASA CMR or Giovanni catalogs.
@@ -404,53 +405,68 @@ export default class TerraBrowseVariables extends TerraElement {
                                             summary.removeAttribute('open')
                                         }}
                                     >
-                                        <sl-tooltip hoist>
-                                            <label>
-                                                <input type="checkbox" tabindex="0" />
-                                                <strong
-                                                    >${variable.dataFieldLongName}</strong
-                                                ><br />
-                                                <span
-                                                    >${variable.dataProductShortName}
-                                                    &bull;
-                                                    ${variable.dataProductTimeInterval}
-                                                    &bull;
-                                                    ${variable.dataProductSpatialResolution}</span
-                                                >
-                                            </label>
+                                        <label>
+                                            <input type="checkbox" tabindex="0" />
+                                            <strong
+                                                >${variable.dataFieldLongName}</strong
+                                            ><br />
+                                            <span
+                                                >${variable.dataProductShortName}
+                                                &bull;
+                                                ${variable.dataProductTimeInterval}
+                                                &bull;
+                                                ${variable.dataProductSpatialResolution}</span
+                                            >
+                                        </label>
 
-                                            <div class="details-panel" slot="content">
-                                                <h4>
-                                                    <strong>Science Name</strong
-                                                    ><br />
-                                                    ${variable.dataFieldLongName}
-                                                </h4>
-                                                <p>
-                                                    <strong>Spatial Resolution</strong
-                                                    ><br />
-                                                    ${variable.dataProductSpatialResolution}
-                                                </p>
-                                                <p>
-                                                    <strong>Temporal Coverage</strong
-                                                    ><br />
-                                                    ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
-                                                </p>
-                                                <p>
-                                                    <strong>Region Coverage</strong
-                                                    ><br />
-                                                    ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
-                                                </p>
-                                                <p>
-                                                    <strong>Dataset</strong><br />
-                                                    ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                                </p>
-                                                <p>
-                                                    <strong>Particulate Matter</strong
-                                                    ><br />
-                                                    ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                                </p>
-                                            </div>
-                                        </sl-tooltip>
+                                        <sl-drawer contained>
+                                            <h4 slot="label">
+                                                <strong>Science Name</strong><br />
+                                                ${variable.dataFieldLongName}
+                                            </h4>
+                                            <p>
+                                                <strong>Spatial Resolution</strong
+                                                ><br />
+                                                ${variable.dataProductSpatialResolution}
+                                            </p>
+                                            <p>
+                                                <strong>Temporal Coverage</strong
+                                                ><br />
+                                                ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
+                                            </p>
+                                            <p>
+                                                <strong>Region Coverage</strong><br />
+                                                ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
+                                            </p>
+                                            <p>
+                                                <strong>Dataset</strong><br />
+                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                            </p>
+                                        </sl-drawer>
+
+                                        <terra-button
+                                            @click=${(_event: Event) => {
+                                                const drawer =
+                                                    this.renderRoot.querySelector(
+                                                        'sl-drawer'
+                                                    ) as SlDrawer
+
+                                                drawer.show()
+                                            }}
+                                            aria-label="View variable details."
+                                            circle
+                                            class="variable-details-button"
+                                            outline
+                                            type="button"
+                                        >
+                                            <slot name="label">
+                                                <terra-icon
+                                                    font-size="1.5em"
+                                                    library="heroicons"
+                                                    name="outline-information-circle"
+                                                ></terra-icon>
+                                            </slot>
+                                        </terra-button>
                                     </div>
                                 </li>
                             `
