@@ -1,35 +1,6 @@
 import { css } from 'lit'
 
 export default css`
-    @supports (interpolate-size: allow-keywords) and selector(::details-content) {
-        :host {
-            /* interpolate-size is currently Chromium only. */
-            interpolate-size: allow-keywords; /* Opt-in the component to interpolate sizes to/from keywords */
-        }
-
-        /* ::details-content is currently Chromium only. This could replace the div.details-panel. */
-        [open]::details-content {
-            height: auto;
-        }
-
-        /* ::details-content is currently Chromium only. This could replace the div.details-panel. */
-        ::details-content {
-            transition:
-                height 0.125s ease 0.125s,
-                content-visibility 0.125s ease allow-discrete 0.125s;
-            height: 0;
-            overflow: clip;
-        }
-
-        @media (prefers-reduced-motion) {
-            ::details-content {
-                transition:
-                    height 0s ease,
-                    content-visibility 0s ease allow-discrete;
-            }
-        }
-    }
-
     :host {
         --light-blue-color: color-mix(
             in hsl,

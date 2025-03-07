@@ -1,4 +1,5 @@
 import { TaskStatus } from '@lit/task'
+import type { SlDrawer } from '@shoelace-style/shoelace'
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
@@ -18,7 +19,6 @@ import type {
     FacetsByCategory,
     SelectedFacets,
 } from './browse-variables.types.js'
-import type { SlDrawer } from '@shoelace-style/shoelace'
 
 /**
  * @summary Browse through the NASA CMR or Giovanni catalogs.
@@ -381,32 +381,9 @@ export default class TerraBrowseVariables extends TerraElement {
                                         )
                                     }}
                                 >
-                                    <div
-                                        class="variable"
-                                        name="variable"
-                                        @mouseover=${(event: Event) => {
-                                            const summary =
-                                                event.currentTarget as HTMLElement
-
-                                            if (!summary) {
-                                                return
-                                            }
-
-                                            summary.setAttribute('open', '')
-                                        }}
-                                        @mouseout=${(event: Event) => {
-                                            const summary =
-                                                event.currentTarget as HTMLElement
-
-                                            if (!summary) {
-                                                return
-                                            }
-
-                                            summary.removeAttribute('open')
-                                        }}
-                                    >
+                                    <div class="variable">
                                         <label>
-                                            <input type="checkbox" tabindex="0" />
+                                            <input type="checkbox" />
                                             <strong
                                                 >${variable.dataFieldLongName}</strong
                                             ><br />
