@@ -47,8 +47,8 @@ class TerraLogin(TerraBaseWidget):
          */
         component.addEventListener('terra-login', (e) => {
             // Placeholder for event handling, you'll need to provide your own functionality here
-            // model.set('terra-login_triggered', true)
-            // model.save_changes()
+            model.set('terra-login_triggered', true)
+            model.save_changes()
         })
     }
 

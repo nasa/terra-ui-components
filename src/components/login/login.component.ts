@@ -40,7 +40,6 @@ export default class TerraLogin extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-loader': TerraLoader,
     }
-    static formAssociated = true
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
