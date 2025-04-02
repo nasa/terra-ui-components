@@ -25,7 +25,7 @@ import {
 // TODO: switch this to Cloud Giovanni during GUUI-3329
 // const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
 const timeSeriesUrlTemplate = compile(
-    `https://api.giovanni.earthdata.nasa.gov/proxy-timeseries?variable={{variable}}&location={{location}}&time={{time}}`
+    `https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user?data={{variable}}&lat={{lat}}&lon={{lon}}&time_start={{time_start}}&time_end={{time_end}}`
 )
 
 export const plotlyDefaultData: Partial<PlotData> = {
@@ -132,24 +132,24 @@ export class TimeSeriesController {
 
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${variableEntryId.split('_')[0]}:${this.collection}:${
+            variable: `${this.collection}_${
                 this.variable
             }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
-            //startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
-            //endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
-            time: format(requestStartDate, 'yyyy-MM-dd') + 'T00' + '/' + format(requestEndDate, 'yyyy-MM-dd') + 'T00',
-            location: 'GEOM:POINT(-86.9375,%2033.9375)',
+            time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+            time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+            lat: 40,
+            lon: 120,
         })
 
         // fetch the time series as a CSV
-        const response = await fetch(url, { mode: 'cors', signal, headers: {authorizationtoken:"eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6ImtydXBhcmFtaTIwIiwiZXhwIjoxNzI4MjM4MzA4LCJpYXQiOjE3MjMwNTQzMDgsImlzcyI6IkVhcnRoZGF0YSBMb2dpbiJ9.MwV4HbS3N9SrkHaL-jJPCb6hgE3oelvFi3fqJnVB8Y4wJ_AWpyWLGgsXAQ2ln2mZpzMRpQUy2AbMDvbnfmwO7a30CeG_eAT7js5a8rrsVESANPr2CsxQQqdGBouQY8ukVhhrY_AwYN5YOoyiPr1VYu44WSMaWOA1ja_GkEp0wf4xD39uZ31CmF-1lxe6ihKzKk2sVPzBlzVTgMsnS5VSnFAtUW1tuZs4qyyK7GU0EUovTQDXx2JPsdTOfi5Cy9Bw-U-_aYaRXC-5KDTaAzeMo0GlUcPJO05CIaC1FjhzjPdNNLTrl5xqkMF_90me39InTHlzUqFCcKvG_BGvMuAn1g"} })
+        const response = await fetch(url, { mode: 'cors', signal })
 
         if (!response.ok) {
             throw new Error(
                 `Failed to fetch time series data: ${response.statusText}`
             )
         }
-
+       
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
         // combined the new parsedData with any existinEduxata
@@ -178,19 +178,19 @@ export class TimeSeriesController {
         const lines = text.split('\n')
         const metadata: Partial<TimeSeriesMetadata> = {}
         const data: TimeSeriesDataRow[] = []
-
+    
         lines.forEach(line => {
             if (line.includes('=')) {
                 const [key, value] = line.split('=')
                 metadata[key] = value
-            } else if (line.includes('\t')) {
-                const [timestamp, value] = line.split('\t')
+            } else if (line.includes(',')) {
+                const [timestamp, value] = line.split(',')
                 if (timestamp && value) {
                     data.push({ timestamp, value })
                 }
             }
         })
-
+    
         return { metadata, data } as TimeSeriesData
     }
 
