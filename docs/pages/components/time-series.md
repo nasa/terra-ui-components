@@ -7,10 +7,10 @@ layout: component
 
 ```html:preview
 <edux-time-series
-    collection="GPM_3IMERGHH_06"
-    variable="precipitationCal"
-    start-date="01/01/2019"
-    end-date="09/01/2021"
+    collection="M2T1NXSLV_5_12_4"
+    variable="V50M"
+    start-date="05/03/2024"
+    end-date="06/03/2024"
 ></edux-time-series>
 ```
 
