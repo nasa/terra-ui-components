@@ -1,12 +1,12 @@
-import EduxMap from './map.component.js'
+import TerraMap from './map.component.js'
 
 export * from './map.component.js'
-export default EduxMap
+export default TerraMap
 
-EduxMap.define('edux-map')
+TerraMap.define('terra-map')
 
 declare global {
     interface HTMLElementTagNameMap {
-        'edux-map': EduxMap
+        'terra-map': TerraMap
     }
 }

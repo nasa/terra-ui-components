@@ -14,24 +14,24 @@ Shoelace makes use of several design tokens to provide a consistent appearance a
 
 Design tokens offer a high-level way to customize the library with minimal effort. There are no component-specific variables, however, as design tokens are intended to be generic and highly reusable. To customize an individual component, refer to the section entitled [CSS Parts](#css-parts).
 
-Design tokens are accessed through CSS custom properties that are defined in your theme. Because design tokens live at the page level, they're prefixed with `--edux-` to avoid collisions with other libraries.
+Design tokens are accessed through CSS custom properties that are defined in your theme. Because design tokens live at the page level, they're prefixed with `--terra-` to avoid collisions with other libraries.
 
 To customize a design token, simply override it in your stylesheet using a `:root` block. Here's an example that changes the primary theme to purple based on existing [color primitives](/tokens/color#primitives).
 
 ```css
 :root {
     /* Changes the primary theme color to purple using primitives */
-    --edux-color-primary-50: var(--edux-color-purple-50);
-    --edux-color-primary-100: var(--edux-color-purple-100);
-    --edux-color-primary-200: var(--edux-color-purple-200);
-    --edux-color-primary-300: var(--edux-color-purple-300);
-    --edux-color-primary-400: var(--edux-color-purple-400);
-    --edux-color-primary-500: var(--edux-color-purple-500);
-    --edux-color-primary-600: var(--edux-color-purple-600);
-    --edux-color-primary-700: var(--edux-color-purple-700);
-    --edux-color-primary-800: var(--edux-color-purple-800);
-    --edux-color-primary-900: var(--edux-color-purple-900);
-    --edux-color-primary-950: var(--edux-color-purple-950);
+    --terra-color-primary-50: var(--terra-color-purple-50);
+    --terra-color-primary-100: var(--terra-color-purple-100);
+    --terra-color-primary-200: var(--terra-color-purple-200);
+    --terra-color-primary-300: var(--terra-color-purple-300);
+    --terra-color-primary-400: var(--terra-color-purple-400);
+    --terra-color-primary-500: var(--terra-color-purple-500);
+    --terra-color-primary-600: var(--terra-color-purple-600);
+    --terra-color-primary-700: var(--terra-color-purple-700);
+    --terra-color-primary-800: var(--terra-color-purple-800);
+    --terra-color-primary-900: var(--terra-color-purple-900);
+    --terra-color-primary-950: var(--terra-color-purple-950);
 }
 ```
 
@@ -46,11 +46,11 @@ Shoelace components use a [shadow DOM](https://developer.mozilla.org/en-US/docs/
 Here's an example that modifies buttons with the `tomato-button` class.
 
 ```html:preview
-<edux-button class="tomato-button"> Tomato Button </edux-button>
+<terra-button class="tomato-button"> Tomato Button </terra-button>
 
 <style>
   .tomato-button::part(base) {
-    background: var(--edux-color-neutral-0);
+    background: var(--terra-color-neutral-0);
     border: solid 1px tomato;
   }
 
@@ -84,12 +84,12 @@ Most (but not all) components expose parts. You can find them in each component'
 
 ## Custom Properties
 
-For convenience, some components expose CSS custom properties you can override. These are not design tokens, nor do they have the same `--edux-` prefix since they're scoped to a component.
+For convenience, some components expose CSS custom properties you can override. These are not design tokens, nor do they have the same `--terra-` prefix since they're scoped to a component.
 
 You can set custom properties on a component in your stylesheet.
 
 ```css
-edux-avatar {
+terra-avatar {
     --size: 6rem;
 }
 ```
@@ -97,7 +97,7 @@ edux-avatar {
 This will also work if you need to target a subset of components with a specific class.
 
 ```css
-edux-avatar.your-class {
+terra-avatar.your-class {
     --size: 6rem;
 }
 ```
@@ -119,7 +119,7 @@ To customize a default animation, use the `setDefaultAnimation()` method. The fu
 This example will make all dialogs use a custom show animation.
 
 ```js
-import { setDefaultAnimation } from '@nasa/earthdata-ux-components/dist/utilities/animation-registry.js'
+import { setDefaultAnimation } from '@nasa-terra/components/dist/utilities/animation-registry.js'
 
 // Change the default animation for all dialogs
 setDefaultAnimation('dialog.show', {
@@ -142,7 +142,7 @@ If you only want to target a single component, use the `setAnimation()` method i
 In this example, only the target dialog will use a custom show animation.
 
 ```js
-import { setAnimation } from '@nasa/earthdata-ux-components/dist/utilities/animation-registry.js'
+import { setAnimation } from '@nasa-terra/components/dist/utilities/animation-registry.js'
 
 // Change the animation for a single dialog
 const dialog = document.querySelector('#my-dialog')

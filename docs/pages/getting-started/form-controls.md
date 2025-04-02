@@ -30,7 +30,7 @@ const data = new FormData(form)
 However, some folks find `FormData` tricky to work with or they need to pass a JSON payload to their server. To accommodate this, Shoelace offers a serialization utility that gathers form data and returns a simple JavaScript object instead.
 
 ```js
-import { serialize } from '@nasa/earthdata-ux-components/dist/utilities/form.js'
+import { serialize } from '@nasa-terra/components/dist/utilities/form.js'
 
 const form = document.querySelector('form')
 const data = serialize(form)
@@ -56,7 +56,7 @@ Client-side validation can be used to improve the UX of forms, but it is not a r
 
 ### Required Fields
 
-To make a field required, use the `required` attribute. Required fields will automatically receive a `*` after their labels. This is configurable through the `--edux-input-required-content` custom property.
+To make a field required, use the `required` attribute. Required fields will automatically receive a `*` after their labels. This is configurable through the `--terra-input-required-content` custom property.
 
 The form will not be submitted if a required field is incomplete.
 
@@ -75,7 +75,7 @@ The form will not be submitted if a required field is incomplete.
   <br />
   <sl-checkbox required>Check me before submitting</sl-checkbox>
   <br /><br />
-  <edux-button type="submit" variant="primary">Submit</edux-button>
+  <terra-button type="submit" variant="primary">Submit</terra-button>
 </form>
 
 <script type="module">
@@ -83,12 +83,12 @@ The form will not be submitted if a required field is incomplete.
 
   // Wait for controls to be defined before attaching form listeners
   await Promise.all([
-    customElements.whenDefined('edux-button'),
-    customElements.whenDefined('edux-checkbox'),
-    customElements.whenDefined('edux-input'),
-    customElements.whenDefined('edux-option'),
-    customElements.whenDefined('edux-select'),
-    customElements.whenDefined('edux-textarea')
+    customElements.whenDefined('terra-button'),
+    customElements.whenDefined('terra-checkbox'),
+    customElements.whenDefined('terra-input'),
+    customElements.whenDefined('terra-option'),
+    customElements.whenDefined('terra-select'),
+    customElements.whenDefined('terra-textarea')
   ]).then(() => {
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -99,12 +99,12 @@ The form will not be submitted if a required field is incomplete.
 ```
 
 ```jsx:react
-import EduxButton from '@nasa/earthdata-ux-components/dist/react/button';
-import SlCheckbox from '@nasa/earthdata-ux-components/dist/react/checkbox';
-import SlInput from '@nasa/earthdata-ux-components/dist/react/input';
-import SlMenuItem from '@nasa/earthdata-ux-components/dist/react/menu-item';
-import SlSelect from '@nasa/earthdata-ux-components/dist/react/select';
-import SlTextarea from '@nasa/earthdata-ux-components/dist/react/textarea';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlCheckbox from '@nasa-terra/components/dist/react/checkbox';
+import SlInput from '@nasa-terra/components/dist/react/input';
+import SlMenuItem from '@nasa-terra/components/dist/react/menu-item';
+import SlSelect from '@nasa-terra/components/dist/react/select';
+import SlTextarea from '@nasa-terra/components/dist/react/textarea';
 
 const App = () => {
   function handleSubmit(event) {
@@ -128,9 +128,9 @@ const App = () => {
       <SlCheckbox required>Check me before submitting</SlCheckbox>
       <br />
       <br />
-      <EduxButton type="submit" variant="primary">
+      <TerraButton type="submit" variant="primary">
         Submit
-      </EduxButton>
+      </TerraButton>
     </form>
   );
 };
@@ -144,8 +144,8 @@ To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/
 <form class="input-validation-pattern">
   <sl-input name="letters" required label="Letters" pattern="[A-Za-z]+"></sl-input>
   <br />
-  <edux-button type="submit" variant="primary">Submit</edux-button>
-  <edux-button type="reset" variant="default">Reset</edux-button>
+  <terra-button type="submit" variant="primary">Submit</terra-button>
+  <terra-button type="reset" variant="default">Reset</terra-button>
 </form>
 
 <script type="module">
@@ -153,8 +153,8 @@ To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/
 
   // Wait for controls to be defined before attaching form listeners
   await Promise.all([
-    customElements.whenDefined('edux-button'),
-    customElements.whenDefined('edux-input')
+    customElements.whenDefined('terra-button'),
+    customElements.whenDefined('terra-input')
   ]).then(() => {
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -165,8 +165,8 @@ To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/
 ```
 
 ```jsx:react
-import EduxButton from '@nasa/earthdata-ux-components/dist/react/button';
-import SlInput from '@nasa/earthdata-ux-components/dist/react/input';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   function handleSubmit(event) {
@@ -178,9 +178,9 @@ const App = () => {
     <form onSubmit={handleSubmit}>
       <SlInput name="letters" required label="Letters" pattern="[A-Za-z]+" />
       <br />
-      <EduxButton type="submit" variant="primary">
+      <TerraButton type="submit" variant="primary">
         Submit
-      </EduxButton>
+      </TerraButton>
     </form>
   );
 };
@@ -196,8 +196,8 @@ Some input types will automatically trigger constraints, such as `email` and `ur
   <br />
   <sl-input type="url" label="URL" placeholder="https://example.com/" required></sl-input>
   <br />
-  <edux-button type="submit" variant="primary">Submit</edux-button>
-  <edux-button type="reset" variant="default">Reset</edux-button>
+  <terra-button type="submit" variant="primary">Submit</terra-button>
+  <terra-button type="reset" variant="default">Reset</terra-button>
 </form>
 
 <script type="module">
@@ -205,8 +205,8 @@ Some input types will automatically trigger constraints, such as `email` and `ur
 
   // Wait for controls to be defined before attaching form listeners
   await Promise.all([
-    customElements.whenDefined('edux-button'),
-    customElements.whenDefined('edux-input')
+    customElements.whenDefined('terra-button'),
+    customElements.whenDefined('terra-input')
   ]).then(() => {
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -217,8 +217,8 @@ Some input types will automatically trigger constraints, such as `email` and `ur
 ```
 
 ```jsx:react
-import EduxButton from '@nasa/earthdata-ux-components/dist/react/button';
-import SlInput from '@nasa/earthdata-ux-components/dist/react/input';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   function handleSubmit(event) {
@@ -232,9 +232,9 @@ const App = () => {
       <br />
       <SlInput type="url" label="URL" placeholder="https://example.com/" required />
       <br />
-      <EduxButton type="submit" variant="primary">
+      <TerraButton type="submit" variant="primary">
         Submit
-      </EduxButton>
+      </TerraButton>
     </form>
   );
 };
@@ -248,25 +248,25 @@ To create a custom validation error, pass a non-empty string to the `setCustomVa
 <form class="input-validation-custom">
   <sl-input label="Type “shoelace”" required></sl-input>
   <br />
-  <edux-button type="submit" variant="primary">Submit</edux-button>
-  <edux-button type="reset" variant="default">Reset</edux-button>
+  <terra-button type="submit" variant="primary">Submit</terra-button>
+  <terra-button type="reset" variant="default">Reset</terra-button>
 </form>
 
 <script type="module">
   const form = document.querySelector('.input-validation-custom');
-  const input = form.querySelector('edux-input');
+  const input = form.querySelector('terra-input');
 
   // Wait for controls to be defined before attaching form listeners
   await Promise.all([
-    customElements.whenDefined('edux-button'),
-    customElements.whenDefined('edux-input')
+    customElements.whenDefined('terra-button'),
+    customElements.whenDefined('terra-input')
   ]).then(() => {
     form.addEventListener('submit', event => {
       event.preventDefault();
       alert('All fields are valid!');
     });
 
-    input.addEventListener('edux-input', () => {
+    input.addEventListener('terra-input', () => {
       if (input.value === 'shoelace') {
         input.setCustomValidity('');
       } else {
@@ -279,8 +279,8 @@ To create a custom validation error, pass a non-empty string to the `setCustomVa
 
 ```jsx:react
 import { useRef, useState } from 'react';
-import EduxButton from '@nasa/earthdata-ux-components/dist/react/button';
-import SlInput from '@nasa/earthdata-ux-components/dist/react/input';
+import TerraButton from '@nasa-terra/components/dist/react/button';
+import SlInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   const input = useRef(null);
@@ -305,9 +305,9 @@ const App = () => {
     <form onSubmit={handleSubmit}>
       <SlInput ref={input} label="Type 'shoelace'" required value={value} onSlInput={handleInput} />
       <br />
-      <EduxButton type="submit" variant="primary">
+      <TerraButton type="submit" variant="primary">
         Submit
-      </EduxButton>
+      </TerraButton>
     </form>
   );
 };
@@ -359,8 +359,8 @@ This example demonstrates custom validation styles using `data-user-invalid` and
 
   <sl-checkbox value="accept" required>Accept terms and conditions</sl-checkbox>
 
-  <edux-button type="submit" variant="primary">Submit</edux-button>
-  <edux-button type="reset" variant="default">Reset</edux-button>
+  <terra-button type="submit" variant="primary">Submit</terra-button>
+  <terra-button type="reset" variant="default">Reset</terra-button>
 </form>
 
 <script type="module">
@@ -368,11 +368,11 @@ This example demonstrates custom validation styles using `data-user-invalid` and
 
   // Wait for controls to be defined before attaching form listeners
   await Promise.all([
-    customElements.whenDefined('edux-button'),
-    customElements.whenDefined('edux-checkbox'),
-    customElements.whenDefined('edux-input'),
-    customElements.whenDefined('edux-option'),
-    customElements.whenDefined('edux-select')
+    customElements.whenDefined('terra-button'),
+    customElements.whenDefined('terra-checkbox'),
+    customElements.whenDefined('terra-input'),
+    customElements.whenDefined('terra-option'),
+    customElements.whenDefined('terra-select')
   ]).then(() => {
     form.addEventListener('submit', event => {
       event.preventDefault();
@@ -382,60 +382,60 @@ This example demonstrates custom validation styles using `data-user-invalid` and
 </script>
 
 <style>
-  .validity-styles edux-input,
-  .validity-styles edux-select,
-  .validity-styles edux-checkbox {
+  .validity-styles terra-input,
+  .validity-styles terra-select,
+  .validity-styles terra-checkbox {
     display: block;
-    margin-bottom: var(--edux-spacing-medium);
+    margin-bottom: var(--terra-spacing-medium);
   }
 
   /* user invalid styles */
-  .validity-styles edux-input[data-user-invalid]::part(base),
-  .validity-styles edux-select[data-user-invalid]::part(combobox),
-  .validity-styles edux-checkbox[data-user-invalid]::part(control) {
-    border-color: var(--edux-color-danger-600);
+  .validity-styles terra-input[data-user-invalid]::part(base),
+  .validity-styles terra-select[data-user-invalid]::part(combobox),
+  .validity-styles terra-checkbox[data-user-invalid]::part(control) {
+    border-color: var(--terra-color-danger-600);
   }
 
   .validity-styles [data-user-invalid]::part(form-control-label),
   .validity-styles [data-user-invalid]::part(form-control-help-text),
-  .validity-styles edux-checkbox[data-user-invalid]::part(label) {
-    color: var(--edux-color-danger-700);
+  .validity-styles terra-checkbox[data-user-invalid]::part(label) {
+    color: var(--terra-color-danger-700);
   }
 
-  .validity-styles edux-checkbox[data-user-invalid]::part(control) {
+  .validity-styles terra-checkbox[data-user-invalid]::part(control) {
     outline: none;
   }
 
-  .validity-styles edux-input:focus-within[data-user-invalid]::part(base),
-  .validity-styles edux-select:focus-within[data-user-invalid]::part(combobox),
-  .validity-styles edux-checkbox:focus-within[data-user-invalid]::part(control) {
-    border-color: var(--edux-color-danger-600);
-    box-shadow: 0 0 0 var(--edux-focus-ring-width) var(--edux-color-danger-300);
+  .validity-styles terra-input:focus-within[data-user-invalid]::part(base),
+  .validity-styles terra-select:focus-within[data-user-invalid]::part(combobox),
+  .validity-styles terra-checkbox:focus-within[data-user-invalid]::part(control) {
+    border-color: var(--terra-color-danger-600);
+    box-shadow: 0 0 0 var(--terra-focus-ring-width) var(--terra-color-danger-300);
   }
 
   /* User valid styles */
-  .validity-styles edux-input[data-user-valid]::part(base),
-  .validity-styles edux-select[data-user-valid]::part(combobox),
-  .validity-styles edux-checkbox[data-user-valid]::part(control) {
-    border-color: var(--edux-color-success-600);
+  .validity-styles terra-input[data-user-valid]::part(base),
+  .validity-styles terra-select[data-user-valid]::part(combobox),
+  .validity-styles terra-checkbox[data-user-valid]::part(control) {
+    border-color: var(--terra-color-success-600);
   }
 
   .validity-styles [data-user-valid]::part(form-control-label),
   .validity-styles [data-user-valid]::part(form-control-help-text),
-  .validity-styles edux-checkbox[data-user-valid]::part(label) {
-    color: var(--edux-color-success-700);
+  .validity-styles terra-checkbox[data-user-valid]::part(label) {
+    color: var(--terra-color-success-700);
   }
 
-  .validity-styles edux-checkbox[data-user-valid]::part(control) {
-    background-color: var(--edux-color-success-600);
+  .validity-styles terra-checkbox[data-user-valid]::part(control) {
+    background-color: var(--terra-color-success-600);
     outline: none;
   }
 
-  .validity-styles edux-input:focus-within[data-user-valid]::part(base),
-  .validity-styles edux-select:focus-within[data-user-valid]::part(combobox),
-  .validity-styles edux-checkbox:focus-within[data-user-valid]::part(control) {
-    border-color: var(--edux-color-success-600);
-    box-shadow: 0 0 0 var(--edux-focus-ring-width) var(--edux-color-success-300);
+  .validity-styles terra-input:focus-within[data-user-valid]::part(base),
+  .validity-styles terra-select:focus-within[data-user-valid]::part(combobox),
+  .validity-styles terra-checkbox:focus-within[data-user-valid]::part(control) {
+    border-color: var(--terra-color-success-600);
+    box-shadow: 0 0 0 var(--terra-focus-ring-width) var(--terra-color-success-300);
   }
 </style>
 ```
@@ -444,7 +444,7 @@ This example demonstrates custom validation styles using `data-user-invalid` and
 
 By default, Shoelace form controls use the browser's tooltip-style error messages. No mechanism is provided to show errors inline, as there are too many opinions on how that would work when combined with native form controls and other custom elements. You can, however, implement your own solution using the following technique.
 
-To disable the browser's error messages, you need to cancel the `edux-invalid` event. Then you can apply your own inline validation errors. This example demonstrates a primitive way to do this.
+To disable the browser's error messages, you need to cancel the `terra-invalid` event. Then you can apply your own inline validation errors. This example demonstrates a primitive way to do this.
 
 ```html:preview
 <form class="inline-validation">
@@ -458,8 +458,8 @@ To disable the browser's error messages, you need to cancel the `edux-invalid` e
 
   <div id="name-error" aria-live="polite" hidden></div>
 
-  <edux-button type="submit" variant="primary">Submit</edux-button>
-  <edux-button type="reset" variant="default">Reset</edux-button>
+  <terra-button type="submit" variant="primary">Submit</terra-button>
+  <terra-button type="reset" variant="default">Reset</terra-button>
 </form>
 
 <script type="module">
@@ -468,12 +468,12 @@ To disable the browser's error messages, you need to cancel the `edux-invalid` e
 
   // Wait for controls to be defined before attaching form listeners
   await Promise.all([
-    customElements.whenDefined('edux-button'),
-    customElements.whenDefined('edux-input')
+    customElements.whenDefined('terra-button'),
+    customElements.whenDefined('terra-input')
   ]).then(() => {
     // A form control is invalid
     form.addEventListener(
-      'edux-invalid',
+      'terra-invalid',
       event => {
         // Suppress the browser's constraint validation message
         event.preventDefault();
@@ -483,7 +483,7 @@ To disable the browser's error messages, you need to cancel the `edux-invalid` e
 
         event.target.focus();
       },
-      { capture: true } // you must use capture since edux-invalid doesn't bubble!
+      { capture: true } // you must use capture since terra-invalid doesn't bubble!
     );
 
     // Handle form submit
@@ -504,46 +504,46 @@ To disable the browser's error messages, you need to cancel the `edux-invalid` e
 
 <style>
   #name-error {
-    font-size: var(--edux-input-help-text-font-size-medium);
-    color: var(--edux-color-danger-700);
+    font-size: var(--terra-input-help-text-font-size-medium);
+    color: var(--terra-color-danger-700);
   }
 
-  #name-error ~ edux-button {
-    margin-top: var(--edux-spacing-medium);
+  #name-error ~ terra-button {
+    margin-top: var(--terra-spacing-medium);
   }
 
-  .inline-validation edux-input {
+  .inline-validation terra-input {
     display: block;
   }
 
   /* user invalid styles */
-  .inline-validation edux-input[data-user-invalid]::part(base) {
-    border-color: var(--edux-color-danger-600);
+  .inline-validation terra-input[data-user-invalid]::part(base) {
+    border-color: var(--terra-color-danger-600);
   }
 
   .inline-validation [data-user-invalid]::part(form-control-label),
   .inline-validation [data-user-invalid]::part(form-control-help-text) {
-    color: var(--edux-color-danger-700);
+    color: var(--terra-color-danger-700);
   }
 
-  .inline-validation edux-input:focus-within[data-user-invalid]::part(base) {
-    border-color: var(--edux-color-danger-600);
-    box-shadow: 0 0 0 var(--edux-focus-ring-width) var(--edux-color-danger-300);
+  .inline-validation terra-input:focus-within[data-user-invalid]::part(base) {
+    border-color: var(--terra-color-danger-600);
+    box-shadow: 0 0 0 var(--terra-focus-ring-width) var(--terra-color-danger-300);
   }
 
   /* User valid styles */
-  .inline-validation edux-input[data-user-valid]::part(base) {
-    border-color: var(--edux-color-success-600);
+  .inline-validation terra-input[data-user-valid]::part(base) {
+    border-color: var(--terra-color-success-600);
   }
 
   .inline-validation [data-user-valid]::part(form-control-label),
   .inline-validation [data-user-valid]::part(form-control-help-text) {
-    color: var(--edux-color-success-700);
+    color: var(--terra-color-success-700);
   }
 
-  .inline-validation edux-input:focus-within[data-user-valid]::part(base) {
-    border-color: var(--edux-color-success-600);
-    box-shadow: 0 0 0 var(--edux-focus-ring-width) var(--edux-color-success-300);
+  .inline-validation terra-input:focus-within[data-user-valid]::part(base) {
+    border-color: var(--terra-color-success-600);
+    box-shadow: 0 0 0 var(--terra-focus-ring-width) var(--terra-color-success-300);
   }
 </style>
 ```
@@ -557,12 +557,12 @@ This example is meant to demonstrate the concept of providing your own error mes
 At this time, using [`HTMLFormElement.elements`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/elements) will not return Shoelace form controls because the browser is unaware of their status as custom element form controls. Fortunately, Shoelace provides an `elements()` function that does something very similar. However, instead of returning an [`HTMLFormControlsCollection`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormControlsCollection), it returns an array of HTML and Shoelace form controls in the order they appear in the DOM.
 
 ```js
-import { getFormControls } from '@nasa/earthdata-ux-components/dist/utilities/form.js'
+import { getFormControls } from '@nasa-terra/components/dist/utilities/form.js'
 
 const form = document.querySelector('#my-form')
 const formControls = getFormControls(form)
 
-console.log(formControls) // e.g. [input, edux-input, ...]
+console.log(formControls) // e.g. [input, terra-input, ...]
 ```
 
 :::tip

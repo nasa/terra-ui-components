@@ -1,29 +1,12 @@
-import { Task, TaskStatus } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
+import { Task, TaskStatus } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import { cherryPickDocInfo } from './lib.js'
-
-export type ListItem = {
-    entryId: string
-    collectionLongName: string
-    collectionShortName: string
-    collectionVersion: string
-    collectionBeginningDateTime: string
-    collectionEndingDateTime: string
-    name: string
-    longName: string
-    standardName: string
-    units: string
-    /* data used to emit event detail when option is selected */
-    eventDetail: string
-}
-
-export type GroupedListItem = {
-    collectionLongName: string
-    variables: ListItem[]
-}
-
-export type ReadableTaskStatus = 'INITIAL' | 'PENDING' | 'COMPLETE' | 'ERROR'
+import type {
+    ListItem,
+    MaybeBearerToken,
+    ReadableTaskStatus,
+} from './variable-combobox.types.js'
 
 const apiError = new Error(
     'Failed to fetch the data required to make a list of searchable items.'
@@ -31,11 +14,28 @@ const apiError = new Error(
 
 export class FetchController {
     #apiTask: Task<[], ListItem[]>
+    #bearerToken: MaybeBearerToken = null
 
-    constructor(host: ReactiveControllerHost) {
+    constructor(host: ReactiveControllerHost, bearerToken: MaybeBearerToken) {
+        this.#bearerToken = bearerToken
+
+        const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
+
         this.#apiTask = new Task(host, {
             task: async () => {
-                const response = await fetch('http://localhost:9000/variables')
+                const response = await fetch(
+                    isLocalHost
+                        ? 'http://localhost:9000/variables'
+                        : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/dev/~jdcarlso/collection+variable.json',
+                    {
+                        headers: {
+                            Accept: 'application/json',
+                            ...(this.#bearerToken
+                                ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                                : {}),
+                        },
+                    }
+                )
 
                 if (!response.ok) {
                     throw apiError
@@ -47,7 +47,7 @@ export class FetchController {
 
                 return cherryPickDocInfo(docs)
             },
-            args: () => [],
+            args: (): any => [],
         })
     }
 

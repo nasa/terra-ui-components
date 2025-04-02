@@ -5,11 +5,15 @@ export default css`
         display: block;
     }
 
+    :host::part(base) {
+        aspect-ratio: 4 / 3;
+    }
+
     /**
    * !Alert! The rest of this stylesheet is auto-generated!
    * Unfortunately Plotly does not work well with Shadow DOM AND they don't supply a CSS file at all for us to import
    * Because of this, a working solution is to copy their CSS over.
-   * 
+   *
    * Given that they use CSS, you can do npx -y sass ./node_modules/plotly.js/src/css/style.scss > plotly.css
    * to generate the CSS, then copy the contents of plotly.css into this file
    */

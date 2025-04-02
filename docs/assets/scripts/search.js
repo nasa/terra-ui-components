@@ -60,7 +60,7 @@
     const clearButton = siteSearch.querySelector('.search__clear-button')
     const results = siteSearch.querySelector('.search__results')
     const version = document.documentElement.getAttribute(
-        'data-earthdata-ux-components-version'
+        'data-terra-ui-components-version'
     )
     const key = `search_${version}`
     const searchDebounce = 50

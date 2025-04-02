@@ -1,12 +1,12 @@
-import EduxButton from './button.component.js'
+import TerraButton from './button.component.js'
 
 export * from './button.component.js'
-export default EduxButton
+export default TerraButton
 
-EduxButton.define('edux-button')
+TerraButton.define('terra-button')
 
 declare global {
     interface HTMLElementTagNameMap {
-        'edux-button': EduxButton
+        'terra-button': TerraButton
     }
 }

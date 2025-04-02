@@ -1,11 +1,11 @@
 import { html } from 'lit'
 import { repeat } from 'lit/directives/repeat.js'
-import type { GroupedListItem, ListItem } from './variable-combobox.controller.js'
+import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
 function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
         <span class="group-title" data-tree-walker="filter_skip"
-            >${listItem.collectionLongName}</span
+            >${listItem.collectionEntryId}</span
         >
         <ul data-tree-walker="filter_skip">
             ${repeat(
@@ -42,14 +42,16 @@ function groupDocsByCollection(docs: ListItem[]): GroupedListItem[] {
     const groupedDocs: Record<string, ListItem[]> = {}
 
     for (const doc of docs) {
-        Array.isArray(groupedDocs[doc.collectionLongName])
-            ? groupedDocs[doc.collectionLongName].push(doc)
-            : (groupedDocs[doc.collectionLongName] = [doc])
+        const key = `${doc.collectionShortName}_${doc.collectionVersion}`
+
+        Array.isArray(groupedDocs[key])
+            ? groupedDocs[key].push(doc)
+            : (groupedDocs[key] = [doc])
     }
 
-    return Object.entries(groupedDocs).map(([collectionLongName, variables]) => {
+    return Object.entries(groupedDocs).map(([collectionEntryId, variables]) => {
         return {
-            collectionLongName,
+            collectionEntryId,
             variables,
         }
     })
@@ -63,25 +65,23 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             collectionLongName: doc['Collection.LongName'],
             collectionShortName: doc['Collection.ShortName'],
             collectionVersion: doc['Collection.Version'],
-            name: doc['Variable.Name'],
+            entryId: `${doc['Collection.ShortName']}_${doc['Collection.Version']}_${doc['Variable.Name']}`,
             longName: doc['Variable.LongName'],
+            name: doc['Variable.Name'],
             standardName: doc['Variable.StandardName'],
             units: doc['Variable.Units'],
-            entryId: `${doc['Collection.ShortName']}_${doc['Collection.Version']}_${doc['Variable.Name']}`,
         }
 
-        const eventDetail = JSON.stringify({
-            collectionBeginningDateTime: doc['Collection.BeginDateTime'],
-            collectionEndingDateTime: doc['Collection.EndDateTime'],
-            collectionShortName: renderableData.collectionShortName,
-            collectionVersion: renderableData.collectionVersion,
-            name: renderableData.name,
-            longName: renderableData.longName,
-            standardName: renderableData.standardName,
-            entryId: renderableData.entryId,
-        })
+        const { collectionLongName, ...eventDetails } = renderableData
 
-        return { ...renderableData, eventDetail }
+        return {
+            ...renderableData,
+            eventDetail: JSON.stringify({
+                ...eventDetails,
+                datasetLandingPage: doc['Collection.DescriptionUrl'],
+                variableLandingPage: doc['Variable.DescriptionUrl'],
+            }),
+        }
     })
 }
 

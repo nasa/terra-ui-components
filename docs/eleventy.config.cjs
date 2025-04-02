@@ -32,7 +32,7 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addGlobalData('layout', 'default') // make 'default' the default layout
     eleventyConfig.addGlobalData('toc', true) // enable the table of contents
     eleventyConfig.addGlobalData('meta', {
-        title: 'Earthdata UX Components',
+        title: 'Terra UI Components',
         description:
             'A collection of web components for working with Earthdata services.',
         image: 'images/og-image.png',
@@ -79,7 +79,7 @@ module.exports = function (eleventyConfig) {
         if (!component) {
             throw new Error(
                 `Unable to find a component called "${tagName}". Make sure the file name is the same as the component's tag ` +
-                    `name (minus the edux- prefix).`
+                    `name (minus the terra- prefix).`
             )
         }
         return component
@@ -110,13 +110,13 @@ module.exports = function (eleventyConfig) {
     })
 
     eleventyConfig.addFilter('classNameToComponentName', className => {
-        let name = capitalCase(className.replace(/^Edux/, ''))
+        let name = capitalCase(className.replace(/^Terra/, ''))
         if (name === 'Qr Code') name = 'QR Code' // manual override
         return name
     })
 
-    eleventyConfig.addFilter('removeEduxPrefix', tagName => {
-        return tagName.replace(/^edux-/, '')
+    eleventyConfig.addFilter('removeTerraPrefix', tagName => {
+        return tagName.replace(/^terra-/, '')
     })
 
     //

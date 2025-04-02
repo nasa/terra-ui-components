@@ -1,9 +1,9 @@
-import '../../../dist/earthdata-ux-components.js'
+import '../../../dist/terra-ui-components.js'
 import { expect, fixture, html } from '@open-wc/testing'
 
-describe('<edux-icon>', () => {
+describe('<terra-icon>', () => {
     it('should render a component', async () => {
-        const el = await fixture(html` <edux-icon></edux-icon> `)
+        const el = await fixture(html` <terra-icon></terra-icon> `)
 
         expect(el).to.exist
     })

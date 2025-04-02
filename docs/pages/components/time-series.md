@@ -5,23 +5,44 @@ meta:
 layout: component
 ---
 
+## All Data Pre-Configured
+
 ```html:preview
-<edux-time-series
+<terra-time-series
+    collection="NLDAS_FORA0125_H_v2.0"
+    variable="LWdown"
+    start-date="01/01/2019"
+    end-date="03/01/2019"
+    location="33.9375,-86.9375"
+></terra-time-series>
+```
+
+## Collection and Variable Pre-Configured
+
+```html:preview
+<terra-time-series
     collection="M2T1NXSLV_5_12_4"
     variable="V50M"
     start-date="05/03/2024"
     end-date="06/03/2024"
-></edux-time-series>
+></terra-time-series>
+```
+
+## No Pre-Configured Data
+
+```html:preview
+<terra-time-series
+></terra-time-series>
 ```
 
 ```jsx:react
-import EduxTimeSeries from '@nasa/earthdata-ux-components/dist/react/time-series'
+import TerraTimeSeries from '@nasa-terra/components/dist/react/time-series'
 
-const App = () => <EduxTimeSeries 
+const App = () => <TerraTimeSeries
     collection="GPM_3IMERGHH_06"
     variable="precipitationCal"
     start-date="01/01/2019"
-    end-date="09/01/2021"></EduxTimeSeries>
+    end-date="09/01/2021"></TerraTimeSeries>
 ```
 
-[component-metadata:edux-time-series]
+[component-metadata:terra-time-series]

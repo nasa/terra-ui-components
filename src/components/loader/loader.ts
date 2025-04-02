@@ -1,12 +1,12 @@
-import EduxLoader from './loader.component.js';
+import TerraLoader from './loader.component.js'
 
-export * from './loader.component.js';
-export default EduxLoader;
+export * from './loader.component.js'
+export default TerraLoader
 
-EduxLoader.define('edux-loader');
+TerraLoader.define('terra-loader')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'edux-loader': EduxLoader;
+        'terra-loader': TerraLoader
     }
 }
