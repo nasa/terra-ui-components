@@ -1,11 +1,11 @@
 /*
  * This file contains utility classes that can't be contained in a component and must be applied to the light DOM. None
- * of the rules in this stylesheet should target component tags or HTML tags, and all classes *must* start with ".edux-"
+ * of the rules in this stylesheet should target component tags or HTML tags, and all classes *must* start with ".terra-"
  * to reduce the possibility of collisions.
  */
 
 @supports (scrollbar-gutter: stable) {
-    .edux-scroll-lock {
+    .terra-scroll-lock {
         scrollbar-gutter: stable !important;
         overflow: hidden !important;
     }
@@ -13,27 +13,27 @@
 
 /** This can go away once Safari has scrollbar-gutter support. */
 @supports not (scrollbar-gutter: stable) {
-    .edux-scroll-lock body {
-        padding-right: var(--edux-scroll-lock-size) !important;
+    .terra-scroll-lock body {
+        padding-right: var(--terra-scroll-lock-size) !important;
         overflow: hidden !important;
     }
 }
 
-.edux-toast-stack {
+.terra-toast-stack {
     position: fixed;
     top: 0;
     inset-inline-end: 0;
-    z-index: var(--edux-z-index-toast);
+    z-index: var(--terra-z-index-toast);
     width: 28rem;
     max-width: 100%;
     max-height: 100%;
     overflow: auto;
 }
 
-.edux-toast-stack edux-alert {
-    margin: var(--edux-spacing-medium);
+.terra-toast-stack terra-alert {
+    margin: var(--terra-spacing-medium);
 }
 
-.edux-toast-stack edux-alert::part(base) {
-    box-shadow: var(--edux-shadow-large);
+.terra-toast-stack terra-alert::part(base) {
+    box-shadow: var(--terra-shadow-large);
 }

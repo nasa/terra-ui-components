@@ -96,7 +96,7 @@
         updateSelection()
 
         // Toggle the dark mode class
-        document.documentElement.classList.toggle('edux-theme-dark', isDark())
+        document.documentElement.classList.toggle('terra-theme-dark', isDark())
     }
 
     function updateSelection() {
@@ -139,7 +139,7 @@
                 )
         ) {
             event.preventDefault()
-            setTheme('horizon')
+            setTheme(isDark() ? 'light' : 'dark')
         }
     })
 

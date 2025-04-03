@@ -2,11 +2,14 @@ export type Collection = string
 export type Variable = string
 export type StartDate = Date
 export type EndDate = Date
+export type Location = string
 
 export type VariableDbEntry = TimeSeriesData & {
     variableEntryId: string
     startDate: string
     endDate: string
+    /** unique key to identify unique record */
+    key: string
 }
 
 export type TimeSeriesData = {
@@ -30,3 +33,7 @@ export type TimeSeriesMetadata = {
     lon: number
     [key: string]: string | number
 }
+
+export type MenuNames = 'download' | 'help' | 'information' | null
+
+export type MaybeBearerToken = string | null

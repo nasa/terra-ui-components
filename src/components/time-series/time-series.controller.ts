@@ -1,26 +1,26 @@
-import { Task, initialState } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
+import { Task, initialState } from '@lit/task'
+import { format } from 'date-fns'
 import { compile } from 'handlebars'
 import type { ReactiveControllerHost } from 'lit'
-import { format } from 'date-fns'
-import type { Data, PlotData } from 'plotly.js'
-import type {
-    Collection,
-    EndDate,
-    StartDate,
-    Variable,
-    VariableDbEntry,
-} from './time-series.types.js'
-import type {
-    TimeSeriesData,
-    TimeSeriesDataRow,
-    TimeSeriesMetadata,
-} from './time-series.types.js'
+import type { Data, PlotData } from 'plotly.js-dist-min'
 import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
 } from '../../internal/indexeddb.js'
+import type {
+    Collection,
+    EndDate,
+    Location,
+    MaybeBearerToken,
+    StartDate,
+    TimeSeriesData,
+    TimeSeriesDataRow,
+    TimeSeriesMetadata,
+    Variable,
+    VariableDbEntry,
+} from './time-series.types.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
 // const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
@@ -36,9 +36,11 @@ export const plotlyDefaultData: Partial<PlotData> = {
     line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
 }
 
-type TaskArguments = [Collection, Variable, StartDate, EndDate]
+type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
 
 export class TimeSeriesController {
+    #bearerToken: MaybeBearerToken = null
+
     host: ReactiveControllerHost
     emptyPlotData: Partial<Data>[] = [
         {
@@ -50,23 +52,32 @@ export class TimeSeriesController {
 
     task: Task<TaskArguments, Partial<Data>[]>
 
+    //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
+    //? Lit behavior is to set the task.value to undefined when aborted
+    lastTaskValue: Partial<Data>[] | undefined
+
     collection: Collection
     variable: Variable
     startDate: StartDate
     endDate: EndDate
+    location: Location
 
-    constructor(host: ReactiveControllerHost) {
+    constructor(host: ReactiveControllerHost, bearerToken: MaybeBearerToken) {
+        this.#bearerToken = bearerToken
+
         this.host = host
 
-        this.task = new Task<TaskArguments, Partial<Data>[]>(
-            host,
-            async (
-                args: TaskArguments,
-                { signal } // passing the signal in so the fetch request will be aborted when the task is aborted
-            ) => {
-                const [collection, variable, startDate, endDate] = args
-
-                if (!collection || !variable || !startDate || !endDate) {
+        this.task = new Task(host, {
+            autoRun: false,
+            // passing the signal in so the fetch request will be aborted when the task is aborted
+            task: async (_args, { signal }) => {
+                if (
+                    !this.collection ||
+                    !this.variable ||
+                    !this.startDate ||
+                    !this.endDate ||
+                    !this.location
+                ) {
                     // requirements not yet met to fetch the time series data
                     return initialState
                 }
@@ -76,59 +87,72 @@ export class TimeSeriesController {
 
                 // now that we have actual data, map it to a Plotly plot definition
                 // see https://plotly.com/javascript/time-series/
-                return [
+                this.lastTaskValue = [
                     {
                         ...plotlyDefaultData,
                         x: timeSeries.data.map(row => row.timestamp),
                         y: timeSeries.data.map(row => row.value),
                     },
                 ]
+
+                return this.lastTaskValue
             },
-            () => [this.collection, this.variable, this.startDate, this.endDate]
-        )
+        })
     }
   
     async #loadTimeSeries(signal: AbortSignal) {
+        const collection = this.collection.replace(
+            'NLDAS_FORA0125_H_2.0',
+            'NLDAS_FORA0125_H_v2.0'
+        )
+
         // create the variable identifer
-        const variableEntryId = `${this.collection}_${this.variable}`
+        const variableEntryId = `${collection}_${this.variable}`
+        const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
-        const existinEduxata = await getDataByKey<VariableDbEntry>(
+        const existingTerraData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            variableEntryId
+            cacheKey
         )
 
         if (
-            existinEduxata &&
+            existingTerraData &&
             this.startDate.getTime() >=
-                new Date(existinEduxata.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existinEduxata.endDate).getTime()
+                new Date(existingTerraData.startDate).getTime() &&
+            this.endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
         ) {
             // already have the data downloaded!
-            return this.#getDataInRange(existinEduxata)
+            return this.#getDataInRange(existingTerraData)
         }
-
         // the fetch request we send out may not contain the full date range the user requested
         // we'll request only the data we don't currently have cached
         let requestStartDate = this.startDate
         let requestEndDate = this.endDate
 
-        if (existinEduxata) {
+        if (existingTerraData) {
             if (
                 requestStartDate.getTime() <
-                new Date(existinEduxata.startDate).getTime()
+                new Date(existingTerraData.startDate).getTime()
             ) {
                 // user has requested more data than what we have, move the endDate up
-                requestEndDate = new Date(existinEduxata.startDate)
+                requestEndDate = new Date(existingTerraData.startDate)
             }
 
             if (
-                requestEndDate.getTime() > new Date(existinEduxata.endDate).getTime()
+                requestEndDate.getTime() >
+                new Date(existingTerraData.endDate).getTime()
             ) {
                 // user has requested more data than what we have, move the startDate back
-                requestStartDate = new Date(existinEduxata.endDate)
+                requestStartDate = new Date(existingTerraData.endDate)
             }
         }
+
+        // on-prem, some of the URLs have a different start prefix
+        // this is a hack for UWG that should be removed
+        const variableGroup = variableEntryId.startsWith('NLDAS_')
+            ? 'NLDAS2'
+            : variableEntryId.split('_')[0]
 
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
@@ -142,7 +166,16 @@ export class TimeSeriesController {
         })
 
         // fetch the time series as a CSV
-        const response = await fetch(url, { mode: 'cors', signal })
+        const response = await fetch(url, {
+            mode: 'cors',
+            signal,
+            headers: {
+                Accept: 'application/json',
+                ...(this.#bearerToken
+                    ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                    : {}),
+            },
+        })
 
         if (!response.ok) {
             throw new Error(
@@ -152,20 +185,17 @@ export class TimeSeriesController {
        
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
-        // combined the new parsedData with any existinEduxata
-        parsedData.data = [...parsedData.data, ...(existinEduxata?.data || [])]
+        // combined the new parsedData with any existinTerraata
+        parsedData.data = [...parsedData.data, ...(existingTerraData?.data || [])]
 
         // save the new data to the database
-        await storeDataByKey<VariableDbEntry>(
-            IndexedDbStores.TIME_SERIES,
+        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
             variableEntryId,
-            {
-                variableEntryId,
-                startDate: parsedData.data[0].timestamp,
-                endDate: parsedData.data[parsedData.data.length - 1].timestamp,
-                ...parsedData,
-            }
-        )
+            key: cacheKey,
+            startDate: parsedData.data[0].timestamp,
+            endDate: parsedData.data[parsedData.data.length - 1].timestamp,
+            ...parsedData,
+        })
 
         return this.#getDataInRange(parsedData)
     }

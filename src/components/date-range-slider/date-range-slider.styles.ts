@@ -65,6 +65,7 @@ export default css`
     /* Offset direction
  */
     .noUi-txt-dir-rtl.noUi-horizontal .noUi-origin {
+        border: 1px solid var(--terra-input-border-color);
         left: 0;
         right: auto;
     }
@@ -126,7 +127,7 @@ export default css`
     .noUi-target {
         background: #fafafa;
         border-radius: 4px;
-        border: 1px solid #d3d3d3;
+        border: 1px solid var(--terra-input-border-color);
         box-shadow:
             inset 0 1px 1px #f0f0f0,
             0 3px 6px -5px #bbb;
@@ -212,6 +213,8 @@ export default css`
         position: absolute;
         white-space: nowrap;
         text-align: center;
+        font-family: var(--terra-input-font-family);
+        font-size: var(--terra-font-size-medium);
     }
     .noUi-value-sub {
         color: #ccc;
@@ -291,11 +294,13 @@ export default css`
     .noUi-tooltip {
         display: block;
         position: absolute;
-        border: 1px solid #d9d9d9;
-        border-radius: 3px;
-        background: #fff;
-        color: #000;
-        padding: 5px;
+        font-family: var(--terra-input-font-family);
+        font-size: var(--terra-input-font-size);
+        color: var(--terra-input-color);
+        border: var(--terra-input-border-width) solid var(--terra-input-border-color);
+        border-radius: var(--terra-input-border-radius);
+        background: var(--terra-input-background-color);
+        padding: 5px 10px;
         text-align: center;
         white-space: nowrap;
     }

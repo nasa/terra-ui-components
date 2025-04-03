@@ -6,7 +6,7 @@ import { ifDefined } from 'lit/directives/if-defined.js'
 import { property, query, state } from 'lit/decorators.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxElement, { type EduxFormControl } from '../../internal/edux-element.js'
+import TerraElement, { type TerraFormControl } from '../../internal/terra-element.js'
 import styles from './button.styles.js'
 import type { CSSResultGroup } from 'lit'
 
@@ -27,7 +27,7 @@ import type { CSSResultGroup } from 'lit'
  * @csspart caret - The button's caret icon, an `<sl-icon>` element.
  * @csspart spinner - The spinner that shows when the button is in the loading state.
  */
-export default class EduxButton extends EduxElement implements EduxFormControl {
+export default class TerraButton extends TerraElement implements TerraFormControl {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     private readonly formControlController = new FormControlController(this, {
@@ -52,16 +52,20 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         | 'default'
         | 'primary'
         | 'success'
-        | 'neutral'
         | 'warning'
         | 'danger'
-        | 'text' = 'default'
+        | 'text'
+        | 'pagelink' =
+        'primary' /* Renders the button as bold text with a trailing red circled arrow icon to indicate navigation to a new page. Links to external content (outside NASA.gov) will render an arrow pointing to the upper right to indicate that the user will be leaving the NASA site. */
 
     /** The button's size. */
     @property({ reflect: true }) size: 'small' | 'medium' | 'large' = 'medium'
 
     /** Draws the button with a caret. Used to indicate that the button triggers a dropdown menu or similar behavior. */
     @property({ type: Boolean, reflect: true }) caret = false
+
+    /** The button's shape. Used to control the radius edge shape when button is not in a terra-button-group. */
+    @property({ reflect: true }) shape: 'square' | 'square-left' | 'square-right'
 
     /** Disables the button. */
     @property({ type: Boolean, reflect: true }) disabled = false
@@ -72,11 +76,8 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
     /** Draws an outlined button. */
     @property({ type: Boolean, reflect: true }) outline = false
 
-    /** Draws a pill-style button with rounded edges. */
-    @property({ type: Boolean, reflect: true }) pill = false
-
     /**
-     * Draws a circular icon button. When this attribute is present, the button expects a single `<sl-icon>` in the
+     * Draws a circular icon button. When this attribute is present, the button expects a single `<terra-icon>` in the
      * default slot.
      */
     @property({ type: Boolean, reflect: true }) circle = false
@@ -259,6 +260,32 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
         }
     }
 
+    setPageLinkIcon(href: string): string {
+        /* Set icon for pageLink button based on whether link is internal or external */
+
+        const parsedUrl = new URL(href)
+        const linkDomain = parsedUrl.hostname
+        const hostDomain = globalThis.location.hostname
+        return linkDomain === hostDomain
+            ? 'outline-arrow-right'
+            : 'outline-arrow-up-right'
+    }
+
+    setFontSize(size: string): string {
+        /* Scale icon size based on pageLink button size. */
+
+        switch (size) {
+            case 'small':
+                return '.8rem'
+            case 'medium':
+                return '1.2rem'
+            case 'large':
+                return '1.5rem'
+            default:
+                return '1.5rem'
+        }
+    }
+
     render() {
         const isLink = this.isLink()
         const tag = isLink ? literal`a` : literal`button`
@@ -273,21 +300,23 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
             'button--default': this.variant === 'default',
             'button--primary': this.variant === 'primary',
             'button--success': this.variant === 'success',
-            'button--neutral': this.variant === 'neutral',
             'button--warning': this.variant === 'warning',
             'button--danger': this.variant === 'danger',
             'button--text': this.variant === 'text',
+            'button--pagelink': this.variant === 'pagelink',
             'button--small': this.size === 'small',
             'button--medium': this.size === 'medium',
             'button--large': this.size === 'large',
             'button--caret': this.caret,
+            'button--square-left': this.shape === 'square-left',
+            'button--square': this.shape === 'square',
+            'button--square-right': this.shape === 'square-right',
             'button--circle': this.circle,
             'button--disabled': this.disabled,
             'button--focused': this.hasFocus,
             'button--loading': this.loading,
             'button--standard': !this.outline,
             'button--outline': this.outline,
-            'button--pill': this.pill,
             'button--has-label': this.hasSlotController.test('[default]'),
             'button--has-prefix': this.hasSlotController.test('prefix'),
             'button--has-suffix': this.hasSlotController.test('suffix'),
@@ -314,7 +343,21 @@ export default class EduxButton extends EduxElement implements EduxFormControl {
       >
         <slot name="prefix" part="prefix" class="button__prefix"></slot>
         <slot part="label" class="button__label"></slot>
-        <slot name="suffix" part="suffix" class="button__suffix"></slot>
+        <slot name="suffix" part="suffix" class="button__suffix">
+            ${
+                this.variant == 'pagelink'
+                    ? html`
+                          <span>
+                              <terra-icon
+                                  name=${this.setPageLinkIcon(this.href)}
+                                  library="heroicons"
+                                  font-size=${this.setFontSize(this.size)}
+                              ></terra-icon>
+                          </span>
+                      `
+                    : ``
+            }
+        </slot>
       </${tag}>
     `
     }

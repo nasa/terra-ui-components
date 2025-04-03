@@ -6,13 +6,13 @@ layout: component
 ---
 
 ```html:preview
-<edux-date-range-slider
+<terra-date-range-slider
     time-scale="half-hourly"
     min-date="1981-01-01"
     max-date="2024-01-01"
     start-date="1986-04-01"
     end-date="2021-01-02"
-></edux-date-range-slider>
+></terra-date-range-slider>
 ```
 
 ## Examples
@@ -25,4 +25,4 @@ TODO
 
 TODO
 
-[component-metadata:edux-date-range-slider]
+[component-metadata:terra-date-range-slider]

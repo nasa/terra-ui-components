@@ -1,5 +1,4 @@
 import * as Turbo from 'https://cdn.jsdelivr.net/npm/@hotwired/turbo@7.3.0/+esm'
-
 ;(() => {
     if (!window.scrollPositions) {
         window.scrollPositions = {}

@@ -1,21 +1,21 @@
-import '../../../dist/earthdata-ux-components.js'
+import '../../../dist/terra-ui-components.js'
 import sinon from 'sinon'
 
 import { expect, fixture, html, waitUntil } from '@open-wc/testing'
 
-// Reproduction of this issue: https://github.com/earthdata-ux/components/issues/1703
+// Reproduction of this issue: https://github.com/terra-ui/components/issues/1703
 it('Should still run form validations if an element is removed', async () => {
     const form = await fixture<HTMLFormElement>(html`
         <form>
-            <edux-input name="name" label="Name" required></edux-input>
-            <edux-textarea name="comment" label="Comment" required></edux-textarea>
+            <terra-input name="name" label="Name" required></terra-input>
+            <terra-textarea name="comment" label="Comment" required></terra-textarea>
         </form>
     `)
 
     expect(form.checkValidity()).to.equal(false)
     expect(form.reportValidity()).to.equal(false)
 
-    form.querySelector('edux-input')!.remove()
+    form.querySelector('terra-input')!.remove()
 
     expect(form.checkValidity()).to.equal(false)
     expect(form.reportValidity()).to.equal(false)
@@ -24,14 +24,14 @@ it('Should still run form validations if an element is removed', async () => {
 it('should submit the correct form values', async () => {
     const form = await fixture<HTMLFormElement>(html`
         <form>
-            <edux-input name="a" value="1"></edux-input>
-            <edux-input name="b" value="2"></edux-input>
-            <edux-input name="c" value="3"></edux-input>
-            <edux-button type="submit">Submit</edux-button>
+            <terra-input name="a" value="1"></terra-input>
+            <terra-input name="b" value="2"></terra-input>
+            <terra-input name="c" value="3"></terra-input>
+            <terra-button type="submit">Submit</terra-button>
         </form>
     `)
 
-    const button = form.querySelector('edux-button')!
+    const button = form.querySelector('terra-button')!
     const submitHandler = sinon.spy((event: SubmitEvent) => {
         formData = new FormData(form)
         event.preventDefault()
@@ -51,14 +51,14 @@ it('should submit the correct form values', async () => {
 it('should submit the correct form values when form controls are removed from the DOM', async () => {
     const form = await fixture<HTMLFormElement>(html`
         <form>
-            <edux-input name="a" value="1"></edux-input>
-            <edux-input name="b" value="2"></edux-input>
-            <edux-input name="c" value="3"></edux-input>
-            <edux-button type="submit">Submit</edux-button>
+            <terra-input name="a" value="1"></terra-input>
+            <terra-input name="b" value="2"></terra-input>
+            <terra-input name="c" value="3"></terra-input>
+            <terra-button type="submit">Submit</terra-button>
         </form>
     `)
 
-    const button = form.querySelector('edux-button')!
+    const button = form.querySelector('terra-button')!
     const submitHandler = sinon.spy((event: SubmitEvent) => {
         formData = new FormData(form)
         event.preventDefault()

@@ -2,7 +2,7 @@ import { property } from 'lit/decorators.js'
 import { html } from 'lit'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import styles from './{{ tagWithoutPrefix tag }}.styles.js'
 import type { CSSResultGroup } from 'lit'
 
@@ -12,7 +12,7 @@ import type { CSSResultGroup } from 'lit'
  * @status experimental
  * @since 1.0
  *
- * @dependency edux-example
+ * @dependency terra-example
  *
  * @slot - The default slot.
  * @slot example - An example slot.
@@ -21,7 +21,7 @@ import type { CSSResultGroup } from 'lit'
  *
  * @cssproperty --example - An example CSS custom property.
  */
-export default class {{ properCase tag }} extends EduxElement {
+export default class {{ properCase tag }} extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /** An example attribute. */

@@ -1,10 +1,10 @@
-import '../../../dist/earthdata-ux-components.js';
-import { expect, fixture, html } from '@open-wc/testing';
+import '../../../dist/terra-ui-components.js'
+import { expect, fixture, html } from '@open-wc/testing'
 
-describe('<edux-combobox>', () => {
+describe('<terra-combobox>', () => {
     it('should render a component', async () => {
-        const el = await fixture(html` <edux-combobox></edux-combobox> `);
+        const el = await fixture(html` <terra-combobox></terra-combobox> `)
 
-        expect(el).to.exist;
-    });
-});
+        expect(el).to.exist
+    })
+})

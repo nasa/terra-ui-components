@@ -2,10 +2,16 @@ import { property, query } from 'lit/decorators.js'
 import { html } from 'lit'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import EduxElement from '../../internal/edux-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
-import { newPlot, type Data, type Layout, type Config } from 'plotly.js-dist-min'
+import {
+    newPlot,
+    Plots,
+    type Data,
+    type Layout,
+    type Config,
+} from 'plotly.js-dist-min'
 
 /**
  * @summary A web component for interactive graphs using Plotly.js.
@@ -15,10 +21,12 @@ import { newPlot, type Data, type Layout, type Config } from 'plotly.js-dist-min
  *
  * @csspart base - The component's base wrapper.
  */
-export default class EduxPlot extends EduxElement {
+export default class TerraPlot extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
-    @query('[part~="base"]')
+    #resizeObserver: ResizeObserver
+
+    @query('[part="base"]')
     base: HTMLElement
 
     @property()
@@ -28,7 +36,7 @@ export default class EduxPlot extends EduxElement {
     layout?: Partial<Layout> = {}
 
     @property()
-    config?: Partial<Config>
+    config?: Partial<Config> = {}
 
     @property({ type: Array })
     data: Array<Partial<Data>> = []
@@ -39,11 +47,22 @@ export default class EduxPlot extends EduxElement {
     }
 
     firstUpdated(): void {
+        this.#resizeObserver = new ResizeObserver(() => {
+            Plots.resize(this.base)
+        })
+
+        this.#resizeObserver.observe(this.base)
+
         if (this.data.length) {
             // when DOM loads, we'll populate the plot with any data passed in
-
             this.updatePlotWithData()
         }
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+
+        this.#resizeObserver.disconnect()
     }
 
     updatePlotWithData() {
@@ -58,11 +77,16 @@ export default class EduxPlot extends EduxElement {
                 title: this.plotTitle, // support for adding a title directly
                 ...this.layout, // or complete access to the Plotly layout
             },
-            this.config
+            { responsive: true, ...this.config }
         )
     }
 
     render() {
-        return html` <div part="base"></div> `
+        return html`<div part="base"></div>`
+    }
+
+    updated() {
+        // If present, define the Plot Title as a part for styling.
+        this.shadowRoot?.querySelector('.gtitle')?.part.add('plot-title')
     }
 }

@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<edux-plot id="example" plotTitle="Example Plot"></edux-plot>
+<terra-plot id="example" plotTitle="Example Plot"></terra-plot>
 
 <script>
     document.getElementById('example').data = [
@@ -2431,4 +2431,4 @@ TODO
 
 TODO
 
-[component-metadata:edux-plot]
+[component-metadata:terra-plot]

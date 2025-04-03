@@ -1,10 +1,10 @@
-import '../../../dist/earthdata-ux-components.js'
+import '../../../dist/terra-ui-components.js'
 import { expect, fixture, html } from '@open-wc/testing'
 
-describe('<edux-variable-combobox>', () => {
+describe('<terra-variable-combobox>', () => {
     it('should render a component', async () => {
         const el = await fixture(html`
-            <edux-variable-combobox></edux-variable-combobox>
+            <terra-variable-combobox></terra-variable-combobox>
         `)
 
         expect(el).to.exist
