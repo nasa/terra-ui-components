@@ -134,7 +134,7 @@ export class TimeSeriesController {
         const url = timeSeriesUrlTemplate({
             variable: `${this.collection}_${
                 this.variable
-            }`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
+            }`,
             time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
             time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
             lat: 40,
