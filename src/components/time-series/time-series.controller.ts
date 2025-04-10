@@ -24,13 +24,9 @@ import type {
 import type TerraTimeSeries from './time-series.component.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
-const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
+// const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
 const timeSeriesUrlTemplate = compile(
-    `${
-        isLocalHost
-            ? 'http://localhost:9000/hydro1'
-            : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/hydro1'
-    }/daac-bin/access/timeseries.cgi?variable={{variable}}&startDate={{startDate}}&endDate={{endDate}}&location={{location}}&type=asc2`
+    `https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user?data={{variable}}&lat={{lat}}&lon={{lon}}&time_start={{time_start}}&time_end={{time_end}}`
 )
 
 export const plotlyDefaultData: Partial<PlotData> = {
@@ -118,7 +114,7 @@ export class TimeSeriesController {
             },
         })
     }
-
+  
     async #loadTimeSeries(signal: AbortSignal) {
         const collection = this.collection.replace(
             'NLDAS_FORA0125_H_2.0',
@@ -175,10 +171,13 @@ export class TimeSeriesController {
 
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${variableGroup}:${collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
-            startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
-            endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
-            location: `GEOM:POINT(${this.location})`,
+            variable: `${this.collection}_${
+                this.variable
+            }`,
+            time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+            time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+            lat: 40,
+            lon: 120,
         })
 
         // fetch the time series as a CSV
@@ -198,7 +197,7 @@ export class TimeSeriesController {
                 `Failed to fetch time series data: ${response.statusText}`
             )
         }
-
+       
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
         // combined the new parsedData with any existinTerraata
@@ -224,19 +223,19 @@ export class TimeSeriesController {
         const lines = text.split('\n')
         const metadata: Partial<TimeSeriesMetadata> = {}
         const data: TimeSeriesDataRow[] = []
-
+    
         lines.forEach(line => {
             if (line.includes('=')) {
                 const [key, value] = line.split('=')
                 metadata[key] = value
-            } else if (line.includes('\t')) {
-                const [timestamp, value] = line.split('\t')
+            } else if (line.includes(',')) {
+                const [timestamp, value] = line.split(',')
                 if (timestamp && value) {
                     data.push({ timestamp, value })
                 }
             }
         })
-
+    
         return { metadata, data } as TimeSeriesData
     }
 
