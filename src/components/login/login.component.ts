@@ -1,6 +1,6 @@
 import { Task } from '@lit/task'
 import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
@@ -240,7 +240,7 @@ export default class TerraLogin extends TerraElement {
                         name="login-feedback"
                         >${this.#loginTask.status === 3
                             ? `An error occurred and has been logged to you browser's console.`
-                            : null}</output
+                            : nothing}</output
                     >
                 </p>
 
