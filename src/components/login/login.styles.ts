@@ -31,9 +31,22 @@ export default css`
         padding-inline: 0.5em;
     }
 
+    terra-button[data-task-status='2']::part(base),
+    terra-button[data-task-status='3']::part(base) {
+        padding-inline: 0;
+
+        transition-delay: 4s;
+        transition-property: padding-inline;
+    }
+
+    terra-button[data-task-status='2']::part(label),
+    terra-button[data-task-status='3']::part(label) {
+        padding-inline: var(--terra-spacing-medium);
+    }
+
     .login-task {
         animation-delay: 4s;
-        animation-duration: 1s;
+        animation-duration: 0.3s;
         animation-fill-mode: forwards;
         animation-name: fade-out;
         animation-timing-function: ease-in;
@@ -62,21 +75,25 @@ export default css`
 
     @keyframes fade-out {
         0% {
-            display: inline;
             opacity: 1;
             scale: 1;
         }
 
         50% {
             opacity: 0;
-            display: none;
+            scale: 1;
+        }
+
+        95% {
+            opacity: 0;
             scale: 1;
         }
 
         100% {
-            opacity: 0;
             display: none;
+            opacity: 0;
             scale: 0;
+            font-size: 0;
         }
     }
 `

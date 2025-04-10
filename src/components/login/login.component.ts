@@ -198,7 +198,11 @@ export default class TerraLogin extends TerraElement {
                 </p>
 
                 <p>
-                    <terra-button type="submit" @click=${this.#handleSubmit}>
+                    <terra-button
+                        type="submit"
+                        @click=${this.#handleSubmit}
+                        data-task-status=${this.#loginTask.status}
+                    >
                         ${this.#loginTask.render({
                             pending: () =>
                                 html`<span
