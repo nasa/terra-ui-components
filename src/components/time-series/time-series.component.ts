@@ -1,27 +1,27 @@
-import { TaskStatus } from '@lit/task'
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone.js'
-import utc from 'dayjs/plugin/utc.js'
-import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
-import { cache } from 'lit/directives/cache.js'
-import { downloadImage } from 'plotly.js-dist-min'
-import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
-import TerraElement from '../../internal/terra-element.js'
-import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
+import dayjs from 'dayjs'
+import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
-import type { Plot } from '../plot/plot.types.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
+import timezone from 'dayjs/plugin/timezone.js'
+import utc from 'dayjs/plugin/utc.js'
+import { cache } from 'lit/directives/cache.js'
+import { downloadImage } from 'plotly.js-dist-min'
+import { html } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
+import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
-import styles from './time-series.styles.js'
+import { watch } from '../../internal/watch.js'
+import type { CSSResultGroup } from 'lit'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
+import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
+import type { Plot } from '../plot/plot.types.js'
 import type { MenuNames } from './time-series.types.js'
 
 dayjs.extend(utc)
@@ -37,6 +37,8 @@ dayjs.tz.setDefault('Etc/GMT')
  * @dependency terra-plot
  * @dependency terra-date-range-slider
  * @dependency terra-variable-combobox
+ *
+ * @event terra-time-series-data-change - Emitted whenever time series data has been fetched from Giovanni
  */
 export default class TerraTimeSeries extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]

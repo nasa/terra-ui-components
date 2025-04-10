@@ -1,7 +1,7 @@
-import type { StatusRenderer } from '@lit/task'
-import { Task, initialState } from '@lit/task'
-import { format } from 'date-fns'
 import { compile } from 'handlebars'
+import { format } from 'date-fns'
+import { initialState, Task } from '@lit/task'
+import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type { Data, PlotData } from 'plotly.js-dist-min'
 import {
@@ -21,6 +21,7 @@ import type {
     Variable,
     VariableDbEntry,
 } from './time-series.types.js'
+import type TerraTimeSeries from './time-series.component.js'
 
 // TODO: switch this to Cloud Giovanni during GUUI-3329
 const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
@@ -45,7 +46,7 @@ type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
 export class TimeSeriesController {
     #bearerToken: MaybeBearerToken = null
 
-    host: ReactiveControllerHost
+    host: ReactiveControllerHost & TerraTimeSeries
     emptyPlotData: Partial<Data>[] = [
         {
             ...plotlyDefaultData,
@@ -66,7 +67,10 @@ export class TimeSeriesController {
     endDate: EndDate
     location: Location
 
-    constructor(host: ReactiveControllerHost, bearerToken: MaybeBearerToken) {
+    constructor(
+        host: ReactiveControllerHost & TerraTimeSeries,
+        bearerToken: MaybeBearerToken
+    ) {
         this.#bearerToken = bearerToken
 
         this.host = host
@@ -98,6 +102,17 @@ export class TimeSeriesController {
                         y: timeSeries.data.map(row => row.value),
                     },
                 ]
+
+                this.host.emit('terra-time-series-data-change', {
+                    detail: {
+                        data: timeSeries,
+                        collection: this.collection,
+                        variable: this.variable,
+                        startDate: this.startDate.toISOString(),
+                        endDate: this.endDate.toISOString(),
+                        location: this.location,
+                    },
+                })
 
                 return this.lastTaskValue
             },
