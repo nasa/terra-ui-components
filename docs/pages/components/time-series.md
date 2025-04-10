@@ -21,8 +21,10 @@ layout: component
 
 ```html:preview
 <terra-time-series
-    collection="GPM_3IMERGHH_06"
-    variable="precipitationCal"
+    collection="M2T1NXSLV_5_12_4"
+    variable="V50M"
+    start-date="05/03/2024"
+    end-date="06/03/2024"
 ></terra-time-series>
 ```
 
