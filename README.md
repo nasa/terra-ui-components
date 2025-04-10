@@ -51,6 +51,8 @@ Then run the following:
 -   `uv pip install -e ".[dev]"` - install dependencies (see pyproject.toml)
 -   `./.venv/bin/jupyter lab` - spins up Jupyter lab and should open the browser for you
 
+For an example of how to use the components in a Jupyter Notebook, open the `/notebooks/playground.ipynb` notebook in Jupyter Lab.
+
 ### Publishing to NPM and PyPI
 
 The Lit components are available on NPM at: https://www.npmjs.com/package/@nasa-terra/components
