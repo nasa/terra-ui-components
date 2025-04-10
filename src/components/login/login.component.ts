@@ -143,6 +143,11 @@ export default class TerraLogin extends TerraElement {
     }
 
     render() {
+        // Un-focus the form on success.
+        if (this.#loginTask.status === 2) {
+            ;(document.activeElement as HTMLInputElement).blur()
+        }
+
         return html`
             <form
                 ${ref(this.#formRef)}
@@ -227,6 +232,15 @@ export default class TerraLogin extends TerraElement {
                             `,
                         })}
                         Sign In</terra-button
+                    >
+
+                    <output
+                        class="form-feedback form-feedback__form"
+                        for="edl-login"
+                        name="login-feedback"
+                        >${this.#loginTask.status === 3
+                            ? `An error occurred and has been logged to you browser's console.`
+                            : null}</output
                     >
                 </p>
 

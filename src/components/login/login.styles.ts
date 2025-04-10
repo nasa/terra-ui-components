@@ -70,6 +70,7 @@ export default css`
 
     .form-feedback {
         color: var(--terra-color-nasa-red-shade);
+        display: block;
         font-size: 0.875em;
     }
 
