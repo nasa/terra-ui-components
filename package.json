@@ -42,7 +42,7 @@
     "url": "https://github.com/gesdisc/components/issues"
   },
   "scripts": {
-    "start": "npm-run-all -p local-dev-server serve",
+    "start": "npm run serve",
     "serve": "node scripts/build.js --serve",
     "build": "node scripts/build.js",
     "build:python": "hatch build",
@@ -62,8 +62,7 @@
     "test:watch": "web-test-runner --watch --group default",
     "spellcheck": "cspell \"**/*.{js,ts,json,html,css,md}\" --no-progress",
     "list-outdated-dependencies": "npm-check-updates --format repo --peer",
-    "update-dependencies": "npm-check-updates --peer -u && npm install",
-    "local-dev-server": "node dev.server.js"
+    "update-dependencies": "npm-check-updates --peer -u && npm install"
   },
   "engines": {
     "node": ">=14.17.0"

@@ -23,8 +23,6 @@ import type {
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 
-// TODO: switch this to Cloud Giovanni during GUUI-3329
-// const isLocalHost = window.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
 const timeSeriesUrlTemplate = compile(
     `https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user?data={{variable}}&lat={{lat}}&lon={{lon}}&time_start={{time_start}}&time_end={{time_end}}`
 )
@@ -114,7 +112,7 @@ export class TimeSeriesController {
             },
         })
     }
-  
+
     async #loadTimeSeries(signal: AbortSignal) {
         const collection = this.collection.replace(
             'NLDAS_FORA0125_H_2.0',
@@ -163,17 +161,9 @@ export class TimeSeriesController {
             }
         }
 
-        // on-prem, some of the URLs have a different start prefix
-        // this is a hack for UWG that should be removed
-        const variableGroup = variableEntryId.startsWith('NLDAS_')
-            ? 'NLDAS2'
-            : variableEntryId.split('_')[0]
-
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${this.collection}_${
-                this.variable
-            }`,
+            variable: `${this.collection}_${this.variable}`,
             time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
             time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
             lat: 40,
@@ -197,7 +187,7 @@ export class TimeSeriesController {
                 `Failed to fetch time series data: ${response.statusText}`
             )
         }
-       
+
         const parsedData = this.#parseTimeSeriesCsv(await response.text())
 
         // combined the new parsedData with any existinTerraata
@@ -223,7 +213,7 @@ export class TimeSeriesController {
         const lines = text.split('\n')
         const metadata: Partial<TimeSeriesMetadata> = {}
         const data: TimeSeriesDataRow[] = []
-    
+
         lines.forEach(line => {
             if (line.includes('=')) {
                 const [key, value] = line.split('=')
@@ -235,7 +225,7 @@ export class TimeSeriesController {
                 }
             }
         })
-    
+
         return { metadata, data } as TimeSeriesData
     }
 

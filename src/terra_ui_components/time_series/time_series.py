@@ -29,6 +29,7 @@ class TerraTimeSeries(TerraBaseWidget):
         component.endDate = model.get('endDate')
         component.location = model.get('location')
         component.units = model.get('units')
+        component.bearerToken = model.get('bearerToken')
 
         /**
          * add the component to the cell
@@ -71,13 +72,24 @@ class TerraTimeSeries(TerraBaseWidget):
         model.on('change:units', () => {
             component.units = model.get('units')
         })
+        model.on('change:bearerToken', () => {
+            component.bearerToken = model.get('bearerToken')
+        })
+
+        /**
+         * Add event listeners.
+         * These are used to communicate back to the Jupyter notebook
+         */
+        component.addEventListener('terra-time-series-data-change', (e) => {
+            console.log('caught the event!! ', e)
+        })
     }
 
     export default { render };
     """
 
     # Component properties
-    # While we have properties in the component, we also need to tell Python about them as well. 
+    # While we have properties in the component, we also need to tell Python about them as well.
     # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
     collection = traitlets.Unicode('').tag(sync=True)
     datasetLandingPage = traitlets.Unicode('').tag(sync=True)
@@ -88,3 +100,4 @@ class TerraTimeSeries(TerraBaseWidget):
     endDate = traitlets.Unicode('').tag(sync=True)
     location = traitlets.Unicode('').tag(sync=True)
     units = traitlets.Unicode('').tag(sync=True)
+    bearerToken = traitlets.Unicode('').tag(sync=True)
