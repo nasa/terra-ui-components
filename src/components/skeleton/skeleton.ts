@@ -1,12 +1,12 @@
-import TerraSkeleton from './skeleton.component.js';
+import TerraSkeleton from './skeleton.component.js'
 
-export * from './skeleton.component.js';
-export default TerraSkeleton;
+export * from './skeleton.component.js'
+export default TerraSkeleton
 
-TerraSkeleton.define('terra-skeleton');
+TerraSkeleton.define('terra-skeleton')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-skeleton': TerraSkeleton;
+        'terra-skeleton': TerraSkeleton
     }
 }
