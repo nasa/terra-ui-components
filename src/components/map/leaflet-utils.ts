@@ -316,7 +316,7 @@ export class Leaflet implements Map {
         // Assuming the query is formatted as 'key=value'
         const [key, value] = query.split('=')
         if (key && value) {
-            url.searchParams.append(key, encodeURIComponent(value))
+            url.searchParams.append(key, value)
         }
 
         const data = await fetch(url.toString(), {
