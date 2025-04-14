@@ -114,13 +114,11 @@ export class TimeSeriesController {
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
-        const collection = this.collection.replace(
-            'NLDAS_FORA0125_H_2.0',
-            'NLDAS_FORA0125_H_v2.0'
-        )
-
         // create the variable identifer
-        const variableEntryId = `${collection}_${this.variable}`
+        const variableEntryId = `${this.collection}_${this.variable}`.replace(
+            '.',
+            '_'
+        ) // GiC doesn't store variables with a "." in the name, they replace them with "_"
         const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
@@ -161,13 +159,15 @@ export class TimeSeriesController {
             }
         }
 
+        const [lon, lat] = decodeURIComponent(this.location ?? ', ').split(', ')
+
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${this.collection}_${this.variable}`,
+            variable: variableEntryId,
             time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
             time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
-            lat: 40,
-            lon: 120,
+            lat,
+            lon,
         })
 
         // fetch the time series as a CSV
