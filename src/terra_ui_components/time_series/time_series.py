@@ -81,7 +81,16 @@ class TerraTimeSeries(TerraBaseWidget):
          * These are used to communicate back to the Jupyter notebook
          */
         component.addEventListener('terra-time-series-data-change', (e) => {
+            // hide the loading overlay, if it exists
+            const loadingOverlay = document.getElementById('jupyterlite-loading-overlay')
+
+            if (loadingOverlay) {
+                loadingOverlay.remove()
+            }
+
             console.log('caught the event!! ', e)
+
+            model.set('data', 'foobar')
         })
     }
 
@@ -101,3 +110,5 @@ class TerraTimeSeries(TerraBaseWidget):
     location = traitlets.Unicode('').tag(sync=True)
     units = traitlets.Unicode('').tag(sync=True)
     bearerToken = traitlets.Unicode('').tag(sync=True)
+    data = traitlets.Union(
+        [traitlets.Dict(), traitlets.Unicode()]).tag(sync=True)
