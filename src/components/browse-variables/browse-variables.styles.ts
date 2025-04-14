@@ -79,8 +79,11 @@ export default css`
     }
 
     .browse-by-category ul {
-        list-style: none;
         padding: 0;
+    }
+
+    .browse-by-category ul ::marker {
+        font-size: 0; /*Safari removes the semantic meaning / role of the list if we remove the list style. */
     }
 
     .browse-by-category li {
@@ -127,6 +130,25 @@ export default css`
         grid-area: header;
         padding: 15px;
         padding-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .variables-container header menu {
+        display: inline-flex;
+        padding: 0;
+        margin: 0;
+        min-width: 24em;
+        justify-content: space-evenly;
+    }
+
+    .variables-container header menu ::marker {
+        font-size: 0;
+    }
+
+    .list-menu-dropdown sl-button::part(base) {
+        border-color: transparent;
+        font-weight: 700;
     }
 
     .variables-container aside {
@@ -145,5 +167,89 @@ export default css`
 
     .facet {
         margin-left: 10px;
+    }
+
+    .variable-list {
+        margin: 0;
+        padding: 0;
+    }
+
+    .variable-list-item {
+    }
+
+    .variable-list-item::marker {
+        font-size: 0;
+    }
+
+    .variable[open] .details-panel {
+        height: max-content;
+    }
+
+    .variable input[type='checkbox'] {
+        margin-block: 0.25em;
+        margin-inline: 0 0.5em;
+    }
+
+    .variable {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .variable label {
+        cursor: pointer;
+        display: block;
+        font-weight: 400;
+    }
+
+    .variable sl-drawer {
+        font-style: italic;
+    }
+
+    .variable sl-drawer::part(base) {
+        --body-spacing: 0.25em;
+        --header-spacing: 0.25em;
+        --footer-spacing: 1em 0;
+    }
+
+    .variable sl-drawer::part(header-actions) {
+        --header-spacing: 0.25em;
+
+        align-items: flex-start;
+        margin-block-start: 1em;
+        margin-inline-end: 0.5em;
+    }
+
+    .variable sl-drawer::part(close-button__base) {
+        --sl-focus-ring: var(--terra-focus-ring);
+        --sl-focus-ring-offset: var(--terra-focus-ring-offset);
+    }
+
+    .variable sl-drawer::part(panel) {
+        background-color: var(--terra-color-nasa-blue-shade);
+        border: 0.0625em solid var(--terra-color-carbon-10);
+        left: auto;
+        right: 0;
+        top: 4.25rem;
+    }
+
+    .variable sl-drawer::part(body) {
+        padding-block-end: 6em;
+    }
+
+    .variable sl-drawer > * {
+        margin-block-start: 0;
+    }
+
+    .variable sl-drawer h4 {
+        font-weight: 400;
+    }
+
+    .variable-details-button {
+        position: static;
+    }
+
+    .variable-details-button::part(base) {
+        border-color: transparent;
+        color: var(--spacesuit-white);
     }
 `
