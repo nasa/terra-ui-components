@@ -111,5 +111,5 @@ class TerraTimeSeries(TerraBaseWidget):
     location = traitlets.Unicode('').tag(sync=True)
     units = traitlets.Unicode('').tag(sync=True)
     bearerToken = traitlets.Unicode('').tag(sync=True)
-    data = traitlets.Union(
-        [traitlets.Dict(), traitlets.Unicode()]).tag(sync=True)
+    data = traitlets.List(trait=traitlets.Dict(),
+                          default_value=[]).tag(sync=True)
