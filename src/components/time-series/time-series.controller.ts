@@ -235,10 +235,16 @@ export class TimeSeriesController {
     #getDataInRange(data: TimeSeriesData): TimeSeriesData {
         return {
             ...data,
-            data: data.data.filter(row => {
-                const timestamp = new Date(row.timestamp)
-                return timestamp >= this.startDate && timestamp <= this.endDate
-            }),
+            data: data.data
+                .filter(row => {
+                    const timestamp = new Date(row.timestamp)
+                    return timestamp >= this.startDate && timestamp <= this.endDate
+                })
+                .sort(
+                    (a, b) =>
+                        new Date(a.timestamp).getTime() -
+                        new Date(b.timestamp).getTime()
+                ),
         }
     }
 
