@@ -90,7 +90,8 @@ class TerraTimeSeries(TerraBaseWidget):
 
             console.log('caught the event!! ', e)
 
-            model.set('data', 'foobar')
+            model.set('data', e.detail.data.data)
+            model.save_changes()
         })
     }
 

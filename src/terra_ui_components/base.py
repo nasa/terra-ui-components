@@ -16,12 +16,12 @@ class TerraBaseWidget(anywidget.AnyWidget):
         return f"""
         const terraStyles = document.createElement('link')
         terraStyles.rel = 'stylesheet'
-        terraStyles.href = 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.20/cdn/themes/horizon.css'
+        terraStyles.href = 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.21/cdn/themes/horizon.css'
         //terraStyles.href = "https://localhost:4000/dist/themes/horizon.css"
         document.head.appendChild(terraStyles)
 
         const terraAutoloader = document.createElement('script')
-        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.20/cdn/terra-ui-components-autoloader.js"
+        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.21/cdn/terra-ui-components-autoloader.js"
         //terraAutoloader.src = "https://localhost:4000/dist/terra-ui-components-autoloader.js"
         terraAutoloader.type = 'module'
         document.head.appendChild(terraAutoloader)
