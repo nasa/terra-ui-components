@@ -49,7 +49,7 @@ Then run the following:
 -   `uv venv` - create a virtual environment (only have to do this the first time)
 -   `source .venv/bin/activate` - activate it
 -   `uv pip install -e ".[dev]"` - install dependencies (see pyproject.toml)
--   `./.venv/bin/jupyter lab` - spins up Jupyter lab and should open the browser for you
+-   `npm run start:python` - spins up Jupyter lab and should open the browser for you
 
 For an example of how to use the components in a Jupyter Notebook, open the `/notebooks/playground.ipynb` notebook in Jupyter Lab.
 
