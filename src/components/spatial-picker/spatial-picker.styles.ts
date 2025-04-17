@@ -47,6 +47,14 @@ export default css`
         width: 1.4rem;
     }
 
+    terra-map {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        z-index: 200;
+    }
+
     .button-icon {
         height: 1rem;
         width: 1rem;
