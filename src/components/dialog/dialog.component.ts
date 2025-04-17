@@ -26,6 +26,10 @@ export default class TerraDialog extends TerraElement {
     @property()
     id: string
 
+    /** the width of the dialog */
+    @property({ reflect: true })
+    width: string = '500px'
+
     /** used to set the dialog's open state */
     @property({ type: Boolean, reflect: true })
     open: boolean = false
@@ -75,6 +79,7 @@ export default class TerraDialog extends TerraElement {
                 id=${this.id}
                 role="dialog"
                 aria-modal="true"
+                style="width: ${this.width}"
             >
                 <slot></slot>
             </dialog>

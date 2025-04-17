@@ -42,8 +42,10 @@ export default css`
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 0;
         position: fixed;
         inset: 0px;
         z-index: var(--terra-dialog-z-index);
+        max-width: 100%;
     }
 `
