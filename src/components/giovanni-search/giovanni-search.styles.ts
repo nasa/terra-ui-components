@@ -30,7 +30,7 @@ export default css`
     .combobox {
         block-size: var(--terra-block-size, 2.25rem);
         flex: 1 1 auto;
-        padding-inline: 0.5rem;
+        padding-inline: 2rem;
         transition:
             background-color 0.2s ease,
             border-color 0.2s ease;
@@ -54,21 +54,28 @@ export default css`
         margin-inline: 0;
         outline: 0;
         position: absolute;
-        right: 0;
         transition:
             background-color 0.2s ease,
             border-color 0.2s ease;
         z-index: 2;
     }
 
-    .search-button::part(base) {
+    .search-input-button::part(base) {
         border-color: transparent;
     }
 
-    .search-button::part(base):hover {
+    .search-input-button::part(base):hover {
         background-color: transparent;
         border-color: var(--terra-color-nasa-blue-shade);
         color: var(--terra-button-outline-text-color);
+    }
+
+    .search-button {
+        left: 0;
+    }
+
+    .clear-button {
+        right: 0;
     }
 
     .button-icon {

@@ -1,23 +1,24 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './browse-variables.styles.js'
-import TerraButton from '../button/button.component.js'
+import { TaskStatus } from '@lit/task'
+import type { SlDrawer } from '@shoelace-style/shoelace'
+import type { CSSResultGroup } from 'lit'
+import { html, nothing } from 'lit'
+import { property, state } from 'lit/decorators.js'
+import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 import TerraElement from '../../internal/terra-element.js'
+import componentStyles from '../../styles/component.styles.js'
+import { getRandomIntInclusive } from '../../utilities/number.js'
+import TerraButton from '../button/button.component.js'
 import TerraGiovanniSearch from '../giovanni-search/giovanni-search.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
 import { BrowseVariablesController } from './browse-variables.controller.js'
-import { getRandomIntInclusive } from '../../utilities/number.js'
-import { html, nothing } from 'lit'
-import { property, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
-import type { CSSResultGroup } from 'lit'
+import styles from './browse-variables.styles.js'
 import type {
     FacetField,
     FacetsByCategory,
     SelectedFacets,
 } from './browse-variables.types.js'
-import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 
 /**
  * @summary Browse through the NASA CMR or Giovanni catalogs.
@@ -91,7 +92,7 @@ export default class TerraBrowseVariables extends TerraElement {
         this.showVariablesBrowse = true
     }
 
-    handleSearchChange(e: TerraGiovanniSearchChangeEvent) {
+    handleSearch(e: TerraGiovanniSearchChangeEvent) {
         // to mimic on-prem Giovanni behavior, we will reset all facets when the search keyword changes
         this.selectedFacets = {}
 
@@ -287,12 +288,59 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Portal', facetKey: 'portals' },
         ]
 
+        // TODO: create "sort by" menu and "group by" menu
+        // MVP sort TBD but must include alpha, reverse-alpha, start data and end date, based on Variable Long Name
+        // MVP group TBD but must include 'Measurements' and 'Dataset'
         return html`<div class="scrollable variables-container">
             <header>
-                Showing ${this.#controller.total}
-                variables${this.searchQuery
-                    ? ` associated with '${this.searchQuery}'`
-                    : ''}
+                Showing ${this.#controller.total} variables
+                ${this.searchQuery ? `associated with '${this.searchQuery}'` : ''}
+                <!-- Sorting and Grouping feature still needs a UI / UX feature discussion.
+                <menu>
+                    <li>
+                        <sl-dropdown class="list-menu-dropdown">
+                            <sl-button slot="trigger" caret>Sort By</sl-button>
+                            <sl-menu>
+                                <sl-menu-item value="aToZ">A&hellip;Z</sl-menu-item>
+                                <sl-menu-item value="zToA">Z&hellip;A</sl-menu-item>
+                            </sl-menu>
+                        </sl-dropdown>
+                    </li>
+                    <li>
+                        <sl-dropdown class="list-menu-dropdown">
+                            <sl-button slot="trigger" caret>Group By</sl-button>
+                            <sl-menu>
+                                <sl-menu-item value="depths">Depths</sl-menu-item>
+                                <sl-menu-item value="disciplines"
+                                    >Disciplines</sl-menu-item
+                                >
+                                <sl-menu-item value="measurements"
+                                    >Measurements</sl-menu-item
+                                >
+                                <sl-menu-item value="observations"
+                                    >Observations</sl-menu-item
+                                >
+                                <sl-menu-item value="platformInstruments"
+                                    >Platform Instruments</sl-menu-item
+                                >
+                                <sl-menu-item value="portals">Portals</sl-menu-item>
+                                <sl-menu-item value="spatialResolutions"
+                                    >Spatial Resolutions</sl-menu-item
+                                >
+                                <sl-menu-item value="specialFeatures"
+                                    >Special Features</sl-menu-item
+                                >
+                                <sl-menu-item value="temporalResolutions"
+                                    >Temporal Resolutions</sl-menu-item
+                                >
+                                <sl-menu-item value="wavelengths"
+                                    >Wavelengths</sl-menu-item
+                                >
+                            </sl-menu>
+                        </sl-dropdown>
+                    </li>
+                </menu>
+                -->
             </header>
 
             <aside>
@@ -311,39 +359,95 @@ export default class TerraBrowseVariables extends TerraElement {
             <main>
                 <section class="group">
                     <ul class="variable-list">
-                        ${this.#controller.variables.map(
-                            variable => html`
-                                <!-- Just dumping some data here that may be useful in the details popup -->
-                                <li tabindex="0" aria-selected="false">
-                                    <strong>${variable.dataFieldLongName}</strong>
-                                    <span
-                                        >MERRA-2 • ${variable.dataProductTimeInterval}
-                                        • kg-m2</span
-                                    >
+                        ${this.#controller.variables.map(variable => {
+                            return html`
+                                <li
+                                    aria-selected="false"
+                                    class="variable-list-item"
+                                    @click=${(event: Event) => {
+                                        const target =
+                                            event.currentTarget as HTMLLIElement
+                                        const targetCheckbox = target.querySelector(
+                                            'input[type="checkbox"]'
+                                        ) as HTMLInputElement | null
 
-                                    <div class="details-panel">
-                                        <h4>
-                                            Science Name:
-                                            ${variable.dataFieldLongName}
-                                        </h4>
-                                        <p>
-                                            <strong>Spatial Resolution:</strong>
-                                            ${variable.dataProductSpatialResolution}
-                                        </p>
-                                        <p>
-                                            <strong>Temporal Coverage:</strong>
-                                            ${variable.dataProductBeginDateTime} -
-                                            ${variable.dataProductEndDateTime}
-                                        </p>
-                                        <p>
-                                            <strong>Region Coverage:</strong>
-                                            Global
-                                        </p>
-                                        <p><strong>Dataset:</strong> MERRA-2</p>
+                                        if (!targetCheckbox) {
+                                            return
+                                        }
+
+                                        target?.setAttribute(
+                                            'aria-selected',
+                                            `${targetCheckbox.checked}`
+                                        )
+                                    }}
+                                >
+                                    <div class="variable">
+                                        <label>
+                                            <input type="checkbox" />
+                                            <strong
+                                                >${variable.dataFieldLongName}</strong
+                                            ><br />
+                                            <span
+                                                >${variable.dataProductShortName}
+                                                &bull;
+                                                ${variable.dataProductTimeInterval}
+                                                &bull;
+                                                ${variable.dataProductSpatialResolution}</span
+                                            >
+                                        </label>
+
+                                        <sl-drawer contained>
+                                            <h4 slot="label">
+                                                <strong>Science Name</strong><br />
+                                                ${variable.dataFieldLongName}
+                                            </h4>
+                                            <p>
+                                                <strong>Spatial Resolution</strong
+                                                ><br />
+                                                ${variable.dataProductSpatialResolution}
+                                            </p>
+                                            <p>
+                                                <strong>Temporal Coverage</strong
+                                                ><br />
+                                                ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
+                                            </p>
+                                            <p>
+                                                <strong>Region Coverage</strong><br />
+                                                ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
+                                            </p>
+                                            <p>
+                                                <strong>Dataset</strong><br />
+                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                            </p>
+                                        </sl-drawer>
+
+                                        <terra-button
+                                            @click=${(_event: Event) => {
+                                                const drawer =
+                                                    this.renderRoot.querySelector(
+                                                        'sl-drawer'
+                                                    ) as SlDrawer
+
+                                                drawer.show()
+                                            }}
+                                            aria-label="View variable details."
+                                            circle
+                                            class="variable-details-button"
+                                            outline
+                                            type="button"
+                                        >
+                                            <slot name="label">
+                                                <terra-icon
+                                                    font-size="1.5em"
+                                                    library="heroicons"
+                                                    name="outline-information-circle"
+                                                ></terra-icon>
+                                            </slot>
+                                        </terra-button>
                                     </div>
                                 </li>
                             `
-                        )}
+                        })}
                     </ul>
                 </section>
             </main>
@@ -371,8 +475,8 @@ export default class TerraBrowseVariables extends TerraElement {
                         : nothing}
 
                     <terra-giovanni-search
-                        @terra-giovanni-search-change=${this.handleSearchChange}
-                    />
+                        @terra-search=${this.handleSearch}
+                    ></terra-giovanni-search>
                 </header>
 
                 ${this.showVariablesBrowse

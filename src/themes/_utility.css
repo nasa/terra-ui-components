@@ -19,6 +19,12 @@
     }
 }
 
+@supports (interpolate-size: allow-keywords) {
+    :root {
+        interpolate-size: allow-keywords; /* Opt-in the whole page to interpolate sizes to/from keywords */
+    }
+}
+
 .terra-toast-stack {
     position: fixed;
     top: 0;
