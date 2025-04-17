@@ -77,6 +77,13 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
 
+    /**
+     * Whether the map should be shown inline, or as part of the normal content flow
+     * the default is false, the map is positioned absolute under the input
+     */
+    @property({ type: Boolean })
+    inline: boolean = false
+
     @state()
     mapValue: any
 
@@ -133,6 +140,7 @@ export default class TerraSpatialPicker extends TerraElement {
 
     renderMap() {
         return html`<terra-map
+            class="${this.inline ? 'inline' : ''}"
             exportparts="map, leaflet-bbox, leaflet-point, leaflet-edit, leaflet-remove"
             min-zoom=${this.minZoom}
             max-zoom=${this.maxZoom}

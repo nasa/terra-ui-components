@@ -47,7 +47,7 @@ export default css`
         width: 1.4rem;
     }
 
-    terra-map {
+    terra-map:not(.inline) {
         position: absolute;
         top: 100%;
         left: 0;
