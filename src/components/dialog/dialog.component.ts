@@ -2,7 +2,7 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './dialog.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import { html } from 'lit'
-import { property } from 'lit/decorators.js'
+import { property, query } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 
 /**
@@ -19,6 +19,9 @@ import type { CSSResultGroup } from 'lit'
 export default class TerraDialog extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
+    @query('[part="dialog"]')
+    dialogEl: HTMLDialogElement
+
     /** the ID to be used for accessibility associations */
     @property()
     id: string
@@ -26,6 +29,14 @@ export default class TerraDialog extends TerraElement {
     /** used to set the dialog's open state */
     @property({ type: Boolean, reflect: true })
     open: boolean = false
+
+    /** allow closing the dialog when clicking outside of it */
+    @property({ attribute: 'click-outside-to-close', type: Boolean, reflect: true })
+    clickOutsideToClose: boolean = true
+
+    /** Show a backdrop behind the dialog */
+    @property({ attribute: 'show-backdrop', type: Boolean, reflect: true })
+    showBackdrop: boolean = true
 
     toggle() {
         this.open ? this.hide() : this.show()
@@ -41,8 +52,23 @@ export default class TerraDialog extends TerraElement {
         this.emit('terra-dialog-hide')
     }
 
+    #handleBackdropClick() {
+        if (this.clickOutsideToClose) {
+            this.hide()
+        }
+    }
+
     render() {
         return html`
+            <div
+                class="dialog-backdrop ${this.showBackdrop ? 'visible' : ''} ${this
+                    .open
+                    ? 'active'
+                    : ''} ${this.clickOutsideToClose ? 'clickable' : ''}"
+                part="backdrop"
+                @click=${this.#handleBackdropClick}
+            ></div>
+
             <dialog
                 part="dialog"
                 ?open=${this.open}
