@@ -15,6 +15,7 @@ export { default as TerraGiovanniSearch } from './components/giovanni-search/gio
 export { default as TerraBrowseVariables } from './components/browse-variables/browse-variables.js'
 export { default as TerraSkeleton } from './components/skeleton/skeleton.js'
 export { default as TerraLogin } from './components/login/login.js'
+export { default as TerraDialog } from './components/dialog/dialog.js';
 /* plop:component */
 
 // Utilities
