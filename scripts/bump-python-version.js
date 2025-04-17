@@ -31,7 +31,7 @@ try {
     let basePyContent = fs.readFileSync(basePyPath, 'utf8')
 
     basePyContent = basePyContent.replace(
-        /@nasa-terra\/components@\d+\.\d+\.\d+/,
+        /@nasa-terra\/components@\d+\.\d+\.\d+/g,
         `@nasa-terra/components@${newVersion}`
     )
 

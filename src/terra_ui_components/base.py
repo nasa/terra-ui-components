@@ -21,7 +21,7 @@ class TerraBaseWidget(anywidget.AnyWidget):
         document.head.appendChild(terraStyles)
 
         const terraAutoloader = document.createElement('script')
-        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.24/cdn/terra-ui-components-autoloader.js"
+        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.25/cdn/terra-ui-components-autoloader.js"
         //terraAutoloader.src = "https://localhost:4000/dist/terra-ui-components-autoloader.js"
         terraAutoloader.type = 'module'
         document.head.appendChild(terraAutoloader)
