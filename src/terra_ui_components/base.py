@@ -16,7 +16,7 @@ class TerraBaseWidget(anywidget.AnyWidget):
         return f"""
         const terraStyles = document.createElement('link')
         terraStyles.rel = 'stylesheet'
-        terraStyles.href = 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.24/cdn/themes/horizon.css'
+        terraStyles.href = 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.25/cdn/themes/horizon.css'
         //terraStyles.href = "https://localhost:4000/dist/themes/horizon.css"
         document.head.appendChild(terraStyles)
 
