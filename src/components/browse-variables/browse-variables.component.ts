@@ -28,7 +28,7 @@ import type {
  * @status MVP
  * @since 1.0
  *
- * @emits terra-variables-change
+ * @emits terra-variables-change - emitted when the user selects or unselects variables
  *
  * @dependency terra-giovanni-search
  * @dependency terra-button
