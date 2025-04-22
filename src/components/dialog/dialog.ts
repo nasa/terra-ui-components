@@ -1,12 +1,12 @@
-import TerraDialog from './dialog.component.js';
+import TerraDialog from './dialog.component.js'
 
-export * from './dialog.component.js';
-export default TerraDialog;
+export * from './dialog.component.js'
+export default TerraDialog
 
-TerraDialog.define('terra-dialog');
+TerraDialog.define('terra-dialog')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-dialog': TerraDialog;
+        'terra-dialog': TerraDialog
     }
 }
