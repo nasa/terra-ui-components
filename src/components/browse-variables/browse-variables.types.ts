@@ -44,6 +44,7 @@ export type FacetField = {
 
 //? there are quite a few more properties available, look at the response directly
 export type Variable = {
+    dataFieldId: string
     dataProductShortName: string
     dataProductVersion: string
     dataFieldShortName: string
