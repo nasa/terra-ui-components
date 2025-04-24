@@ -3,11 +3,7 @@ import { css } from 'lit'
 export default css`
     :host {
         box-sizing: border-box;
-        opacity: 0;
-    }
-
-    :defined {
-        opacity: unset;
+        display: none;
     }
 
     :host *,

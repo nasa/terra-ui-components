@@ -1,12 +1,11 @@
-import type { CSSResultGroup } from 'lit'
-import { html, nothing } from 'lit'
-import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
-
-import { property, query, state } from 'lit/decorators.js'
-import { StringifyBoundingBox, parseBoundingBox } from '../map/leaflet-utils.js'
+import TerraElement from '../../internal/terra-element.js'
 import TerraMap from '../map/map.component.js'
+import { html, nothing } from 'lit'
+import { parseBoundingBox, StringifyBoundingBox } from '../map/leaflet-utils.js'
+import { property, query, state } from 'lit/decorators.js'
+import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -75,7 +74,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property()
     label: string = 'Select Region'
 
-    @state()
+    @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
 
     @state()

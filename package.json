@@ -1,7 +1,7 @@
 {
   "name": "@nasa-terra/components",
   "description": "A collection of NASA Earthdata components",
-  "version": "0.0.16",
+  "version": "0.0.22",
   "homepage": "https://github.com/gesdisc/components",
   "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
   "license": "MIT",
@@ -42,7 +42,7 @@
     "url": "https://github.com/gesdisc/components/issues"
   },
   "scripts": {
-    "start": "npm-run-all -p local-dev-server serve",
+    "start": "npm run serve",
     "start:python": "./.venv/bin/jupyter lab",
     "serve": "node scripts/build.js --serve",
     "build": "node scripts/build.js",
@@ -63,8 +63,7 @@
     "test:watch": "web-test-runner --watch --group default",
     "spellcheck": "cspell \"**/*.{js,ts,json,html,css,md}\" --no-progress",
     "list-outdated-dependencies": "npm-check-updates --format repo --peer",
-    "update-dependencies": "npm-check-updates --peer -u && npm install",
-    "local-dev-server": "node dev.server.js"
+    "update-dependencies": "npm-check-updates --peer -u && npm install"
   },
   "engines": {
     "node": ">=14.17.0"
