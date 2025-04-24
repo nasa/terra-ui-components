@@ -8,34 +8,8 @@ export default css`
         display: block;
     }
 
-    .dialog-backdrop {
-        pointer-events: none;
-        position: fixed;
-        top: 0;
-        left: -9999;
-        right: auto;
-        bottom: auto;
-        width: 0;
-        height: 0;
-        z-index: calc(var(--terra-dialog-z-index) - 1);
-        /* TODO: fade in the backdrop */
-    }
-
-    .dialog-backdrop.visible {
+    ::backdrop {
         background-color: var(--terra-dialog-backdrop-color);
-    }
-
-    .dialog-backdrop.clickable {
-        pointer-events: auto;
-    }
-
-    .dialog-backdrop.active {
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: auto;
-        height: auto;
     }
 
     dialog[open] {
