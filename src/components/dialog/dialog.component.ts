@@ -30,10 +30,6 @@ export default class TerraDialog extends TerraElement {
     @property({ reflect: true })
     width: string = 'fit-content'
 
-    /** used to set the dialog's open state */
-    @property({ type: Boolean, reflect: true })
-    open: boolean = false
-
     /** allow closing the dialog when clicking outside of it */
     @property({ attribute: 'click-outside-to-close', type: Boolean, reflect: true })
     clickOutsideToClose: boolean = true
@@ -43,7 +39,7 @@ export default class TerraDialog extends TerraElement {
     showBackdrop: boolean = true
 
     toggle() {
-        this.open ? this.hide('toggle') : this.show()
+        this.dialogEl.open ? this.hide('toggle') : this.show()
     }
 
     show() {
@@ -69,7 +65,6 @@ export default class TerraDialog extends TerraElement {
     render() {
         return html`
             <dialog
-                ?open=${this.open}
                 @click=${this.#handleBackdropClick}
                 aria-modal="true"
                 id=${this.id}
