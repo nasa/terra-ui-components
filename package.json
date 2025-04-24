@@ -43,6 +43,7 @@
   },
   "scripts": {
     "start": "npm run serve",
+    "start:python": "./.venv/bin/jupyter lab",
     "serve": "node scripts/build.js --serve",
     "build": "node scripts/build.js",
     "build:python": "hatch build",
