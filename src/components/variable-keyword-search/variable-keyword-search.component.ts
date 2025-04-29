@@ -8,9 +8,9 @@ import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
 import TerraIcon from '../icon/icon.js'
-import { FetchController } from './giovanni-search.controller.js'
-import styles from './giovanni-search.styles.js'
-import type { ListItem } from './giovanni-search.types.js'
+import { FetchController } from './variable-keyword-search.controller.js'
+import styles from './variable-keyword-search.styles.js'
+import type { ListItem } from './variable-keyword-search.types.js'
 import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
 
 /**
@@ -28,10 +28,10 @@ import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
  * @cssproperty --host-height - The height of the host element.
  * @cssproperty --label-height - The height of the input's label element.
  *
- * @event terra-giovanni-search-change - Emitted when an option is selected.
+ * @event terra-variable-keyword-search-change - Emitted when an option is selected.
  * @event terra-search - Emitted when the component is triggering a search (like a form triggering submit).
  */
-export default class TerraGiovanniSearch extends TerraElement {
+export default class TerraVariableKeywordSearch extends TerraElement {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
@@ -42,7 +42,7 @@ export default class TerraGiovanniSearch extends TerraElement {
         delegatesFocus: true,
     }
 
-    static tagName = 'terra-giovanni-search'
+    static tagName = 'terra-variable-keyword-search'
 
     static initialQuery = ''
 
@@ -92,7 +92,7 @@ export default class TerraGiovanniSearch extends TerraElement {
     isExpanded = false
 
     @state()
-    query = TerraGiovanniSearch.initialQuery
+    query = TerraVariableKeywordSearch.initialQuery
 
     @state()
     searchResults: ListItem[] = []
@@ -116,7 +116,7 @@ export default class TerraGiovanniSearch extends TerraElement {
     }
 
     clear() {
-        this.query = TerraGiovanniSearch.initialQuery
+        this.query = TerraVariableKeywordSearch.initialQuery
     }
 
     close() {
@@ -222,7 +222,7 @@ export default class TerraGiovanniSearch extends TerraElement {
                     // @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/cancel_event}
                     this.dispatchEvent(new Event('cancel'))
                 } else {
-                    this.query = TerraGiovanniSearch.initialQuery
+                    this.query = TerraVariableKeywordSearch.initialQuery
                 }
 
                 break
@@ -238,7 +238,8 @@ export default class TerraGiovanniSearch extends TerraElement {
         const path = event.composedPath()
         const containedThis = path.some(
             eventTarget =>
-                (eventTarget as HTMLElement).localName === TerraGiovanniSearch.tagName
+                (eventTarget as HTMLElement).localName ===
+                TerraVariableKeywordSearch.tagName
         )
 
         if (!containedThis) {
@@ -248,7 +249,7 @@ export default class TerraGiovanniSearch extends TerraElement {
 
     #selectOption = (option: HTMLLIElement) => {
         this.query = option.id
-        this.emit('terra-giovanni-search-change', { detail: option.id })
+        this.emit('terra-variable-keyword-search-change', { detail: option.id })
 
         this.isExpanded = false
 
@@ -265,7 +266,7 @@ export default class TerraGiovanniSearch extends TerraElement {
     }
 
     #clearSearch() {
-        this.query = TerraGiovanniSearch.initialQuery
+        this.query = TerraVariableKeywordSearch.initialQuery
         this.emit('terra-search', { detail: this.query })
 
         clearSelection(
