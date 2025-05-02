@@ -28,11 +28,7 @@ export default class TerraDialog extends TerraElement {
 
     /** the width of the dialog */
     @property({ reflect: true })
-    width: string = '500px'
-
-    /** used to set the dialog's open state */
-    @property({ type: Boolean, reflect: true })
-    open: boolean = false
+    width: string = 'fit-content'
 
     /** allow closing the dialog when clicking outside of it */
     @property({ attribute: 'click-outside-to-close', type: Boolean, reflect: true })
@@ -43,42 +39,37 @@ export default class TerraDialog extends TerraElement {
     showBackdrop: boolean = true
 
     toggle() {
-        this.open ? this.hide() : this.show()
+        this.dialogEl.open ? this.hide('toggle') : this.show()
     }
 
     show() {
-        this.open = true
+        this.dialogEl.showModal()
         this.emit('terra-dialog-show')
     }
 
-    hide() {
-        this.open = false
+    hide(reason?: string) {
+        this.dialogEl.close(reason)
         this.emit('terra-dialog-hide')
     }
 
-    #handleBackdropClick() {
+    #handleBackdropClick(event: Event) {
         if (this.clickOutsideToClose) {
-            this.hide()
+            const target = event.target as HTMLElement
+
+            if (target.nodeName === 'DIALOG') {
+                this.hide('backdrop')
+            }
         }
     }
 
     render() {
         return html`
-            <div
-                class="dialog-backdrop ${this.showBackdrop ? 'visible' : ''} ${this
-                    .open
-                    ? 'active'
-                    : ''} ${this.clickOutsideToClose ? 'clickable' : ''}"
-                part="backdrop"
-                @click=${this.#handleBackdropClick}
-            ></div>
-
             <dialog
-                part="dialog"
-                ?open=${this.open}
-                id=${this.id}
-                role="dialog"
+                @click=${this.#handleBackdropClick}
                 aria-modal="true"
+                id=${this.id}
+                part="dialog"
+                role="dialog"
                 style="width: ${this.width}"
             >
                 <slot></slot>
