@@ -1,20 +1,20 @@
 // Components
 export { default as TerraButton } from './components/button/button.js'
+export { default as TerraChip } from './components/chip/chip.js'
 export { default as TerraCombobox } from './components/combobox/combobox.js'
 export { default as TerraDateRangeSlider } from './components/date-range-slider/date-range-slider.js'
 export { default as TerraIcon } from './components/icon/icon.js'
-export { default as TerraChip } from './components/chip/chip.js'
+export { default as TerraLoader } from './components/loader/loader.js'
 export { default as TerraMap } from './components/map/map.js'
 export { default as TerraPlot } from './components/plot/plot.js'
 export { default as TerraSpatialPicker } from './components/spatial-picker/spatial-picker.js'
 export { default as TerraTimeSeries } from './components/time-series/time-series.js'
 export { default as TerraVariableCombobox } from './components/variable-combobox/variable-combobox.js'
-export { default as TerraLoader } from './components/loader/loader.js'
 
-export { default as TerraGiovanniSearch } from './components/giovanni-search/giovanni-search.js'
 export { default as TerraBrowseVariables } from './components/browse-variables/browse-variables.js'
-export { default as TerraSkeleton } from './components/skeleton/skeleton.js'
 export { default as TerraLogin } from './components/login/login.js'
+export { default as TerraSkeleton } from './components/skeleton/skeleton.js'
+export { default as TerraVariableKeywordSearch } from './components/variable-keyword-search/variable-keyword-search.js'
 /* plop:component */
 
 // Utilities

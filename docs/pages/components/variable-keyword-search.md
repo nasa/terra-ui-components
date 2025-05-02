@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<terra-giovanni-search></terra-giovanni-search>
+<terra-variable-keyword-search></terra-variable-keyword-search>
 ```
 
 ## Examples
@@ -19,4 +19,4 @@ TODO
 
 TODO
 
-[component-metadata:terra-giovanni-search]
+[component-metadata:terra-variable-keyword-search]

@@ -1,7 +1,7 @@
 import type { StatusRenderer } from '@lit/task'
 import { Task, TaskStatus } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
-import type { ListItem, ReadableTaskStatus } from './giovanni-search.types.ts'
+import type { ListItem, ReadableTaskStatus } from './variable-keyword-search.types.js'
 
 const apiError = new Error(
     'Failed to fetch the data required to make a list of searchable items.'
