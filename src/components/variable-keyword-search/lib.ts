@@ -1,5 +1,5 @@
 import { html } from 'lit'
-import type { ListItem } from './giovanni-search.types.js'
+import type { ListItem } from './variable-keyword-search.types.js'
 
 const whenIdle =
     'requestIdleCallback' in window ? requestIdleCallback : requestAnimationFrame

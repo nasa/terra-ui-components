@@ -3,16 +3,16 @@ import traitlets
 from ..base import TerraBaseWidget
 
 try:
-    __version__ = importlib.metadata.version("terra_giovanni_search")
+    __version__ = importlib.metadata.version("terra_variable_keyword_search")
 except importlib.metadata.PackageNotFoundError:
     __version__ = "unknown"
 
 
-class TerraGiovanniSearch(TerraBaseWidget):
+class TerraVariableKeywordSearch(TerraBaseWidget):
     _esm = TerraBaseWidget.get_autoloader() + """
     function render({ model, el }) {
         // create an instance of the component
-        let component = document.createElement('terra-giovanni-search')
+        let component = document.createElement('terra-variable-keyword-search')
         
         /**
          * Set initial property values
@@ -36,9 +36,14 @@ class TerraGiovanniSearch(TerraBaseWidget):
          * Add event listeners.
          * These are used to communicate back to the Jupyter notebook
          */
-        component.addEventListener('terra-giovanni-search-change', (e) => {
+        component.addEventListener('terra-variable-keyword-search-change', (e) => {
             // Placeholder for event handling, you'll need to provide your own functionality here
-            // model.set('terra-giovanni-search-change_triggered', true)
+            // model.set('terra-variable-keyword-search-change_triggered', true)
+            // model.save_changes()
+        })
+        component.addEventListener('terra-search', (e) => {
+            // Placeholder for event handling, you'll need to provide your own functionality here
+            // model.set('terra-search_triggered', true)
             // model.save_changes()
         })
         component.addEventListener('terra-search', (e) => {

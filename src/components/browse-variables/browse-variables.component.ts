@@ -2,19 +2,19 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './browse-variables.styles.js'
 import TerraButton from '../button/button.component.js'
 import TerraElement from '../../internal/terra-element.js'
-import TerraGiovanniSearch from '../giovanni-search/giovanni-search.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
+import TerraVariableKeywordSearch from '../variable-keyword-search/variable-keyword-search.component.js'
 import { BrowseVariablesController } from './browse-variables.controller.js'
 import { getRandomIntInclusive } from '../../utilities/number.js'
 import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { TaskStatus } from '@lit/task'
 import { watch } from '../../internal/watch.js'
+import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
 import type { SlDrawer } from '@shoelace-style/shoelace'
 import type { CSSResultGroup } from 'lit'
-import type { TerraGiovanniSearchChangeEvent } from '../../events/terra-giovanni-search-change.js'
 import type {
     FacetField,
     FacetsByCategory,
@@ -30,7 +30,7 @@ import type {
  *
  * @emits terra-variables-change - emitted when the user selects or unselects variables
  *
- * @dependency terra-giovanni-search
+ * @dependency terra-variable-keyword-search
  * @dependency terra-button
  * @dependency terra-skeleton
  * @dependency terra-icon
@@ -39,7 +39,7 @@ import type {
 export default class TerraBrowseVariables extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
-        'terra-giovanni-search': TerraGiovanniSearch,
+        'terra-variable-keyword-search': TerraVariableKeywordSearch,
         'terra-button': TerraButton,
         'terra-skeleton': TerraSkeleton,
         'terra-icon': TerraIcon,
@@ -108,7 +108,7 @@ export default class TerraBrowseVariables extends TerraElement {
         this.showVariablesBrowse = true
     }
 
-    handleSearch(e: TerraGiovanniSearchChangeEvent) {
+    handleSearch(e: TerraVariableKeywordSearchChangeEvent) {
         // to mimic on-prem Giovanni behavior, we will reset all facets when the search keyword changes
         this.selectedFacets = {}
 
@@ -520,9 +520,9 @@ export default class TerraBrowseVariables extends TerraElement {
                           `
                         : nothing}
 
-                    <terra-giovanni-search
+                    <terra-variable-keyword-search
                         @terra-search=${this.handleSearch}
-                    ></terra-giovanni-search>
+                    ></terra-variable-keyword-search>
                 </header>
 
                 ${this.showVariablesBrowse
