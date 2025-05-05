@@ -72,12 +72,10 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             units: doc['Variable.Units'],
         }
 
-        const { collectionLongName, ...eventDetails } = renderableData
-
         return {
             ...renderableData,
             eventDetail: JSON.stringify({
-                ...eventDetails,
+                ...renderableData,
                 datasetLandingPage: doc['Collection.DescriptionUrl'],
                 variableLandingPage: doc['Variable.DescriptionUrl'],
             }),
