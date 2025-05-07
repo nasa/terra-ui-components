@@ -1,34 +1,9 @@
 import { css } from 'lit'
 
-const darkModeCSS = '/dist/themes/horizon-dark.css'
-
-function loadCSSFile(
-    filename: string,
-    media?: string,
-    onloadCallback?: () => void
-): void {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.type = 'text/css'
-    link.href = filename
-    if (media) {
-        link.media = media
-    }
-    if (onloadCallback) {
-        link.onload = onloadCallback
-    }
-    document.head.appendChild(link)
-}
-
-// Load base component theme
-loadCSSFile('/dist/themes/horizon.css')
-
-// Load dark theme. The class rules in horizon-dark.css determine if dark applies.
-loadCSSFile(darkModeCSS)
-
 export default css`
     :host {
         box-sizing: border-box;
+        display: none;
     }
 
     :host *,

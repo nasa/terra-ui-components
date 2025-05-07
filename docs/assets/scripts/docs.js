@@ -139,7 +139,7 @@
                 )
         ) {
             event.preventDefault()
-            setTheme(isDark() ? 'light' : 'dark');
+            setTheme(isDark() ? 'light' : 'dark')
         }
     })
 

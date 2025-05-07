@@ -5,8 +5,10 @@ import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
 import TerraElement from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
+import TerraIcon from '../icon/icon.js'
 import {
     clearSelection,
     groupDocsByCollection,
@@ -16,8 +18,6 @@ import {
 } from './lib.js'
 import { FetchController } from './variable-combobox.controller.js'
 import styles from './variable-combobox.styles.js'
-import { watch } from '../../internal/watch.js'
-import TerraIcon from '../icon/icon.js'
 import type { ListItem } from './variable-combobox.types.js'
 
 /**
@@ -55,7 +55,7 @@ export default class TerraVariableCombobox extends TerraElement {
 
     #combobox: HTMLInputElement | null = null
 
-    #fetchController = new FetchController(this)
+    #fetchController: FetchController
 
     #searchableList: ListItem[] = []
 
@@ -96,6 +96,14 @@ export default class TerraVariableCombobox extends TerraElement {
     @property()
     value: string
 
+    /**
+     * The token to be used for authentication with remote servers.
+     * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
+     * The property's value will be inserted after "Bearer" (the authentication scheme).
+     */
+    @property({ attribute: 'bearer-token', reflect: false })
+    bearerToken: string
+
     @state()
     isExpanded = false
 
@@ -129,6 +137,9 @@ export default class TerraVariableCombobox extends TerraElement {
     connectedCallback() {
         super.connectedCallback()
 
+        //* instantiate the fetch contoller maybe with a token
+        this.#fetchController = new FetchController(this, this.bearerToken)
+
         //* set a window-level event listener to detect clicks that should close the listbox
         globalThis.addEventListener('click', this.#manageListboxVisibility)
     }
@@ -136,7 +147,7 @@ export default class TerraVariableCombobox extends TerraElement {
     disconnectedCallback() {
         super.disconnectedCallback()
 
-        globalThis.addEventListener('click', this.#manageListboxVisibility)
+        globalThis.removeEventListener('click', this.#manageListboxVisibility)
     }
 
     clear() {
@@ -177,11 +188,11 @@ export default class TerraVariableCombobox extends TerraElement {
     #handleOptionClick = (event: Event) => {
         const path = event.composedPath()
 
+        // filter out anything not role="option"
         const [target] = path.filter(
             eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
 
-        // filter out anything not role="option"
         if (!target) {
             return
         }
@@ -311,6 +322,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     })}
                     aria-autocomplete="list"
                     aria-controls="listbox"
+                    aria-haspopup="list"
                     aria-expanded=${this.isExpanded}
                     class="combobox"
                     id="combobox"

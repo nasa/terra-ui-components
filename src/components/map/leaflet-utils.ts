@@ -1,6 +1,6 @@
-import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import * as L from 'leaflet'
 import 'leaflet-draw'
+import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import type { BoundingBox, LatLng } from './type.js'
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
@@ -309,12 +309,14 @@ export class Leaflet implements Map {
     }
 
     async fetchSelectedShape(query: any) {
-        const url = new URL('http://localhost:9000/getGeoJSON')
+        const url = new URL(
+            'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/geojson'
+        )
 
         // Assuming the query is formatted as 'key=value'
         const [key, value] = query.split('=')
         if (key && value) {
-            url.searchParams.append(key, encodeURIComponent(value))
+            url.searchParams.append(key, value)
         }
 
         const data = await fetch(url.toString(), {

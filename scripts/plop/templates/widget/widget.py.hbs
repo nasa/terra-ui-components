@@ -1,0 +1,75 @@
+import importlib.metadata
+import traitlets
+from ..base import TerraBaseWidget
+
+try:
+    __version__ = importlib.metadata.version("terra_{{pythonName}}")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "unknown"
+
+
+class {{className}}(TerraBaseWidget):
+    _esm = TerraBaseWidget.get_autoloader() + """
+    function render({ model, el }) {
+        // create an instance of the component
+        let component = document.createElement('terra-{{name}}')
+        
+        {{#if properties}}
+        /**
+         * Set initial property values
+         * NOTE: In reality, we won't need to have the ability to set EVERY property in a Jupyter Notebook, feel free to remove the ones that don't make sense
+         *
+         * model.get() pulls from the Jupyter notebooks state. We'll use the state to set the initial value for each property
+         */
+        {{#each properties}}
+        component.{{name}} = model.get('{{name}}')
+        {{/each}}
+        {{/if}}
+
+        /**
+         * add the component to the cell
+         * it should now be visible in the notebook!
+         */
+        el.appendChild(component)
+
+        {{#if events}}
+        /**
+         * Add event listeners.
+         * These are used to communicate back to the Jupyter notebook
+         */
+        {{#each events}}
+        component.addEventListener('{{this}}', (e) => {
+            // Placeholder for event handling, you'll need to provide your own functionality here
+            // model.set('{{this}}_triggered', true)
+            // model.save_changes()
+        })
+        {{/each}}
+        {{/if}}
+
+        {{#if properties}}
+        /**
+         * Set up property change handlers
+         * This way if someone in the Jupyter Notebook changes the property externally, we reflect the change
+         * back to the component.
+         * 
+         * If this isn't here, the component can't be changed after it's initial render
+         */
+        {{#each properties}}
+        model.on('change:{{name}}', () => {
+            component.{{name}} = model.get('{{name}}')
+        })
+        {{/each}}
+        {{/if}}
+    }
+
+    export default { render };
+    """
+
+    {{#if properties}}
+    # Component properties
+    # While we have properties in the component, we also need to tell Python about them as well. 
+    # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
+    {{#each properties}}
+    {{name}} = traitlets.{{propertyType type}}({{defaultValue type}}).tag(sync=True)
+    {{/each}}
+    {{/if}}

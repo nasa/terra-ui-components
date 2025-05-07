@@ -1,8 +1,12 @@
+import { cherryPickDocInfo } from './lib.js'
 import { Task, TaskStatus } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
-import { cherryPickDocInfo } from './lib.js'
-import type { ListItem, ReadableTaskStatus } from './variable-combobox.types.js'
+import type {
+    ListItem,
+    MaybeBearerToken,
+    ReadableTaskStatus,
+} from './variable-combobox.types.js'
 
 const apiError = new Error(
     'Failed to fetch the data required to make a list of searchable items.'
@@ -10,16 +14,23 @@ const apiError = new Error(
 
 export class FetchController {
     #apiTask: Task<[], ListItem[]>
+    #bearerToken: MaybeBearerToken = null
 
-    constructor(host: ReactiveControllerHost) {
-        const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
+    constructor(host: ReactiveControllerHost, bearerToken: MaybeBearerToken) {
+        this.#bearerToken = bearerToken
 
         this.#apiTask = new Task(host, {
             task: async () => {
                 const response = await fetch(
-                    isLocalHost
-                        ? 'http://localhost:9000/variables'
-                        : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/dev/~jdcarlso/collection+variable.json'
+                    'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/website/data-rods-variables',
+                    {
+                        headers: {
+                            Accept: 'application/json',
+                            ...(this.#bearerToken
+                                ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                                : {}),
+                        },
+                    }
                 )
 
                 if (!response.ok) {

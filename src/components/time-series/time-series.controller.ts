@@ -1,36 +1,30 @@
-import { Task, initialState } from '@lit/task'
-import type { StatusRenderer } from '@lit/task'
 import { compile } from 'handlebars'
-import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
+import { initialState, Task } from '@lit/task'
+import type { StatusRenderer } from '@lit/task'
+import type { ReactiveControllerHost } from 'lit'
 import type { Data, PlotData } from 'plotly.js-dist-min'
-import type {
-    Collection,
-    EndDate,
-    StartDate,
-    Variable,
-    VariableDbEntry,
-    Location,
-} from './time-series.types.js'
-import type {
-    TimeSeriesData,
-    TimeSeriesDataRow,
-    TimeSeriesMetadata,
-} from './time-series.types.js'
 import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
 } from '../../internal/indexeddb.js'
+import type {
+    Collection,
+    EndDate,
+    Location,
+    MaybeBearerToken,
+    StartDate,
+    TimeSeriesData,
+    TimeSeriesDataRow,
+    TimeSeriesMetadata,
+    Variable,
+    VariableDbEntry,
+} from './time-series.types.js'
+import type TerraTimeSeries from './time-series.component.js'
 
-// TODO: switch this to Cloud Giovanni during GUUI-3329
-const isLocalHost = globalThis.location.hostname === 'localhost' // if running on localhost, we'll route API calls through a local proxy
 const timeSeriesUrlTemplate = compile(
-    `${
-        isLocalHost
-            ? 'http://localhost:9000/hydro1'
-            : 'https://uui-test.gesdisc.eosdis.nasa.gov/api/proxy/hydro1'
-    }/daac-bin/access/timeseries.cgi?variable={{variable}}&startDate={{startDate}}&endDate={{endDate}}&location={{location}}&type=asc2`
+    `https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user?data={{variable}}&lat={{lat}}&lon={{lon}}&time_start={{time_start}}&time_end={{time_end}}`
 )
 
 export const plotlyDefaultData: Partial<PlotData> = {
@@ -44,7 +38,9 @@ export const plotlyDefaultData: Partial<PlotData> = {
 type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
 
 export class TimeSeriesController {
-    host: ReactiveControllerHost
+    #bearerToken: MaybeBearerToken = null
+
+    host: ReactiveControllerHost & TerraTimeSeries
     emptyPlotData: Partial<Data>[] = [
         {
             ...plotlyDefaultData,
@@ -65,7 +61,12 @@ export class TimeSeriesController {
     endDate: EndDate
     location: Location
 
-    constructor(host: ReactiveControllerHost) {
+    constructor(
+        host: ReactiveControllerHost & TerraTimeSeries,
+        bearerToken: MaybeBearerToken
+    ) {
+        this.#bearerToken = bearerToken
+
         this.host = host
 
         this.task = new Task(host, {
@@ -96,19 +97,28 @@ export class TimeSeriesController {
                     },
                 ]
 
+                this.host.emit('terra-time-series-data-change', {
+                    detail: {
+                        data: timeSeries,
+                        collection: this.collection,
+                        variable: this.variable,
+                        startDate: this.startDate.toISOString(),
+                        endDate: this.endDate.toISOString(),
+                        location: this.location,
+                    },
+                })
+
                 return this.lastTaskValue
             },
         })
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
-        const collection = this.collection.replace(
-            'NLDAS_FORA0125_H_2.0',
-            'NLDAS_FORA0125_H_v2.0'
-        )
-
         // create the variable identifer
-        const variableEntryId = `${collection}_${this.variable}`
+        const variableEntryId = `${this.collection}_${this.variable}`.replace(
+            '.',
+            '_'
+        ) // GiC doesn't store variables with a "." in the name, they replace them with "_"
         const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
@@ -149,22 +159,28 @@ export class TimeSeriesController {
             }
         }
 
-        // on-prem, some of the URLs have a different start prefix
-        // this is a hack for UWG that should be removed
-        const variableGroup = variableEntryId.startsWith('NLDAS_')
-            ? 'NLDAS2'
-            : variableEntryId.split('_')[0]
+        const [lon, lat] = decodeURIComponent(this.location ?? ', ').split(', ')
 
         // construct a URL to fetch the time series data
         const url = timeSeriesUrlTemplate({
-            variable: `${variableGroup}:${collection}:${this.variable}`, // TODO: Cloud Giovanni would use "variableEntryId" directly here, no need to reformat
-            startDate: format(requestStartDate, 'yyyy-MM-dd') + 'T00',
-            endDate: format(requestEndDate, 'yyyy-MM-dd') + 'T00',
-            location: `GEOM:POINT(${this.location})`,
+            variable: variableEntryId,
+            time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+            time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+            lat,
+            lon,
         })
 
         // fetch the time series as a CSV
-        const response = await fetch(url, { mode: 'cors', signal })
+        const response = await fetch(url, {
+            mode: 'cors',
+            signal,
+            headers: {
+                Accept: 'application/json',
+                ...(this.#bearerToken
+                    ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                    : {}),
+            },
+        })
 
         if (!response.ok) {
             throw new Error(
@@ -202,8 +218,8 @@ export class TimeSeriesController {
             if (line.includes('=')) {
                 const [key, value] = line.split('=')
                 metadata[key] = value
-            } else if (line.includes('\t')) {
-                const [timestamp, value] = line.split('\t')
+            } else if (line.includes(',')) {
+                const [timestamp, value] = line.split(',')
                 if (timestamp && value) {
                     data.push({ timestamp, value })
                 }
@@ -219,10 +235,16 @@ export class TimeSeriesController {
     #getDataInRange(data: TimeSeriesData): TimeSeriesData {
         return {
             ...data,
-            data: data.data.filter(row => {
-                const timestamp = new Date(row.timestamp)
-                return timestamp >= this.startDate && timestamp <= this.endDate
-            }),
+            data: data.data
+                .filter(row => {
+                    const timestamp = new Date(row.timestamp)
+                    return timestamp >= this.startDate && timestamp <= this.endDate
+                })
+                .sort(
+                    (a, b) =>
+                        new Date(a.timestamp).getTime() -
+                        new Date(b.timestamp).getTime()
+                ),
         }
     }
 

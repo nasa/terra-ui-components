@@ -1,27 +1,27 @@
-import { TaskStatus } from '@lit/task'
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone.js'
-import utc from 'dayjs/plugin/utc.js'
-import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
-import { cache } from 'lit/directives/cache.js'
-import { downloadImage } from 'plotly.js-dist-min'
-import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
-import TerraElement from '../../internal/terra-element.js'
-import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
+import dayjs from 'dayjs'
+import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
-import type { Plot } from '../plot/plot.types.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
+import timezone from 'dayjs/plugin/timezone.js'
+import utc from 'dayjs/plugin/utc.js'
+import { cache } from 'lit/directives/cache.js'
+import { downloadImage } from 'plotly.js-dist-min'
+import { html } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
+import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
-import styles from './time-series.styles.js'
+import { watch } from '../../internal/watch.js'
+import type { CSSResultGroup } from 'lit'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
+import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
+import type { Plot } from '../plot/plot.types.js'
 import type { MenuNames } from './time-series.types.js'
 
 dayjs.extend(utc)
@@ -37,6 +37,8 @@ dayjs.tz.setDefault('Etc/GMT')
  * @dependency terra-plot
  * @dependency terra-date-range-slider
  * @dependency terra-variable-combobox
+ *
+ * @event terra-time-series-data-change - Emitted whenever time series data has been fetched from Giovanni
  */
 export default class TerraTimeSeries extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -50,7 +52,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-button': TerraButton,
     }
 
-    #timeSeriesController = new TimeSeriesController(this)
+    #timeSeriesController: TimeSeriesController
 
     /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
@@ -116,6 +118,14 @@ export default class TerraTimeSeries extends TerraElement {
     })
     units?: string
 
+    /**
+     * The token to be used for authentication with remote servers.
+     * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
+     * The property's value will be inserted after "Bearer" (the authentication scheme).
+     */
+    @property({ attribute: 'bearer-token', reflect: false })
+    bearerToken: string
+
     @query('terra-date-range-slider') dateRangeSlider: TerraDateRangeSlider
     @query('terra-plot') plot: TerraPlot
     @query('terra-spatial-picker') spatialPicker: TerraSpatialPicker
@@ -172,6 +182,13 @@ export default class TerraTimeSeries extends TerraElement {
         }
 
         this.menu.focus()
+    }
+
+    connectedCallback(): void {
+        super.connectedCallback()
+
+        //* instantiate the time series contoller maybe with a token
+        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
     }
 
     #adaptPropertyToController(
@@ -363,6 +380,7 @@ export default class TerraTimeSeries extends TerraElement {
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 value=${`${this.collection}_${this.variable}`}
+                .bearerToken=${this.bearerToken ?? null}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
