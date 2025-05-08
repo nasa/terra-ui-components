@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import timezone from 'dayjs/plugin/timezone.js'
 import utc from 'dayjs/plugin/utc.js'
 import type { CSSResultGroup } from 'lit'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { downloadImage } from 'plotly.js-dist-min'
@@ -385,7 +385,9 @@ export default class TerraTimeSeries extends TerraElement {
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
-                value=${`${this.collection}_${this.variable}`}
+                .value=${this.collection && this.variable
+                    ? `${this.collection}_${this.variable}`
+                    : nothing}
                 .bearerToken=${this.bearerToken ?? null}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>

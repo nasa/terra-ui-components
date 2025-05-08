@@ -174,10 +174,6 @@ export default css`
         padding-block: 1rem 0.5rem;
     }
 
-    .listbox-option-group:has(.clear-button) {
-        text-align: center;
-    }
-
     .group-title {
         font-family: var(--terra-font-family--inter);
         font-weight: 700;

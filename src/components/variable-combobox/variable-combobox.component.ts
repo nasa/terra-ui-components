@@ -10,6 +10,7 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
 import TerraIcon from '../icon/icon.js'
 import {
+    adaptValueToVariableMetadata,
     clearSelection,
     groupDocsByCollection,
     removeEmptyCollections,
@@ -93,6 +94,10 @@ export default class TerraVariableCombobox extends TerraElement {
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel = false
 
+    /**
+     * Represents the EntryID (<collection-name>_<variable-name>) of the selected variable.
+     * Other components (like the time-series graphing component) will use this.
+     */
     @property()
     value: string
 
@@ -113,23 +118,26 @@ export default class TerraVariableCombobox extends TerraElement {
     @state()
     searchResults: ListItem[] = []
 
+    /**
+     * This component's value is read by other components.
+     * Internally, the variable metdata has slight differences that require adapting.
+     */
     @watch('value')
     async valueChanged() {
         await this.#fetchController.taskComplete
 
-        const selectedVariable = this.#fetchController.value?.find(variable => {
-            // TODO: don't commit this
-            const lastUnderscoreIndex = this.value.lastIndexOf('_')
-            const collection = this.value.substring(0, lastUnderscoreIndex)
-            const variableName = this.value.substring(lastUnderscoreIndex + 1)
-            const modifiedCollection = collection.replace(/_v(?=[^_]*$)/, '_')
-            const fixedValue = `${modifiedCollection}_${variableName}`
-
-            return variable.entryId === fixedValue
+        const compatibleValue = adaptValueToVariableMetadata(this.value)
+        const selectedVariable = this.#fetchController.value?.find(metadata => {
+            return compatibleValue === metadata.entryId
         })
 
+        // Update the internal state to match the selected external value.
         if (selectedVariable) {
             this.query = selectedVariable.longName
+            this.searchResults = this.#searchEngine
+                ?.search(this.query)
+                .map(({ item }: any) => item) as ListItem[]
+
             this.#dispatchChange(selectedVariable.eventDetail)
         }
     }
@@ -304,16 +312,12 @@ export default class TerraVariableCombobox extends TerraElement {
     }
 
     render() {
-        const searchHasNoMatches =
-            this.searchResults?.length === 0 &&
-            this.#searchableList?.length !== 0 &&
-            this.query !== TerraVariableCombobox.initialQuery
-
         return html`<search part="base" title="Search through the list.">
             <label for="combobox" class=${this.hideLabel ? 'sr-only' : 'input-label'}
                 >${this.label}</label
             >
             <div class="search-input-group">
+                <slot name="tags"></slot>
                 <input
                     ${ref(el => {
                         if (el) {
@@ -414,21 +418,6 @@ export default class TerraVariableCombobox extends TerraElement {
                 role="listbox"
                 class="search-results"
             >
-                ${searchHasNoMatches
-                    ? html`<li
-                          class="listbox-option-group"
-                          data-tree-walker="filter_skip"
-                      >
-                          <terra-button
-                              @click=${() =>
-                                  (this.query = TerraVariableCombobox.initialQuery)}
-                              class="clear-button"
-                              data-tree-walker="filter_skip"
-                          >
-                              clear search
-                          </terra-button>
-                      </li>`
-                    : nothing}
                 ${this.#fetchController.render({
                     initial: () =>
                         html`<li class="updating">Updating List of Variables</li>`,
