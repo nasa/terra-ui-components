@@ -389,6 +389,7 @@ export default class TerraTimeSeries extends TerraElement {
                     ? `${this.collection}_${this.variable}`
                     : nothing}
                 .bearerToken=${this.bearerToken ?? null}
+                .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 

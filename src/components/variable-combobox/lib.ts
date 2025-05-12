@@ -18,6 +18,7 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                             id="listbox-option-${index}.${subIndex}"
                             role="option"
                             class="listbox-option"
+                            data-name=${variable.name}
                             data-long-name=${variable.longName}
                             data-event-detail=${variable.eventDetail}
                         >

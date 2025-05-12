@@ -66,6 +66,8 @@ export default class TerraVariableCombobox extends TerraElement {
 
     #walker: TreeWalker | null = null
 
+    #tagContainer: HTMLDivElement | null = null
+
     /**
      * Label the combobox with this.
      * @example Search All Variables
@@ -84,15 +86,21 @@ export default class TerraVariableCombobox extends TerraElement {
      * Hide the combobox's help text.
      * When hidden, not rendered at all.
      */
-    @property({ attribute: 'hide-help', type: Boolean })
+    @property({ attribute: 'hide-help', type: Boolean, reflect: true })
     hideHelp = false
 
     /**
      * Hide the combobox's label text.
      * When hidden, still presents to screen readers.
      */
-    @property({ attribute: 'hide-label', type: Boolean })
+    @property({ attribute: 'hide-label', type: Boolean, reflect: true })
     hideLabel = false
+
+    /**
+     * Determines if the variable combobox uses tags or plain text to display the query.
+     */
+    @property({ attribute: 'use-tags', type: Boolean, reflect: true })
+    useTags = false
 
     /**
      * Represents the EntryID (<collection-name>_<variable-name>) of the selected variable.
@@ -118,12 +126,22 @@ export default class TerraVariableCombobox extends TerraElement {
     @state()
     searchResults: ListItem[] = []
 
+    @state()
+    tags: string[] = []
+
+    @state()
+    tagContainerWidth = 0
+
     /**
      * This component's value is read by other components.
      * Internally, the variable metdata has slight differences that require adapting.
      */
     @watch('value')
-    async valueChanged() {
+    async valueChanged(oldValue: string, newValue: string) {
+        if (oldValue === newValue) {
+            return
+        }
+
         await this.#fetchController.taskComplete
 
         const compatibleValue = adaptValueToVariableMetadata(this.value)
@@ -139,6 +157,15 @@ export default class TerraVariableCombobox extends TerraElement {
                 .map(({ item }: any) => item) as ListItem[]
 
             this.#dispatchChange(selectedVariable.eventDetail)
+
+            if (this.useTags) {
+                // Sets one tag, but obviously could be refactored for multiple tags.
+                this.tags = [`${selectedVariable.name}`]
+                // Clear out the value of the text input, which is decoupled from the query since we're using tags.
+                this.#combobox!.value = TerraVariableCombobox.initialQuery
+                // Clear out the stored query so that there is no filtering of listbox options.
+                this.query = TerraVariableCombobox.initialQuery
+            }
         }
     }
 
@@ -298,7 +325,7 @@ export default class TerraVariableCombobox extends TerraElement {
     }
 
     #selectOption = (option: HTMLLIElement) => {
-        const { longName, eventDetail } = option.dataset
+        const { longName, eventDetail, name } = option.dataset
 
         this.query = `${longName}`
         this.#dispatchChange(eventDetail as string)
@@ -309,6 +336,46 @@ export default class TerraVariableCombobox extends TerraElement {
             this.#combobox as HTMLInputElement,
             this.#listbox as HTMLUListElement
         )
+
+        if (this.useTags) {
+            // Sets one tag, but obviously could be refactored for multiple tags.
+            this.tags = [`${name}`]
+            // Clear out the value of the text input, which is decoupled from the query since we're using tags.
+            this.#combobox!.value = TerraVariableCombobox.initialQuery
+            // Clear out the stored query so that there is no filtering of listbox options.
+            this.query = TerraVariableCombobox.initialQuery
+        }
+    }
+
+    #renderTags(tag: string, _index: number) {
+        return html`
+            <terra-button
+                size="small"
+                variant="default"
+                outline
+                class="tag"
+                aria-label=${`Clear tag ${tag}`}
+                @click=${() => {
+                    this.tags = []
+                    this.clear()
+
+                    // I dont' love this, but requestUpdate() didn't work...I needed to wait until the tag container has collapsed.
+                    setTimeout(() => {
+                        this.tagContainerWidth =
+                            this.#tagContainer?.getBoundingClientRect()
+                                .width as number
+                    }, 100)
+                }}
+            >
+                ${tag}
+                <terra-icon
+                    class="tag-icon"
+                    slot="suffix"
+                    name="outline-x-circle"
+                    library="heroicons"
+                ></terra-icon>
+            </terra-button>
+        `
     }
 
     render() {
@@ -317,13 +384,30 @@ export default class TerraVariableCombobox extends TerraElement {
                 >${this.label}</label
             >
             <div class="search-input-group">
-                <slot name="tags"></slot>
+                ${this.useTags
+                    ? html`<div
+                          ${ref(el => {
+                              if (el) {
+                                  this.#tagContainer ??= el as HTMLDivElement
+                                  this.tagContainerWidth =
+                                      el.getBoundingClientRect().width
+                              }
+                          })}
+                          class="tag-container"
+                          id="tag-container"
+                      >
+                          ${map(this.tags, (value, index) =>
+                              this.#renderTags(value, index)
+                          )}
+                      </div>`
+                    : nothing}
                 <input
                     ${ref(el => {
                         if (el) {
                             this.#combobox ??= el as HTMLInputElement
                         }
                     })}
+                    autocomplete="off"
                     aria-autocomplete="list"
                     aria-controls="listbox"
                     aria-haspopup="list"
@@ -333,8 +417,16 @@ export default class TerraVariableCombobox extends TerraElement {
                     part="combobox"
                     role="combobox"
                     type="text"
-                    .placeholder=${this.placeholder ?? `${this.label}…`}
-                    .value=${this.query}
+                    style=${this.useTags
+                        ? `padding-inline-start: calc(${this.tagContainerWidth}px + 0.25rem);`
+                        : nothing}
+                    aria-describedby=${this.useTags ? 'tag-container' : nothing}
+                    placeholder=${this.useTags
+                        ? nothing
+                        : this.placeholder ?? `${this.label}…`}
+                    .value=${this.useTags
+                        ? TerraVariableCombobox.initialQuery
+                        : this.query}
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
                 />
