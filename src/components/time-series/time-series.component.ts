@@ -464,7 +464,6 @@ export default class TerraTimeSeries extends TerraElement {
                                           ></terra-icon>
                                       </terra-button>
                                   </div>
-                              </header>
 
                               <menu
                                   role="menu"
@@ -592,6 +591,7 @@ export default class TerraTimeSeries extends TerraElement {
                                       </ul>
                                   </li>
                               </menu>
+                              </header>
                           `
                         : html`<div class="spacer"></div>`
                 )}
