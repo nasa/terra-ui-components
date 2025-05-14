@@ -18,6 +18,7 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                             id="listbox-option-${index}.${subIndex}"
                             role="option"
                             class="listbox-option"
+                            data-name=${variable.name}
                             data-long-name=${variable.longName}
                             data-event-detail=${variable.eventDetail}
                         >
@@ -38,7 +39,7 @@ function removeEmptyCollections(docs: GroupedListItem[]) {
     return nonEmptyCollections
 }
 
-function groupDocsByCollection(docs: ListItem[]): GroupedListItem[] {
+function groupDocsByCollection(docs: ListItem[] = []): GroupedListItem[] {
     const groupedDocs: Record<string, ListItem[]> = {}
 
     for (const doc of docs) {
@@ -130,11 +131,21 @@ function walkToLast(walker: TreeWalker) {
     walker.lastChild()
 }
 
+function adaptValueToVariableMetadata(value: string) {
+    const lastUnderscoreIndex = value.lastIndexOf('_')
+    const collection = value.substring(0, lastUnderscoreIndex)
+    const variableName = value.substring(lastUnderscoreIndex + 1)
+    const modifiedCollection = collection.replace(/_v(?=[^_]*$)/, '_')
+
+    return `${modifiedCollection}_${variableName}`
+}
+
 export {
+    adaptValueToVariableMetadata,
     cherryPickDocInfo,
-    walkToOption,
     clearSelection,
     groupDocsByCollection,
     removeEmptyCollections,
     renderSearchResult,
+    walkToOption,
 }

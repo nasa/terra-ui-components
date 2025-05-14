@@ -50,6 +50,39 @@ export default css`
         flex-wrap: wrap;
     }
 
+    .tag-container {
+        block-size: var(--terra-block-size, 2.25rem);
+        position: absolute;
+        top: 2.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-content: center;
+        padding-inline-start: 0.5rem;
+    }
+
+    .tag {
+        --terra-button-height-small: 1.25rem;
+        --terra-spacing-small: 0.5rem;
+    }
+
+    .tag:hover .tag-icon,
+    .tag:active .tag-icon,
+    .tag:focus .tag-icon {
+        transform: scale(1.125);
+        color: var(--terra-color-nasa-red-shade);
+        transition:
+            transform 0.2s ease-out,
+            color 0.2s ease-out;
+    }
+
+    .tag-icon {
+        font-size: 1.25em;
+    }
+
+    .tag-icon::part(svg) {
+        stroke-width: 2;
+    }
+
     .combobox {
         block-size: var(--terra-block-size, 2.25rem);
         flex: 1 1 auto;
@@ -57,6 +90,7 @@ export default css`
         transition:
             background-color 0.2s ease,
             border-color 0.2s ease;
+        max-inline-size: 100%;
     }
 
     .combobox::placeholder {
@@ -172,10 +206,6 @@ export default css`
     .listbox-option-group {
         padding-inline: 0.5rem;
         padding-block: 1rem 0.5rem;
-    }
-
-    .listbox-option-group:has(.clear-button) {
-        text-align: center;
     }
 
     .group-title {
