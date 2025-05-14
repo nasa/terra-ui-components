@@ -1,4 +1,3 @@
-import { compile } from 'handlebars'
 import { format } from 'date-fns'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
@@ -23,9 +22,8 @@ import type {
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 
-const timeSeriesUrlTemplate = compile(
-    `https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user?data={{variable}}&lat={{lat}}&lon={{lon}}&time_start={{time_start}}&time_end={{time_end}}`
-)
+const endpoint =
+    'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
 
 export const plotlyDefaultData: Partial<PlotData> = {
     // holds the default Plotly configuration options.
@@ -161,14 +159,13 @@ export class TimeSeriesController {
 
         const [lon, lat] = decodeURIComponent(this.location ?? ', ').split(', ')
 
-        // construct a URL to fetch the time series data
-        const url = timeSeriesUrlTemplate({
-            variable: variableEntryId,
-            time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
-            time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+        const url = `${endpoint}?${new URLSearchParams({
+            data: variableEntryId,
             lat,
             lon,
-        })
+            time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+            time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+        }).toString()}`
 
         // fetch the time series as a CSV
         const response = await fetch(url, {
