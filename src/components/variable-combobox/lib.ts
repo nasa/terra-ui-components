@@ -70,6 +70,7 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             name: doc['Variable.Name'],
             standardName: doc['Variable.StandardName'],
             units: doc['Variable.Units'],
+            timeInterval: doc['Collection.TimeInterval'],
         }
 
         const { collectionLongName, ...eventDetails } = renderableData

@@ -12,6 +12,7 @@ import TerraVariableCombobox from '../variable-combobox/variable-combobox.compon
 import timezone from 'dayjs/plugin/timezone.js'
 import utc from 'dayjs/plugin/utc.js'
 import { cache } from 'lit/directives/cache.js'
+import { calculateDataPoints } from '../../lib/dataset.js'
 import { downloadImage } from 'plotly.js-dist-min'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
@@ -23,6 +24,9 @@ import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-ch
 import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
 import type { Plot } from '../plot/plot.types.js'
 import type { MenuNames } from './time-series.types.js'
+import type { TimeInterval } from '../../types.js'
+
+const NUM_DATAPOINTS_TO_WARN_USER = 50000
 
 dayjs.extend(utc)
 dayjs.extend(timezone)
@@ -145,6 +149,24 @@ export default class TerraTimeSeries extends TerraElement {
     collectionEndingDateTime?: string
 
     /**
+     * holds the time interval for the collection
+     */
+    @state()
+    timeInterval?: TimeInterval
+
+    /**
+     * if true, we'll show a warning to the user about them requesting a large number of data points
+     */
+    @state()
+    showDataPointWarning = false
+
+    /**
+     * stores the estimated
+     */
+    @state()
+    estimatedDataPoints = 0
+
+    /**
      *
      */
     @state()
@@ -191,6 +213,43 @@ export default class TerraTimeSeries extends TerraElement {
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
     }
 
+    /**
+     * Checks if the current date range will exceed data point limits
+     * eturns true if it's safe to proceed, false if confirmation is needed
+     */
+    #checkDataPointLimits() {
+        if (!this.timeInterval || !this.startDate || !this.endDate) {
+            return true // not enough info to check, we'll just let the user proceed in this case
+        }
+
+        const startDate = dayjs.utc(this.startDate).toDate()
+        const endDate = dayjs.utc(this.endDate).toDate()
+
+        this.estimatedDataPoints = calculateDataPoints(
+            this.timeInterval,
+            startDate,
+            endDate
+        )
+
+        if (this.estimatedDataPoints < NUM_DATAPOINTS_TO_WARN_USER) {
+            // under the warning limit, user is good to go
+            return true
+        }
+
+        // show warning and require confirmation from the user
+        this.showDataPointWarning = true
+        return false
+    }
+
+    #confirmDataPointWarning() {
+        this.showDataPointWarning = false
+        this.#timeSeriesController.task.run()
+    }
+
+    #cancelDataPointWarning() {
+        this.showDataPointWarning = false
+    }
+
     #adaptPropertyToController(
         property: 'collection' | 'variable' | 'startDate' | 'endDate' | 'location',
         value: any
@@ -216,8 +275,6 @@ export default class TerraTimeSeries extends TerraElement {
 
                 break
         }
-
-        this.#timeSeriesController.task.run()
     }
 
     /**
@@ -228,6 +285,7 @@ export default class TerraTimeSeries extends TerraElement {
      * this is an init-only action.
      */
     #maybeSliceTimeForStartEnd() {
+        // TODO: use the "calculateDataPoints" function to make this a bit smarter (i.e. show the last N datapoints by default)
         const hasExternallySetDates = !!this.startDate || !!this.endDate
         const hasBothDatesFromCollection =
             !!this.collectionBeginningDateTime && !!this.collectionEndingDateTime
@@ -267,6 +325,11 @@ export default class TerraTimeSeries extends TerraElement {
         this.variable = event.detail.name
         this.variableLandingPage = event.detail.variableLandingPage
         this.variableLongName = event.detail.longName
+        this.timeInterval = event.detail.timeInterval
+
+        if (this.#checkDataPointLimits()) {
+            this.#timeSeriesController.task.run()
+        }
     }
 
     #handleMapChange(event: CustomEvent) {
@@ -278,6 +341,10 @@ export default class TerraTimeSeries extends TerraElement {
 
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)}`
+
+            if (this.#checkDataPointLimits()) {
+                this.#timeSeriesController.task.run()
+            }
         }
     }
 
@@ -287,6 +354,10 @@ export default class TerraTimeSeries extends TerraElement {
     #handleDateRangeSliderChangeEvent(event: TerraDateRangeChangeEvent) {
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
+
+        if (this.#checkDataPointLimits()) {
+            this.#timeSeriesController.task.run()
+        }
     }
 
     /**
@@ -644,6 +715,38 @@ export default class TerraTimeSeries extends TerraElement {
                 <terra-loader indeterminate></terra-loader>
                 <p>Plotting ${this.collection} ${this.variable}&hellip;</p>
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
+            </dialog>
+
+            <dialog ?open=${this.showDataPointWarning} class="quota-dialog">
+                <h2>This is a large request</h2>
+
+                <p>
+                    You are requesting approximately
+                    ${this.estimatedDataPoints.toLocaleString()} data points.
+                </p>
+
+                <p>
+                    Requesting large amounts of data will count against your monthly
+                    quota.
+                </p>
+
+                <p>Would you like to proceed with this request?</p>
+
+                <div class="dialog-buttons">
+                    <terra-button
+                        @click=${this.#cancelDataPointWarning}
+                        variant="default"
+                    >
+                        Cancel
+                    </terra-button>
+
+                    <terra-button
+                        @click=${this.#confirmDataPointWarning}
+                        variant="primary"
+                    >
+                        Proceed
+                    </terra-button>
+                </div>
             </dialog>
         `
     }
