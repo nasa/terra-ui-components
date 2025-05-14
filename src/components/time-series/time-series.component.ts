@@ -726,11 +726,11 @@ export default class TerraTimeSeries extends TerraElement {
                 </p>
 
                 <p>
-                    Requesting large amounts of data will count against your monthly
-                    quota.
+                    Requesting large amounts of data may cause you to reach your
+                    monthly quota limit.
                 </p>
 
-                <p>Would you like to proceed with this request?</p>
+                <p>Would you still like to proceed with this request?</p>
 
                 <div class="dialog-buttons">
                     <terra-button
