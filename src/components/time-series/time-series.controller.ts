@@ -1,3 +1,4 @@
+import { calculateDateChunks } from '../../lib/dataset.js'
 import { format } from 'date-fns'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
@@ -21,6 +22,7 @@ import type {
     VariableDbEntry,
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
+import type { TimeInterval } from '../../types.js'
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -135,40 +137,131 @@ export class TimeSeriesController {
             return this.#getDataInRange(existingTerraData)
         }
 
-        // the fetch request we send out may not contain the full date range the user requested
-        // we'll request only the data we don't currently have cached
-        let requestStartDate = this.startDate
-        let requestEndDate = this.endDate
+        // Calculate what data we need to fetch (accounting for data we already have)
+        const dataGaps = this.#calculateDataGaps(existingTerraData)
 
-        if (existingTerraData) {
-            if (
-                requestStartDate.getTime() <
-                new Date(existingTerraData.startDate).getTime()
-            ) {
-                // user has requested more data than what we have, move the endDate up
-                requestEndDate = new Date(existingTerraData.startDate)
-            }
-
-            if (
-                requestEndDate.getTime() >
-                new Date(existingTerraData.endDate).getTime()
-            ) {
-                // user has requested more data than what we have, move the startDate back
-                requestStartDate = new Date(existingTerraData.endDate)
-            }
+        if (dataGaps.length === 0 && existingTerraData) {
+            // No gaps to fill, return existing data
+            return this.#getDataInRange(existingTerraData)
         }
 
+        // We have gaps, so we'll need to request new data
+        // We'll do this in chunks in case the number of data points exceeds the API-imposed limit
+        const allChunks: Array<{ start: Date; end: Date }> = []
+
+        for (const gap of dataGaps) {
+            const chunks = calculateDateChunks(
+                this.host.timeInterval as TimeInterval,
+                gap.start,
+                gap.end
+            )
+            allChunks.push(...chunks)
+        }
+
+        // Request chunks in parallel
+        const chunkResults = await Promise.all(
+            allChunks.map(async chunk => {
+                const result = await this.#fetchTimeSeriesChunk(
+                    variableEntryId,
+                    chunk.start,
+                    chunk.end,
+                    signal
+                )
+
+                return result
+            })
+        )
+
+        let allData: TimeSeriesDataRow[] = existingTerraData?.data || []
+        let metadata = {} as any
+
+        // Merge all the chunk results
+        for (const chunkResult of chunkResults) {
+            allData = [...allData, ...chunkResult.data]
+            metadata = { ...metadata, ...chunkResult.metadata }
+        }
+
+        const consolidatedResult: TimeSeriesData = {
+            metadata,
+            data: allData,
+        }
+
+        // Save the consolidated data to IndexedDB
+        if (allData.length > 0) {
+            // Sort data by timestamp to ensure they're in order
+            const sortedData = [...allData].sort(
+                (a, b) =>
+                    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+            )
+
+            await storeDataByKey<VariableDbEntry>(
+                IndexedDbStores.TIME_SERIES,
+                cacheKey,
+                {
+                    variableEntryId,
+                    key: cacheKey,
+                    startDate: sortedData[0].timestamp,
+                    endDate: sortedData[sortedData.length - 1].timestamp,
+                    metadata: consolidatedResult.metadata,
+                    data: sortedData,
+                }
+            )
+        }
+
+        return this.#getDataInRange({
+            metadata: consolidatedResult.metadata,
+            data: allData,
+        })
+    }
+
+    /**
+     * Calculates what data gaps need to be filled from the API
+     */
+    #calculateDataGaps(
+        existingData?: VariableDbEntry
+    ): Array<{ start: Date; end: Date }> {
+        if (!existingData) {
+            // No existing data, need to fetch the entire range
+            return [{ start: this.startDate, end: this.endDate }]
+        }
+
+        const existingStartDate = new Date(existingData.startDate)
+        const existingEndDate = new Date(existingData.endDate)
+        const gaps: Array<{ start: Date; end: Date }> = []
+
+        // Check if we need data before our cached range
+        if (this.startDate < existingStartDate) {
+            gaps.push({ start: this.startDate, end: existingStartDate })
+        }
+
+        // Check if we need data after our cached range
+        if (this.endDate > existingEndDate) {
+            gaps.push({ start: existingEndDate, end: this.endDate })
+        }
+
+        return gaps
+    }
+
+    /**
+     * Fetches a single chunk of time series data
+     */
+    async #fetchTimeSeriesChunk(
+        variableEntryId: string,
+        startDate: Date,
+        endDate: Date,
+        signal: AbortSignal
+    ): Promise<TimeSeriesData> {
         const [lon, lat] = decodeURIComponent(this.location ?? ', ').split(', ')
 
         const url = `${endpoint}?${new URLSearchParams({
             data: variableEntryId,
             lat,
             lon,
-            time_start: format(requestStartDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
-            time_end: format(requestEndDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+            time_start: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+            time_end: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
         }).toString()}`
 
-        // fetch the time series as a CSV
+        // Fetch the time series as a CSV
         const response = await fetch(url, {
             mode: 'cors',
             signal,
@@ -186,21 +279,7 @@ export class TimeSeriesController {
             )
         }
 
-        const parsedData = this.#parseTimeSeriesCsv(await response.text())
-
-        // combined the new parsedData with any existing data
-        parsedData.data = [...parsedData.data, ...(existingTerraData?.data || [])]
-
-        // save the new data to the database
-        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
-            variableEntryId,
-            key: cacheKey,
-            startDate: parsedData.data[0].timestamp,
-            endDate: parsedData.data[parsedData.data.length - 1].timestamp,
-            ...parsedData,
-        })
-
-        return this.#getDataInRange(parsedData)
+        return this.#parseTimeSeriesCsv(await response.text())
     }
 
     /**
