@@ -1,23 +1,25 @@
-import { TaskStatus } from '@lit/task'
-import type { SlDrawer } from '@shoelace-style/shoelace'
-import type { CSSResultGroup } from 'lit'
-import { html, nothing } from 'lit'
-import { property, state } from 'lit/decorators.js'
-import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
-import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
-import { getRandomIntInclusive } from '../../utilities/number.js'
+import styles from './browse-variables.styles.js'
 import TerraButton from '../button/button.component.js'
-import TerraVariableKeywordSearch from '../variable-keyword-search/variable-keyword-search.component.js'
+import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
+import TerraVariableKeywordSearch from '../variable-keyword-search/variable-keyword-search.component.js'
 import { BrowseVariablesController } from './browse-variables.controller.js'
-import styles from './browse-variables.styles.js'
+import { getRandomIntInclusive } from '../../utilities/number.js'
+import { html, nothing } from 'lit'
+import { property, state } from 'lit/decorators.js'
+import { TaskStatus } from '@lit/task'
+import { watch } from '../../internal/watch.js'
+import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
+import type { SlDrawer } from '@shoelace-style/shoelace'
+import type { CSSResultGroup } from 'lit'
 import type {
     FacetField,
     FacetsByCategory,
     SelectedFacets,
+    Variable,
 } from './browse-variables.types.js'
 
 /**
@@ -25,6 +27,8 @@ import type {
  * @documentation https://disc.gsfc.nasa.gov/components/browse-variables
  * @status MVP
  * @since 1.0
+ *
+ * @emits terra-variables-change - emitted when the user selects or unselects variables
  *
  * @dependency terra-variable-keyword-search
  * @dependency terra-button
@@ -56,9 +60,21 @@ export default class TerraBrowseVariables extends TerraElement {
     selectedFacets: SelectedFacets = {}
 
     @state()
+    selectedVariables: Variable[] = []
+
+    @state()
     showVariablesBrowse: boolean = false
 
     #controller = new BrowseVariablesController(this)
+
+    @watch('selectedVariables')
+    handleSelectedVariablesChange() {
+        this.emit('terra-variables-change', {
+            detail: {
+                selectedVariables: this.selectedVariables,
+            },
+        })
+    }
 
     reset() {
         // reset state back to it's defaults
@@ -144,6 +160,25 @@ export default class TerraBrowseVariables extends TerraElement {
         this.selectedFacets = {
             ...this.selectedFacets,
             [facet]: filteredFields,
+        }
+    }
+
+    #handleVariableSelection(variable: Variable, checked: Boolean) {
+        const variableIsSelected = this.selectedVariables.find(
+            v => v.dataFieldLongName === variable.dataFieldLongName
+        )
+
+        if (checked && !variableIsSelected) {
+            // need to add variable to list of selected variables
+            this.selectedVariables = ([] as Variable[]).concat(
+                this.selectedVariables,
+                variable
+            )
+        } else if (!checked && variableIsSelected) {
+            // need to remove variable from list of selected variables
+            this.selectedVariables = this.selectedVariables.filter(
+                v => v.dataFieldLongName !== variable.dataFieldLongName
+            )
         }
     }
 
@@ -383,7 +418,18 @@ export default class TerraBrowseVariables extends TerraElement {
                                 >
                                     <div class="variable">
                                         <label>
-                                            <input type="checkbox" />
+                                            <input
+                                                data-variable=${variable}
+                                                type="checkbox"
+                                                @change=${(e: Event) => {
+                                                    const input =
+                                                        e.currentTarget as HTMLInputElement
+                                                    this.#handleVariableSelection(
+                                                        variable,
+                                                        input.checked
+                                                    )
+                                                }}
+                                            />
                                             <strong
                                                 >${variable.dataFieldLongName}</strong
                                             ><br />

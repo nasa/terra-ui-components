@@ -11,7 +11,7 @@ export default css`
         background-color: var(--terra-color-nasa-blue-dark);
         color: white;
         display: block;
-        padding-bottom: 55%;
+        padding-bottom: 55% !important;
         position: relative;
         width: 100%;
     }

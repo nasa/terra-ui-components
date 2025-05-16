@@ -1,3 +1,5 @@
+import componentStyles from '../../styles/component.styles.js'
+import styles from './button.styles.js'
 import { classMap } from 'lit/directives/class-map.js'
 import { FormControlController, validValidityState } from '../../internal/form.js'
 import { HasSlotController } from '../../internal/slot.js'
@@ -5,10 +7,13 @@ import { html, literal } from 'lit/static-html.js'
 import { ifDefined } from 'lit/directives/if-defined.js'
 import { property, query, state } from 'lit/decorators.js'
 import { watch } from '../../internal/watch.js'
-import componentStyles from '../../styles/component.styles.js'
 import TerraElement, { type TerraFormControl } from '../../internal/terra-element.js'
-import styles from './button.styles.js'
 import type { CSSResultGroup } from 'lit'
+import type TerraDialog from '../dialog/dialog.component.js'
+import type {
+    TerraDialogHideEvent,
+    TerraDialogShowEvent,
+} from '../../terra-ui-components.js'
 
 /**
  * @summary Buttons represent actions that are available to the user.
@@ -147,6 +152,14 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         | '_top'
         | string
 
+    /** Used to connect this button to a dqialog on the page. Clicking the button will toggle the dialog's visiblity */
+    @property({ attribute: 'for-dialog' })
+    forDialog?: string
+
+    /** if button is used to control another element on the page, such as an accordion or dialog, this state communicates whether the controlled element is expanded */
+    @state()
+    expanded: boolean = false
+
     /** Gets the validity state object */
     get validity() {
         if (this.isButton()) {
@@ -171,6 +184,42 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         }
     }
 
+    connectedCallback() {
+        super.connectedCallback()
+
+        if (this.forDialog) {
+            document.addEventListener(
+                'terra-dialog-show',
+                this.#handleDialogStateChange.bind(this)
+            )
+            document.addEventListener(
+                'terra-dialog-hide',
+                this.#handleDialogStateChange.bind(this)
+            )
+        }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+
+        document.removeEventListener(
+            'terra-dialog-show',
+            this.#handleDialogStateChange.bind(this)
+        )
+        document.removeEventListener(
+            'terra-dialog-hide',
+            this.#handleDialogStateChange.bind(this)
+        )
+    }
+
+    #handleDialogStateChange(e: TerraDialogShowEvent | TerraDialogHideEvent) {
+        if (this.forDialog && this.forDialog === e.target.id) {
+            // make sure the aria expanded property gets updated when the dialog hides/shows
+            // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-expanded#buttons
+            this.expanded = e.target.open
+        }
+    }
+
     private handleBlur() {
         this.hasFocus = false
         this.emit('sl-blur')
@@ -190,6 +239,12 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         if (this.type === 'reset') {
             // @ts-ignore
             this.formControlController.reset(this)
+        }
+
+        if (this.forDialog) {
+            // this is a trigger for a dialog, go ahead and show the dialog
+            const el = document.getElementById(this.forDialog) as TerraDialog
+            el?.show()
         }
     }
 
@@ -340,6 +395,9 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         @focus=${this.handleFocus}
         @invalid=${this.isButton() ? this.handleInvalid : null}
         @click=${this.handleClick}
+        aria-controls=${ifDefined(this.forDialog || undefined)} 
+        ?aria-haspopup=${this.forDialog ? 'dialog' : undefined}
+        aria-expanded=${ifDefined(this.forDialog ? this.expanded : undefined)}
       >
         <slot name="prefix" part="prefix" class="button__prefix"></slot>
         <slot part="label" class="button__label"></slot>
