@@ -14,7 +14,7 @@ import utc from 'dayjs/plugin/utc.js'
 import { cache } from 'lit/directives/cache.js'
 import { calculateDataPoints } from '../../lib/dataset.js'
 import { downloadImage } from 'plotly.js-dist-min'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
@@ -63,6 +63,12 @@ export default class TerraTimeSeries extends TerraElement {
      */
     @property({ reflect: true })
     collection?: string
+
+    /**
+     * a collection long name (ex: "NLDAS Primary Forcing Data L4 Hourly 0.125 x 0.125 degree V2.0 (NLDAS_FORA0125_H) at GES DISC")
+     */
+    @property({ reflect: true })
+    collectionLongName?: string
 
     /**
      * the dataset landing page for the collection
@@ -320,6 +326,7 @@ export default class TerraTimeSeries extends TerraElement {
         this.#maybeSliceTimeForStartEnd()
 
         this.collection = `${event.detail.collectionShortName}_${event.detail.collectionVersion}`
+        this.collectionLongName = event.detail.collectionLongName
         this.datasetLandingPage = event.detail.datasetLandingPage
         this.units = event.detail.units
         this.variable = event.detail.name
@@ -446,12 +453,14 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     render() {
-        // console.log(this.#timeSeriesController.task.value)
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
-                value=${`${this.collection}_${this.variable}`}
+                .value=${this.collection && this.variable
+                    ? `${this.collection}_${this.variable}`
+                    : nothing}
                 .bearerToken=${this.bearerToken ?? null}
+                .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
@@ -567,7 +576,7 @@ export default class TerraTimeSeries extends TerraElement {
                                                   href=${this.datasetLandingPage}
                                                   rel="noopener noreffer"
                                                   target="_blank"
-                                                  >Dataset Summary
+                                                  >${this.collectionLongName}
 
                                                   <terra-icon
                                                       name="outline-arrow-top-right-on-square"

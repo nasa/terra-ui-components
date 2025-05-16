@@ -90,6 +90,7 @@ export default css`
 
     menu dd {
         font-style: italic;
+        text-wrap: balance;
     }
 
     terra-date-range-slider {
