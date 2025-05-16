@@ -6,7 +6,7 @@ export default css`
     }
 
     :host::part(base) {
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 16 / 9;
     }
 
     /**
