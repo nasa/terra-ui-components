@@ -310,7 +310,7 @@ export class Leaflet implements Map {
 
     async fetchSelectedShape(query: any) {
         const url = new URL(
-            'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/geojson'
+            'https://pzdypgyqo6.execute-api.us-east-1.amazonaws.com/default/giovanni-geojson'
         )
 
         // Assuming the query is formatted as 'key=value'
