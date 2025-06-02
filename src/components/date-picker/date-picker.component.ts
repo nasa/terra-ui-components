@@ -36,13 +36,21 @@ export default class TerraDatePicker extends TerraElement {
     @property({ type: Boolean, attribute: 'week-numbers' }) weekNumbers = false
     @property({ type: Boolean }) static = false
     @property() position: 'auto' | 'above' | 'below' = 'auto'
-    @property() theme: 'light' | 'dark' | 'material_blue' | 'material_red' | 'material_green' | 'material_orange' | 'airbnb' | 'confetti' | 'none' = 'light'
+    @property() theme:
+        | 'light'
+        | 'dark'
+        | 'material_blue'
+        | 'material_red'
+        | 'material_green'
+        | 'material_orange'
+        | 'airbnb'
+        | 'confetti'
+        | 'none' = 'light'
     @property({ type: Number, attribute: 'show-months' }) showMonths = 1
 
     @query('lit-flatpickr') private flatpickrElement: any
 
     firstUpdated() {
-        // Set up event listeners
         this.flatpickrElement.addEventListener('change', this.handleChange.bind(this))
     }
 
@@ -62,8 +70,8 @@ export default class TerraDatePicker extends TerraElement {
                 .mode=${this.range ? 'range' : 'single'}
                 .minDate=${this.minDate}
                 .maxDate=${this.maxDate}
-                .defaultDate=${this.range 
-                    ? [this.startDate, this.endDate].filter(Boolean) as string[]
+                .defaultDate=${this.range
+                    ? ([this.startDate, this.endDate].filter(Boolean) as string[])
                     : this.startDate}
                 .allowInput=${this.allowInput}
                 .altFormat=${this.altFormat}
