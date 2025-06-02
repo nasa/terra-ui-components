@@ -1,7 +1,7 @@
 {
   "name": "@nasa-terra/components",
   "description": "A collection of NASA Earthdata components",
-  "version": "0.0.22",
+  "version": "0.0.29",
   "homepage": "https://github.com/gesdisc/components",
   "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
   "license": "MIT",
@@ -85,6 +85,7 @@
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "lit": "^3.0.0",
+    "lit-flatpickr": "^0.4.1",
     "nouislider": "^15.7.1",
     "plotly.js-dist-min": "^2.30.1",
     "qr-creator": "^1.0.0"

@@ -1,27 +1,27 @@
-import componentStyles from '../../styles/component.styles.js'
+import { TaskStatus } from '@lit/task'
 import dayjs from 'dayjs'
-import styles from './time-series.styles.js'
+import timezone from 'dayjs/plugin/timezone.js'
+import utc from 'dayjs/plugin/utc.js'
+import type { CSSResultGroup } from 'lit'
+import { html, nothing } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
+import { cache } from 'lit/directives/cache.js'
+import { downloadImage } from 'plotly.js-dist-min'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
+import TerraElement from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
+import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
 import TerraButton from '../button/button.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
-import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
+import type { Plot } from '../plot/plot.types.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
-import timezone from 'dayjs/plugin/timezone.js'
-import utc from 'dayjs/plugin/utc.js'
-import { cache } from 'lit/directives/cache.js'
-import { downloadImage } from 'plotly.js-dist-min'
-import { html } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
-import { watch } from '../../internal/watch.js'
-import type { CSSResultGroup } from 'lit'
-import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
-import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
-import type { Plot } from '../plot/plot.types.js'
+import styles from './time-series.styles.js'
 import type { MenuNames } from './time-series.types.js'
 
 dayjs.extend(utc)
@@ -59,6 +59,12 @@ export default class TerraTimeSeries extends TerraElement {
      */
     @property({ reflect: true })
     collection?: string
+
+    /**
+     * a collection long name (ex: "NLDAS Primary Forcing Data L4 Hourly 0.125 x 0.125 degree V2.0 (NLDAS_FORA0125_H) at GES DISC")
+     */
+    @property({ reflect: true })
+    collectionLongName?: string
 
     /**
      * the dataset landing page for the collection
@@ -262,6 +268,7 @@ export default class TerraTimeSeries extends TerraElement {
         this.#maybeSliceTimeForStartEnd()
 
         this.collection = `${event.detail.collectionShortName}_${event.detail.collectionVersion}`
+        this.collectionLongName = event.detail.collectionLongName
         this.datasetLandingPage = event.detail.datasetLandingPage
         this.units = event.detail.units
         this.variable = event.detail.name
@@ -375,12 +382,14 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     render() {
-        // console.log(this.#timeSeriesController.task.value)
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
-                value=${`${this.collection}_${this.variable}`}
+                .value=${this.collection && this.variable
+                    ? `${this.collection}_${this.variable}`
+                    : nothing}
                 .bearerToken=${this.bearerToken ?? null}
+                .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
@@ -495,7 +504,7 @@ export default class TerraTimeSeries extends TerraElement {
                                                   href=${this.datasetLandingPage}
                                                   rel="noopener noreffer"
                                                   target="_blank"
-                                                  >Dataset Summary
+                                                  >${this.collectionLongName}
 
                                                   <terra-icon
                                                       name="outline-arrow-top-right-on-square"

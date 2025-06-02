@@ -13,8 +13,10 @@ export { default as TerraVariableCombobox } from './components/variable-combobox
 
 export { default as TerraBrowseVariables } from './components/browse-variables/browse-variables.js'
 export { default as TerraLogin } from './components/login/login.js'
+export { default as TerraDialog } from './components/dialog/dialog.js'
 export { default as TerraSkeleton } from './components/skeleton/skeleton.js'
 export { default as TerraVariableKeywordSearch } from './components/variable-keyword-search/variable-keyword-search.js'
+export { default as TerraDatePicker } from './components/date-picker/date-picker.js';
 /* plop:component */
 
 // Utilities

@@ -1,5 +1,6 @@
 import { execSync } from 'child_process'
 import fs from 'fs'
+import path from 'path'
 
 try {
     // Get the latest tag from Git
@@ -26,13 +27,28 @@ try {
 
     console.log(`Updated pyproject.toml version to: ${newVersion}`)
 
-    // Stage the pyproject.toml file
-    execSync('git add pyproject.toml')
+    const basePyPath = path.join('src', 'terra_ui_components', 'base.py')
+    let basePyContent = fs.readFileSync(basePyPath, 'utf8')
 
-    // Amend the previous commit to include the updated version
+    basePyContent = basePyContent.replace(
+        /@nasa-terra\/components@\d+\.\d+\.\d+/g,
+        `@nasa-terra/components@${newVersion}`
+    )
+
+    fs.writeFileSync(basePyPath, basePyContent, 'utf8')
+
+    console.log(`Updated base.py version to: ${newVersion}`)
+
+    // Stage both files
+    execSync('git add pyproject.toml')
+    execSync(`git add ${basePyPath}`)
+
+    // Amend the previous commit to include the updated versions
     execSync('git commit --amend --no-edit')
 
-    console.log('Amended commit to include updated pyproject.toml version.')
+    console.log(
+        'Amended commit to include updated pyproject.toml and base.py versions.'
+    )
 } catch (error) {
     console.error('Error updating Python version:', error.message)
     process.exit(1)
