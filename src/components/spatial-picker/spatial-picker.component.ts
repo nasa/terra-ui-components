@@ -80,10 +80,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'spatial-constraints' })
     spatialConstraints: string = '-180, -90, 180, 90'
 
-    @state()
-
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
-
     isExpanded: boolean = false
 
     @state()
@@ -96,21 +93,31 @@ export default class TerraSpatialPicker extends TerraElement {
         const inputValue = (e.target as HTMLInputElement).value
 
         if (inputValue === '') {
-            this.mapValue = [];
+            this.mapValue = []
         } else {
-            const parsedValue = parseBoundingBox(inputValue);
-    
+            const parsedValue = parseBoundingBox(inputValue)
+
             if (Array.isArray(parsedValue)) {
                 this.mapValue = parsedValue.map((coordArray: number[]) => {
                     // Round each number in the inner array (lat, lng) to 2 decimal places
-                    return coordArray.map((coord: number) => parseFloat(coord.toFixed(2)));
-                });
-            } else if (parsedValue && typeof parsedValue === 'object' && 'lat' in parsedValue && 'lng' in parsedValue) {
+                    return coordArray.map((coord: number) =>
+                        parseFloat(coord.toFixed(2))
+                    )
+                })
+            } else if (
+                parsedValue &&
+                typeof parsedValue === 'object' &&
+                'lat' in parsedValue &&
+                'lng' in parsedValue
+            ) {
                 // Handle lat/lng object
-                const { lat, lng } = parsedValue;
-                this.mapValue = { lat: parseFloat(lat.toFixed(2)), lng: parseFloat(lng.toFixed(2)) };
+                const { lat, lng } = parsedValue
+                this.mapValue = {
+                    lat: parseFloat(lat.toFixed(2)),
+                    lng: parseFloat(lng.toFixed(2)),
+                }
             } else {
-                this.mapValue = [];
+                this.mapValue = []
             }
         }
     }
@@ -145,7 +152,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         event.detail.latLng
                     )
                 }
-                break   
+                break
 
             default:
                 break
