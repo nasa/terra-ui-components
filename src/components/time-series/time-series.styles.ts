@@ -28,7 +28,7 @@ export default css`
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
-        position: relative; 
+        position: relative;
         z-index: 10;
         padding-bottom: 10px;
     }
@@ -60,19 +60,19 @@ export default css`
     }
 
     menu {
-         all: unset;
-         position: absolute;
-         top: calc(100%); 
-         right: 0;
-         z-index: 1000; 
-         background: white;
-         border: 1px solid #ccc;
-         border-radius: 0.5em;
-         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-         width: max-content;
-         min-width: 20ch;
-         padding: 1em;
-         display: none
+        all: unset;
+        position: absolute;
+        top: calc(100%);
+        right: 0;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 0.5em;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        width: max-content;
+        min-width: 20ch;
+        padding: 1em;
+        display: none;
     }
 
     menu[data-expanded='true'] {
