@@ -33,11 +33,6 @@ import type { CSSResultGroup } from 'lit';
  */
 export default class TerraAlert extends TerraElement {
   static styles: CSSResultGroup = [componentStyles, styles];
-  static define(tag = 'terra-alert') {
-    if (!customElements.get(tag)) {
-      customElements.define(tag, this);
-    }
-  }
 
   private autoHideTimeout: number;
   private remainingTimeInterval: number;
