@@ -1,4 +1,5 @@
 // Components
+export { default as TerraAlert } from './components/alert/alert.js'
 export { default as TerraButton } from './components/button/button.js'
 export { default as TerraChip } from './components/chip/chip.js'
 export { default as TerraCombobox } from './components/combobox/combobox.js'
