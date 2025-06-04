@@ -20,7 +20,10 @@ import 'lit-flatpickr'
 export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
-    selectedDates: Date[] = [] // intentionally not using state decorator to avoid re-rendering
+    selectedDates: {
+        startDate: string | null
+        endDate: string | null
+    } // intentionally not using state decorator to avoid re-rendering
 
     @property() id: string
     @property({ type: Boolean }) range = false
@@ -49,7 +52,13 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private handleChange(selectedDates: Date[]) {
-        this.selectedDates = selectedDates
+        this.selectedDates = {
+            startDate: selectedDates[0]?.toISOString().split('T')[0],
+            endDate: this.range
+                ? selectedDates[1]?.toISOString().split('T')[0]
+                : null,
+        }
+
         this.emit('terra-change')
     }
 
