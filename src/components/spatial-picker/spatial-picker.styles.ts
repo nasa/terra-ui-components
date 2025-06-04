@@ -50,8 +50,11 @@ export default css`
     terra-map:not(.inline) {
         position: absolute;
         top: 100%;
-        left: 0;
-        width: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        min-width: 600px;
+        max-width: 100vw;
+        width: max-content;
         z-index: 200;
     }
 
