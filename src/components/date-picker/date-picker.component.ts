@@ -48,6 +48,10 @@ export default class TerraDatePicker extends TerraElement {
 
     private handleChange(e: CustomEvent) {
         const selectedDates = e.detail.selectedDates
+
+        console.log('handleChange', e)
+        console.log('selectedDates', selectedDates)
+
         if (this.range) {
             this.startDate = selectedDates[0]?.toISOString().split('T')[0]
             this.endDate = selectedDates[1]?.toISOString().split('T')[0]
@@ -90,6 +94,7 @@ export default class TerraDatePicker extends TerraElement {
                         .position=${this.position}
                         .showMonths=${this.showMonths}
                         theme="material_blue"
+                        .onChange="${this.handleChange}"
                     ></lit-flatpickr>
                     <button
                         class="date-picker__input_icon_button"
