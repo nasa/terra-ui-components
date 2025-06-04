@@ -47,6 +47,7 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private handleChange(e: CustomEvent) {
+        /*
         const selectedDates = e.detail.selectedDates
 
         console.log('handleChange', e)
@@ -57,7 +58,9 @@ export default class TerraDatePicker extends TerraElement {
             this.endDate = selectedDates[1]?.toISOString().split('T')[0]
         } else {
             this.startDate = selectedDates[0]?.toISOString().split('T')[0]
-        }
+        }*/
+
+        console.log('handleChange', e)
 
         this.emit('terra-change')
     }
