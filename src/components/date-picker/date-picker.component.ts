@@ -54,6 +54,8 @@ export default class TerraDatePicker extends TerraElement {
         } else {
             this.startDate = selectedDates[0]?.toISOString().split('T')[0]
         }
+
+        this.emit('terra-change')
     }
 
     render() {
