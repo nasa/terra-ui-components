@@ -92,8 +92,12 @@ export default class TerraSpatialPicker extends TerraElement {
 
     private _blur(e: Event) {
         const inputValue = (e.target as HTMLInputElement).value
-
         this.mapValue = inputValue === '' ? [] : parseBoundingBox(inputValue)
+        this.isExpanded = false
+    }
+
+    private _focus() {
+        this.isExpanded = true
     }
 
     private _click() {
@@ -174,6 +178,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         aria-controls="map"
                         aria-expanded=${this.isExpanded}
                         @blur=${this._blur}
+                        @focus=${this._focus}
                     />
                     <terra-button
                         shape="square-left"
