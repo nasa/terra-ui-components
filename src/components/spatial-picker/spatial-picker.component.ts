@@ -90,10 +90,15 @@ export default class TerraSpatialPicker extends TerraElement {
     @query('.spatial-picker__input')
     spatialInput: HTMLInputElement
 
-    private _blur(e: Event) {
+    private _blur(e: FocusEvent) {
         const inputValue = (e.target as HTMLInputElement).value
         this.mapValue = inputValue === '' ? [] : parseBoundingBox(inputValue)
-        this.isExpanded = false
+
+        // Don't hide if clicking within the map component
+        const relatedTarget = e.relatedTarget as HTMLElement
+        if (!relatedTarget?.closest('terra-map')) {
+            this.isExpanded = false
+        }
     }
 
     private _focus() {

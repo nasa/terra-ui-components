@@ -33,16 +33,14 @@ export default css`
 
     :host lit-flatpickr {
         width: 100%;
-    }
-
-    :host lit-flatpickr::part(input) {
         display: block;
         width: 100%;
         height: 36px;
-        padding: 6px 12px;
+        padding: 6px 40px 6px 12px;
         background-image: none;
         -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+        border: 1px solid #ccc;
         -webkit-transition:
             border-color ease-in-out 0.15s,
             box-shadow ease-in-out 0.15s;
