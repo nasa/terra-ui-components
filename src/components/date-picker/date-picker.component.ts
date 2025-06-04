@@ -1,4 +1,4 @@
-import { property, query, state } from 'lit/decorators.js'
+import { property, query } from 'lit/decorators.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
