@@ -36,16 +36,6 @@ export default class TerraDatePicker extends TerraElement {
     @property({ type: Boolean, attribute: 'week-numbers' }) weekNumbers = false
     @property({ type: Boolean }) static = false
     @property() position: 'auto' | 'above' | 'below' = 'auto'
-    @property() theme:
-        | 'light'
-        | 'dark'
-        | 'material_blue'
-        | 'material_red'
-        | 'material_green'
-        | 'material_orange'
-        | 'airbnb'
-        | 'confetti'
-        | 'none' = 'light'
     @property({ type: Number, attribute: 'show-months' }) showMonths = 1
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Date'
@@ -96,8 +86,8 @@ export default class TerraDatePicker extends TerraElement {
                         .weekNumbers=${this.weekNumbers}
                         .static=${this.static}
                         .position=${this.position}
-                        .theme=${this.theme}
                         .showMonths=${this.showMonths}
+                        theme="material_blue"
                     ></lit-flatpickr>
                     <button
                         class="date-picker__input_icon_button"
