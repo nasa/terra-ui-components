@@ -6,7 +6,7 @@ import type {
 import { GET_SHAPE_FILES, GET_GEOJSON_SHAPE } from './queries.js'
 import { graphQLClient } from '../lib/graphql-client.js'
 
-export class GiovanniGeoJsonShapesRepository implements GeoJsonShapesInterface {
+export class GiovanniGeoJsonShapes implements GeoJsonShapesInterface {
     async getShapeFiles(): Promise<ShapeFilesResponse> {
         const response = await graphQLClient.query<{
             shapeFiles: ShapeFilesResponse
