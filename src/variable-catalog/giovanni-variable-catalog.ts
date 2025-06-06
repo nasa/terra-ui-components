@@ -1,10 +1,12 @@
-import { graphQLClient } from '../lib/graphql-client.js'
+import { getGraphQLClient } from '../lib/graphql-client.js'
 import { GET_SEARCH_KEYWORDS } from './queries.js'
 import type { SearchKeywordsResponse, VariableCatalogInterface } from './types.js'
 
 export class GiovanniVariableCatalog implements VariableCatalogInterface {
     async getSearchKeywords() {
-        const response = await graphQLClient.query<{
+        const client = await getGraphQLClient()
+
+        const response = await client.query<{
             aesirKeywords: SearchKeywordsResponse
         }>({
             query: GET_SEARCH_KEYWORDS,
