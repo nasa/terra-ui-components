@@ -2,11 +2,10 @@ import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
 import { CachePersistor } from 'apollo3-cache-persist'
 import localforage from 'localforage'
 
-// Configure localforage to use IndexedDB
 localforage.config({
-    name: 'apollo-cache',
-    storeName: 'apollo-cache-store',
-    description: 'Apollo Client Cache',
+    name: 'terra-general-cache',
+    storeName: 'terra-general-cache-store',
+    description: 'General cache for the Terra Component Library',
 })
 
 const cache = new InMemoryCache()
@@ -25,7 +24,6 @@ const persistor = new CachePersistor({
             return await localforage.removeItem(key)
         },
     },
-    maxSize: 10485760, // 10MB
     debug: process.env.NODE_ENV === 'development',
 })
 
