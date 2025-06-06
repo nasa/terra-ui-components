@@ -2,6 +2,7 @@ import * as L from 'leaflet'
 import 'leaflet-draw'
 import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import type { BoundingBox, LatLng } from './type.js'
+import { GiovanniGeoJsonShapesRepository } from '../../geojson/giovanni-geojson-repository.js'
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
 // @ts-expect-error
@@ -76,8 +77,11 @@ export interface Map {
 }
 
 export class Leaflet implements Map {
+    private readonly geoJsonRepository: GiovanniGeoJsonShapesRepository
+
     constructor() {
         this.handleShapeSelect = this.handleShapeSelect.bind(this)
+        this.geoJsonRepository = new GiovanniGeoJsonShapesRepository()
     }
     map: any
     editableLayers: any
@@ -336,7 +340,7 @@ export class Leaflet implements Map {
 
         if (!selectedShape) return
 
-        const shapeGeoJson = await this.fetchSelectedShape(selectedShape)
+        const shapeGeoJson = await this.geoJsonRepository.getGeoJson(selectedShape)
 
         if (this.selectedGeoJson?.hasLayer) {
             this.selectedGeoJson.remove()

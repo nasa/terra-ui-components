@@ -69,6 +69,7 @@
     "node": ">=14.17.0"
   },
   "dependencies": {
+    "@apollo/client": "^3.13.8",
     "@ctrl/tinycolor": "^4.0.2",
     "@floating-ui/dom": "^1.5.3",
     "@lit/react": "^1.0.0",
@@ -80,6 +81,7 @@
     "date-fns": "^3.6.0",
     "dayjs": "^1.11.11",
     "fuse.js": "^7.0.0",
+    "graphql": "^16.11.0",
     "handlebars": "^4.7.8",
     "idb": "^8.0.0",
     "leaflet": "^1.9.4",
