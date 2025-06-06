@@ -22,7 +22,7 @@ export class FetchController {
         this.#apiTask = new Task(host, {
             task: async () => {
                 const response = await fetch(
-                    'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/website/data-rods-variables',
+                    'https://lb.gesdisc.eosdis.nasa.gov/windmill/api/r/website/data-rods-variables',
                     {
                         headers: {
                             Accept: 'application/json',

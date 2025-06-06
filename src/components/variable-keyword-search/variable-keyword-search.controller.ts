@@ -15,7 +15,7 @@ export class FetchController {
             task: async () => {
                 /** @see {@link https://solr.apache.org/guide/solr/latest/query-guide/terms-component.html} */
                 const response = await fetch(
-                    'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/aesir-keywords'
+                    'https://lb.gesdisc.eosdis.nasa.gov/windmill/api/r/giovanni/aesir-keywords'
                 )
 
                 if (!response.ok) {

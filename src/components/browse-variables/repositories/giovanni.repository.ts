@@ -5,7 +5,7 @@ import type {
 } from '../browse-variables.types.js'
 
 const GIOVANNI_CATALOG_URL =
-    'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/catalog'
+    'https://lb.gesdisc.eosdis.nasa.gov/windmill/api/r/giovanni/catalog'
 
 export class GiovanniRepository implements CatalogRepositoryInterface {
     async searchVariablesAndFacets(

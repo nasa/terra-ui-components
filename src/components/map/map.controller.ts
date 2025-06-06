@@ -18,7 +18,7 @@ export class MapController implements ReactiveController {
 
     private async getShapeFiles() {
         const data = await fetch(
-            'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/shape-files',
+            'https://lb.gesdisc.eosdis.nasa.gov/windmill/api/r/giovanni/shape-files',
             {
                 mode: 'cors',
             }
