@@ -312,27 +312,6 @@ export class Leaflet implements Map {
         return transformedShapes
     }
 
-    async fetchSelectedShape(query: any) {
-        const url = new URL(
-            'https://lb.gesdisc.eosdis.nasa.gov/windmill/api/r/giovanni/geojson'
-        )
-
-        // Assuming the query is formatted as 'key=value'
-        const [key, value] = query.split('=')
-        if (key && value) {
-            url.searchParams.append(key, value)
-        }
-
-        const data = await fetch(url.toString(), {
-            method: 'GET',
-            mode: 'cors',
-        })
-
-        const shape = await data.json()
-
-        return shape
-    }
-
     async handleShapeSelect(event: any) {
         event.preventDefault()
 
