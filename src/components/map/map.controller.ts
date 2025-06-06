@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
 import type TerraMap from './map.js'
-import { GiovanniGeoJsonShapesRepository } from '../../geojson/giovanni-geojson-repository.js'
+import { GiovanniGeoJsonShapesRepository } from '../../geojson/giovanni-geojson.js'
 
 export class MapController implements ReactiveController {
     private host: ReactiveControllerHost & TerraMap

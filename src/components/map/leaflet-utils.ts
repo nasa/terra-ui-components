@@ -2,7 +2,7 @@ import * as L from 'leaflet'
 import 'leaflet-draw'
 import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import type { BoundingBox, LatLng } from './type.js'
-import { GiovanniGeoJsonShapesRepository } from '../../geojson/giovanni-geojson-repository.js'
+import { GiovanniGeoJsonShapesRepository } from '../../geojson/giovanni-geojson.js'
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
 // @ts-expect-error
