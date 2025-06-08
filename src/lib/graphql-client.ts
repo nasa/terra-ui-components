@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client/core'
 import { CachePersistor } from 'apollo3-cache-persist'
 import localforage from 'localforage'
 
