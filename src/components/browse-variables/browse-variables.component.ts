@@ -113,6 +113,7 @@ export default class TerraBrowseVariables extends TerraElement {
         this.selectedFacets = {}
 
         this.searchQuery = e.detail
+        this.showVariablesBrowse = true
     }
 
     /**
@@ -429,6 +430,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                                         input.checked
                                                     )
                                                 }}
+                                                style="display: none;"
                                             />
                                             <strong
                                                 >${variable.dataFieldLongName}</strong
@@ -468,9 +470,12 @@ export default class TerraBrowseVariables extends TerraElement {
                                         </sl-drawer>
 
                                         <terra-button
-                                            @click=${(_event: Event) => {
-                                                const drawer =
-                                                    this.renderRoot.querySelector(
+                                            @click=${(event: Event) => {
+                                                const button =
+                                                    event.currentTarget as HTMLElement
+                                                const drawer = button
+                                                    .closest('.variable')
+                                                    ?.querySelector(
                                                         'sl-drawer'
                                                     ) as SlDrawer
 

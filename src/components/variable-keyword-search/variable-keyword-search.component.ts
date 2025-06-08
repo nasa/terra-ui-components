@@ -154,6 +154,7 @@ export default class TerraVariableKeywordSearch extends TerraElement {
         }
 
         this.#selectOption(target as HTMLLIElement)
+        this.#handleSearch(this.query)
     }
 
     #handleKeydown = (event: KeyboardEvent) => {
