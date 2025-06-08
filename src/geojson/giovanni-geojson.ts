@@ -4,11 +4,13 @@ import type {
     GeoJsonShapesInterface,
 } from './types.js'
 import { GET_SHAPE_FILES, GET_GEOJSON_SHAPE } from './queries.js'
-import { graphQLClient } from '../lib/graphql-client.js'
+import { getGraphQLClient } from '../lib/graphql-client.js'
 
 export class GiovanniGeoJsonShapes implements GeoJsonShapesInterface {
     async getShapeFiles(): Promise<ShapeFilesResponse> {
-        const response = await graphQLClient.query<{
+        const client = await getGraphQLClient()
+
+        const response = await client.query<{
             shapeFiles: ShapeFilesResponse
         }>({
             query: GET_SHAPE_FILES,
@@ -25,8 +27,11 @@ export class GiovanniGeoJsonShapes implements GeoJsonShapesInterface {
     }
 
     async getGeoJson(query: string): Promise<GeoJsonShapeResponse> {
+        const client = await getGraphQLClient()
+
         const shapeId = query.replace('shape=', '')
-        const response = await graphQLClient.query<{
+
+        const response = await client.query<{
             getGeoJsonShape: GeoJsonShapeResponse
         }>({
             query: GET_GEOJSON_SHAPE,
