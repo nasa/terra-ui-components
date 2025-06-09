@@ -152,7 +152,7 @@ export class Leaflet implements Map {
         // coord tracker extends leaflet controls
         const CoordTracker = L.Control.extend({
             options: {
-                position: 'bottomright',
+                position: 'bottomleft',
                 title: 'Mouse Position',
                 exclude: [],
                 include: [],
@@ -193,7 +193,7 @@ export class Leaflet implements Map {
         this.editableLayers.addTo(this.map)
 
         let drawControl = new L.Control.Draw({
-            position: 'topright',
+            position: 'topleft',
             draw: {
                 polyline: false,
                 polygon: false,

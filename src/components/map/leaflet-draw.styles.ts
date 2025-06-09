@@ -164,10 +164,16 @@ export default css`
         background-position: -150px -1px;
     }
     .leaflet-draw-toolbar .leaflet-draw-edit-remove {
-        background-position: -182px -2px;
+        background-image: url('https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/dist/assets/icons/outline-arrow-path.svg');
+        background-size: 50% 50%; 
+        background-position: center center;
+        color: #464646;
     }
     .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-remove {
-        background-position: -180px -1px;
+        background-image: url('https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/dist/assets/icons/outline-arrow-path.svg');
+        background-size: 50% 50%;  
+        background-position: center center;
+        color: #464646;
     }
     .leaflet-draw-toolbar .leaflet-draw-edit-edit.leaflet-disabled {
         background-position: -212px -2px;
@@ -176,10 +182,16 @@ export default css`
         background-position: -210px -1px;
     }
     .leaflet-draw-toolbar .leaflet-draw-edit-remove.leaflet-disabled {
-        background-position: -242px -2px;
+        background-image: url('https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/dist/assets/icons/outline-arrow-path.svg');
+        background-size: 50% 50%; 
+        background-position: center center;
+        color: #464646;
     }
     .leaflet-touch .leaflet-draw-toolbar .leaflet-draw-edit-remove.leaflet-disabled {
-        background-position: -240px -2px;
+        background-image: url('https://cdn.jsdelivr.net/npm/@nasa-terra/components@latest/dist/assets/icons/outline-arrow-path.svg');
+        background-size: 50% 50%; 
+        background-position: center center;
+        color: #464646;
     }
     .leaflet-mouse-marker {
         background-color: #fff;

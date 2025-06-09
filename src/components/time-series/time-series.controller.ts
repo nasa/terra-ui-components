@@ -116,7 +116,7 @@ export class TimeSeriesController {
     async #loadTimeSeries(signal: AbortSignal) {
         // create the variable identifer
         const variableEntryId = `${this.collection}_${this.variable}`.replace(
-            '.',
+            /\./g,
             '_'
         ) // GiC doesn't store variables with a "." in the name, they replace them with "_"
         const cacheKey = `${variableEntryId}_${this.location}`

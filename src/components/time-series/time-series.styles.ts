@@ -28,6 +28,9 @@ export default css`
         display: flex;
         flex-wrap: wrap;
         justify-content: space-between;
+        position: relative; 
+        z-index: 10;
+        padding-bottom: 10px;
     }
 
     .title {
@@ -57,31 +60,34 @@ export default css`
     }
 
     menu {
-        margin: 0;
-        max-height: 0;
-        overscroll-behavior: contain;
-        padding-block: 0.25em;
-        padding-inline: 0.5em;
-        transition: max-height 0.1s ease-in;
+         all: unset;
+         position: absolute;
+         top: calc(100%); 
+         right: 0;
+         z-index: 1000; 
+         background: white;
+         border: 1px solid #ccc;
+         border-radius: 0.5em;
+         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+         width: max-content;
+         min-width: 20ch;
+         padding: 1em;
+         display: none
     }
 
     menu[data-expanded='true'] {
-        margin-block: 0.75em;
-        max-height: 85dvh;
-        overflow-y: auto;
+        display: block;
     }
 
     menu [role='menuitem'] {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0em 1em;
+        display: block;
         list-style: none;
         margin: 0;
-        padding: 0;
+        padding: 0.5em 0;
     }
 
     [role='menuitem'] p {
-        flex: 1 0 100%;
+        margin-block: 0.5em;
     }
 
     menu dt {
@@ -98,26 +104,26 @@ export default css`
         padding-block-start: 2rem;
     }
 
-    /* The current Giovanni API doesn't accept bounding box subsetting. */
     terra-spatial-picker::part(leaflet-bbox),
     terra-spatial-picker::part(leaflet-edit) {
         display: none;
     }
 
-    /* Set the plot title to transparent, which makes it not visible on the page but visible on download. */
     terra-plot::part(plot-title) {
         opacity: 0;
+        z-index: 0 !important;
     }
 
     dialog {
         opacity: 1;
-        transition: opacity 0.3s ease-out 0.4s; /* a short delay, to allow local results to be displayed without a loading icon */
-        place-self: center;
-        z-index: var(--terra-z-index-dialog);
+        transition: opacity 0.3s ease-out 0.4s;
 
         @starting-style {
             opacity: 0;
         }
+
+        place-self: center;
+        z-index: var(--terra-z-index-dialog);
     }
 
     dialog {

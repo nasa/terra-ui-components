@@ -9,7 +9,7 @@ layout: component
 
 ```html:preview
 <terra-time-series
-    collection="NLDAS_FORA0125_H_v2.0"
+    collection="NLDAS_FORA0125_H_2_0"
     variable="LWdown"
     start-date="01/01/2019"
     end-date="03/01/2019"
