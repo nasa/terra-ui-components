@@ -74,6 +74,12 @@ export default class TerraSpatialPicker extends TerraElement {
     @property()
     label: string = 'Select Region'
 
+    /**
+     * Spatial constraints for the map (default: '-180, -90, 180, 90')
+     */
+    @property({ attribute: 'spatial-constraints' })
+    spatialConstraints: string = '-180, -90, 180, 90'
+
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
 
@@ -92,7 +98,35 @@ export default class TerraSpatialPicker extends TerraElement {
 
     private _blur(e: FocusEvent) {
         const inputValue = (e.target as HTMLInputElement).value
-        this.mapValue = inputValue === '' ? [] : parseBoundingBox(inputValue)
+
+        if (inputValue === '') {
+            this.mapValue = []
+        } else {
+            const parsedValue = parseBoundingBox(inputValue)
+
+            if (Array.isArray(parsedValue)) {
+                this.mapValue = parsedValue.map((coordArray: number[]) => {
+                    // Round each number in the inner array (lat, lng) to 2 decimal places
+                    return coordArray.map((coord: number) =>
+                        parseFloat(coord.toFixed(2))
+                    )
+                })
+            } else if (
+                parsedValue &&
+                typeof parsedValue === 'object' &&
+                'lat' in parsedValue &&
+                'lng' in parsedValue
+            ) {
+                // Handle lat/lng object
+                const { lat, lng } = parsedValue
+                this.mapValue = {
+                    lat: parseFloat(lat.toFixed(2)),
+                    lng: parseFloat(lng.toFixed(2)),
+                }
+            } else {
+                this.mapValue = []
+            }
+        }
 
         // Don't hide if clicking within the map component
         const relatedTarget = e.relatedTarget as HTMLElement
@@ -121,6 +155,8 @@ export default class TerraSpatialPicker extends TerraElement {
         switch (event.detail.cause) {
             case 'clear':
                 this.spatialInput.value = ''
+                // Reset spatial constraints to default value on map clear
+                this.spatialConstraints = '-180, -90, 180, 90'
                 break
 
             case 'draw':
@@ -179,7 +215,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         value=${this.initialValue}
                         type="text"
                         class="spatial-picker__input form-control"
-                        placeholder="-180, -90, 180, 90"
+                        placeholder="${this.spatialConstraints}"
                         aria-controls="map"
                         aria-expanded=${this.isExpanded}
                         @blur=${this._blur}
