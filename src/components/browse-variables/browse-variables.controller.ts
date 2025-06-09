@@ -1,4 +1,4 @@
-import { GiovanniRepository } from './repositories/giovanni.repository.js'
+import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
 import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
@@ -54,7 +54,7 @@ export class BrowseVariablesController {
 
     #getCatalogRepository() {
         if (this.#host.catalog === 'giovanni') {
-            return new GiovanniRepository()
+            return new GiovanniVariableCatalog()
         }
 
         throw new Error(`Invalid catalog: ${this.#host.catalog}`)
