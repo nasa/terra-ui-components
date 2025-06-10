@@ -10,6 +10,7 @@ import type {
     SearchResponse,
     SelectedFacets,
     FacetsByCategory,
+    Variable,
 } from '../components/browse-variables/browse-variables.types.js'
 
 export class GiovanniVariableCatalog implements VariableCatalogInterface {
@@ -88,5 +89,34 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
             facetsByCategory,
             total,
         }
+    }
+
+    async getVariable(
+        variableEntryId: string,
+        options?: SearchOptions
+    ): Promise<Variable | null> {
+        const client = await getGraphQLClient()
+
+        const response = await client.query<{
+            getVariables: GetVariablesResponse
+        }>({
+            query: GET_VARIABLES,
+            variables: {
+                variableEntryId,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+        })
+
+        if (response.errors) {
+            throw new Error(`Failed to fetch variable: ${response.errors[0].message}`)
+        }
+
+        const { variables } = response.data!.getVariables
+
+        return variables.length ? variables[0] : null
     }
 }

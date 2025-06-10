@@ -14,12 +14,14 @@ export const GET_VARIABLES = gql`
         $includeFields: String
         $rows: String
         $filter: FilterInput
+        $variableEntryId: String
     ) {
         getVariables(
             q: $q
             includeFields: $includeFields
             rows: $rows
             filter: $filter
+            variableEntryId: $variableEntryId
         ) {
             count
             total
