@@ -216,7 +216,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         if (this.forDialog && this.forDialog === e.target.id) {
             // make sure the aria expanded property gets updated when the dialog hides/shows
             // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-expanded#buttons
-            // TODO this.expanded = e.target.open
+            //TODO this.expanded = e.target.open
         }
     }
 
