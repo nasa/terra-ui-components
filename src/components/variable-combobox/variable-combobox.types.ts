@@ -1,3 +1,5 @@
+import type { TimeInterval } from '../../types.js'
+
 export type ListItem = {
     collectionBeginningDateTime: string
     collectionEndingDateTime: string
@@ -11,6 +13,7 @@ export type ListItem = {
     name: string
     standardName: string
     units: string
+    timeInterval: TimeInterval
 }
 
 export type GroupedListItem = {

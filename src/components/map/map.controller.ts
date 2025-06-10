@@ -1,6 +1,9 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
 import type TerraMap from './map.js'
 
+const SHAPE_FILES_ENDPOINT =
+    'https://5ejg1qg7s4.execute-api.us-east-1.amazonaws.com/default/giovanni-shape-files'
+
 export class MapController implements ReactiveController {
     private host: ReactiveControllerHost & TerraMap
 
@@ -17,12 +20,9 @@ export class MapController implements ReactiveController {
     }
 
     private async getShapeFiles() {
-        const data = await fetch(
-            'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/shape-files',
-            {
-                mode: 'cors',
-            }
-        )
+        const data = await fetch(SHAPE_FILES_ENDPOINT, {
+            mode: 'cors',
+        })
 
         const listOfShapes = await data.json()
 
