@@ -10,7 +10,6 @@ import {
     storeDataByKey,
 } from '../../internal/indexeddb.js'
 import type {
-    Collection,
     EndDate,
     Location,
     MaybeBearerToken,
@@ -18,11 +17,12 @@ import type {
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
-    Variable,
     VariableDbEntry,
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import type { TimeInterval } from '../../types.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import { formatDate } from '../../utilities/date.js'
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -35,7 +35,7 @@ export const plotlyDefaultData: Partial<PlotData> = {
     line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
 }
 
-type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
+type TaskArguments = [Variable, StartDate, EndDate, Location]
 
 export class TimeSeriesController {
     #bearerToken: MaybeBearerToken = null
@@ -55,7 +55,6 @@ export class TimeSeriesController {
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
 
-    collection: Collection
     variable: Variable
     startDate: StartDate
     endDate: EndDate
@@ -70,11 +69,16 @@ export class TimeSeriesController {
         this.host = host
 
         this.task = new Task(host, {
-            autoRun: false,
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
+                console.log(
+                    'task run? ',
+                    this.variable,
+                    this.startDate,
+                    this.endDate,
+                    this.location
+                )
                 if (
-                    !this.collection ||
                     !this.variable ||
                     !this.startDate ||
                     !this.endDate ||
@@ -100,25 +104,21 @@ export class TimeSeriesController {
                 this.host.emit('terra-time-series-data-change', {
                     detail: {
                         data: timeSeries,
-                        collection: this.collection,
                         variable: this.variable,
-                        startDate: this.startDate.toISOString(),
-                        endDate: this.endDate.toISOString(),
+                        startDate: formatDate(this.startDate),
+                        endDate: formatDate(this.endDate),
                         location: this.location,
                     },
                 })
 
                 return this.lastTaskValue
             },
+            args: () => [this.variable, this.startDate, this.endDate, this.location],
         })
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
-        // create the variable identifer
-        const variableEntryId = `${this.collection}_${this.variable}`.replace(
-            /\./g,
-            '_'
-        ) // GiC doesn't store variables with a "." in the name, they replace them with "_"
+        const variableEntryId = this.variable.dataFieldId
         const cacheKey = `${variableEntryId}_${this.location}`
 
         // check the database for any existing data
@@ -151,7 +151,7 @@ export class TimeSeriesController {
 
         for (const gap of dataGaps) {
             const chunks = calculateDateChunks(
-                this.host.timeInterval as TimeInterval,
+                this.variable.dataProductTimeInterval as TimeInterval,
                 gap.start,
                 gap.end
             )

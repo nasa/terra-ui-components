@@ -17,6 +17,7 @@ export { default as TerraDialog } from './components/dialog/dialog.js'
 export { default as TerraSkeleton } from './components/skeleton/skeleton.js'
 export { default as TerraVariableKeywordSearch } from './components/variable-keyword-search/variable-keyword-search.js'
 export { default as TerraDatePicker } from './components/date-picker/date-picker.js'
+export { default as TerraDataRods } from './components/data-rods/data-rods.js';
 /* plop:component */
 
 // Utilities

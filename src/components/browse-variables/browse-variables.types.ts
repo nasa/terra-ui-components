@@ -59,4 +59,14 @@ export type Variable = {
     dataProductBeginDateTime: string
     dataProductEndDateTime: string
     dataFieldKeywords: string[]
+    dataFieldUnits: string
+    // dataset landing page
+    dataProductDescriptionUrl: string
+    // variable landing page
+    dataFieldDescriptionUrl: string
+} & Partial<ExampleInitialDates>
+
+export type ExampleInitialDates = {
+    exampleInitialStartDate: Date
+    exampleInitialEndDate: Date
 }

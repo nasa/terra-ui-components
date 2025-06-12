@@ -66,7 +66,7 @@ function cherryPickDocInfo(docs: Record<string, any>[]): ListItem[] {
             collectionLongName: doc['Collection.LongName'],
             collectionShortName: doc['Collection.ShortName'],
             collectionVersion: doc['Collection.Version'],
-            entryId: `${doc['Collection.ShortName']}_${doc['Collection.Version']}_${doc['Variable.Name']}`,
+            entryId: doc['Variable.Id'],
             longName: doc['Variable.LongName'],
             name: doc['Variable.Name'],
             standardName: doc['Variable.StandardName'],

@@ -1,3 +1,5 @@
+import type { Variable } from '../components/browse-variables/browse-variables.types.js'
+
 export interface VariableCatalogInterface {
     /**
      * Fetches the list of search keywords
@@ -9,24 +11,6 @@ export interface VariableCatalogInterface {
 
 export type SearchKeywordsResponse = {
     id: string
-}
-
-export type GiovanniVariable = {
-    dataFieldId: string
-    dataProductShortName: string
-    dataProductVersion: string
-    dataFieldShortName: string
-    dataFieldLongName: string
-    dataProductLongName: string
-    dataProductTimeInterval: string
-    dataProductWest: number
-    dataProductSouth: number
-    dataProductEast: number
-    dataProductNorth: number
-    dataProductSpatialResolution: string
-    dataProductBeginDateTime: string
-    dataProductEndDateTime: string
-    dataFieldKeywords: string[]
 }
 
 export type GiovanniFacetValue = {
@@ -42,6 +26,6 @@ export type GiovanniFacet = {
 export type GetVariablesResponse = {
     count: number
     total: number
-    variables: GiovanniVariable[]
+    variables: Variable[]
     facets: GiovanniFacet[]
 }

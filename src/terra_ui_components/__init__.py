@@ -5,4 +5,5 @@ from .time_series import TerraTimeSeries
 from .login import TerraLogin
 from .dialog import TerraDialog
 from .date_picker import TerraDatePicker
-__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraGiovanniSearch", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker"]
+from .data_rods import TerraDataRods
+__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraGiovanniSearch", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods"]
