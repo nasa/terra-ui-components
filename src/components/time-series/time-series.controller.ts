@@ -10,10 +10,7 @@ import {
     storeDataByKey,
 } from '../../internal/indexeddb.js'
 import type {
-    EndDate,
-    Location,
     MaybeBearerToken,
-    StartDate,
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
@@ -21,8 +18,7 @@ import type {
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import type { TimeInterval } from '../../types.js'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
-import { formatDate } from '../../utilities/date.js'
+import { formatDate, getUTCDate } from '../../utilities/date.js'
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -34,8 +30,6 @@ export const plotlyDefaultData: Partial<PlotData> = {
     mode: 'lines',
     line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
 }
-
-type TaskArguments = [Variable, StartDate, EndDate, Location]
 
 export class TimeSeriesController {
     #bearerToken: MaybeBearerToken = null
@@ -49,16 +43,11 @@ export class TimeSeriesController {
         },
     ]
 
-    task: Task<TaskArguments, Partial<Data>[]>
+    task: Task<any, Partial<Data>[]>
 
     //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
-
-    variable: Variable
-    startDate: StartDate
-    endDate: EndDate
-    location: Location
 
     constructor(
         host: ReactiveControllerHost & TerraTimeSeries,
@@ -71,18 +60,11 @@ export class TimeSeriesController {
         this.task = new Task(host, {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
-                console.log(
-                    'task run? ',
-                    this.variable,
-                    this.startDate,
-                    this.endDate,
-                    this.location
-                )
                 if (
-                    !this.variable ||
-                    !this.startDate ||
-                    !this.endDate ||
-                    !this.location
+                    !this.host.variable ||
+                    !this.host.startDate ||
+                    !this.host.endDate ||
+                    !this.host.location
                 ) {
                     // requirements not yet met to fetch the time series data
                     return initialState
@@ -104,22 +86,31 @@ export class TimeSeriesController {
                 this.host.emit('terra-time-series-data-change', {
                     detail: {
                         data: timeSeries,
-                        variable: this.variable,
-                        startDate: formatDate(this.startDate),
-                        endDate: formatDate(this.endDate),
-                        location: this.location,
+                        variable: this.host.variable,
+                        startDate: formatDate(this.host.startDate),
+                        endDate: formatDate(this.host.endDate),
+                        location: this.host.location,
                     },
                 })
 
                 return this.lastTaskValue
             },
-            args: () => [this.variable, this.startDate, this.endDate, this.location],
+            args: () => [
+                this.host.variable,
+                this.host.startDate,
+                this.host.endDate,
+                this.host.location,
+            ],
         })
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
-        const variableEntryId = this.variable.dataFieldId
-        const cacheKey = `${variableEntryId}_${this.location}`
+        const [lat, lon] = this.host.location!.split(',')
+        const location = `${lon},%20${lat}`
+        const startDate = getUTCDate(this.host.startDate!)
+        const endDate = getUTCDate(this.host.endDate!)
+        const variableEntryId = this.host.variable!.dataFieldId
+        const cacheKey = `${variableEntryId}_${location}`
 
         // check the database for any existing data
         const existingTerraData = await getDataByKey<VariableDbEntry>(
@@ -129,9 +120,8 @@ export class TimeSeriesController {
 
         if (
             existingTerraData &&
-            this.startDate.getTime() >=
-                new Date(existingTerraData.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
+            startDate.getTime() >= new Date(existingTerraData.startDate).getTime() &&
+            endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
         ) {
             // already have the data downloaded!
             return this.#getDataInRange(existingTerraData)
@@ -151,7 +141,7 @@ export class TimeSeriesController {
 
         for (const gap of dataGaps) {
             const chunks = calculateDateChunks(
-                this.variable.dataProductTimeInterval as TimeInterval,
+                this.host.variable!.dataProductTimeInterval as TimeInterval,
                 gap.start,
                 gap.end
             )
@@ -220,9 +210,12 @@ export class TimeSeriesController {
     #calculateDataGaps(
         existingData?: VariableDbEntry
     ): Array<{ start: Date; end: Date }> {
+        const start = getUTCDate(this.host.startDate!)
+        const end = getUTCDate(this.host.endDate!)
+
         if (!existingData) {
             // No existing data, need to fetch the entire range
-            return [{ start: this.startDate, end: this.endDate }]
+            return [{ start, end }]
         }
 
         const existingStartDate = new Date(existingData.startDate)
@@ -230,13 +223,13 @@ export class TimeSeriesController {
         const gaps: Array<{ start: Date; end: Date }> = []
 
         // Check if we need data before our cached range
-        if (this.startDate < existingStartDate) {
-            gaps.push({ start: this.startDate, end: existingStartDate })
+        if (start < existingStartDate) {
+            gaps.push({ start, end: existingStartDate })
         }
 
         // Check if we need data after our cached range
-        if (this.endDate > existingEndDate) {
-            gaps.push({ start: existingEndDate, end: this.endDate })
+        if (end > existingEndDate) {
+            gaps.push({ start: existingEndDate, end })
         }
 
         return gaps
@@ -251,12 +244,12 @@ export class TimeSeriesController {
         endDate: Date,
         signal: AbortSignal
     ): Promise<TimeSeriesData> {
-        const [lon, lat] = decodeURIComponent(this.location ?? ', ').split(', ')
+        const [lon, lat] = decodeURIComponent(this.host.location ?? ',').split(',')
 
         const url = `${endpoint}?${new URLSearchParams({
             data: variableEntryId,
-            lat,
-            lon,
+            lat: lat.trim(),
+            lon: lon.trim(),
             time_start: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
             time_end: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
         }).toString()}`
@@ -335,12 +328,15 @@ export class TimeSeriesController {
      * given a set of data and a date range, will return only the data that falls within that range
      */
     #getDataInRange(data: TimeSeriesData): TimeSeriesData {
+        const startDate = getUTCDate(this.host.startDate!)
+        const endDate = getUTCDate(this.host.endDate!)
+
         return {
             ...data,
             data: data.data
                 .filter(row => {
                     const timestamp = new Date(row.timestamp)
-                    return timestamp >= this.startDate && timestamp <= this.endDate
+                    return timestamp >= startDate && timestamp <= endDate
                 })
                 .sort(
                     (a, b) =>

@@ -109,6 +109,10 @@ export default class TerraDataRods extends TerraElement {
                 return
             }
 
+            this.startDate =
+                this.startDate ?? variable.exampleInitialStartDate?.toISOString()
+            this.endDate =
+                this.endDate ?? variable.exampleInitialEndDate?.toISOString()
             this.catalogVariable = variable
         },
         args: () => [this.variableEntryId, this.collection, this.variable],
@@ -141,11 +145,11 @@ export default class TerraDataRods extends TerraElement {
             ></terra-spatial-picker>
 
             <terra-time-series
-                .variable=${this.variable}
-                .start-date=${this.startDate}
-                .end-date=${this.endDate}
-                .location=${this.location}
-                .bearer-token=${this.bearerToken}
+                .variable=${this.catalogVariable}
+                start-date=${this.startDate}
+                end-date=${this.endDate}
+                location=${this.location}
+                bearer-token=${this.bearerToken}
             ></terra-time-series>
 
             <terra-date-range-slider
