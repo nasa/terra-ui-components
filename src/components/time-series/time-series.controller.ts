@@ -60,14 +60,6 @@ export class TimeSeriesController {
         this.task = new Task(host, {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
-                console.log(
-                    'in the task ',
-                    this.host.catalogVariable,
-                    this.host.startDate,
-                    this.host.endDate,
-                    this.host.location
-                )
-
                 if (
                     !this.host.catalogVariable ||
                     !this.host.startDate ||
@@ -114,7 +106,8 @@ export class TimeSeriesController {
 
     async #loadTimeSeries(signal: AbortSignal) {
         const [lat, lon] = this.host.location!.split(',')
-        const location = `${lat},%20${lon}`
+        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
+        const location = `${normalizedLocation.lat},%20${normalizedLocation.lon}`
         const startDate = getUTCDate(this.host.startDate!)
         const endDate = getUTCDate(this.host.endDate!)
         const variableEntryId = this.host.catalogVariable!.dataFieldId
@@ -253,11 +246,12 @@ export class TimeSeriesController {
         signal: AbortSignal
     ): Promise<TimeSeriesData> {
         const [lat, lon] = decodeURIComponent(this.host.location ?? ',').split(',')
+        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
 
         const url = `${endpoint}?${new URLSearchParams({
             data: variableEntryId,
-            lat: lat.trim(),
-            lon: lon.trim(),
+            lat: normalizedLocation.lat,
+            lon: normalizedLocation.lon,
             time_start: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
             time_end: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
         }).toString()}`
@@ -356,5 +350,15 @@ export class TimeSeriesController {
 
     render(renderFunctions: StatusRenderer<Partial<Data>[]>) {
         return this.task.render(renderFunctions)
+    }
+
+    /**
+     * Normalizes coordinates to 2 decimal places
+     */
+    #normalizeCoordinates(lat: string, lon: string) {
+        return {
+            lat: Number(lat).toFixed(2),
+            lon: Number(lon).toFixed(2),
+        }
     }
 }
