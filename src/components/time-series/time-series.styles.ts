@@ -71,6 +71,7 @@ export default css`
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
         width: max-content;
         min-width: 20ch;
+        max-width: 100%;
         padding: 1em;
         display: none;
     }

@@ -143,7 +143,7 @@ export default class TerraDataRods extends TerraElement {
             ></terra-spatial-picker>
 
             <terra-time-series
-                .variable=${this.catalogVariable}
+                variable-entry-id=${this.#getVariableEntryId()}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
                 location=${this.location}

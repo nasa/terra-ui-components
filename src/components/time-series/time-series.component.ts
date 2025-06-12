@@ -9,13 +9,14 @@ import { cache } from 'lit/directives/cache.js'
 import { downloadImage } from 'plotly.js-dist-min'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
+import { Task, TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
 import { watch } from '../../internal/watch.js'
 import type { CSSResultGroup } from 'lit'
 import type { Plot } from '../plot/plot.types.js'
 import type { MenuNames } from './time-series.types.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
+import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
 
 //const NUM_DATAPOINTS_TO_WARN_USER = 50000
 
@@ -41,10 +42,24 @@ export default class TerraTimeSeries extends TerraElement {
     #timeSeriesController: TimeSeriesController
 
     /**
-     * a catalog variable for the time series plot.
+     * a variable entry ID (ex: GPM_3IMERGHH_06_precipitationCal)
      */
-    @property()
-    variable?: Variable
+    @property({ attribute: 'variable-entry-id', reflect: true })
+    variableEntryId?: string
+
+    /**
+     * a collection entry id (ex: GPM_3IMERGHH_06)
+     * only required if you don't include a variableEntryId
+     */
+    @property({ reflect: true })
+    collection?: string
+
+    /**
+     * a variable short name to plot (ex: precipitationCal)
+     * only required if you don't include a variableEntryId
+     */
+    @property({ reflect: true })
+    variable?: string // TODO: support multiple variables (non-MVP feature)
 
     /**
      * The start date for the time series plot. (ex: 2021-01-01)
@@ -83,6 +98,8 @@ export default class TerraTimeSeries extends TerraElement {
     @query('terra-plot') plot: TerraPlot
     @query('#menu') menu: HTMLMenuElement
 
+    @state() catalogVariable: Variable
+
     /**
      * if true, we'll show a warning to the user about them requesting a large number of data points
      */
@@ -110,6 +127,38 @@ export default class TerraTimeSeries extends TerraElement {
         this.menu.focus()
     }
 
+    #catalog = new GiovanniVariableCatalog()
+
+    // @ts-expect-error
+    #fetchVariableTask = new Task(this, {
+        task: async (_args, { signal }) => {
+            const variableEntryId = this.#getVariableEntryId()
+
+            console.debug('fetch variable ', variableEntryId)
+
+            if (!variableEntryId) {
+                return
+            }
+
+            const variable = await this.#catalog.getVariable(variableEntryId, {
+                signal,
+            })
+
+            console.debug('found variable ', variable)
+
+            if (!variable) {
+                return
+            }
+
+            this.startDate =
+                this.startDate ?? variable.exampleInitialStartDate?.toISOString()
+            this.endDate =
+                this.endDate ?? variable.exampleInitialEndDate?.toISOString()
+            this.catalogVariable = variable
+        },
+        args: () => [this.variableEntryId, this.collection, this.variable],
+    })
+
     connectedCallback(): void {
         super.connectedCallback()
 
@@ -132,7 +181,7 @@ export default class TerraTimeSeries extends TerraElement {
      */
     /*#checkDataPointLimits() {
         if (
-            !this.variable?.dataProductTimeInterval ||
+            !this.catalogVariable?.dataProductTimeInterval ||
             !this.startDate ||
             !this.endDate
         ) {
@@ -143,7 +192,7 @@ export default class TerraTimeSeries extends TerraElement {
         const endDate = getUTCDate(this.endDate)
 
         this.estimatedDataPoints = calculateDataPoints(
-            this.variable?.dataProductTimeInterval,
+            this.catalogVariable?.dataProductTimeInterval,
             startDate,
             endDate
         )
@@ -202,7 +251,7 @@ export default class TerraTimeSeries extends TerraElement {
 
     #downloadPNG(_event: Event) {
         downloadImage(this.plot?.base, {
-            filename: this.variable!.dataFieldId,
+            filename: this.catalogVariable!.dataFieldId,
             format: 'png',
             width: 1920,
             height: 1080,
@@ -221,11 +270,11 @@ export default class TerraTimeSeries extends TerraElement {
         return html`
             <div class="plot-container">
                 ${cache(
-                    this.variable
+                    this.catalogVariable
                         ? html`
                               <header>
                                   <h2 class="title">
-                                      ${this.variable.dataFieldLongName}
+                                      ${this.catalogVariable.dataFieldLongName}
                                   </h2>
 
                                   <div class="toggles">
@@ -241,7 +290,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           @click=${this.#handleActiveMenuItem}
                                           data-menu-name="information"
                                       >
-                                          <span class="sr-only">Information for ${this.variable.dataFieldLongName}</span>
+                                          <span class="sr-only">Information for ${this.catalogVariable.dataFieldLongName}</span>
 
                                           <terra-icon
                                               name="outline-information-circle"
@@ -262,7 +311,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           @click=${this.#handleActiveMenuItem}
                                           data-menu-name="download"
                                       >
-                                          <span class="sr-only">Download options for ${this.variable.dataFieldLongName}</span>
+                                          <span class="sr-only">Download options for ${this.catalogVariable.dataFieldLongName}</span>
 
                                           <terra-icon
                                               name="outline-arrow-down-tray"
@@ -283,7 +332,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           @click=${this.#handleActiveMenuItem}
                                           data-menu-name="help"
                                       >
-                                          <span class="sr-only">Help link for ${this.variable.dataFieldLongName}</span>
+                                          <span class="sr-only">Help link for ${this.catalogVariable.dataFieldLongName}</span>
 
                                           <terra-icon
                                               name="outline-question-mark-circle"
@@ -307,23 +356,23 @@ export default class TerraTimeSeries extends TerraElement {
 
                                       <dl>
                                           <dt>Variable Longname</dt>
-                                          <dd>${this.variable.dataFieldLongName}</dd>
+                                          <dd>${this.catalogVariable.dataFieldLongName}</dd>
 
                                           <dt>Variable Shortname</dt>
-                                          <dd>${this.variable}</dd>
+                                          <dd>${this.catalogVariable}</dd>
 
                                           <dt>Units</dt>
                                           <dd>
-                                              <code>${this.variable.dataFieldUnits}</code>
+                                              <code>${this.catalogVariable.dataFieldUnits}</code>
                                           </dd>
 
                                           <dt>Dataset Information</dt>
                                           <dd>
                                               <a
-                                                  href=${this.variable.dataProductDescriptionUrl}
+                                                  href=${this.catalogVariable.dataProductDescriptionUrl}
                                                   rel="noopener noreffer"
                                                   target="_blank"
-                                                  >${this.variable.dataProductLongName}
+                                                  >${this.catalogVariable.dataProductLongName}
 
                                                   <terra-icon
                                                       name="outline-arrow-top-right-on-square"
@@ -335,7 +384,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           <dt>Variable Information</dt>
                                           <dd>
                                               <a
-                                                  href=${this.variable.dataFieldDescriptionUrl}
+                                                  href=${this.catalogVariable.dataFieldDescriptionUrl}
                                                   rel="noopener noreffer"
                                                   target="_blank"
                                                   >Variable Glossary
@@ -436,16 +485,16 @@ export default class TerraTimeSeries extends TerraElement {
                         },
                         yaxis: {
                             title:
-                                this.variable?.dataFieldLongName &&
-                                this.variable?.dataFieldUnits
-                                    ? `${this.variable.dataFieldLongName}, ${this.variable.dataFieldUnits}`
+                                this.catalogVariable?.dataFieldLongName &&
+                                this.catalogVariable?.dataFieldUnits
+                                    ? `${this.catalogVariable.dataFieldLongName}, ${this.catalogVariable.dataFieldUnits}`
                                     : null,
                             showline: false,
                         },
                         title: {
                             text:
-                                this.variable && this.location
-                                    ? `${this.variable.dataProductShortName} @ ${this.location}`
+                                this.catalogVariable && this.location
+                                    ? `${this.catalogVariable.dataProductShortName} @ ${this.location}`
                                     : null,
                         },
                     }}"
@@ -464,7 +513,7 @@ export default class TerraTimeSeries extends TerraElement {
                 ?open=${this.#timeSeriesController.task.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
-                <p>Plotting ${this.variable?.dataFieldId}&hellip;</p>
+                <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
 
@@ -500,5 +549,13 @@ export default class TerraTimeSeries extends TerraElement {
                 </div>
             </dialog>
         `
+    }
+
+    #getVariableEntryId() {
+        if (!this.variableEntryId && !(this.collection && this.variable)) {
+            return
+        }
+
+        return this.variableEntryId ?? `${this.collection}_${this.variable}`
     }
 }

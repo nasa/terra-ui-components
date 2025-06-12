@@ -60,8 +60,16 @@ export class TimeSeriesController {
         this.task = new Task(host, {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
+                console.log(
+                    'in the task ',
+                    this.host.catalogVariable,
+                    this.host.startDate,
+                    this.host.endDate,
+                    this.host.location
+                )
+
                 if (
-                    !this.host.variable ||
+                    !this.host.catalogVariable ||
                     !this.host.startDate ||
                     !this.host.endDate ||
                     !this.host.location
@@ -86,7 +94,7 @@ export class TimeSeriesController {
                 this.host.emit('terra-time-series-data-change', {
                     detail: {
                         data: timeSeries,
-                        variable: this.host.variable,
+                        variable: this.host.catalogVariable,
                         startDate: formatDate(this.host.startDate),
                         endDate: formatDate(this.host.endDate),
                         location: this.host.location,
@@ -96,7 +104,7 @@ export class TimeSeriesController {
                 return this.lastTaskValue
             },
             args: () => [
-                this.host.variable,
+                this.host.catalogVariable,
                 this.host.startDate,
                 this.host.endDate,
                 this.host.location,
@@ -106,10 +114,10 @@ export class TimeSeriesController {
 
     async #loadTimeSeries(signal: AbortSignal) {
         const [lat, lon] = this.host.location!.split(',')
-        const location = `${lon},%20${lat}`
+        const location = `${lat},%20${lon}`
         const startDate = getUTCDate(this.host.startDate!)
         const endDate = getUTCDate(this.host.endDate!)
-        const variableEntryId = this.host.variable!.dataFieldId
+        const variableEntryId = this.host.catalogVariable!.dataFieldId
         const cacheKey = `${variableEntryId}_${location}`
 
         // check the database for any existing data
@@ -141,7 +149,7 @@ export class TimeSeriesController {
 
         for (const gap of dataGaps) {
             const chunks = calculateDateChunks(
-                this.host.variable!.dataProductTimeInterval as TimeInterval,
+                this.host.catalogVariable!.dataProductTimeInterval as TimeInterval,
                 gap.start,
                 gap.end
             )
@@ -244,7 +252,7 @@ export class TimeSeriesController {
         endDate: Date,
         signal: AbortSignal
     ): Promise<TimeSeriesData> {
-        const [lon, lat] = decodeURIComponent(this.host.location ?? ',').split(',')
+        const [lat, lon] = decodeURIComponent(this.host.location ?? ',').split(',')
 
         const url = `${endpoint}?${new URLSearchParams({
             data: variableEntryId,
