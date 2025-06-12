@@ -99,16 +99,6 @@ export default css`
         text-wrap: balance;
     }
 
-    terra-date-range-slider {
-        grid-column: 1 / 3;
-        padding-block-start: 2rem;
-    }
-
-    terra-spatial-picker::part(leaflet-bbox),
-    terra-spatial-picker::part(leaflet-edit) {
-        display: none;
-    }
-
     terra-plot::part(plot-title) {
         opacity: 0;
         z-index: 0 !important;
