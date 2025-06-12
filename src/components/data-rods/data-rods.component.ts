@@ -129,9 +129,7 @@ export default class TerraDataRods extends TerraElement {
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
-                .value=${this.collection && this.variable
-                    ? `${this.collection}_${this.variable}`
-                    : nothing}
+                .value=${this.#getVariableEntryId()}
                 .bearerToken=${this.bearerToken ?? null}
                 .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
