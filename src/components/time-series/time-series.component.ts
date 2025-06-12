@@ -484,11 +484,7 @@ export default class TerraTimeSeries extends TerraElement {
                             zeroline: false,
                         },
                         yaxis: {
-                            title:
-                                this.catalogVariable?.dataFieldLongName &&
-                                this.catalogVariable?.dataFieldUnits
-                                    ? `${this.catalogVariable.dataFieldLongName}, ${this.catalogVariable.dataFieldUnits}`
-                                    : null,
+                            title: this.#getYAxisLabel(),
                             showline: false,
                         },
                         title: {
@@ -557,5 +553,18 @@ export default class TerraTimeSeries extends TerraElement {
         }
 
         return this.variableEntryId ?? `${this.collection}_${this.variable}`
+    }
+
+    #getYAxisLabel() {
+        if (!this.catalogVariable) {
+            return
+        }
+
+        return [
+            this.catalogVariable.dataFieldLongName,
+            this.catalogVariable.dataFieldUnits,
+        ]
+            .filter(Boolean)
+            .join(', ')
     }
 }
