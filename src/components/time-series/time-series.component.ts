@@ -607,18 +607,16 @@ export default class TerraTimeSeries extends TerraElement {
     #renderHelpPanel() {
         return html`
             <h3 class="sr-only">Help Links</h3>
-                                      <ul>
-                                          <li>
-                                              <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </li>
-                                      </ul>
-
-                                      
+            <ul>
+                <li>
+                    <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </li>
+            </ul>                  
         `
     }
 
@@ -627,9 +625,11 @@ export default class TerraTimeSeries extends TerraElement {
             <h3 class="sr-only">Jupyter Notebook Options</h3>
             <p>Open this plot in a Jupyter Notebook to explore the data further.</p>
             <a
-                href=${`https://notebooks.gesdisc.eosdis.nasa.gov/hub/user-redirect/git-pull?repo=https://github.com/nasa/GESDISC-Notebooks&branch=main&subPath=TimeSeries/${this.catalogVariable.dataFieldId}.ipynb`}
-                rel="noopener noreferrer"
-                target="_blank"
+                href="#"
+                @click=${(e: Event) => {
+                    e.preventDefault()
+                    this.#handleJupyterNotebookClick()
+                }}
             >
                 Open in Jupyter Notebook
                 <terra-icon
@@ -638,5 +638,50 @@ export default class TerraTimeSeries extends TerraElement {
                 ></terra-icon>
             </a>
         `
+    }
+
+    #handleJupyterNotebookClick() {
+        const jupyterLiteUrl = 'https://gesdisc.github.io/jupyterlite/lab/index.html'
+        const jupyterWindow = window.open(jupyterLiteUrl, '_blank')
+
+        if (!jupyterWindow) {
+            console.error('Failed to open JupyterLite!')
+            return
+        }
+
+        // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+        setTimeout(() => {
+            const notebook = [
+                {
+                    id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
+                    cell_type: 'code',
+                    source: '%pip install -q terra_ui_components',
+                    metadata: {
+                        trusted: true,
+                    },
+                    outputs: [],
+                    execution_count: null,
+                },
+                {
+                    id: '870c1384-e706-48ee-ba07-fd552a949869',
+                    cell_type: 'code',
+                    source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.variableEntryId}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
+                    metadata: {
+                        trusted: true,
+                    },
+                    outputs: [],
+                    execution_count: null,
+                },
+            ]
+
+            jupyterWindow.postMessage(
+                {
+                    type: 'load-notebook',
+                    filename: 'from_uui.ipynb',
+                    notebook,
+                },
+                '*'
+            )
+        }, 500)
     }
 }
