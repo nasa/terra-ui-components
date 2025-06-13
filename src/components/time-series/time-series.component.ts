@@ -240,7 +240,28 @@ export default class TerraTimeSeries extends TerraElement {
 
         // Create CSV format, make it a Blob file and generate a link to it.
         const csv = this.#convertToCSV(csvData)
-        csv
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.setAttribute('href', url)
+
+        // Create filename with variable, location, and date range
+        const variableName = this.catalogVariable?.dataFieldId || 'time-series-data'
+        const locationStr = this.location
+            ? `_${this.location.replace(/,/g, '_')}`
+            : ''
+        const dateRange =
+            this.startDate && this.endDate
+                ? `_${this.startDate.split('T')[0]}_to_${this.endDate.split('T')[0]}`
+                : ''
+
+        const filename = `${variableName}${locationStr}${dateRange}.csv`
+        link.setAttribute('download', filename)
+
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
     }
 
     #convertToCSV(data: any[]): string {
