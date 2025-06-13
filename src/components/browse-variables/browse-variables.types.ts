@@ -48,6 +48,7 @@ export type Variable = {
     dataProductShortName: string
     dataProductVersion: string
     dataFieldShortName: string
+    dataFieldAccessName: string
     dataFieldLongName: string
     dataProductLongName: string
     dataProductTimeInterval: string

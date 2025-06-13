@@ -14,14 +14,14 @@ export const GET_VARIABLES = gql`
         $includeFields: String
         $rows: String
         $filter: FilterInput
-        $variableEntryId: String
+        $variableEntryIds: [String]
     ) {
         getVariables(
             q: $q
             includeFields: $includeFields
             rows: $rows
             filter: $filter
-            variableEntryId: $variableEntryId
+            variableEntryIds: $variableEntryIds
         ) {
             count
             total
@@ -30,6 +30,7 @@ export const GET_VARIABLES = gql`
                 dataProductShortName
                 dataProductVersion
                 dataFieldShortName
+                dataFieldAccessName
                 dataFieldLongName
                 dataProductLongName
                 dataProductTimeInterval
@@ -41,6 +42,9 @@ export const GET_VARIABLES = gql`
                 dataProductBeginDateTime
                 dataProductEndDateTime
                 dataFieldKeywords
+                dataFieldUnits
+                dataProductDescriptionUrl
+                dataFieldDescriptionUrl
             }
             facets {
                 category

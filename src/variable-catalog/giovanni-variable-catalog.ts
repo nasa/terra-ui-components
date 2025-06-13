@@ -104,7 +104,7 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
         }>({
             query: GET_VARIABLES,
             variables: {
-                variableEntryId,
+                variableEntryIds: [variableEntryId],
             },
             context: {
                 fetchOptions: {
@@ -131,6 +131,10 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
                 ...variable,
                 exampleInitialStartDate: exampleInitialDates?.exampleInitialStartDate,
                 exampleInitialEndDate: exampleInitialDates?.exampleInitialEndDate,
+                dataFieldShortName:
+                    !variable.dataFieldShortName || variable.dataFieldShortName == ''
+                        ? variable.dataFieldAccessName
+                        : variable.dataFieldShortName,
             }
         })
     }

@@ -285,16 +285,19 @@ export default class TerraTimeSeries extends TerraElement {
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'information'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'information'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
                                           @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="information"
                                       >
-                                          <span class="sr-only">Information for ${this.catalogVariable.dataFieldLongName}</span>
+                                          <span class="sr-only"
+                                              >Information for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
                                               name="outline-information-circle"
@@ -306,16 +309,19 @@ export default class TerraTimeSeries extends TerraElement {
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'download'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'download'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
                                           @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="download"
                                       >
-                                          <span class="sr-only">Download options for ${this.catalogVariable.dataFieldLongName}</span>
+                                          <span class="sr-only"
+                                              >Download options for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
                                               name="outline-arrow-down-tray"
@@ -327,16 +333,19 @@ export default class TerraTimeSeries extends TerraElement {
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'help'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'help'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
                                           @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="help"
                                       >
-                                          <span class="sr-only">Help link for ${this.catalogVariable.dataFieldLongName}</span>
+                                          <span class="sr-only"
+                                              >Help link for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
                                               name="outline-question-mark-circle"
@@ -348,16 +357,19 @@ export default class TerraTimeSeries extends TerraElement {
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'jupyter'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'jupyter'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
                                           @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="jupyter"
                                       >
-                                          <span class="sr-only">Open in Jupyter Notebook for ${this.catalogVariable.dataFieldLongName}</span>
+                                          <span class="sr-only"
+                                              >Open in Jupyter Notebook for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
                                               name="outline-code-bracket-square"
@@ -367,154 +379,43 @@ export default class TerraTimeSeries extends TerraElement {
                                       </terra-button>
                                   </div>
 
-                              <menu
-                                  role="menu"
-                                  id="menu"
-                                  data-expanded=${this.activeMenuItem !== null}
-                                  tabindex="-1"
-                                  @mouseleave=${this.#handleMenuLeave}
-                              >
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'information'}
+                                  <menu
+                                      role="menu"
+                                      id="menu"
+                                      data-expanded=${this.activeMenuItem !== null}
+                                      tabindex="-1"
+                                      @mouseleave=${this.#handleMenuLeave}
                                   >
-                                      <h3 class="sr-only">Information</h3>
-
-                                      <dl>
-                                          <dt>Variable Longname</dt>
-                                          <dd>${this.catalogVariable.dataFieldLongName}</dd>
-
-                                          <dt>Variable Shortname</dt>
-                                          <dd>${this.catalogVariable}</dd>
-
-                                          <dt>Units</dt>
-                                          <dd>
-                                              <code>${this.catalogVariable.dataFieldUnits}</code>
-                                          </dd>
-
-                                          <dt>Dataset Information</dt>
-                                          <dd>
-                                              <a
-                                                  href=${this.catalogVariable.dataProductDescriptionUrl}
-                                                  rel="noopener noreffer"
-                                                  target="_blank"
-                                                  >${this.catalogVariable.dataProductLongName}
-
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </dd>
-
-                                          <dt>Variable Information</dt>
-                                          <dd>
-                                              <a
-                                                  href=${this.catalogVariable.dataFieldDescriptionUrl}
-                                                  rel="noopener noreffer"
-                                                  target="_blank"
-                                                  >Variable Glossary
-
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </dd>
-                                      </dl>
-                                  </li>
-
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'download'}
-                                  >
-                                      <h3 class="sr-only">Download Options</h3>
-
-                                      <p>
-                                          This plot can be downloaded as either a
-                                          <abbr title="Portable Network Graphic"
-                                              >PNG</abbr
-                                          >
-                                          image or
-                                          <abbr title="Comma-Separated Value"
-                                              >CSV</abbr
-                                          >
-                                          data.
-                                      </p>
-
-                                      <terra-button
-                                          outline
-                                          variant="default"
-                                          @click=${this.#downloadPNG}
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !==
+                                          'information'}
                                       >
-                                          <span class="sr-only"
-                                              >Download Plot Data as
-                                          </span>
-                                          PNG
-                                          <terra-icon
-                                              slot="prefix"
-                                              name="outline-photo"
-                                              library="heroicons"
-                                              font-size="1.5em"
-                                          ></terra-icon>
-                                      </terra-button>
+                                          ${this.#renderInfoPanel()}
+                                      </li>
 
-                                      <terra-button
-                                          outline
-                                          variant="default"
-                                          @click=${this.#downloadCSV}
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !==
+                                          'download'}
                                       >
-                                          <span class="sr-only"
-                                              >Download Plot Data as
-                                          </span>
-                                          CSV
-                                          <terra-icon
-                                              slot="prefix"
-                                              name="outline-document-chart-bar"
-                                              library="heroicons"
-                                              font-size="1.5em"
-                                          ></terra-icon>
-                                      </terra-button>
-                                  </li>
+                                          ${this.#renderDownloadPanel()}
+                                      </li>
 
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'help'}
-                                  >
-                                      <h3 class="sr-only">Help Links</h3>
-                                      <ul>
-                                          <li>
-                                              <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </li>
-                                      </ul>
-                                  </li>
-
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'jupyter'}
-                                  >
-                                      <h3 class="sr-only">Jupyter Notebook Options</h3>
-                                      <p>
-                                          Open this plot in a Jupyter Notebook to explore the data further.
-                                      </p>
-                                      <a
-                                          href=${`https://notebooks.gesdisc.eosdis.nasa.gov/hub/user-redirect/git-pull?repo=https://github.com/nasa/GESDISC-Notebooks&branch=main&subPath=TimeSeries/${this.catalogVariable.dataFieldId}.ipynb`}
-                                          rel="noopener noreferrer"
-                                          target="_blank"
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !== 'help'}
                                       >
-                                          Open in Jupyter Notebook
-                                          <terra-icon
-                                              name="outline-arrow-top-right-on-square"
-                                              library="heroicons"
-                                          ></terra-icon>
-                                      </a>
-                                  </li>
-                              </menu>
+                                          ${this.#renderHelpPanel()}
+                                      </li>
+
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !== 'jupyter'}
+                                      >
+                                          ${this.#renderJupyterNotebookPanel()}
+                                      </li>
+                                  </menu>
                               </header>
                           `
                         : html`<div class="spacer"></div>`
@@ -613,5 +514,129 @@ export default class TerraTimeSeries extends TerraElement {
         ]
             .filter(Boolean)
             .join(', ')
+    }
+
+    #renderInfoPanel() {
+        return html`
+            <h3 class="sr-only">Information</h3>
+
+            <dl>
+                <dt>Variable Longname</dt>
+                <dd>${this.catalogVariable.dataFieldLongName}</dd>
+
+                <dt>Variable Shortname</dt>
+                <dd>
+                    ${this.catalogVariable.dataFieldShortName ??
+                    this.catalogVariable.dataFieldAccessName}
+                </dd>
+
+                <dt>Units</dt>
+                <dd>
+                    <code>${this.catalogVariable.dataFieldUnits}</code>
+                </dd>
+
+                <dt>Dataset Information</dt>
+                <dd>
+                    <a
+                        href=${this.catalogVariable.dataProductDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >${this.catalogVariable.dataProductLongName}
+
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </dd>
+
+                <dt>Variable Information</dt>
+                <dd>
+                    <a
+                        href=${this.catalogVariable.dataFieldDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >Variable Glossary
+
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </dd>
+            </dl>
+        `
+    }
+
+    #renderDownloadPanel() {
+        return html`
+            <h3 class="sr-only">Download Options</h3>
+
+            <p>
+                This plot can be downloaded as either a
+                <abbr title="Portable Network Graphic">PNG</abbr>
+                image or
+                <abbr title="Comma-Separated Value">CSV</abbr>
+                data.
+            </p>
+
+            <terra-button outline variant="default" @click=${this.#downloadPNG}>
+                <span class="sr-only">Download Plot Data as </span>
+                PNG
+                <terra-icon
+                    slot="prefix"
+                    name="outline-photo"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
+
+            <terra-button outline variant="default" @click=${this.#downloadCSV}>
+                <span class="sr-only">Download Plot Data as </span>
+                CSV
+                <terra-icon
+                    slot="prefix"
+                    name="outline-document-chart-bar"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
+        `
+    }
+
+    #renderHelpPanel() {
+        return html`
+            <h3 class="sr-only">Help Links</h3>
+                                      <ul>
+                                          <li>
+                                              <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
+                                                  <terra-icon
+                                                      name="outline-arrow-top-right-on-square"
+                                                      library="heroicons"
+                                                  ></terra-icon>
+                                              </a>
+                                          </li>
+                                      </ul>
+
+                                      
+        `
+    }
+
+    #renderJupyterNotebookPanel() {
+        return html`
+            <h3 class="sr-only">Jupyter Notebook Options</h3>
+            <p>Open this plot in a Jupyter Notebook to explore the data further.</p>
+            <a
+                href=${`https://notebooks.gesdisc.eosdis.nasa.gov/hub/user-redirect/git-pull?repo=https://github.com/nasa/GESDISC-Notebooks&branch=main&subPath=TimeSeries/${this.catalogVariable.dataFieldId}.ipynb`}
+                rel="noopener noreferrer"
+                target="_blank"
+            >
+                Open in Jupyter Notebook
+                <terra-icon
+                    name="outline-arrow-top-right-on-square"
+                    library="heroicons"
+                ></terra-icon>
+            </a>
+        `
     }
 }
