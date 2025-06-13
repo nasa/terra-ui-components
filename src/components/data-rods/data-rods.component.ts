@@ -1,5 +1,5 @@
 import { property, state } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
+import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-rods.styles.js'
