@@ -262,8 +262,12 @@ export default class TerraTimeSeries extends TerraElement {
         const button = event.currentTarget as HTMLButtonElement
         const menuName = button.dataset.menuName as MenuNames
 
-        // Toggle to `null` or set the menu item as active.
-        this.activeMenuItem = menuName === this.activeMenuItem ? null : menuName
+        // Set the menu item as active.
+        this.activeMenuItem = menuName
+    }
+
+    #handleMenuLeave() {
+        this.activeMenuItem = null
     }
 
     render() {
@@ -287,7 +291,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
-                                          @click=${this.#handleActiveMenuItem}
+                                          @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="information"
                                       >
                                           <span class="sr-only">Information for ${this.catalogVariable.dataFieldLongName}</span>
@@ -308,7 +312,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
-                                          @click=${this.#handleActiveMenuItem}
+                                          @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="download"
                                       >
                                           <span class="sr-only">Download options for ${this.catalogVariable.dataFieldLongName}</span>
@@ -329,13 +333,34 @@ export default class TerraTimeSeries extends TerraElement {
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
-                                          @click=${this.#handleActiveMenuItem}
+                                          @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="help"
                                       >
                                           <span class="sr-only">Help link for ${this.catalogVariable.dataFieldLongName}</span>
 
                                           <terra-icon
                                               name="outline-question-mark-circle"
+                                              library="heroicons"
+                                              font-size="1.5em"
+                                          ></terra-icon>
+                                      </terra-button>
+
+                                      <terra-button
+                                          circle
+                                          outline
+                                          aria-expanded=${
+                                              this.activeMenuItem === 'jupyter'
+                                          }
+                                          aria-controls="menu"
+                                          aria-haspopup="true"
+                                          class="toggle"
+                                          @mouseenter=${this.#handleActiveMenuItem}
+                                          data-menu-name="jupyter"
+                                      >
+                                          <span class="sr-only">Open in Jupyter Notebook for ${this.catalogVariable.dataFieldLongName}</span>
+
+                                          <terra-icon
+                                              name="outline-code-bracket-square"
                                               library="heroicons"
                                               font-size="1.5em"
                                           ></terra-icon>
@@ -347,6 +372,7 @@ export default class TerraTimeSeries extends TerraElement {
                                   id="menu"
                                   data-expanded=${this.activeMenuItem !== null}
                                   tabindex="-1"
+                                  @mouseleave=${this.#handleMenuLeave}
                               >
                                   <li
                                       role="menuitem"
@@ -466,6 +492,27 @@ export default class TerraTimeSeries extends TerraElement {
                                               </a>
                                           </li>
                                       </ul>
+                                  </li>
+
+                                  <li
+                                      role="menuitem"
+                                      ?hidden=${this.activeMenuItem !== 'jupyter'}
+                                  >
+                                      <h3 class="sr-only">Jupyter Notebook Options</h3>
+                                      <p>
+                                          Open this plot in a Jupyter Notebook to explore the data further.
+                                      </p>
+                                      <a
+                                          href=${`https://notebooks.gesdisc.eosdis.nasa.gov/hub/user-redirect/git-pull?repo=https://github.com/nasa/GESDISC-Notebooks&branch=main&subPath=TimeSeries/${this.catalogVariable.dataFieldId}.ipynb`}
+                                          rel="noopener noreferrer"
+                                          target="_blank"
+                                      >
+                                          Open in Jupyter Notebook
+                                          <terra-icon
+                                              name="outline-arrow-top-right-on-square"
+                                              library="heroicons"
+                                          ></terra-icon>
+                                      </a>
                                   </li>
                               </menu>
                               </header>
