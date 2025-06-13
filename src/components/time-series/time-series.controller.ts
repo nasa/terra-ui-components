@@ -1,4 +1,4 @@
-import { calculateDateChunks } from '../../lib/dataset.js'
+import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
 import { format } from 'date-fns'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
@@ -19,6 +19,9 @@ import type {
 import type TerraTimeSeries from './time-series.component.js'
 import type { TimeInterval } from '../../types.js'
 import { formatDate, getUTCDate } from '../../utilities/date.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+
+const NUM_DATAPOINTS_TO_WARN_USER = 50000
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -33,6 +36,7 @@ export const plotlyDefaultData: Partial<PlotData> = {
 
 export class TimeSeriesController {
     #bearerToken: MaybeBearerToken = null
+    #userConfirmedWarning = false
 
     host: ReactiveControllerHost & TerraTimeSeries
     emptyPlotData: Partial<Data>[] = [
@@ -245,6 +249,22 @@ export class TimeSeriesController {
         endDate: Date,
         signal: AbortSignal
     ): Promise<TimeSeriesData> {
+        // Check if we need to warn the user about data point limits
+        if (
+            !this.#userConfirmedWarning &&
+            !this.#checkDataPointLimits(
+                this.host.catalogVariable!,
+                startDate,
+                endDate
+            )
+        ) {
+            // User needs to confirm before proceeding
+            throw new Error('User cancelled data point warning')
+        }
+
+        // Reset the confirmation flag after using it
+        this.#userConfirmedWarning = false
+
         const [lat, lon] = decodeURIComponent(this.host.location ?? ',').split(',')
         const normalizedLocation = this.#normalizeCoordinates(lat, lon)
 
@@ -360,5 +380,34 @@ export class TimeSeriesController {
             lat: Number(lat).toFixed(2),
             lon: Number(lon).toFixed(2),
         }
+    }
+
+    /**
+     * Checks if the current date range will exceed data point limits
+     * Returns true if it's safe to proceed, false if confirmation is needed
+     */
+    #checkDataPointLimits(catalogVariable: Variable, startDate: Date, endDate: Date) {
+        this.host.estimatedDataPoints = calculateDataPoints(
+            catalogVariable.dataProductTimeInterval as TimeInterval,
+            startDate,
+            endDate
+        )
+
+        if (this.host.estimatedDataPoints < NUM_DATAPOINTS_TO_WARN_USER) {
+            // under the warning limit, user is good to go
+            return true
+        }
+
+        // show warning and require confirmation from the user
+        this.host.showDataPointWarning = true
+        return false
+    }
+
+    /**
+     * Called when the user confirms the data point warning
+     */
+    confirmDataPointWarning() {
+        this.#userConfirmedWarning = true
+        this.host.showDataPointWarning = false
     }
 }

@@ -18,8 +18,6 @@ import type { MenuNames } from './time-series.types.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
 
-//const NUM_DATAPOINTS_TO_WARN_USER = 50000
-
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
  * @documentation https://disc.gsfc.nasa.gov/components/time-series
@@ -167,45 +165,13 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #confirmDataPointWarning() {
-        this.showDataPointWarning = false
+        this.#timeSeriesController.confirmDataPointWarning()
         this.#timeSeriesController.task.run()
     }
 
     #cancelDataPointWarning() {
         this.showDataPointWarning = false
     }
-
-    /**
-     * Checks if the current date range will exceed data point limits
-     * eturns true if it's safe to proceed, false if confirmation is needed
-     */
-    /*#checkDataPointLimits() {
-        if (
-            !this.catalogVariable?.dataProductTimeInterval ||
-            !this.startDate ||
-            !this.endDate
-        ) {
-            return true // not enough info to check, we'll just let the user proceed in this case
-        }
-
-        const startDate = getUTCDate(this.startDate)
-        const endDate = getUTCDate(this.endDate)
-
-        this.estimatedDataPoints = calculateDataPoints(
-            this.catalogVariable?.dataProductTimeInterval,
-            startDate,
-            endDate
-        )
-
-        if (this.estimatedDataPoints < NUM_DATAPOINTS_TO_WARN_USER) {
-            // under the warning limit, user is good to go
-            return true
-        }
-
-        // show warning and require confirmation from the user
-        this.showDataPointWarning = true
-        return false
-    }*/
 
     /**
      * aborts the underlying data loading task, which cancels the network request
