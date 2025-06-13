@@ -665,7 +665,7 @@ export default class TerraTimeSeries extends TerraElement {
                 {
                     id: '870c1384-e706-48ee-ba07-fd552a949869',
                     cell_type: 'code',
-                    source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.variableEntryId}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
+                    source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.#getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
                     metadata: {
                         trusted: true,
                     },
