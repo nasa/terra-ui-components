@@ -1,12 +1,12 @@
-import TerraDataRods from './data-rods.component.js';
+import TerraDataRods from './data-rods.component.js'
 
-export * from './data-rods.component.js';
-export default TerraDataRods;
+export * from './data-rods.component.js'
+export default TerraDataRods
 
-TerraDataRods.define('terra-data-rods');
+TerraDataRods.define('terra-data-rods')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-data-rods': TerraDataRods;
+        'terra-data-rods': TerraDataRods
     }
 }
