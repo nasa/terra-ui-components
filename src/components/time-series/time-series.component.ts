@@ -677,7 +677,7 @@ export default class TerraTimeSeries extends TerraElement {
             jupyterWindow.postMessage(
                 {
                     type: 'load-notebook',
-                    filename: 'from_uui.ipynb',
+                    filename: `${encodeURIComponent(this.#getVariableEntryId() ?? 'plot')}.ipynb`,
                     notebook,
                 },
                 '*'

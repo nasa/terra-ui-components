@@ -96,3 +96,4 @@ class TerraTimeSeries(TerraBaseWidget):
     endDate = traitlets.Unicode('').tag(sync=True)
     location = traitlets.Unicode('').tag(sync=True)
     bearerToken = traitlets.Unicode('').tag(sync=True)
+    data = traitlets.List(trait=traitlets.Dict(), default_value=[]).tag(sync=True)
