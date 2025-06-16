@@ -23,6 +23,7 @@ export default css`
 
     terra-time-series {
         grid-column: 1 / 3;
+        z-index: 9;
     }
 
     terra-spatial-picker::part(leaflet-bbox),
