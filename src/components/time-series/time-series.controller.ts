@@ -109,13 +109,10 @@ export class TimeSeriesController {
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
-        const [lat, lon] = this.host.location!.split(',')
-        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
-        const location = `${normalizedLocation.lat},%20${normalizedLocation.lon}`
         const startDate = getUTCDate(this.host.startDate!)
         const endDate = getUTCDate(this.host.endDate!)
+        const cacheKey = this.getCacheKey()
         const variableEntryId = this.host.catalogVariable!.dataFieldId
-        const cacheKey = `${variableEntryId}_${location}`
 
         // check the database for any existing data
         const existingTerraData = await getDataByKey<VariableDbEntry>(
@@ -380,6 +377,22 @@ export class TimeSeriesController {
             lat: Number(lat).toFixed(2),
             lon: Number(lon).toFixed(2),
         }
+    }
+
+    /**
+     * Gets the cache key for the current time series data
+     */
+    getCacheKey(): string {
+        if (!this.host.location || !this.host.catalogVariable) {
+            throw new Error(
+                'Location and catalog variable are required to get cache key'
+            )
+        }
+
+        const [lat, lon] = this.host.location.split(',')
+        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
+        const location = `${normalizedLocation.lat},%20${normalizedLocation.lon}`
+        return `${this.host.catalogVariable.dataFieldId}_${location}`
     }
 
     /**

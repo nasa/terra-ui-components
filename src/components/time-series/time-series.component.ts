@@ -17,6 +17,8 @@ import type { Plot } from '../plot/plot.types.js'
 import type { MenuNames } from './time-series.types.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
+import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
+import type { VariableDbEntry } from './time-series.types.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -649,39 +651,48 @@ export default class TerraTimeSeries extends TerraElement {
             return
         }
 
-        // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
-        setTimeout(() => {
-            const notebook = [
-                {
-                    id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
-                    cell_type: 'code',
-                    source: '%pip install -q terra_ui_components',
-                    metadata: {
-                        trusted: true,
+        // Fetch the time series data from IndexedDB
+        getDataByKey<VariableDbEntry>(
+            IndexedDbStores.TIME_SERIES,
+            this.#timeSeriesController.getCacheKey()
+        ).then(timeSeriesData => {
+            // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+            setTimeout(() => {
+                const notebook = [
+                    {
+                        id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
+                        cell_type: 'code',
+                        source: '%pip install -q terra_ui_components',
+                        metadata: {
+                            trusted: true,
+                        },
+                        outputs: [],
+                        execution_count: null,
                     },
-                    outputs: [],
-                    execution_count: null,
-                },
-                {
-                    id: '870c1384-e706-48ee-ba07-fd552a949869',
-                    cell_type: 'code',
-                    source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.#getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
-                    metadata: {
-                        trusted: true,
+                    {
+                        id: '870c1384-e706-48ee-ba07-fd552a949869',
+                        cell_type: 'code',
+                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.#getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
+                        metadata: {
+                            trusted: true,
+                        },
+                        outputs: [],
+                        execution_count: null,
                     },
-                    outputs: [],
-                    execution_count: null,
-                },
-            ]
+                ]
 
-            jupyterWindow.postMessage(
-                {
-                    type: 'load-notebook',
-                    filename: `${encodeURIComponent(this.#getVariableEntryId() ?? 'plot')}.ipynb`,
-                    notebook,
-                },
-                '*'
-            )
-        }, 500)
+                jupyterWindow.postMessage(
+                    {
+                        type: 'load-notebook',
+                        filename: `${encodeURIComponent(this.#getVariableEntryId() ?? 'plot')}.ipynb`,
+                        notebook,
+                        timeSeriesData,
+                        databaseName: DB_NAME,
+                        storeName: IndexedDbStores.TIME_SERIES,
+                    },
+                    '*'
+                )
+            }, 500)
+        })
     }
 }

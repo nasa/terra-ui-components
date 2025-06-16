@@ -1,6 +1,6 @@
 import { openDB, type IDBPDatabase } from 'idb'
 
-const DB_NAME = 'terra'
+export const DB_NAME = 'terra'
 
 export enum IndexedDbStores {
     TIME_SERIES = 'time-series',
