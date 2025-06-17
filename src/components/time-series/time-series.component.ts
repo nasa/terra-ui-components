@@ -268,13 +268,25 @@ export default class TerraTimeSeries extends TerraElement {
         this.activeMenuItem = menuName
     }
 
-    #handleMenuLeave() {
-        this.activeMenuItem = null
+    #handleComponentLeave(event: MouseEvent) {
+        // Check if we're actually leaving the component by checking if the related target is outside
+        const relatedTarget = event.relatedTarget as HTMLElement
+        if (!this.contains(relatedTarget)) {
+            this.activeMenuItem = null
+        }
+    }
+
+    #handleMenuLeave(event: MouseEvent) {
+        // Only close if we're not moving to another element within the component
+        const relatedTarget = event.relatedTarget as HTMLElement
+        if (!this.contains(relatedTarget)) {
+            this.activeMenuItem = null
+        }
     }
 
     render() {
         return html`
-            <div class="plot-container">
+            <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
                 ${cache(
                     this.catalogVariable
                         ? html`
@@ -302,9 +314,8 @@ export default class TerraTimeSeries extends TerraElement {
                                           >
 
                                           <terra-icon
-                                              name="outline-information-circle"
-                                              library="heroicons"
-                                              font-size="1.5em"
+                                              name="info"
+                                              font-size="1.25em"
                                           ></terra-icon>
                                       </terra-button>
 
@@ -350,9 +361,8 @@ export default class TerraTimeSeries extends TerraElement {
                                           >
 
                                           <terra-icon
-                                              name="outline-question-mark-circle"
-                                              library="heroicons"
-                                              font-size="1.5em"
+                                              name="question"
+                                              font-size="1.25em"
                                           ></terra-icon>
                                       </terra-button>
 
@@ -374,7 +384,7 @@ export default class TerraTimeSeries extends TerraElement {
                                           >
 
                                           <terra-icon
-                                              name="outline-code-bracket-square"
+                                              name="outline-code-bracket"
                                               library="heroicons"
                                               font-size="1.5em"
                                           ></terra-icon>
@@ -452,8 +462,6 @@ export default class TerraTimeSeries extends TerraElement {
                     }}
                 ></terra-plot>
             </div>
-
-            <!-- DATE RANGE SLIDER WAS HERE -->
 
             <dialog
                 ?open=${this.#timeSeriesController.task.status === TaskStatus.PENDING}
