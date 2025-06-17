@@ -11,6 +11,7 @@ import { Leaflet } from './leaflet-utils.js'
 import leafletStyles from './leaflet.styles.js'
 import { MapController } from './map.controller.js'
 import styles from './map.styles.js'
+import type { ShapeFilesResponse } from '../../geojson/types.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -84,7 +85,7 @@ export default class TerraMap extends TerraElement {
      * List of geojson shapes
      */
     @state()
-    shapes: any
+    shapes: ShapeFilesResponse
 
     _mapController: MapController = new MapController(this)
 
@@ -157,18 +158,12 @@ export default class TerraMap extends TerraElement {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(this.shapes?.available, (parentShape: string) => {
-                        const shapes = this.map.transformShapeData(
-                            this.shapes?.info[parentShape]
-                        )
-
-                        return html`<optgroup
-                            label="${this.shapes?.info[parentShape].title}"
-                        >
-                            ${shapes.map((shape: any) => {
+                    map(this.shapes?.categories, category => {
+                        return html`<optgroup label="${category.title}">
+                            ${category.shapes.map(shape => {
                                 return html`
                                     <option
-                                        value="shape=${shape.shapefileID}/${shape.gShapeID}"
+                                        value="shape=${shape.shapefileID}/${shape.shapeID}"
                                     >
                                         ${shape.name}
                                     </option>

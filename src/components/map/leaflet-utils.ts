@@ -2,6 +2,7 @@ import * as L from 'leaflet'
 import 'leaflet-draw'
 import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
 import type { BoundingBox, LatLng } from './type.js'
+import { GiovanniGeoJsonShapes } from '../../geojson/giovanni-geojson.js'
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
 // @ts-expect-error
@@ -76,8 +77,11 @@ export interface Map {
 }
 
 export class Leaflet implements Map {
+    private readonly geoJsonRepository: GiovanniGeoJsonShapes
+
     constructor() {
         this.handleShapeSelect = this.handleShapeSelect.bind(this)
+        this.geoJsonRepository = new GiovanniGeoJsonShapes()
     }
     map: any
     editableLayers: any
@@ -308,27 +312,6 @@ export class Leaflet implements Map {
         return transformedShapes
     }
 
-    async fetchSelectedShape(query: any) {
-        const url = new URL(
-            'https://pzdypgyqo6.execute-api.us-east-1.amazonaws.com/default/giovanni-geojson'
-        )
-
-        // Assuming the query is formatted as 'key=value'
-        const [key, value] = query.split('=')
-        if (key && value) {
-            url.searchParams.append(key, value)
-        }
-
-        const data = await fetch(url.toString(), {
-            method: 'GET',
-            mode: 'cors',
-        })
-
-        const shape = await data.json()
-
-        return shape
-    }
-
     async handleShapeSelect(event: any) {
         event.preventDefault()
 
@@ -336,7 +319,7 @@ export class Leaflet implements Map {
 
         if (!selectedShape) return
 
-        const shapeGeoJson = await this.fetchSelectedShape(selectedShape)
+        const shapeGeoJson = await this.geoJsonRepository.getGeoJson(selectedShape)
 
         if (this.selectedGeoJson?.hasLayer) {
             this.selectedGeoJson.remove()

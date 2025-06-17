@@ -154,6 +154,7 @@ export default class TerraVariableKeywordSearch extends TerraElement {
         }
 
         this.#selectOption(target as HTMLLIElement)
+        this.#handleSearch(this.query)
     }
 
     #handleKeydown = (event: KeyboardEvent) => {
@@ -370,7 +371,7 @@ export default class TerraVariableKeywordSearch extends TerraElement {
                         html`<li class="updating">Updating List of Keywords</li>`,
                     complete: list => {
                         //* @see {@link https://www.fusejs.io/api/options.html}
-                        this.#searchEngine = new Fuse(list, this.searchConfig)
+                        this.#searchEngine = new Fuse(list as any, this.searchConfig)
 
                         //* This needs to get reassigned on render, as this listbox's renderable nodes will change based on the active query.
                         this.#walker = document.createTreeWalker(

@@ -20,6 +20,11 @@ import 'lit-flatpickr'
 export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
+    selectedDates: {
+        startDate: string | null
+        endDate: string | null
+    } // intentionally not using state decorator to avoid re-rendering
+
     @property() id: string
     @property({ type: Boolean }) range = false
     @property({ attribute: 'min-date' }) minDate?: string
@@ -36,17 +41,9 @@ export default class TerraDatePicker extends TerraElement {
     @property({ type: Boolean, attribute: 'week-numbers' }) weekNumbers = false
     @property({ type: Boolean }) static = false
     @property() position: 'auto' | 'above' | 'below' = 'auto'
-    @property() theme:
-        | 'light'
-        | 'dark'
-        | 'material_blue'
-        | 'material_red'
-        | 'material_green'
-        | 'material_orange'
-        | 'airbnb'
-        | 'confetti'
-        | 'none' = 'light'
     @property({ type: Number, attribute: 'show-months' }) showMonths = 1
+    @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
+    @property() label: string = 'Select Date'
 
     @query('lit-flatpickr') private flatpickrElement: any
 
@@ -54,38 +51,73 @@ export default class TerraDatePicker extends TerraElement {
         this.flatpickrElement.addEventListener('change', this.handleChange.bind(this))
     }
 
-    private handleChange(e: CustomEvent) {
-        const selectedDates = e.detail.selectedDates
-        if (this.range) {
-            this.startDate = selectedDates[0]?.toISOString().split('T')[0]
-            this.endDate = selectedDates[1]?.toISOString().split('T')[0]
-        } else {
-            this.startDate = selectedDates[0]?.toISOString().split('T')[0]
+    private handleChange(selectedDates: Date[]) {
+        this.selectedDates = {
+            startDate: selectedDates[0]?.toISOString().split('T')[0],
+            endDate: this.range
+                ? selectedDates[1]?.toISOString().split('T')[0]
+                : null,
         }
+
+        this.emit('terra-change')
     }
 
     render() {
         return html`
-            <lit-flatpickr
-                .mode=${this.range ? 'range' : 'single'}
-                .minDate=${this.minDate}
-                .maxDate=${this.maxDate}
-                .defaultDate=${this.range
-                    ? ([this.startDate, this.endDate].filter(Boolean) as string[])
-                    : this.startDate}
-                .allowInput=${this.allowInput}
-                .altFormat=${this.altFormat}
-                .altInput=${this.altInput}
-                .altInputClass=${this.altInputClass}
-                .dateFormat=${this.dateFormat}
-                .enableTime=${this.enableTime}
-                .time24hr=${this.time24hr}
-                .weekNumbers=${this.weekNumbers}
-                .static=${this.static}
-                .position=${this.position}
-                .theme=${this.theme}
-                .showMonths=${this.showMonths}
-            ></lit-flatpickr>
+            <div class="date-picker">
+                <label
+                    for="date-picker__input"
+                    class=${this.hideLabel ? 'sr-only' : 'date-picker__input_label'}
+                    >${this.label}</label
+                >
+                <div class="date-picker__input_fields">
+                    <lit-flatpickr
+                        id="date-picker__input"
+                        class="form-control"
+                        .mode=${this.range ? 'range' : 'single'}
+                        .minDate=${this.minDate}
+                        .maxDate=${this.maxDate}
+                        .defaultDate=${this.range
+                            ? ([this.startDate, this.endDate].filter(
+                                  Boolean
+                              ) as string[])
+                            : this.startDate}
+                        .allowInput=${this.allowInput}
+                        .altFormat=${this.altFormat}
+                        .altInput=${this.altInput}
+                        .altInputClass=${this.altInputClass}
+                        .dateFormat=${this.dateFormat}
+                        .enableTime=${this.enableTime}
+                        .time24hr=${this.time24hr}
+                        .weekNumbers=${this.weekNumbers}
+                        .static=${this.static}
+                        .position=${this.position}
+                        .showMonths=${this.showMonths}
+                        theme="material_blue"
+                        .onChange="${this.handleChange.bind(this)}"
+                    ></lit-flatpickr>
+                    <button
+                        class="date-picker__input_icon_button"
+                        type="button"
+                        @click=${() => this.flatpickrElement.open()}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                            class="w-6 h-6"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+                            />
+                        </svg>
+                    </button>
+                </div>
+            </div>
         `
     }
 }

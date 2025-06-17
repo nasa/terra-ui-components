@@ -1,29 +1,18 @@
 import type { StatusRenderer } from '@lit/task'
 import { Task, TaskStatus } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
-import type { ListItem, ReadableTaskStatus } from './variable-keyword-search.types.js'
-
-const apiError = new Error(
-    'Failed to fetch the data required to make a list of searchable items.'
-)
+import type { ReadableTaskStatus } from './variable-keyword-search.types.js'
+import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
+import type { SearchKeywordsResponse } from '../../variable-catalog/types.js'
 
 export class FetchController {
-    #apiTask: Task<[], any[]>
+    #apiTask: Task<[], SearchKeywordsResponse>
 
     constructor(host: ReactiveControllerHost) {
+        const variableCatalog = new GiovanniVariableCatalog()
+
         this.#apiTask = new Task(host, {
-            task: async () => {
-                /** @see {@link https://solr.apache.org/guide/solr/latest/query-guide/terms-component.html} */
-                const response = await fetch(
-                    'https://windmill-load-balancer-641499207.us-east-1.elb.amazonaws.com/api/r/giovanni/aesir-keywords'
-                )
-
-                if (!response.ok) {
-                    throw apiError
-                }
-
-                return await response.json()
-            },
+            task: async () => variableCatalog.getSearchKeywords(),
             args: (): any => [],
         })
     }
@@ -48,7 +37,7 @@ export class FetchController {
         return readableStatus[this.#apiTask.status]
     }
 
-    render(renderFunctions: StatusRenderer<ListItem[]>) {
+    render(renderFunctions: StatusRenderer<SearchKeywordsResponse>) {
         return this.#apiTask.render(renderFunctions)
     }
 }
