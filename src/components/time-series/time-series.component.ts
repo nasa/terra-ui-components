@@ -315,7 +315,7 @@ export default class TerraTimeSeries extends TerraElement {
 
                                           <terra-icon
                                               name="info"
-                                              font-size="1.25em"
+                                              font-size="1em"
                                           ></terra-icon>
                                       </terra-button>
 
@@ -362,7 +362,7 @@ export default class TerraTimeSeries extends TerraElement {
 
                                           <terra-icon
                                               name="question"
-                                              font-size="1.25em"
+                                              font-size="1em"
                                           ></terra-icon>
                                       </terra-button>
 
