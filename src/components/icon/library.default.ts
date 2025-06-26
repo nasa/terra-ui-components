@@ -57,29 +57,29 @@ const defaultIcons = {
     `,
 
     'chevron-down-circle': `
-    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor">
-      <path d="M250 440.099c-104.461 0-189.931-85.47-189.931-189.931 0-104.463 85.47-189.931 189.931-189.931 104.461 0 189.931 85.468 189.931 189.931 0 104.461-85.47 189.931-189.931 189.931Zm0-356.122c-92.592 0-166.19 73.598-166.19 166.191S157.408 416.359 250 416.359s166.19-73.598 166.19-166.191S342.592 83.977 250 83.977Z"/>
-      <path d="m250 285.78 61.727-61.727 14.247 14.244L250 314.27l-75.973-75.973 14.245-14.244L250 285.78Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1" stroke-opacity="0.5"/>
+      <polyline points="10,14 16,20 22,14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `,
     'chevron-left-circle': `
-    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor">
-      <path d="M60.069 250.168c0-104.461 85.47-189.931 189.931-189.931 104.463 0 189.931 85.47 189.931 189.931 0 104.461-85.468 189.931-189.931 189.931-104.461 0-189.931-85.47-189.931-189.931Zm356.122 0c0-92.592-73.598-166.19-166.191-166.19S83.809 157.576 83.809 250.168 157.407 416.358 250 416.358s166.191-73.598 166.191-166.19Z"/>
-      <path d="m214.388 250.167 61.727 61.727-14.244 14.247-75.973-75.974 75.973-75.973 14.244 14.245-61.727 61.728Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1" stroke-opacity="0.5"/>
+      <polyline points="18,10 12,16 18,22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `,
     'chevron-right-circle': `
-    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor">
-      <path d="M439.931 250.168c0 104.461-85.47 189.931-189.931 189.931-104.463 0-189.931-85.47-189.931-189.931 0-104.461 85.468-189.931 189.931-189.931 104.461 0 189.931 85.47 189.931 189.931Zm-356.122 0c0 92.592 73.598 166.19 166.191 166.19s166.191-73.598 166.191-166.19S342.593 83.978 250 83.978 83.809 157.576 83.809 250.168Z"/>
-      <path d="m285.611 250.168-61.727-61.727 14.244-14.247 75.973 75.974-75.973 75.973-14.244-14.245 61.727-61.728Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1" stroke-opacity="0.5"/>
+      <polyline points="14,10 20,16 14,22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   `,
     'chevron-up-circle': `
-    <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor">
-      <path d="M250 60.237c104.461 0 189.931 85.47 189.931 189.931 0 104.463-85.47 189.931-189.931 189.931-104.461 0-189.931-85.468-189.931-189.931 0-104.461 85.47-189.931 189.931-189.931Zm0 356.122c92.592 0 166.19-73.598 166.19-166.191S342.592 83.977 250 83.977 83.81 157.575 83.81 250.168 157.408 416.359 250 416.359Z"/>
-      <path d="m249.999 214.555-61.727 61.727-14.247-14.244 75.974-75.973 75.973 75.973-14.245 14.244-61.728-61.727Z"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1" stroke-opacity="0.5"/>
+      <polyline points="10,18 16,12 22,18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    `,
+  `,
 
     'nasa-logo': `
     <svg viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
