@@ -2,7 +2,7 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type TerraDataSubsetter from './data-subsetter.component.js'
-import { type SubsetJobStatus } from '../../data-services/types.js'
+import { type SubsetJobStatus, Status } from '../../data-services/types.js'
 import {
     FINAL_STATUSES,
     HarmonyDataService,
@@ -25,9 +25,7 @@ export class DataSubsetterController {
             task: async ([], { signal }) => {
                 let job
 
-                console.log('running task')
-
-                if (this.currentJob) {
+                if (this.currentJob?.jobID) {
                     // we already have a job, get it's status
                     job = await this.#dataService.getSubsetJobStatus(
                         this.currentJob.jobID,
@@ -79,5 +77,20 @@ export class DataSubsetterController {
 
     #getDataService() {
         return new HarmonyDataService()
+    }
+
+    public startJobPlaceholder() {
+        this.currentJob = {
+            jobID: '',
+            status: Status.RUNNING,
+            message: 'Starting request... Please wait.',
+            progress: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            dataExpiration: '',
+            request: '',
+            numInputGranules: 0,
+            links: [],
+        }
     }
 }

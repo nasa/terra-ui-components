@@ -243,19 +243,27 @@ export default class TerraDataSubsetter extends TerraElement {
 
             <div class="footer">
                 <button class="btn btn-secondary">Reset All</button>
-                <button
-                    class="btn btn-primary"
-                    @click=${() => this.#controller.jobStatusTask.run()}
-                >
+                <button class="btn btn-primary" @click=${this.#getData}>
                     Get Data
                 </button>
             </div>
         `
     }
 
+    #getData() {
+        this.#controller.startJobPlaceholder()
+        this.#controller.jobStatusTask.run()
+
+        // scroll the job-status-section into view
+        setTimeout(() => {
+            const el = this.renderRoot.querySelector('#job-status-section')
+            el?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
+    }
+
     #renderJobStatus() {
         return html`
-            <div class="results-section">
+            <div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
 
                 <div class="progress-container">
@@ -297,12 +305,17 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 <div id="web-links" class="tab-content active">
                     <div class="documentation-links">
-                        <a href="#" class="doc-link">IMERG_V07_ATBD_final.pdf</a>
-                        <a href="#" class="doc-link">README Document</a>
+                        ${this.#getDocumentationLinks().map(
+                            link => html`
+                                <a href="${link.href}" class="doc-link"
+                                    >${link.title}</a
+                                >
+                            `
+                        )}
                     </div>
 
                     <ul class="file-list">
-                        ${this.#controller.currentJob.links.map(
+                        ${this.#getDataLinks().map(
                             link => html`
                                 <li class="file-item">
                                     <a
@@ -354,5 +367,15 @@ export default class TerraDataSubsetter extends TerraElement {
                 this.#controller.currentJob.progress) /
                 100
         )
+    }
+
+    #getDocumentationLinks() {
+        return this.#controller.currentJob.links.filter(
+            link => link.rel === 'stac-catalog-json'
+        )
+    }
+
+    #getDataLinks() {
+        return this.#controller.currentJob.links.filter(link => link.rel === 'data')
     }
 }
