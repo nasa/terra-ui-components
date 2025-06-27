@@ -6,7 +6,6 @@ layout: component
 ---
 
 ```html:preview
-<terra-login></terra-login>
 <terra-data-subsetter></terra-data-subsetter>
 ```
 

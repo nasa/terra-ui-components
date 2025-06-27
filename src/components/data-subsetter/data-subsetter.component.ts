@@ -3,6 +3,8 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter.styles.js'
 import type { CSSResultGroup } from 'lit'
+import { HarmonyDataService } from '../../data-services/harmony-data-service.js'
+import { Status } from '../../data-services/types.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -21,6 +23,52 @@ import type { CSSResultGroup } from 'lit'
  */
 export default class TerraDataSubsetter extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
+
+    #dataService = new HarmonyDataService()
+
+    async submitHarmonyRequest() {
+        const collectionId = 'C1239966755-GES_DISC'
+        const variableConceptId = 'V2778423892-GES_DISC'
+        const job = await this.#dataService.createSubsetJob(collectionId, {
+            variableConceptId,
+        })
+
+        console.log('got back ', job)
+
+        this.pollHarmonyJob(job.jobID)
+    }
+
+    async pollHarmonyJob(jobId: string) {
+        let done = false
+
+        while (!done) {
+            const job = await this.#dataService.getSubsetJobStatus(jobId)
+
+            console.log('Harmony job status:', job.status)
+
+            if (job.status === Status.SUCCESSFUL) {
+                done = true
+
+                console.log('we are done! ', job.links)
+            } else if (
+                job.status === Status.FAILED ||
+                job.status === Status.CANCELED
+            ) {
+                done = true
+                console.error('Harmony job failed/canceled:', job)
+            } else {
+                await new Promise(res => setTimeout(res, 3000))
+            }
+        }
+    }
+
+    firstUpdated() {
+        // Attach event listener to the Get Data button
+        const btn = this.renderRoot.querySelector('.btn-primary')
+        if (btn) {
+            btn.addEventListener('click', () => this.submitHarmonyRequest())
+        }
+    }
 
     render() {
         console.log('im here')
