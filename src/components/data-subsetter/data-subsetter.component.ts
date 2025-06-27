@@ -1,4 +1,4 @@
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter.styles.js'
@@ -250,17 +250,6 @@ export default class TerraDataSubsetter extends TerraElement {
         `
     }
 
-    #getData() {
-        this.#controller.startJobPlaceholder()
-        this.#controller.jobStatusTask.run()
-
-        // scroll the job-status-section into view
-        setTimeout(() => {
-            const el = this.renderRoot.querySelector('#job-status-section')
-            el?.scrollIntoView({ behavior: 'smooth' })
-        }, 100)
-    }
-
     #renderJobStatus() {
         return html`
             <div class="results-section" id="job-status-section">
@@ -268,11 +257,19 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 <div class="progress-container">
                     <div class="progress-text">
-                        <span class="spinner"></span>
-                        <span class="status-running"
-                            >Searching for data...
-                            (${this.#controller.currentJob.progress}%)</span
-                        >
+                        ${this.#controller.currentJob.progress >= 100
+                            ? html`
+                                  <span class="status-complete"
+                                      >✓ Search complete</span
+                                  >
+                              `
+                            : html`
+                                  <span class="spinner"></span>
+                                  <span class="status-running"
+                                      >Searching for data...
+                                      (${this.#controller.currentJob.progress}%)</span
+                                  >
+                              `}
                     </div>
 
                     <div class="progress-bar">
@@ -291,7 +288,6 @@ export default class TerraDataSubsetter extends TerraElement {
                     <span class="estimated-total"
                         >${this.#controller.currentJob.numInputGranules}</span
                     >, continuing the search.
-                    <span>Note: ${this.#controller.currentJob.message}</span>
                 </div>
 
                 <div class="tabs">
@@ -304,15 +300,19 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
 
                 <div id="web-links" class="tab-content active">
-                    <div class="documentation-links">
-                        ${this.#getDocumentationLinks().map(
-                            link => html`
-                                <a href="${link.href}" class="doc-link"
-                                    >${link.title}</a
-                                >
-                            `
-                        )}
-                    </div>
+                    ${this.#getDocumentationLinks().length
+                        ? html`
+                              <div class="documentation-links">
+                                  ${this.#getDocumentationLinks().map(
+                                      link => html`
+                                          <a href="${link.href}" class="doc-link"
+                                              >${link.title}</a
+                                          >
+                                      `
+                                  )}
+                              </div>
+                          `
+                        : nothing}
 
                     <ul class="file-list">
                         ${this.#getDataLinks().map(
@@ -359,6 +359,16 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
             </div>
         `
+    }
+
+    #getData() {
+        this.#controller.jobStatusTask.run()
+
+        // scroll the job-status-section into view
+        setTimeout(() => {
+            const el = this.renderRoot.querySelector('#job-status-section')
+            el?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
     }
 
     #numberOfFilesFoundEstimate() {

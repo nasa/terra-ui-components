@@ -41,7 +41,10 @@ export class DataSubsetterController {
                         subsetOptions
                     )
 
-                    // we don't have a job, create one
+                    // we'll start with an empty job to clear out any existing job
+                    this.currentJob = this.#getEmptyJob()
+
+                    // create the new job
                     job = await this.#dataService.createSubsetJob(
                         this.#host.collectionConceptId,
                         {
@@ -79,8 +82,8 @@ export class DataSubsetterController {
         return new HarmonyDataService()
     }
 
-    public startJobPlaceholder() {
-        this.currentJob = {
+    #getEmptyJob() {
+        return {
             jobID: '',
             status: Status.RUNNING,
             message: 'Starting request... Please wait.',

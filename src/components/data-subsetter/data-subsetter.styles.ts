@@ -371,10 +371,20 @@ export default css`
     .file-list {
         list-style: none;
         padding: 0;
+        max-height: 250px;
+        overflow-y: auto;
+        overflow-x: auto;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px;
+        margin-bottom: 10px;
+        white-space: nowrap;
     }
 
     .file-item {
         margin-bottom: 8px;
+        white-space: nowrap;
     }
 
     .file-link,
@@ -384,6 +394,7 @@ export default css`
         font-size: 14px;
         display: block;
         transition: all 0.2s;
+        white-space: nowrap;
     }
 
     .file-link {
