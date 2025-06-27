@@ -1,9 +1,11 @@
+import type { SearchOptions } from '../components/browse-variables/browse-variables.types.js'
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import { CREATE_SUBSET_JOB, GET_SUBSET_JOB_STATUS } from './queries.js'
-import type {
-    DataServiceInterface,
-    SubsetJobOptions,
-    SubsetJobStatus,
+import {
+    Status,
+    type DataServiceInterface,
+    type SubsetJobOptions,
+    type SubsetJobStatus,
 } from './types.js'
 
 const authorization = ''
@@ -12,6 +14,12 @@ export const HARMONY_CONFIG = {
     baseUrl: 'https://harmony.earthdata.nasa.gov',
     cmrUrl: 'https://cmr.earthdata.nasa.gov/search',
 }
+
+export const FINAL_STATUSES = new Set<Status>([
+    Status.SUCCESSFUL,
+    Status.FAILED,
+    Status.CANCELED,
+])
 
 export class HarmonyDataService implements DataServiceInterface {
     async getAvailableServices(): Promise<any> {
@@ -44,6 +52,9 @@ export class HarmonyDataService implements DataServiceInterface {
                 headers: {
                     authorization,
                 },
+                fetchOptions: {
+                    signal: subsetOptions?.signal,
+                },
             },
         })
 
@@ -56,7 +67,10 @@ export class HarmonyDataService implements DataServiceInterface {
         return response.data?.createSubsetJob
     }
 
-    async getSubsetJobStatus(jobId: string): Promise<SubsetJobStatus> {
+    async getSubsetJobStatus(
+        jobId: string,
+        searchOptions?: SearchOptions
+    ): Promise<SubsetJobStatus> {
         const client = await getGraphQLClient()
 
         const response = await client.query<{
@@ -69,6 +83,9 @@ export class HarmonyDataService implements DataServiceInterface {
             context: {
                 headers: {
                     authorization,
+                },
+                fetchOptions: {
+                    signal: searchOptions?.signal,
                 },
             },
             fetchPolicy: 'no-cache', //! important, we don't want to get cached results here!

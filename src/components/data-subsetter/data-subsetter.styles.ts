@@ -10,7 +10,6 @@ export default css`
         margin: 0 auto;
         padding: 20px;
         background: white;
-        min-height: 100vh;
     }
 
     .header {
@@ -72,21 +71,27 @@ export default css`
         color: #856404;
     }
 
-    .section {
+    .section,
+    .results-section {
         margin-bottom: 25px;
     }
 
-    .section-title {
+    .section-title,
+    .results-title {
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 15px;
         color: #333;
+    }
+
+    .section-title {
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    .help-icon {
+    .help-icon,
+    .info-icon {
         width: 16px;
         height: 16px;
         border-radius: 50%;
@@ -206,8 +211,8 @@ export default css`
 
     .footer {
         display: flex;
-        justify-content: flex-end;
-        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
         margin-top: 30px;
         padding-top: 20px;
         border-top: 1px solid #dee2e6;
@@ -221,6 +226,8 @@ export default css`
         cursor: pointer;
         transition: all 0.2s;
         border: 1px solid transparent;
+        text-decoration: none;
+        display: inline-block;
     }
 
     .btn-secondary {
@@ -242,19 +249,195 @@ export default css`
         background: #0056b3;
     }
 
+    .btn-success {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background: #218838;
+        border-color: #1e7e34;
+    }
+
     .hidden {
         display: none;
     }
 
-    .download-icon {
-        width: 16px;
-        height: 16px;
-        margin-right: 5px;
-    }
-
+    .download-icon,
     .icon-scissors {
         width: 16px;
         height: 16px;
+    }
+
+    .icon-scissors {
         color: #28a745;
+    }
+
+    .progress-container {
+        margin-bottom: 20px;
+    }
+
+    .progress-text,
+    .search-status,
+    .job-info {
+        font-size: 14px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .progress-text {
+        margin-bottom: 8px;
+    }
+
+    .search-status {
+        margin-bottom: 20px;
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid #e9ecef;
+        border-top: 2px solid #0066cc;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background-color: #0066cc;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        width: 28%;
+    }
+
+    .tabs {
+        display: flex;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        padding: 12px 20px;
+        background: none;
+        border: none;
+        font-size: 14px;
+        font-weight: 500;
+        color: #666;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        transition: all 0.2s;
+    }
+
+    .tab.active {
+        color: #0066cc;
+        border-bottom-color: #0066cc;
+        background: #f8f9fa;
+    }
+
+    .tab:hover:not(.active) {
+        color: #495057;
+        background: #f8f9fa;
+    }
+
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    .file-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .file-item {
+        margin-bottom: 8px;
+    }
+
+    .file-link,
+    .doc-link {
+        color: #0066cc;
+        text-decoration: none;
+        font-size: 14px;
+        display: block;
+        transition: all 0.2s;
+    }
+
+    .file-link {
+        padding: 8px 0;
+        border-radius: 4px;
+    }
+
+    .file-link:hover {
+        text-decoration: underline;
+        background: #f8f9fa;
+        padding-left: 8px;
+    }
+
+    .doc-link {
+        margin-bottom: 8px;
+    }
+
+    .doc-link:hover {
+        text-decoration: underline;
+    }
+
+    .documentation-links {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .job-id {
+        font-family: 'Courier New', monospace;
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 3px;
+        border: 1px solid #dee2e6;
+    }
+
+    .status-complete {
+        color: #28a745;
+        font-weight: 500;
+    }
+
+    .status-running {
+        color: #ffc107;
+        font-weight: 500;
+    }
+
+    .file-count {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .estimated-total {
+        color: #666;
+        font-size: 13px;
     }
 `

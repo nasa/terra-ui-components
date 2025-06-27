@@ -12,6 +12,7 @@ export interface DataServiceInterface {
 
 export type SubsetJobOptions = {
     variableConceptId?: string
+    signal?: AbortSignal
 }
 
 export enum Status {
@@ -37,7 +38,7 @@ export type SubsetJobStatus = {
     outputDataSize?: string
     dataSizePercentChange?: string
     labels?: string[]
-    links: SubsetJobLink
+    links: Array<SubsetJobLink>
 }
 
 export type SubsetJobLink = {
