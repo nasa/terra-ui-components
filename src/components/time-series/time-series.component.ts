@@ -714,12 +714,28 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
+        let changed = false
         if (e.detail.xAxisMin) {
             this.startDate = formatDate(e.detail.xAxisMin)
+            changed = true
         }
 
         if (e.detail.xAxisMax) {
             this.endDate = formatDate(e.detail.xAxisMax)
+            changed = true
+        }
+
+        if (changed) {
+            this.dispatchEvent(
+                new CustomEvent('terra-time-series-date-range-change', {
+                    detail: {
+                        startDate: this.startDate,
+                        endDate: this.endDate,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            )
         }
     }
 }
