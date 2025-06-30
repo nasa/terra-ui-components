@@ -34,6 +34,6 @@ export type TimeSeriesMetadata = {
     [key: string]: string | number
 }
 
-export type MenuNames = 'download' | 'help' | 'information' | null
+export type MenuNames = 'download' | 'help' | 'information' | 'jupyter' | null
 
 export type MaybeBearerToken = string | null

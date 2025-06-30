@@ -71,6 +71,7 @@ export default css`
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
         width: max-content;
         min-width: 20ch;
+        max-width: 100%;
         padding: 1em;
         display: none;
     }
@@ -97,16 +98,6 @@ export default css`
     menu dd {
         font-style: italic;
         text-wrap: balance;
-    }
-
-    terra-date-range-slider {
-        grid-column: 1 / 3;
-        padding-block-start: 2rem;
-    }
-
-    terra-spatial-picker::part(leaflet-bbox),
-    terra-spatial-picker::part(leaflet-edit) {
-        display: none;
     }
 
     terra-plot::part(plot-title) {
