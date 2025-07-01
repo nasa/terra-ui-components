@@ -1,8 +1,13 @@
 import type { SearchOptions } from '../components/browse-variables/browse-variables.types.js'
 import { getGraphQLClient } from '../lib/graphql-client.js'
-import { CREATE_SUBSET_JOB, GET_SUBSET_JOB_STATUS } from './queries.js'
+import {
+    CREATE_SUBSET_JOB,
+    GET_SERVICE_CAPABILITIES,
+    GET_SUBSET_JOB_STATUS,
+} from './queries.js'
 import {
     Status,
+    type CollectionWithAvailableServices,
     type DataServiceInterface,
     type SubsetJobOptions,
     type SubsetJobStatus,
@@ -22,9 +27,41 @@ export const FINAL_STATUSES = new Set<Status>([
 ])
 
 export class HarmonyDataService implements DataServiceInterface {
-    async getAvailableServices(): Promise<any> {
-        // TODO: implement
-        return []
+    async getCollectionWithAvailableServices(
+        collectionEntryId: string,
+        options?: { signal: AbortSignal }
+    ): Promise<CollectionWithAvailableServices> {
+        const client = await getGraphQLClient()
+
+        console.log(
+            'Getting collection with available services for ',
+            collectionEntryId
+        )
+
+        const response = await client.query<{
+            getServiceCapabilities: CollectionWithAvailableServices
+        }>({
+            query: GET_SERVICE_CAPABILITIES,
+            variables: {
+                collectionEntryId,
+            },
+            context: {
+                headers: {
+                    authorization,
+                },
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+        })
+
+        if (response.errors) {
+            throw new Error(
+                `Failed to create subset job: ${response.errors[0].message}`
+            )
+        }
+
+        return response.data.getServiceCapabilities
     }
 
     async createSubsetJob(

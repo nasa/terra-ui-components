@@ -1,5 +1,39 @@
 import { gql } from '@apollo/client/core'
 
+export const GET_SERVICE_CAPABILITIES = gql`
+    query GetServiceCapabilities($collectionEntryId: String) {
+        getServiceCapabilities(input: { collectionEntryId: $collectionEntryId }) {
+            conceptId
+            shortName
+            variableSubset
+            bboxSubset
+            shapeSubset
+            temporalSubset
+            concatenate
+            reproject
+            capabilitiesVersion
+            outputFormats
+            services {
+                name
+                href
+                capabilities {
+                    output_formats
+                    subsetting {
+                        temporal
+                        bbox
+                        variable
+                        shape
+                    }
+                }
+            }
+            variables {
+                name
+                href
+            }
+        }
+    }
+`
+
 export const CREATE_SUBSET_JOB = gql`
     mutation CreateSubsetJob(
         $collectionConceptId: String!

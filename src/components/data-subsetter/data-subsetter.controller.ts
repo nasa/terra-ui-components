@@ -12,6 +12,7 @@ const JOB_STATUS_POLL_MILLIS = 3000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
+    fetchCollectionTask: Task<[string], any | undefined>
     currentJob: SubsetJobStatus
 
     #host: ReactiveControllerHost & TerraDataSubsetter
@@ -20,6 +21,20 @@ export class DataSubsetterController {
     constructor(host: ReactiveControllerHost & TerraDataSubsetter) {
         this.#host = host
         this.#dataService = this.#getDataService()
+
+        this.fetchCollectionTask = new Task(host, {
+            task: async ([collectionEntryId], { signal }) => {
+                this.#host.collectionWithServices = collectionEntryId
+                    ? await this.#dataService.getCollectionWithAvailableServices(
+                          collectionEntryId,
+                          { signal }
+                      )
+                    : undefined
+
+                return this.#host.collectionWithServices
+            },
+            args: (): [string | undefined] => [this.#host.collectionEntryId],
+        })
 
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
@@ -37,7 +52,7 @@ export class DataSubsetterController {
                     }
 
                     console.log(
-                        `Creating a job for collection, ${this.#host.collectionConceptId}, with subset options`,
+                        `Creating a job for collection, ${this.#host.collectionWithServices?.conceptId}, with subset options`,
                         subsetOptions
                     )
 
@@ -46,7 +61,7 @@ export class DataSubsetterController {
 
                     // create the new job
                     job = await this.#dataService.createSubsetJob(
-                        this.#host.collectionConceptId,
+                        this.#host.collectionWithServices?.conceptId ?? '',
                         {
                             ...subsetOptions,
                             signal,

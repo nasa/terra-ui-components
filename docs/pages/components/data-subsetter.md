@@ -6,7 +6,7 @@ layout: component
 ---
 
 ```html:preview
-<terra-data-subsetter></terra-data-subsetter>
+<terra-data-subsetter collection-entry-id="OMAERO_003"></terra-data-subsetter>
 ```
 
 ## Examples

@@ -5,6 +5,9 @@ import styles from './data-subsetter.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
+import TerraAccordion from '../accordion/accordion.component.js'
+import { watch } from '../../internal/watch.js'
+import type { CollectionWithAvailableServices } from '../../data-services/types.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -23,17 +26,37 @@ import { DataSubsetterController } from './data-subsetter.controller.js'
  */
 export default class TerraDataSubsetter extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
+    static dependencies: Record<string, typeof TerraElement> = {
+        'terra-accordion': TerraAccordion,
+    }
 
-    @property({ reflect: true, attribute: 'collection-concept-id' })
-    collectionConceptId: string = 'C1239966755-GES_DISC'
+    @property({ reflect: true, attribute: 'collection-entry-id' })
+    collectionEntryId?: string
 
     @property({ reflect: true, attribute: 'variable-concept-id' })
-    variableConceptId?: string = 'V2778423892-GES_DISC'
+    variableConceptId?: string
+
+    @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
+    showCollectionSearch?: boolean = true
 
     @state()
     jobId?: string
 
+    @state()
+    collectionWithServices?: CollectionWithAvailableServices
+
     #controller = new DataSubsetterController(this)
+
+    firstUpdated() {
+        if (this.collectionEntryId) {
+            this.showCollectionSearch = false
+        }
+    }
+
+    @watch(['collectionEntryId'])
+    collectionEntryIdChanged() {
+        console.log('entry id is now ', this.collectionEntryId)
+    }
 
     render() {
         return html`
@@ -72,147 +95,38 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
             </div>
 
-            <div class="section">
-                <h2 class="section-title">
-                    Download Method
-                    <span class="help-icon">?</span>
-                </h2>
-                <div class="accordion">
-                    <div
-                        class="accordion-header"
-                        onclick="toggleAccordion('download-method')"
-                    >
-                        <span class="accordion-title">Download Method:</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="accordion-value">
-                                <svg
-                                    class="icon-scissors"
-                                    viewBox="0 0 24 24"
-                                    fill="currentColor"
-                                >
-                                    <path
-                                        d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3z"
-                                    />
-                                </svg>
-                                Get File Subsets using OPeNDAP
-                            </span>
-                            <button class="reset-btn">Reset</button>
-                            <span class="chevron">▼</span>
-                        </div>
-                    </div>
-                    <div
-                        class="accordion-content hidden"
-                        id="download-method-content"
-                    >
-                        <p style="color: #666; font-style: italic;">
-                            TO BE IMPLEMENTED
-                        </p>
-                    </div>
-                </div>
-            </div>
+            ${this.showCollectionSearch
+                ? html`
+                      <div class="section">
+                          <h2 class="section-title">
+                              Select Data Collection
+                              <span class="help-icon">?</span>
+                          </h2>
 
-            <div class="section">
-                <h2 class="section-title">
-                    Method Options
-                    <span class="help-icon">?</span>
-                </h2>
+                          ${this.#renderSearchForCollection()}
+                      </div>
+                  `
+                : nothing}
+            ${this.#hasAtLeastOneSubsetOption()
+                ? html`
+                      <div class="section">
+                          <h2 class="section-title">
+                              Method Options
+                              <span class="help-icon">?</span>
+                          </h2>
 
-                <div class="accordion" style="margin-bottom: 15px;">
-                    <div
-                        class="accordion-header"
-                        onclick="toggleAccordion('date-range')"
-                    >
-                        <span class="accordion-title">Refine Date Range:</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="accordion-value"
-                                >1998-01-01 to 2025-01-31</span
-                            >
-                            <button class="reset-btn">Reset</button>
-                            <span class="chevron">▼</span>
-                        </div>
-                    </div>
-                    <div class="accordion-content hidden" id="date-range-content">
-                        <p style="color: #666; font-style: italic;">
-                            TO BE IMPLEMENTED
-                        </p>
-                    </div>
-                </div>
-
-                <div class="accordion" style="margin-bottom: 15px;">
-                    <div class="accordion-header" onclick="toggleAccordion('region')">
-                        <span class="accordion-title">Refine Region:</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="accordion-value">-180, -90, 180, 90</span>
-                            <button class="reset-btn">Reset</button>
-                            <span class="chevron">▼</span>
-                        </div>
-                    </div>
-                    <div class="accordion-content hidden" id="region-content">
-                        <p style="color: #666; font-style: italic;">
-                            TO BE IMPLEMENTED
-                        </p>
-                    </div>
-                </div>
-
-                <div class="option-row">
-                    <label class="checkbox-option">
-                        <input type="checkbox" id="geo-spatial" />
-                        <svg
-                            class="icon-scissors"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M9.64 7.64c.23-.5.36-1.05.36-1.64 0-2.21-1.79-4-4-4S2 3.79 2 6s1.79 4 4 4c.59 0 1.14-.13 1.64-.36L10 12l-2.36 2.36C7.14 14.13 6.59 14 6 14c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4c0-.59-.13-1.14-.36-1.64L12 14l7 7h3v-1L9.64 7.64zM6 8c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm0 12c-1.1 0-2-.89-2-2s.9-2 2-2 2 .89 2 2-.9 2-2 2zm6-7.5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM19 3l-6 6 2 2 7-7V3z"
-                            />
-                        </svg>
-                        Use 'Refine Region' for geo-spatial subsetting
-                        <span class="help-icon">?</span>
-                    </label>
-                </div>
-
-                <div class="accordion" style="margin-bottom: 15px;">
-                    <div
-                        class="accordion-header"
-                        onclick="toggleAccordion('variables')"
-                    >
-                        <span class="accordion-title">Select Variables:</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="accordion-value error"
-                                >Please select at least one variable</span
-                            >
-                            <button class="reset-btn">Reset</button>
-                            <span class="chevron">▼</span>
-                        </div>
-                    </div>
-                    <div class="accordion-content hidden" id="variables-content">
-                        <p style="color: #666; font-style: italic;">
-                            TO BE IMPLEMENTED
-                        </p>
-                    </div>
-                </div>
-
-                <div class="accordion">
-                    <div
-                        class="accordion-header"
-                        onclick="toggleAccordion('dimensions')"
-                    >
-                        <span class="accordion-title">Select Dimensions:</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="accordion-value"
-                                >Get all select dimensions</span
-                            >
-                            <button class="reset-btn">Reset</button>
-                            <span class="chevron">▼</span>
-                        </div>
-                    </div>
-                    <div class="accordion-content hidden" id="dimensions-content">
-                        <p style="color: #666; font-style: italic;">
-                            TO BE IMPLEMENTED
-                        </p>
-                    </div>
-                </div>
-            </div>
+                          ${this.collectionWithServices?.temporalSubset
+                              ? this.#renderDateRangeSelection()
+                              : nothing}
+                          ${this.#hasSpatialSubset()
+                              ? this.#renderSpatialSelection()
+                              : nothing}
+                          ${this.collectionWithServices?.variableSubset
+                              ? this.#renderVariableSelection()
+                              : nothing}
+                      </div>
+                  `
+                : nothing}
 
             <div class="section">
                 <h2 class="section-title">
@@ -247,6 +161,194 @@ export default class TerraDataSubsetter extends TerraElement {
                     Get Data
                 </button>
             </div>
+        `
+    }
+
+    #renderSearchForCollection() {
+        return html`
+            <terra-accordion open>
+                <div slot="summary">
+                    <span class="accordion-title">Data Collection:</span>
+                </div>
+
+                <div
+                    slot="summary-right"
+                    style="display: flex; align-items: center; gap: 10px"
+                >
+                    <span class="accordion-value" id="selected-collection-display"
+                        >Please select a collection</span
+                    >
+                    <button class="reset-btn">Reset</button>
+                </div>
+
+                <!--
+                        <div class="search-tabs-mini">
+                            <button
+                                class="search-tab-mini active"
+                                onclick="switchSearchType('all')"
+                            >
+                                All
+                            </button>
+                            <button
+                                class="search-tab-mini"
+                                onclick="switchSearchType('collections')"
+                            >
+                                Collections
+                            </button>
+                            <button
+                                class="search-tab-mini"
+                                onclick="switchSearchType('variables')"
+                            >
+                                Variables
+                            </button>
+                        </div>
+                        -->
+
+                <div class="search-container-mini">
+                    <input
+                        type="text"
+                        class="search-input-mini"
+                        id="search-input"
+                        placeholder="Search all types of resources"
+                        onkeypress="handleSearchKeypress(event)"
+                    />
+                    <button class="search-button-mini" onclick="performSearch()">
+                        <svg
+                            class="search-icon-mini"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                        >
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                            />
+                        </svg>
+                        Search
+                    </button>
+                </div>
+
+                <!--
+                        <div class="quick-links-mini">
+                            <a
+                                href="#"
+                                class="quick-link-mini"
+                                onclick="quickSearch('GPM')"
+                                >GPM Precipitation</a
+                            >
+                            <a
+                                href="#"
+                                class="quick-link-mini"
+                                onclick="quickSearch('MODIS')"
+                                >MODIS Data</a
+                            >
+                            <a
+                                href="#"
+                                class="quick-link-mini"
+                                onclick="quickSearch('Landsat')"
+                                >Landsat Imagery</a
+                            >
+                            <a
+                                href="#"
+                                class="quick-link-mini"
+                                onclick="quickSearch('AIRS')"
+                                >Atmospheric Data</a
+                            >
+                        </div>
+                        -->
+
+                <div
+                    id="search-results-section"
+                    class="search-results-section"
+                    style="display: none"
+                >
+                    <div class="results-header-mini">
+                        <div class="results-count-mini" id="results-count">
+                            Found 0 results
+                        </div>
+                    </div>
+
+                    <div id="results-container-mini" class="results-container-mini">
+                        <!-- Results will be populated here -->
+                    </div>
+
+                    <div id="loading-mini" class="loading-mini" style="display: none">
+                        <div class="spinner-mini"></div>
+                        <div>Searching NASA CMR...</div>
+                    </div>
+
+                    <div
+                        id="no-results-mini"
+                        class="no-results-mini"
+                        style="display: none"
+                    >
+                        <p>
+                            No results found. Try adjusting your search terms or
+                            browse the quick links above.
+                        </p>
+                    </div>
+                </div>
+            </terra-accordion>
+        `
+    }
+
+    #renderDateRangeSelection() {
+        return html`
+            <terra-accordion>
+                <div slot="summary">
+                    <span class="accordion-title">Refine Date Range:</span>
+                </div>
+
+                <div
+                    slot="summary-right"
+                    style="display: flex; align-items: center; gap: 10px;"
+                >
+                    <span class="accordion-value">1998-01-01 to 2025-01-31</span>
+                    <button class="reset-btn">Reset</button>
+                </div>
+
+                <p style="color: #666; font-style: italic;">TO BE IMPLEMENTED</p>
+            </terra-accordion>
+        `
+    }
+
+    #renderSpatialSelection() {
+        return html`
+            <terra-accordion>
+                <div slot="summary">
+                    <span class="accordion-title">Refine Region:</span>
+                </div>
+
+                <div
+                    slot="summary-right"
+                    style="display: flex; align-items: center; gap: 10px;"
+                >
+                    <span class="accordion-value">-180, -90, 180, 90</span>
+                    <button class="reset-btn">Reset</button>
+                </div>
+
+                <p style="color: #666; font-style: italic;">TO BE IMPLEMENTED</p>
+            </terra-accordion>
+        `
+    }
+
+    #renderVariableSelection() {
+        return html`
+            <terra-accordion>
+                <div slot="summary">
+                    <span class="accordion-title">Select Variables:</span>
+                </div>
+
+                <div
+                    slot="summary-right"
+                    style="display: flex; align-items: center; gap: 10px;"
+                >
+                    <span class="accordion-value error"
+                        >Please select at least one variable</span
+                    >
+                    <button class="reset-btn">Reset</button>
+                </div>
+
+                <p style="color: #666; font-style: italic;">TO BE IMPLEMENTED</p>
+            </terra-accordion>
         `
     }
 
@@ -387,5 +489,21 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #getDataLinks() {
         return this.#controller.currentJob.links.filter(link => link.rel === 'data')
+    }
+
+    #hasAtLeastOneSubsetOption() {
+        return (
+            this.collectionWithServices?.bboxSubset ||
+            this.collectionWithServices?.shapeSubset ||
+            this.collectionWithServices?.variableSubset ||
+            this.collectionWithServices?.temporalSubset
+        )
+    }
+
+    #hasSpatialSubset() {
+        return (
+            this.collectionWithServices?.bboxSubset ||
+            this.collectionWithServices?.shapeSubset
+        )
     }
 }

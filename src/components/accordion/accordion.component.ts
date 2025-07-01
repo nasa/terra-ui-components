@@ -37,6 +37,8 @@ export default class TerraAccordion extends TerraElement {
     /** whether the accordion is open or not */
     @property({ reflect: true, type: Boolean }) open: boolean = false
 
+    @property({ type: Boolean }) showArrow: boolean = true
+
     render() {
         return html`
             <details
@@ -47,10 +49,17 @@ export default class TerraAccordion extends TerraElement {
                 <summary class="accordion-summary">
                     <slot name="summary"> ${this.summary} </slot>
 
-                    <terra-icon
-                        name="chevron-down-circle"
-                        font-size="24px"
-                    ></terra-icon>
+                    <div class="accordion-summary-right">
+                        <slot name="summary-right"></slot>
+
+                        ${this.showArrow &&
+                        html`
+                            <terra-icon
+                                name="chevron-down-circle"
+                                font-size="24px"
+                            ></terra-icon>
+                        `}
+                    </div>
                 </summary>
 
                 <div class="accordion-content">

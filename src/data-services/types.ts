@@ -1,13 +1,53 @@
 export interface DataServiceInterface {
+    getCollectionWithAvailableServices(
+        collectionEntryId: string,
+        options?: { signal?: AbortSignal }
+    ): Promise<CollectionWithAvailableServices>
+
     createSubsetJob(
         collectionConceptId: string,
         subsetOptions?: SubsetJobOptions
     ): Promise<SubsetJobStatus | undefined>
 
     getSubsetJobStatus(jobId: string): Promise<SubsetJobStatus>
+}
 
-    // TODO: document and types
-    getAvailableServices(): Promise<any>
+export interface CollectionWithAvailableServices {
+    conceptId: string
+    shortName: string
+    variableSubset: boolean
+    bboxSubset: boolean
+    shapeSubset: boolean
+    temporalSubset: boolean
+    concatenate: boolean
+    reproject: boolean
+    capabilitiesVersion: string
+    outputFormats: string[]
+    services: Service[]
+    variables: Variable[]
+}
+
+export interface Service {
+    name: string
+    href: string
+    capabilities: Capabilities
+}
+
+export interface Capabilities {
+    output_formats: string[]
+    subsetting: Subsetting
+}
+
+export interface Subsetting {
+    temporal: boolean
+    bbox: boolean
+    variable: boolean
+    shape: boolean
+}
+
+export interface Variable {
+    name: string
+    href: string
 }
 
 export type SubsetJobOptions = {
