@@ -74,7 +74,7 @@ export class HarmonyDataService implements DataServiceInterface {
             'creating subset job ',
             CREATE_SUBSET_JOB,
             collectionConceptId,
-            subsetOptions?.variableConceptId
+            subsetOptions
         )
 
         const response = await client.mutate<{
@@ -83,7 +83,7 @@ export class HarmonyDataService implements DataServiceInterface {
             mutation: CREATE_SUBSET_JOB,
             variables: {
                 collectionConceptId,
-                variableConceptId: subsetOptions?.variableConceptId,
+                variableConceptIds: subsetOptions?.variableConceptIds,
             },
             context: {
                 headers: {

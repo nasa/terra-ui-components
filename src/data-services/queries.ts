@@ -38,12 +38,12 @@ export const GET_SERVICE_CAPABILITIES = gql`
 export const CREATE_SUBSET_JOB = gql`
     mutation CreateSubsetJob(
         $collectionConceptId: String!
-        $variableConceptId: String
+        $variableConceptIds: [String]
     ) {
         createSubsetJob(
             input: {
                 collectionConceptId: $collectionConceptId
-                variableConceptId: $variableConceptId
+                variableConceptIds: $variableConceptIds
             }
         ) {
             jobID

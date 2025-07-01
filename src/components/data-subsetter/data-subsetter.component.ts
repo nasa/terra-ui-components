@@ -40,9 +40,6 @@ export default class TerraDataSubsetter extends TerraElement {
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
 
-    @property({ reflect: true, attribute: 'variable-concept-id' })
-    variableConceptId?: string
-
     @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
     showCollectionSearch?: boolean = true
 
@@ -53,7 +50,7 @@ export default class TerraDataSubsetter extends TerraElement {
     collectionWithServices?: CollectionWithAvailableServices
 
     @state()
-    selectedVariables: string[] = []
+    selectedVariables: Variable[] = []
 
     @state()
     expandedVariableGroups: Set<string> = new Set()
@@ -434,13 +431,13 @@ export default class TerraDataSubsetter extends TerraElement {
                                 <label class="checkbox-option">
                                     <input
                                         type="checkbox"
-                                        .checked=${this.selectedVariables.includes(
-                                            value.__variable.name
+                                        .checked=${this.selectedVariables.some(
+                                            v => v.name === value.__variable.name
                                         )}
                                         @change=${(e: Event) =>
                                             this.#toggleVariableSelection(
                                                 e,
-                                                value.__variable.name
+                                                value.__variable
                                             )}
                                     />
                                     <span>${key}</span>
@@ -515,13 +512,17 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
-    #toggleVariableSelection(e: Event, name: string) {
+    #toggleVariableSelection(e: Event, variable: Variable) {
         this.#markFieldTouched('variables')
         const checked = (e.target as HTMLInputElement).checked
         if (checked) {
-            this.selectedVariables = [...this.selectedVariables, name]
+            if (!this.selectedVariables.some(v => v.name === variable.name)) {
+                this.selectedVariables = [...this.selectedVariables, variable]
+            }
         } else {
-            this.selectedVariables = this.selectedVariables.filter(h => h !== name)
+            this.selectedVariables = this.selectedVariables.filter(
+                v => v.name !== variable.name
+            )
         }
     }
 

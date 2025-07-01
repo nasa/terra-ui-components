@@ -52,7 +52,7 @@ export interface Variable {
 }
 
 export type SubsetJobOptions = {
-    variableConceptId?: string
+    variableConceptIds?: Array<string>
     signal?: AbortSignal
 }
 

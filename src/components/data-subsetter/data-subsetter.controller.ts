@@ -48,7 +48,9 @@ export class DataSubsetterController {
                     )
                 } else {
                     const subsetOptions = {
-                        variableConceptId: this.#host.variableConceptId,
+                        variableConceptIds: this.#host.selectedVariables.map(
+                            v => v.conceptId
+                        ),
                     }
 
                     console.log(
