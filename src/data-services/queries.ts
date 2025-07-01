@@ -29,6 +29,7 @@ export const GET_SERVICE_CAPABILITIES = gql`
             variables {
                 name
                 href
+                conceptId
             }
         }
     }

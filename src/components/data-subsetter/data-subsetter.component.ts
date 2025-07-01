@@ -7,7 +7,12 @@ import { property, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
 import TerraAccordion from '../accordion/accordion.component.js'
 import { watch } from '../../internal/watch.js'
-import type { CollectionWithAvailableServices } from '../../data-services/types.js'
+import type {
+    CollectionWithAvailableServices,
+    Variable,
+} from '../../data-services/types.js'
+import TerraDatePicker from '../date-picker/date-picker.component.js'
+import TerraIcon from '../icon/icon.component.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -28,6 +33,8 @@ export default class TerraDataSubsetter extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-accordion': TerraAccordion,
+        'terra-date-picker': TerraDatePicker,
+        'terra-icon': TerraIcon,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -44,6 +51,15 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     collectionWithServices?: CollectionWithAvailableServices
+
+    @state()
+    selectedVariables: string[] = []
+
+    @state()
+    expandedVariableGroups: Set<string> = new Set()
+
+    @state()
+    touchedFields: Set<string> = new Set()
 
     #controller = new DataSubsetterController(this)
 
@@ -305,7 +321,13 @@ export default class TerraDataSubsetter extends TerraElement {
                     <button class="reset-btn">Reset</button>
                 </div>
 
-                <p style="color: #666; font-style: italic;">TO BE IMPLEMENTED</p>
+                <terra-date-picker
+                    label="Date Range"
+                    range
+                    show-months="2"
+                    class="w-full"
+                    id="date-range"
+                ></terra-date-picker>
             </terra-accordion>
         `
     }
@@ -331,25 +353,184 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderVariableSelection() {
+        const variables = this.collectionWithServices?.variables || []
+        const showError =
+            this.touchedFields.has('variables') && this.selectedVariables.length === 0
+
+        const tree = this.#buildVariableTree(variables)
+        const allGroups = this.#getAllGroupPaths(tree)
+        const allExpanded =
+            allGroups.length > 0 &&
+            allGroups.every(g => this.expandedVariableGroups.has(g))
+
         return html`
             <terra-accordion>
                 <div slot="summary">
                     <span class="accordion-title">Select Variables:</span>
                 </div>
-
                 <div
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px;"
                 >
-                    <span class="accordion-value error"
-                        >Please select at least one variable</span
-                    >
-                    <button class="reset-btn">Reset</button>
-                </div>
+                    ${showError
+                        ? html`<span class="accordion-value error"
+                              >Please select at least one variable</span
+                          >`
+                        : this.selectedVariables.length
+                          ? html`<span class="accordion-value"
+                                >${this.selectedVariables.length} selected</span
+                            >`
+                          : nothing}
 
-                <p style="color: #666; font-style: italic;">TO BE IMPLEMENTED</p>
+                    <button class="reset-btn" @click=${this.#resetVariableSelection}>
+                        Reset
+                    </button>
+                </div>
+                <div class="accordion-content">
+                    <button
+                        class="reset-btn"
+                        style="margin-bottom: 10px;"
+                        @click=${() => this.#toggleExpandCollapseAll(tree)}
+                    >
+                        ${allExpanded ? 'Collapse Tree' : 'Expand Tree'}
+                    </button>
+                    ${variables.length === 0
+                        ? html`<p style="color: #666; font-style: italic;">
+                              No variables available for this collection.
+                          </p>`
+                        : this.#renderVariableTree(tree, [])}
+                </div>
             </terra-accordion>
         `
+    }
+
+    #buildVariableTree(variables: Variable[]): Record<string, any> {
+        const root: Record<string, any> = {}
+        for (const v of variables) {
+            const parts = v.name.split('/')
+            let node = root
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i]
+                if (!node[part]) node[part] = { __children: {}, __isLeaf: false }
+                if (i === parts.length - 1) {
+                    node[part].__isLeaf = true
+                    node[part].__variable = v
+                }
+                node = node[part].__children
+            }
+        }
+        return root
+    }
+
+    #renderVariableTree(node: Record<string, any>, path: string[]): unknown {
+        return html`
+            <div style="margin-left: ${path.length * 20}px;">
+                ${Object.entries(node).map(([key, value]: [string, any]) => {
+                    const groupPath = [...path, key].join('/')
+                    if (value.__isLeaf) {
+                        // Leaf node (variable)
+                        return html`
+                            <div class="option-row">
+                                <label class="checkbox-option">
+                                    <input
+                                        type="checkbox"
+                                        .checked=${this.selectedVariables.includes(
+                                            value.__variable.name
+                                        )}
+                                        @change=${(e: Event) =>
+                                            this.#toggleVariableSelection(
+                                                e,
+                                                value.__variable.name
+                                            )}
+                                    />
+                                    <span>${key}</span>
+                                </label>
+                            </div>
+                        `
+                    } else {
+                        // Group node
+                        const expanded = this.expandedVariableGroups.has(groupPath)
+                        return html`
+                            <div class="option-row" style="align-items: flex-start;">
+                                <span
+                                    style="cursor: pointer; display: flex; align-items: center;"
+                                    @click=${() => this.#toggleGroupExpand(groupPath)}
+                                >
+                                    <terra-icon
+                                        library="heroicons"
+                                        name="${expanded
+                                            ? 'outline-minus-circle'
+                                            : 'outline-plus-circle'}"
+                                        style="margin-right: 4px;"
+                                    ></terra-icon>
+                                    <span style="font-weight: 500;">${key}</span>
+                                </span>
+                            </div>
+                            ${expanded
+                                ? this.#renderVariableTree(value.__children, [
+                                      ...path,
+                                      key,
+                                  ])
+                                : ''}
+                        `
+                    }
+                })}
+            </div>
+        `
+    }
+
+    #getAllGroupPaths(node: Record<string, any>, path: string[] = []): string[] {
+        let groups: string[] = []
+        for (const [key, value] of Object.entries(node)) {
+            if (!value.__isLeaf) {
+                const groupPath = [...path, key].join('/')
+                groups.push(groupPath)
+                groups = groups.concat(
+                    this.#getAllGroupPaths(value.__children, [...path, key])
+                )
+            }
+        }
+        return groups
+    }
+
+    #toggleGroupExpand(groupPath: string) {
+        const set = new Set(this.expandedVariableGroups)
+        if (set.has(groupPath)) {
+            set.delete(groupPath)
+        } else {
+            set.add(groupPath)
+        }
+        this.expandedVariableGroups = set
+    }
+
+    #toggleExpandCollapseAll(tree: Record<string, any>) {
+        const allGroups = this.#getAllGroupPaths(tree)
+        const allExpanded =
+            allGroups.length > 0 &&
+            allGroups.every((g: string) => this.expandedVariableGroups.has(g))
+        if (allExpanded) {
+            this.expandedVariableGroups = new Set()
+        } else {
+            this.expandedVariableGroups = new Set(allGroups)
+        }
+    }
+
+    #toggleVariableSelection(e: Event, name: string) {
+        this.#markFieldTouched('variables')
+        const checked = (e.target as HTMLInputElement).checked
+        if (checked) {
+            this.selectedVariables = [...this.selectedVariables, name]
+        } else {
+            this.selectedVariables = this.selectedVariables.filter(h => h !== name)
+        }
+    }
+
+    #markFieldTouched(field: string) {
+        this.touchedFields = new Set(this.touchedFields).add(field)
+    }
+
+    #resetVariableSelection = () => {
+        this.selectedVariables = []
     }
 
     #renderJobStatus() {
@@ -464,6 +645,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #getData() {
+        this.#touchAllFields()
         this.#controller.jobStatusTask.run()
 
         // scroll the job-status-section into view
@@ -471,6 +653,10 @@ export default class TerraDataSubsetter extends TerraElement {
             const el = this.renderRoot.querySelector('#job-status-section')
             el?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
+    }
+
+    #touchAllFields() {
+        this.touchedFields = new Set(['variables'])
     }
 
     #numberOfFilesFoundEstimate() {

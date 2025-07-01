@@ -48,6 +48,7 @@ export interface Subsetting {
 export interface Variable {
     name: string
     href: string
+    conceptId: string
 }
 
 export type SubsetJobOptions = {

@@ -51,22 +51,4 @@ export default css`
     .accordion-content {
         padding: 1rem;
     }
-
-    .variable-label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        margin-bottom: 0.5rem;
-        cursor: pointer;
-    }
-
-    .variable-label:last-child {
-        margin-bottom: 0;
-    }
-
-    .variable-checkbox {
-        accent-color: #2563eb;
-        border-radius: 0.25rem;
-    }
 `

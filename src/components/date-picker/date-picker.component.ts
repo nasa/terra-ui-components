@@ -5,6 +5,7 @@ import TerraElement from '../../internal/terra-element.js'
 import styles from './date-picker.styles.js'
 import type { CSSResultGroup } from 'lit'
 import 'lit-flatpickr'
+import TerraButton from '../button/button.component.js'
 
 /**
  * @summary A date picker component that supports single date selection or date range selection.
@@ -19,6 +20,9 @@ import 'lit-flatpickr'
  */
 export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
+    static dependencies = {
+        'terra-button': TerraButton,
+    }
 
     selectedDates: {
         startDate: string | null
@@ -96,10 +100,12 @@ export default class TerraDatePicker extends TerraElement {
                         theme="material_blue"
                         .onChange="${this.handleChange.bind(this)}"
                     ></lit-flatpickr>
-                    <button
+                    <terra-button
+                        shape="square-left"
+                        size="medium"
                         class="date-picker__input_icon_button"
-                        type="button"
                         @click=${() => this.flatpickrElement.open()}
+                        type="button"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +121,7 @@ export default class TerraDatePicker extends TerraElement {
                                 d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
                             />
                         </svg>
-                    </button>
+                    </terra-button>
                 </div>
             </div>
         `
