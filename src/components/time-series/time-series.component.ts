@@ -19,6 +19,8 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
 import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
 import type { VariableDbEntry } from './time-series.types.js'
+import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
+import { formatDate } from '../../utilities/date.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -154,6 +156,7 @@ export default class TerraTimeSeries extends TerraElement {
                 this.startDate ?? variable.exampleInitialStartDate?.toISOString()
             this.endDate =
                 this.endDate ?? variable.exampleInitialEndDate?.toISOString()
+
             this.catalogVariable = variable
         },
         args: () => [this.variableEntryId, this.collection, this.variable],
@@ -442,6 +445,11 @@ export default class TerraTimeSeries extends TerraElement {
                             title: 'Time',
                             showgrid: false,
                             zeroline: false,
+                            range:
+                                // manually set the range as we may adjust it when we fetch new data as a user pans/zooms the plot
+                                this.startDate && this.endDate
+                                    ? [this.startDate, this.endDate]
+                                    : undefined,
                         },
                         yaxis: {
                             title: this.#getYAxisLabel(),
@@ -460,6 +468,7 @@ export default class TerraTimeSeries extends TerraElement {
                         modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
                         responsive: true,
                     }}
+                    @terra-plot-relayout=${this.#handlePlotRelayout}
                 ></terra-plot>
             </div>
 
@@ -702,5 +711,31 @@ export default class TerraTimeSeries extends TerraElement {
                 )
             }, 500)
         })
+    }
+
+    #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
+        let changed = false
+        if (e.detail.xAxisMin) {
+            this.startDate = formatDate(e.detail.xAxisMin)
+            changed = true
+        }
+
+        if (e.detail.xAxisMax) {
+            this.endDate = formatDate(e.detail.xAxisMax)
+            changed = true
+        }
+
+        if (changed) {
+            this.dispatchEvent(
+                new CustomEvent('terra-time-series-date-range-change', {
+                    detail: {
+                        startDate: this.startDate,
+                        endDate: this.endDate,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            )
+        }
     }
 }

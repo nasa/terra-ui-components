@@ -148,6 +148,8 @@ export default class TerraDataRods extends TerraElement {
                 end-date=${this.endDate}
                 location=${this.location}
                 bearer-token=${this.bearerToken}
+                @terra-time-series-date-range-change=${this
+                    .#handleTimeSeriesDateRangeChange}
             ></terra-time-series>
 
             <terra-date-range-slider
@@ -191,5 +193,10 @@ export default class TerraDataRods extends TerraElement {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)}`
         }
+    }
+
+    #handleTimeSeriesDateRangeChange(event: CustomEvent) {
+        this.startDate = event.detail.startDate
+        this.endDate = event.detail.endDate
     }
 }
