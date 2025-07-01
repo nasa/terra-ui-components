@@ -223,6 +223,7 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     render() {
+        const expanded = this.inline ? true : this.isExpanded
         return html`
             <div class="spatial-picker">
                 <label
@@ -240,7 +241,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         class="spatial-picker__input form-control"
                         placeholder="${this.spatialConstraints}"
                         aria-controls="map"
-                        aria-expanded=${this.isExpanded}
+                        aria-expanded=${expanded}
                         @blur=${this._blur}
                         @focus=${this._focus}
                     />
@@ -266,7 +267,15 @@ export default class TerraSpatialPicker extends TerraElement {
                         </svg>
                     </terra-button>
                 </div>
-                ${this.isExpanded ? this.renderMap() : nothing}
+                ${expanded
+                    ? html`<div
+                          style="${this.inline
+                              ? 'position: static; width: 100%;'
+                              : ''}"
+                      >
+                          ${this.renderMap()}
+                      </div>`
+                    : nothing}
             </div>
         `
     }

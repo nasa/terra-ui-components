@@ -31,6 +31,23 @@ export const GET_SERVICE_CAPABILITIES = gql`
                 href
                 conceptId
             }
+            collection {
+                EntryTitle
+                SpatialExtent {
+                    GranuleSpatialRepresentation
+                    HorizontalSpatialDomain {
+                        Geometry {
+                            CoordinateSystem
+                            BoundingRectangles {
+                                WestBoundingCoordinate
+                                NorthBoundingCoordinate
+                                EastBoundingCoordinate
+                                SouthBoundingCoordinate
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 `
@@ -39,11 +56,13 @@ export const CREATE_SUBSET_JOB = gql`
     mutation CreateSubsetJob(
         $collectionConceptId: String!
         $variableConceptIds: [String]
+        $boundingBox: BoundingBoxInput
     ) {
         createSubsetJob(
             input: {
                 collectionConceptId: $collectionConceptId
                 variableConceptIds: $variableConceptIds
+                boundingBox: $boundingBox
             }
         ) {
             jobID

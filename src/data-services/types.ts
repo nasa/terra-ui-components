@@ -25,6 +25,25 @@ export interface CollectionWithAvailableServices {
     outputFormats: string[]
     services: Service[]
     variables: Variable[]
+    collection: Collection
+}
+
+export interface Collection {
+    EntryTitle: string
+    SpatialExtent: {
+        GranuleSpatialRepresentation: string
+        HorizontalSpatialDomain: {
+            Geometry: {
+                CoordinateSystem: string
+                BoundingRectangles: {
+                    WestBoundingCoordinate: number
+                    NorthBoundingCoordinate: number
+                    EastBoundingCoordinate: number
+                    SouthBoundingCoordinate: number
+                }
+            }
+        }
+    }
 }
 
 export interface Service {
@@ -51,8 +70,16 @@ export interface Variable {
     conceptId: string
 }
 
+export type BoundingBox = {
+    w: number // West
+    s: number // South
+    e: number // East
+    n: number // North
+}
+
 export type SubsetJobOptions = {
     variableConceptIds?: Array<string>
+    boundingBox?: BoundingBox
     signal?: AbortSignal
 }
 

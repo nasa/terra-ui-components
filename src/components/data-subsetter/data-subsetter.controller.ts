@@ -2,7 +2,11 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type TerraDataSubsetter from './data-subsetter.component.js'
-import { type SubsetJobStatus, Status } from '../../data-services/types.js'
+import {
+    type BoundingBox,
+    type SubsetJobStatus,
+    Status,
+} from '../../data-services/types.js'
 import {
     FINAL_STATUSES,
     HarmonyDataService,
@@ -47,10 +51,13 @@ export class DataSubsetterController {
                         { signal }
                     )
                 } else {
-                    const subsetOptions = {
+                    let subsetOptions = {
                         variableConceptIds: this.#host.selectedVariables.map(
                             v => v.conceptId
                         ),
+                        ...('w' in (this.#host.spatialSelection ?? {}) && {
+                            boundingBox: this.#host.spatialSelection as BoundingBox,
+                        }),
                     }
 
                     console.log(

@@ -5,6 +5,10 @@ export default css`
         display: block;
     }
 
+    :host * {
+        box-sizing: border-box;
+    }
+
     .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -104,44 +108,6 @@ export default css`
         cursor: help;
     }
 
-    .accordion {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        background: white;
-        overflow: hidden;
-    }
-
-    .accordion-header {
-        background: #f8f9fa;
-        padding: 12px 15px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid #dee2e6;
-        transition: background-color 0.2s;
-        user-select: none;
-    }
-
-    .accordion-header:hover {
-        background: #e9ecef;
-    }
-
-    .accordion-header.active {
-        background: #e7f3ff;
-    }
-
-    .accordion-title {
-        font-weight: 500;
-        color: #333;
-    }
-
-    .accordion-content {
-        padding: 15px;
-        border-top: 1px solid #dee2e6;
-        background: white;
-    }
-
     .accordion-value {
         color: #28a745;
         font-weight: 500;
@@ -161,16 +127,6 @@ export default css`
 
     .accordion-value.error::before {
         content: '✗';
-    }
-
-    .chevron {
-        transition: transform 0.2s;
-        font-size: 12px;
-        color: #666;
-    }
-
-    .chevron.open {
-        transform: rotate(180deg);
     }
 
     .option-row {
@@ -538,44 +494,6 @@ export default css`
         cursor: help;
     }
 
-    .accordion {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        background: white;
-        overflow: hidden;
-    }
-
-    .accordion-header {
-        background: #f8f9fa;
-        padding: 12px 15px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        border-bottom: 1px solid #dee2e6;
-        transition: background-color 0.2s;
-        user-select: none;
-    }
-
-    .accordion-header:hover {
-        background: #e9ecef;
-    }
-
-    .accordion-header.active {
-        background: #e7f3ff;
-    }
-
-    .accordion-title {
-        font-weight: 500;
-        color: #333;
-    }
-
-    .accordion-content {
-        padding: 15px;
-        border-top: 1px solid #dee2e6;
-        background: white;
-    }
-
     .accordion-value {
         color: #28a745;
         font-weight: 500;
@@ -595,16 +513,6 @@ export default css`
 
     .accordion-value.error::before {
         content: '✗';
-    }
-
-    .chevron {
-        transition: transform 0.2s;
-        font-size: 12px;
-        color: #666;
-    }
-
-    .chevron.open {
-        transform: rotate(180deg);
     }
 
     .option-row {

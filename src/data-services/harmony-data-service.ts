@@ -84,6 +84,7 @@ export class HarmonyDataService implements DataServiceInterface {
             variables: {
                 collectionConceptId,
                 variableConceptIds: subsetOptions?.variableConceptIds,
+                boundingBox: subsetOptions?.boundingBox,
             },
             context: {
                 headers: {

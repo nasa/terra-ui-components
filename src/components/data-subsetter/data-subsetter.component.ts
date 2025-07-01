@@ -6,13 +6,16 @@ import type { CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
 import TerraAccordion from '../accordion/accordion.component.js'
-import { watch } from '../../internal/watch.js'
 import type {
+    BoundingBox,
     CollectionWithAvailableServices,
     Variable,
 } from '../../data-services/types.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
+import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import type { LatLng } from '../map/type.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -35,6 +38,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-accordion': TerraAccordion,
         'terra-date-picker': TerraDatePicker,
         'terra-icon': TerraIcon,
+        'terra-spatial-picker': TerraSpatialPicker,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -58,17 +62,15 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     touchedFields: Set<string> = new Set()
 
+    @state()
+    spatialSelection: BoundingBox | LatLng | null = null
+
     #controller = new DataSubsetterController(this)
 
     firstUpdated() {
         if (this.collectionEntryId) {
             this.showCollectionSearch = false
         }
-    }
-
-    @watch(['collectionEntryId'])
-    collectionEntryIdChanged() {
-        console.log('entry id is now ', this.collectionEntryId)
     }
 
     render() {
@@ -83,8 +85,8 @@ export default class TerraDataSubsetter extends TerraElement {
                         >
                             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                         </svg>
-                        Get GPM IMERG Final Precipitation L3 Half Hourly 0.1 degree x
-                        0.1 degree V07 data
+                        ${this.collectionWithServices?.collection?.EntryTitle ??
+                        html`Download Data`}
                     </h1>
                     <button class="close-btn" onclick="closeDialog()">×</button>
                 </div>
@@ -140,33 +142,6 @@ export default class TerraDataSubsetter extends TerraElement {
                       </div>
                   `
                 : nothing}
-
-            <div class="section">
-                <h2 class="section-title">
-                    Output format
-                    <span class="help-icon">?</span>
-                </h2>
-                <div class="accordion">
-                    <div
-                        class="accordion-header"
-                        onclick="toggleAccordion('file-format')"
-                    >
-                        <span class="accordion-title">File Format:</span>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span class="accordion-value error"
-                                >Please choose a format</span
-                            >
-                            <button class="reset-btn">Reset</button>
-                            <span class="chevron">▼</span>
-                        </div>
-                    </div>
-                    <div class="accordion-content hidden" id="file-format-content">
-                        <p style="color: #666; font-style: italic;">
-                            TO BE IMPLEMENTED
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             <div class="footer">
                 <button class="btn btn-secondary">Reset All</button>
@@ -330,6 +305,14 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderSpatialSelection() {
+        const showError = this.touchedFields.has('spatial') && !this.spatialSelection
+        let boundingRects: any =
+            this.collectionWithServices?.collection?.SpatialExtent
+                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+
+        if (boundingRects && !Array.isArray(boundingRects)) {
+            boundingRects = [boundingRects]
+        }
         return html`
             <terra-accordion>
                 <div slot="summary">
@@ -340,13 +323,76 @@ export default class TerraDataSubsetter extends TerraElement {
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px;"
                 >
-                    <span class="accordion-value">-180, -90, 180, 90</span>
-                    <button class="reset-btn">Reset</button>
+                    ${showError
+                        ? html`<span class="accordion-value error"
+                              >Please select a region</span
+                          >`
+                        : this.spatialSelection && 'w' in this.spatialSelection
+                          ? html`<span class="accordion-value"
+                                >${this.spatialSelection.w},${this.spatialSelection
+                                    .s},${this.spatialSelection.e},${this
+                                    .spatialSelection.n}</span
+                            >`
+                          : this.spatialSelection &&
+                              'lat' in this.spatialSelection &&
+                              'lng' in this.spatialSelection
+                            ? html`<span class="accordion-value"
+                                  >${this.spatialSelection.lat},${this
+                                      .spatialSelection.lng}</span
+                              >`
+                            : nothing}
+                    <button class="reset-btn" @click=${this.#resetSpatialSelection}>
+                        Reset
+                    </button>
                 </div>
-
-                <p style="color: #666; font-style: italic;">TO BE IMPLEMENTED</p>
+                <div class="accordion-content">
+                    <terra-spatial-picker
+                        inline
+                        hide-label
+                        .initialValue=${this.spatialSelection ?? ''}
+                        @terra-map-change=${this.#handleSpatialChange}
+                    ></terra-spatial-picker>
+                    ${boundingRects &&
+                    Array.isArray(boundingRects) &&
+                    boundingRects.length
+                        ? html`<div style="margin-top: 10px; color: #666;">
+                              ${boundingRects.map(
+                                  (rect: any) =>
+                                      html`<div>
+                                          Available Range:
+                                          ${rect.WestBoundingCoordinate},
+                                          ${rect.SouthBoundingCoordinate},
+                                          ${rect.EastBoundingCoordinate},
+                                          ${rect.NorthBoundingCoordinate}
+                                      </div>`
+                              )}
+                          </div>`
+                        : nothing}
+                </div>
             </terra-accordion>
         `
+    }
+
+    #handleSpatialChange = (e: TerraMapChangeEvent) => {
+        this.#markFieldTouched('spatial')
+        const round2 = (n: number) => parseFloat(Number(n).toFixed(2))
+
+        if (e.detail?.bounds) {
+            this.spatialSelection = {
+                e: round2(e.detail.bounds._northEast.lng),
+                n: round2(e.detail.bounds._northEast.lat),
+                w: round2(e.detail.bounds._southWest.lng),
+                s: round2(e.detail.bounds._southWest.lat),
+            }
+        } else if (e.detail?.latLng) {
+            this.spatialSelection = e.detail.latLng
+        } else {
+            this.spatialSelection = null
+        }
+    }
+
+    #resetSpatialSelection = () => {
+        this.spatialSelection = null
     }
 
     #renderVariableSelection() {
@@ -657,7 +703,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #touchAllFields() {
-        this.touchedFields = new Set(['variables'])
+        this.touchedFields = new Set(['variables', 'spatial'])
     }
 
     #numberOfFilesFoundEstimate() {
