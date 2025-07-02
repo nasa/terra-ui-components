@@ -51,7 +51,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-loader': TerraLoader,
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
-        'terra-alert' : TerraAlert,
+        'terra-alert': TerraAlert,
     }
 
     #timeSeriesController: TimeSeriesController
@@ -151,11 +151,11 @@ export default class TerraTimeSeries extends TerraElement {
      */
     @state()
     collectionEndingDateTime?: string
-    
+
     /**
      * user quota reached maximum request
      */
-    @state() private quotaExceededOpen = false;
+    @state() private quotaExceededOpen = false
     /**
      *
      */
@@ -198,27 +198,29 @@ export default class TerraTimeSeries extends TerraElement {
 
     connectedCallback(): void {
         super.connectedCallback()
-         this.addEventListener('terra-time-series-error', this.#handleQuotaError as EventListener);
+        this.addEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
         //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
     }
 
-   disconnectedCallback(): void {
-        super.disconnectedCallback();
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
         this.removeEventListener(
-        'terra-time-series-error',
-         this.#handleQuotaError as EventListener
-     );
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
     }
 
     #handleQuotaError = (event: CustomEvent) => {
-        const { status } = event.detail;
+        const { status } = event.detail
 
-         if (status === 429) {
-            this.quotaExceededOpen = true;
-         }
-    };
-
+        if (status === 429) {
+            this.quotaExceededOpen = true
+        }
+    }
 
     #adaptPropertyToController(
         property: 'collection' | 'variable' | 'startDate' | 'endDate' | 'location',
@@ -425,25 +427,29 @@ export default class TerraTimeSeries extends TerraElement {
 
             <div class="plot-container">
                 ${this.quotaExceededOpen
-                     ? html`
-                       <terra-alert
-                         variant="warning"
-                         duration="10000"
-                         open=${this.quotaExceededOpen}
-                         closable
-                         @terra-after-hide=${() => (this.quotaExceededOpen = false)}
-                        >
-                       <terra-icon
-                        slot="icon"
-                        name="outline-exclamation-triangle" 
-                        library="heroicons"
-                       ></terra-icon>
-                          You've exceeded your request quota. Please <a href="https://disc.gsfc.nasa.gov/information/documents?title=Contact%20Us">contact the help desk</a> for further assistance.
-                        </terra-alert>
+                    ? html`
+                          <terra-alert
+                              variant="warning"
+                              duration="10000"
+                              open=${this.quotaExceededOpen}
+                              closable
+                              @terra-after-hide=${() =>
+                                  (this.quotaExceededOpen = false)}
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              You've exceeded your request quota. Please
+                              <a
+                                  href="https://disc.gsfc.nasa.gov/information/documents?title=Contact%20Us"
+                                  >contact the help desk</a
+                              >
+                              for further assistance.
+                          </terra-alert>
                       `
-                  : ''}
-                
-                
+                    : ''}
                 ${cache(
                     this.variable
                         ? html`
