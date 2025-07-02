@@ -29,6 +29,7 @@ export interface CollectionWithAvailableServices {
 }
 
 export interface Collection {
+    granuleCount: number
     EntryTitle: string
     SpatialExtent: {
         GranuleSpatialRepresentation: string
@@ -44,6 +45,13 @@ export interface Collection {
             }
         }
     }
+    TemporalExtents: Array<{
+        EndsAtPresentFlag: boolean
+        RangeDateTimes: Array<{
+            BeginningDateTime: string
+            EndingDateTime: string | null
+        }>
+    }>
 }
 
 export interface Service {

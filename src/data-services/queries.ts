@@ -32,6 +32,7 @@ export const GET_SERVICE_CAPABILITIES = gql`
                 conceptId
             }
             collection {
+                granuleCount
                 EntryTitle
                 SpatialExtent {
                     GranuleSpatialRepresentation
@@ -45,6 +46,13 @@ export const GET_SERVICE_CAPABILITIES = gql`
                                 SouthBoundingCoordinate
                             }
                         }
+                    }
+                }
+                TemporalExtents {
+                    EndsAtPresentFlag
+                    RangeDateTimes {
+                        BeginningDateTime
+                        EndingDateTime
                     }
                 }
             }

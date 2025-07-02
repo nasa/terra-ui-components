@@ -99,17 +99,26 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderSubsetOptions() {
-        return html`
-            <div class="size-info">
-                <h2>Estimated size of results</h2>
-                <div class="size-stats">9,893 days, 474,864 links, 1.21 TB</div>
-                <div class="size-warning">
-                    You are about to retrieve 474,864 file links from the archive. You
-                    may <strong>speed up the request</strong> by limiting the scope of
-                    your search.
-                </div>
-            </div>
+        const estimates = this.#estimateJobSize()
 
+        return html`
+            ${estimates
+                ? html`<div class="size-info">
+                      <h2>Estimated size of results</h2>
+                      <div class="size-stats">
+                          ${estimates.days.toLocaleString()} days,
+                          ${estimates.links.toLocaleString()} links
+                      </div>
+
+                      <div class="size-warning">
+                          You are about to retrieve
+                          ${estimates.links.toLocaleString()} file links from the
+                          archive. You may
+                          <strong>speed up the request</strong> by limiting the scope
+                          of your search.
+                      </div>
+                  </div>`
+                : nothing}
             ${this.showCollectionSearch
                 ? html`
                       <div class="section">
@@ -600,6 +609,8 @@ export default class TerraDataSubsetter extends TerraElement {
             </div>`
         }
 
+        const estimates = this.#estimateJobSize()
+
         return html`
             <div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
@@ -640,7 +651,8 @@ export default class TerraDataSubsetter extends TerraElement {
                     >
                     out of estimated
                     <span class="estimated-total"
-                        >${this.#controller.currentJob.numInputGranules}</span
+                        >${estimates?.links?.toLocaleString() ??
+                        this.#controller.currentJob.numInputGranules.toLocaleString()}</span
                     >
                 </div>
 
@@ -806,5 +818,36 @@ export default class TerraDataSubsetter extends TerraElement {
                 ${this.#controller.currentJob.message}
             </div>
         `
+    }
+
+    #estimateJobSize() {
+        const collection = this.collectionWithServices?.collection
+        if (!collection) return
+
+        const links = collection.granuleCount ?? 0
+        const temporalExtents = collection.TemporalExtents
+        if (!temporalExtents || !temporalExtents.length) {
+            return
+        }
+
+        let days = 0
+        const today = new Date()
+        for (const temporal of temporalExtents) {
+            for (const range of temporal.RangeDateTimes) {
+                const start = new Date(range.BeginningDateTime)
+                let end
+                if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
+                    end = today
+                } else {
+                    end = new Date(range.EndingDateTime)
+                }
+                days +=
+                    Math.floor(
+                        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+                    ) + 1
+            }
+        }
+
+        return { days, links }
     }
 }
