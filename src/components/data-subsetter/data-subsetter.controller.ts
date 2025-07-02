@@ -102,6 +102,10 @@ export class DataSubsetterController {
         return this.jobStatusTask.render(renderFunctions)
     }
 
+    cancelCurrentJob() {
+        this.#dataService.cancelSubsetJob(this.currentJob.jobID)
+    }
+
     #getDataService() {
         return new HarmonyDataService()
     }
@@ -110,7 +114,7 @@ export class DataSubsetterController {
         return {
             jobID: '',
             status: Status.RUNNING,
-            message: 'Starting request... Please wait.',
+            message: 'Your job is being created and will start soon.',
             progress: 0,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),

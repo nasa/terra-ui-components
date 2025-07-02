@@ -71,10 +71,10 @@ export interface Variable {
 }
 
 export type BoundingBox = {
-    w: number // West
-    s: number // South
-    e: number // East
-    n: number // North
+    w: number
+    s: number
+    e: number
+    n: number
 }
 
 export type SubsetJobOptions = {

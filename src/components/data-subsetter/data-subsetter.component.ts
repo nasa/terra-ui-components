@@ -581,34 +581,58 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderJobStatus() {
-        return html`
-            <div class="results-section" id="job-status-section">
+        if (!this.#controller.currentJob.jobID) {
+            return html`<div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
 
                 <div class="progress-container">
                     <div class="progress-text">
-                        ${this.#controller.currentJob.progress >= 100
-                            ? html`
-                                  <span class="status-complete"
-                                      >✓ Search complete</span
-                                  >
-                              `
-                            : html`
-                                  <span class="spinner"></span>
-                                  <span class="status-running"
-                                      >Searching for data...
-                                      (${this.#controller.currentJob.progress}%)</span
-                                  >
-                              `}
+                        <span class="spinner"></span>
+                        <span class="status-running">Searching for data...</span>
                     </div>
 
                     <div class="progress-bar">
-                        <div
-                            class="progress-fill"
-                            style="width: ${this.#controller.currentJob.progress}%"
-                        ></div>
+                        <div class="progress-fill" style="width: 0%"></div>
                     </div>
                 </div>
+
+                ${this.#renderJobMessage()}
+            </div>`
+        }
+
+        return html`
+            <div class="results-section" id="job-status-section">
+                <h2 class="results-title">Results:</h2>
+
+                ${this.#controller.currentJob.status !== 'canceled' &&
+                this.#controller.currentJob.status !== 'failed'
+                    ? html` <div class="progress-container">
+                          <div class="progress-text">
+                              ${this.#controller.currentJob.progress >= 100
+                                  ? html`
+                                        <span class="status-complete"
+                                            >✓ Search complete</span
+                                        >
+                                    `
+                                  : html`
+                                        <span class="spinner"></span>
+                                        <span class="status-running"
+                                            >Searching for data...
+                                            (${this.#controller.currentJob
+                                                .progress}%)</span
+                                        >
+                                    `}
+                          </div>
+
+                          <div class="progress-bar">
+                              <div
+                                  class="progress-fill"
+                                  style="width: ${this.#controller.currentJob
+                                      .progress}%"
+                              ></div>
+                          </div>
+                      </div>`
+                    : nothing}
 
                 <div class="search-status">
                     <span class="file-count"
@@ -617,8 +641,10 @@ export default class TerraDataSubsetter extends TerraElement {
                     out of estimated
                     <span class="estimated-total"
                         >${this.#controller.currentJob.numInputGranules}</span
-                    >, continuing the search.
+                    >
                 </div>
+
+                ${this.#renderJobMessage()}
 
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('web-links')">
@@ -671,9 +697,11 @@ export default class TerraDataSubsetter extends TerraElement {
             </div>
 
             <div class="footer">
-                <button class="btn btn-success" onclick="cancelRequest()">
-                    Cancel request
-                </button>
+                ${this.#controller.currentJob.status === 'running'
+                    ? html`<button class="btn btn-success" @click=${this.#cancelJob}>
+                          Cancel request
+                      </button>`
+                    : nothing}
 
                 <div class="job-info">
                     Job ID:
@@ -689,6 +717,10 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
             </div>
         `
+    }
+
+    #cancelJob() {
+        this.#controller.cancelCurrentJob()
     }
 
     #getData() {
@@ -738,5 +770,41 @@ export default class TerraDataSubsetter extends TerraElement {
             this.collectionWithServices?.bboxSubset ||
             this.collectionWithServices?.shapeSubset
         )
+    }
+
+    #renderJobMessage() {
+        let type = 'normal'
+        if (this.#controller.currentJob.status === 'canceled') {
+            type = 'warning'
+        } else if (this.#controller.currentJob.status === 'failed') {
+            type = 'error'
+        }
+
+        let color, bg
+        if (type === 'error') {
+            color = '#dc3545'
+            bg = '#f8d7da'
+        } else if (type === 'warning') {
+            color = '#856404'
+            bg = '#fff3cd'
+        } else {
+            color = '#555'
+            bg = '#f8f9fa'
+        }
+
+        return html`
+            <div
+                style="
+                margin: 24px 0 16px 0;
+                padding: 16px 20px;
+                border-radius: 6px;
+                background: ${bg};
+                color: ${color};
+                border: 1px solid ${color}22;
+            "
+            >
+                ${this.#controller.currentJob.message}
+            </div>
+        `
     }
 }

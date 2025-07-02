@@ -1,6 +1,7 @@
 import type { SearchOptions } from '../components/browse-variables/browse-variables.types.js'
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
+    CANCEL_SUBSET_JOB,
     CREATE_SUBSET_JOB,
     GET_SERVICE_CAPABILITIES,
     GET_SUBSET_JOB_STATUS,
@@ -136,5 +137,32 @@ export class HarmonyDataService implements DataServiceInterface {
         }
 
         return response.data.getSubsetJobStatus
+    }
+
+    async cancelSubsetJob(jobId: string): Promise<SubsetJobStatus> {
+        const client = await getGraphQLClient()
+
+        const response = await client.query<{
+            cancelSubsetJob: SubsetJobStatus
+        }>({
+            query: CANCEL_SUBSET_JOB,
+            variables: {
+                jobId,
+            },
+            context: {
+                headers: {
+                    authorization,
+                },
+            },
+            fetchPolicy: 'no-cache', //! important, we don't want to get cached results here!
+        })
+
+        if (response.errors) {
+            throw new Error(
+                `Failed to cancel subset job: ${response.errors[0].message}`
+            )
+        }
+
+        return response.data.cancelSubsetJob
     }
 }
