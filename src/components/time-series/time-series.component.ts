@@ -203,21 +203,22 @@ export default class TerraTimeSeries extends TerraElement {
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
     }
 
-    disconnectedCallback(): void {
-    super.disconnectedCallback()
-    this.removeEventListener(
+   disconnectedCallback(): void {
+        super.disconnectedCallback();
+        this.removeEventListener(
         'terra-time-series-error',
-        this.#handleQuotaError as EventListener
-    )
-}
-    
-    #handleQuotaError = (event: CustomEvent) => {
-    const { status } = event.detail;
-
-    if (status === 429) {
-      this.quotaExceededOpen = true;
+         this.#handleQuotaError as EventListener
+     );
     }
+
+    #handleQuotaError = (event: CustomEvent) => {
+        const { status } = event.detail;
+
+         if (status === 429) {
+            this.quotaExceededOpen = true;
+         }
     };
+
 
     #adaptPropertyToController(
         property: 'collection' | 'variable' | 'startDate' | 'endDate' | 'location',
@@ -437,7 +438,7 @@ export default class TerraTimeSeries extends TerraElement {
                         name="outline-exclamation-triangle" 
                         library="heroicons"
                        ></terra-icon>
-                          You've exceeded your request quota. Please contact help desk.
+                          You've exceeded your request quota. Please <a href="https://disc.gsfc.nasa.gov/information/documents?title=Contact%20Us">contact the help desk</a> for further assistance.
                         </terra-alert>
                       `
                   : ''}
