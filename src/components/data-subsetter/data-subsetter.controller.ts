@@ -11,8 +11,9 @@ import {
     FINAL_STATUSES,
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
+import { getUTCDate } from '../../utilities/date.js'
 
-const JOB_STATUS_POLL_MILLIS = 3000
+const JOB_STATUS_POLL_MILLIS = 1000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
@@ -58,6 +59,15 @@ export class DataSubsetterController {
                         ...('w' in (this.#host.spatialSelection ?? {}) && {
                             boundingBox: this.#host.spatialSelection as BoundingBox,
                         }),
+                        ...(this.#host.selectedDateRange.startDate &&
+                            this.#host.selectedDateRange.endDate && {
+                                startDate: getUTCDate(
+                                    this.#host.selectedDateRange.startDate
+                                ).toISOString(),
+                                endDate: getUTCDate(
+                                    this.#host.selectedDateRange.endDate
+                                ).toISOString(),
+                            }),
                     }
 
                     console.log(

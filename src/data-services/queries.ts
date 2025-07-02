@@ -65,12 +65,16 @@ export const CREATE_SUBSET_JOB = gql`
         $collectionConceptId: String!
         $variableConceptIds: [String]
         $boundingBox: BoundingBoxInput
+        $startDate: String
+        $endDate: String
     ) {
         createSubsetJob(
             input: {
                 collectionConceptId: $collectionConceptId
                 variableConceptIds: $variableConceptIds
                 boundingBox: $boundingBox
+                startDate: $startDate
+                endDate: $endDate
             }
         ) {
             jobID

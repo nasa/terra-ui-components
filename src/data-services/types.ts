@@ -88,6 +88,8 @@ export type BoundingBox = {
 export type SubsetJobOptions = {
     variableConceptIds?: Array<string>
     boundingBox?: BoundingBox
+    startDate?: string
+    endDate?: string
     signal?: AbortSignal
 }
 

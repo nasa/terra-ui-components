@@ -65,6 +65,15 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     spatialSelection: BoundingBox | LatLng | null = null
 
+    @state()
+    selectedDateRange: { startDate: string | null; endDate: string | null } = {
+        startDate: null,
+        endDate: null,
+    }
+
+    @state()
+    cancelingGetData: boolean = false
+
     #controller = new DataSubsetterController(this)
 
     firstUpdated() {
@@ -288,6 +297,14 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderDateRangeSelection() {
+        const { startDate: defaultStartDate, endDate: defaultEndDate } =
+            this.#getCollectionDateRange()
+        const startDate = this.selectedDateRange.startDate ?? defaultStartDate
+        const endDate = this.selectedDateRange.endDate ?? defaultEndDate
+        const showError =
+            this.touchedFields.has('date') &&
+            (!this.selectedDateRange.startDate || !this.selectedDateRange.endDate)
+
         return html`
             <terra-accordion>
                 <div slot="summary">
@@ -298,8 +315,18 @@ export default class TerraDataSubsetter extends TerraElement {
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px;"
                 >
-                    <span class="accordion-value">1998-01-01 to 2025-01-31</span>
-                    <button class="reset-btn">Reset</button>
+                    ${showError
+                        ? html`<span class="accordion-value error"
+                              >Please select a date range</span
+                          >`
+                        : this.touchedFields.has('date') && startDate && endDate
+                          ? html`<span class="accordion-value"
+                                >${startDate} to ${endDate}</span
+                            >`
+                          : nothing}
+                    <button class="reset-btn" @click=${this.#resetDateRangeSelection}>
+                        Reset
+                    </button>
                 </div>
 
                 <terra-date-picker
@@ -308,9 +335,54 @@ export default class TerraDataSubsetter extends TerraElement {
                     show-months="2"
                     class="w-full"
                     id="date-range"
+                    @terra-change=${this.#handleDateRangeChange}
                 ></terra-date-picker>
             </terra-accordion>
         `
+    }
+
+    #handleDateRangeChange = (e: CustomEvent) => {
+        this.#markFieldTouched('date')
+
+        const datePicker = e.currentTarget as TerraDatePicker
+
+        this.selectedDateRange = {
+            startDate: datePicker.selectedDates.startDate,
+            endDate: datePicker.selectedDates.endDate,
+        }
+    }
+
+    #resetDateRangeSelection = () => {
+        this.selectedDateRange = { startDate: null, endDate: null }
+    }
+
+    #getCollectionDateRange() {
+        const temporalExtents =
+            this.collectionWithServices?.collection?.TemporalExtents
+        if (!temporalExtents || !temporalExtents.length) return {}
+
+        let minStart = null
+        let maxEnd = null
+        const today = new Date()
+
+        for (const temporal of temporalExtents) {
+            for (const range of temporal.RangeDateTimes) {
+                const start = new Date(range.BeginningDateTime)
+                let end
+                if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
+                    end = today
+                } else {
+                    end = new Date(range.EndingDateTime)
+                }
+                if (!minStart || start < minStart) minStart = start
+                if (!maxEnd || end > maxEnd) maxEnd = end
+            }
+        }
+
+        return {
+            startDate: minStart ? minStart.toISOString().slice(0, 10) : undefined,
+            endDate: maxEnd ? maxEnd.toISOString().slice(0, 10) : undefined,
+        }
     }
 
     #renderSpatialSelection() {
@@ -710,8 +782,12 @@ export default class TerraDataSubsetter extends TerraElement {
 
             <div class="footer">
                 ${this.#controller.currentJob.status === 'running'
-                    ? html`<button class="btn btn-success" @click=${this.#cancelJob}>
-                          Cancel request
+                    ? html`<button
+                          class="btn btn-success"
+                          @click=${this.#cancelJob}
+                          ?disabled=${this.cancelingGetData}
+                      >
+                          ${this.cancelingGetData ? 'Canceling...' : 'Cancel request'}
                       </button>`
                     : nothing}
 
@@ -732,10 +808,12 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #cancelJob() {
+        this.cancelingGetData = true
         this.#controller.cancelCurrentJob()
     }
 
     #getData() {
+        this.cancelingGetData = false
         this.#touchAllFields()
         this.#controller.jobStatusTask.run()
 
@@ -824,28 +902,38 @@ export default class TerraDataSubsetter extends TerraElement {
         const collection = this.collectionWithServices?.collection
         if (!collection) return
 
-        const links = collection.granuleCount ?? 0
-        const temporalExtents = collection.TemporalExtents
-        if (!temporalExtents || !temporalExtents.length) {
-            return
+        const range = this.#getCollectionDateRange()
+        let startDate: string | undefined
+        let endDate: string | undefined
+        let links = collection.granuleCount ?? 0
+
+        if (this.selectedDateRange.startDate && this.selectedDateRange.endDate) {
+            // Use the user selected date range if available
+            startDate = this.selectedDateRange.startDate
+            endDate = this.selectedDateRange.endDate
+        } else {
+            // fallback to the collection's full date range
+            startDate = range.startDate
+            endDate = range.endDate
         }
 
-        let days = 0
-        const today = new Date()
-        for (const temporal of temporalExtents) {
-            for (const range of temporal.RangeDateTimes) {
-                const start = new Date(range.BeginningDateTime)
-                let end
-                if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
-                    end = today
-                } else {
-                    end = new Date(range.EndingDateTime)
-                }
-                days +=
-                    Math.floor(
-                        (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-                    ) + 1
-            }
+        if (!startDate || !endDate) return
+
+        const start = new Date(startDate)
+        const end = new Date(endDate)
+        const days =
+            Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
+        if (range.startDate && range.endDate) {
+            const availableDaysInCollection =
+                Math.floor(
+                    (new Date(range.endDate).getTime() -
+                        new Date(range.startDate).getTime()) /
+                        (1000 * 60 * 60 * 24)
+                ) + 1
+            const granulesPerDay = links / availableDaysInCollection
+
+            links = Math.floor(days * granulesPerDay)
         }
 
         return { days, links }
