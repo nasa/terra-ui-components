@@ -723,8 +723,7 @@ export default class TerraDataSubsetter extends TerraElement {
                     >
                     out of estimated
                     <span class="estimated-total"
-                        >${estimates?.links?.toLocaleString() ??
-                        this.#controller.currentJob.numInputGranules.toLocaleString()}</span
+                        >${this.#controller.currentJob.numInputGranules.toLocaleString()}</span
                     >
                 </div>
 
@@ -933,7 +932,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 ) + 1
             const granulesPerDay = links / availableDaysInCollection
 
-            links = Math.floor(days * granulesPerDay)
+            links = Math.ceil(days * granulesPerDay)
         }
 
         return { days, links }

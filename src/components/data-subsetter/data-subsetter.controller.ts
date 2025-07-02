@@ -65,7 +65,8 @@ export class DataSubsetterController {
                                     this.#host.selectedDateRange.startDate
                                 ).toISOString(),
                                 endDate: getUTCDate(
-                                    this.#host.selectedDateRange.endDate
+                                    this.#host.selectedDateRange.endDate,
+                                    true
                                 ).toISOString(),
                             }),
                     }
