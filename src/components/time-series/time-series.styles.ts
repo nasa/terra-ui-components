@@ -38,6 +38,12 @@ export default css`
         font-size: 1.25rem;
     }
 
+    .region {
+        margin: 0;
+        font-size: 0.75rem;
+        display: block;
+    }
+
     .toggles {
         display: flex;
         justify-content: space-between;

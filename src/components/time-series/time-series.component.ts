@@ -478,6 +478,7 @@ export default class TerraTimeSeries extends TerraElement {
                               <header>
                                   <h2 class="title">
                                       ${this.variableLongName}
+                                      <span class="region"> Region: ${this.location} </span>
                                   </h2>
 
                                   <div class="toggles">
