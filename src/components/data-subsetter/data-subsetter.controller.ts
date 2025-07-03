@@ -18,7 +18,7 @@ const JOB_STATUS_POLL_MILLIS = 1000
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
     fetchCollectionTask: Task<[string], any | undefined>
-    currentJob: SubsetJobStatus
+    currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
     #dataService: HarmonyDataService
@@ -114,6 +114,10 @@ export class DataSubsetterController {
     }
 
     cancelCurrentJob() {
+        if (!this.currentJob?.jobID) {
+            return
+        }
+
         this.#dataService.cancelSubsetJob(this.currentJob.jobID)
     }
 

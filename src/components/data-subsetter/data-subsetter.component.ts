@@ -75,6 +75,12 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     cancelingGetData: boolean = false
 
+    @state()
+    selectedTab: 'web-links' | 'selected-params' = 'web-links'
+
+    @state()
+    refineParameters: boolean = false
+
     #controller = new DataSubsetterController(this)
 
     firstUpdated() {
@@ -101,7 +107,7 @@ export default class TerraDataSubsetter extends TerraElement {
                     <button class="close-btn" onclick="closeDialog()">×</button>
                 </div>
 
-                ${this.#controller.currentJob
+                ${this.#controller.currentJob && !this.refineParameters
                     ? this.#renderJobStatus()
                     : this.#renderSubsetOptions()}
             </div>
@@ -664,7 +670,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderJobStatus() {
-        if (!this.#controller.currentJob.jobID) {
+        if (!this.#controller.currentJob?.jobID) {
             return html`<div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
 
@@ -687,11 +693,11 @@ export default class TerraDataSubsetter extends TerraElement {
             <div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
 
-                ${this.#controller.currentJob.status !== 'canceled' &&
-                this.#controller.currentJob.status !== 'failed'
+                ${this.#controller.currentJob!.status !== 'canceled' &&
+                this.#controller.currentJob!.status !== 'failed'
                     ? html` <div class="progress-container">
                           <div class="progress-text">
-                              ${this.#controller.currentJob.progress >= 100
+                              ${this.#controller.currentJob!.progress >= 100
                                   ? html`
                                         <span class="status-complete"
                                             >✓ Search complete</span
@@ -701,7 +707,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                         <span class="spinner"></span>
                                         <span class="status-running"
                                             >Searching for data...
-                                            (${this.#controller.currentJob
+                                            (${this.#controller.currentJob!
                                                 .progress}%)</span
                                         >
                                     `}
@@ -710,7 +716,7 @@ export default class TerraDataSubsetter extends TerraElement {
                           <div class="progress-bar">
                               <div
                                   class="progress-fill"
-                                  style="width: ${this.#controller.currentJob
+                                  style="width: ${this.#controller.currentJob!
                                       .progress}%"
                               ></div>
                           </div>
@@ -723,12 +729,12 @@ export default class TerraDataSubsetter extends TerraElement {
                     >
                     out of estimated
                     <span class="estimated-total"
-                        >${this.#controller.currentJob.numInputGranules.toLocaleString()}</span
+                        >${this.#controller.currentJob!.numInputGranules.toLocaleString()}</span
                     >
                 </div>
 
                 ${this.#renderJobMessage()}
-                ${this.#controller.currentJob.errors?.length
+                ${this.#controller.currentJob!.errors?.length
                     ? html`
                           <terra-accordion>
                               <div slot="summary">
@@ -736,7 +742,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       class="accordion-title"
                                       style="color: #dc3545;"
                                       >Errors
-                                      (${this.#controller.currentJob.errors
+                                      (${this.#controller.currentJob!.errors
                                           .length})</span
                                   >
                               </div>
@@ -744,7 +750,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                   <ul
                                       style="color: #dc3545; font-size: 14px; padding-left: 20px;"
                                   >
-                                      ${this.#controller.currentJob.errors.map(
+                                      ${this.#controller.currentJob!.errors.map(
                                           (err: {
                                               url: string
                                               message: string
@@ -770,15 +776,30 @@ export default class TerraDataSubsetter extends TerraElement {
                     : nothing}
 
                 <div class="tabs">
-                    <button class="tab active" onclick="switchTab('web-links')">
-                        Links
+                    <button
+                        class="tab ${this.selectedTab === 'web-links'
+                            ? 'active'
+                            : ''}"
+                        @click=${() => (this.selectedTab = 'web-links')}
+                    >
+                        Web Links
                     </button>
-                    <button class="tab" onclick="switchTab('selected-params')">
+
+                    <button
+                        class="tab ${this.selectedTab === 'selected-params'
+                            ? 'active'
+                            : ''}"
+                        @click=${() => (this.selectedTab = 'selected-params')}
+                    >
                         Selected Parameters
                     </button>
                 </div>
-
-                <div id="web-links" class="tab-content active">
+                <div
+                    id="web-links"
+                    class="tab-content ${this.selectedTab === 'web-links'
+                        ? 'active'
+                        : ''}"
+                >
                     ${this.#getDocumentationLinks().length
                         ? html`
                               <div class="documentation-links">
@@ -810,17 +831,17 @@ export default class TerraDataSubsetter extends TerraElement {
                     </ul>
                 </div>
 
-                <div id="selected-params" class="tab-content">
-                    <div
-                        style="padding: 20px; color: #666; font-style: italic; text-align: center;"
-                    >
-                        Selected parameters and filters will be displayed here
-                    </div>
+                <div
+                    id="selected-params"
+                    class="tab-content ${this.selectedTab === 'selected-params'
+                        ? 'active'
+                        : ''}"
+                >
+                    ${this.#renderSelectedParams()}
                 </div>
             </div>
-
             <div class="footer">
-                ${this.#controller.currentJob.status === 'running'
+                ${this.#controller.currentJob!.status === 'running'
                     ? html`<button
                           class="btn btn-success"
                           @click=${this.#cancelJob}
@@ -835,14 +856,62 @@ export default class TerraDataSubsetter extends TerraElement {
                     <span class="job-id"
                         ><a
                             href="https://harmony.earthdata.nasa.gov/jobs/${this
-                                .#controller.currentJob.jobID}"
+                                .#controller.currentJob!.jobID}"
                             target="_blank"
-                            >${this.#controller.currentJob.jobID}</a
+                            >${this.#controller.currentJob!.jobID}</a
                         ></span
                     >
                     <span class="info-icon">?</span>
                 </div>
             </div>
+        `
+    }
+
+    #renderSelectedParams() {
+        const collection = this.collectionWithServices?.collection
+        const variables = this.selectedVariables.length
+            ? this.selectedVariables.map(v => v.name)
+            : ['All']
+        const dateRange =
+            this.selectedDateRange.startDate && this.selectedDateRange.endDate
+                ? `${this.selectedDateRange.startDate} to ${this.selectedDateRange.endDate}`
+                : '—'
+        let spatial = '—'
+
+        if (this.spatialSelection) {
+            if ('w' in this.spatialSelection) {
+                spatial = `Bounding Box: ${this.spatialSelection.w}, ${this.spatialSelection.s}, ${this.spatialSelection.e}, ${this.spatialSelection.n}`
+            } else if (
+                'lat' in this.spatialSelection &&
+                'lng' in this.spatialSelection
+            ) {
+                spatial = `Point: ${this.spatialSelection.lat}, ${this.spatialSelection.lng}`
+            }
+        }
+
+        return html`
+            <dl class="params-summary">
+                <div>
+                    <dt><strong>Dataset</strong></dt>
+                    <dd>${collection?.EntryTitle ?? '—'}</dd>
+                </div>
+                <div>
+                    <dt><strong>Variables</strong></dt>
+                    <dd>${variables.map(v => html`<div>${v}</div>`)}</dd>
+                </div>
+                <div>
+                    <dt><strong>Date Range</strong></dt>
+                    <dd>${dateRange}</dd>
+                </div>
+                <div>
+                    <dt><strong>Spatial</strong></dt>
+                    <dd>${spatial}</dd>
+                </div>
+            </dl>
+
+            <terra-button @click=${this.#refineParameters}
+                >Refine Parameters</terra-button
+            >
         `
     }
 
@@ -853,14 +922,21 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #getData() {
         this.cancelingGetData = false
-        this.#touchAllFields()
-        this.#controller.jobStatusTask.run()
+        this.#touchAllFields() // touch all fields, so errors will show if fields are invalid
+
+        // cancel any existing running job
+        this.#controller.cancelCurrentJob()
+        this.#controller.currentJob = null
+
+        this.#controller.jobStatusTask.run() // go ahead and create the new job and start polling
 
         // scroll the job-status-section into view
         setTimeout(() => {
             const el = this.renderRoot.querySelector('#job-status-section')
             el?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
+
+        this.refineParameters = false // reset refine parameters, if the user had previously clicked that button
     }
 
     #touchAllFields() {
@@ -869,20 +945,20 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #numberOfFilesFoundEstimate() {
         return Math.floor(
-            (this.#controller.currentJob.numInputGranules *
-                this.#controller.currentJob.progress) /
+            (this.#controller.currentJob!.numInputGranules *
+                this.#controller.currentJob!.progress) /
                 100
         )
     }
 
     #getDocumentationLinks() {
-        return this.#controller.currentJob.links.filter(
+        return this.#controller.currentJob!.links.filter(
             link => link.rel === 'stac-catalog-json'
         )
     }
 
     #getDataLinks() {
-        return this.#controller.currentJob.links.filter(link => link.rel === 'data')
+        return this.#controller.currentJob!.links.filter(link => link.rel === 'data')
     }
 
     #hasAtLeastOneSubsetOption() {
@@ -910,9 +986,9 @@ export default class TerraDataSubsetter extends TerraElement {
         const errorStatuses = [Status.FAILED]
 
         let type = 'normal'
-        if (warningStatuses.includes(this.#controller.currentJob.status)) {
+        if (warningStatuses.includes(this.#controller.currentJob!.status)) {
             type = 'warning'
-        } else if (errorStatuses.includes(this.#controller.currentJob.status)) {
+        } else if (errorStatuses.includes(this.#controller.currentJob!.status)) {
             type = 'error'
         }
 
@@ -939,7 +1015,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 border: 1px solid ${color}22;
             "
             >
-                ${this.#controller.currentJob.message}
+                ${this.#controller.currentJob!.message}
             </div>
         `
     }
@@ -983,5 +1059,9 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         return { days, links }
+    }
+
+    #refineParameters() {
+        this.refineParameters = true
     }
 }
