@@ -100,6 +100,8 @@ export enum Status {
     FAILED = 'failed',
     CANCELED = 'canceled',
     PAUSED = 'paused',
+    RUNNING_WITH_ERRORS = 'running_with_errors',
+    COMPLETE_WITH_ERRORS = 'complete_with_errors',
 }
 
 export type SubsetJobStatus = {
@@ -116,7 +118,13 @@ export type SubsetJobStatus = {
     outputDataSize?: string
     dataSizePercentChange?: string
     labels?: string[]
+    errors?: Array<SubsetJobError>
     links: Array<SubsetJobLink>
+}
+
+export type SubsetJobError = {
+    url: string
+    message: string
 }
 
 export type SubsetJobLink = {

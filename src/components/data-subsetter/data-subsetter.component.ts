@@ -6,10 +6,11 @@ import type { CSSResultGroup } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
 import TerraAccordion from '../accordion/accordion.component.js'
-import type {
-    BoundingBox,
-    CollectionWithAvailableServices,
-    Variable,
+import {
+    Status,
+    type BoundingBox,
+    type CollectionWithAvailableServices,
+    type Variable,
 } from '../../data-services/types.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
@@ -681,8 +682,6 @@ export default class TerraDataSubsetter extends TerraElement {
             </div>`
         }
 
-        const estimates = this.#estimateJobSize()
-
         return html`
             <div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
@@ -728,6 +727,46 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
 
                 ${this.#renderJobMessage()}
+                ${this.#controller.currentJob.errors?.length
+                    ? html`
+                          <terra-accordion>
+                              <div slot="summary">
+                                  <span
+                                      class="accordion-title"
+                                      style="color: #dc3545;"
+                                      >Errors
+                                      (${this.#controller.currentJob.errors
+                                          .length})</span
+                                  >
+                              </div>
+                              <div class="accordion-content">
+                                  <ul
+                                      style="color: #dc3545; font-size: 14px; padding-left: 20px;"
+                                  >
+                                      ${this.#controller.currentJob.errors.map(
+                                          (err: {
+                                              url: string
+                                              message: string
+                                          }) => html`
+                                              <li style="margin-bottom: 12px;">
+                                                  <a
+                                                      href="${err.url}"
+                                                      target="_blank"
+                                                      style="word-break: break-all; color: #dc3545; text-decoration: underline;"
+                                                  >
+                                                      ${err.url}
+                                                  </a>
+                                                  <div style="margin-top: 2px;">
+                                                      ${err.message}
+                                                  </div>
+                                              </li>
+                                          `
+                                      )}
+                                  </ul>
+                              </div>
+                          </terra-accordion>
+                      `
+                    : nothing}
 
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('web-links')">
@@ -862,10 +901,17 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderJobMessage() {
+        const warningStatuses = [
+            Status.CANCELED,
+            Status.COMPLETE_WITH_ERRORS,
+            Status.RUNNING_WITH_ERRORS,
+        ]
+        const errorStatuses = [Status.FAILED]
+
         let type = 'normal'
-        if (this.#controller.currentJob.status === 'canceled') {
+        if (warningStatuses.includes(this.#controller.currentJob.status)) {
             type = 'warning'
-        } else if (this.#controller.currentJob.status === 'failed') {
+        } else if (errorStatuses.includes(this.#controller.currentJob.status)) {
             type = 'error'
         }
 

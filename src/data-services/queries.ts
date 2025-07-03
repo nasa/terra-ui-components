@@ -132,6 +132,10 @@ export const GET_SUBSET_JOB_STATUS = gql`
                     end
                 }
             }
+            errors {
+                url
+                message
+            }
         }
     }
 `
