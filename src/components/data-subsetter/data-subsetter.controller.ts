@@ -113,6 +113,24 @@ export class DataSubsetterController {
         return this.jobStatusTask.render(renderFunctions)
     }
 
+    fetchJobByID(jobID: string) {
+        this.currentJob = {
+            jobID,
+            status: Status.FETCHING,
+            message: 'Your job is being retrieved.',
+            progress: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            dataExpiration: '',
+            request: '',
+            numInputGranules: 0,
+            links: [],
+        }
+
+        // run the job status task to get the job details
+        this.jobStatusTask.run()
+    }
+
     cancelCurrentJob() {
         if (!this.currentJob?.jobID) {
             return

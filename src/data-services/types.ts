@@ -94,6 +94,7 @@ export type SubsetJobOptions = {
 }
 
 export enum Status {
+    FETCHING = 'fetching',
     PREVIEWING = 'previewing',
     RUNNING = 'running',
     SUCCESSFUL = 'successful',

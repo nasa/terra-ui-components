@@ -48,7 +48,7 @@ export default class TerraDataSubsetter extends TerraElement {
     @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
     showCollectionSearch?: boolean = true
 
-    @state()
+    @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
 
     @state()
@@ -86,6 +86,10 @@ export default class TerraDataSubsetter extends TerraElement {
     firstUpdated() {
         if (this.collectionEntryId) {
             this.showCollectionSearch = false
+        }
+
+        if (this.jobId) {
+            this.#controller.fetchJobByID(this.jobId)
         }
     }
 
