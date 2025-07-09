@@ -284,11 +284,20 @@ export class TimeSeriesController {
                     : {}),
             },
         })
-
+             
         if (!response.ok) {
-            throw new Error(
-                `Failed to fetch time series data: ${response.statusText}`
-            )
+            this.host.dispatchEvent(
+            new CustomEvent('terra-time-series-error', {
+            detail: {
+             status: response.status,
+             message: response.statusText,
+            },
+            bubbles: true,
+            composed: true,
+         })
+         )
+
+        throw new Error(`Failed to fetch time series data: ${response.statusText}`)
         }
 
         return this.#parseTimeSeriesCsv(await response.text())

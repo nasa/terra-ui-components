@@ -1,6 +1,7 @@
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
+import TerraAlert from '../alert/alert.component.js'
 import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
@@ -39,6 +40,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-loader': TerraLoader,
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
+        'terra-alert': TerraAlert,
     }
 
     #timeSeriesController: TimeSeriesController
@@ -103,6 +105,11 @@ export default class TerraTimeSeries extends TerraElement {
     @state() catalogVariable: Variable
 
     /**
+     * user quota reached maximum request
+     */
+    @state() private quotaExceededOpen = false
+
+    /**
      * if true, we'll show a warning to the user about them requesting a large number of data points
      */
     @state()
@@ -165,6 +172,11 @@ export default class TerraTimeSeries extends TerraElement {
     connectedCallback(): void {
         super.connectedCallback()
 
+        this.addEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
+
         //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
 
@@ -179,6 +191,22 @@ export default class TerraTimeSeries extends TerraElement {
             iframe.title = 'Notebook Warm-Up Frame'
             iframe.setAttribute('aria-hidden', 'true')
             document.body.appendChild(iframe)
+        }
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.removeEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
+    }
+
+    #handleQuotaError = (event: CustomEvent) => {
+        const { status } = event.detail
+
+        if (status === 429) {
+            this.quotaExceededOpen = true
         }
     }
 
@@ -290,6 +318,30 @@ export default class TerraTimeSeries extends TerraElement {
     render() {
         return html`
             <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
+                ${this.quotaExceededOpen
+                    ? html`
+                          <terra-alert
+                              variant="warning"
+                              duration="10000"
+                              open=${this.quotaExceededOpen}
+                              closable
+                              @terra-after-hide=${() =>
+                                  (this.quotaExceededOpen = false)}
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              You've exceeded your request quota. Please
+                              <a
+                                  href="https://disc.gsfc.nasa.gov/information/documents?title=Contact%20Us"
+                                  >contact the help desk</a
+                              >
+                              for further assistance.
+                          </terra-alert>
+                      `
+                    : ''}
                 ${cache(
                     this.catalogVariable
                         ? html`
