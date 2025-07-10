@@ -18,6 +18,7 @@ import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { LatLng } from '../map/type.js'
 import { getBasePath } from '../../utilities/base-path.js'
+import { watch } from '../../internal/watch.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -103,6 +104,11 @@ export default class TerraDataSubsetter extends TerraElement {
         super.disconnectedCallback()
 
         document.removeEventListener('click', this.#handleClickOutside.bind(this))
+    }
+
+    @watch(['collectionWithServices'])
+    collectionChanged() {
+        this.selectedDateRange = this.#getCollectionDateRange()
     }
 
     render() {
@@ -415,7 +421,11 @@ export default class TerraDataSubsetter extends TerraElement {
     #getCollectionDateRange() {
         const temporalExtents =
             this.collectionWithServices?.collection?.TemporalExtents
-        if (!temporalExtents || !temporalExtents.length) return {}
+        if (!temporalExtents || !temporalExtents.length)
+            return {
+                startDate: null,
+                endDate: null,
+            }
 
         let minStart = null
         let maxEnd = null
@@ -436,8 +446,8 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         return {
-            startDate: minStart ? minStart.toISOString().slice(0, 10) : undefined,
-            endDate: maxEnd ? maxEnd.toISOString().slice(0, 10) : undefined,
+            startDate: minStart ? minStart.toISOString().slice(0, 10) : null,
+            endDate: maxEnd ? maxEnd.toISOString().slice(0, 10) : null,
         }
     }
 
@@ -1151,8 +1161,8 @@ export default class TerraDataSubsetter extends TerraElement {
         if (!collection) return
 
         const range = this.#getCollectionDateRange()
-        let startDate: string | undefined
-        let endDate: string | undefined
+        let startDate: string | null
+        let endDate: string | null
         let links = collection.granuleCount ?? 0
 
         if (this.selectedDateRange.startDate && this.selectedDateRange.endDate) {
