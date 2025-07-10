@@ -67,6 +67,7 @@ export const CREATE_SUBSET_JOB = gql`
         $boundingBox: BoundingBoxInput
         $startDate: String
         $endDate: String
+        $format: String
     ) {
         createSubsetJob(
             input: {
@@ -75,6 +76,7 @@ export const CREATE_SUBSET_JOB = gql`
                 boundingBox: $boundingBox
                 startDate: $startDate
                 endDate: $endDate
+                format: $format
             }
         ) {
             jobID

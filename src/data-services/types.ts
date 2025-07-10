@@ -90,6 +90,7 @@ export type SubsetJobOptions = {
     boundingBox?: BoundingBox
     startDate?: string
     endDate?: string
+    format?: string
     signal?: AbortSignal
 }
 

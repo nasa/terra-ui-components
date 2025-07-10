@@ -69,6 +69,9 @@ export class DataSubsetterController {
                                     true
                                 ).toISOString(),
                             }),
+                        ...(this.#host.selectedFormat && {
+                            format: this.#host.selectedFormat,
+                        }),
                     }
 
                     console.log(

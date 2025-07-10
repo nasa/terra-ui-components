@@ -18,6 +18,10 @@ import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { LatLng } from '../map/type.js'
 import { getBasePath } from '../../utilities/base-path.js'
+import {
+    defaultSubsetFileMimeType,
+    getFriendlyNameForMimeType,
+} from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
 
 /**
@@ -73,6 +77,9 @@ export default class TerraDataSubsetter extends TerraElement {
         startDate: null,
         endDate: null,
     }
+
+    @state()
+    selectedFormat: string = defaultSubsetFileMimeType
 
     @state()
     cancelingGetData: boolean = false
@@ -186,6 +193,18 @@ export default class TerraDataSubsetter extends TerraElement {
                           ${this.collectionWithServices?.variableSubset
                               ? this.#renderVariableSelection()
                               : nothing}
+                      </div>
+                  `
+                : nothing}
+            ${this.collectionWithServices?.outputFormats?.length
+                ? html`
+                      <div class="section">
+                          <h2 class="section-title">
+                              Output Format
+                              <span class="help-icon">?</span>
+                          </h2>
+
+                          ${this.#renderOutputFormatSelection()}
                       </div>
                   `
                 : nothing}
@@ -325,6 +344,53 @@ export default class TerraDataSubsetter extends TerraElement {
         `
     }
 
+    #renderOutputFormatSelection() {
+        return html`
+            <terra-accordion>
+                <div slot="summary">
+                    <span class="accordion-title">File Format:</span>
+                </div>
+
+                <div
+                    slot="summary-right"
+                    style="display: flex; align-items: center; gap: 10px;"
+                >
+                    <span>${getFriendlyNameForMimeType(this.selectedFormat)}</span>
+
+                    <button class="reset-btn" @click=${this.#resetFormatSelection}>
+                        Reset
+                    </button>
+                </div>
+
+                <div class="accordion-content" style="margin-top: 12px;">
+                    ${(() => {
+                        const uniqueFormats = Array.from(
+                            new Set(this.collectionWithServices?.outputFormats || [])
+                        )
+
+                        return uniqueFormats.map(
+                            format => html`
+                                <label
+                                    style="display: flex; align-items: center; gap: 8px; padding: 5px;"
+                                >
+                                    <input
+                                        type="radio"
+                                        name="output-format"
+                                        value="${format}"
+                                        .checked=${this.selectedFormat === format}
+                                        @change=${() =>
+                                            (this.selectedFormat = format)}
+                                    />
+                                    ${getFriendlyNameForMimeType(format)}
+                                </label>
+                            `
+                        )
+                    })()}
+                </div>
+            </terra-accordion>
+        `
+    }
+
     #renderDateRangeSelection() {
         const { startDate: defaultStartDate, endDate: defaultEndDate } =
             this.#getCollectionDateRange()
@@ -416,6 +482,10 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #resetDateRangeSelection = () => {
         this.selectedDateRange = { startDate: null, endDate: null }
+    }
+
+    #resetFormatSelection = () => {
+        this.selectedFormat = defaultSubsetFileMimeType
     }
 
     #getCollectionDateRange() {

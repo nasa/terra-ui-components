@@ -89,6 +89,7 @@ export class HarmonyDataService implements DataServiceInterface {
                 boundingBox: subsetOptions?.boundingBox,
                 startDate: subsetOptions?.startDate,
                 endDate: subsetOptions?.endDate,
+                format: subsetOptions?.format,
             },
             context: {
                 headers: {
