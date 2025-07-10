@@ -81,6 +81,9 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     refineParameters: boolean = false
 
+    @state()
+    showDownloadMenu: boolean = false
+
     #controller = new DataSubsetterController(this)
 
     firstUpdated() {
@@ -91,6 +94,14 @@ export default class TerraDataSubsetter extends TerraElement {
         if (this.jobId) {
             this.#controller.fetchJobByID(this.jobId)
         }
+
+        document.addEventListener('click', this.#handleClickOutside.bind(this))
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+
+        document.removeEventListener('click', this.#handleClickOutside.bind(this))
     }
 
     render() {
@@ -844,7 +855,64 @@ export default class TerraDataSubsetter extends TerraElement {
                     ${this.#renderSelectedParams()}
                 </div>
             </div>
+
             <div class="footer">
+                ${this.#controller.currentJob!.status === Status.SUCCESSFUL ||
+                this.#controller.currentJob!.status === Status.COMPLETE_WITH_ERRORS
+                    ? html`
+                          <div
+                              class="download-dropdown ${this.showDownloadMenu
+                                  ? 'open'
+                                  : ''}"
+                          >
+                              <button
+                                  class="download-btn"
+                                  @click=${(e: Event) => this.#toggleDownloadMenu(e)}
+                              >
+                                  <svg
+                                      class="download-icon-small"
+                                      viewBox="0 0 24 24"
+                                      fill="currentColor"
+                                  >
+                                      <path
+                                          d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                      />
+                                  </svg>
+                                  Download Options
+                                  <svg
+                                      class="dropdown-arrow"
+                                      viewBox="0 0 24 24"
+                                      fill="currentColor"
+                                  >
+                                      <path d="M7 10l5 5 5-5z" />
+                                  </svg>
+                              </button>
+
+                              <div
+                                  class="download-menu ${this.showDownloadMenu
+                                      ? 'open'
+                                      : ''}"
+                              >
+                                  <button
+                                      class="download-option"
+                                      @click=${(e: Event) =>
+                                          this.#downloadLinksAsTxt(e)}
+                                  >
+                                      <svg
+                                          class="file-icon"
+                                          viewBox="0 0 24 24"
+                                          fill="currentColor"
+                                      >
+                                          <path
+                                              d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+                                          />
+                                      </svg>
+                                      Download File List
+                                  </button>
+                              </div>
+                          </div>
+                      `
+                    : nothing}
                 ${this.#controller.currentJob!.status === 'running'
                     ? html`<button
                           class="btn btn-success"
@@ -1067,5 +1135,53 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #refineParameters() {
         this.refineParameters = true
+    }
+
+    #toggleDownloadMenu(event: Event) {
+        event.stopPropagation()
+        this.showDownloadMenu = !this.showDownloadMenu
+    }
+
+    #downloadLinksAsTxt(event: Event) {
+        event.stopPropagation()
+        if (!this.#controller.currentJob?.links) {
+            return
+        }
+
+        const dataLinks = this.#getDataLinks()
+
+        if (dataLinks.length === 0) {
+            return
+        }
+
+        const content = dataLinks.map(link => link.href).join('\n')
+        const blob = new Blob([content], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+
+        // Create a temporary link element and trigger download
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `subset_links_${this.#controller.currentJob!.jobID}.txt`
+        document.body.appendChild(a)
+        a.click()
+
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        this.showDownloadMenu = false
+    }
+
+    #handleClickOutside(event: MouseEvent) {
+        if (!this.showDownloadMenu) {
+            return
+        }
+
+        const target = event.target as Node
+        const downloadDropdown = this.renderRoot.querySelector('.download-dropdown')
+
+        if (downloadDropdown && !downloadDropdown.contains(target)) {
+            // hide download menu
+            this.showDownloadMenu = false
+        }
     }
 }

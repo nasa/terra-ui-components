@@ -172,6 +172,8 @@ export default css`
         margin-top: 30px;
         padding-top: 20px;
         border-top: 1px solid #dee2e6;
+        position: relative;
+        overflow: visible;
     }
 
     .btn {
@@ -553,11 +555,13 @@ export default css`
 
     .footer {
         display: flex;
-        justify-content: flex-end;
-        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
         margin-top: 30px;
         padding-top: 20px;
         border-top: 1px solid #dee2e6;
+        position: relative;
+        overflow: visible;
     }
 
     .btn {
@@ -808,5 +812,103 @@ export default css`
         padding: 20px;
         color: #666;
         font-size: 14px;
+    }
+
+    /* Download Options Styles */
+    .download-dropdown {
+        position: relative;
+        display: inline-block;
+        z-index: 10000;
+    }
+
+    .download-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #0066cc;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .download-btn:hover {
+        background: #0056b3;
+    }
+
+    .download-icon-small {
+        width: 16px;
+        height: 16px;
+    }
+
+    .dropdown-arrow {
+        width: 16px;
+        height: 16px;
+        transition: transform 0.2s;
+    }
+
+    .download-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s;
+        margin-top: 4px;
+        min-width: 200px;
+    }
+
+    .download-menu.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .download-dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .download-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding: 12px 16px;
+        background: none;
+        border: none;
+        text-align: left;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .download-option:hover {
+        background: #f8f9fa;
+    }
+
+    .download-option:first-child {
+        border-radius: 6px 6px 0 0;
+    }
+
+    .download-option:last-child {
+        border-radius: 0 0 6px 6px;
+    }
+
+    .file-icon {
+        width: 16px;
+        height: 16px;
+        color: #666;
     }
 `
