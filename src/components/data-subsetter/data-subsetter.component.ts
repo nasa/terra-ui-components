@@ -57,6 +57,9 @@ export default class TerraDataSubsetter extends TerraElement {
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
 
+    @property({ attribute: 'bearer-token' })
+    bearerToken?: string
+
     @state()
     collectionWithServices?: CollectionWithAvailableServices
 
@@ -105,6 +108,8 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         document.addEventListener('click', this.#handleClickOutside.bind(this))
+
+        console.log(this.bearerToken)
     }
 
     disconnectedCallback() {

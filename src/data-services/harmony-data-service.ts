@@ -1,4 +1,3 @@
-import type { SearchOptions } from '../components/browse-variables/browse-variables.types.js'
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
     CANCEL_SUBSET_JOB,
@@ -12,9 +11,8 @@ import {
     type DataServiceInterface,
     type SubsetJobOptions,
     type SubsetJobStatus,
+    type SearchOptions,
 } from './types.js'
-
-const authorization = ''
 
 export const HARMONY_CONFIG = {
     baseUrl: 'https://harmony.earthdata.nasa.gov',
@@ -31,7 +29,7 @@ export const FINAL_STATUSES = new Set<Status>([
 export class HarmonyDataService implements DataServiceInterface {
     async getCollectionWithAvailableServices(
         collectionEntryId: string,
-        options?: { signal: AbortSignal }
+        options?: SearchOptions
     ): Promise<CollectionWithAvailableServices> {
         const client = await getGraphQLClient()
 
@@ -49,7 +47,9 @@ export class HarmonyDataService implements DataServiceInterface {
             },
             context: {
                 headers: {
-                    authorization,
+                    ...(options?.bearerToken && {
+                        authorizaton: options.bearerToken,
+                    }),
                 },
                 fetchOptions: {
                     signal: options?.signal,
@@ -93,7 +93,9 @@ export class HarmonyDataService implements DataServiceInterface {
             },
             context: {
                 headers: {
-                    authorization,
+                    ...(subsetOptions?.bearerToken && {
+                        authorizaton: subsetOptions.bearerToken,
+                    }),
                 },
                 fetchOptions: {
                     signal: subsetOptions?.signal,
@@ -125,7 +127,9 @@ export class HarmonyDataService implements DataServiceInterface {
             },
             context: {
                 headers: {
-                    authorization,
+                    ...(searchOptions?.bearerToken && {
+                        authorizaton: searchOptions.bearerToken,
+                    }),
                 },
                 fetchOptions: {
                     signal: searchOptions?.signal,
@@ -143,7 +147,10 @@ export class HarmonyDataService implements DataServiceInterface {
         return response.data.getSubsetJobStatus
     }
 
-    async cancelSubsetJob(jobId: string): Promise<SubsetJobStatus> {
+    async cancelSubsetJob(
+        jobId: string,
+        options?: SearchOptions
+    ): Promise<SubsetJobStatus> {
         const client = await getGraphQLClient()
 
         const response = await client.query<{
@@ -155,7 +162,9 @@ export class HarmonyDataService implements DataServiceInterface {
             },
             context: {
                 headers: {
-                    authorization,
+                    ...(options?.bearerToken && {
+                        authorizaton: options.bearerToken,
+                    }),
                 },
             },
             fetchPolicy: 'no-cache', //! important, we don't want to get cached results here!

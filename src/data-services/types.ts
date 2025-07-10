@@ -1,7 +1,12 @@
+export type SearchOptions = {
+    signal?: AbortSignal
+    bearerToken?: string
+}
+
 export interface DataServiceInterface {
     getCollectionWithAvailableServices(
         collectionEntryId: string,
-        options?: { signal?: AbortSignal }
+        options?: SearchOptions
     ): Promise<CollectionWithAvailableServices>
 
     createSubsetJob(
@@ -85,13 +90,12 @@ export type BoundingBox = {
     n: number
 }
 
-export type SubsetJobOptions = {
+export type SubsetJobOptions = SearchOptions & {
     variableConceptIds?: Array<string>
     boundingBox?: BoundingBox
     startDate?: string
     endDate?: string
     format?: string
-    signal?: AbortSignal
 }
 
 export enum Status {

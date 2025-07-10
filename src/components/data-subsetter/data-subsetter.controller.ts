@@ -32,7 +32,7 @@ export class DataSubsetterController {
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
                           collectionEntryId,
-                          { signal }
+                          { signal, bearerToken: this.#host.bearerToken }
                       )
                     : undefined
 
@@ -49,7 +49,7 @@ export class DataSubsetterController {
                     // we already have a job, get it's status
                     job = await this.#dataService.getSubsetJobStatus(
                         this.currentJob.jobID,
-                        { signal }
+                        { signal, bearerToken: this.#host.bearerToken }
                     )
                 } else {
                     let subsetOptions = {
@@ -88,6 +88,7 @@ export class DataSubsetterController {
                         {
                             ...subsetOptions,
                             signal,
+                            bearerToken: this.#host.bearerToken,
                         }
                     )
                 }
@@ -139,7 +140,9 @@ export class DataSubsetterController {
             return
         }
 
-        this.#dataService.cancelSubsetJob(this.currentJob.jobID)
+        this.#dataService.cancelSubsetJob(this.currentJob.jobID, {
+            bearerToken: this.#host.bearerToken,
+        })
     }
 
     #getDataService() {
