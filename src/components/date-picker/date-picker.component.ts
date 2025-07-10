@@ -54,6 +54,13 @@ export default class TerraDatePicker extends TerraElement {
 
     firstUpdated() {
         this.flatpickrElement.addEventListener('change', this.handleChange.bind(this))
+
+        setTimeout(() => {
+            // need to give flatpickr a bit to render
+            this.flatpickrElement.shadowRoot
+                .querySelector('input')
+                .addEventListener('blur', this.handleBlur.bind(this))
+        }, 250)
     }
 
     private handleChange(selectedDates: Date[]) {
@@ -65,6 +72,10 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         this.emit('terra-change')
+    }
+
+    private handleBlur() {
+        this.handleChange(this.flatpickrElement._instance.selectedDates)
     }
 
     render() {

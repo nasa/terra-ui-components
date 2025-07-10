@@ -50,11 +50,19 @@ export default css`
     }
 
     .size-info {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
+        border: 1px solid transparent;
         border-radius: 6px;
         padding: 15px;
         margin-bottom: 25px;
+    }
+
+    .size-info.warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+    }
+
+    .size-info.neutral {
+        background: #f8f9fa;
     }
 
     .size-info h2 {
@@ -444,8 +452,7 @@ export default css`
     }
 
     .size-info {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
+        border: 1px solid transparent;
         border-radius: 6px;
         padding: 15px;
         margin-bottom: 25px;

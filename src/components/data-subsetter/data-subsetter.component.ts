@@ -115,7 +115,23 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @watch(['collectionWithServices'])
     collectionChanged() {
-        this.selectedDateRange = this.#getCollectionDateRange()
+        const { startDate, endDate } = this.#getCollectionDateRange()
+
+        if (startDate && endDate) {
+            // We'll default to the last 7 days of a collection's links so that we don't accidentally overwhelm Harmony
+            const end = new Date(endDate)
+            const start = new Date(startDate)
+            const sevenDaysAgo = new Date(end)
+            sevenDaysAgo.setDate(end.getDate() - 6) // 7 days including end
+            const defaultStart = sevenDaysAgo > start ? sevenDaysAgo : start
+
+            this.selectedDateRange = {
+                startDate: defaultStart.toISOString().slice(0, 10),
+                endDate: endDate,
+            }
+        } else {
+            this.selectedDateRange = { startDate, endDate }
+        }
     }
 
     render() {
@@ -148,20 +164,25 @@ export default class TerraDataSubsetter extends TerraElement {
 
         return html`
             ${estimates
-                ? html`<div class="size-info">
+                ? html`<div
+                      class="size-info ${estimates.links >= 150
+                          ? 'warning'
+                          : 'neutral'}"
+                  >
                       <h2>Estimated size of results</h2>
                       <div class="size-stats">
                           ${estimates.days.toLocaleString()} days,
                           ${estimates.links.toLocaleString()} links
                       </div>
-
-                      <div class="size-warning">
-                          You are about to retrieve
-                          ${estimates.links.toLocaleString()} file links from the
-                          archive. You may
-                          <strong>speed up the request</strong> by limiting the scope
-                          of your search.
-                      </div>
+                      ${estimates.links >= 150
+                          ? html`<div class="size-warning">
+                                You are about to retrieve
+                                ${estimates.links.toLocaleString()} file links from
+                                the archive. You may
+                                <strong>speed up the request</strong> by limiting the
+                                scope of your search.
+                            </div>`
+                          : nothing}
                   </div>`
                 : nothing}
             ${this.showCollectionSearch
@@ -431,7 +452,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         class="w-full"
                         .minDate=${defaultStartDate}
                         .maxDate=${endDate}
-                        .defaultDate=${defaultStartDate}
+                        .defaultDate=${startDate}
                         @terra-change=${this.#handleStartDateChange}
                     ></terra-date-picker>
                     <terra-date-picker
@@ -440,7 +461,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         class="w-full"
                         .minDate=${startDate}
                         .maxDate=${defaultEndDate}
-                        .defaultDate=${defaultEndDate}
+                        .defaultDate=${endDate}
                         @terra-change=${this.#handleEndDateChange}
                     ></terra-date-picker>
                 </div>
