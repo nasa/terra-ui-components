@@ -220,6 +220,12 @@ await nextTask('Generating themes', () => {
     })
 })
 
+await nextTask('Packaging up assets', () => {
+    return execPromise(`node scripts/make-assets.js --outdir "${outdir}"`, {
+        stdio: 'inherit',
+    })
+})
+
 await nextTask('Packaging up icons', () => {
     return execPromise(`node scripts/make-icons.js --outdir "${outdir}"`, {
         stdio: 'inherit',

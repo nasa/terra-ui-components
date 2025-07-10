@@ -1,0 +1,66 @@
+"""
+Python script for downloading data from a NASA Harmony job
+
+Requirements:
+    > pip install harmony
+
+To run the script: `python download_subset_files_{{jobId}}.py`
+
+You will be prompted for your Earthdata Login (https://urs.earthdata.nasa.gov) username and password.
+
+If you would rather, you can store your EDL credentials in a .netrc file:
+    > cd ~
+    > touch .netrc
+    > echo "machine urs.earthdata.nasa.gov login uid_goes_here password password_goes_here" > .netrc
+    > chmod 0600 .netrc
+"""
+
+from harmony import Client
+from harmony.config import Environment
+import netrc
+from getpass import getpass
+
+
+def main(job_id="{{jobId}}"):
+    login, password = get_login_credentials()
+    harmony_client = Client(auth=(login, password), env=Environment.PROD)
+
+    print("Getting the subset job status from Harmony for job: ", job_id)
+    job = harmony_client.status(job_id)
+
+    if job["status"] != "successful" and job["status"] != "complete_with_errors":
+        # we need to wait for the job to complete
+        print("Waiting for the job to finish")
+        harmony_client.wait_for_processing(job_id, show_progress=True)
+
+    # get a list of the jobs data urls
+    urls = harmony_client.result_urls(job_id)
+
+    print("Downloading ", sum(1 for _ in urls), " files\n")
+
+    futures = harmony_client.download_all(job_id)
+    [f.result() for f in futures]
+
+    print("\nFinished downloading files!")
+
+
+def get_login_credentials():
+    login = None
+    password = None
+
+    try:
+        nrc = netrc.netrc()
+        login, _account, password = nrc.authenticators("urs.earthdata.nasa.gov")
+    except Exception:
+        login = None
+        password = None
+
+    if not login:
+        login = input("Earthdata Login username: ")
+        password = getpass("Password: ")
+        
+    return login, password
+
+
+if __name__ == "__main__":
+    main()

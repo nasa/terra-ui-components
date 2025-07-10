@@ -17,6 +17,7 @@ import TerraIcon from '../icon/icon.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { LatLng } from '../map/type.js'
+import { getBasePath } from '../../utilities/base-path.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -907,7 +908,25 @@ export default class TerraDataSubsetter extends TerraElement {
                                               d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
                                           />
                                       </svg>
-                                      Download File List
+                                      File List
+                                  </button>
+                                  <button
+                                      class="download-option"
+                                      @click=${(e: Event) =>
+                                          this.#downloadPythonScript(e)}
+                                  >
+                                      <svg
+                                          class="file-icon"
+                                          viewBox="0 0 128 128"
+                                          width="16"
+                                          height="16"
+                                      >
+                                          <path
+                                              fill="currentColor"
+                                              d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
+                                          ></path>
+                                      </svg>
+                                      Python Script
                                   </button>
                               </div>
                           </div>
@@ -1162,6 +1181,42 @@ export default class TerraDataSubsetter extends TerraElement {
         const a = document.createElement('a')
         a.href = url
         a.download = `subset_links_${this.#controller.currentJob!.jobID}.txt`
+        document.body.appendChild(a)
+        a.click()
+
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        this.showDownloadMenu = false
+    }
+
+    async #downloadPythonScript(event: Event) {
+        event.stopPropagation()
+        if (!this.#controller.currentJob?.links) {
+            return
+        }
+
+        const response = await fetch(
+            getBasePath('assets/data-subsetter/download_subset_files.py.txt')
+        )
+
+        if (!response.ok) {
+            alert(
+                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime'
+            )
+        }
+
+        const content = (await response.text()).replace(
+            /{{jobId}}/gi,
+            this.#controller.currentJob!.jobID
+        )
+        const blob = new Blob([content], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+
+        // Create a temporary link element and trigger download
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `download_subset_files_${this.#controller.currentJob!.jobID}.py`
         document.body.appendChild(a)
         a.click()
 

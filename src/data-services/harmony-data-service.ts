@@ -25,6 +25,7 @@ export const FINAL_STATUSES = new Set<Status>([
     Status.SUCCESSFUL,
     Status.FAILED,
     Status.CANCELED,
+    Status.COMPLETE_WITH_ERRORS,
 ])
 
 export class HarmonyDataService implements DataServiceInterface {
