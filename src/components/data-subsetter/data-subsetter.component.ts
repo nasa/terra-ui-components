@@ -352,26 +352,59 @@ export default class TerraDataSubsetter extends TerraElement {
                     </button>
                 </div>
 
-                <terra-date-picker
-                    label="Date Range"
-                    range
-                    show-months="2"
-                    class="w-full"
-                    id="date-range"
-                    @terra-change=${this.#handleDateRangeChange}
-                ></terra-date-picker>
+                <div style="display: flex; gap: 16px;">
+                    <terra-date-picker
+                        label="Start Date"
+                        allow-input
+                        class="w-full"
+                        .minDate=${defaultStartDate}
+                        .maxDate=${endDate}
+                        .defaultDate=${defaultStartDate}
+                        @terra-change=${this.#handleStartDateChange}
+                    ></terra-date-picker>
+                    <terra-date-picker
+                        label="End Date"
+                        allow-input
+                        class="w-full"
+                        .minDate=${startDate}
+                        .maxDate=${defaultEndDate}
+                        .defaultDate=${defaultEndDate}
+                        @terra-change=${this.#handleEndDateChange}
+                    ></terra-date-picker>
+                </div>
+
+                <div
+                    style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
+                >
+                    <span
+                        ><strong>Available Range:</strong> ${defaultStartDate} to
+                        ${defaultEndDate}</span
+                    >
+                    <span
+                        ><strong>Note:</strong> All dates and times are in UTC.</span
+                    >
+                </div>
             </terra-accordion>
         `
     }
 
-    #handleDateRangeChange = (e: CustomEvent) => {
+    #handleStartDateChange = (e: CustomEvent) => {
         this.#markFieldTouched('date')
-
         const datePicker = e.currentTarget as TerraDatePicker
 
         this.selectedDateRange = {
+            ...this.selectedDateRange,
             startDate: datePicker.selectedDates.startDate,
-            endDate: datePicker.selectedDates.endDate,
+        }
+    }
+
+    #handleEndDateChange = (e: CustomEvent) => {
+        this.#markFieldTouched('date')
+        const datePicker = e.currentTarget as TerraDatePicker
+
+        this.selectedDateRange = {
+            ...this.selectedDateRange,
+            endDate: datePicker.selectedDates.startDate,
         }
     }
 
@@ -460,11 +493,13 @@ export default class TerraDataSubsetter extends TerraElement {
                     ${boundingRects &&
                     Array.isArray(boundingRects) &&
                     boundingRects.length
-                        ? html`<div style="margin-top: 10px; color: #666;">
+                        ? html`<div
+                              style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
+                          >
                               ${boundingRects.map(
                                   (rect: any) =>
                                       html`<div>
-                                          Available Range:
+                                          <strong>Available Range:</strong>
                                           ${rect.WestBoundingCoordinate},
                                           ${rect.SouthBoundingCoordinate},
                                           ${rect.EastBoundingCoordinate},

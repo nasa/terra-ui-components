@@ -35,6 +35,7 @@ export default class TerraDatePicker extends TerraElement {
     @property({ attribute: 'max-date' }) maxDate?: string
     @property({ attribute: 'start-date' }) startDate?: string
     @property({ attribute: 'end-date' }) endDate?: string
+    @property({ attribute: 'default-date' }) defaultDate?: string
     @property({ type: Boolean, attribute: 'allow-input' }) allowInput = false
     @property({ attribute: 'alt-format' }) altFormat = 'F j, Y'
     @property({ type: Boolean, attribute: 'alt-input' }) altInput = false
@@ -85,7 +86,7 @@ export default class TerraDatePicker extends TerraElement {
                             ? ([this.startDate, this.endDate].filter(
                                   Boolean
                               ) as string[])
-                            : this.startDate}
+                            : this.defaultDate}
                         .allowInput=${this.allowInput}
                         .altFormat=${this.altFormat}
                         .altInput=${this.altInput}
