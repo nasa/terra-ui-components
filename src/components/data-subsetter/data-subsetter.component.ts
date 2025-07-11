@@ -1113,14 +1113,16 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 <div class="job-info">
                     Job ID:
-                    <span class="job-id"
-                        ><a
-                            href="https://harmony.earthdata.nasa.gov/jobs/${this
-                                .#controller.currentJob!.jobID}"
-                            target="_blank"
-                            >${this.#controller.currentJob!.jobID}</a
-                        ></span
-                    >
+                    <span class="job-id">
+                        ${this.bearerToken
+                            ? html`<a
+                                  href="https://harmony.earthdata.nasa.gov/jobs/${this
+                                      .#controller.currentJob!.jobID}"
+                                  target="_blank"
+                                  >${this.#controller.currentJob!.jobID}</a
+                              >`
+                            : this.#controller.currentJob!.jobID}
+                    </span>
                     <span class="info-icon">?</span>
                 </div>
             </div>

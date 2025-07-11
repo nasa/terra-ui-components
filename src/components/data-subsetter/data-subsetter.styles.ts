@@ -9,7 +9,9 @@ export default css`
         box-sizing: border-box;
     }
 
-    .container {
+    :host .container {
+        font-size: 16px;
+        text-align: left;
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
