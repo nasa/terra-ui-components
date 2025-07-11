@@ -20,6 +20,8 @@ import TerraTimeSeries from '../time-series/time-series.component.js'
  * @documentation https://disc.gsfc.nasa.gov/components/data-rods
  * @status mvp
  * @since 1.0
+ *
+ * @event terra-date-range-change - Emitted whenever the date range of the date slider is updated
  */
 export default class TerraDataRods extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -148,8 +150,7 @@ export default class TerraDataRods extends TerraElement {
                 end-date=${this.endDate}
                 location=${this.location}
                 bearer-token=${this.bearerToken}
-                @terra-time-series-date-range-change=${this
-                    .#handleTimeSeriesDateRangeChange}
+                @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             ></terra-time-series>
 
             <terra-date-range-slider
