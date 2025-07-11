@@ -1,5 +1,4 @@
 import { classMap } from 'lit/directives/class-map.js'
-//import { setDefaultAnimation } from '../../utilities/animation-registry.js';
 import { HasSlotController } from '../../internal/slot.js'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
@@ -32,11 +31,6 @@ import type { CSSResultGroup } from 'lit'
  */
 export default class TerraAlert extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
-    static define(tag = 'terra-alert') {
-        if (!customElements.get(tag)) {
-            customElements.define(tag, this)
-        }
-    }
 
     private autoHideTimeout: number
     private remainingTimeInterval: number
@@ -148,6 +142,8 @@ export default class TerraAlert extends TerraElement {
 
     @watch('open', { waitUntilFirstUpdate: true })
     async handleOpenChange() {
+        this.base.hidden = !this.open
+
         if (this.open) {
             // Show
             this.emit('terra-show')
@@ -261,13 +257,12 @@ export default class TerraAlert extends TerraElement {
 
                 ${this.closable
                     ? html`
-                          <button
-                              class="terra-alert__close-button"
+                          <terra-icon
+                              class="alert__close-button"
+                              name="solid-x-mark"
+                              library="heroicons"
                               @click=${this.handleCloseClick}
-                              aria-label="Close"
-                          >
-                              x
-                          </button>
+                          ></terra-icon>
                       `
                     : ''}
 
@@ -289,19 +284,3 @@ export default class TerraAlert extends TerraElement {
         `
     }
 }
-
-/*setDefaultAnimation('alert.show', {
-  keyframes: [
-    { opacity: 0, scale: 0.8 },
-    { opacity: 1, scale: 1 }
-  ],
-  options: { duration: 250, easing: 'ease' }
-});
-
-setDefaultAnimation('alert.hide', {
-  keyframes: [
-    { opacity: 1, scale: 1 },
-    { opacity: 0, scale: 0.8 }
-  ],
-  options: { duration: 250, easing: 'ease' }
-});*/

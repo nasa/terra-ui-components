@@ -11,6 +11,8 @@ import {
     type Data,
     type Layout,
     type Config,
+    type PlotlyHTMLElement,
+    type PlotRelayoutEvent,
 } from 'plotly.js-dist-min'
 
 /**
@@ -27,7 +29,7 @@ export default class TerraPlot extends TerraElement {
     #resizeObserver: ResizeObserver
 
     @query('[part="base"]')
-    base: HTMLElement
+    base: PlotlyHTMLElement
 
     @property()
     plotTitle?: string
@@ -79,6 +81,8 @@ export default class TerraPlot extends TerraElement {
             },
             { responsive: true, ...this.config }
         )
+
+        this.base.on('plotly_relayout', this.#handlePlotlyRelayout.bind(this))
     }
 
     render() {
@@ -88,5 +92,22 @@ export default class TerraPlot extends TerraElement {
     updated() {
         // If present, define the Plot Title as a part for styling.
         this.shadowRoot?.querySelector('.gtitle')?.part.add('plot-title')
+    }
+
+    #handlePlotlyRelayout(e: PlotRelayoutEvent) {
+        const detail = {
+            ...(e['xaxis.range[0]'] && { xAxisMin: e['xaxis.range[0]'] }),
+            ...(e['xaxis.range[1]'] && { xAxisMax: e['xaxis.range[1]'] }),
+            ...(e['yaxis.range[0]'] && { yAxisMin: e['yaxis.range[0]'] }),
+            ...(e['yaxis.range[1]'] && { yAxisMax: e['yaxis.range[1]'] }),
+        }
+
+        if (!Object.keys(detail).length) {
+            return
+        }
+
+        this.emit('terra-plot-relayout', {
+            detail,
+        })
     }
 }

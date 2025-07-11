@@ -1,6 +1,7 @@
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
+import TerraAlert from '../alert/alert.component.js'
 import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
@@ -19,6 +20,8 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
 import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
 import type { VariableDbEntry } from './time-series.types.js'
+import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
+import { formatDate } from '../../utilities/date.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -37,6 +40,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-loader': TerraLoader,
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
+        'terra-alert': TerraAlert,
     }
 
     #timeSeriesController: TimeSeriesController
@@ -101,6 +105,11 @@ export default class TerraTimeSeries extends TerraElement {
     @state() catalogVariable: Variable
 
     /**
+     * user quota reached maximum request
+     */
+    @state() private quotaExceededOpen = false
+
+    /**
      * if true, we'll show a warning to the user about them requesting a large number of data points
      */
     @state()
@@ -154,6 +163,7 @@ export default class TerraTimeSeries extends TerraElement {
                 this.startDate ?? variable.exampleInitialStartDate?.toISOString()
             this.endDate =
                 this.endDate ?? variable.exampleInitialEndDate?.toISOString()
+
             this.catalogVariable = variable
         },
         args: () => [this.variableEntryId, this.collection, this.variable],
@@ -161,6 +171,11 @@ export default class TerraTimeSeries extends TerraElement {
 
     connectedCallback(): void {
         super.connectedCallback()
+
+        this.addEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
 
         //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
@@ -176,6 +191,22 @@ export default class TerraTimeSeries extends TerraElement {
             iframe.title = 'Notebook Warm-Up Frame'
             iframe.setAttribute('aria-hidden', 'true')
             document.body.appendChild(iframe)
+        }
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.removeEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
+    }
+
+    #handleQuotaError = (event: CustomEvent) => {
+        const { status } = event.detail
+
+        if (status === 429) {
+            this.quotaExceededOpen = true
         }
     }
 
@@ -287,6 +318,30 @@ export default class TerraTimeSeries extends TerraElement {
     render() {
         return html`
             <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
+                ${this.quotaExceededOpen
+                    ? html`
+                          <terra-alert
+                              variant="warning"
+                              duration="10000"
+                              open=${this.quotaExceededOpen}
+                              closable
+                              @terra-after-hide=${() =>
+                                  (this.quotaExceededOpen = false)}
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              You've exceeded your request quota. Please
+                              <a
+                                  href="https://disc.gsfc.nasa.gov/information/documents?title=Contact%20Us"
+                                  >contact the help desk</a
+                              >
+                              for further assistance.
+                          </terra-alert>
+                      `
+                    : ''}
                 ${cache(
                     this.catalogVariable
                         ? html`
@@ -442,6 +497,11 @@ export default class TerraTimeSeries extends TerraElement {
                             title: 'Time',
                             showgrid: false,
                             zeroline: false,
+                            range:
+                                // manually set the range as we may adjust it when we fetch new data as a user pans/zooms the plot
+                                this.startDate && this.endDate
+                                    ? [this.startDate, this.endDate]
+                                    : undefined,
                         },
                         yaxis: {
                             title: this.#getYAxisLabel(),
@@ -460,6 +520,7 @@ export default class TerraTimeSeries extends TerraElement {
                         modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
                         responsive: true,
                     }}
+                    @terra-plot-relayout=${this.#handlePlotRelayout}
                 ></terra-plot>
             </div>
 
@@ -702,5 +763,31 @@ export default class TerraTimeSeries extends TerraElement {
                 )
             }, 500)
         })
+    }
+
+    #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
+        let changed = false
+        if (e.detail.xAxisMin) {
+            this.startDate = formatDate(e.detail.xAxisMin)
+            changed = true
+        }
+
+        if (e.detail.xAxisMax) {
+            this.endDate = formatDate(e.detail.xAxisMax)
+            changed = true
+        }
+
+        if (changed) {
+            this.dispatchEvent(
+                new CustomEvent('terra-time-series-date-range-change', {
+                    detail: {
+                        startDate: this.startDate,
+                        endDate: this.endDate,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            )
+        }
     }
 }

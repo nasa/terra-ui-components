@@ -13,7 +13,7 @@ export default css`
         display: flex;
         align-items: stretch;
         background-color: var(--terra-panel-background-color);
-        border: solid var(--terra-panel-border-width) var(--sl-panel-border-color);
+        border: solid var(--terra-panel-border-width) var(--terra-panel-border-color);
         border-top-width: calc(var(--terra-panel-border-width) * 3);
         border-radius: var(--terra-border-radius-medium);
         font-family: var(--terra-font-sans);
