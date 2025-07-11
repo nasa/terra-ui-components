@@ -11,12 +11,18 @@ layout: component
 
 ## Examples
 
-### First Example
+### Subsetter in dialog
 
-TODO
+```html:preview
+<div style="height: 200px;">
+    <terra-dialog id="my-dialog">
+        <terra-data-subsetter collection-entry-id="OMAERO_003"></terra-data-subsetter>
+    </terra-dialog>
 
-### Second Example
-
-TODO
+    <terra-button for-dialog="my-dialog">
+        Open Subsetter
+    </button>
+</div>
+```
 
 [component-metadata:terra-data-subsetter]
