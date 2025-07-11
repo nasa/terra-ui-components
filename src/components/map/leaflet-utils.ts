@@ -67,16 +67,12 @@ export interface MapViewOptions {
     maxZoom: number
     hasCoordTracker?: boolean
     hasNavigation?: boolean
+    hideBoundingBoxDrawTool?: boolean
+    hidePointSelectionDrawTool?: boolean
     initialValue?: LatLngBoundsExpression
 }
 
-export interface Map {
-    map: any
-
-    initializeMap(container: HTMLElement, options: MapViewOptions): any
-}
-
-export class Leaflet implements Map {
+export class Leaflet {
     private readonly geoJsonRepository: GiovanniGeoJsonShapes
 
     constructor() {
@@ -112,7 +108,7 @@ export class Leaflet implements Map {
         }
 
         if (options.hasNavigation) {
-            this.addDrawControl()
+            this.addDrawControl(options)
         }
 
         this.map.whenReady((_e: any) => {
@@ -191,7 +187,7 @@ export class Leaflet implements Map {
         coordTracker.addTo(this.map)
     }
 
-    addDrawControl() {
+    addDrawControl(options: MapViewOptions) {
         this.editableLayers = new L.FeatureGroup()
 
         this.editableLayers.addTo(this.map)
@@ -203,16 +199,18 @@ export class Leaflet implements Map {
                 polygon: false,
                 circle: false, // Turns off this drawing tool
                 circlemarker: false,
-                rectangle: {},
-                marker: {
-                    icon: L.icon({
-                        iconUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                        iconAnchor: [15, 40],
-                        shadowUrl:
-                            'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                    }),
-                },
+                rectangle: options?.hideBoundingBoxDrawTool ? false : {},
+                marker: options?.hidePointSelectionDrawTool
+                    ? false
+                    : {
+                          icon: L.icon({
+                              iconUrl:
+                                  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                              iconAnchor: [15, 40],
+                              shadowUrl:
+                                  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                          }),
+                      },
             },
             edit: {
                 featureGroup: this.editableLayers, //REQUIRED!!

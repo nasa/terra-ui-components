@@ -48,7 +48,7 @@ export class HarmonyDataService implements DataServiceInterface {
             context: {
                 headers: {
                     ...(options?.bearerToken && {
-                        authorizaton: options.bearerToken,
+                        authorization: options.bearerToken,
                     }),
                 },
                 fetchOptions: {
@@ -94,7 +94,7 @@ export class HarmonyDataService implements DataServiceInterface {
             context: {
                 headers: {
                     ...(subsetOptions?.bearerToken && {
-                        authorizaton: subsetOptions.bearerToken,
+                        authorization: subsetOptions.bearerToken,
                     }),
                 },
                 fetchOptions: {
@@ -128,7 +128,7 @@ export class HarmonyDataService implements DataServiceInterface {
             context: {
                 headers: {
                     ...(searchOptions?.bearerToken && {
-                        authorizaton: searchOptions.bearerToken,
+                        authorization: searchOptions.bearerToken,
                     }),
                 },
                 fetchOptions: {
@@ -163,7 +163,7 @@ export class HarmonyDataService implements DataServiceInterface {
             context: {
                 headers: {
                     ...(options?.bearerToken && {
-                        authorizaton: options.bearerToken,
+                        authorization: options.bearerToken,
                     }),
                 },
             },

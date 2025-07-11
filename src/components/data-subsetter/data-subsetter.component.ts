@@ -108,8 +108,6 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         document.addEventListener('click', this.#handleClickOutside.bind(this))
-
-        console.log(this.bearerToken)
     }
 
     disconnectedCallback() {
@@ -593,6 +591,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         inline
                         hide-label
                         has-shape-selector
+                        hide-point-selection
                         .initialValue=${this.spatialSelection ?? ''}
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>

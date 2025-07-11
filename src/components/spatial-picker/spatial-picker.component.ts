@@ -55,6 +55,12 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'has-shape-selector', type: Boolean })
     hasShapeSelector: boolean = false
 
+    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
+    hideBoundingBoxSelection?: boolean
+
+    @property({ attribute: 'hide-point-selection', type: Boolean })
+    hidePointSelection?: boolean
+
     /**
      * initialValue of spatial picker
      */
@@ -217,6 +223,8 @@ export default class TerraSpatialPicker extends TerraElement {
             .value=${this.mapValue}
             ?has-navigation=${this.hasNavigation}
             ?has-shape-selector=${this.hasShapeSelector}
+            ?hide-bounding-box-selection=${this.hideBoundingBoxSelection}
+            ?hide-point-selection=${this.hidePointSelection}
             @terra-map-change=${this._handleMapChange}
         >
         </terra-map>`

@@ -63,6 +63,12 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'has-shape-selector', type: Boolean })
     hasShapeSelector: boolean = false
 
+    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
+    hideBoundingBoxSelection?: boolean
+
+    @property({ attribute: 'hide-point-selection', type: Boolean })
+    hidePointSelection?: boolean
+
     @property({ type: Array })
     value: any = []
 
@@ -101,6 +107,8 @@ export default class TerraMap extends TerraElement {
             hasCoordTracker: this.hasCoordTracker,
             hasNavigation: this.hasNavigation,
             initialValue: this.value,
+            hideBoundingBoxDrawTool: this.hideBoundingBoxSelection,
+            hidePointSelectionDrawTool: this.hidePointSelection,
         })
 
         this.map.on('draw', (layer: any) =>
