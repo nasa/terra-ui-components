@@ -16,5 +16,3 @@ export type { TerraAfterHideEvent } from './terra-after-hide.js'
 export type { TerraDialogShowEvent } from './terra-dialog-show.js'
 export type { TerraDialogHideEvent } from './terra-dialog-hide.js'
 export type { TerraVariablesChangeEvent } from './terra-variables-change.js'
-
-

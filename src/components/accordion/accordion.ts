@@ -1,12 +1,12 @@
-import TerraAccordion from './accordion.component.js';
+import TerraAccordion from './accordion.component.js'
 
-export * from './accordion.component.js';
-export default TerraAccordion;
+export * from './accordion.component.js'
+export default TerraAccordion
 
-TerraAccordion.define('terra-accordion');
+TerraAccordion.define('terra-accordion')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-accordion': TerraAccordion;
+        'terra-accordion': TerraAccordion
     }
 }

@@ -4,6 +4,7 @@ meta:
     description: Alerts are used to display important messages inline or as toast notifications.
 layout: component
 ---
+
 <!-- TODO: @shoelace-style/shoelace/dist/react/alert needs to be replaced with our dist -->
 
 ```html:preview
@@ -30,4 +31,5 @@ const App = () => (
   </TerraAlert>
 );
 ```
+
 :::tip Alerts will not be visible if the open attribute is not present. :::

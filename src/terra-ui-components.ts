@@ -20,7 +20,7 @@ export { default as TerraVariableKeywordSearch } from './components/variable-key
 export { default as TerraDatePicker } from './components/date-picker/date-picker.js'
 export { default as TerraDataRods } from './components/data-rods/data-rods.js'
 export { default as TerraAccordion } from './components/accordion/accordion.js'
-export { default as TerraDataSubsetter } from './components/data-subsetter/data-subsetter.js';
+export { default as TerraDataSubsetter } from './components/data-subsetter/data-subsetter.js'
 /* plop:component */
 
 // Utilities
