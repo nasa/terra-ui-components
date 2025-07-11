@@ -1,4 +1,4 @@
-import { calculateDateChunks } from '../../lib/dataset.js'
+import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
 import { format } from 'date-fns'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
@@ -10,19 +10,18 @@ import {
     storeDataByKey,
 } from '../../internal/indexeddb.js'
 import type {
-    Collection,
-    EndDate,
-    Location,
     MaybeBearerToken,
-    StartDate,
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
-    Variable,
     VariableDbEntry,
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import type { TimeInterval } from '../../types.js'
+import { formatDate, getUTCDate } from '../../utilities/date.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+
+const NUM_DATAPOINTS_TO_WARN_USER = 50000
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -35,10 +34,9 @@ export const plotlyDefaultData: Partial<PlotData> = {
     line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
 }
 
-type TaskArguments = [Collection, Variable, StartDate, EndDate, Location]
-
 export class TimeSeriesController {
     #bearerToken: MaybeBearerToken = null
+    #userConfirmedWarning = false
 
     host: ReactiveControllerHost & TerraTimeSeries
     emptyPlotData: Partial<Data>[] = [
@@ -49,17 +47,11 @@ export class TimeSeriesController {
         },
     ]
 
-    task: Task<TaskArguments, Partial<Data>[]>
+    task: Task<any, Partial<Data>[]>
 
     //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
-
-    collection: Collection
-    variable: Variable
-    startDate: StartDate
-    endDate: EndDate
-    location: Location
 
     constructor(
         host: ReactiveControllerHost & TerraTimeSeries,
@@ -70,15 +62,13 @@ export class TimeSeriesController {
         this.host = host
 
         this.task = new Task(host, {
-            autoRun: false,
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
                 if (
-                    !this.collection ||
-                    !this.variable ||
-                    !this.startDate ||
-                    !this.endDate ||
-                    !this.location
+                    !this.host.catalogVariable ||
+                    !this.host.startDate ||
+                    !this.host.endDate ||
+                    !this.host.location
                 ) {
                     // requirements not yet met to fetch the time series data
                     return initialState
@@ -100,26 +90,29 @@ export class TimeSeriesController {
                 this.host.emit('terra-time-series-data-change', {
                     detail: {
                         data: timeSeries,
-                        collection: this.collection,
-                        variable: this.variable,
-                        startDate: this.startDate.toISOString(),
-                        endDate: this.endDate.toISOString(),
-                        location: this.location,
+                        variable: this.host.catalogVariable,
+                        startDate: formatDate(this.host.startDate),
+                        endDate: formatDate(this.host.endDate),
+                        location: this.host.location,
                     },
                 })
 
                 return this.lastTaskValue
             },
+            args: () => [
+                this.host.catalogVariable,
+                this.host.startDate,
+                this.host.endDate,
+                this.host.location,
+            ],
         })
     }
 
     async #loadTimeSeries(signal: AbortSignal) {
-        // create the variable identifer
-        const variableEntryId = `${this.collection}_${this.variable}`.replace(
-            /\./g,
-            '_'
-        ) // GiC doesn't store variables with a "." in the name, they replace them with "_"
-        const cacheKey = `${variableEntryId}_${this.location}`
+        const startDate = getUTCDate(this.host.startDate!)
+        const endDate = getUTCDate(this.host.endDate!)
+        const cacheKey = this.getCacheKey()
+        const variableEntryId = this.host.catalogVariable!.dataFieldId
 
         // check the database for any existing data
         const existingTerraData = await getDataByKey<VariableDbEntry>(
@@ -129,9 +122,8 @@ export class TimeSeriesController {
 
         if (
             existingTerraData &&
-            this.startDate.getTime() >=
-                new Date(existingTerraData.startDate).getTime() &&
-            this.endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
+            startDate.getTime() >= new Date(existingTerraData.startDate).getTime() &&
+            endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
         ) {
             // already have the data downloaded!
             return this.#getDataInRange(existingTerraData)
@@ -151,7 +143,7 @@ export class TimeSeriesController {
 
         for (const gap of dataGaps) {
             const chunks = calculateDateChunks(
-                this.host.timeInterval as TimeInterval,
+                this.host.catalogVariable!.dataProductTimeInterval as TimeInterval,
                 gap.start,
                 gap.end
             )
@@ -220,9 +212,12 @@ export class TimeSeriesController {
     #calculateDataGaps(
         existingData?: VariableDbEntry
     ): Array<{ start: Date; end: Date }> {
+        const start = getUTCDate(this.host.startDate!)
+        const end = getUTCDate(this.host.endDate!)
+
         if (!existingData) {
             // No existing data, need to fetch the entire range
-            return [{ start: this.startDate, end: this.endDate }]
+            return [{ start, end }]
         }
 
         const existingStartDate = new Date(existingData.startDate)
@@ -230,13 +225,13 @@ export class TimeSeriesController {
         const gaps: Array<{ start: Date; end: Date }> = []
 
         // Check if we need data before our cached range
-        if (this.startDate < existingStartDate) {
-            gaps.push({ start: this.startDate, end: existingStartDate })
+        if (start < existingStartDate) {
+            gaps.push({ start, end: existingStartDate })
         }
 
         // Check if we need data after our cached range
-        if (this.endDate > existingEndDate) {
-            gaps.push({ start: existingEndDate, end: this.endDate })
+        if (end > existingEndDate) {
+            gaps.push({ start: existingEndDate, end })
         }
 
         return gaps
@@ -251,12 +246,29 @@ export class TimeSeriesController {
         endDate: Date,
         signal: AbortSignal
     ): Promise<TimeSeriesData> {
-        const [lon, lat] = decodeURIComponent(this.location ?? ', ').split(', ')
+        // Check if we need to warn the user about data point limits
+        if (
+            !this.#userConfirmedWarning &&
+            !this.#checkDataPointLimits(
+                this.host.catalogVariable!,
+                startDate,
+                endDate
+            )
+        ) {
+            // User needs to confirm before proceeding
+            throw new Error('User cancelled data point warning')
+        }
+
+        // Reset the confirmation flag after using it
+        this.#userConfirmedWarning = false
+
+        const [lat, lon] = decodeURIComponent(this.host.location ?? ',').split(',')
+        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
 
         const url = `${endpoint}?${new URLSearchParams({
             data: variableEntryId,
-            lat,
-            lon,
+            lat: normalizedLocation.lat,
+            lon: normalizedLocation.lon,
             time_start: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
             time_end: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
         }).toString()}`
@@ -344,12 +356,15 @@ export class TimeSeriesController {
      * given a set of data and a date range, will return only the data that falls within that range
      */
     #getDataInRange(data: TimeSeriesData): TimeSeriesData {
+        const startDate = getUTCDate(this.host.startDate!)
+        const endDate = getUTCDate(this.host.endDate!)
+
         return {
             ...data,
             data: data.data
                 .filter(row => {
                     const timestamp = new Date(row.timestamp)
-                    return timestamp >= this.startDate && timestamp <= this.endDate
+                    return timestamp >= startDate && timestamp <= endDate
                 })
                 .sort(
                     (a, b) =>
@@ -361,5 +376,60 @@ export class TimeSeriesController {
 
     render(renderFunctions: StatusRenderer<Partial<Data>[]>) {
         return this.task.render(renderFunctions)
+    }
+
+    /**
+     * Normalizes coordinates to 2 decimal places
+     */
+    #normalizeCoordinates(lat: string, lon: string) {
+        return {
+            lat: Number(lat).toFixed(2),
+            lon: Number(lon).toFixed(2),
+        }
+    }
+
+    /**
+     * Gets the cache key for the current time series data
+     */
+    getCacheKey(): string {
+        if (!this.host.location || !this.host.catalogVariable) {
+            throw new Error(
+                'Location and catalog variable are required to get cache key'
+            )
+        }
+
+        const [lat, lon] = this.host.location.split(',')
+        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
+        const location = `${normalizedLocation.lat},%20${normalizedLocation.lon}`
+        return `${this.host.catalogVariable.dataFieldId}_${location}`
+    }
+
+    /**
+     * Checks if the current date range will exceed data point limits
+     * Returns true if it's safe to proceed, false if confirmation is needed
+     */
+    #checkDataPointLimits(catalogVariable: Variable, startDate: Date, endDate: Date) {
+        this.host.estimatedDataPoints = calculateDataPoints(
+            catalogVariable.dataProductTimeInterval as TimeInterval,
+            startDate,
+            endDate
+        )
+
+        if (this.host.estimatedDataPoints < NUM_DATAPOINTS_TO_WARN_USER) {
+            // under the warning limit, user is good to go
+            return true
+        }
+
+        // show warning and require confirmation from the user
+        this.host.showDataPointWarning = true
+        return false
+    }
+
+    /**
+     * Called when the user confirms the data point warning
+     */
+    confirmDataPointWarning() {
+        this.#userConfirmedWarning = true
+        this.host.showDataPointWarning = false
     }
 }

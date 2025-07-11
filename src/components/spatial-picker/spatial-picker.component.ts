@@ -90,6 +90,12 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ type: Boolean })
     inline: boolean = false
 
+    /**
+     * Whether the map should show automatically when the input is focused
+     */
+    @property({ attribute: 'show-map-on-focus', type: Boolean })
+    showMapOnFocus: boolean = false
+
     @state()
     mapValue: any
 
@@ -133,10 +139,27 @@ export default class TerraSpatialPicker extends TerraElement {
         if (!relatedTarget?.closest('terra-map')) {
             this.isExpanded = false
         }
+
+        this.emit('terra-map-change', {
+            detail: {
+                cause: 'draw',
+                latLng: this.mapValue,
+                geoJson: {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [this.mapValue.lng, this.mapValue.lat],
+                    },
+                    properties: {},
+                },
+            },
+        })
     }
 
     private _focus() {
-        this.isExpanded = true
+        if (this.showMapOnFocus) {
+            this.isExpanded = true
+        }
     }
 
     private _click() {
