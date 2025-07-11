@@ -1068,6 +1068,35 @@ export default class TerraDataSubsetter extends TerraElement {
                                       </svg>
                                       Python Script
                                   </button>
+                                  <button
+                                      class="download-option"
+                                      @click=${(e: Event) =>
+                                          this.#downloadEarthdataDownload(e)}
+                                  >
+                                      <svg
+                                          class="file-icon"
+                                          viewBox="0 0 64 64"
+                                          fill="none"
+                                          width="16"
+                                          height="16"
+                                      >
+                                          <circle
+                                              cx="32"
+                                              cy="32"
+                                              r="28"
+                                              fill="currentColor"
+                                          />
+                                          <path
+                                              d="M32 14v26M32 40l-9-9M32 40l9-9"
+                                              stroke="#fff"
+                                              stroke-width="4"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              fill="none"
+                                          />
+                                      </svg>
+                                      Earthdata Download
+                                  </button>
                               </div>
                           </div>
                       `
@@ -1362,6 +1391,17 @@ export default class TerraDataSubsetter extends TerraElement {
 
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
+
+        this.showDownloadMenu = false
+    }
+
+    async #downloadEarthdataDownload(event: Event) {
+        event.stopPropagation()
+        if (!this.#controller.currentJob?.links) {
+            return
+        }
+
+        alert('Sorry, Earthdata Download is not currently supported')
 
         this.showDownloadMenu = false
     }
