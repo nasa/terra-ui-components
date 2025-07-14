@@ -3,7 +3,7 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter.styles.js'
 import type { CSSResultGroup } from 'lit'
-import { property, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
 import TerraAccordion from '../accordion/accordion.component.js'
 import {
@@ -38,6 +38,8 @@ import { watch } from '../../internal/watch.js'
  * @csspart base - The component's base wrapper.
  *
  * @cssproperty --example - An example CSS custom property.
+ *
+ * @event terra-subset-job-complete - called when a subset job enters a final state (e.g. successful, failed, completed_with_errors)
  */
 export default class TerraDataSubsetter extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -95,6 +97,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     showDownloadMenu: boolean = false
+
+    @query('[part~="spatial-picker"]')
+    spatialPicker: TerraSpatialPicker
 
     #controller = new DataSubsetterController(this)
 
@@ -588,6 +593,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
                 <div class="accordion-content">
                     <terra-spatial-picker
+                        part="spatial-picker"
                         inline
                         hide-label
                         has-shape-selector
@@ -1001,103 +1007,110 @@ export default class TerraDataSubsetter extends TerraElement {
                 ${this.#controller.currentJob!.status === Status.SUCCESSFUL ||
                 this.#controller.currentJob!.status === Status.COMPLETE_WITH_ERRORS
                     ? html`
-                          <div
-                              class="download-dropdown ${this.showDownloadMenu
-                                  ? 'open'
-                                  : ''}"
-                          >
-                              <button
-                                  class="download-btn"
-                                  @click=${(e: Event) => this.#toggleDownloadMenu(e)}
-                              >
-                                  <svg
-                                      class="download-icon-small"
-                                      viewBox="0 0 24 24"
-                                      fill="currentColor"
-                                  >
-                                      <path
-                                          d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
-                                      />
-                                  </svg>
-                                  Download Options
-                                  <svg
-                                      class="dropdown-arrow"
-                                      viewBox="0 0 24 24"
-                                      fill="currentColor"
-                                  >
-                                      <path d="M7 10l5 5 5-5z" />
-                                  </svg>
-                              </button>
-
+                          <div>
                               <div
-                                  class="download-menu ${this.showDownloadMenu
+                                  class="download-dropdown ${this.showDownloadMenu
                                       ? 'open'
                                       : ''}"
                               >
-                                  <button
-                                      class="download-option"
+                                  <terra-button
                                       @click=${(e: Event) =>
-                                          this.#downloadLinksAsTxt(e)}
+                                          this.#toggleDownloadMenu(e)}
                                   >
+                                      Download Options
                                       <svg
-                                          class="file-icon"
+                                          class="dropdown-arrow"
                                           viewBox="0 0 24 24"
                                           fill="currentColor"
                                       >
-                                          <path
-                                              d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
-                                          />
+                                          <path d="M7 10l5 5 5-5z" />
                                       </svg>
-                                      File List
-                                  </button>
-                                  <button
-                                      class="download-option"
-                                      @click=${(e: Event) =>
-                                          this.#downloadPythonScript(e)}
+                                  </terra-button>
+
+                                  <div
+                                      class="download-menu ${this.showDownloadMenu
+                                          ? 'open'
+                                          : ''}"
                                   >
-                                      <svg
-                                          class="file-icon"
-                                          viewBox="0 0 128 128"
-                                          width="16"
-                                          height="16"
+                                      <button
+                                          class="download-option"
+                                          @click=${(e: Event) =>
+                                              this.#downloadLinksAsTxt(e)}
                                       >
-                                          <path
+                                          <svg
+                                              class="file-icon"
+                                              viewBox="0 0 24 24"
                                               fill="currentColor"
-                                              d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
-                                          ></path>
-                                      </svg>
-                                      Python Script
-                                  </button>
-                                  <button
-                                      class="download-option"
-                                      @click=${(e: Event) =>
-                                          this.#downloadEarthdataDownload(e)}
-                                  >
-                                      <svg
-                                          class="file-icon"
-                                          viewBox="0 0 64 64"
-                                          fill="none"
-                                          width="16"
-                                          height="16"
+                                          >
+                                              <path
+                                                  d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"
+                                              />
+                                          </svg>
+                                          File List
+                                      </button>
+                                      <button
+                                          class="download-option"
+                                          @click=${(e: Event) =>
+                                              this.#downloadPythonScript(e)}
                                       >
-                                          <circle
-                                              cx="32"
-                                              cy="32"
-                                              r="28"
-                                              fill="currentColor"
-                                          />
-                                          <path
-                                              d="M32 14v26M32 40l-9-9M32 40l9-9"
-                                              stroke="#fff"
-                                              stroke-width="4"
-                                              stroke-linecap="round"
-                                              stroke-linejoin="round"
+                                          <svg
+                                              class="file-icon"
+                                              viewBox="0 0 128 128"
+                                              width="16"
+                                              height="16"
+                                          >
+                                              <path
+                                                  fill="currentColor"
+                                                  d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
+                                              ></path>
+                                          </svg>
+                                          Python Script
+                                      </button>
+                                      <button
+                                          class="download-option"
+                                          @click=${(e: Event) =>
+                                              this.#downloadEarthdataDownload(e)}
+                                      >
+                                          <svg
+                                              class="file-icon"
+                                              viewBox="0 0 64 64"
                                               fill="none"
-                                          />
-                                      </svg>
-                                      Earthdata Download
-                                  </button>
+                                              width="16"
+                                              height="16"
+                                          >
+                                              <circle
+                                                  cx="32"
+                                                  cy="32"
+                                                  r="28"
+                                                  fill="currentColor"
+                                              />
+                                              <path
+                                                  d="M32 14v26M32 40l-9-9M32 40l9-9"
+                                                  stroke="#fff"
+                                                  stroke-width="4"
+                                                  stroke-linecap="round"
+                                                  stroke-linejoin="round"
+                                                  fill="none"
+                                              />
+                                          </svg>
+                                          Earthdata Download
+                                      </button>
+                                  </div>
                               </div>
+
+                              <terra-button
+                                  outline
+                                  @click=${() => this.#handleJupyterNotebookClick()}
+                                  style="margin-left: 8px;"
+                              >
+                                  <terra-icon
+                                      name="outline-code-bracket"
+                                      library="heroicons"
+                                      font-size="1.5em"
+                                      style="margin-right: 5px;"
+                                  ></terra-icon>
+                                  Open in Jupyter Notebook
+                              </terra-button>
                           </div>
                       `
                     : nothing}
@@ -1420,5 +1433,52 @@ export default class TerraDataSubsetter extends TerraElement {
             // hide download menu
             this.showDownloadMenu = false
         }
+    }
+
+    #handleJupyterNotebookClick() {
+        const jupyterLiteUrl = 'https://gesdisc.github.io/jupyterlite/lab/index.html'
+        const jupyterWindow = window.open(jupyterLiteUrl, '_blank')
+
+        if (!jupyterWindow) {
+            console.error('Failed to open JupyterLite!')
+            return
+        }
+
+        // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+        setTimeout(() => {
+            const notebook = [
+                {
+                    id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
+                    cell_type: 'code',
+                    source: '%pip install -q terra_ui_components',
+                    metadata: {
+                        trusted: true,
+                    },
+                    outputs: [],
+                    execution_count: null,
+                },
+                {
+                    id: '870c1384-e706-48ee-ba07-fd552a949869',
+                    cell_type: 'code',
+                    source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\nsubsetter.jobId = '${this.#controller.currentJob?.jobID}'\n\nsubsetter`,
+                    metadata: {
+                        trusted: true,
+                    },
+                    outputs: [],
+                    execution_count: null,
+                },
+            ]
+
+            console.log('posting to JupyterLite ', notebook)
+
+            jupyterWindow.postMessage(
+                {
+                    type: 'load-notebook',
+                    filename: `subset_${this.#controller.currentJob?.jobID}.ipynb`,
+                    notebook,
+                },
+                '*'
+            )
+        }, 500)
     }
 }

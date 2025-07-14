@@ -20,7 +20,10 @@ class TerraDataSubsetter(TerraBaseWidget):
          *
          * model.get() pulls from the Jupyter notebooks state. We'll use the state to set the initial value for each property
          */
-        component.attr = model.get('attr')
+        component.collectionEntryId = model.get('collectionEntryId')
+        component.showCollectionSearch = model.get('showCollectionSearch')
+        component.jobId = model.get('jobId')
+        component.bearerToken = model.get('bearerToken')
 
         /**
          * add the component to the cell
@@ -36,8 +39,35 @@ class TerraDataSubsetter(TerraBaseWidget):
          * 
          * If this isn't here, the component can't be changed after it's initial render
          */
-        model.on('change:attr', () => {
-            component.attr = model.get('attr')
+        model.on('change:collectionEntryId', () => {
+            component.collectionEntryId = model.get('collectionEntryId')
+        })
+        model.on('change:showCollectionSearch', () => {
+            component.showCollectionSearch = model.get('showCollectionSearch')
+        })
+        model.on('change:jobId', () => {
+            component.jobId = model.get('jobId')
+        })
+        model.on('change:bearerToken', () => {
+            component.bearerToken = model.get('bearerToken')
+        })
+
+         /**
+         * Add event listeners.
+         * These are used to communicate back to the Jupyter notebook
+         */
+        component.addEventListener('terra-subset-job-complete', (e) => {
+            // hide the loading overlay, if it exists
+            const loadingOverlay = document.getElementById('jupyterlite-loading-overlay')
+
+            if (loadingOverlay) {
+                loadingOverlay.remove()
+            }
+
+            console.log('caught the event!! ', e)
+
+            model.set('job', e.detail)
+            model.save_changes()
         })
     }
 
@@ -47,4 +77,8 @@ class TerraDataSubsetter(TerraBaseWidget):
     # Component properties
     # While we have properties in the component, we also need to tell Python about them as well. 
     # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
-    attr = traitlets.Unicode('').tag(sync=True)
+    collectionEntryId = traitlets.Unicode('').tag(sync=True)
+    showCollectionSearch = traitlets.Unicode('').tag(sync=True)
+    jobId = traitlets.Unicode('').tag(sync=True)
+    bearerToken = traitlets.Unicode('').tag(sync=True)
+    job = traitlets.List(trait=traitlets.Dict(), default_value=[]).tag(sync=True)

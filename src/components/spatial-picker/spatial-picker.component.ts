@@ -108,6 +108,9 @@ export default class TerraSpatialPicker extends TerraElement {
     @query('.spatial-picker__input')
     spatialInput: HTMLInputElement
 
+    @query('terra-map')
+    map: TerraMap
+
     private _blur(e: FocusEvent) {
         const inputValue = (e.target as HTMLInputElement).value
 
@@ -210,6 +213,10 @@ export default class TerraSpatialPicker extends TerraElement {
             this.mapValue =
                 this.initialValue === '' ? [] : parseBoundingBox(this.initialValue)
         }
+
+        setTimeout(() => {
+            this.invalidateSize()
+        }, 500)
     }
 
     renderMap() {
@@ -286,5 +293,9 @@ export default class TerraSpatialPicker extends TerraElement {
                     : nothing}
             </div>
         `
+    }
+
+    invalidateSize() {
+        this.map?.invalidateSize()
     }
 }

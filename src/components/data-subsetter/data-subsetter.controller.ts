@@ -104,6 +104,11 @@ export class DataSubsetterController {
                     setTimeout(() => {
                         this.jobStatusTask.run()
                     }, JOB_STATUS_POLL_MILLIS)
+                } else if (job) {
+                    console.log('Subset job completed ', job)
+                    this.#host.emit('terra-subset-job-complete', {
+                        detail: job,
+                    })
                 }
 
                 return job

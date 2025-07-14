@@ -85,7 +85,7 @@ export default class TerraMap extends TerraElement {
         }
     }
 
-    map: any = new Leaflet()
+    map = new Leaflet()
 
     /**
      * List of geojson shapes
@@ -191,5 +191,10 @@ export default class TerraMap extends TerraElement {
             <!-- "Map goes here" -->
             <div part="map" id="map" class="map"></div>
         `
+    }
+
+    invalidateSize() {
+        console.log('invalidate size ', this.map.map)
+        this.map.map.invalidateSize()
     }
 }

@@ -888,6 +888,30 @@ export default css`
         transform: rotate(180deg);
     }
 
+    .jupyter-btn {
+        background: #fff;
+        color: #333;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        padding: 6px 12px;
+        font-size: 1em;
+        cursor: pointer;
+        transition:
+            background 0.2s,
+            box-shadow 0.2s;
+        margin-left: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .jupyter-btn:hover,
+    .jupyter-btn:focus {
+        background: #f8f8f8;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        outline: none;
+    }
+
     .download-option {
         display: flex;
         align-items: center;
