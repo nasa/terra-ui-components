@@ -67,7 +67,14 @@ module.exports = function (eleventyConfig) {
 
     // Generates a URL relative to the site's asset directory
     eleventyConfig.addNunjucksGlobal('assetUrl', (value = '', absolute = false) => {
-        value = path.join(`/${assetsDir}`, value)
+        // Get pathPrefix from config or globalData
+        const pathPrefix =
+            eleventyConfig.globalData.pathPrefix || eleventyConfig.pathPrefix || ''
+        // Ensure pathPrefix starts with / and does not end with /
+        const normalizedPrefix = pathPrefix
+            ? '/' + pathPrefix.replace(/^\/+|\/+$/g, '')
+            : ''
+        value = path.join(normalizedPrefix, assetsDir, value)
         return absolute
             ? new URL(value, eleventyConfig.globalData.baseUrl).toString()
             : value
@@ -264,6 +271,7 @@ module.exports = function (eleventyConfig) {
     // 11ty config
     //
     return {
+        pathPrefix: process.env.DOCS_PATH_PREFIX || '',
         dir: {
             input: 'pages',
             output: '../_site',

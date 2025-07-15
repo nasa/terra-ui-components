@@ -25,6 +25,8 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          DOCS_PATH_PREFIX: /components
 
       - name: Release Github Pages
         uses: peaceiris/actions-gh-pages@v3
