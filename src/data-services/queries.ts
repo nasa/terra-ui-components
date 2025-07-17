@@ -68,6 +68,7 @@ export const CREATE_SUBSET_JOB = gql`
         $startDate: String
         $endDate: String
         $format: String
+        $labels: [String]
     ) {
         createSubsetJob(
             input: {
@@ -77,6 +78,7 @@ export const CREATE_SUBSET_JOB = gql`
                 startDate: $startDate
                 endDate: $endDate
                 format: $format
+                labels: $labels
             }
         ) {
             jobID
@@ -102,6 +104,22 @@ export const CREATE_SUBSET_JOB = gql`
                     start
                     end
                 }
+            }
+        }
+    }
+`
+
+export const GET_SUBSET_JOBS = gql`
+    query {
+        getSubsetJobs {
+            count
+            jobs {
+                jobID
+                status
+                message
+                progress
+                request
+                labels
             }
         }
     }

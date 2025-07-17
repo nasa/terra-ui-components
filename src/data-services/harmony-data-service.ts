@@ -4,6 +4,7 @@ import {
     CREATE_SUBSET_JOB,
     GET_SERVICE_CAPABILITIES,
     GET_SUBSET_JOB_STATUS,
+    GET_SUBSET_JOBS,
 } from './queries.js'
 import {
     Status,
@@ -12,6 +13,7 @@ import {
     type SubsetJobOptions,
     type SubsetJobStatus,
     type SearchOptions,
+    type SubsetJobs,
 } from './types.js'
 
 export const HARMONY_CONFIG = {
@@ -90,6 +92,7 @@ export class HarmonyDataService implements DataServiceInterface {
                 startDate: subsetOptions?.startDate,
                 endDate: subsetOptions?.endDate,
                 format: subsetOptions?.format,
+                labels: subsetOptions?.labels,
             },
             context: {
                 headers: {
@@ -110,6 +113,35 @@ export class HarmonyDataService implements DataServiceInterface {
         }
 
         return response.data?.createSubsetJob
+    }
+
+    async getSubsetJobs(searchOptions?: SearchOptions): Promise<SubsetJobs> {
+        const client = await getGraphQLClient()
+
+        const response = await client.query<{
+            getSubsetJobs: SubsetJobs
+        }>({
+            query: GET_SUBSET_JOBS,
+            context: {
+                headers: {
+                    ...(searchOptions?.bearerToken && {
+                        authorization: searchOptions.bearerToken,
+                    }),
+                },
+                fetchOptions: {
+                    signal: searchOptions?.signal,
+                },
+            },
+            fetchPolicy: 'network-only',
+        })
+
+        if (response.errors) {
+            throw new Error(
+                `Failed to fetch subset jobs: ${response.errors[0].message}`
+            )
+        }
+
+        return response.data.getSubsetJobs
     }
 
     async getSubsetJobStatus(

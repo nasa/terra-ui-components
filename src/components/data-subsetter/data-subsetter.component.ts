@@ -1290,9 +1290,28 @@ export default class TerraDataSubsetter extends TerraElement {
                 border: 1px solid ${color}22;
             "
             >
-                ${this.#controller.currentJob!.message}
+                ${this.#getJobMessageText()}
             </div>
         `
+    }
+
+    #getJobMessageText() {
+        return this.#controller.currentJob?.message.replace(
+            /\b(The job|the job|job|Job)\b/g,
+            match => {
+                switch (match) {
+                    case 'The job':
+                        return 'Your request'
+                    case 'the job':
+                        return 'Your Request'
+                    case 'job':
+                        return 'request'
+                    case 'Job':
+                        return 'Request'
+                }
+                return match
+            }
+        )
     }
 
     #estimateJobSize() {

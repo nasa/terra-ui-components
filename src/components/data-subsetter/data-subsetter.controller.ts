@@ -13,7 +13,7 @@ import {
 } from '../../data-services/harmony-data-service.js'
 import { getUTCDate } from '../../utilities/date.js'
 
-const JOB_STATUS_POLL_MILLIS = 1000
+const JOB_STATUS_POLL_MILLIS = 3000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
@@ -52,6 +52,8 @@ export class DataSubsetterController {
                         { signal, bearerToken: this.#host.bearerToken }
                     )
                 } else {
+                    const labels = this.#buildJobLabels()
+
                     let subsetOptions = {
                         variableConceptIds: this.#host.selectedVariables.map(
                             v => v.conceptId
@@ -72,6 +74,7 @@ export class DataSubsetterController {
                         ...(this.#host.selectedFormat && {
                             format: this.#host.selectedFormat,
                         }),
+                        labels,
                     }
 
                     console.log(
@@ -167,5 +170,42 @@ export class DataSubsetterController {
             numInputGranules: 0,
             links: [],
         }
+    }
+
+    #buildJobLabels(): string[] {
+        const labels: string[] = []
+        const cws = this.#host.collectionWithServices
+        if (cws?.shortName) {
+            labels.push(`Collection: ${cws.shortName}`)
+        }
+
+        const dr = this.#host.selectedDateRange
+        if (dr?.startDate && dr?.endDate) {
+            labels.push(`Date: ${dr.startDate} to ${dr.endDate}`)
+        }
+
+        const spatial = this.#host.spatialSelection
+        if (spatial) {
+            if ('w' in spatial) {
+                labels.push(
+                    `BBOX: ${spatial.w},${spatial.s},${spatial.e},${spatial.n}`
+                )
+            } else if ('lat' in spatial && 'lng' in spatial) {
+                labels.push(`Point: ${spatial.lat},${spatial.lng}`)
+            }
+        }
+
+        if (this.#host.selectedVariables?.length) {
+            labels.push(
+                `Variables: ${this.#host.selectedVariables.map(v => v.name).join(', ')}`
+            )
+        } else if (cws?.variableSubset) {
+            labels.push('Variables: All')
+        }
+
+        if (this.#host.selectedFormat) {
+            labels.push(`Format: ${this.#host.selectedFormat}`)
+        }
+        return labels
     }
 }

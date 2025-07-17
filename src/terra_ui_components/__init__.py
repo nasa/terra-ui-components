@@ -7,4 +7,5 @@ from .date_picker import TerraDatePicker
 from .data_rods import TerraDataRods
 from .accordion import TerraAccordion
 from .data_subsetter import TerraDataSubsetter
-__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods", "TerraAccordion", "TerraDataSubsetter"]
+from .data_subsetter_history import TerraDataSubsetterHistory
+__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods", "TerraAccordion", "TerraDataSubsetter", "TerraDataSubsetterHistory"]
