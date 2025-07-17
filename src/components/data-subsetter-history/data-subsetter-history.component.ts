@@ -1,11 +1,14 @@
-import { property, state } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
 import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter-history.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { DataSubsetterHistoryController } from './data-subsetter-history.controller.js'
-import type { SubsetJobs } from '../../data-services/types.js'
+import type { SubsetJobs, SubsetJobStatus } from '../../data-services/types.js'
+import TerraIcon from '../icon/icon.component.js'
+import TerraDataSubsetter from '../data-subsetter/data-subsetter.component.js'
+import TerraDialog from '../dialog/dialog.component.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -23,6 +26,11 @@ import type { SubsetJobs } from '../../data-services/types.js'
  * @cssproperty --example - An example CSS custom property.
  */
 export default class TerraDataSubsetterHistory extends TerraElement {
+    static dependencies: Record<string, typeof TerraElement> = {
+        'terra-icon': TerraIcon,
+        'terra-data-subsetter': TerraDataSubsetter,
+        'terra-dialog': TerraDialog,
+    }
     static styles: CSSResultGroup = [componentStyles, styles]
 
     @property({ attribute: 'bearer-token' })
@@ -30,6 +38,12 @@ export default class TerraDataSubsetterHistory extends TerraElement {
 
     @state()
     collapsed: boolean = false
+
+    @state()
+    selectedJob?: string
+
+    @query('[part~="dialog"]')
+    dialog: TerraDialog
 
     #controller = new DataSubsetterHistoryController(this)
 
@@ -62,43 +76,49 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                     </div>
 
                     <div class="history-list">
-                        <p>${this.#controller.task.status}</p>
-
+                        ${this.selectedJob}
                         ${this.#controller.jobs
                             ? this.#renderHistoryItems(this.#controller.jobs)
                             : nothing}
                     </div>
                 </div>
             </div>
+
+            <terra-dialog part="dialog" width="1500px">
+                <terra-data-subsetter
+                    .jobId=${this.selectedJob}
+                    .bearerToken=${this.bearerToken}
+                ></terra-data-subsetter>
+            </terra-dialog>
         `
     }
 
     #renderHistoryItems(subsetJobs: SubsetJobs) {
         return subsetJobs.jobs
-            .filter(job => job.labels?.length)
-            .map(
-                job => html`
-                    <div class="history-item">
+            .slice()
+            .sort(
+                (a, b) =>
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            )
+            .map(job => {
+                let fillColor = '#0066cc' // default blue
+                if (job.status === 'successful') {
+                    fillColor = '#28a745' // green
+                } else if (job.status === 'failed') {
+                    fillColor = '#dc3545' // red
+                } else if (
+                    job.status === 'canceled' ||
+                    job.status === 'complete_with_errors' ||
+                    job.status === 'running_with_errors'
+                ) {
+                    fillColor = '#ffc107' // orange/yellow
+                }
+                return html`
+                    <div
+                        class="history-item"
+                        @click=${this.#handleHistoryItemClick.bind(this, job)}
+                    >
                         <div class="item-header">
-                            <span class="icon">
-                                <svg
-                                    width="20"
-                                    height="20"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                >
-                                    <circle cx="12" cy="12" r="12" fill="#7c4dff" />
-                                    <path
-                                        d="M12 7v6m0 0v4m0-4h4m-4 0H8"
-                                        stroke="#fff"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                    />
-                                </svg>
-                            </span>
-
                             <span class="item-title">
                                 ${job.labels?.length
                                     ? job.labels.join(' ')
@@ -107,10 +127,20 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                         </div>
 
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 29%">29%</div>
+                            <div
+                                class="progress-fill"
+                                style="width: ${job.progress}%; background-color: ${fillColor}"
+                            >
+                                ${job.progress}%
+                            </div>
                         </div>
                     </div>
                 `
-            )
+            })
+    }
+
+    #handleHistoryItemClick(job: SubsetJobStatus) {
+        this.selectedJob = job.jobID
+        this.dialog?.show()
     }
 }

@@ -120,6 +120,7 @@ export const GET_SUBSET_JOBS = gql`
                 progress
                 request
                 labels
+                createdAt
             }
         }
     }

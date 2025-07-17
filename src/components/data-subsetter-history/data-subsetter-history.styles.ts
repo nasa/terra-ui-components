@@ -83,6 +83,8 @@ export default css`
     .history-list {
         margin: 16px 0 0 0;
         padding: 0 20px;
+        max-height: calc(3 * 102px);
+        overflow-y: auto;
     }
     .history-item {
         background: #f8f9fa;
@@ -103,21 +105,21 @@ export default css`
         color: #222;
     }
     .history-item .item-header .icon {
-        width: 32px;
-        height: 32px;
-        background: #7c4dff;
-        color: #fff;
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.3em;
     }
     .history-item .item-title {
         font-size: 1em;
         font-weight: 500;
         color: #222;
         margin-bottom: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: normal;
     }
     .history-item .progress-bar {
         background: #e9ecef;

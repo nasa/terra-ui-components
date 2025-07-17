@@ -103,6 +103,13 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #controller = new DataSubsetterController(this)
 
+    @watch(['jobId'])
+    jobIdChanged() {
+        if (this.jobId) {
+            this.#controller.fetchJobByID(this.jobId)
+        }
+    }
+
     firstUpdated() {
         if (this.collectionEntryId) {
             this.showCollectionSearch = false

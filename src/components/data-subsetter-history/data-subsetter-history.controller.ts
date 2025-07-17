@@ -34,8 +34,6 @@ export class DataSubsetterHistoryController {
             args: (): any => [],
             autoRun: false,
         })
-
-        this.#poll()
     }
 
     hostConnected() {
@@ -43,6 +41,8 @@ export class DataSubsetterHistoryController {
             'visibilitychange',
             this.#handleVisibilityChange.bind(this)
         )
+
+        this.#poll()
     }
 
     hostDisconnected() {
