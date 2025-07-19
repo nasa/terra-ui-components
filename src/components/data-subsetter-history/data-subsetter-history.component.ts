@@ -64,6 +64,9 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     }
 
     render() {
+        const jobs = this.#controller.jobs
+        const hasJobs = jobs && jobs.jobs.length > 0
+
         return html`
             <div class="${this.collapsed ? 'collapsed' : ''}">
                 <div class="history-header" @click=${this.toggleCollapsed}>
@@ -71,27 +74,48 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                 </div>
 
                 <div class="history-panel">
-                    <div
-                        style="display: flex; align-items: center; justify-content: flex-end; padding: 5px 20px;"
-                    >
-                        <a
-                            href="https://harmony.earthdata.nasa.gov/jobs"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style="font-size: 0.98em; color: #0066cc; text-decoration: none; display: flex; align-items: center; gap: 4px;"
-                        >
-                            View all
-                            <terra-icon
-                                name="outline-arrow-top-right-on-square"
-                                library="heroicons"
-                                size="32px"
-                            ></terra-icon>
-                        </a>
-                    </div>
+                    ${hasJobs
+                        ? html`
+                              <div class="history-link-row">
+                                  <a
+                                      href="https://harmony.earthdata.nasa.gov/jobs"
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      class="history-link"
+                                  >
+                                      View all
+                                      <terra-icon
+                                          name="outline-arrow-top-right-on-square"
+                                          library="heroicons"
+                                          size="32px"
+                                      ></terra-icon>
+                                  </a>
+                              </div>
+                          `
+                        : nothing}
+
                     <div class="history-list">
-                        ${this.#controller.jobs
-                            ? this.#renderHistoryItems(this.#controller.jobs)
-                            : nothing}
+                        ${jobs
+                            ? hasJobs
+                                ? this.#renderHistoryItems(jobs)
+                                : html`<div class="history-alert-message">
+                                      You haven't made any requests yet.<br />
+                                      Get started by
+                                      <a
+                                          href="#"
+                                          class="history-alert-link"
+                                          @click=${(e: Event) => {
+                                              e.preventDefault()
+                                              this.selectedJob = undefined
+                                              this.dialog?.show()
+                                          }}
+                                      >
+                                          creating your first request!</a
+                                      >.
+                                  </div>`
+                            : html`<div class="history-alert-message">
+                                  Retrieving your requests....
+                              </div>`}
                     </div>
                 </div>
             </div>

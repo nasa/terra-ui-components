@@ -170,4 +170,42 @@ export default css`
             border-radius: 0;
         }
     }
+
+    .history-link-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 5px 20px;
+    }
+
+    .history-link {
+        font-size: 0.98em;
+        color: #0066cc;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .history-link:hover {
+        text-decoration: underline;
+    }
+
+    .history-alert {
+        padding: 32px 0;
+        text-align: center;
+        color: #666;
+        font-size: 1.05em;
+    }
+
+    .history-alert-link {
+        color: #0066cc;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .history-alert-link:hover {
+        text-decoration: underline;
+        color: #004999;
+    }
 `
