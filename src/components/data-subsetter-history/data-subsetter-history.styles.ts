@@ -81,7 +81,7 @@ export default css`
     }
 
     .history-list {
-        margin: 16px 0 0 0;
+        margin: 0;
         padding: 0 20px;
         max-height: calc(3 * 102px);
         overflow-y: auto;

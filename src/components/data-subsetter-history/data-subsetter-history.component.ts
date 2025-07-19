@@ -5,7 +5,11 @@ import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter-history.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { DataSubsetterHistoryController } from './data-subsetter-history.controller.js'
-import type { SubsetJobs, SubsetJobStatus } from '../../data-services/types.js'
+import {
+    Status,
+    type SubsetJobs,
+    type SubsetJobStatus,
+} from '../../data-services/types.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraDataSubsetter from '../data-subsetter/data-subsetter.component.js'
 import TerraDialog from '../dialog/dialog.component.js'
@@ -32,6 +36,9 @@ export default class TerraDataSubsetterHistory extends TerraElement {
         'terra-dialog': TerraDialog,
     }
     static styles: CSSResultGroup = [componentStyles, styles]
+
+    @property()
+    label: string = 'History'
 
     @property({ attribute: 'bearer-token' })
     bearerToken: string
@@ -60,23 +67,28 @@ export default class TerraDataSubsetterHistory extends TerraElement {
         return html`
             <div class="${this.collapsed ? 'collapsed' : ''}">
                 <div class="history-header" @click=${this.toggleCollapsed}>
-                    <span class="count">0:1</span>
-                    <span>History</span>
+                    <span>${this.label}</span>
                 </div>
 
                 <div class="history-panel">
-                    <div class="tabs">
-                        <button class="tab active">
-                            All <span class="count">1</span>
-                        </button>
-                        <button class="tab">Done <span class="count">0</span></button>
-                        <button class="tab">
-                            Active <span class="count">1</span>
-                        </button>
+                    <div
+                        style="display: flex; align-items: center; justify-content: flex-end; padding: 5px 20px;"
+                    >
+                        <a
+                            href="https://harmony.earthdata.nasa.gov/jobs"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style="font-size: 0.98em; color: #0066cc; text-decoration: none; display: flex; align-items: center; gap: 4px;"
+                        >
+                            View all
+                            <terra-icon
+                                name="outline-arrow-top-right-on-square"
+                                library="heroicons"
+                                size="32px"
+                            ></terra-icon>
+                        </a>
                     </div>
-
                     <div class="history-list">
-                        ${this.selectedJob}
                         ${this.#controller.jobs
                             ? this.#renderHistoryItems(this.#controller.jobs)
                             : nothing}
@@ -101,18 +113,28 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
             .map(job => {
-                let fillColor = '#0066cc' // default blue
-                if (job.status === 'successful') {
-                    fillColor = '#28a745' // green
-                } else if (job.status === 'failed') {
-                    fillColor = '#dc3545' // red
-                } else if (
-                    job.status === 'canceled' ||
-                    job.status === 'complete_with_errors' ||
-                    job.status === 'running_with_errors'
+                let fillColor = '#0066cc'
+                if (
+                    job.status === Status.SUCCESSFUL ||
+                    job.status === Status.COMPLETE_WITH_ERRORS ||
+                    job.status === Status.RUNNING_WITH_ERRORS
                 ) {
+                    fillColor = '#28a745' // green
+                } else if (job.status === Status.FAILED) {
+                    fillColor = '#dc3545' // red
+                } else if (job.status === Status.CANCELED) {
                     fillColor = '#ffc107' // orange/yellow
                 }
+
+                const progressLabel =
+                    job.status === Status.FAILED || job.status === Status.CANCELED
+                        ? job.status
+                        : `${job.progress}%`
+                const progress =
+                    job.status === Status.FAILED || job.status === Status.CANCELED
+                        ? 100
+                        : job.progress
+
                 return html`
                     <div
                         class="history-item"
@@ -129,9 +151,9 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                         <div class="progress-bar">
                             <div
                                 class="progress-fill"
-                                style="width: ${job.progress}%; background-color: ${fillColor}"
+                                style="width: ${progress}%; background-color: ${fillColor}"
                             >
-                                ${job.progress}%
+                                ${progressLabel}
                             </div>
                         </div>
                     </div>
