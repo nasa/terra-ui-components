@@ -43,8 +43,15 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     @property({ attribute: 'bearer-token' })
     bearerToken: string
 
+    /**
+     * if a user has never done a subset request, by default they don't see the history panel at all
+     * this prop allows you to override that behavior and always show the history panel
+     */
+    @property({ attribute: 'always-show', type: Boolean })
+    alwaysShow: boolean
+
     @state()
-    collapsed: boolean = false
+    collapsed: boolean = true
 
     @state()
     selectedJob?: string
@@ -66,6 +73,11 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     render() {
         const jobs = this.#controller.jobs
         const hasJobs = jobs && jobs.jobs.length > 0
+
+        if (!hasJobs) {
+            // hide the history panel if the user doesn't have any requests
+            return nothing
+        }
 
         return html`
             <div class="${this.collapsed ? 'collapsed' : ''}">
