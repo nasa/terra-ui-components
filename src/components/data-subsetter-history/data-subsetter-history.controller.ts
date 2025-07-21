@@ -6,8 +6,7 @@ import { type SubsetJobs } from '../../data-services/types.js'
 import { HarmonyDataService } from '../../data-services/harmony-data-service.js'
 
 // we want to keep a relatively fresh jobs list, but if the history is collapsed we don't need to trigger it as often
-const EXPANDED_JOBS_POLL_MILLIS = 3000
-const COLLAPSED_JOBS_POLL_MILLIS = 10000
+const JOBS_POLL_MILLIS = 3000
 
 export class DataSubsetterHistoryController {
     jobs?: SubsetJobs
@@ -42,12 +41,7 @@ export class DataSubsetterHistoryController {
                 }
 
                 // call the task again automatically after a bit
-                this.#jobTimeout = setTimeout(
-                    () => this.task.run(),
-                    !this.#host.collapsed
-                        ? EXPANDED_JOBS_POLL_MILLIS
-                        : COLLAPSED_JOBS_POLL_MILLIS
-                )
+                this.#jobTimeout = setTimeout(() => this.task.run(), JOBS_POLL_MILLIS)
 
                 return this.jobs
             },

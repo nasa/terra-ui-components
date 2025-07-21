@@ -25,19 +25,15 @@ import {
 import { watch } from '../../internal/watch.js'
 
 /**
- * @summary Short summary of the component's intended use.
+ * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
  * @documentation https://disc.gsfc.nasa.gov/components/data-subsetter
- * @status experimental
+ * @status stable
  * @since 1.0
  *
- * @dependency terra-example
- *
- * @slot - The default slot.
- * @slot example - An example slot.
- *
- * @csspart base - The component's base wrapper.
- *
- * @cssproperty --example - An example CSS custom property.
+ * @dependency terra-accordion
+ * @dependency terra-date-picker
+ * @dependency terra-icon
+ * @dependency terra-spatial-picker
  *
  * @event terra-subset-job-complete - called when a subset job enters a final state (e.g. successful, failed, completed_with_errors)
  */
@@ -107,7 +103,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #controller = new DataSubsetterController(this)
 
-    @watch(['jobId'])
+    @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
             this.#controller.fetchJobByID(this.jobId)
