@@ -98,6 +98,10 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     showDownloadMenu: boolean = false
 
+    // true if the subsetter is inside a terra-dialog
+    @state()
+    renderedInDialog: boolean = false
+
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
@@ -120,6 +124,10 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         document.addEventListener('click', this.#handleClickOutside.bind(this))
+
+        if (this.closest('terra-dialog')) {
+            this.renderedInDialog = true
+        }
     }
 
     disconnectedCallback() {
@@ -150,6 +158,9 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     render() {
+        const showJobStatus = this.#controller.currentJob && !this.refineParameters
+        const showMinimizeButton = showJobStatus && this.renderedInDialog
+
         return html`
             <div class="container">
                 <div class="header">
@@ -164,14 +175,26 @@ export default class TerraDataSubsetter extends TerraElement {
                         ${this.collectionWithServices?.collection?.EntryTitle ??
                         html`Download Data`}
                     </h1>
-                    <button class="close-btn" onclick="closeDialog()">×</button>
+
+                    ${showMinimizeButton
+                        ? html`<button
+                              class="minimize-btn"
+                              @click=${() => this.minimizeDialog()}
+                          >
+                              -
+                          </button>`
+                        : nothing}
                 </div>
 
-                ${this.#controller.currentJob && !this.refineParameters
+                ${showJobStatus
                     ? this.#renderJobStatus()
                     : this.#renderSubsetOptions()}
             </div>
         `
+    }
+
+    minimizeDialog() {
+        this.closest('terra-dialog')?.hide()
     }
 
     #renderSubsetOptions() {
@@ -557,6 +580,12 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
+    #handleRegionAccordionToggle() {
+        // sometimes the map will show up kind of wonky when it's in an accordion
+        // this makes sure it resets itself if that occurs
+        this.spatialPicker?.invalidateSize()
+    }
+
     #renderSpatialSelection() {
         const showError = this.touchedFields.has('spatial') && !this.spatialSelection
         let boundingRects: any =
@@ -567,7 +596,9 @@ export default class TerraDataSubsetter extends TerraElement {
             boundingRects = [boundingRects]
         }
         return html`
-            <terra-accordion>
+            <terra-accordion
+                @terra-accordion-toggle=${this.#handleRegionAccordionToggle}
+            >
                 <div slot="summary">
                     <span class="accordion-title">Refine Region:</span>
                 </div>
@@ -1506,5 +1537,24 @@ export default class TerraDataSubsetter extends TerraElement {
                 '*'
             )
         }, 500)
+    }
+
+    renderHistoryPanel() {
+        const existingHistoryPanel = document.querySelector(
+            'terra-data-subsetter-history'
+        )
+
+        if (!existingHistoryPanel) {
+            // let's add a history panel to the page
+            const historyPanel = document.createElement(
+                'terra-data-subsetter-history'
+            )
+
+            if (this.bearerToken) {
+                historyPanel.setAttribute('bearer-token', this.bearerToken)
+            }
+
+            document.body.appendChild(historyPanel)
+        }
     }
 }

@@ -35,7 +35,7 @@ export default css`
         gap: 8px;
     }
 
-    .close-btn {
+    .minimize-btn {
         background: none;
         border: none;
         font-size: 20px;
@@ -46,7 +46,7 @@ export default css`
         transition: background-color 0.2s;
     }
 
-    .close-btn:hover {
+    .minimize-btn:hover {
         background-color: #f8f9fa;
     }
 
@@ -437,7 +437,7 @@ export default css`
         gap: 8px;
     }
 
-    .close-btn {
+    .minimize-btn {
         background: none;
         border: none;
         font-size: 20px;
@@ -448,7 +448,7 @@ export default css`
         transition: background-color 0.2s;
     }
 
-    .close-btn:hover {
+    .minimize-btn:hover {
         background-color: #f8f9fa;
     }
 
