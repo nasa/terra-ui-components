@@ -11,7 +11,7 @@ const COLLAPSED_JOBS_POLL_MILLIS = 10000
 
 export class DataSubsetterHistoryController {
     jobs?: SubsetJobs
-    task: Task<[], SubsetJobs>
+    task: Task<[], SubsetJobs | undefined>
 
     #host: ReactiveControllerHost & TerraDataSubsetterHistory
     #dataService: HarmonyDataService
@@ -24,15 +24,34 @@ export class DataSubsetterHistoryController {
 
         this.task = new Task(host, {
             task: async ([], { signal }) => {
-                this.jobs = await this.#dataService.getSubsetJobs({
-                    bearerToken: this.#host.bearerToken,
-                    signal,
-                })
+                clearTimeout(this.#jobTimeout)
+
+                // only fetch new jobs if:
+                //      this is the first time the task has run
+                //      the history panel is expanded
+                //      the browser window is focused
+                const shouldFetch =
+                    this.#windowIsVisible && (!this.#host.collapsed || !this.jobs)
+
+                if (shouldFetch) {
+                    // only fetch new jobs if the history panel is expanded AND the user is looking at the browser window
+                    this.jobs = await this.#dataService.getSubsetJobs({
+                        bearerToken: this.#host.bearerToken,
+                        signal,
+                    })
+                }
+
+                // call the task again automatically after a bit
+                this.#jobTimeout = setTimeout(
+                    () => this.task.run(),
+                    !this.#host.collapsed
+                        ? EXPANDED_JOBS_POLL_MILLIS
+                        : COLLAPSED_JOBS_POLL_MILLIS
+                )
 
                 return this.jobs
             },
             args: (): any => [],
-            autoRun: false,
         })
     }
 
@@ -41,8 +60,6 @@ export class DataSubsetterHistoryController {
             'visibilitychange',
             this.#handleVisibilityChange.bind(this)
         )
-
-        this.#poll()
     }
 
     hostDisconnected() {
@@ -63,24 +80,6 @@ export class DataSubsetterHistoryController {
     #handleVisibilityChange() {
         this.#windowIsVisible = document.visibilityState === 'visible'
 
-        this.#poll()
-    }
-
-    async #poll() {
-        clearTimeout(this.#jobTimeout)
-
-        if (!this.#windowIsVisible) {
-            // stop polling if the user isn't looking at the window
-            return
-        }
-
-        await this.task.run()
-
-        this.#jobTimeout = setTimeout(
-            () => this.#poll(),
-            !this.#host.collapsed
-                ? EXPANDED_JOBS_POLL_MILLIS
-                : COLLAPSED_JOBS_POLL_MILLIS
-        )
+        this.task.run()
     }
 }

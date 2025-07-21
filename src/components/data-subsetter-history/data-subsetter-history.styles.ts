@@ -174,7 +174,7 @@ export default css`
     .history-link-row {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: space-between;
         padding: 5px 20px;
     }
 

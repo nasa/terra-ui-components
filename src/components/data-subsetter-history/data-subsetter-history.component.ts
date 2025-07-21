@@ -56,6 +56,9 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     @state()
     selectedJob?: string
 
+    @state()
+    hideCancelled: boolean = true
+
     @query('[part~="dialog"]')
     dialog: TerraDialog
 
@@ -89,8 +92,21 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                     ${hasJobs
                         ? html`
                               <div class="history-link-row">
+                                  <label>
+                                      <input
+                                          type="checkbox"
+                                          .checked=${this.hideCancelled}
+                                          @change=${(e: Event) => {
+                                              this.hideCancelled = (
+                                                  e.target as HTMLInputElement
+                                              ).checked
+                                          }}
+                                      />
+                                      Hide Cancelled
+                                  </label>
+
                                   <a
-                                      href="https://harmony.earthdata.nasa.gov/jobs"
+                                      href="https://harmony.earthdata.nasa.gov/workflow-ui"
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       class="history-link"
@@ -142,59 +158,87 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     }
 
     #renderHistoryItems(subsetJobs: SubsetJobs) {
-        return subsetJobs.jobs
+        const filteredJobs = subsetJobs.jobs
             .slice()
+            .filter(job => {
+                if (this.hideCancelled) {
+                    return job.status !== Status.CANCELED
+                }
+
+                return true
+            })
             .sort(
                 (a, b) =>
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
-            .map(job => {
-                let fillColor = '#0066cc'
-                if (
-                    job.status === Status.SUCCESSFUL ||
-                    job.status === Status.COMPLETE_WITH_ERRORS ||
-                    job.status === Status.RUNNING_WITH_ERRORS
-                ) {
-                    fillColor = '#28a745' // green
-                } else if (job.status === Status.FAILED) {
-                    fillColor = '#dc3545' // red
-                } else if (job.status === Status.CANCELED) {
-                    fillColor = '#ffc107' // orange/yellow
-                }
 
-                const progressLabel =
-                    job.status === Status.FAILED || job.status === Status.CANCELED
-                        ? job.status
-                        : `${job.progress}%`
-                const progress =
-                    job.status === Status.FAILED || job.status === Status.CANCELED
-                        ? 100
-                        : job.progress
-
-                return html`
-                    <div
-                        class="history-item"
-                        @click=${this.#handleHistoryItemClick.bind(this, job)}
+        if (!filteredJobs.length) {
+            return html`
+                <div class="history-alert-message">
+                    There are no active requests to show.<br />
+                    If you'd like, you can
+                    <a
+                        href="#"
+                        class="history-alert-link"
+                        @click=${(e: Event) => {
+                            e.preventDefault()
+                            this.selectedJob = undefined
+                            this.dialog?.show()
+                        }}
                     >
-                        <div class="item-header">
-                            <span class="item-title">
-                                ${job.labels?.length
-                                    ? job.labels.join(' ')
-                                    : job.request.split('.nasa.gov').pop()}
-                            </span>
-                        </div>
+                        create a new request.</a
+                    >
+                </div>
+            `
+        }
 
-                        <div class="progress-bar">
-                            <div
-                                class="progress-fill"
-                                style="width: ${progress}%; background-color: ${fillColor}"
-                            >
-                                ${progressLabel}
-                            </div>
+        return filteredJobs.map(job => {
+            let fillColor = '#0066cc'
+            if (
+                job.status === Status.SUCCESSFUL ||
+                job.status === Status.COMPLETE_WITH_ERRORS ||
+                job.status === Status.RUNNING_WITH_ERRORS
+            ) {
+                fillColor = '#28a745' // green
+            } else if (job.status === Status.FAILED) {
+                fillColor = '#dc3545' // red
+            } else if (job.status === Status.CANCELED) {
+                fillColor = '#ffc107' // orange/yellow
+            }
+
+            const progressLabel =
+                job.status === Status.FAILED || job.status === Status.CANCELED
+                    ? job.status
+                    : `${job.progress}%`
+            const progress =
+                job.status === Status.FAILED || job.status === Status.CANCELED
+                    ? 100
+                    : job.progress
+
+            return html`
+                <div
+                    class="history-item"
+                    @click=${this.#handleHistoryItemClick.bind(this, job)}
+                >
+                    <div class="item-header">
+                        <span class="item-title">
+                            ${job.labels?.length
+                                ? job.labels.join(' ')
+                                : job.request.split('.nasa.gov').pop()}
+                        </span>
+                    </div>
+
+                    <div class="progress-bar">
+                        <div
+                            class="progress-fill"
+                            style="width: ${progress}%; background-color: ${fillColor}"
+                        >
+                            ${progressLabel}
                         </div>
                     </div>
-                `
-            })
+                </div>
+            `
+        })
     }
 
     #handleHistoryItemClick(job: SubsetJobStatus) {
