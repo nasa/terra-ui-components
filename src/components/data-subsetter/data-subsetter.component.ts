@@ -9,7 +9,6 @@ import TerraAccordion from '../accordion/accordion.component.js'
 import {
     Status,
     type BoundingBox,
-    type CmrSearchResult,
     type CollectionWithAvailableServices,
     type Variable,
 } from '../../data-services/types.js'
@@ -25,6 +24,7 @@ import {
 } from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
+import type { CmrSearchResult } from '../../metadata-catalog/types.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -112,6 +112,12 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     collectionSearchResults?: Array<CmrSearchResult>
 
+    @state()
+    collectionLoading: boolean = false
+
+    @state()
+    collectionAccordionOpen: boolean = true
+
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
@@ -150,21 +156,10 @@ export default class TerraDataSubsetter extends TerraElement {
     collectionChanged() {
         const { startDate, endDate } = this.#getCollectionDateRange()
 
-        if (startDate && endDate) {
-            // We'll default to the last 7 days of a collection's links so that we don't accidentally overwhelm Harmony
-            const end = new Date(endDate)
-            const start = new Date(startDate)
-            const sevenDaysAgo = new Date(end)
-            sevenDaysAgo.setDate(end.getDate() - 6) // 7 days including end
-            const defaultStart = sevenDaysAgo > start ? sevenDaysAgo : start
+        this.selectedDateRange = { startDate, endDate }
 
-            this.selectedDateRange = {
-                startDate: defaultStart.toISOString().slice(0, 10),
-                endDate: endDate,
-            }
-        } else {
-            this.selectedDateRange = { startDate, endDate }
-        }
+        this.collectionLoading = false
+        this.collectionAccordionOpen = false
     }
 
     render() {
@@ -300,7 +295,7 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         return html`
-            <terra-accordion open>
+            <terra-accordion .open=${this.collectionAccordionOpen}>
                 <div slot="summary">
                     <span class="accordion-title">Collection:</span>
                 </div>
@@ -309,10 +304,20 @@ export default class TerraDataSubsetter extends TerraElement {
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px"
                 >
-                    <span class="accordion-value" id="selected-collection-display"
-                        >Please select a collection</span
-                    >
-                    <button class="reset-btn">Reset</button>
+                    ${this.collectionEntryId
+                        ? html` <span
+                                  class="accordion-value"
+                                  id="selected-collection-display"
+                                  >${this.collectionEntryId}</span
+                              >
+
+                              <button
+                                  class="reset-btn"
+                                  @click=${() => (this.collectionEntryId = undefined)}
+                              >
+                                  Reset
+                              </button>`
+                        : nothing}
                 </div>
 
                 <div class="search-tabs-mini">
@@ -356,7 +361,7 @@ export default class TerraDataSubsetter extends TerraElement {
                             )}"
                     />
 
-                    <button class="search-button-mini" onclick="performSearch()">
+                    <button class="search-button-mini">
                         <svg
                             class="search-icon-mini"
                             viewBox="0 0 24 24"
@@ -405,7 +410,27 @@ export default class TerraDataSubsetter extends TerraElement {
                             >
                                 ${this.collectionSearchResults?.map(
                                     item => html`
-                                        <div class="result-item-mini">
+                                        <div
+                                            class="result-item-mini"
+                                            @click=${() => {
+                                                this.collectionEntryId =
+                                                    item.collectionEntryId
+                                                this.collectionAccordionOpen = false
+                                                this.collectionLoading = true
+
+                                                // if this item is a variable, we'll also go ahead and select the variable
+                                                if (item.type === 'variable') {
+                                                    this.selectedVariables = [
+                                                        {
+                                                            name: item.entryId,
+                                                            href: '',
+                                                            conceptId: item.conceptId,
+                                                        },
+                                                    ]
+                                                }
+                                            }}
+                                            style="cursor: pointer;"
+                                        >
                                             <div class="result-title-mini">
                                                 ${item.title}
                                             </div>
@@ -419,6 +444,12 @@ export default class TerraDataSubsetter extends TerraElement {
                                                 <span>📅 2000-02-24 - ongoing</span>
                                                 <span>🌍 Global</span>
                                                 <span>🏢 ${item.provider}</span>
+                                                ${item.type === 'variable'
+                                                    ? html` <span
+                                                          >📊
+                                                          ${item.collectionEntryId}</span
+                                                      >`
+                                                    : nothing}
                                                 <span class="tag-mini"
                                                     >${item.type.toUpperCase()}</span
                                                 >
@@ -439,6 +470,31 @@ export default class TerraDataSubsetter extends TerraElement {
                             : nothing}
                 </div>
             </terra-accordion>
+
+            ${this.collectionLoading
+                ? html`
+                      <div
+                          class="collection-loading-bar"
+                          style="display: flex; align-items: center; gap: 10px; margin: 16px 0;"
+                      >
+                          <span
+                              class="loading-spinner"
+                              style="width: 20px; height: 20px; border: 3px solid #ccc; border-top: 3px solid #31708f; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"
+                          ></span>
+                          Retrieving collection, please wait...
+                      </div>
+                      <style>
+                          @keyframes spin {
+                              0% {
+                                  transform: rotate(0deg);
+                              }
+                              100% {
+                                  transform: rotate(360deg);
+                              }
+                          }
+                      </style>
+                  `
+                : nothing}
         `
     }
 

@@ -8,7 +8,7 @@ import TerraVariableCombobox from '../variable-combobox/variable-combobox.compon
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
 import { Task } from '@lit/task'
-import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
+import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { getUTCDate } from '../../utilities/date.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'

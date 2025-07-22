@@ -2,8 +2,8 @@ import type { StatusRenderer } from '@lit/task'
 import { Task, TaskStatus } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type { ReadableTaskStatus } from './variable-keyword-search.types.js'
-import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
-import type { SearchKeywordsResponse } from '../../variable-catalog/types.js'
+import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
+import type { SearchKeywordsResponse } from '../../metadata-catalog/types.js'
 
 export class FetchController {
     #apiTask: Task<[], SearchKeywordsResponse>

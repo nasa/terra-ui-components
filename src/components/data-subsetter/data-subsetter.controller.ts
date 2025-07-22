@@ -13,21 +13,25 @@ import {
 } from '../../data-services/harmony-data-service.js'
 import { getUTCDate } from '../../utilities/date.js'
 import Fuse from 'fuse.js'
+import type { MetadataCatalogInterface } from '../../metadata-catalog/types.js'
+import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
     fetchCollectionTask: Task<[string], any | undefined>
-    searchCmrTask: Task<[string | undefined], any | undefined>
+    searchCmrTask: Task<[string | undefined, string], any | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
     #dataService: HarmonyDataService
+    #metadataCatalog: MetadataCatalogInterface
 
     constructor(host: ReactiveControllerHost & TerraDataSubsetter) {
         this.#host = host
         this.#dataService = this.#getDataService()
+        this.#metadataCatalog = this.#getMetadataCatalog()
 
         this.fetchCollectionTask = new Task(host, {
             task: async ([collectionEntryId], { signal }) => {
@@ -44,7 +48,7 @@ export class DataSubsetterController {
         })
 
         this.searchCmrTask = new Task(host, {
-            task: async ([searchQuery], { signal }) => {
+            task: async ([searchQuery, searchType], { signal }) => {
                 if (!searchQuery) {
                     this.#host.collectionSearchResults = undefined
                     return this.#host.collectionSearchResults
@@ -53,9 +57,9 @@ export class DataSubsetterController {
                 // reset the results
                 this.#host.collectionSearchLoading = true
 
-                const results = await this.#dataService.searchCmr(
+                const results = await this.#metadataCatalog.searchCmr(
                     searchQuery,
-                    'all',
+                    searchType as 'collection' | 'variable' | 'all',
                     {
                         signal,
                     }
@@ -63,7 +67,6 @@ export class DataSubsetterController {
 
                 const fuse = new Fuse(results, {
                     keys: ['title', 'entryId', 'provider'],
-                    threshold: 0.4,
                 })
 
                 this.#host.collectionSearchResults = fuse
@@ -74,7 +77,10 @@ export class DataSubsetterController {
 
                 return this.#host.collectionSearchResults
             },
-            args: (): [string | undefined] => [this.#host.collectionSearchQuery],
+            args: (): [string | undefined, string] => [
+                this.#host.collectionSearchQuery,
+                this.#host.collectionSearchType,
+            ],
         })
 
         this.jobStatusTask = new Task(host, {
@@ -190,6 +196,10 @@ export class DataSubsetterController {
         this.#dataService.cancelSubsetJob(this.currentJob.jobID, {
             bearerToken: this.#host.bearerToken,
         })
+    }
+
+    #getMetadataCatalog() {
+        return new CmrCatalog()
     }
 
     #getDataService() {
