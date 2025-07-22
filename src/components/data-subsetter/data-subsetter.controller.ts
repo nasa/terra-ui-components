@@ -100,14 +100,19 @@ export class DataSubsetterController {
                     const labels = this.#buildJobLabels()
 
                     let subsetOptions = {
-                        variableConceptIds: this.#host.selectedVariables.map(
-                            v => v.conceptId
-                        ),
-                        ...('w' in (this.#host.spatialSelection ?? {}) && {
-                            boundingBox: this.#host.spatialSelection as BoundingBox,
+                        ...(this.#host.collectionWithServices?.variableSubset && {
+                            variableConceptIds: this.#host.selectedVariables.map(
+                                v => v.conceptId
+                            ),
                         }),
+                        ...('w' in (this.#host.spatialSelection ?? {}) &&
+                            this.#host.collectionWithServices?.bboxSubset && {
+                                boundingBox: this.#host
+                                    .spatialSelection as BoundingBox,
+                            }),
                         ...(this.#host.selectedDateRange.startDate &&
-                            this.#host.selectedDateRange.endDate && {
+                            this.#host.selectedDateRange.endDate &&
+                            this.#host.collectionWithServices?.temporalSubset && {
                                 startDate: getUTCDate(
                                     this.#host.selectedDateRange.startDate
                                 ).toISOString(),
@@ -116,9 +121,11 @@ export class DataSubsetterController {
                                     true
                                 ).toISOString(),
                             }),
-                        ...(this.#host.selectedFormat && {
-                            format: this.#host.selectedFormat,
-                        }),
+                        ...(this.#host.selectedFormat &&
+                            this.#host.collectionWithServices?.outputFormats
+                                ?.length && {
+                                format: this.#host.selectedFormat,
+                            }),
                         labels,
                     }
 

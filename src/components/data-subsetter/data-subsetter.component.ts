@@ -204,9 +204,17 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #renderSubsetOptions() {
         const estimates = this.#estimateJobSize()
+        const hasSubsetOption = this.#hasAtLeastOneSubsetOption()
+        const collection = this.collectionWithServices?.collection
+        const temporalExtents = collection?.TemporalExtents
+        const spatialExtent = collection?.SpatialExtent
+        const showTemporalSection = temporalExtents && temporalExtents.length
+        const showSpatialSection =
+            spatialExtent &&
+            spatialExtent.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
         return html`
-            ${estimates
+            ${hasSubsetOption && estimates
                 ? html`<div
                       class="size-info ${estimates.links >= 150
                           ? 'warning'
@@ -240,7 +248,7 @@ export default class TerraDataSubsetter extends TerraElement {
                       </div>
                   `
                 : nothing}
-            ${this.#hasAtLeastOneSubsetOption()
+            ${hasSubsetOption
                 ? html`
                       <div class="section">
                           <h2 class="section-title">
@@ -259,8 +267,16 @@ export default class TerraDataSubsetter extends TerraElement {
                               : nothing}
                       </div>
                   `
-                : nothing}
-            ${this.collectionWithServices?.outputFormats?.length
+                : html`
+                      ${showTemporalSection &&
+                      !this.collectionWithServices?.temporalSubset
+                          ? this.#renderAvailableTemporalRangeSection()
+                          : nothing}
+                      ${showSpatialSection && !this.#hasSpatialSubset()
+                          ? this.#renderAvailableSpatialRangeSection()
+                          : nothing}
+                  `}
+            ${this.collectionWithServices?.outputFormats?.length && hasSubsetOption
                 ? html`
                       <div class="section">
                           <h2 class="section-title">
@@ -269,6 +285,19 @@ export default class TerraDataSubsetter extends TerraElement {
                           </h2>
 
                           ${this.#renderOutputFormatSelection()}
+                      </div>
+                  `
+                : nothing}
+            ${!hasSubsetOption && estimates
+                ? html`
+                      <div
+                          class="neutral-info"
+                          style="margin-top: 24px; padding: 16px 20px; border-radius: 6px; background: #f8f9fa; color: #555; border: 1px solid #ccc;"
+                      >
+                          <strong>Estimated result size:</strong><br />
+                          Your request will return approximately
+                          <b>${estimates.links.toLocaleString()}</b> files covering
+                          <b>${estimates.days.toLocaleString()}</b> days.
                       </div>
                   `
                 : nothing}
@@ -428,6 +457,8 @@ export default class TerraDataSubsetter extends TerraElement {
                                                         },
                                                     ]
                                                 }
+
+                                                this.requestUpdate()
                                             }}
                                             style="cursor: pointer;"
                                         >
@@ -1656,5 +1687,49 @@ export default class TerraDataSubsetter extends TerraElement {
 
             document.body.appendChild(historyPanel)
         }
+    }
+
+    #renderAvailableTemporalRangeSection() {
+        const { startDate, endDate } = this.#getCollectionDateRange()
+        if (!startDate || !endDate) return nothing
+        return html`
+            <div class="section" style="margin-bottom: 16px;">
+                <h2 class="section-title">Available Date Range</h2>
+                <div style="color: #31708f; margin-top: 8px;">
+                    <strong>${startDate}</strong> to <strong>${endDate}</strong>
+                </div>
+                <div style="font-size: 0.95em; color: #666;">
+                    This collection does not support temporal subsetting.
+                </div>
+            </div>
+        `
+    }
+
+    #renderAvailableSpatialRangeSection() {
+        const boundingRects =
+            this.collectionWithServices?.collection?.SpatialExtent
+                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+        if (!boundingRects || !Array.isArray(boundingRects) || !boundingRects.length)
+            return nothing
+        return html`
+            <div class="section" style="margin-bottom: 16px;">
+                <h2 class="section-title">Available Spatial Area</h2>
+                <div style="color: #31708f; margin-top: 8px;">
+                    ${boundingRects.map(
+                        (rect: any) =>
+                            html`<div>
+                                <strong>Bounding Box:</strong>
+                                ${rect.WestBoundingCoordinate},
+                                ${rect.SouthBoundingCoordinate},
+                                ${rect.EastBoundingCoordinate},
+                                ${rect.NorthBoundingCoordinate}
+                            </div>`
+                    )}
+                </div>
+                <div style="font-size: 0.95em; color: #666;">
+                    This collection does not support spatial subsetting.
+                </div>
+            </div>
+        `
     }
 }
