@@ -43,6 +43,12 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 <terra-data-subsetter collection-entry-id="OMAERO_003"></terra-data-subsetter>
 ```
 
+### No collection (enables Collection search)
+
+```html:preview
+<terra-data-subsetter></terra-data-subsetter>
+```
+
 ### Subsetter in a Dialog
 
 ```html:preview

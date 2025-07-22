@@ -9,6 +9,7 @@ import TerraAccordion from '../accordion/accordion.component.js'
 import {
     Status,
     type BoundingBox,
+    type CmrSearchResult,
     type CollectionWithAvailableServices,
     type Variable,
 } from '../../data-services/types.js'
@@ -23,6 +24,7 @@ import {
     getFriendlyNameForMimeType,
 } from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
+import { debounce } from '../../internal/debounce.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -97,6 +99,18 @@ export default class TerraDataSubsetter extends TerraElement {
     // true if the subsetter is inside a terra-dialog
     @state()
     renderedInDialog: boolean = false
+
+    @state()
+    collectionSearchType: 'collection' | 'variable' | 'all' = 'all'
+
+    @state()
+    collectionSearchQuery?: string
+
+    @state()
+    collectionSearchLoading: boolean = false
+
+    @state()
+    collectionSearchResults?: Array<CmrSearchResult>
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -274,10 +288,21 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderSearchForCollection() {
+        let placeholder =
+            'Search all types of resources (e.g. rainfall, GPM, hurricanes, etc.)'
+
+        if (this.collectionSearchType === 'collection') {
+            placeholder = 'Search collections (e.g. AQUA, GPM_3IMERGH, etc.)'
+        }
+
+        if (this.collectionSearchType === 'variable') {
+            placeholder = 'Search variables (e.g. rainfall, hurricanes, etc.)'
+        }
+
         return html`
             <terra-accordion open>
                 <div slot="summary">
-                    <span class="accordion-title">Data Collection:</span>
+                    <span class="accordion-title">Collection:</span>
                 </div>
 
                 <div
@@ -290,37 +315,47 @@ export default class TerraDataSubsetter extends TerraElement {
                     <button class="reset-btn">Reset</button>
                 </div>
 
-                <!--
-                        <div class="search-tabs-mini">
-                            <button
-                                class="search-tab-mini active"
-                                onclick="switchSearchType('all')"
-                            >
-                                All
-                            </button>
-                            <button
-                                class="search-tab-mini"
-                                onclick="switchSearchType('collections')"
-                            >
-                                Collections
-                            </button>
-                            <button
-                                class="search-tab-mini"
-                                onclick="switchSearchType('variables')"
-                            >
-                                Variables
-                            </button>
-                        </div>
-                        -->
+                <div class="search-tabs-mini">
+                    <button
+                        class="search-tab-mini ${this.collectionSearchType === 'all'
+                            ? 'active'
+                            : ''}"
+                        @click=${() => (this.collectionSearchType = 'all')}
+                    >
+                        All
+                    </button>
+                    <button
+                        class="search-tab-mini ${this.collectionSearchType ===
+                        'collection'
+                            ? 'active'
+                            : ''}"
+                        @click=${() => (this.collectionSearchType = 'collection')}
+                    >
+                        Collections
+                    </button>
+                    <button
+                        class="search-tab-mini ${this.collectionSearchType ===
+                        'variable'
+                            ? 'active'
+                            : ''}"
+                        @click=${() => (this.collectionSearchType = 'variable')}
+                    >
+                        Variables
+                    </button>
+                </div>
 
                 <div class="search-container-mini">
                     <input
                         type="text"
                         class="search-input-mini"
                         id="search-input"
-                        placeholder="Search all types of resources"
-                        onkeypress="handleSearchKeypress(event)"
+                        placeholder=${placeholder}
+                        @input="${(e: InputEvent) =>
+                            this.handleCollectionSearch(
+                                (e.target as HTMLInputElement).value
+                            )}"
                     />
+
                     <button class="search-button-mini" onclick="performSearch()">
                         <svg
                             class="search-icon-mini"
@@ -335,68 +370,81 @@ export default class TerraDataSubsetter extends TerraElement {
                     </button>
                 </div>
 
-                <!--
-                        <div class="quick-links-mini">
-                            <a
-                                href="#"
-                                class="quick-link-mini"
-                                onclick="quickSearch('GPM')"
-                                >GPM Precipitation</a
-                            >
-                            <a
-                                href="#"
-                                class="quick-link-mini"
-                                onclick="quickSearch('MODIS')"
-                                >MODIS Data</a
-                            >
-                            <a
-                                href="#"
-                                class="quick-link-mini"
-                                onclick="quickSearch('Landsat')"
-                                >Landsat Imagery</a
-                            >
-                            <a
-                                href="#"
-                                class="quick-link-mini"
-                                onclick="quickSearch('AIRS')"
-                                >Atmospheric Data</a
-                            >
-                        </div>
-                        -->
-
-                <div
-                    id="search-results-section"
-                    class="search-results-section"
-                    style="display: none"
-                >
-                    <div class="results-header-mini">
-                        <div class="results-count-mini" id="results-count">
-                            Found 0 results
-                        </div>
-                    </div>
-
-                    <div id="results-container-mini" class="results-container-mini">
-                        <!-- Results will be populated here -->
-                    </div>
-
-                    <div id="loading-mini" class="loading-mini" style="display: none">
-                        <div class="spinner-mini"></div>
-                        <div>Searching NASA CMR...</div>
-                    </div>
-
-                    <div
-                        id="no-results-mini"
-                        class="no-results-mini"
-                        style="display: none"
+                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends? 
+                <div class="quick-links-mini">
+                    <a href="#" class="quick-link-mini" onclick="quickSearch('GPM')"
+                        >GPM Precipitation</a
                     >
-                        <p>
-                            No results found. Try adjusting your search terms or
-                            browse the quick links above.
-                        </p>
-                    </div>
+                    <a href="#" class="quick-link-mini" onclick="quickSearch('MODIS')"
+                        >MODIS Data</a
+                    >
+                    <a
+                        href="#"
+                        class="quick-link-mini"
+                        onclick="quickSearch('Landsat')"
+                        >Landsat Imagery</a
+                    >
+                    <a href="#" class="quick-link-mini" onclick="quickSearch('AIRS')"
+                        >Atmospheric Data</a
+                    >
+                </div>
+                -->
+
+                <div id="search-results-section" class="search-results-section">
+                    ${this.collectionSearchLoading
+                        ? html`
+                              <div id="loading-mini" class="loading-mini">
+                                  <div class="spinner-mini"></div>
+                                  <div>Searching NASA CMR...</div>
+                              </div>
+                          `
+                        : this.collectionSearchResults?.length
+                          ? html` <div
+                                id="results-container-mini"
+                                class="results-container-mini"
+                            >
+                                ${this.collectionSearchResults?.map(
+                                    item => html`
+                                        <div class="result-item-mini">
+                                            <div class="result-title-mini">
+                                                ${item.title}
+                                            </div>
+                                            <div class="result-id-mini">
+                                                ${item.entryId}
+                                            </div>
+                                            <div class="result-description-mini">
+                                                ${item.title}
+                                            </div>
+                                            <div class="result-meta-mini">
+                                                <span>📅 2000-02-24 - ongoing</span>
+                                                <span>🌍 Global</span>
+                                                <span>🏢 ${item.provider}</span>
+                                                <span class="tag-mini"
+                                                    >${item.type.toUpperCase()}</span
+                                                >
+                                            </div>
+                                        </div>
+                                    `
+                                )}
+                            </div>`
+                          : this.collectionSearchResults &&
+                              this.collectionSearchResults.length === 0
+                            ? html`<div id="no-results-mini" class="no-results-mini">
+                                  <p>
+                                      No results found for
+                                      '${this.collectionSearchQuery}'. Try adjusting
+                                      your search term.
+                                  </p>
+                              </div>`
+                            : nothing}
                 </div>
             </terra-accordion>
         `
+    }
+
+    @debounce(500)
+    handleCollectionSearch(searchTerm: string) {
+        this.collectionSearchQuery = searchTerm
     }
 
     #renderOutputFormatSelection() {

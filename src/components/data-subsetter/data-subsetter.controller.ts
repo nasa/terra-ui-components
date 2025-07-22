@@ -12,12 +12,14 @@ import {
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
 import { getUTCDate } from '../../utilities/date.js'
+import Fuse from 'fuse.js'
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
     fetchCollectionTask: Task<[string], any | undefined>
+    searchCmrTask: Task<[string | undefined], any | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
@@ -39,6 +41,40 @@ export class DataSubsetterController {
                 return this.#host.collectionWithServices
             },
             args: (): [string | undefined] => [this.#host.collectionEntryId],
+        })
+
+        this.searchCmrTask = new Task(host, {
+            task: async ([searchQuery], { signal }) => {
+                if (!searchQuery) {
+                    this.#host.collectionSearchResults = undefined
+                    return this.#host.collectionSearchResults
+                }
+
+                // reset the results
+                this.#host.collectionSearchLoading = true
+
+                const results = await this.#dataService.searchCmr(
+                    searchQuery,
+                    'all',
+                    {
+                        signal,
+                    }
+                )
+
+                const fuse = new Fuse(results, {
+                    keys: ['title', 'entryId', 'provider'],
+                    threshold: 0.4,
+                })
+
+                this.#host.collectionSearchResults = fuse
+                    .search(searchQuery)
+                    .map(result => result.item)
+
+                this.#host.collectionSearchLoading = false
+
+                return this.#host.collectionSearchResults
+            },
+            args: (): [string | undefined] => [this.#host.collectionSearchQuery],
         })
 
         this.jobStatusTask = new Task(host, {

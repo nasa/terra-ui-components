@@ -1,5 +1,62 @@
 import { gql } from '@apollo/client/core'
 
+export const GET_CMR_SEARCH_RESULTS_ALL = gql`
+    query GetCMRSearchResultsAll($keyword: String!) {
+        collections(params: { keyword: $keyword }) {
+            items {
+                conceptId
+                nativeId
+                provider
+                title
+            }
+        }
+        variables(params: { keyword: $keyword }) {
+            items {
+                conceptId
+                name
+                providerId
+                longName
+                collections {
+                    items {
+                        conceptId
+                    }
+                }
+            }
+        }
+    }
+`
+
+export const GET_CMR_SEARCH_RESULTS_COLLECTIONS = gql`
+    query GetCMRSearchResultsCollections($keyword: String!) {
+        collections(params: { keyword: $keyword }) {
+            items {
+                conceptId
+                nativeId
+                provider
+                title
+            }
+        }
+    }
+`
+
+export const GET_CMR_SEARCH_RESULTS_VARIABLES = gql`
+    query GetCMRSearchResultsVariables($keyword: String!) {
+        variables(params: { keyword: $keyword }) {
+            items {
+                conceptId
+                name
+                providerId
+                longName
+                collections {
+                    items {
+                        conceptId
+                    }
+                }
+            }
+        }
+    }
+`
+
 export const GET_SERVICE_CAPABILITIES = gql`
     query GetServiceCapabilities($collectionEntryId: String) {
         getServiceCapabilities(input: { collectionEntryId: $collectionEntryId }) {

@@ -1,7 +1,11 @@
 import { getGraphQLClient } from '../lib/graphql-client.js'
+import { getGraphQLClient as getCmrGraphQLClient } from '../lib/cmr-graphql-client.js'
 import {
     CANCEL_SUBSET_JOB,
     CREATE_SUBSET_JOB,
+    GET_CMR_SEARCH_RESULTS_ALL,
+    GET_CMR_SEARCH_RESULTS_COLLECTIONS,
+    GET_CMR_SEARCH_RESULTS_VARIABLES,
     GET_SERVICE_CAPABILITIES,
     GET_SUBSET_JOB_STATUS,
     GET_SUBSET_JOBS,
@@ -14,6 +18,8 @@ import {
     type SubsetJobStatus,
     type SearchOptions,
     type SubsetJobs,
+    type CmrSearchResultsResponse,
+    type CmrSearchResult,
 } from './types.js'
 
 export const HARMONY_CONFIG = {
@@ -29,6 +35,59 @@ export const FINAL_STATUSES = new Set<Status>([
 ])
 
 export class HarmonyDataService implements DataServiceInterface {
+    async searchCmr(
+        keyword: string,
+        type: 'collection' | 'variable' | 'all',
+        options?: SearchOptions
+    ): Promise<Array<CmrSearchResult>> {
+        const client = await getCmrGraphQLClient()
+
+        console.log('Searching for ', keyword)
+
+        const response = await client.query<CmrSearchResultsResponse>({
+            query:
+                type === 'collection'
+                    ? GET_CMR_SEARCH_RESULTS_COLLECTIONS
+                    : type === 'variable'
+                      ? GET_CMR_SEARCH_RESULTS_VARIABLES
+                      : GET_CMR_SEARCH_RESULTS_ALL,
+            variables: {
+                keyword,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+        })
+
+        if (response.errors) {
+            throw new Error(`Failed to search CMR: ${response.errors[0].message}`)
+        }
+
+        const collections: Array<CmrSearchResult> =
+            response.data.collections?.items?.map(collection => ({
+                type: 'collection',
+                collectionConceptId: collection.conceptId,
+                conceptId: collection.conceptId,
+                entryId: collection.nativeId,
+                provider: collection.provider,
+                title: collection.title,
+            })) ?? []
+
+        const variables: Array<CmrSearchResult> =
+            response.data.variables?.items?.map(variable => ({
+                type: 'variable',
+                collectionConceptId: variable.collections.items?.[0]?.conceptId,
+                conceptId: variable.conceptId,
+                entryId: variable.name,
+                provider: variable.providerId,
+                title: variable.longName,
+            })) ?? []
+
+        return [...collections, ...variables]
+    }
+
     async getCollectionWithAvailableServices(
         collectionEntryId: string,
         options?: SearchOptions
