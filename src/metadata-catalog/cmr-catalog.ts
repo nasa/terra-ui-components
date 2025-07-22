@@ -1,4 +1,4 @@
-import { getGraphQLClient } from '../lib/cmr-graphql-client.js'
+import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
@@ -17,7 +17,7 @@ export class CmrCatalog implements MetadataCatalogInterface {
         type: 'collection' | 'variable' | 'all',
         options?: SearchOptions
     ): Promise<Array<CmrSearchResult>> {
-        const client = await getGraphQLClient()
+        const client = await getGraphQLClient('cmr')
 
         const response = await client.query<CmrSearchResultsResponse>({
             query:
