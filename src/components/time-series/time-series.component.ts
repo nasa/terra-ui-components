@@ -1,36 +1,27 @@
 import componentStyles from '../../styles/component.styles.js'
-import dayjs from 'dayjs'
 import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
-import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import TerraAlert from '../alert/alert.component.js'
 import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
-import TerraSpatialPicker from '../spatial-picker/spatial-picker.js'
-import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
-import timezone from 'dayjs/plugin/timezone.js'
-import utc from 'dayjs/plugin/utc.js'
 import { cache } from 'lit/directives/cache.js'
-import { calculateDataPoints } from '../../lib/dataset.js'
 import { downloadImage } from 'plotly.js-dist-min'
-import { html, nothing } from 'lit'
+import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
+import { Task, TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
 import { watch } from '../../internal/watch.js'
 import type { CSSResultGroup } from 'lit'
-import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
-import type { TerraComboboxChangeEvent } from '../../terra-ui-components.js'
 import type { Plot } from '../plot/plot.types.js'
 import type { MenuNames } from './time-series.types.js'
-import type { TimeInterval } from '../../types.js'
-
-const NUM_DATAPOINTS_TO_WARN_USER = 50000
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.tz.setDefault('Etc/GMT')
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
+import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
+import type { VariableDbEntry } from './time-series.types.js'
+import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
+import { formatDate } from '../../utilities/date.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -39,8 +30,6 @@ dayjs.tz.setDefault('Etc/GMT')
  * @since 1.0
  *
  * @dependency terra-plot
- * @dependency terra-date-range-slider
- * @dependency terra-variable-combobox
  *
  * @event terra-time-series-data-change - Emitted whenever time series data has been fetched from Giovanni
  */
@@ -48,51 +37,33 @@ export default class TerraTimeSeries extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-plot': TerraPlot,
-        'terra-date-range-slider': TerraDateRangeSlider,
-        'terra-spatial-picker': TerraSpatialPicker,
-        'terra-variable-combobox': TerraVariableCombobox,
         'terra-loader': TerraLoader,
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
+        'terra-alert': TerraAlert,
     }
 
     #timeSeriesController: TimeSeriesController
 
     /**
+     * a variable entry ID (ex: GPM_3IMERGHH_06_precipitationCal)
+     */
+    @property({ attribute: 'variable-entry-id', reflect: true })
+    variableEntryId?: string
+
+    /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
+     * only required if you don't include a variableEntryId
      */
     @property({ reflect: true })
     collection?: string
 
     /**
-     * a collection long name (ex: "NLDAS Primary Forcing Data L4 Hourly 0.125 x 0.125 degree V2.0 (NLDAS_FORA0125_H) at GES DISC")
-     */
-    @property({ reflect: true })
-    collectionLongName?: string
-
-    /**
-     * the dataset landing page for the collection
-     */
-    @property({ reflect: true })
-    datasetLandingPage?: string // TODO: support multiple variables (non-MVP feature)
-
-    /**
      * a variable short name to plot (ex: precipitationCal)
+     * only required if you don't include a variableEntryId
      */
     @property({ reflect: true })
     variable?: string // TODO: support multiple variables (non-MVP feature)
-
-    /**
-     * the variable landing page
-     */
-    @property({ reflect: true })
-    variableLandingPage?: string // TODO: support multiple variables (non-MVP feature)
-
-    /**
-     * a variable long name to plot (e.g., "Longwave radiation flux downwards (surface)")
-     */
-    @property({ reflect: true })
-    variableLongName?: string // TODO: support multiple variables (non-MVP feature)
 
     /**
      * The start date for the time series plot. (ex: 2021-01-01)
@@ -121,14 +92,6 @@ export default class TerraTimeSeries extends TerraElement {
     location?: string
 
     /**
-     * Units
-     */
-    @property({
-        reflect: true,
-    })
-    units?: string
-
-    /**
      * The token to be used for authentication with remote servers.
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
@@ -136,29 +99,15 @@ export default class TerraTimeSeries extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken: string
 
-    @query('terra-date-range-slider') dateRangeSlider: TerraDateRangeSlider
     @query('terra-plot') plot: TerraPlot
-    @query('terra-spatial-picker') spatialPicker: TerraSpatialPicker
-    @query('terra-variable-combobo') variableCombobox: TerraVariableCombobox
     @query('#menu') menu: HTMLMenuElement
 
-    /**
-     * holds the start date for the earliest available data for the collection
-     */
-    @state()
-    collectionBeginningDateTime?: string
+    @state() catalogVariable: Variable
 
     /**
-     * holds the end date for the latest available data for the collection
+     * user quota reached maximum request
      */
-    @state()
-    collectionEndingDateTime?: string
-
-    /**
-     * holds the time interval for the collection
-     */
-    @state()
-    timeInterval?: TimeInterval
+    @state() private quotaExceededOpen = false
 
     /**
      * if true, we'll show a warning to the user about them requesting a large number of data points
@@ -178,31 +127,6 @@ export default class TerraTimeSeries extends TerraElement {
     @state()
     activeMenuItem: MenuNames = null
 
-    @watch('collection')
-    handleCollectionUpdate(_oldValue: string, newValue: string) {
-        this.#adaptPropertyToController('collection', newValue)
-    }
-
-    @watch('variable')
-    handlevariableUpdate(_oldValue: string, newValue: string) {
-        this.#adaptPropertyToController('variable', newValue)
-    }
-
-    @watch('startDate')
-    handleStartDateUpdate(_oldValue: string, newValue: string) {
-        this.#adaptPropertyToController('startDate', newValue)
-    }
-
-    @watch('endDate')
-    handleEndDateUpdate(_oldValue: string, newValue: string) {
-        this.#adaptPropertyToController('endDate', newValue)
-    }
-
-    @watch('location')
-    handleLocationUpdate(_oldValue: string, newValue: string) {
-        this.#adaptPropertyToController('location', newValue)
-    }
-
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
         if (newValue === null) {
@@ -212,159 +136,87 @@ export default class TerraTimeSeries extends TerraElement {
         this.menu.focus()
     }
 
+    #catalog = new GiovanniVariableCatalog()
+
+    // @ts-expect-error
+    #fetchVariableTask = new Task(this, {
+        task: async (_args, { signal }) => {
+            const variableEntryId = this.#getVariableEntryId()
+
+            console.debug('fetch variable ', variableEntryId)
+
+            if (!variableEntryId) {
+                return
+            }
+
+            const variable = await this.#catalog.getVariable(variableEntryId, {
+                signal,
+            })
+
+            console.debug('found variable ', variable)
+
+            if (!variable) {
+                return
+            }
+
+            this.startDate =
+                this.startDate ?? variable.exampleInitialStartDate?.toISOString()
+            this.endDate =
+                this.endDate ?? variable.exampleInitialEndDate?.toISOString()
+
+            this.catalogVariable = variable
+        },
+        args: () => [this.variableEntryId, this.collection, this.variable],
+    })
+
     connectedCallback(): void {
         super.connectedCallback()
 
-        //* instantiate the time series contoller maybe with a token
-        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
-    }
-
-    /**
-     * Checks if the current date range will exceed data point limits
-     * eturns true if it's safe to proceed, false if confirmation is needed
-     */
-    #checkDataPointLimits() {
-        if (!this.timeInterval || !this.startDate || !this.endDate) {
-            return true // not enough info to check, we'll just let the user proceed in this case
-        }
-
-        const startDate = dayjs.utc(this.startDate).toDate()
-        const endDate = dayjs.utc(this.endDate).toDate()
-
-        this.estimatedDataPoints = calculateDataPoints(
-            this.timeInterval,
-            startDate,
-            endDate
+        this.addEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
         )
 
-        if (this.estimatedDataPoints < NUM_DATAPOINTS_TO_WARN_USER) {
-            // under the warning limit, user is good to go
-            return true
-        }
+        //* instantiate the time series contoller maybe with a token
+        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
 
-        // show warning and require confirmation from the user
-        this.showDataPointWarning = true
-        return false
+        // Add JupyterLite warmup iframe if it doesn't exist
+        if (!document.getElementById('terra-jupyterlite-warmup-iframe')) {
+            const iframe = document.createElement('iframe')
+            iframe.id = 'terra-jupyterlite-warmup-iframe'
+            iframe.src =
+                'https://gesdisc.github.io/jupyterlite/lab/index.html?path=warmup.ipynb'
+            iframe.style.cssText =
+                'width:1px; height:1px; opacity:0.01; pointer-events: none; border: 0; position: fixed; top: 0; left: 0;'
+            iframe.title = 'Notebook Warm-Up Frame'
+            iframe.setAttribute('aria-hidden', 'true')
+            document.body.appendChild(iframe)
+        }
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.removeEventListener(
+            'terra-time-series-error',
+            this.#handleQuotaError as EventListener
+        )
+    }
+
+    #handleQuotaError = (event: CustomEvent) => {
+        const { status } = event.detail
+
+        if (status === 429) {
+            this.quotaExceededOpen = true
+        }
     }
 
     #confirmDataPointWarning() {
-        this.showDataPointWarning = false
+        this.#timeSeriesController.confirmDataPointWarning()
         this.#timeSeriesController.task.run()
     }
 
     #cancelDataPointWarning() {
         this.showDataPointWarning = false
-    }
-
-    #adaptPropertyToController(
-        property: 'collection' | 'variable' | 'startDate' | 'endDate' | 'location',
-        value: any
-    ) {
-        switch (property) {
-            case 'startDate':
-            case 'endDate':
-                // FIXME: this also adjusts to local time zone; we want UTC for the controller, but we're getting a number of off-by-one errors because of timezone conversions.
-                // We have to consider the incoming startTime, endTime (maybe use a custom converter) and when the start / end times are set by the collection's defaults.
-                this.#timeSeriesController[property] = dayjs.utc(value).toDate()
-
-                break
-
-            case 'location':
-                const [lat, lon] = value.split(',')
-
-                // TODO: Figure this out: the API requires a very specific format for this value, which seems to be lon, lat. That's a reversal from the order specified in ISO 6709 (though I'm sure we're not compliant in other ways), and we don't use that order anywhere else (like the spatial-picker, or UUI).
-                this.#timeSeriesController[property] = `${lon},%20${lat}`
-                break
-
-            default:
-                this.#timeSeriesController[property] = value
-
-                break
-        }
-    }
-
-    /**
-     * The Collection Beginning DateTime changes when a new collection is selected.
-     * We want to auto-select a reasonable slice of time and send a request to the data API, the
-     * same as if the user moved the time slider.
-     * However, if the component has the startDate or endDate set externally, don't override that;
-     * this is an init-only action.
-     */
-    #maybeSliceTimeForStartEnd() {
-        // TODO: use the "calculateDataPoints" function to make this a bit smarter (i.e. show the last N datapoints by default)
-        const hasExternallySetDates = !!this.startDate || !!this.endDate
-        const hasBothDatesFromCollection =
-            !!this.collectionBeginningDateTime && !!this.collectionEndingDateTime
-
-        if (hasExternallySetDates || !hasBothDatesFromCollection) {
-            return
-        }
-
-        // get the diff betwwen start and end; it doesn't matter that we adjust for local time, because the adjustment is the same
-        const diff = Math.abs(
-            new Date(this.collectionEndingDateTime as string).getTime() -
-                new Date(this.collectionBeginningDateTime as string).getTime()
-        )
-        const threeQuarterRange = Math.floor(diff * 0.75)
-        const startDate = Math.abs(
-            new Date(this.collectionBeginningDateTime as string).getTime() +
-                threeQuarterRange
-        )
-
-        this.startDate = dayjs.utc(startDate).format()
-        this.endDate = dayjs.utc(this.collectionEndingDateTime).format()
-    }
-
-    #handleVariableChange(event: TerraComboboxChangeEvent) {
-        this.collectionBeginningDateTime = dayjs
-            .utc()
-            .format(event.detail.collectionBeginningDateTime)
-        this.collectionEndingDateTime = dayjs
-            .utc()
-            .format(event.detail.collectionEndingDateTime)
-
-        this.#maybeSliceTimeForStartEnd()
-
-        this.collection = `${event.detail.collectionShortName}_${event.detail.collectionVersion}`
-        this.collectionLongName = event.detail.collectionLongName
-        this.datasetLandingPage = event.detail.datasetLandingPage
-        this.units = event.detail.units
-        this.variable = event.detail.name
-        this.variableLandingPage = event.detail.variableLandingPage
-        this.variableLongName = event.detail.longName
-        this.timeInterval = event.detail.timeInterval
-
-        if (this.#checkDataPointLimits()) {
-            this.#timeSeriesController.task.run()
-        }
-    }
-
-    #handleMapChange(event: CustomEvent) {
-        const type = event.detail.geoJson.geometry.type
-
-        //* The map emits types for bbox and point-based drawing.
-        if (type === 'Point') {
-            const { latLng } = event.detail
-
-            // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
-            this.location = `${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)}`
-
-            if (this.#checkDataPointLimits()) {
-                this.#timeSeriesController.task.run()
-            }
-        }
-    }
-
-    /**
-     * anytime the date range slider changes, update the start and end date
-     */
-    #handleDateRangeSliderChangeEvent(event: TerraDateRangeChangeEvent) {
-        this.startDate = event.detail.startDate
-        this.endDate = event.detail.endDate
-
-        if (this.#checkDataPointLimits()) {
-            this.#timeSeriesController.task.run()
-        }
     }
 
     /**
@@ -374,24 +226,12 @@ export default class TerraTimeSeries extends TerraElement {
         this.#timeSeriesController.task?.abort()
     }
 
-    /**
-     * TODO:
-     * [x] re-enable downloads here
-     * [x] get live data from Giovanni
-     * [x] display required information in information menuitem
-     * [x] ask about adding help links
-     * [ ] see what can be simplified from downloadCSV
-     */
-
     #downloadCSV(_event: Event) {
-        // const controllerData = this.#timeSeriesController.toPlotlyData()
         const controllerData =
             this.#timeSeriesController.lastTaskValue ??
             this.#timeSeriesController.emptyPlotData
 
         let plotData: Array<Plot> = []
-
-        // console.log(controllerData)
 
         // convert data object to plot object to resolve property references
         controllerData.forEach((plot: any, index: number) => {
@@ -410,23 +250,30 @@ export default class TerraTimeSeries extends TerraElement {
             })
             .flat()
 
-        // console.log(csvData)
-
         // Create CSV format, make it a Blob file and generate a link to it.
         const csv = this.#convertToCSV(csvData)
-        csv
-        // console.log(csv)
-        // const blob = new Blob([csv], { type: 'text/csv' })
-        // const url = window.URL.createObjectURL(blob)
-        // const a = document.createElement('a')
-        //
-        // // Create a hidden link element and click it to download the CSV, then remove the link.
-        // a.setAttribute('href', url)
-        // a.setAttribute('download', `${this.collection}_${this.variable}.csv`)
-        // a.style.display = 'none'
-        // document.body.appendChild(a)
-        // a.click()
-        // document.body.removeChild(a)
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.setAttribute('href', url)
+
+        // Create filename with variable, location, and date range
+        const variableName = this.catalogVariable?.dataFieldId || 'time-series-data'
+        const locationStr = this.location
+            ? `_${this.location.replace(/,/g, '_')}`
+            : ''
+        const dateRange =
+            this.startDate && this.endDate
+                ? `_${this.startDate.split('T')[0]}_to_${this.endDate.split('T')[0]}`
+                : ''
+
+        const filename = `${variableName}${locationStr}${dateRange}.csv`
+        link.setAttribute('download', filename)
+
+        link.style.visibility = 'hidden'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
     }
 
     #convertToCSV(data: any[]): string {
@@ -437,7 +284,7 @@ export default class TerraTimeSeries extends TerraElement {
 
     #downloadPNG(_event: Event) {
         downloadImage(this.plot?.base, {
-            filename: `${this.collection}_${this.variable}`,
+            filename: this.catalogVariable!.dataFieldId,
             format: 'png',
             width: 1920,
             height: 1080,
@@ -448,74 +295,104 @@ export default class TerraTimeSeries extends TerraElement {
         const button = event.currentTarget as HTMLButtonElement
         const menuName = button.dataset.menuName as MenuNames
 
-        // Tooggle to `null` or set the menu item as active.
-        this.activeMenuItem = menuName === this.activeMenuItem ? null : menuName
+        // Set the menu item as active.
+        this.activeMenuItem = menuName
+    }
+
+    #handleComponentLeave(event: MouseEvent) {
+        // Check if we're actually leaving the component by checking if the related target is outside
+        const relatedTarget = event.relatedTarget as HTMLElement
+        if (!this.contains(relatedTarget)) {
+            this.activeMenuItem = null
+        }
+    }
+
+    #handleMenuLeave(event: MouseEvent) {
+        // Only close if we're not moving to another element within the component
+        const relatedTarget = event.relatedTarget as HTMLElement
+        if (!this.contains(relatedTarget)) {
+            this.activeMenuItem = null
+        }
     }
 
     render() {
         return html`
-            <terra-variable-combobox
-                exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
-                .value=${this.collection && this.variable
-                    ? `${this.collection}_${this.variable}`
-                    : nothing}
-                .bearerToken=${this.bearerToken ?? null}
-                .useTags=${true}
-                @terra-combobox-change="${this.#handleVariableChange}"
-            ></terra-variable-combobox>
-
-            <terra-spatial-picker
-                initial-value=${this.location}
-                exportparts="map:spatial-picker__map, leaflet-bbox:spatial-picker__leaflet-bbox, leaflet-point:spatial-picker__leaflet-point"
-                label="Select Point"
-                @terra-map-change=${this.#handleMapChange}
-            ></terra-spatial-picker>
-
-            <div class="plot-container">
+            <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
+                ${this.quotaExceededOpen
+                    ? html`
+                          <terra-alert
+                              variant="warning"
+                              duration="10000"
+                              open=${this.quotaExceededOpen}
+                              closable
+                              @terra-after-hide=${() =>
+                                  (this.quotaExceededOpen = false)}
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              You've exceeded your request quota. Please
+                              <a
+                                  href="https://disc.gsfc.nasa.gov/information/documents?title=Contact%20Us"
+                                  >contact the help desk</a
+                              >
+                              for further assistance.
+                          </terra-alert>
+                      `
+                    : ''}
                 ${cache(
-                    this.variable
+                    this.catalogVariable
                         ? html`
                               <header>
                                   <h2 class="title">
-                                      ${this.variableLongName}
-                                      <span class="region"> Region: ${this.location} </span>
+                                      ${this.catalogVariable.dataFieldLongName}
+                                      <span class="region">
+                                          Region: ${this.location}
+                                      </span>
                                   </h2>
 
                                   <div class="toggles">
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'information'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'information'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
-                                          @click=${this.#handleActiveMenuItem}
+                                          @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="information"
                                       >
-                                          <span class="sr-only">Information for ${this.variableLongName}</span>
+                                          <span class="sr-only"
+                                              >Information for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
-                                              name="outline-information-circle"
-                                              library="heroicons"
-                                              font-size="1.5em"
+                                              name="info"
+                                              font-size="1em"
                                           ></terra-icon>
                                       </terra-button>
 
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'download'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'download'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
-                                          @click=${this.#handleActiveMenuItem}
+                                          @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="download"
                                       >
-                                          <span class="sr-only">Download options for ${this.variableLongName}</span>
+                                          <span class="sr-only"
+                                              >Download options for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
                                               name="outline-arrow-down-tray"
@@ -527,151 +404,88 @@ export default class TerraTimeSeries extends TerraElement {
                                       <terra-button
                                           circle
                                           outline
-                                          aria-expanded=${
-                                              this.activeMenuItem === 'help'
-                                          }
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'help'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
                                           class="toggle"
-                                          @click=${this.#handleActiveMenuItem}
+                                          @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="help"
                                       >
-                                          <span class="sr-only">Help link for ${this.variableLongName}</span>
+                                          <span class="sr-only"
+                                              >Help link for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
 
                                           <terra-icon
-                                              name="outline-question-mark-circle"
+                                              name="question"
+                                              font-size="1em"
+                                          ></terra-icon>
+                                      </terra-button>
+
+                                      <terra-button
+                                          circle
+                                          outline
+                                          aria-expanded=${this.activeMenuItem ===
+                                          'jupyter'}
+                                          aria-controls="menu"
+                                          aria-haspopup="true"
+                                          class="toggle"
+                                          @mouseenter=${this.#handleActiveMenuItem}
+                                          data-menu-name="jupyter"
+                                      >
+                                          <span class="sr-only"
+                                              >Open in Jupyter Notebook for
+                                              ${this.catalogVariable
+                                                  .dataFieldLongName}</span
+                                          >
+
+                                          <terra-icon
+                                              name="outline-code-bracket"
                                               library="heroicons"
                                               font-size="1.5em"
                                           ></terra-icon>
                                       </terra-button>
                                   </div>
 
-                              <menu
-                                  role="menu"
-                                  id="menu"
-                                  data-expanded=${this.activeMenuItem !== null}
-                                  tabindex="-1"
-                              >
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'information'}
+                                  <menu
+                                      role="menu"
+                                      id="menu"
+                                      data-expanded=${this.activeMenuItem !== null}
+                                      tabindex="-1"
+                                      @mouseleave=${this.#handleMenuLeave}
                                   >
-                                      <h3 class="sr-only">Information</h3>
-
-                                      <dl>
-                                          <dt>Variable Longname</dt>
-                                          <dd>${this.variableLongName}</dd>
-
-                                          <dt>Variable Shortname</dt>
-                                          <dd>${this.variable}</dd>
-
-                                          <dt>Units</dt>
-                                          <dd>
-                                              <code>${this.units}</code>
-                                          </dd>
-
-                                          <dt>Dataset Information</dt>
-                                          <dd>
-                                              <a
-                                                  href=${this.datasetLandingPage}
-                                                  rel="noopener noreffer"
-                                                  target="_blank"
-                                                  >${this.collectionLongName}
-
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </dd>
-
-                                          <dt>Variable Information</dt>
-                                          <dd>
-                                              <a
-                                                  href=${this.variableLandingPage}
-                                                  rel="noopener noreffer"
-                                                  target="_blank"
-                                                  >Variable Glossary
-
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </dd>
-                                      </dl>
-                                  </li>
-
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'download'}
-                                  >
-                                      <h3 class="sr-only">Download Options</h3>
-
-                                      <p>
-                                          This plot can be downloaded as either a
-                                          <abbr title="Portable Network Graphic"
-                                              >PNG</abbr
-                                          >
-                                          image or
-                                          <abbr title="Comma-Separated Value"
-                                              >CSV</abbr
-                                          >
-                                          data.
-                                      </p>
-
-                                      <terra-button
-                                          outline
-                                          variant="default"
-                                          @click=${this.#downloadPNG}
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !==
+                                          'information'}
                                       >
-                                          <span class="sr-only"
-                                              >Download Plot Data as
-                                          </span>
-                                          PNG
-                                          <terra-icon
-                                              slot="prefix"
-                                              name="outline-photo"
-                                              library="heroicons"
-                                              font-size="1.5em"
-                                          ></terra-icon>
-                                      </terra-button>
+                                          ${this.#renderInfoPanel()}
+                                      </li>
 
-                                      <terra-button
-                                          outline
-                                          variant="default"
-                                          @click=${this.#downloadCSV}
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !==
+                                          'download'}
                                       >
-                                          <span class="sr-only"
-                                              >Download Plot Data as
-                                          </span>
-                                          CSV
-                                          <terra-icon
-                                              slot="prefix"
-                                              name="outline-document-chart-bar"
-                                              library="heroicons"
-                                              font-size="1.5em"
-                                          ></terra-icon>
-                                      </terra-button>
-                                  </li>
+                                          ${this.#renderDownloadPanel()}
+                                      </li>
 
-                                  <li
-                                      role="menuitem"
-                                      ?hidden=${this.activeMenuItem !== 'help'}
-                                  >
-                                      <h3 class="sr-only">Help Links</h3>
-                                      <ul>
-                                          <li>
-                                              <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
-                                                  <terra-icon
-                                                      name="outline-arrow-top-right-on-square"
-                                                      library="heroicons"
-                                                  ></terra-icon>
-                                              </a>
-                                          </li>
-                                      </ul>
-                                  </li>
-                              </menu>
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !== 'help'}
+                                      >
+                                          ${this.#renderHelpPanel()}
+                                      </li>
+
+                                      <li
+                                          role="menuitem"
+                                          ?hidden=${this.activeMenuItem !== 'jupyter'}
+                                      >
+                                          ${this.#renderJupyterNotebookPanel()}
+                                      </li>
+                                  </menu>
                               </header>
                           `
                         : html`<div class="spacer"></div>`
@@ -686,18 +500,20 @@ export default class TerraTimeSeries extends TerraElement {
                             title: 'Time',
                             showgrid: false,
                             zeroline: false,
+                            range:
+                                // manually set the range as we may adjust it when we fetch new data as a user pans/zooms the plot
+                                this.startDate && this.endDate
+                                    ? [this.startDate, this.endDate]
+                                    : undefined,
                         },
                         yaxis: {
-                            title:
-                                this.variableLongName && this.units
-                                    ? `${this.variableLongName}, ${this.units}`
-                                    : null,
+                            title: this.#getYAxisLabel(),
                             showline: false,
                         },
                         title: {
                             text:
-                                this.collection && this.location
-                                    ? `${this.collection} @ ${this.location}`
+                                this.catalogVariable && this.location
+                                    ? `${this.catalogVariable.dataProductShortName} @ ${this.location}`
                                     : null,
                         },
                     }}"
@@ -707,23 +523,15 @@ export default class TerraTimeSeries extends TerraElement {
                         modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
                         responsive: true,
                     }}
+                    @terra-plot-relayout=${this.#handlePlotRelayout}
                 ></terra-plot>
             </div>
-
-            <terra-date-range-slider
-                exportparts="slider:date-range-slider__slider"
-                min-date=${this.collectionBeginningDateTime}
-                max-date=${this.collectionEndingDateTime}
-                start-date=${this.startDate}
-                end-date=${this.endDate}
-                @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
-            ></terra-date-range-slider>
 
             <dialog
                 ?open=${this.#timeSeriesController.task.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
-                <p>Plotting ${this.collection} ${this.variable}&hellip;</p>
+                <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
 
@@ -759,5 +567,230 @@ export default class TerraTimeSeries extends TerraElement {
                 </div>
             </dialog>
         `
+    }
+
+    #getVariableEntryId() {
+        if (!this.variableEntryId && !(this.collection && this.variable)) {
+            return
+        }
+
+        return this.variableEntryId ?? `${this.collection}_${this.variable}`
+    }
+
+    #getYAxisLabel() {
+        if (!this.catalogVariable) {
+            return
+        }
+
+        return [
+            this.catalogVariable.dataFieldLongName,
+            this.catalogVariable.dataFieldUnits,
+        ]
+            .filter(Boolean)
+            .join(', ')
+    }
+
+    #renderInfoPanel() {
+        return html`
+            <h3 class="sr-only">Information</h3>
+
+            <dl>
+                <dt>Variable Longname</dt>
+                <dd>${this.catalogVariable.dataFieldLongName}</dd>
+
+                <dt>Variable Shortname</dt>
+                <dd>
+                    ${this.catalogVariable.dataFieldShortName ??
+                    this.catalogVariable.dataFieldAccessName}
+                </dd>
+
+                <dt>Units</dt>
+                <dd>
+                    <code>${this.catalogVariable.dataFieldUnits}</code>
+                </dd>
+
+                <dt>Dataset Information</dt>
+                <dd>
+                    <a
+                        href=${this.catalogVariable.dataProductDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >${this.catalogVariable.dataProductLongName}
+
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </dd>
+
+                <dt>Variable Information</dt>
+                <dd>
+                    <a
+                        href=${this.catalogVariable.dataFieldDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >Variable Glossary
+
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </dd>
+            </dl>
+        `
+    }
+
+    #renderDownloadPanel() {
+        return html`
+            <h3 class="sr-only">Download Options</h3>
+
+            <p>
+                This plot can be downloaded as either a
+                <abbr title="Portable Network Graphic">PNG</abbr>
+                image or
+                <abbr title="Comma-Separated Value">CSV</abbr>
+                data.
+            </p>
+
+            <terra-button outline variant="default" @click=${this.#downloadPNG}>
+                <span class="sr-only">Download Plot Data as </span>
+                PNG
+                <terra-icon
+                    slot="prefix"
+                    name="outline-photo"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
+
+            <terra-button outline variant="default" @click=${this.#downloadCSV}>
+                <span class="sr-only">Download Plot Data as </span>
+                CSV
+                <terra-icon
+                    slot="prefix"
+                    name="outline-document-chart-bar"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
+        `
+    }
+
+    #renderHelpPanel() {
+        return html`
+            <h3 class="sr-only">Help Links</h3>
+            <ul>
+                <li>
+                    <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </li>
+            </ul>                  
+        `
+    }
+
+    #renderJupyterNotebookPanel() {
+        return html`
+            <h3 class="sr-only">Jupyter Notebook Options</h3>
+            <p>Open this plot in a Jupyter Notebook to explore the data further.</p>
+            <a
+                href="#"
+                @click=${(e: Event) => {
+                    e.preventDefault()
+                    this.#handleJupyterNotebookClick()
+                }}
+            >
+                Open in Jupyter Notebook
+                <terra-icon
+                    name="outline-arrow-top-right-on-square"
+                    library="heroicons"
+                ></terra-icon>
+            </a>
+        `
+    }
+
+    #handleJupyterNotebookClick() {
+        const jupyterLiteUrl = 'https://gesdisc.github.io/jupyterlite/lab/index.html'
+        const jupyterWindow = window.open(jupyterLiteUrl, '_blank')
+
+        if (!jupyterWindow) {
+            console.error('Failed to open JupyterLite!')
+            return
+        }
+
+        // Fetch the time series data from IndexedDB
+        getDataByKey<VariableDbEntry>(
+            IndexedDbStores.TIME_SERIES,
+            this.#timeSeriesController.getCacheKey()
+        ).then(timeSeriesData => {
+            // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+            setTimeout(() => {
+                const notebook = [
+                    {
+                        id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
+                        cell_type: 'code',
+                        source: '%pip install -q terra_ui_components',
+                        metadata: {
+                            trusted: true,
+                        },
+                        outputs: [],
+                        execution_count: null,
+                    },
+                    {
+                        id: '870c1384-e706-48ee-ba07-fd552a949869',
+                        cell_type: 'code',
+                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.#getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
+                        metadata: {
+                            trusted: true,
+                        },
+                        outputs: [],
+                        execution_count: null,
+                    },
+                ]
+
+                jupyterWindow.postMessage(
+                    {
+                        type: 'load-notebook',
+                        filename: `${encodeURIComponent(this.#getVariableEntryId() ?? 'plot')}.ipynb`,
+                        notebook,
+                        timeSeriesData,
+                        databaseName: DB_NAME,
+                        storeName: IndexedDbStores.TIME_SERIES,
+                    },
+                    '*'
+                )
+            }, 500)
+        })
+    }
+
+    #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
+        let changed = false
+        if (e.detail.xAxisMin) {
+            this.startDate = formatDate(e.detail.xAxisMin)
+            changed = true
+        }
+
+        if (e.detail.xAxisMax) {
+            this.endDate = formatDate(e.detail.xAxisMax)
+            changed = true
+        }
+
+        if (changed) {
+            this.dispatchEvent(
+                new CustomEvent('terra-time-series-date-range-change', {
+                    detail: {
+                        startDate: this.startDate,
+                        endDate: this.endDate,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            )
+        }
     }
 }

@@ -20,15 +20,12 @@ class TerraTimeSeries(TerraBaseWidget):
          *
          * model.get() pulls from the Jupyter notebooks state. We'll use the state to set the initial value for each property
          */
+        component.variableEntryId = model.get('variableEntryId')
         component.collection = model.get('collection')
-        component.datasetLandingPage = model.get('datasetLandingPage')
         component.variable = model.get('variable')
-        component.variableLandingPage = model.get('variableLandingPage')
-        component.variableLongName = model.get('variableLongName')
         component.startDate = model.get('startDate')
         component.endDate = model.get('endDate')
         component.location = model.get('location')
-        component.units = model.get('units')
         component.bearerToken = model.get('bearerToken')
 
         /**
@@ -45,20 +42,14 @@ class TerraTimeSeries(TerraBaseWidget):
          * 
          * If this isn't here, the component can't be changed after it's initial render
          */
+        model.on('change:variableEntryId', () => {
+            component.variableEntryId = model.get('variableEntryId')
+        })
         model.on('change:collection', () => {
             component.collection = model.get('collection')
         })
-        model.on('change:datasetLandingPage', () => {
-            component.datasetLandingPage = model.get('datasetLandingPage')
-        })
         model.on('change:variable', () => {
             component.variable = model.get('variable')
-        })
-        model.on('change:variableLandingPage', () => {
-            component.variableLandingPage = model.get('variableLandingPage')
-        })
-        model.on('change:variableLongName', () => {
-            component.variableLongName = model.get('variableLongName')
         })
         model.on('change:startDate', () => {
             component.startDate = model.get('startDate')
@@ -68,9 +59,6 @@ class TerraTimeSeries(TerraBaseWidget):
         })
         model.on('change:location', () => {
             component.location = model.get('location')
-        })
-        model.on('change:units', () => {
-            component.units = model.get('units')
         })
         model.on('change:bearerToken', () => {
             component.bearerToken = model.get('bearerToken')
@@ -99,17 +87,13 @@ class TerraTimeSeries(TerraBaseWidget):
     """
 
     # Component properties
-    # While we have properties in the component, we also need to tell Python about them as well.
+    # While we have properties in the component, we also need to tell Python about them as well. 
     # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
+    variableEntryId = traitlets.Unicode('').tag(sync=True)
     collection = traitlets.Unicode('').tag(sync=True)
-    datasetLandingPage = traitlets.Unicode('').tag(sync=True)
     variable = traitlets.Unicode('').tag(sync=True)
-    variableLandingPage = traitlets.Unicode('').tag(sync=True)
-    variableLongName = traitlets.Unicode('').tag(sync=True)
     startDate = traitlets.Unicode('').tag(sync=True)
     endDate = traitlets.Unicode('').tag(sync=True)
     location = traitlets.Unicode('').tag(sync=True)
-    units = traitlets.Unicode('').tag(sync=True)
     bearerToken = traitlets.Unicode('').tag(sync=True)
-    data = traitlets.List(trait=traitlets.Dict(),
-                          default_value=[]).tag(sync=True)
+    data = traitlets.List(trait=traitlets.Dict(), default_value=[]).tag(sync=True)

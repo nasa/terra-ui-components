@@ -1,4 +1,5 @@
 // Components
+export { default as TerraAlert } from './components/alert/alert.js'
 export { default as TerraButton } from './components/button/button.js'
 export { default as TerraChip } from './components/chip/chip.js'
 export { default as TerraCombobox } from './components/combobox/combobox.js'
@@ -17,6 +18,7 @@ export { default as TerraDialog } from './components/dialog/dialog.js'
 export { default as TerraSkeleton } from './components/skeleton/skeleton.js'
 export { default as TerraVariableKeywordSearch } from './components/variable-keyword-search/variable-keyword-search.js'
 export { default as TerraDatePicker } from './components/date-picker/date-picker.js'
+export { default as TerraDataRods } from './components/data-rods/data-rods.js'
 /* plop:component */
 
 // Utilities
