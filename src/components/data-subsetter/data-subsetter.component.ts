@@ -469,7 +469,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                                 ${item.entryId}
                                             </div>
                                             <div class="result-description-mini">
-                                                ${item.title}
+                                                ${item.summary || item.title}
                                             </div>
                                             <div class="result-meta-mini">
                                                 <span>📅 2000-02-24 - ongoing</span>
