@@ -54,6 +54,12 @@ export default css`
         position: relative;
     }
 
+    .square-button {
+        border-radius: 0 !important; /* square corners */
+        width: 2.5em;
+        height: 2.5em;
+    }
+
     .toggle[aria-expanded='true']::after {
         background-color: var(--terra-color-nasa-blue);
         block-size: 0.125em;
