@@ -181,19 +181,6 @@ export default class TerraTimeSeries extends TerraElement {
 
         //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
-
-        // Add JupyterLite warmup iframe if it doesn't exist
-        if (!document.getElementById('terra-jupyterlite-warmup-iframe')) {
-            const iframe = document.createElement('iframe')
-            iframe.id = 'terra-jupyterlite-warmup-iframe'
-            iframe.src =
-                'https://gesdisc.github.io/jupyterlite/lab/index.html?path=warmup.ipynb'
-            iframe.style.cssText =
-                'width:1px; height:1px; opacity:0.01; pointer-events: none; border: 0; position: fixed; top: 0; left: 0;'
-            iframe.title = 'Notebook Warm-Up Frame'
-            iframe.setAttribute('aria-hidden', 'true')
-            document.body.appendChild(iframe)
-        }
     }
 
     disconnectedCallback(): void {
