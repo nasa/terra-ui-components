@@ -100,6 +100,8 @@ export class DataSubsetterController {
                     const labels = this.#buildJobLabels()
 
                     let subsetOptions = {
+                        collectionConceptId:
+                            this.#host.collectionWithServices?.conceptId ?? '',
                         ...(this.#host.collectionWithServices?.variableSubset && {
                             variableConceptIds: this.#host.selectedVariables.map(
                                 v => v.conceptId
@@ -138,14 +140,10 @@ export class DataSubsetterController {
                     this.currentJob = this.#getEmptyJob()
 
                     // create the new job
-                    job = await this.#dataService.createSubsetJob(
-                        this.#host.collectionWithServices?.conceptId ?? '',
-                        {
-                            ...subsetOptions,
-                            signal,
-                            bearerToken: this.#host.bearerToken,
-                        }
-                    )
+                    job = await this.#dataService.createSubsetJob(subsetOptions, {
+                        signal,
+                        bearerToken: this.#host.bearerToken,
+                    })
                 }
 
                 console.log('Job status: ', job)

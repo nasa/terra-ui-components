@@ -86,6 +86,7 @@ export default class TerraTimeSeries extends TerraElement {
 
     /**
      * The point location in "lat,lon" format.
+     * Or the bounding box in "west,south,east,north" format.
      */
     @property({
         reflect: true,
@@ -142,7 +143,7 @@ export default class TerraTimeSeries extends TerraElement {
     // @ts-expect-error
     #fetchVariableTask = new Task(this, {
         task: async (_args, { signal }) => {
-            const variableEntryId = this.#getVariableEntryId()
+            const variableEntryId = this.getVariableEntryId()
 
             console.debug('fetch variable ', variableEntryId)
 
@@ -567,7 +568,7 @@ export default class TerraTimeSeries extends TerraElement {
         `
     }
 
-    #getVariableEntryId() {
+    getVariableEntryId() {
         if (!this.variableEntryId && !(this.collection && this.variable)) {
             return
         }
@@ -742,7 +743,7 @@ export default class TerraTimeSeries extends TerraElement {
                     {
                         id: '870c1384-e706-48ee-ba07-fd552a949869',
                         cell_type: 'code',
-                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.#getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
+                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
                         metadata: {
                             trusted: true,
                         },
@@ -754,7 +755,7 @@ export default class TerraTimeSeries extends TerraElement {
                 jupyterWindow.postMessage(
                     {
                         type: 'load-notebook',
-                        filename: `${encodeURIComponent(this.#getVariableEntryId() ?? 'plot')}.ipynb`,
+                        filename: `${encodeURIComponent(this.getVariableEntryId() ?? 'plot')}.ipynb`,
                         notebook,
                         timeSeriesData,
                         databaseName: DB_NAME,

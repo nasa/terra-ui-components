@@ -5,7 +5,7 @@ meta:
 layout: component
 ---
 
-## All Data Pre-Configured
+## Point-based Time Series
 
 ```html:preview
 <terra-time-series
@@ -17,21 +17,15 @@ layout: component
 ></terra-time-series>
 ```
 
-## Collection and Variable Pre-Configured
+## Area-averaged Time Series
 
 ```html:preview
 <terra-time-series
-    collection="M2T1NXSLV_5_12_4"
-    variable="V50M"
-    start-date="05/03/2024"
-    end-date="06/03/2024"
-></terra-time-series>
-```
-
-## No Pre-Configured Data
-
-```html:preview
-<terra-time-series
+    collection="M2T1NXAER_5.12.4"
+    variable="BCCMASS"
+    start-date="01/01/2009"
+    end-date="01/05/2009"
+    location="62,5,95,40"
 ></terra-time-series>
 ```
 
