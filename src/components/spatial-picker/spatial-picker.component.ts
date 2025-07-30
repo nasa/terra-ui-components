@@ -6,6 +6,8 @@ import { html, nothing } from 'lit'
 import { parseBoundingBox, StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
+import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import { MapEventType } from '../map/type.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -112,57 +114,13 @@ export default class TerraSpatialPicker extends TerraElement {
     map: TerraMap
 
     private _blur(e: FocusEvent) {
-        const inputValue = (e.target as HTMLInputElement).value
-
-        if (inputValue === '') {
-            this.mapValue = []
-        } else {
-            const parsedValue = parseBoundingBox(inputValue)
-
-            if (Array.isArray(parsedValue)) {
-                this.mapValue = parsedValue.map((coordArray: number[]) => {
-                    // Round each number in the inner array (lat, lng) to 2 decimal places
-                    return coordArray.map((coord: number) =>
-                        parseFloat(coord.toFixed(2))
-                    )
-                })
-            } else if (
-                parsedValue &&
-                typeof parsedValue === 'object' &&
-                'lat' in parsedValue &&
-                'lng' in parsedValue
-            ) {
-                // Handle lat/lng object
-                const { lat, lng } = parsedValue
-                this.mapValue = {
-                    lat: parseFloat(lat.toFixed(2)),
-                    lng: parseFloat(lng.toFixed(2)),
-                }
-            } else {
-                this.mapValue = []
-            }
-        }
+        this._emitMapChange()
 
         // Don't hide if clicking within the map component
         const relatedTarget = e.relatedTarget as HTMLElement
         if (!relatedTarget?.closest('terra-map')) {
             this.isExpanded = false
         }
-
-        this.emit('terra-map-change', {
-            detail: {
-                cause: 'draw',
-                latLng: this.mapValue,
-                geoJson: {
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [this.mapValue.lng, this.mapValue.lat],
-                    },
-                    properties: {},
-                },
-            },
-        })
     }
 
     private _focus() {
@@ -175,6 +133,36 @@ export default class TerraSpatialPicker extends TerraElement {
         this.isExpanded = !this.isExpanded
     }
 
+    private _emitMapChange() {
+        const layer = this.map.getDrawLayer()
+
+        if ('getLatLng' in layer) {
+            this.mapValue = layer.getLatLng()
+
+            this.emit('terra-map-change', {
+                detail: {
+                    type: MapEventType.POINT,
+                    cause: 'draw',
+                    latLng: this.mapValue,
+                    geoJson: layer.toGeoJSON(),
+                },
+            })
+        } else if ('getBounds' in layer) {
+            this.mapValue = layer.getBounds()
+
+            this.emit('terra-map-change', {
+                detail: {
+                    type: MapEventType.BBOX,
+                    cause: 'draw',
+                    bounds: this.mapValue,
+                    geoJson: layer.toGeoJSON(),
+                },
+            })
+        } else {
+            this.mapValue = []
+        }
+    }
+
     open() {
         this.isExpanded = true
     }
@@ -183,24 +171,25 @@ export default class TerraSpatialPicker extends TerraElement {
         this.isExpanded = false
     }
 
-    private _handleMapChange(event: CustomEvent) {
+    private _handleMapChange(event: TerraMapChangeEvent) {
         switch (event.detail.cause) {
             case 'clear':
                 this.spatialInput.value = ''
-                // Reset spatial constraints to default value on map clear
-                this.spatialConstraints = '-180, -90, 180, 90'
                 break
 
             case 'draw':
-                if (event.detail.bounds) {
+                if (event.detail.type === MapEventType.BBOX) {
                     this.spatialInput.value = StringifyBoundingBox(
                         event.detail.bounds
                     )
-                } else if (event.detail.latLng) {
+                } else if (event.detail.type === MapEventType.POINT) {
                     this.spatialInput.value = StringifyBoundingBox(
                         event.detail.latLng
                     )
                 }
+
+                this._emitMapChange()
+
                 break
 
             default:
