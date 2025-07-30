@@ -32,3 +32,46 @@ export function formatDate(date: dayjs.Dayjs | MaybeDate, format?: string) {
 
     return date.format(format)
 }
+
+/**
+ * Helper to check if a date range is contained within another date range.
+ * This is useful for determining if existing data covers the requested range.
+ */
+export function isDateRangeContained(
+    start1: Date,
+    end1: Date,
+    start2: Date,
+    end2: Date
+): boolean {
+    const startOfDay1 = new Date(
+        start1.getFullYear(),
+        start1.getMonth(),
+        start1.getDate()
+    )
+    const startOfDay2 = new Date(
+        start2.getFullYear(),
+        start2.getMonth(),
+        start2.getDate()
+    )
+
+    const endOfDay1 = new Date(
+        end1.getFullYear(),
+        end1.getMonth(),
+        end1.getDate(),
+        23,
+        59,
+        59,
+        999
+    )
+    const endOfDay2 = new Date(
+        end2.getFullYear(),
+        end2.getMonth(),
+        end2.getDate(),
+        23,
+        59,
+        59,
+        999
+    )
+
+    return startOfDay1 >= startOfDay2 && endOfDay1 <= endOfDay2
+}

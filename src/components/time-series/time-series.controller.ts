@@ -18,7 +18,7 @@ import type {
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import type { TimeInterval } from '../../types.js'
-import { formatDate, getUTCDate } from '../../utilities/date.js'
+import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import {
     FINAL_STATUSES,
@@ -118,7 +118,7 @@ export class TimeSeriesController {
 
     async #loadTimeSeries(signal: AbortSignal) {
         const startDate = getUTCDate(this.host.startDate!)
-        const endDate = getUTCDate(this.host.endDate!)
+        const endDate = getUTCDate(this.host.endDate!, true)
         const cacheKey = this.getCacheKey()
         const variableEntryId = this.host.catalogVariable!.dataFieldId
 
@@ -130,8 +130,12 @@ export class TimeSeriesController {
 
         if (
             existingTerraData &&
-            startDate.getTime() >= new Date(existingTerraData.startDate).getTime() &&
-            endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
+            isDateRangeContained(
+                startDate,
+                endDate,
+                new Date(existingTerraData.startDate),
+                new Date(existingTerraData.endDate)
+            )
         ) {
             // already have the data downloaded!
             return this.#getDataInRange(existingTerraData)
@@ -429,8 +433,11 @@ export class TimeSeriesController {
                         row.push(parts[i].trim())
                     }
 
+                    // Normalize timestamp format
+                    const timestamp = this.#normalizeTimestamp(row[0])
+
                     data.push({
-                        timestamp: row[0],
+                        timestamp,
                         value: row[1],
                     })
                 }
@@ -438,6 +445,25 @@ export class TimeSeriesController {
         }
 
         return { metadata, data } as TimeSeriesData
+    }
+
+    /**
+     * Normalizes timestamp format to be consistent between point-based and area-averaged data
+     * Point-based data format: "2013-11-28 23:30"
+     * Area-averaged data format: "2009-01-01T00:30:00.000000000"
+     * This function converts area-averaged format to match point-based format
+     */
+    #normalizeTimestamp(timestamp: string): string {
+        try {
+            // Parse the timestamp and format it consistently
+            const date = new Date(timestamp)
+
+            return formatDate(date)
+        } catch (error) {
+            // If parsing fails, return the original timestamp
+            console.warn('Failed to normalize timestamp:', timestamp, error)
+            return timestamp
+        }
     }
 
     /**
