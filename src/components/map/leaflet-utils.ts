@@ -1,7 +1,6 @@
 import * as L from 'leaflet'
 import 'leaflet-draw'
 import type { LatLngBoundsExpression, LatLngBoundsLiteral } from 'leaflet'
-import type { BoundingBox, LatLng } from './type.js'
 import { GiovanniGeoJsonShapes } from '../../geojson/giovanni-geojson.js'
 
 // There is a leaflet bug with type sometimes being undefined. This is a temporary fix
@@ -45,7 +44,7 @@ export function parseBoundingBox(inputString: string) {
     return leafletBounds
 }
 
-export function StringifyBoundingBox(input: LatLng | BoundingBox): string {
+export function StringifyBoundingBox(input: any): string {
     if ('_southWest' in input && '_northEast' in input) {
         // It's a BoundingBox
         return `${input._southWest.lng.toFixed(2)}, ${input._southWest.lat.toFixed(
@@ -118,7 +117,7 @@ export class Leaflet {
                 'lat' in options.initialValue &&
                 'lng' in options.initialValue
             ) {
-                L.marker(options.initialValue as LatLng, {
+                L.marker(options.initialValue as any, {
                     icon: L.icon({
                         iconUrl:
                             'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
