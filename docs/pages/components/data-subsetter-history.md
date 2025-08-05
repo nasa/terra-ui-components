@@ -15,7 +15,7 @@ The `<terra-data-subsetter-history>` component displays a floating panel showing
   The history panel is at the bottom right of your screen
 </terra-alert>
 
-<terra-data-subsetter-history bearer-token="YOUR_EARTHDATA_BEARER_TOKEN"></terra-data-subsetter-history>
+<terra-data-subsetter-history></terra-data-subsetter-history>
 ```
 
 ## Properties
@@ -25,14 +25,6 @@ The `<terra-data-subsetter-history>` component displays a floating panel showing
 | `label`        | string  | "History" | The label shown at the top of the history panel.                    |
 | `bearer-token` | string  | —         | NASA Earthdata bearer token for fetching user-specific job history. |
 | `always-show`  | boolean | false     | If true, always show the panel even if the user has no jobs.        |
-
-## Examples
-
-### Basic Usage
-
-```html:preview
-<terra-data-subsetter-history bearer-token="YOUR_EARTHDATA_BEARER_TOKEN"></terra-data-subsetter-history>
-```
 
 ## Best Practices
 

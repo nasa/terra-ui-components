@@ -26,13 +26,14 @@ export class DataSubsetterHistoryController {
                 clearTimeout(this.#jobTimeout)
 
                 // only fetch new jobs if:
+                //      we have a token
                 //      this is the first time the task has run
                 //      the history panel is expanded
                 //      the browser window is focused
                 const shouldFetch =
                     this.#windowIsVisible && (!this.#host.collapsed || !this.jobs)
 
-                if (shouldFetch) {
+                if (shouldFetch && this.#host.bearerToken) {
                     // only fetch new jobs if the history panel is expanded AND the user is looking at the browser window
                     this.jobs = await this.#dataService.getSubsetJobs({
                         bearerToken: this.#host.bearerToken,
@@ -45,7 +46,7 @@ export class DataSubsetterHistoryController {
 
                 return this.jobs
             },
-            args: (): any => [],
+            args: (): any => [this.#host.bearerToken],
         })
     }
 
