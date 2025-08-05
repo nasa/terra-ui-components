@@ -62,10 +62,22 @@ class AuthService {
         this.authenticate()
     }
 
-    subscribe(listener: (state: AuthState) => void): () => void {
+    subscribe(
+        listener: (state: AuthState) => void,
+        bearerToken?: string
+    ): () => void {
         this.listeners.add(listener)
 
-        listener(this.authState) // Immediately call with current state
+        if (bearerToken) {
+            this.setState({ token: bearerToken })
+
+            this.authenticate().then(() => {
+                // wait to finish authenticating before calling the listener
+                listener(this.authState)
+            })
+        } else {
+            listener(this.authState) // Immediately call with current state
+        }
 
         return () => {
             this.listeners.delete(listener)
@@ -108,7 +120,7 @@ class AuthService {
             return this.authState.user
         }
 
-        const token = localStorage.getItem(TOKEN_KEY)
+        const token = this.authState.token ?? localStorage.getItem(TOKEN_KEY)
 
         if (!token) {
             // no token, set the state to logged out

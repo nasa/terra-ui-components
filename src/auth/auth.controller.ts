@@ -14,15 +14,19 @@ export class AuthController<C> {
 
         this.task = new Task(host, {
             task: async ([]) => {
-                this.unsubscribe = authService.subscribe(state => {
-                    if (state.token) {
-                        // @ts-expect-error - we can't guarantee the host has a bearerToken property
-                        this.#host.bearerToken = state.token
-                    }
+                this.unsubscribe = authService.subscribe(
+                    state => {
+                        if (state.token) {
+                            // @ts-expect-error - we can't guarantee the host has a bearerToken property
+                            this.#host.bearerToken = state.token
+                        }
 
-                    // Trigger a re-render when auth state changes
-                    this.#host.requestUpdate()
-                })
+                        // Trigger a re-render when auth state changes
+                        this.#host.requestUpdate()
+                    },
+                    // @ts-expect-error - we can't guarantee the host has a bearerToken property
+                    this.#host.bearerToken
+                )
 
                 // Return current state
                 return authService.getState()
