@@ -10,10 +10,16 @@ layout: component
 The `<terra-data-subsetter-history>` component displays a floating panel showing a user's recent data subset requests, their status, and quick access to results. It integrates with `<terra-data-subsetter>` for viewing and re-running jobs. The panel is typically shown in the lower right of the screen and is intended for authenticated users.
 
 ```html:preview
-<terra-alert open variant="success">
-  <terra-icon slot="icon" name="outline-check-circle" library="heroicons"></terra-icon>
-  The history panel is at the bottom right of your screen
-</terra-alert>
+<terra-login style="width: 100%">
+  <span slot="loading">Loading...</span>
+
+  <terra-alert open variant="success" slot="logged-in">
+    <terra-icon slot="icon" name="outline-check-circle" library="heroicons"></terra-icon>
+    The history panel is at the bottom right of your screen
+  </terra-alert>
+
+  <p slot="logged-out">Please login to see your history</p>
+</terra-login>
 
 <terra-data-subsetter-history></terra-data-subsetter-history>
 ```
