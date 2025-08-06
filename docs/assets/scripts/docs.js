@@ -148,6 +148,65 @@
 })()
 
 //
+// Environment selector
+//
+;(() => {
+    function getEnvironment() {
+        return localStorage.getItem('terra-environment') || 'uat'
+    }
+
+    function setEnvironment(newEnvironment) {
+        environment = newEnvironment
+        localStorage.setItem('terra-environment', environment)
+
+        // Update the UI
+        updateEnvironmentSelection()
+        updateEnvironmentDisplay()
+
+        // Trigger a custom event that components can listen to
+        document.dispatchEvent(
+            new CustomEvent('terra-environment-change', {
+                detail: { environment },
+            })
+        )
+    }
+
+    function updateEnvironmentSelection() {
+        const menu = document.querySelector('#environment-selector sl-menu')
+        if (!menu) return
+        ;[...menu.querySelectorAll('sl-menu-item')].map(
+            item => (item.checked = item.getAttribute('value') === environment)
+        )
+    }
+
+    function updateEnvironmentDisplay() {
+        const display = document.querySelector('#environment-display')
+        if (display) {
+            display.textContent = environment.toUpperCase()
+        }
+    }
+
+    let environment = getEnvironment()
+
+    // Selection is not preserved when changing page, so update when opening dropdown
+    document.addEventListener('sl-show', event => {
+        const environmentSelector = event.target.closest('#environment-selector')
+        if (!environmentSelector) return
+        updateEnvironmentSelection()
+    })
+
+    // Listen for selections
+    document.addEventListener('sl-select', event => {
+        const menu = event.target.closest('#environment-selector sl-menu')
+        if (!menu) return
+        setEnvironment(event.detail.item.value)
+    })
+
+    // Set the initial environment and sync the UI
+    setEnvironment(environment)
+})()
+
+//
 // Open details when printing
 //
 ;(() => {

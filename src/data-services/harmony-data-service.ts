@@ -54,7 +54,7 @@ export class HarmonyDataService implements DataServiceInterface {
                     ...(options?.bearerToken && {
                         authorization: options.bearerToken,
                     }),
-                    'x-environment': 'uat',
+                    'x-environment': options?.environment ?? 'prod',
                 },
                 fetchOptions: {
                     signal: options?.signal,
@@ -100,7 +100,7 @@ export class HarmonyDataService implements DataServiceInterface {
                     ...(options?.bearerToken && {
                         authorization: options.bearerToken,
                     }),
-                    'x-environment': 'uat',
+                    'x-environment': options?.environment ?? 'prod',
                 },
                 fetchOptions: {
                     signal: options?.signal,
@@ -129,7 +129,7 @@ export class HarmonyDataService implements DataServiceInterface {
                     ...(searchOptions?.bearerToken && {
                         authorization: searchOptions.bearerToken,
                     }),
-                    'x-environment': 'uat',
+                    'x-environment': searchOptions?.environment ?? 'prod',
                 },
                 fetchOptions: {
                     signal: searchOptions?.signal,
@@ -165,7 +165,7 @@ export class HarmonyDataService implements DataServiceInterface {
                     ...(searchOptions?.bearerToken && {
                         authorization: searchOptions.bearerToken,
                     }),
-                    'x-environment': 'uat',
+                    'x-environment': searchOptions?.environment ?? 'prod',
                 },
                 fetchOptions: {
                     signal: searchOptions?.signal,
@@ -201,7 +201,7 @@ export class HarmonyDataService implements DataServiceInterface {
                     ...(options?.bearerToken && {
                         authorization: options.bearerToken,
                     }),
-                    'x-environment': 'uat',
+                    'x-environment': options?.environment ?? 'prod',
                 },
             },
             fetchPolicy: 'no-cache', //! important, we don't want to get cached results here!

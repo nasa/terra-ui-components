@@ -197,7 +197,6 @@ export class FormControlController implements ReactiveController {
         // Check to make sure there's no other form controls in the collection. If we do this
         // without checking if any other controls are still in the collection, then we will wipe out the
         // validity checks for all other elements.
-        // see: https://github.com/gesdisc/components/issues/1703
         if (formCollection.size <= 0) {
             this.form.removeEventListener('formdata', this.handleFormData)
             this.form.removeEventListener('submit', this.handleFormSubmit)
@@ -427,7 +426,6 @@ export class FormControlController implements ReactiveController {
         // We're mapping the following "states" to data attributes. In the future, we can use ElementInternals.states to
         // create a similar mapping, but instead of [data-invalid] it will look like :--invalid.
         //
-        // See this RFC for more details: https://github.com/gesdisc/components/issues/1011
         //
         host.toggleAttribute('data-required', required)
         host.toggleAttribute('data-optional', !required)

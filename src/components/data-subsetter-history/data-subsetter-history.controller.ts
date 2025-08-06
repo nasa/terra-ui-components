@@ -38,6 +38,7 @@ export class DataSubsetterHistoryController {
                     this.jobs = await this.#dataService.getSubsetJobs({
                         bearerToken: this.#host.bearerToken,
                         signal,
+                        environment: this.#host.environment,
                     })
                 }
 

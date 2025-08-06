@@ -83,6 +83,8 @@ export default class TerraElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
+    @property() environment?: 'uat' | 'prod' =
+        localStorage.getItem('terra-environment') === 'prod' ? 'prod' : 'uat'
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
@@ -167,6 +169,15 @@ export default class TerraElement extends LitElement {
         ).forEach(([name, component]) => {
             ;(this.constructor as typeof TerraElement).define(name, component)
         })
+
+        // Listen for environment changes
+        document.addEventListener(
+            'terra-environment-change',
+            (event: CustomEvent) => {
+                console.log('environment change', event.detail.environment)
+                this.environment = event.detail.environment
+            }
+        )
     }
 }
 

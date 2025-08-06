@@ -3,7 +3,6 @@ import sinon from 'sinon'
 
 import { expect, fixture, html, waitUntil } from '@open-wc/testing'
 
-// Reproduction of this issue: https://github.com/terra-ui/components/issues/1703
 it('Should still run form validations if an element is removed', async () => {
     const form = await fixture<HTMLFormElement>(html`
         <form>

@@ -309,6 +309,7 @@ export class TimeSeriesController {
             const job = await this.#dataService.createSubsetJob(subsetOptions, {
                 signal,
                 bearerToken: this.#bearerToken,
+                environment: this.host.environment,
             })
 
             if (!job) {
@@ -321,6 +322,7 @@ export class TimeSeriesController {
             timeSeriesCsvData = await this.#dataService.getSubsetJobData(jobStatus, {
                 signal,
                 bearerToken: this.#bearerToken,
+                environment: this.host.environment,
             })
         } else {
             const [lat, lon] = this.#normalizeCoordinates(parsedLocation)
@@ -376,6 +378,7 @@ export class TimeSeriesController {
                 jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
                     signal,
                     bearerToken: this.#bearerToken,
+                    environment: this.host.environment,
                 })
 
                 console.log('Job status', jobStatus)

@@ -35,7 +35,7 @@ To customize a design token, simply override it in your stylesheet using a `:roo
 }
 ```
 
-Many design tokens are described further along in this documentation. For a complete list, refer to `src/themes/light.css` in the project's [source code](https://github.com/gesdisc/components/blob/current/src/themes/light.css).
+Many design tokens are described further along in this documentation. For a complete list, refer to `src/themes/light.css` in the project's [source code](https://github.com/nasa/terra-ui-components/blob/current/src/themes/light.css).
 
 ## CSS Parts
 
