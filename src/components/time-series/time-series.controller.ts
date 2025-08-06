@@ -10,7 +10,6 @@ import {
     storeDataByKey,
 } from '../../internal/indexeddb.js'
 import type {
-    MaybeBearerToken,
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
@@ -41,7 +40,6 @@ export const plotlyDefaultData: Partial<PlotData> = {
 }
 
 export class TimeSeriesController {
-    #bearerToken: MaybeBearerToken = null
     #userConfirmedWarning = false
     #dataService: HarmonyDataService
 
@@ -60,11 +58,7 @@ export class TimeSeriesController {
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
 
-    constructor(
-        host: ReactiveControllerHost & TerraTimeSeries,
-        bearerToken: MaybeBearerToken
-    ) {
-        this.#bearerToken = bearerToken
+    constructor(host: ReactiveControllerHost & TerraTimeSeries) {
         this.#dataService = this.#getDataService()
 
         this.host = host
@@ -308,7 +302,7 @@ export class TimeSeriesController {
             // create the new job
             const job = await this.#dataService.createSubsetJob(subsetOptions, {
                 signal,
-                bearerToken: this.#bearerToken,
+                bearerToken: this.host.bearerToken,
                 environment: this.host.environment,
             })
 
@@ -321,7 +315,7 @@ export class TimeSeriesController {
             // the job is completed, fetch the data for the job
             timeSeriesCsvData = await this.#dataService.getSubsetJobData(jobStatus, {
                 signal,
-                bearerToken: this.#bearerToken,
+                bearerToken: this.host.bearerToken,
                 environment: this.host.environment,
             })
         } else {
@@ -341,8 +335,8 @@ export class TimeSeriesController {
                 signal,
                 headers: {
                     Accept: 'application/json',
-                    ...(this.#bearerToken
-                        ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                    ...(this.host.bearerToken
+                        ? { Authorization: `Bearer: ${this.host.bearerToken}` }
                         : {}),
                 },
             })
@@ -377,7 +371,7 @@ export class TimeSeriesController {
             try {
                 jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
                     signal,
-                    bearerToken: this.#bearerToken,
+                    bearerToken: this.host.bearerToken,
                     environment: this.host.environment,
                 })
 

@@ -174,7 +174,6 @@ export default class TerraElement extends LitElement {
         document.addEventListener(
             'terra-environment-change',
             (event: CustomEvent) => {
-                console.log('environment change', event.detail.environment)
                 this.environment = event.detail.environment
             }
         )

@@ -22,6 +22,7 @@ import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb
 import type { VariableDbEntry } from './time-series.types.js'
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
 import { formatDate } from '../../utilities/date.js'
+import { AuthController } from '../../auth/auth.controller.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -99,7 +100,7 @@ export default class TerraTimeSeries extends TerraElement {
      * The property's value will be inserted after "Bearer" (the authentication scheme).
      */
     @property({ attribute: 'bearer-token', reflect: false })
-    bearerToken: string
+    bearerToken?: string
 
     @query('terra-plot') plot: TerraPlot
     @query('#menu') menu: HTMLMenuElement
@@ -139,6 +140,7 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #catalog = new GiovanniVariableCatalog()
+    _authController = new AuthController(this)
 
     // @ts-expect-error
     #fetchVariableTask = new Task(this, {
@@ -180,7 +182,7 @@ export default class TerraTimeSeries extends TerraElement {
         )
 
         //* instantiate the time series contoller maybe with a token
-        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
+        this.#timeSeriesController = new TimeSeriesController(this)
     }
 
     disconnectedCallback(): void {

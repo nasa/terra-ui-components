@@ -76,11 +76,9 @@ class GraphQLClientManager {
             const timestamp = await localforage.getItem<number>(CACHE_TIMESTAMP_KEY)
             const now = Date.now()
             if (!timestamp || now - timestamp > CACHE_TTL_MS) {
-                console.log('purging cache')
                 await persistor.purge()
                 await localforage.setItem(CACHE_TIMESTAMP_KEY, now)
             } else {
-                console.log('restoring cache')
                 await persistor.restore()
             }
         } catch (error) {
