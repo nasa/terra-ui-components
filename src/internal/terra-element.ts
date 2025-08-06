@@ -84,7 +84,7 @@ export default class TerraElement extends LitElement {
     @property() dir: string
     @property() lang: string
     @property() environment?: 'uat' | 'prod' =
-        localStorage.getItem('terra-environment') === 'prod' ? 'prod' : 'uat'
+        localStorage.getItem('terra-environment') === 'uat' ? 'uat' : 'prod'
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
