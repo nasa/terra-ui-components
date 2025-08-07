@@ -1,6 +1,7 @@
 import { LitElement } from 'lit'
 import { property } from 'lit/decorators.js'
 import { Environment, getEnvironment } from '../utilities/environment.js'
+import { purgeGraphQLCache } from '../lib/graphql-client.js'
 
 // Match event type name strings that are registered on GlobalEventHandlersEventMap...
 type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
@@ -174,6 +175,7 @@ export default class TerraElement extends LitElement {
         document.addEventListener(
             'terra-environment-change',
             (event: CustomEvent) => {
+                purgeGraphQLCache()
                 this.environment = event.detail.environment
             }
         )

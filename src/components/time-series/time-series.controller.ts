@@ -202,6 +202,7 @@ export class TimeSeriesController {
                     endDate: sortedData[sortedData.length - 1].timestamp,
                     metadata: consolidatedResult.metadata,
                     data: sortedData,
+                    environment: this.host.environment,
                 }
             )
         }
@@ -510,7 +511,8 @@ export class TimeSeriesController {
             this.host.location.split(',')
         )
         const normalizedLocation = normalizedCoordinates.join(',%20')
-        return `${this.host.catalogVariable.dataFieldId}_${normalizedLocation}`
+        const environment = this.host.environment ?? 'prod'
+        return `${this.host.catalogVariable.dataFieldId}_${normalizedLocation}_${environment}`
     }
 
     /**

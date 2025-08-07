@@ -15,10 +15,11 @@ class GraphQLClientManager {
     private static instance: GraphQLClientManager
     private clients: Map<string, ApolloClient<any>> = new Map()
     private initializationPromise: Promise<void>
+    private persistor: CachePersistor<any>
 
     private constructor() {
         const cache = new InMemoryCache()
-        const persistor = new CachePersistor({
+        this.persistor = new CachePersistor({
             cache,
             storage: {
                 getItem: async (key: string) => {
@@ -37,7 +38,7 @@ class GraphQLClientManager {
         this.clients.set('terra', this.getTerraGraphQLClient(cache))
         this.clients.set('cmr', this.getCmrGraphQLClient(cache))
 
-        this.initializationPromise = this.initCache(persistor)
+        this.initializationPromise = this.initCache(this.persistor)
     }
 
     private getTerraGraphQLClient(cache: InMemoryCache) {
@@ -97,9 +98,17 @@ class GraphQLClientManager {
         await this.initializationPromise
         return this.clients.get(clientKey)!
     }
+
+    public async purgeCache() {
+        localforage.clear()
+        await this.clients.forEach(client => client.resetStore())
+    }
 }
 
-// Export a function that returns the initialized client
+export async function purgeGraphQLCache() {
+    await GraphQLClientManager.getInstance().purgeCache()
+}
+
 export async function getGraphQLClient(
     clientKey?: string
 ): Promise<ApolloClient<any>> {

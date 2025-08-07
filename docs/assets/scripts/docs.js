@@ -200,6 +200,10 @@
         const menu = event.target.closest('#environment-selector sl-menu')
         if (!menu) return
         setEnvironment(event.detail.item.value)
+
+        setTimeout(() => {
+            location.reload()
+        }, 250)
     })
 
     // Set the initial environment and sync the UI

@@ -10,6 +10,8 @@ export type VariableDbEntry = TimeSeriesData & {
     endDate: string
     /** unique key to identify unique record */
     key: string
+    /** environment used when fetching the data */
+    environment?: string
 }
 
 export type TimeSeriesData = {
