@@ -1,5 +1,6 @@
 import { LitElement } from 'lit'
 import { property } from 'lit/decorators.js'
+import { Environment, getEnvironment } from '../utilities/environment.js'
 
 // Match event type name strings that are registered on GlobalEventHandlersEventMap...
 type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
@@ -83,8 +84,7 @@ export default class TerraElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
-    @property() environment?: 'uat' | 'prod' =
-        localStorage.getItem('terra-environment') === 'uat' ? 'uat' : 'prod'
+    @property() environment?: Environment = getEnvironment()
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
