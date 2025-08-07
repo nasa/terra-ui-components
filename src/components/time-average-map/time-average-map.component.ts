@@ -20,9 +20,6 @@ export default class TerraTimeAverageMap extends TerraElement {
       height: 100%;
     }
   `;
-
-@property() long_name = ''; // Value populated at geotiff metadata extraction step
-
  /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
      * only required if you don't include a variableEntryId
@@ -59,6 +56,8 @@ export default class TerraTimeAverageMap extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken: string
 
+    @property({ type: String })
+    long_name = '';
       
   #controller: TimeAvgMapController
   
@@ -66,13 +65,28 @@ export default class TerraTimeAverageMap extends TerraElement {
     console.log("Parameters at firstUpdated: ",this.collection,this.startDate,this.endDate,this.location,this.bearerToken)
     this.#controller = new TimeAvgMapController(this)
     
-    // // Now we wait until polling completes with a final job
-    const finalStatus = this.#controller.jobStatusTask.run();
+    // Start the task..
+    this.#controller.jobStatusTask.run();
 
-    console.log("Job status: ",finalStatus)
-  
-    const url = 'https://localhost:4000/dist/GIOVANNI-timeAvgMap.M2T1NXAER_5_12_4_BCCMASS.20090101-20090105.62E_5N_95E_40N.tif'
-  
+    let blob: Blob | undefined;
+
+    while (!blob) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // poll every second
+      blob = this.#controller.jobStatusTask.value;
+      console.log("Polling jobStatusTask.value: ", blob);
+    }
+
+    let gtSource = this.render_open_layers_map(blob);
+    
+    const metadata = await this.fetchGeotiffMetadata(gtSource);
+    this.long_name = metadata['long_name'] ?? '';
+  }
+
+  // TODO: Add proper type for geotiff_url
+  render_open_layers_map(geotiff_url: any): GeoTIFF {
+    
+    let blobUrl = URL.createObjectURL(geotiff_url);
+
     const baseLayer = new WebGLTileLayer({
       source: new OSM() as any,
     })
@@ -80,7 +94,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     const gtSource = new GeoTIFF({
       sources: [
         {
-          url,
+          url: blobUrl,
           bands: [1],
           nodata: NaN,
         },
@@ -102,12 +116,38 @@ export default class TerraTimeAverageMap extends TerraElement {
         projection: 'EPSG:3857',
       }),
     })
-  
-    // const metadata = await this.#controller.fetchGeoTIFFMetadata(gtSource)
-    // this.long_name = metadata['long_name'] ?? ''
-    // console.log(this.long_name)
+
+    return gtSource
+
   }
 
+  async fetchGeotiffMetadata(gtSource: GeoTIFF): Promise<{ [key: string]: string }> {
+    await gtSource.getView();
+    const internal = gtSource as any;
+    console.log('sourceImagery_:', internal.sourceImagery_);
+    const gtImage = internal.sourceImagery_[0][0];
+    const gtMetadata = gtImage.fileDirectory?.GDAL_METADATA;
+    console.log(typeof (gtMetadata));
+  
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(gtMetadata, "application/xml");
+    const items = xmlDoc.querySelectorAll("Item");
+    console.log("items: ", items);
+  
+    const dataObj: { [key: string]: string } = {};
+  
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const name = item.getAttribute("name");
+      const value = item.textContent ? item.textContent.trim() : "";
+      if (name) {
+        dataObj[name] = value;
+      }
+    }
+  
+    console.log("Data obj: ", dataObj);
+    return dataObj;
+  }
   render() {
     return html`
       <header>

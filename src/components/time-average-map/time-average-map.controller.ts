@@ -12,11 +12,12 @@ import {
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
+const REFRESH_HARMONY_DATA_INTERVAL = 2000
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
 export class TimeAvgMapController {
-    jobStatusTask: Task<[], SubsetJobStatus | undefined>
+    jobStatusTask: any
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraTimeAvgMap
@@ -78,21 +79,21 @@ export class TimeAvgMapController {
                 }
 
                 if (!FINAL_STATUSES.has(this.currentJob.status)) {
-                    // if the job status isn't done yet, we will trigger the task again after a bit
                     setTimeout(() => {
                         this.jobStatusTask.run()
                     }, JOB_STATUS_POLL_MILLIS)
                 } else if (job) {
                     console.log('Subset job completed ', job)
-                    this.#host.emit('terra-subset-job-complete', {
-                        detail: job,
+                    console.log("Fetching time avg map..")
+                   const {blob} = await this.#dataService.getSubsetJobData(job, {
+                        signal,
+                        bearerToken: this.#host.bearerToken,
                     })
+                    return blob
                 }
-
-                return job
             },
             args: (): any => [],
-            autoRun: false, // this task won't automatically be triggered, the component has to trigger it manually
+            autoRun: false, 
         })
     }
 
