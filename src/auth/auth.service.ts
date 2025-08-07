@@ -1,3 +1,5 @@
+import { Environment, getEnvironment } from '../utilities/environment.js'
+
 const TOKEN_KEY = 'terra-token'
 
 export type User = {
@@ -52,8 +54,10 @@ class AuthService {
             `${window.location.pathname}${urlParams.size > 0 ? '?' + urlParams.toString() : ''}`
         )
 
+        const url = `${AUTH_URL}/callback?code=${code}${getEnvironment() === Environment.UAT ? '&environment=uat' : ''}`
+
         // fetch the token from the auth URL
-        const response = await fetch(`${AUTH_URL}/callback?code=${code}`)
+        const response = await fetch(url)
         const data = await response.json()
 
         // store token in local storage and update state
@@ -135,8 +139,12 @@ class AuthService {
         })
 
         try {
+            // if the environment is UAT, we need to add the environment to the URL
+            const environment = getEnvironment()
+            const url = `${AUTH_URL}/user${environment === Environment.UAT ? '?environment=uat' : ''}`
+
             // get user info from the auth service
-            const response = await fetch(`${AUTH_URL}/user`, {
+            const response = await fetch(url, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -185,7 +193,7 @@ class AuthService {
     }
 
     login(): void {
-        window.location.href = `${AUTH_URL}/login?redirect_uri=${window.location.href}`
+        window.location.href = `${AUTH_URL}/login?redirect_uri=${window.location.href}${getEnvironment() === Environment.UAT ? '&environment=uat' : ''}`
     }
 
     logout(): void {
