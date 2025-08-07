@@ -230,9 +230,7 @@ export class HarmonyDataService implements DataServiceInterface {
         }
 
         const proxyUrl = `${HARMONY_CONFIG.proxyUrl}?url=${encodeURIComponent(link)}`
-        console.log("OPTIONS IN GETSUBSET : ",options)
-        console.log("JOB: ",job)
-
+        
         console.log('fetching data from ', proxyUrl)
 
         const response = await fetch(proxyUrl, {
