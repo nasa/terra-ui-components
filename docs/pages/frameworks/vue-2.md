@@ -103,5 +103,5 @@ Now you can use the `v-terra-model` directive to keep your data in sync!
 ```
 
 :::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/terra-ui/components/blob/next/docs/frameworks/vue-2.md)
+Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/nasa/terra-ui-components/blob/next/docs/frameworks/vue-2.md)
 :::
