@@ -36,12 +36,18 @@ export default class TerraLogin extends TerraElement {
 
     render() {
         if (this.#authController.state.user?.uid) {
-            // by default we don't show nothing in the logged in slot, but if the user wants to show something
+            // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
-            return html`<slot
-                name="logged-in"
-                .user=${this.#authController.state.user}
-            ></slot>`
+            const template = this.querySelector<HTMLTemplateElement>(
+                'template[slot="logged-in"]'
+            )
+
+            return html`${template
+                ? template.content.cloneNode(true)
+                : html`<slot
+                      name="logged-in"
+                      .user=${this.#authController.state.user}
+                  ></slot>`}`
         }
 
         if (this.#authController.state.isLoading) {
