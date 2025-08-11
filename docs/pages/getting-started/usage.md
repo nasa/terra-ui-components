@@ -239,4 +239,4 @@ If you are using types from multiple projects, you can add an array of reference
 
 ### Other Editors
 
-Most popular editors support custom code completion with a bit of configuration. Please [submit a feature request](https://github.com/gesdisc/components/issues/new/choose) for your editor of choice. PRs are also welcome!
+Most popular editors support custom code completion with a bit of configuration. Please [submit a feature request](https://github.com/nasa/terra-ui-components/issues/new/choose) for your editor of choice. PRs are also welcome!

@@ -2,7 +2,7 @@
   "name": "@nasa-terra/components",
   "description": "A collection of NASA Earthdata components",
   "version": "0.0.58",
-  "homepage": "https://github.com/gesdisc/components",
+  "homepage": "https://github.com/nasa/terra-ui-components",
   "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
   "license": "MIT",
   "customElements": "dist/custom-elements.json",
@@ -36,10 +36,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gesdisc/components.git"
+    "url": "git+https://github.com/nasa/terra-ui-components.git"
   },
   "bugs": {
-    "url": "https://github.com/gesdisc/components/issues"
+    "url": "https://github.com/nasa/terra-ui-components/issues"
   },
   "scripts": {
     "start": "npm run serve",
