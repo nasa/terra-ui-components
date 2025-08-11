@@ -30,8 +30,12 @@ export default class TerraLogin extends TerraElement {
 
     #authController = new AuthController(this)
 
-    #handleLogin() {
+    login() {
         this.#authController.login()
+    }
+
+    logout() {
+        this.#authController.logout()
     }
 
     render() {
@@ -57,8 +61,6 @@ export default class TerraLogin extends TerraElement {
 
         // user is definitely logged out, show the login button
         return html` <slot name="logged-out"></slot
-            ><terra-button @click=${this.#handleLogin}>
-                ${this.buttonLabel}</terra-button
-            >`
+            ><terra-button @click=${this.login}> ${this.buttonLabel}</terra-button>`
     }
 }

@@ -21,12 +21,22 @@ export class AuthController<C> {
                             this.#host.bearerToken = state.token
                         }
 
+                        // @ts-expect-error - we can't guarantee the host has a emit property
+                        this.#host.emit('terra-login', {
+                            detail: state,
+                        })
+
                         // Trigger a re-render when auth state changes
                         this.#host.requestUpdate()
                     },
                     // @ts-expect-error - we can't guarantee the host has a bearerToken property
                     this.#host.bearerToken
                 )
+
+                // @ts-expect-error - we can't guarantee the host has a emit property
+                this.#host.emit('terra-login', {
+                    detail: authService.getState(),
+                })
 
                 // Return current state
                 return authService.getState()
@@ -42,6 +52,10 @@ export class AuthController<C> {
 
     login() {
         authService.login()
+    }
+
+    logout() {
+        authService.logout()
     }
 
     render(renderFunctions: StatusRenderer<AuthState>) {
