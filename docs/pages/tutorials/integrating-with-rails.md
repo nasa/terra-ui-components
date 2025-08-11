@@ -9,7 +9,7 @@ meta:
 This page explains how to integrate Shoelace with a Rails app.
 
 :::tip
-This is a community-maintained document. Please [ask the community](/resources/community) if you have questions about this integration. You can also [suggest improvements](https://github.com/gesdisc/components/blob/next/docs/tutorials/integrating-with-rails.md) to make it better.
+This is a community-maintained document. Please [ask the community](/resources/community) if you have questions about this integration. You can also [suggest improvements](https://github.com/nasa/terra-ui-components/blob/next/docs/tutorials/integrating-with-rails.md) to make it better.
 :::
 
 ## Requirements
