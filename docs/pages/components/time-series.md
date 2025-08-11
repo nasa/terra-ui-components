@@ -9,7 +9,7 @@ layout: component
 
 ```html:preview
 <terra-login style="width: 100%">
-    <span slot="loading">Loading...</span>
+    <span slot="loading">Loading...please wait</span>
 
     <terra-time-series slot="logged-in"
         collection="NLDAS_FORA0125_H_2_0"
@@ -27,7 +27,7 @@ layout: component
 
 ```html:preview
 <terra-login style="width: 100%">
-    <span slot="loading">Loading...</span>
+    <span slot="loading">Loading...please wait</span>
 
     <template slot="logged-in">
         <terra-time-series
