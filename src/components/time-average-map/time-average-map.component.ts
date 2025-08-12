@@ -1,37 +1,34 @@
-import { html, css } from 'lit';
+import { html} from 'lit';
 import { property } from 'lit/decorators.js';
 import { Map, View } from 'ol';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import OSM from 'ol/source/OSM.js';
 import GeoTIFF from 'ol/source/GeoTIFF.js';
 import TerraElement from '../../internal/terra-element.js';
+import componentStyles from '../../styles/component.styles.js';
+import styles from './time-average-map.styles.js'
+import type { CSSResultGroup } from 'lit'
+
+
 
 import { TimeAvgMapController } from './time-average-map.controller.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
-  static styles = css`
-    :host {
-      display: block;
-      height: 600px;
-    }
-
-    #map {
-      width: 100%;
-      height: 100%;
-    }
-  `;
+static styles: CSSResultGroup = [componentStyles, styles]
  /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
-     * only required if you don't include a variableEntryId
      */
  @property({ reflect: true })
  collection?: string
 
-  @property({
-    attribute: 'start-date',
-    reflect: true,
-  })
-  startDate?: string
+ @property({ reflect: true })
+ variable?: string
+
+@property({
+  attribute: 'start-date',
+  reflect: true,
+})
+startDate?: string
 
   @property({
     attribute: 'end-date',
@@ -60,65 +57,64 @@ export default class TerraTimeAverageMap extends TerraElement {
     long_name = '';
       
   #controller: TimeAvgMapController
-  
-  async firstUpdated() {
-    console.log("Parameters at firstUpdated: ",this.collection,this.startDate,this.endDate,this.location,this.bearerToken)
+
+  #map: Map | null = null
+  #gtLayer: WebGLTileLayer | null = null
+
+    async firstUpdated() {
+
     this.#controller = new TimeAvgMapController(this)
-    
-    // Start the task..
-    this.#controller.jobStatusTask.run();
+    // Initialize the base layer open street map
+    this.intializeMap()
+    this.updateGeoTIFFLayer()
 
-    let blob: Blob | undefined;
 
-    while (!blob) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // poll every second
-      blob = this.#controller.jobStatusTask.value;
-      console.log("Polling jobStatusTask.value: ", blob);
-    }
-
-    let gtSource = this.render_open_layers_map(blob);
-    
-    const metadata = await this.fetchGeotiffMetadata(gtSource);
-    this.long_name = metadata['long_name'] ?? '';
   }
 
-  // TODO: Add proper type for geotiff_url
-  render_open_layers_map(geotiff_url: any): GeoTIFF {
+  async updateGeoTIFFLayer() {
+    await this.#controller.jobStatusTask.run();
+    // The task returns the blob upon completion
+    let job_status_value = this.#controller.jobStatusTask.value
     
-    let blobUrl = URL.createObjectURL(geotiff_url);
+    const blobUrl = URL.createObjectURL(job_status_value);
+  
+    const gtSource = new GeoTIFF({
+      sources: [{
+        url: blobUrl,
+        bands: [1],
+        nodata: NaN,
+      }],
+      interpolate: false,
+      normalize: false,
+    });
+  
+    this.#gtLayer = new WebGLTileLayer({
+      source: gtSource,
+    });
+  
+    if (this.#map) {
+      this.#map.addLayer(this.#gtLayer);
+    }
 
+    const metadata = await this.fetchGeotiffMetadata(gtSource);
+    this.long_name = metadata['long_name'] ?? '';
+
+  }
+
+  intializeMap() {
     const baseLayer = new WebGLTileLayer({
       source: new OSM() as any,
     })
   
-    const gtSource = new GeoTIFF({
-      sources: [
-        {
-          url: blobUrl,
-          bands: [1],
-          nodata: NaN,
-        },
-      ],
-      interpolate: false,
-      normalize: false,
-    })
-  
-    const gtLayer = new WebGLTileLayer({
-      source: gtSource,
-    })
-  
-    new Map({
+    this.#map = new Map({
       target: this.shadowRoot?.getElementById('map') ?? undefined,
-      layers: [baseLayer, gtLayer],
+      layers: [baseLayer],
       view: new View({
         center: [0, 0],
         zoom: 2,
         projection: 'EPSG:3857',
       }),
-    })
-
-    return gtSource
-
+    });
   }
 
   async fetchGeotiffMetadata(gtSource: GeoTIFF): Promise<{ [key: string]: string }> {
