@@ -349,6 +349,9 @@ export default class TerraTimeSeries extends TerraElement {
                               <header>
                                   <h2 class="title">
                                       ${this.catalogVariable.dataFieldLongName}
+                                      <span class="region">
+                                          Region: ${this.location}
+                                      </span>
                                   </h2>
 
                                   <div class="toggles">
@@ -423,13 +426,13 @@ export default class TerraTimeSeries extends TerraElement {
                                       </terra-button>
 
                                       <terra-button
-                                          circle
                                           outline
                                           aria-expanded=${this.activeMenuItem ===
                                           'jupyter'}
                                           aria-controls="menu"
                                           aria-haspopup="true"
-                                          class="toggle"
+                                          class="toggle square-button"
+                                          variant="warning"
                                           @mouseenter=${this.#handleActiveMenuItem}
                                           data-menu-name="jupyter"
                                       >

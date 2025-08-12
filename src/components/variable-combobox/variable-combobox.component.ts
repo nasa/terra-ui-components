@@ -516,7 +516,16 @@ export default class TerraVariableCombobox extends TerraElement {
                     pending: () =>
                         html`<li class="updating">Updating List of Variables</li>`,
                     complete: list => {
-                        this.#searchableList = list
+                        //Filter out GPM_3IMERGHH V06 as soon as results arrive
+                        const filtered = list.filter(
+                            item =>
+                                !(
+                                    item.collectionShortName === 'GPM_3IMERGHH' &&
+                                    item.collectionVersion === '06'
+                                )
+                        )
+
+                        this.#searchableList = filtered
 
                         //* @see {@link https://www.fusejs.io/api/options.html}
                         this.#searchEngine = new Fuse(this.#searchableList, {
