@@ -4,6 +4,7 @@ meta:
     description: Alerts are used to display important messages inline or as toast notifications.
 layout: component
 ---
+
 <!-- TODO: @shoelace-style/shoelace/dist/react/alert needs to be replaced with our dist -->
 
 ```html:preview
@@ -25,8 +26,9 @@ const App = () => (
   </TerraAlert>
 );
 ```
+
 :::tip
- Alerts will not be visible if the open attribute is not present.
+Alerts will not be visible if the open attribute is not present.
 :::
 
 ## Examples
@@ -111,7 +113,6 @@ const App = () => (
 
 Add the closable attribute to show a close button that will hide the alert.
 
-
 ```html:preview
 <terra-alert variant="primary" open closable class="alert-closable">
 <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
@@ -176,7 +177,7 @@ Set the duration attribute to automatically hide an alert after a period of time
 ```html:preview
 <div class="alert-duration">
   <terra-button variant="primary">Show Alert</terra-button>
-  
+
   <terra-alert variant="primary" duration="3000" closable>
     <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
    This alert will automatically hide itself after three seconds, unless you interact with it.
@@ -239,7 +240,7 @@ Set the countdown attribute to display a loading bar that indicates the alert re
 ```html:preview
 <div class="alert-countdown">
   <terra-button variant="primary">Show Alert</terra-button>
-  
+
   <terra-alert variant="primary" duration="10000" countdown="rtl" closable>
     <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
     You're not stuck, the alert will close after a pretty long duration.
@@ -294,4 +295,3 @@ const App = () => {
   );
 };
 ```
-

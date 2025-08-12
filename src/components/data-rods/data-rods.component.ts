@@ -8,7 +8,7 @@ import TerraVariableCombobox from '../variable-combobox/variable-combobox.compon
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
 import { Task } from '@lit/task'
-import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
+import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { getUTCDate } from '../../utilities/date.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
@@ -20,6 +20,8 @@ import TerraTimeSeries from '../time-series/time-series.component.js'
  * @documentation https://disc.gsfc.nasa.gov/components/data-rods
  * @status mvp
  * @since 1.0
+ *
+ * @event terra-date-range-change - Emitted whenever the date range of the date slider is updated
  */
 export default class TerraDataRods extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]

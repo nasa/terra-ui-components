@@ -1,4 +1,4 @@
-import { GiovanniVariableCatalog } from '../../variable-catalog/giovanni-variable-catalog.js'
+import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
 import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'

@@ -11,6 +11,6 @@ export interface BoundingBox {
 export interface MapEventDetail {
     cause: string
     geoJson?: any
-    bounds?: any
+    bounds?: BoundingBox
     latLng?: any
 }

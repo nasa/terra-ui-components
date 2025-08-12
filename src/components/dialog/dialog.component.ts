@@ -72,7 +72,9 @@ export default class TerraDialog extends TerraElement {
                 role="dialog"
                 style="width: ${this.width}"
             >
-                <slot></slot>
+                <div class="dialog-content">
+                    <slot></slot>
+                </div>
             </dialog>
         `
     }

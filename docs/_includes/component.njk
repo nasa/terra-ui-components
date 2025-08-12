@@ -48,7 +48,7 @@
   <h2>Importing</h2>
   <p>
     If you're using the autoloader or the traditional loader, you can ignore this section. Otherwise, feel free to use
-    any of the following snippets to <a href="/getting-started/installation#cherry-picking">cherry pick</a> this component.
+    any of the following snippets to <a href="{{ '/getting-started/installation#cherry-picking' | url }}">cherry pick</a> this component.
   </p>
 
   <sl-tab-group>
@@ -75,14 +75,14 @@
 
     <sl-tab-panel name="bundler">
       <p>
-        To import this component using <a href="{{ rootUrl('/getting-started/installation#bundling') }}">a bundler</a>:
+        To import this component using <a href="{{ '/getting-started/installation#bundling' | url }}">a bundler</a>:
       </p>
       <pre><code class="language-js">import '@nasa-terra/components/{{ meta.npmdir }}/{{ component.path }}';</code></pre>
     </sl-tab-panel>
 
     <sl-tab-panel name="react">
       <p>
-        To import this component as a <a href="/frameworks/react">React component</a>:
+        To import this component as a <a href="{{ '/frameworks/react' | url }}">React component</a>:
       </p>
       <pre><code class="language-js">import {{ component.name }} from '@nasa-terra/components/{{ meta.npmdir }}/react/{{ component.tagNameWithoutPrefix }}';</code></pre>
     </sl-tab-panel>
@@ -116,7 +116,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/usage#slots') }}">using slots</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/usage#slots' | url }}">using slots</a>.</em>
     </p>
   {% endif %}
 
@@ -182,7 +182,7 @@
           </td>
           <td>
             A read-only promise that resolves when the component has
-            <a href="/getting-started/usage?#component-rendering-and-updating">finished updating</a>.
+            <a href="{{ '/getting-started/usage?#component-rendering-and-updating' | url }}">finished updating</a>.
           </td>
           <td></td>
           <td></td>
@@ -192,7 +192,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/usage#attributes-and-properties') }}">attributes and properties</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/usage#attributes-and-properties' | url }}">attributes and properties</a>.</em>
     </p>
   {% endif %}
 
@@ -232,7 +232,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/usage#events') }}">events</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/usage#events' | url }}">events</a>.</em>
     </p>
   {% endif %}
 
@@ -273,7 +273,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/usage#methods') }}">methods</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/usage#methods' | url }}">methods</a>.</em>
     </p>
   {% endif %}
 
@@ -303,7 +303,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/usage#custom-properties') }}">customizing CSS custom properties</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/usage#custom-properties' | url }}">customizing CSS custom properties</a>.</em>
     </p>
   {% endif %}
 
@@ -331,7 +331,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/customizing/#css-parts') }}">customizing CSS parts</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/customizing/#css-parts' | url }}">customizing CSS parts</a>.</em>
     </p>
   {% endif %}
 
@@ -359,7 +359,7 @@
     </table>
 
     <p>
-      <em>Learn more about <a href="{{ rootUrl('/getting-started/customizing#animations') }}">customizing animations</a>.</em>
+      <em>Learn more about <a href="{{ '/getting-started/customizing#animations' | url }}">customizing animations</a>.</em>
     </p>
   {% endif %}
 

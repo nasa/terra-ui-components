@@ -14,8 +14,12 @@ export function isValidDate(date: any): boolean {
     return !isNaN(parsedDate) && isValid(parsedDate)
 }
 
-export function getUTCDate(date: MaybeDate) {
-    return dayjs.utc(date).toDate()
+export function getUTCDate(date: MaybeDate, endOfDay: boolean = false) {
+    const utcDate = dayjs.utc(date).toDate()
+
+    if (endOfDay) utcDate.setUTCHours(23, 59, 59, 999)
+
+    return utcDate
 }
 
 /**

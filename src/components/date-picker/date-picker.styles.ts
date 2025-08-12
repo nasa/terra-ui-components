@@ -2,6 +2,7 @@ import { css } from 'lit'
 
 export default css`
     :host {
+        box-sizing: border-box;
         display: inline-block;
         position: relative;
         max-width: 600px;
@@ -12,6 +13,7 @@ export default css`
     }
 
     :host .form-control {
+        box-sizing: border-box;
         display: block;
         width: 100%;
         height: 36px;
@@ -54,17 +56,16 @@ export default css`
         top: 0;
         right: 0;
         height: 36px;
-        padding: 0px;
+        width: 36px;
+        padding: 0;
+        margin: 0;
         z-index: 2;
-        margin-block: 0;
-        margin-inline: 0;
-        background: none;
-        border: none;
-        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 36px;
+        background: none;
+        border: none;
+        box-shadow: none;
     }
 
     :host .date-picker__input_icon_button svg {

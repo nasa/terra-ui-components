@@ -20,6 +20,12 @@ export default css`
         position: fixed;
         inset: 0px;
         z-index: var(--terra-dialog-z-index);
-        max-width: 100%;
+        max-width: 90vw;
+    }
+
+    .dialog-content {
+        max-height: 90vh;
+        overflow: auto;
+        width: 100%;
     }
 `

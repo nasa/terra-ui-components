@@ -55,6 +55,12 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'has-shape-selector', type: Boolean })
     hasShapeSelector: boolean = false
 
+    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
+    hideBoundingBoxSelection?: boolean
+
+    @property({ attribute: 'hide-point-selection', type: Boolean })
+    hidePointSelection?: boolean
+
     /**
      * initialValue of spatial picker
      */
@@ -101,6 +107,9 @@ export default class TerraSpatialPicker extends TerraElement {
 
     @query('.spatial-picker__input')
     spatialInput: HTMLInputElement
+
+    @query('terra-map')
+    map: TerraMap
 
     private _blur(e: FocusEvent) {
         const inputValue = (e.target as HTMLInputElement).value
@@ -204,6 +213,10 @@ export default class TerraSpatialPicker extends TerraElement {
             this.mapValue =
                 this.initialValue === '' ? [] : parseBoundingBox(this.initialValue)
         }
+
+        setTimeout(() => {
+            this.invalidateSize()
+        }, 500)
     }
 
     renderMap() {
@@ -217,12 +230,15 @@ export default class TerraSpatialPicker extends TerraElement {
             .value=${this.mapValue}
             ?has-navigation=${this.hasNavigation}
             ?has-shape-selector=${this.hasShapeSelector}
+            ?hide-bounding-box-selection=${this.hideBoundingBoxSelection}
+            ?hide-point-selection=${this.hidePointSelection}
             @terra-map-change=${this._handleMapChange}
         >
         </terra-map>`
     }
 
     render() {
+        const expanded = this.inline ? true : this.isExpanded
         return html`
             <div class="spatial-picker">
                 <label
@@ -240,7 +256,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         class="spatial-picker__input form-control"
                         placeholder="${this.spatialConstraints}"
                         aria-controls="map"
-                        aria-expanded=${this.isExpanded}
+                        aria-expanded=${expanded}
                         @blur=${this._blur}
                         @focus=${this._focus}
                     />
@@ -266,8 +282,20 @@ export default class TerraSpatialPicker extends TerraElement {
                         </svg>
                     </terra-button>
                 </div>
-                ${this.isExpanded ? this.renderMap() : nothing}
+                ${expanded
+                    ? html`<div
+                          style="${this.inline
+                              ? 'position: static; width: 100%;'
+                              : ''}"
+                      >
+                          ${this.renderMap()}
+                      </div>`
+                    : nothing}
             </div>
         `
+    }
+
+    invalidateSize() {
+        this.map?.invalidateSize()
     }
 }

@@ -3,19 +3,19 @@
         <h2>Getting Started</h2>
         <ul>
             <li>
-                <a href="/">Home</a>
+                <a href="{{ '/' | url }}">Home</a>
             </li>
             <li>
-                <a href="/getting-started/installation">Installation</a>
+                <a href="{{ '/getting-started/installation' | url }}">Installation</a>
             </li>
             <li>
-                <a href="/getting-started/usage">Usage</a>
+                <a href="{{ '/getting-started/usage' | url }}">Usage</a>
             </li>
             <li>
-                <a href="/getting-started/themes">Themes</a>
+                <a href="{{ '/getting-started/themes' | url }}">Themes</a>
             </li>
             <li>
-                <a href="/getting-started/customizing">Customizing</a>
+                <a href="{{ '/getting-started/customizing' | url }}">Customizing</a>
             </li>
         </ul>
     </li>
@@ -23,13 +23,13 @@
         <h2>Frameworks</h2>
         <ul>
             <li>
-                <a href="/frameworks/react">React</a>
+                <a href="{{ '/frameworks/react' | url }}">React</a>
             </li>
             <li>
-                <a href="/frameworks/vue">Vue</a>
+                <a href="{{ '/frameworks/vue' | url }}">Vue</a>
             </li>
             <li>
-                <a href="/frameworks/angular">Angular</a>
+                <a href="{{ '/frameworks/angular' | url }}">Angular</a>
             </li>
         </ul>
     </li>
@@ -38,7 +38,7 @@
         <ul>
             {% for component in meta.components %}
                 <li>
-                    <a href="/components/{{ component.tagName | removeTerraPrefix }}">
+                    <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
                         {{ component.name | classNameToComponentName }}
                     </a>
                 </li>

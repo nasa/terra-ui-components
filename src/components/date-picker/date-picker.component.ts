@@ -5,6 +5,7 @@ import TerraElement from '../../internal/terra-element.js'
 import styles from './date-picker.styles.js'
 import type { CSSResultGroup } from 'lit'
 import 'lit-flatpickr'
+import TerraButton from '../button/button.component.js'
 
 /**
  * @summary A date picker component that supports single date selection or date range selection.
@@ -19,6 +20,9 @@ import 'lit-flatpickr'
  */
 export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
+    static dependencies = {
+        'terra-button': TerraButton,
+    }
 
     selectedDates: {
         startDate: string | null
@@ -31,6 +35,7 @@ export default class TerraDatePicker extends TerraElement {
     @property({ attribute: 'max-date' }) maxDate?: string
     @property({ attribute: 'start-date' }) startDate?: string
     @property({ attribute: 'end-date' }) endDate?: string
+    @property({ attribute: 'default-date' }) defaultDate?: string
     @property({ type: Boolean, attribute: 'allow-input' }) allowInput = false
     @property({ attribute: 'alt-format' }) altFormat = 'F j, Y'
     @property({ type: Boolean, attribute: 'alt-input' }) altInput = false
@@ -49,6 +54,13 @@ export default class TerraDatePicker extends TerraElement {
 
     firstUpdated() {
         this.flatpickrElement.addEventListener('change', this.handleChange.bind(this))
+
+        setTimeout(() => {
+            // need to give flatpickr a bit to render
+            this.flatpickrElement.shadowRoot
+                .querySelector('input')
+                .addEventListener('blur', this.handleBlur.bind(this))
+        }, 250)
     }
 
     private handleChange(selectedDates: Date[]) {
@@ -60,6 +72,10 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         this.emit('terra-change')
+    }
+
+    private handleBlur() {
+        this.handleChange(this.flatpickrElement._instance.selectedDates)
     }
 
     render() {
@@ -81,7 +97,7 @@ export default class TerraDatePicker extends TerraElement {
                             ? ([this.startDate, this.endDate].filter(
                                   Boolean
                               ) as string[])
-                            : this.startDate}
+                            : this.defaultDate}
                         .allowInput=${this.allowInput}
                         .altFormat=${this.altFormat}
                         .altInput=${this.altInput}
@@ -96,10 +112,12 @@ export default class TerraDatePicker extends TerraElement {
                         theme="material_blue"
                         .onChange="${this.handleChange.bind(this)}"
                     ></lit-flatpickr>
-                    <button
+                    <terra-button
+                        shape="square-left"
+                        size="medium"
                         class="date-picker__input_icon_button"
-                        type="button"
                         @click=${() => this.flatpickrElement.open()}
+                        type="button"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -115,7 +133,7 @@ export default class TerraDatePicker extends TerraElement {
                                 d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
                             />
                         </svg>
-                    </button>
+                    </terra-button>
                 </div>
             </div>
         `
