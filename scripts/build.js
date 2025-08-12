@@ -112,8 +112,6 @@ async function buildTheSource() {
             ...(await globby('./src/utilities/**/!(*.(style|test)).ts')),
             // Theme stylesheets
             ...(await globby('./src/themes/**/!(*.test).ts')),
-            // React wrappers
-            ...(await globby('./src/react/**/*.ts')),  // Include GeoTIFF files as entry points
         ],
         outdir: cdndir,
         chunkNames: 'chunks/[name].[hash]',
@@ -253,10 +251,6 @@ await nextTask(`Themes, Icons, and TS Types to "${cdndir}"`, async () => {
 
 await nextTask('Building source files', async () => {
     buildResults = await buildTheSource()
-})
-await nextTask(`Copy geotiff`, async () => {
-    await copy('src/geotiffs', cdndir)
-    console.log("GeoTIFF files copied to", cdndir)
 })
 
 // Copy the CDN build to the docs (prod only; we use a virtual directory in dev)
