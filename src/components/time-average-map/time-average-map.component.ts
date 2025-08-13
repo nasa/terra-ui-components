@@ -10,9 +10,11 @@ import styles from './time-average-map.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { watch } from '../../internal/watch.js'
 import { TimeAvgMapController } from './time-average-map.controller.js'
+import TerraButton from '../button/button.component.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
   static styles: CSSResultGroup = [componentStyles, styles]
+  static dependencies = { 'terra-button': TerraButton }
   /**
       * a collection entry id (ex: GPM_3IMERGHH_06)
       */
