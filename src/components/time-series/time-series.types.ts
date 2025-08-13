@@ -12,6 +12,8 @@ export type VariableDbEntry = TimeSeriesData & {
     key: string
     /** environment used when fetching the data */
     environment?: string
+    /** timestamp when the data was cached */
+    cachedAt: number
 }
 
 export type TimeSeriesData = {

@@ -47,3 +47,9 @@ export function storeDataByKey<T>(store: IndexedDbStores, key: string, data: T) 
         })
     })
 }
+
+export function deleteDataByKey(store: IndexedDbStores, key: string) {
+    return withDb(async db => {
+        await db.delete(store, key)
+    })
+}
