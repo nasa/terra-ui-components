@@ -1,5 +1,5 @@
-import { html} from 'lit';
-import { property } from 'lit/decorators.js';
+import { html } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { Map, View } from 'ol';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import OSM from 'ol/source/OSM.js';
@@ -8,27 +8,27 @@ import TerraElement from '../../internal/terra-element.js';
 import componentStyles from '../../styles/component.styles.js';
 import styles from './time-average-map.styles.js'
 import type { CSSResultGroup } from 'lit'
-
-
-
+import { watch } from '../../internal/watch.js'
 import { TimeAvgMapController } from './time-average-map.controller.js'
+import TerraButton from '../button/button.component.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
-static styles: CSSResultGroup = [componentStyles, styles]
- /**
-     * a collection entry id (ex: GPM_3IMERGHH_06)
-     */
- @property({ reflect: true })
- collection?: string
+  static styles: CSSResultGroup = [componentStyles, styles]
+  static dependencies = { 'terra-button': TerraButton }
+  /**
+      * a collection entry id (ex: GPM_3IMERGHH_06)
+      */
+  @property({ reflect: true })
+  collection?: string
 
- @property({ reflect: true })
- variable?: string
+  @property({ reflect: true })
+  variable?: string
 
-@property({
-  attribute: 'start-date',
-  reflect: true,
-})
-startDate?: string
+  @property({
+    attribute: 'start-date',
+    reflect: true,
+  })
+  startDate?: string
 
   @property({
     attribute: 'end-date',
@@ -45,23 +45,58 @@ startDate?: string
   })
   location?: string
 
-    /**
-   * The token to be used for authentication with remote servers.
-   * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
-   * The property's value will be inserted after "Bearer" (the authentication scheme).
-   */
-    @property({ attribute: 'bearer-token', reflect: false })
-    bearerToken: string
+  @state()
+  activeMenuItem: any = null
 
-    @property({ type: String })
-    long_name = '';
-      
+  @watch('activeMenuItem')
+  handleFocus(_oldValue: any, newValue: any) {
+    if (newValue === null) {
+      return
+    }
+
+    this.menu.focus()
+  }
+
+
+  /**
+ * The token to be used for authentication with remote servers.
+ * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
+ * The property's value will be inserted after "Bearer" (the authentication scheme).
+ */
+  @property({ attribute: 'bearer-token', reflect: false })
+  bearerToken: string
+
+  @property({ type: String })
+  long_name = '';
+
+  @query('#menu') menu: HTMLMenuElement
+
   #controller: TimeAvgMapController
 
   #map: Map | null = null
   #gtLayer: WebGLTileLayer | null = null
 
-    async firstUpdated() {
+  #downloadGeotiff() {
+    if (!this.#controller.jobStatusTask.value) {
+      console.warn('No GeoTIFF available to download.');
+      return;
+    }
+    const job_status_value = this.#controller.jobStatusTask.value;
+    const url = URL.createObjectURL(job_status_value);
+    const a = document.createElement('a');
+
+    const locationStr = `${this.location!.replace(/,/g, '_')}`
+    let file_name = `${this.collection}_${this.variable}_${this.startDate}-${this.endDate}_${locationStr}.tif`
+    a.href = url;
+    a.download = `${file_name}`
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    console.log("Successfully downloaded tiff file...")
+  }
+
+  async firstUpdated() {
 
     this.#controller = new TimeAvgMapController(this)
     // Initialize the base layer open street map
@@ -75,9 +110,8 @@ startDate?: string
     await this.#controller.jobStatusTask.run();
     // The task returns the blob upon completion
     let job_status_value = this.#controller.jobStatusTask.value
-    
     const blobUrl = URL.createObjectURL(job_status_value);
-  
+
     const gtSource = new GeoTIFF({
       sources: [{
         url: blobUrl,
@@ -87,11 +121,11 @@ startDate?: string
       interpolate: false,
       normalize: false,
     });
-  
+
     this.#gtLayer = new WebGLTileLayer({
       source: gtSource,
     });
-  
+
     if (this.#map) {
       this.#map.addLayer(this.#gtLayer);
     }
@@ -105,7 +139,7 @@ startDate?: string
     const baseLayer = new WebGLTileLayer({
       source: new OSM() as any,
     })
-  
+
     this.#map = new Map({
       target: this.shadowRoot?.getElementById('map') ?? undefined,
       layers: [baseLayer],
@@ -120,18 +154,15 @@ startDate?: string
   async fetchGeotiffMetadata(gtSource: GeoTIFF): Promise<{ [key: string]: string }> {
     await gtSource.getView();
     const internal = gtSource as any;
-    console.log('sourceImagery_:', internal.sourceImagery_);
     const gtImage = internal.sourceImagery_[0][0];
     const gtMetadata = gtImage.fileDirectory?.GDAL_METADATA;
-    console.log(typeof (gtMetadata));
-  
+
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(gtMetadata, "application/xml");
     const items = xmlDoc.querySelectorAll("Item");
-    console.log("items: ", items);
-  
+
     const dataObj: { [key: string]: string } = {};
-  
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const name = item.getAttribute("name");
@@ -140,16 +171,85 @@ startDate?: string
         dataObj[name] = value;
       }
     }
-  
+
     console.log("Data obj: ", dataObj);
     return dataObj;
   }
+
+  #handleActiveMenuItem(event: Event) {
+    const button = event.currentTarget as HTMLButtonElement
+    const menuName = button.dataset.menuName as any
+    // Set the menu item as active.
+    this.activeMenuItem = menuName
+  }
+  #handleMenuLeave(event: MouseEvent) {
+    const relatedTarget = event.relatedTarget as HTMLElement
+    if (!this.contains(relatedTarget)) {
+      this.activeMenuItem = null
+    }
+  }
+  #renderDownloadPanel() {
+    return html`
+        <h3 class="sr-only">Download Options</h3>
+        <p>
+            This plot can be downloaded as a
+            <abbr title="Geotiff">GeoTIFF</abbr>
+            file
+        </p>
+
+        <terra-button outline variant="default" @click=${this.#downloadGeotiff}>
+            <span class="sr-only">Download Plot Data as </span>
+            GeoTIFF
+            <terra-icon
+                slot="prefix"
+                name="outline-photo"
+                library="heroicons"
+                font-size="1.5em"
+            ></terra-icon>
+        </terra-button>
+    `
+  }
+
   render() {
     return html`
       <header>
         <h2>${this.long_name}</h2>
+        <!-- Download Toggle Button -->
+        <div class="toggles"> 
+        <terra-button
+          circle
+          outline
+          aria-expanded=${this.activeMenuItem === 'download'}
+          aria-controls="download-menu"
+          aria-haspopup="true"
+          @mouseenter=${this.#handleActiveMenuItem}
+          data-menu-name="download"
+        >
+          <span class="sr-only">Download options</span>
+          <terra-icon
+            name="outline-arrow-down-tray"
+            library="heroicons"
+            font-size="1.5em"
+          ></terra-icon>
+        </terra-button>
+        </div>
+  
+        <!-- Download Menu -->
+        <menu
+        role="menu"
+        id="menu"
+        data-expanded=${this.activeMenuItem !== null}
+        tabindex="-1"
+        @mouseleave=${this.#handleMenuLeave}
+        >
+        <div role="menuitem" ?hidden=${this.activeMenuItem !== 'download'}>
+        ${this.#renderDownloadPanel()}
+        </div>
+        </menu>
       </header>
+  
       <div id="map"></div>
-    `;
+    `
   }
+
 }

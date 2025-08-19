@@ -29,7 +29,7 @@ export class TimeAvgMapController {
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
                 let job
-    
+
                 const start_date = new Date(this.#host?.startDate ?? Date.now());
                 const end_date = new Date(this.#host?.endDate ?? Date.now());;
                 const [w, s, e, n] = this.#host.location?.split(',') ?? [];
@@ -46,10 +46,10 @@ export class TimeAvgMapController {
                     endDate: format(end_date, 'yyyy-MM-dd') + 'T00%3A00%3A00',
                     format: 'text/csv',
                     boundingBox: {
-                    w: parseFloat(w),
-                    s: parseFloat(s),
-                    e: parseFloat(e),
-                    n: parseFloat(n),
+                        w: parseFloat(w),
+                        s: parseFloat(s),
+                        e: parseFloat(e),
+                        n: parseFloat(n),
                     },
                     average: 'time',
                 }
@@ -62,36 +62,36 @@ export class TimeAvgMapController {
                 this.currentJob = this.#getEmptyJob()
 
                 try {
-                console.log("Calling create subset job..")
-                job = await this.#dataService.createSubsetJob(subsetOptions, {
-                    signal,
-                    bearerToken: this.#host.bearerToken,
-                })
+                    console.log("Calling create subset job..")
+                    job = await this.#dataService.createSubsetJob(subsetOptions, {
+                        signal,
+                        bearerToken: this.#host.bearerToken,
+                    })
 
-                if (!job) {
-                    throw new Error('Failed to create subset job')
+                    if (!job) {
+                        throw new Error('Failed to create subset job')
+                    }
+
+                    console.log("Waiting for harmony job..")
+                    const jobStatus = await this.#waitForHarmonyJob(job, signal)
+
+                    // the job is completed, fetch the data for the job
+                    const { blob } = await this.#dataService.getSubsetJobData(jobStatus, {
+                        signal,
+                        bearerToken: this.#host.bearerToken,
+                    })
+                    this.blobUrl = blob
+
+                    return blob
                 }
-
-                console.log("Waiting for harmony job..")
-                const jobStatus = await this.#waitForHarmonyJob(job, signal)
-
-                // the job is completed, fetch the data for the job
-                const { blob } = await this.#dataService.getSubsetJobData(jobStatus, {
-                signal,
-                bearerToken: this.#host.bearerToken,
-                })
-                this.blobUrl = blob
-            
-                return blob
-            }
-            catch(err) {
-                const error_msg = `Failed to create subset job: ${err}`
-                console.error(error_msg)
-                throw new Error(error_msg);
-            }
+                catch (err) {
+                    const error_msg = `Failed to create subset job: ${err}`
+                    console.error(error_msg)
+                    throw new Error(error_msg);
+                }
             },
             args: (): any => [],
-            autoRun: false, 
+            autoRun: false,
         })
     }
 
@@ -118,30 +118,30 @@ export class TimeAvgMapController {
     }
 
     #waitForHarmonyJob(job: SubsetJobStatus, signal: AbortSignal) {
-            return new Promise<SubsetJobStatus>(async resolve => {
-                let jobStatus: SubsetJobStatus | undefined
-    
-                try {
-                    jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
-                        signal,
-                        bearerToken: this.#host.bearerToken,
-                    })
-    
-                    console.log('Job status', jobStatus)
-                } catch (error) {
-                    console.error('Error checking harmony job status', error)
-                }
-    
-                if (jobStatus && FINAL_STATUSES.has(jobStatus.status)) {
-                    console.log('Job is done', jobStatus)
-                    resolve(jobStatus)
-                } else {
-                    setTimeout(async () => {
-                        resolve(await this.#waitForHarmonyJob(job, signal))
-                    }, REFRESH_HARMONY_DATA_INTERVAL)
-                }
-            })
-        }
+        return new Promise<SubsetJobStatus>(async resolve => {
+            let jobStatus: SubsetJobStatus | undefined
+
+            try {
+                jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
+                    signal,
+                    bearerToken: this.#host.bearerToken,
+                })
+
+                console.log('Job status', jobStatus)
+            } catch (error) {
+                console.error('Error checking harmony job status', error)
+            }
+
+            if (jobStatus && FINAL_STATUSES.has(jobStatus.status)) {
+                console.log('Job is done', jobStatus)
+                resolve(jobStatus)
+            } else {
+                setTimeout(async () => {
+                    resolve(await this.#waitForHarmonyJob(job, signal))
+                }, REFRESH_HARMONY_DATA_INTERVAL)
+            }
+        })
+    }
 
 
 
