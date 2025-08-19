@@ -305,7 +305,6 @@ export class TimeSeriesController {
         if (parsedLocation.length === 4) {
             const collection = `${this.host.catalogVariable!.dataProductShortName}_${this.host.catalogVariable!.dataProductVersion}`
             const [w, s, e, n] = parsedLocation
-            console.log("start_date: ",startDate)
             let subsetOptions = {
                 collectionEntryId: collection,
                 variableConceptIds: ['parameter_vars'],
