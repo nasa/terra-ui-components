@@ -123,26 +123,6 @@ export default class TerraTimeAverageMap extends TerraElement {
         args: () => [this.collection, this.variable],
     })
 
-    #downloadGeotiff() {
-        if (!this.#controller.jobStatusTask.value) {
-            console.warn('No GeoTIFF available to download.')
-            return
-        }
-        const job_status_value = this.#controller.jobStatusTask.value
-        const url = URL.createObjectURL(job_status_value)
-        const a = document.createElement('a')
-
-        const locationStr = `${this.location!.replace(/,/g, '_')}`
-        let file_name = `${this.collection}_${this.variable}_${this.startDate}-${this.endDate}_${locationStr}.tif`
-        a.href = url
-        a.download = `${file_name}`
-        a.style.display = 'none'
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        console.log('Successfully downloaded tiff file...')
-    }
-
     async firstUpdated() {
         this.#controller = new TimeAvgMapController(this)
         // Initialize the base layer open street map
@@ -223,40 +203,6 @@ export default class TerraTimeAverageMap extends TerraElement {
         return dataObj
     }
 
-    #handleActiveMenuItem(event: Event) {
-        const button = event.currentTarget as HTMLButtonElement
-        const menuName = button.dataset.menuName as any
-        // Set the menu item as active.
-        this.activeMenuItem = menuName
-    }
-    #handleMenuLeave(event: MouseEvent) {
-        const relatedTarget = event.relatedTarget as HTMLElement
-        if (!this.contains(relatedTarget)) {
-            this.activeMenuItem = null
-        }
-    }
-    #renderDownloadPanel() {
-        return html`
-            <h3 class="sr-only">Download Options</h3>
-            <p>
-                This plot can be downloaded as a
-                <abbr title="Geotiff">GeoTIFF</abbr>
-                file
-            </p>
-
-            <terra-button outline variant="default" @click=${this.#downloadGeotiff}>
-                <span class="sr-only">Download Plot Data as </span>
-                GeoTIFF
-                <terra-icon
-                    slot="prefix"
-                    name="outline-photo"
-                    library="heroicons"
-                    font-size="1.5em"
-                ></terra-icon>
-            </terra-button>
-        `
-    }
-
     getVariableEntryId() {
         if (!this.collection || !this.variable) {
             return
@@ -270,7 +216,9 @@ export default class TerraTimeAverageMap extends TerraElement {
             ${cache(
                 this.catalogVariable
                     ? html`<terra-plot-toolbar
+                          dataType="geotiff"
                           .catalogVariable=${this.catalogVariable}
+                          .timeSeriesData=${this.#controller.jobStatusTask?.value}
                           .location=${this.location}
                           .startDate=${this.startDate}
                           .endDate=${this.endDate}
@@ -279,45 +227,6 @@ export default class TerraTimeAverageMap extends TerraElement {
                       ></terra-plot-toolbar>`
                     : html`<div class="spacer"></div>`
             )}
-
-            <header>
-                <h2>${this.long_name}</h2>
-                <!-- Download Toggle Button -->
-                <div class="toggles">
-                    <terra-button
-                        circle
-                        outline
-                        aria-expanded=${this.activeMenuItem === 'download'}
-                        aria-controls="download-menu"
-                        aria-haspopup="true"
-                        @mouseenter=${this.#handleActiveMenuItem}
-                        data-menu-name="download"
-                    >
-                        <span class="sr-only">Download options</span>
-                        <terra-icon
-                            name="outline-arrow-down-tray"
-                            library="heroicons"
-                            font-size="1.5em"
-                        ></terra-icon>
-                    </terra-button>
-                </div>
-
-                <!-- Download Menu -->
-                <menu
-                    role="menu"
-                    id="menu"
-                    data-expanded=${this.activeMenuItem !== null}
-                    tabindex="-1"
-                    @mouseleave=${this.#handleMenuLeave}
-                >
-                    <div
-                        role="menuitem"
-                        ?hidden=${this.activeMenuItem !== 'download'}
-                    >
-                        ${this.#renderDownloadPanel()}
-                    </div>
-                </menu>
-            </header>
 
             <div id="map"></div>
         `

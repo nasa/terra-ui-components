@@ -41,7 +41,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() catalogVariable: Variable
     @property() variableEntryId: string
     @property() plot?: TerraPlot
-    @property() timeSeriesData?: Partial<Data>[] | undefined
+    @property() timeSeriesData?: Partial<Data>[] | Blob
     @property() location: string
     @property() startDate: string
     @property() endDate: string
@@ -269,35 +269,71 @@ export default class TerraPlotToolbar extends TerraElement {
         return html`
             <h3 class="sr-only">Download Options</h3>
 
-            <p>
-                This plot can be downloaded as either a
-                <abbr title="Portable Network Graphic">PNG</abbr>
-                image or
-                <abbr title="Comma-Separated Value">CSV</abbr>
-                data.
-            </p>
+            ${this.dataType === 'geotiff'
+                ? html`
+                      <p>
+                          This plot can be downloaded as a
+                          <abbr title="Geotiff">GeoTIFF</abbr>
+                          file
+                      </p>
+                  `
+                : html`
+                      <p>
+                          This plot can be downloaded as either a
+                          <abbr title="Portable Network Graphic">PNG</abbr>
+                          image or
+                          <abbr title="Comma-Separated Value">CSV</abbr>
+                          data.
+                      </p>
+                  `}
+            ${this.dataType === 'geotiff'
+                ? html`
+                      <terra-button
+                          outline
+                          variant="default"
+                          @click=${this.#downloadGeotiff}
+                      >
+                          <span class="sr-only">Download Plot Data as </span>
+                          GeoTIFF
+                          <terra-icon
+                              slot="prefix"
+                              name="outline-photo"
+                              library="heroicons"
+                              font-size="1.5em"
+                          ></terra-icon>
+                      </terra-button>
+                  `
+                : html`
+                      <terra-button
+                          outline
+                          variant="default"
+                          @click=${this.#downloadPNG}
+                      >
+                          <span class="sr-only">Download Plot Data as </span>
+                          PNG
+                          <terra-icon
+                              slot="prefix"
+                              name="outline-photo"
+                              library="heroicons"
+                              font-size="1.5em"
+                          ></terra-icon>
+                      </terra-button>
 
-            <terra-button outline variant="default" @click=${this.#downloadPNG}>
-                <span class="sr-only">Download Plot Data as </span>
-                PNG
-                <terra-icon
-                    slot="prefix"
-                    name="outline-photo"
-                    library="heroicons"
-                    font-size="1.5em"
-                ></terra-icon>
-            </terra-button>
-
-            <terra-button outline variant="default" @click=${this.#downloadCSV}>
-                <span class="sr-only">Download Plot Data as </span>
-                CSV
-                <terra-icon
-                    slot="prefix"
-                    name="outline-document-chart-bar"
-                    library="heroicons"
-                    font-size="1.5em"
-                ></terra-icon>
-            </terra-button>
+                      <terra-button
+                          outline
+                          variant="default"
+                          @click=${this.#downloadCSV}
+                      >
+                          <span class="sr-only">Download Plot Data as </span>
+                          CSV
+                          <terra-icon
+                              slot="prefix"
+                              name="outline-document-chart-bar"
+                              library="heroicons"
+                              font-size="1.5em"
+                          ></terra-icon>
+                      </terra-button>
+                  `}
         `
     }
 
@@ -403,6 +439,10 @@ export default class TerraPlotToolbar extends TerraElement {
     #downloadCSV(_event: Event) {
         let plotData: Array<Plot> = []
 
+        if (!Array.isArray(this.timeSeriesData)) {
+            return
+        }
+
         // convert data object to plot object to resolve property references
         this.timeSeriesData?.forEach((plot: any, index: number) => {
             plotData[index] = plot as unknown as Plot
@@ -450,5 +490,25 @@ export default class TerraPlotToolbar extends TerraElement {
         const header = Object.keys(data[0]).join(',') + '\n'
         const rows = data.map(obj => Object.values(obj).join(',')).join('\n')
         return header + rows
+    }
+
+    #downloadGeotiff() {
+        if (!this.timeSeriesData || !(this.timeSeriesData instanceof Blob)) {
+            console.warn('No GeoTIFF available to download.')
+            return
+        }
+
+        const url = URL.createObjectURL(this.timeSeriesData)
+        const a = document.createElement('a')
+
+        const locationStr = `${this.location!.replace(/,/g, '_')}`
+        let file_name = `${this.variableEntryId}_${this.startDate}-${this.endDate}_${locationStr}.tif`
+        a.href = url
+        a.download = `${file_name}`
+        a.style.display = 'none'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        console.log('Successfully downloaded tiff file...')
     }
 }
