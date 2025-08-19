@@ -130,7 +130,7 @@ async function buildTheSource() {
         splitting: true,
         loader: {
             // Tell esbuild how to handle image files
-            '.tif': 'file',  // Treat .tif files as static assets (copy to output directory)
+            '.tif': 'file', // Treat .tif files as static assets (copy to output directory)
         },
         plugins: [
             polyfillNode(),

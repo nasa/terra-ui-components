@@ -12,7 +12,6 @@ import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
-    deleteDataByKey,
 } from '../../internal/indexeddb.js'
 
 const REFRESH_HARMONY_DATA_INTERVAL = 2000

@@ -22,8 +22,8 @@ export { default as TerraDataRods } from './components/data-rods/data-rods.js'
 export { default as TerraAccordion } from './components/accordion/accordion.js'
 export { default as TerraDataSubsetter } from './components/data-subsetter/data-subsetter.js'
 export { default as TerraDataSubsetterHistory } from './components/data-subsetter-history/data-subsetter-history.js'
-export { default as TerraTimeAverageMap } from './components/time-average-map/time-average-map.js';
-export { default as TerraPlotToolbar } from './components/plot-toolbar/plot-toolbar.js';
+export { default as TerraTimeAverageMap } from './components/time-average-map/time-average-map.js'
+export { default as TerraPlotToolbar } from './components/plot-toolbar/plot-toolbar.js'
 /* plop:component */
 
 // Utilities

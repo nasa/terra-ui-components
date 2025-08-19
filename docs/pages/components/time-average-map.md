@@ -4,9 +4,11 @@ meta:
     description:
 layout: component
 ---
+
 ## Examples
 
-### Render of geotiff data from time average map service. 
+### Render of geotiff data from time average map service.
+
 ```html:preview
 <terra-time-average-map
     collection="M2T1NXAER_5_12_4"

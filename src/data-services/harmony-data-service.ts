@@ -75,49 +75,48 @@ export class HarmonyDataService implements DataServiceInterface {
         input: CreateSubsetJobInput,
         options?: SearchOptions
     ): Promise<SubsetJobStatus | undefined> {
-
         try {
-        const client = await getGraphQLClient()
-        const response = await client.mutate<{
-            createSubsetJob: SubsetJobStatus
-        }>({
-            mutation: CREATE_SUBSET_JOB,
-            variables: {
-                collectionConceptId: input.collectionConceptId,
-                collectionEntryId: input.collectionEntryId,
-                variableConceptIds: input.variableConceptIds,
-                variableEntryIds: input.variableEntryIds,
-                average: input.average,
-                boundingBox: input.boundingBox,
-                startDate: input.startDate,
-                endDate: input.endDate,
-                format: input.format,
-                labels: input.labels,
-            },
-            context: {
-                headers: {
-                    ...(options?.bearerToken && {
-                        authorization: options.bearerToken,
-                    }),
-                    'x-environment': options?.environment ?? 'prod',
+            const client = await getGraphQLClient()
+            const response = await client.mutate<{
+                createSubsetJob: SubsetJobStatus
+            }>({
+                mutation: CREATE_SUBSET_JOB,
+                variables: {
+                    collectionConceptId: input.collectionConceptId,
+                    collectionEntryId: input.collectionEntryId,
+                    variableConceptIds: input.variableConceptIds,
+                    variableEntryIds: input.variableEntryIds,
+                    average: input.average,
+                    boundingBox: input.boundingBox,
+                    startDate: input.startDate,
+                    endDate: input.endDate,
+                    format: input.format,
+                    labels: input.labels,
                 },
-                fetchOptions: {
-                    signal: options?.signal,
+                context: {
+                    headers: {
+                        ...(options?.bearerToken && {
+                            authorization: options.bearerToken,
+                        }),
+                        'x-environment': options?.environment ?? 'prod',
+                    },
+                    fetchOptions: {
+                        signal: options?.signal,
+                    },
                 },
-            },
-        })
+            })
 
-        if (response.errors) {
-            throw new Error(
-                `Failed to create subset job: ${response.errors[0].message}`
-            )
-        }
+            if (response.errors) {
+                throw new Error(
+                    `Failed to create subset job: ${response.errors[0].message}`
+                )
+            }
 
-        return response.data?.createSubsetJob
-    } catch(err) {
-        console.error("createSubsetJob ERROR: ", err)
+            return response.data?.createSubsetJob
+        } catch (err) {
+            console.error('createSubsetJob ERROR: ', err)
             throw err
-    }
+        }
     }
 
     async getSubsetJobs(searchOptions?: SearchOptions): Promise<SubsetJobs> {
@@ -230,7 +229,7 @@ export class HarmonyDataService implements DataServiceInterface {
         }
 
         const proxyUrl = `${HARMONY_CONFIG.proxyUrl}?url=${encodeURIComponent(link)}`
-        
+
         console.log('fetching data from ', proxyUrl)
 
         const response = await fetch(proxyUrl, {
@@ -248,10 +247,10 @@ export class HarmonyDataService implements DataServiceInterface {
             )
         }
 
-        const clonedResponse = response.clone();
-        const blob = await response.blob();
-        const text = await clonedResponse.text();
+        const clonedResponse = response.clone()
+        const blob = await response.blob()
+        const text = await clonedResponse.text()
 
-        return {blob,text}
+        return { blob, text }
     }
 }

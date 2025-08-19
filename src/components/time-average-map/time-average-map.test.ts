@@ -1,10 +1,12 @@
-import '../../../dist/terra-ui-components.js';
-import { expect, fixture, html } from '@open-wc/testing';
+import '../../../dist/terra-ui-components.js'
+import { expect, fixture, html } from '@open-wc/testing'
 
 describe('<terra-time-average-map>', () => {
     it('should render a component', async () => {
-        const el = await fixture(html` <terra-time-average-map></terra-time-average-map> `);
+        const el = await fixture(html`
+            <terra-time-average-map></terra-time-average-map>
+        `)
 
-        expect(el).to.exist;
-    });
-});
+        expect(el).to.exist
+    })
+})
