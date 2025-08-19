@@ -20,6 +20,10 @@ export default css`
         grid-column: 1 / 3;
     }
 
+    .spacer {
+        padding-block: 1.375rem;
+    }
+
     terra-plot::part(plot-title) {
         opacity: 0;
         z-index: 0 !important;

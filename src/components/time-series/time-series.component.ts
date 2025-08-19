@@ -17,6 +17,7 @@ import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js
 import { formatDate } from '../../utilities/date.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
+import { cache } from 'lit/directives/cache.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -231,18 +232,22 @@ export default class TerraTimeSeries extends TerraElement {
                           </terra-alert>
                       `
                     : ''}
-
-                <terra-plot-toolbar
-                    .catalogVariable=${this.catalogVariable}
-                    .plot=${this.plot}
-                    .timeSeriesData=${this.#timeSeriesController.lastTaskValue ??
-                    this.#timeSeriesController.emptyPlotData}
-                    .location=${this.location}
-                    .startDate=${this.startDate}
-                    .endDate=${this.endDate}
-                    .cacheKey=${this.#timeSeriesController.getCacheKey()}
-                    .variableEntryId=${this.variableEntryId}
-                ></terra-plot-toolbar>
+                ${cache(
+                    this.catalogVariable
+                        ? html`<terra-plot-toolbar
+                              .catalogVariable=${this.catalogVariable}
+                              .plot=${this.plot}
+                              .timeSeriesData=${this.#timeSeriesController
+                                  .lastTaskValue ??
+                              this.#timeSeriesController.emptyPlotData}
+                              .location=${this.location}
+                              .startDate=${this.startDate}
+                              .endDate=${this.endDate}
+                              .cacheKey=${this.#timeSeriesController.getCacheKey()}
+                              .variableEntryId=${this.variableEntryId}
+                          ></terra-plot-toolbar>`
+                        : html`<div class="spacer"></div>`
+                )}
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
