@@ -184,7 +184,6 @@ it.skip('Should account for when focus is changed from outside sources (like cli
     expect(activeElementsArray()).to.include(closeButton)
 })
 
-// https://github.com/gesdisc/components/issues/1710
 it('Should respect nested modal instances', async () => {
     const dialogOne = (): SlDialog => document.querySelector('#dialog-1')!
     const dialogTwo = (): SlDialog => document.querySelector('#dialog-2')!

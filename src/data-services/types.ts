@@ -3,6 +3,7 @@ import type { MaybeBearerToken } from '../components/time-series/time-series.typ
 export type SearchOptions = {
     signal?: AbortSignal
     bearerToken?: MaybeBearerToken
+    environment?: 'uat' | 'prod'
 }
 
 export interface DataServiceInterface {
