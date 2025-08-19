@@ -17,6 +17,7 @@ import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variabl
 import { Task } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
+import { AuthController } from '../../auth/auth.controller.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -85,6 +86,7 @@ export default class TerraTimeAverageMap extends TerraElement {
 
     #controller: TimeAvgMapController
     #catalog = new GiovanniVariableCatalog()
+    _authController = new AuthController(this)
 
     #map: Map | null = null
     #gtLayer: WebGLTileLayer | null = null
