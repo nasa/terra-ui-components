@@ -3,7 +3,6 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type {
-    CatalogRepositoryInterface,
     FacetsByCategory,
     SearchResponse,
     Variable,
@@ -14,7 +13,7 @@ export class BrowseVariablesController {
     task: Task<[string | undefined], SearchResponse>
 
     #host: ReactiveControllerHost & TerraBrowseVariables
-    #catalog: CatalogRepositoryInterface
+    #catalog: any // TODO: fix this type, it should be VariableCatalogInterface
 
     constructor(host: ReactiveControllerHost & TerraBrowseVariables) {
         this.#host = host
@@ -29,6 +28,8 @@ export class BrowseVariablesController {
                         signal,
                     }
                 )
+
+                this.#selectVariables(searchResponse)
 
                 return searchResponse
             },
@@ -50,6 +51,40 @@ export class BrowseVariablesController {
 
     render(renderFunctions: StatusRenderer<any>) {
         return this.task.render(renderFunctions)
+    }
+
+    /**
+     * Selects variables from the search response that are in the selectedVariableEntryIds list
+     */
+    async #selectVariables(searchResponse: SearchResponse) {
+        if (
+            !this.#host.selectedVariableEntryIds ||
+            this.#host.selectedVariables.length > 0
+        ) {
+            // we only want to select variables if the user has passed any in AND we haven't already made any selections
+            return
+        }
+
+        const variableEntryIds = this.#host.selectedVariableEntryIds.split(',')
+
+        const variables = searchResponse.variables.filter(variable => {
+            return (
+                variableEntryIds.includes(variable.dataFieldId) ||
+                variableEntryIds.includes(
+                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldShortName}`
+                )
+            )
+        })
+
+        const missingVariableIds = variableEntryIds.filter(
+            id => !variables.some(variable => variable.dataFieldId === id)
+        )
+
+        const missingVariables = await Promise.all(
+            missingVariableIds.map(id => this.#catalog.getVariable(id))
+        )
+
+        this.#host.selectedVariables = [...variables, ...missingVariables]
     }
 
     #getCatalogRepository() {

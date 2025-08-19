@@ -53,6 +53,9 @@ export default class TerraBrowseVariables extends TerraElement {
     @property()
     catalog: 'giovanni' = 'giovanni'
 
+    @property({ attribute: 'selected-variable-entry-ids', reflect: true })
+    selectedVariableEntryIds?: string
+
     @state()
     searchQuery: string
 
