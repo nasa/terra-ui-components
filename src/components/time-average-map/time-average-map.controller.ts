@@ -8,6 +8,12 @@ import {
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
+import {
+    IndexedDbStores,
+    getDataByKey,
+    storeDataByKey,
+    deleteDataByKey,
+} from '../../internal/indexeddb.js'
 
 const REFRESH_HARMONY_DATA_INTERVAL = 2000
 
@@ -57,6 +63,24 @@ export class TimeAvgMapController {
                 this.currentJob = this.#getEmptyJob()
 
                 try {
+                    // Try cache first
+                    const cacheKey = this.getCacheKey()
+                    const existing = await getDataByKey<{
+                        key: string
+                        cachedAt: number
+                        environment?: string
+                        blob: Blob
+                    }>(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey)
+
+                    if (existing) {
+                        console.log(
+                            'Returning existing map blob from cache',
+                            cacheKey
+                        )
+                        this.blobUrl = existing.blob
+                        return existing.blob
+                    }
+
                     console.log('Calling create subset job..')
                     job = await this.#dataService.createSubsetJob(subsetOptions, {
                         signal,
@@ -81,6 +105,14 @@ export class TimeAvgMapController {
                         }
                     )
                     this.blobUrl = blob
+
+                    // Store in cache
+                    await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {
+                        key: cacheKey,
+                        cachedAt: new Date().getTime(),
+                        environment: this.#host.environment,
+                        blob,
+                    })
 
                     return blob
                 } catch (err) {
@@ -160,5 +192,15 @@ export class TimeAvgMapController {
             numInputGranules: 0,
             links: [],
         }
+    }
+
+    getCacheKey(): string {
+        const environment = this.#host.environment ?? 'prod'
+        const location = this.#host.location ?? ''
+        const collection = this.#host.collection ?? ''
+        const variable = this.#host.variable ?? ''
+        const start = this.#host.startDate ?? ''
+        const end = this.#host.endDate ?? ''
+        return `map_${collection}_${variable}_${start}_${end}_${location}_${environment}`
     }
 }

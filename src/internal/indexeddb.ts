@@ -4,17 +4,26 @@ export const DB_NAME = 'terra'
 
 export enum IndexedDbStores {
     TIME_SERIES = 'time-series',
+    TIME_AVERAGE_MAP = 'time-average-map',
 }
 
 /**
  * Get the indexedDB database
  */
 export async function getDb() {
-    return await openDB(DB_NAME, 1, {
-        upgrade(db) {
-            db.createObjectStore(IndexedDbStores.TIME_SERIES, {
-                keyPath: 'key',
-            })
+    return await openDB(DB_NAME, 2, {
+        upgrade(db, oldVersion) {
+            if (oldVersion < 1) {
+                db.createObjectStore(IndexedDbStores.TIME_SERIES, {
+                    keyPath: 'key',
+                })
+            }
+
+            if (oldVersion < 2) {
+                db.createObjectStore(IndexedDbStores.TIME_AVERAGE_MAP, {
+                    keyPath: 'key',
+                })
+            }
         },
     })
 }

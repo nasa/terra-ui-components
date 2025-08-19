@@ -222,7 +222,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                           .location=${this.location}
                           .startDate=${this.startDate}
                           .endDate=${this.endDate}
-                          .cacheKey=${'TODO'}
+                          .cacheKey=${this.#controller.getCacheKey()}
                           .variableEntryId=${this.getVariableEntryId()}
                       ></terra-plot-toolbar>`
                     : html`<div class="spacer"></div>`
