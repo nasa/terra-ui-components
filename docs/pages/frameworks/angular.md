@@ -109,5 +109,5 @@ export class DrawerExampleComponent implements OnInit {
 Now you can start using Terra UI Components in your app!
 
 :::tip
-Are you using Terra UI Components with Angular? [Help us improve this page!](https://github.com/terra-ui/components/blob/next/docs/frameworks/angular.md)
+Are you using Terra UI Components with Angular? [Help us improve this page!](https://github.com/nasa/terra-ui-components/blob/next/docs/frameworks/angular.md)
 :::

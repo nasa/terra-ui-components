@@ -1,5 +1,8 @@
 import { LitElement } from 'lit'
 import { property } from 'lit/decorators.js'
+import { Environment, getEnvironment } from '../utilities/environment.js'
+import { purgeGraphQLCache } from '../lib/graphql-client.js'
+import { authService } from '../auth/auth.service.js'
 
 // Match event type name strings that are registered on GlobalEventHandlersEventMap...
 type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
@@ -83,6 +86,7 @@ export default class TerraElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
+    @property() environment?: Environment = getEnvironment()
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
@@ -167,6 +171,19 @@ export default class TerraElement extends LitElement {
         ).forEach(([name, component]) => {
             ;(this.constructor as typeof TerraElement).define(name, component)
         })
+
+        // Listen for environment changes
+        document.addEventListener(
+            'terra-environment-change',
+            (event: CustomEvent) => {
+                // Purge the GraphQL cache and authentication info when the environment changes
+                // This really shouldn't happen normally. Most websites/apps will be using the same environment.
+                // The docs site is an exception, as we allow for switching between UAT and PROD.
+                purgeGraphQLCache()
+                authService.logout()
+                this.environment = event.detail.environment
+            }
+        )
     }
 }
 

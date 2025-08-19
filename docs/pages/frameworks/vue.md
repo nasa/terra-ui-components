@@ -108,7 +108,7 @@ One caveat is there's currently [no support for v-model on custom elements](http
 If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-terra-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
 
 :::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/terra-ui/components/blob/next/docs/frameworks/vue.md)
+Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/nasa/terra-ui-components/blob/next/docs/frameworks/vue.md)
 :::
 
 ### Slots
