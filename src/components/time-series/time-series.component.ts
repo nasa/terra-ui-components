@@ -6,7 +6,6 @@ import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
-import { cache } from 'lit/directives/cache.js'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { Task, TaskStatus } from '@lit/task'
@@ -17,6 +16,7 @@ import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variabl
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
 import { formatDate } from '../../utilities/date.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
+import { AuthController } from '../../auth/auth.controller.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -95,7 +95,7 @@ export default class TerraTimeSeries extends TerraElement {
      * The property's value will be inserted after "Bearer" (the authentication scheme).
      */
     @property({ attribute: 'bearer-token', reflect: false })
-    bearerToken: string
+    bearerToken?: string
 
     @query('terra-plot') plot: TerraPlot
 
@@ -119,6 +119,7 @@ export default class TerraTimeSeries extends TerraElement {
     estimatedDataPoints = 0
 
     #catalog = new GiovanniVariableCatalog()
+    _authController = new AuthController(this)
 
     // @ts-expect-error
     #fetchVariableTask = new Task(this, {
@@ -160,7 +161,7 @@ export default class TerraTimeSeries extends TerraElement {
         )
 
         //* instantiate the time series contoller maybe with a token
-        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
+        this.#timeSeriesController = new TimeSeriesController(this)
     }
 
     disconnectedCallback(): void {

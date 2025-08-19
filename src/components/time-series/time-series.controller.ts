@@ -8,9 +8,9 @@ import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
+    deleteDataByKey,
 } from '../../internal/indexeddb.js'
 import type {
-    MaybeBearerToken,
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
@@ -28,6 +28,7 @@ import type { SubsetJobStatus } from '../../data-services/types.js'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
 const REFRESH_HARMONY_DATA_INTERVAL = 2000
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -41,7 +42,6 @@ export const plotlyDefaultData: Partial<PlotData> = {
 }
 
 export class TimeSeriesController {
-    #bearerToken: MaybeBearerToken = null
     #userConfirmedWarning = false
     #dataService: HarmonyDataService
 
@@ -61,11 +61,7 @@ export class TimeSeriesController {
     lastTaskValue: Partial<Data>[] | undefined
     
 
-    constructor(
-        host: ReactiveControllerHost & TerraTimeSeries,
-        bearerToken: MaybeBearerToken
-    ) {
-        this.#bearerToken = bearerToken
+    constructor(host: ReactiveControllerHost & TerraTimeSeries) {
         this.#dataService = this.#getDataService()
 
         this.host = host
@@ -136,8 +132,11 @@ export class TimeSeriesController {
                 endDate,
                 new Date(existingTerraData.startDate),
                 new Date(existingTerraData.endDate)
-            )
+            ) &&
+            this.#isCacheValid(existingTerraData)
         ) {
+            console.log('Returning existing data from cache ', this.getCacheKey())
+
             // already have the data downloaded!
             return this.#getDataInRange(existingTerraData)
         }
@@ -209,6 +208,8 @@ export class TimeSeriesController {
                     endDate: sortedData[sortedData.length - 1].timestamp,
                     metadata: consolidatedResult.metadata,
                     data: sortedData,
+                    environment: this.host.environment,
+                    cachedAt: new Date().getTime(),
                 }
             )
         }
@@ -217,6 +218,26 @@ export class TimeSeriesController {
             metadata: consolidatedResult.metadata,
             data: allData,
         })
+    }
+
+    /**
+     * Checks if cached data is still valid (not expired)
+     */
+    #isCacheValid(existingData: VariableDbEntry): boolean {
+        // If cachedAt is not present (backward compatibility), consider it expired
+        if (!existingData.cachedAt) {
+            this.clearExpiredCache()
+            return false
+        }
+
+        const now = new Date().getTime()
+        const cacheIsExpired = now - existingData.cachedAt > CACHE_TTL_MS
+
+        if (cacheIsExpired) {
+            this.clearExpiredCache()
+        }
+
+        return !cacheIsExpired
     }
 
     /**
@@ -309,7 +330,8 @@ export class TimeSeriesController {
             // create the new job
             const job = await this.#dataService.createSubsetJob(subsetOptions, {
                 signal,
-                bearerToken: this.#bearerToken,
+                bearerToken: this.host.bearerToken,
+                environment: this.host.environment,
             })
 
             if (!job) {
@@ -321,7 +343,8 @@ export class TimeSeriesController {
             // the job is completed, fetch the data for the job
             const { text } = await this.#dataService.getSubsetJobData(jobStatus, {
                 signal,
-                bearerToken: this.#bearerToken,
+                bearerToken: this.host.bearerToken,
+                environment: this.host.environment,
             })
             timeSeriesCsvData =text
         } else {
@@ -341,8 +364,8 @@ export class TimeSeriesController {
                 signal,
                 headers: {
                     Accept: 'application/json',
-                    ...(this.#bearerToken
-                        ? { Authorization: `Bearer: ${this.#bearerToken}` }
+                    ...(this.host.bearerToken
+                        ? { Authorization: `Bearer: ${this.host.bearerToken}` }
                         : {}),
                 },
             })
@@ -377,7 +400,8 @@ export class TimeSeriesController {
             try {
                 jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
                     signal,
-                    bearerToken: this.#bearerToken,
+                    bearerToken: this.host.bearerToken,
+                    environment: this.host.environment,
                 })
 
                 console.log('Job status', jobStatus)
@@ -515,7 +539,8 @@ export class TimeSeriesController {
             this.host.location.split(',')
         )
         const normalizedLocation = normalizedCoordinates.join(',%20')
-        return `${this.host.catalogVariable.dataFieldId}_${normalizedLocation}`
+        const environment = this.host.environment ?? 'prod'
+        return `${this.host.catalogVariable.dataFieldId}_${normalizedLocation}_${environment}`
     }
 
     /**
@@ -545,6 +570,26 @@ export class TimeSeriesController {
     confirmDataPointWarning() {
         this.#userConfirmedWarning = true
         this.host.showDataPointWarning = false
+    }
+
+    /**
+     * Clears expired cache entries for the current cache key
+     */
+    async clearExpiredCache() {
+        try {
+            const cacheKey = this.getCacheKey()
+            const existingData = await getDataByKey<VariableDbEntry>(
+                IndexedDbStores.TIME_SERIES,
+                cacheKey
+            )
+
+            if (existingData && !this.#isCacheValid(existingData)) {
+                await deleteDataByKey(IndexedDbStores.TIME_SERIES, cacheKey)
+                console.log(`Cleared expired cache for key: ${cacheKey}`)
+            }
+        } catch (error) {
+            console.warn('Error clearing expired cache:', error)
+        }
     }
 
     #getDataService() {

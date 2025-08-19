@@ -10,12 +10,18 @@ layout: component
 The `<terra-data-subsetter-history>` component displays a floating panel showing a user's recent data subset requests, their status, and quick access to results. It integrates with `<terra-data-subsetter>` for viewing and re-running jobs. The panel is typically shown in the lower right of the screen and is intended for authenticated users.
 
 ```html:preview
-<terra-alert open variant="success">
-  <terra-icon slot="icon" name="outline-check-circle" library="heroicons"></terra-icon>
-  The history panel is at the bottom right of your screen
-</terra-alert>
+<terra-login style="width: 100%">
+  <span slot="loading">Loading...</span>
 
-<terra-data-subsetter-history bearer-token="YOUR_EARTHDATA_BEARER_TOKEN"></terra-data-subsetter-history>
+  <terra-alert open variant="success" slot="logged-in">
+    <terra-icon slot="icon" name="outline-check-circle" library="heroicons"></terra-icon>
+    The history panel is at the bottom right of your screen
+  </terra-alert>
+
+  <p slot="logged-out">Please login to see your history</p>
+</terra-login>
+
+<terra-data-subsetter-history></terra-data-subsetter-history>
 ```
 
 ## Properties
@@ -25,14 +31,6 @@ The `<terra-data-subsetter-history>` component displays a floating panel showing
 | `label`        | string  | "History" | The label shown at the top of the history panel.                    |
 | `bearer-token` | string  | —         | NASA Earthdata bearer token for fetching user-specific job history. |
 | `always-show`  | boolean | false     | If true, always show the panel even if the user has no jobs.        |
-
-## Examples
-
-### Basic Usage
-
-```html:preview
-<terra-data-subsetter-history bearer-token="YOUR_EARTHDATA_BEARER_TOKEN"></terra-data-subsetter-history>
-```
 
 ## Best Practices
 

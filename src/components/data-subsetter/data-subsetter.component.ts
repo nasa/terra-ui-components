@@ -26,6 +26,8 @@ import { debounce } from '../../internal/debounce.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
 import type { LatLng } from 'leaflet'
 import { MapEventType } from '../map/type.js'
+import { AuthController } from '../../auth/auth.controller.js'
+import TerraLogin from '../login/login.component.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -47,6 +49,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-date-picker': TerraDatePicker,
         'terra-icon': TerraIcon,
         'terra-spatial-picker': TerraSpatialPicker,
+        'terra-login': TerraLogin,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -123,6 +126,7 @@ export default class TerraDataSubsetter extends TerraElement {
     spatialPicker: TerraSpatialPicker
 
     #controller = new DataSubsetterController(this)
+    #authController = new AuthController(this)
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
@@ -203,6 +207,44 @@ export default class TerraDataSubsetter extends TerraElement {
         this.closest('terra-dialog')?.hide()
     }
 
+    #renderSizeInfo(estimates: { days: number; links: number }) {
+        if (
+            !this.#authController.state.isLoading &&
+            !this.#authController.state.user
+        ) {
+            return html`
+                <div class="size-info warning">
+                    <terra-login>
+                        <h2 slot="logged-out">Limited access as a guest.</h2>
+
+                        <p slot="logged-out">
+                            Your results will be capped at 10 links. Log in for full
+                            access to all data.
+                        </p>
+                    </terra-login>
+                </div>
+            `
+        }
+
+        return html`<div
+            class="size-info ${estimates.links >= 150 ? 'warning' : 'neutral'}"
+        >
+            <h2>Estimated size of results</h2>
+            <div class="size-stats">
+                ${estimates.days.toLocaleString()} days,
+                ${estimates.links.toLocaleString()} links
+            </div>
+            ${estimates.links >= 150
+                ? html`<div class="size-warning">
+                      You are about to retrieve ${estimates.links.toLocaleString()}
+                      file links from the archive. You may
+                      <strong>speed up the request</strong> by limiting the scope of
+                      your search.
+                  </div>`
+                : nothing}
+        </div>`
+    }
+
     #renderSubsetOptions() {
         const estimates = this.#estimateJobSize()
         const hasSubsetOption = this.#hasAtLeastOneSubsetOption()
@@ -216,26 +258,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
         return html`
             ${hasSubsetOption && estimates
-                ? html`<div
-                      class="size-info ${estimates.links >= 150
-                          ? 'warning'
-                          : 'neutral'}"
-                  >
-                      <h2>Estimated size of results</h2>
-                      <div class="size-stats">
-                          ${estimates.days.toLocaleString()} days,
-                          ${estimates.links.toLocaleString()} links
-                      </div>
-                      ${estimates.links >= 150
-                          ? html`<div class="size-warning">
-                                You are about to retrieve
-                                ${estimates.links.toLocaleString()} file links from
-                                the archive. You may
-                                <strong>speed up the request</strong> by limiting the
-                                scope of your search.
-                            </div>`
-                          : nothing}
-                  </div>`
+                ? this.#renderSizeInfo(estimates)
                 : nothing}
             ${this.showCollectionSearch
                 ? html`

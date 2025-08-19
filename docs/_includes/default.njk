@@ -82,9 +82,18 @@
         {# Icon toolbar #}
         <div id="icon-toolbar">
             {# GitHub #}
-            <a href="https://github.com/terra-ui/components" title="View Terra UI Components on GitHub">
+            <a href="https://github.com/nasa/terra-ui-components" title="View Terra UI Components on GitHub">
                 <sl-icon name="github"></sl-icon>
             </a>
+            <sl-dropdown id="environment-selector" placement="bottom-end" distance="3">
+                <terra-button slot="trigger" size="large" variant="text" caret="" title="Environment" data-optional="" data-valid="" data-user-valid="">
+                    <span id="environment-display">UAT</span>
+                </terra-button>
+                <sl-menu role="menu">
+                    <sl-menu-item type="checkbox" value="uat" tabindex="-1" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">UAT</sl-menu-item>
+                    <sl-menu-item type="checkbox" value="prod" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">PROD</sl-menu-item>
+                </sl-menu>
+            </sl-dropdown>
             <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
                 <terra-button slot="trigger" size="large" variant="text" caret="" title="Press \ to toggle" data-optional="" data-valid="" data-user-valid="">
                     <sl-icon class="only-light" name="sun-fill" aria-hidden="true" library="default"></sl-icon>
@@ -111,10 +120,10 @@
             </header>
 
             <div class="sidebar-buttons">
-                <terra-button size="small" class="repo-button repo-button--github" href="https://github.com/terra-ui/components" target="_blank">
+                <terra-button size="small" class="repo-button repo-button--github" href="https://github.com/nasa/terra-ui-components" target="_blank">
                     <sl-icon slot="prefix" name="github"></sl-icon> Code
         </terra-button>
-                <terra-button size="small" class="repo-button repo-button--star" href="https://github.com/terra-ui/components/stargazers" target="_blank">
+                <terra-button size="small" class="repo-button repo-button--star" href="https://github.com/nasa/terra-ui-components/stargazers" target="_blank">
                     <sl-icon slot="prefix" name="star-fill"></sl-icon> Star
         </terra-button>
             </div>
