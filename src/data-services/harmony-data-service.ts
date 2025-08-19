@@ -75,10 +75,9 @@ export class HarmonyDataService implements DataServiceInterface {
         input: CreateSubsetJobInput,
         options?: SearchOptions
     ): Promise<SubsetJobStatus | undefined> {
+
+        try {
         const client = await getGraphQLClient()
-
-        console.log('creating subset job ', CREATE_SUBSET_JOB, input)
-
         const response = await client.mutate<{
             createSubsetJob: SubsetJobStatus
         }>({
@@ -115,6 +114,10 @@ export class HarmonyDataService implements DataServiceInterface {
         }
 
         return response.data?.createSubsetJob
+    } catch(err) {
+        console.error("createSubsetJob ERROR: ", err)
+            throw err
+    }
     }
 
     async getSubsetJobs(searchOptions?: SearchOptions): Promise<SubsetJobs> {
@@ -219,7 +222,7 @@ export class HarmonyDataService implements DataServiceInterface {
     async getSubsetJobData(
         job: SubsetJobStatus,
         options?: SearchOptions
-    ): Promise<string> {
+    ): Promise<{ blob: Blob; text: string }> {
         const link = job.links.find(link => link.rel === 'data')?.href
 
         if (!link) {
@@ -227,7 +230,7 @@ export class HarmonyDataService implements DataServiceInterface {
         }
 
         const proxyUrl = `${HARMONY_CONFIG.proxyUrl}?url=${encodeURIComponent(link)}`
-
+        
         console.log('fetching data from ', proxyUrl)
 
         const response = await fetch(proxyUrl, {
@@ -245,6 +248,10 @@ export class HarmonyDataService implements DataServiceInterface {
             )
         }
 
-        return await response.text()
+        const clonedResponse = response.clone();
+        const blob = await response.blob();
+        const text = await clonedResponse.text();
+
+        return {blob,text}
     }
 }
