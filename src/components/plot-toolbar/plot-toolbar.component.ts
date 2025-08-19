@@ -62,6 +62,10 @@ export default class TerraPlotToolbar extends TerraElement {
         this.menu.focus()
     }
 
+    closeMenu() {
+        this.activeMenuItem = null
+    }
+
     render() {
         return cache(
             !this.catalogVariable
