@@ -114,6 +114,10 @@ export default class TerraSpatialPicker extends TerraElement {
     map: TerraMap
 
     private _blur(e: FocusEvent) {
+        this.mapValue = this.spatialInput.value
+            ? parseBoundingBox(this.spatialInput.value)
+            : []
+
         this._emitMapChange()
 
         // Don't hide if clicking within the map component
@@ -134,7 +138,7 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     private _emitMapChange() {
-        const layer = this.map.getDrawLayer()
+        const layer = this.map?.getDrawLayer()
 
         if (!layer) {
             return
