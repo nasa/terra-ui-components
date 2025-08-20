@@ -132,7 +132,11 @@ export class Leaflet {
                 return
             }
 
-            if ((options.initialValue as LatLngBoundsLiteral)?.length > 0) {
+            if (
+                options.initialValue &&
+                ((options.initialValue as LatLngBoundsLiteral)?.length > 0 ||
+                    'getNorthEast' in options.initialValue)
+            ) {
                 L.rectangle(options.initialValue as LatLngBoundsExpression, {
                     stroke: true,
                     color: '#3388ff',

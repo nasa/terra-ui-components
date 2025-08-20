@@ -136,6 +136,10 @@ export default class TerraSpatialPicker extends TerraElement {
     private _emitMapChange() {
         const layer = this.map.getDrawLayer()
 
+        if (!layer) {
+            return
+        }
+
         if ('getLatLng' in layer) {
             this.mapValue = layer.getLatLng()
 
