@@ -116,6 +116,20 @@ export default class TerraSpatialPicker extends TerraElement {
     @query('terra-map')
     map: TerraMap
 
+    setValue(value: string) {
+        try {
+            this.mapValue = parseBoundingBox(value)
+            this.error = ''
+
+            this._emitMapChange()
+        } catch (error) {
+            this.error =
+                error instanceof Error
+                    ? error.message
+                    : 'Invalid spatial area (format: LAT, LNG or LAT, LNG, LAT, LNG)'
+        }
+    }
+
     private _blur(e: FocusEvent) {
         try {
             this.mapValue = this.spatialInput.value
