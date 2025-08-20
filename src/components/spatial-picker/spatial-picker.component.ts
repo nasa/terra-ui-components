@@ -107,6 +107,9 @@ export default class TerraSpatialPicker extends TerraElement {
     @state()
     mapValue: any
 
+    @state()
+    error: string = ''
+
     @query('.spatial-picker__input')
     spatialInput: HTMLInputElement
 
@@ -114,9 +117,18 @@ export default class TerraSpatialPicker extends TerraElement {
     map: TerraMap
 
     private _blur(e: FocusEvent) {
-        this.mapValue = this.spatialInput.value
-            ? parseBoundingBox(this.spatialInput.value)
-            : []
+        try {
+            this.mapValue = this.spatialInput.value
+                ? parseBoundingBox(this.spatialInput.value)
+                : []
+
+            this.error = ''
+        } catch (error) {
+            this.error =
+                error instanceof Error
+                    ? error.message
+                    : 'Invalid spatial area (format: LAT, LNG or LAT, LNG, LAT, LNG)'
+        }
 
         this._emitMapChange()
 
@@ -279,6 +291,9 @@ export default class TerraSpatialPicker extends TerraElement {
                         </svg>
                     </terra-button>
                 </div>
+                ${this.error
+                    ? html`<div class="spatial-picker__error">${this.error}</div>`
+                    : nothing}
                 ${expanded
                     ? html`<div
                           style="${this.inline

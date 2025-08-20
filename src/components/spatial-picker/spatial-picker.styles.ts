@@ -59,4 +59,10 @@ export default css`
         height: 1rem;
         width: 1rem;
     }
+
+    .spatial-picker__error {
+        color: #a94442;
+        font-size: 0.8rem;
+        padding: 10px;
+    }
 `
