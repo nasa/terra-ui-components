@@ -53,6 +53,24 @@ export default class TerraDatePicker extends TerraElement {
     @query('lit-flatpickr') private flatpickrElement: any
 
     firstUpdated() {
+        // Parse dates from URL
+        const params = new URLSearchParams(window.location.search)
+
+        const timeStartParam = params.get('time_start')
+        const timeEndParam = params.get('time_end')
+
+        // Format as YYYY-MM-DD if value exists
+        const formatToDate = (dateStr: string | null) =>
+            dateStr ? new Date(dateStr).toISOString().split('T')[0] : undefined
+
+        this.startDate = formatToDate(timeStartParam)
+        this.endDate = formatToDate(timeEndParam)
+
+        this.selectedDates = {
+            startDate: this.startDate ?? null,
+            endDate: this.range ? this.endDate ?? null : null,
+        }
+
         this.flatpickrElement.addEventListener('change', this.handleChange.bind(this))
 
         setTimeout(() => {
@@ -70,6 +88,25 @@ export default class TerraDatePicker extends TerraElement {
                 ? selectedDates[1]?.toISOString().split('T')[0]
                 : null,
         }
+
+        const url = new URL(window.location.href)
+        const timeStartISO = selectedDates[0]?.toISOString()
+        const timeEndISO = this.range ? selectedDates[1]?.toISOString() : undefined
+
+        if (timeStartISO) {
+            url.searchParams.set('time_start', timeStartISO)
+        }
+
+        if (this.range && timeEndISO) {
+            url.searchParams.set('time_end', timeEndISO)
+        }
+
+        //remove time_end if range not used
+        if (!this.range) {
+            url.searchParams.delete('time_end')
+        }
+
+        window.history.replaceState({}, '', url)
 
         this.emit('terra-change')
     }
@@ -97,7 +134,7 @@ export default class TerraDatePicker extends TerraElement {
                             ? ([this.startDate, this.endDate].filter(
                                   Boolean
                               ) as string[])
-                            : this.defaultDate}
+                            : this.startDate}
                         .allowInput=${this.allowInput}
                         .altFormat=${this.altFormat}
                         .altInput=${this.altInput}
