@@ -14,6 +14,8 @@ import { getUTCDate } from '../../utilities/date.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-change.js'
 import TerraTimeSeries from '../time-series/time-series.component.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import { MapEventType } from '../map/type.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
@@ -184,15 +186,10 @@ export default class TerraDataRods extends TerraElement {
         this.variableEntryId = event.detail.entryId
     }
 
-    #handleMapChange(event: CustomEvent) {
-        const type = event.detail.geoJson.geometry.type
-
-        //* The map emits types for bbox and point-based drawing.
-        if (type === 'Point') {
-            const { latLng } = event.detail
-
+    #handleMapChange(event: TerraMapChangeEvent) {
+        if (event.detail.type === MapEventType.POINT) {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
-            this.location = `${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)}`
+            this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
         }
     }
 

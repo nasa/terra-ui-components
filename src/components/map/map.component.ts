@@ -131,6 +131,10 @@ export default class TerraMap extends TerraElement {
         this.#markDynamicLeafletContent()
     }
 
+    getDrawLayer() {
+        return this.map.editableLayers.getLayers()[0]
+    }
+
     #markDynamicLeafletContent() {
         //* Add CSS parts to the following items that Leaflet dynamically inserts:
         const parts = [

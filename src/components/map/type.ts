@@ -1,16 +1,18 @@
-export interface LatLng {
-    lat: number
-    lng: number
+import type { LatLng, LatLngBounds } from 'leaflet'
+
+export enum MapEventType {
+    POINT = 'point',
+    BBOX = 'bbox',
 }
 
-export interface BoundingBox {
-    _southWest: LatLng
-    _northEast: LatLng
-}
-
-export interface MapEventDetail {
+type BaseMapEventDetail = {
     cause: string
-    geoJson?: any
-    bounds?: BoundingBox
-    latLng?: any
+    geoJson?: GeoJSON.FeatureCollection
 }
+
+export type MapEventDetail = BaseMapEventDetail &
+    (
+        | { type: MapEventType.POINT; latLng: LatLng }
+        | { type: MapEventType.BBOX; bounds: LatLngBounds }
+        | { type?: undefined }
+    )

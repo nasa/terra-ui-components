@@ -8,9 +8,9 @@ import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
+    deleteDataByKey,
 } from '../../internal/indexeddb.js'
 import type {
-    MaybeBearerToken,
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
@@ -18,10 +18,17 @@ import type {
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import type { TimeInterval } from '../../types.js'
-import { formatDate, getUTCDate } from '../../utilities/date.js'
+import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
+import {
+    FINAL_STATUSES,
+    HarmonyDataService,
+} from '../../data-services/harmony-data-service.js'
+import type { SubsetJobStatus } from '../../data-services/types.js'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
+const REFRESH_HARMONY_DATA_INTERVAL = 2000
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 const endpoint =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
@@ -35,8 +42,8 @@ export const plotlyDefaultData: Partial<PlotData> = {
 }
 
 export class TimeSeriesController {
-    #bearerToken: MaybeBearerToken = null
     #userConfirmedWarning = false
+    #dataService: HarmonyDataService
 
     host: ReactiveControllerHost & TerraTimeSeries
     emptyPlotData: Partial<Data>[] = [
@@ -52,12 +59,10 @@ export class TimeSeriesController {
     //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
+    
 
-    constructor(
-        host: ReactiveControllerHost & TerraTimeSeries,
-        bearerToken: MaybeBearerToken
-    ) {
-        this.#bearerToken = bearerToken
+    constructor(host: ReactiveControllerHost & TerraTimeSeries) {
+        this.#dataService = this.#getDataService()
 
         this.host = host
 
@@ -110,7 +115,7 @@ export class TimeSeriesController {
 
     async #loadTimeSeries(signal: AbortSignal) {
         const startDate = getUTCDate(this.host.startDate!)
-        const endDate = getUTCDate(this.host.endDate!)
+        const endDate = getUTCDate(this.host.endDate!, true)
         const cacheKey = this.getCacheKey()
         const variableEntryId = this.host.catalogVariable!.dataFieldId
 
@@ -122,9 +127,16 @@ export class TimeSeriesController {
 
         if (
             existingTerraData &&
-            startDate.getTime() >= new Date(existingTerraData.startDate).getTime() &&
-            endDate.getTime() <= new Date(existingTerraData.endDate).getTime()
+            isDateRangeContained(
+                startDate,
+                endDate,
+                new Date(existingTerraData.startDate),
+                new Date(existingTerraData.endDate)
+            ) &&
+            this.#isCacheValid(existingTerraData)
         ) {
+            console.log('Returning existing data from cache ', this.getCacheKey())
+
             // already have the data downloaded!
             return this.#getDataInRange(existingTerraData)
         }
@@ -196,6 +208,8 @@ export class TimeSeriesController {
                     endDate: sortedData[sortedData.length - 1].timestamp,
                     metadata: consolidatedResult.metadata,
                     data: sortedData,
+                    environment: this.host.environment,
+                    cachedAt: new Date().getTime(),
                 }
             )
         }
@@ -204,6 +218,26 @@ export class TimeSeriesController {
             metadata: consolidatedResult.metadata,
             data: allData,
         })
+    }
+
+    /**
+     * Checks if cached data is still valid (not expired)
+     */
+    #isCacheValid(existingData: VariableDbEntry): boolean {
+        // If cachedAt is not present (backward compatibility), consider it expired
+        if (!existingData.cachedAt) {
+            this.clearExpiredCache()
+            return false
+        }
+
+        const now = new Date().getTime()
+        const cacheIsExpired = now - existingData.cachedAt > CACHE_TTL_MS
+
+        if (cacheIsExpired) {
+            this.clearExpiredCache()
+        }
+
+        return !cacheIsExpired
     }
 
     /**
@@ -246,6 +280,8 @@ export class TimeSeriesController {
         endDate: Date,
         signal: AbortSignal
     ): Promise<TimeSeriesData> {
+        let timeSeriesCsvData: string = ''
+
         // Check if we need to warn the user about data point limits
         if (
             !this.#userConfirmedWarning &&
@@ -262,47 +298,125 @@ export class TimeSeriesController {
         // Reset the confirmation flag after using it
         this.#userConfirmedWarning = false
 
-        const [lat, lon] = decodeURIComponent(this.host.location ?? ',').split(',')
-        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
+        const parsedLocation = decodeURIComponent(this.host.location ?? ',').split(
+            ','
+        )
 
-        const url = `${endpoint}?${new URLSearchParams({
-            data: variableEntryId,
-            lat: normalizedLocation.lat,
-            lon: normalizedLocation.lon,
-            time_start: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
-            time_end: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
-        }).toString()}`
+        if (parsedLocation.length === 4) {
+            const collection = `${this.host.catalogVariable!.dataProductShortName}_${this.host.catalogVariable!.dataProductVersion}`
+            const [w, s, e, n] = parsedLocation
+            let subsetOptions = {
+                collectionEntryId: collection,
+                variableConceptIds: ['parameter_vars'],
+                variableEntryIds: [variableEntryId],
+                startDate: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+                endDate: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+                format: 'text/csv',
+                boundingBox: {
+                    w: parseFloat(w),
+                    s: parseFloat(s),
+                    e: parseFloat(e),
+                    n: parseFloat(n),
+                },
+                average: 'area',
+            }
 
-        // Fetch the time series as a CSV
-        const response = await fetch(url, {
-            mode: 'cors',
-            signal,
-            headers: {
-                Accept: 'application/json',
-                ...(this.#bearerToken
-                    ? { Authorization: `Bearer: ${this.#bearerToken}` }
-                    : {}),
-            },
-        })
-
-        if (!response.ok) {
-            this.host.dispatchEvent(
-                new CustomEvent('terra-time-series-error', {
-                    detail: {
-                        status: response.status,
-                        message: response.statusText,
-                    },
-                    bubbles: true,
-                    composed: true,
-                })
+            console.log(
+                `Creating a Harmony job for collection, ${collection}, with subset options`,
+                subsetOptions
             )
 
-            throw new Error(
-                `Failed to fetch time series data: ${response.statusText}`
-            )
+            // create the new job
+            const job = await this.#dataService.createSubsetJob(subsetOptions, {
+                signal,
+                bearerToken: this.host.bearerToken,
+                environment: this.host.environment,
+            })
+
+            if (!job) {
+                throw new Error('Failed to create subset job')
+            }
+
+            const jobStatus = await this.#waitForHarmonyJob(job, signal)
+
+            // the job is completed, fetch the data for the job
+            const { text } = await this.#dataService.getSubsetJobData(jobStatus, {
+                signal,
+                bearerToken: this.host.bearerToken,
+                environment: this.host.environment,
+            })
+            timeSeriesCsvData =text
+        } else {
+            const [lat, lon] = this.#normalizeCoordinates(parsedLocation)
+
+            const url = `${endpoint}?${new URLSearchParams({
+                data: variableEntryId,
+                lat,
+                lon,
+                time_start: format(startDate, 'yyyy-MM-dd') + 'T00%3A00%3A00',
+                time_end: format(endDate, 'yyyy-MM-dd') + 'T23%3A59%3A59',
+            }).toString()}`
+
+            // Fetch the time series as a CSV
+            const response = await fetch(url, {
+                mode: 'cors',
+                signal,
+                headers: {
+                    Accept: 'application/json',
+                    ...(this.host.bearerToken
+                        ? { Authorization: `Bearer: ${this.host.bearerToken}` }
+                        : {}),
+                },
+            })
+
+            if (!response.ok) {
+                this.host.dispatchEvent(
+                    new CustomEvent('terra-time-series-error', {
+                        detail: {
+                            status: response.status,
+                            message: response.statusText,
+                        },
+                        bubbles: true,
+                        composed: true,
+                    })
+                )
+
+                throw new Error(
+                    `Failed to fetch time series data: ${response.statusText}`
+                )
+            }
+
+            timeSeriesCsvData = await response.text()
         }
 
-        return this.#parseTimeSeriesCsv(await response.text())
+        return this.#parseTimeSeriesCsv(timeSeriesCsvData)
+    }
+
+    #waitForHarmonyJob(job: SubsetJobStatus, signal: AbortSignal) {
+        return new Promise<SubsetJobStatus>(async resolve => {
+            let jobStatus: SubsetJobStatus | undefined
+
+            try {
+                jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
+                    signal,
+                    bearerToken: this.host.bearerToken,
+                    environment: this.host.environment,
+                })
+
+                console.log('Job status', jobStatus)
+            } catch (error) {
+                console.error('Error checking harmony job status', error)
+            }
+
+            if (jobStatus && FINAL_STATUSES.has(jobStatus.status)) {
+                console.log('Job is done', jobStatus)
+                resolve(jobStatus)
+            } else {
+                setTimeout(async () => {
+                    resolve(await this.#waitForHarmonyJob(job, signal))
+                }, REFRESH_HARMONY_DATA_INTERVAL)
+            }
+        })
     }
 
     /**
@@ -323,7 +437,7 @@ export class TimeSeriesController {
 
         for (const line of lines) {
             if (!inDataSection) {
-                if (line === 'Timestamp (UTC),Data') {
+                if (line.startsWith('Timestamp (UTC)') || line.startsWith('time,')) {
                     // This marks the beginning of the data section
                     dataHeaders = line.split(',').map(h => h.trim())
                     inDataSection = true
@@ -339,19 +453,42 @@ export class TimeSeriesController {
                 // Now parsing data rows
                 const parts = line.split(',')
                 if (parts.length === dataHeaders.length) {
-                    const row: Record<string, string> = {}
+                    const row: Array<string> = []
                     for (let i = 0; i < dataHeaders.length; i++) {
-                        row[dataHeaders[i]] = parts[i].trim()
+                        row.push(parts[i].trim())
                     }
+
+                    // Normalize timestamp format
+                    const timestamp = this.#normalizeTimestamp(row[0])
+
                     data.push({
-                        timestamp: row['Timestamp (UTC)'],
-                        value: row['Data'],
+                        timestamp,
+                        value: row[1],
                     })
                 }
             }
         }
 
         return { metadata, data } as TimeSeriesData
+    }
+
+    /**
+     * Normalizes timestamp format to be consistent between point-based and area-averaged data
+     * Point-based data format: "2013-11-28 23:30"
+     * Area-averaged data format: "2009-01-01T00:30:00.000000000"
+     * This function converts area-averaged format to match point-based format
+     */
+    #normalizeTimestamp(timestamp: string): string {
+        try {
+            // Parse the timestamp and format it consistently
+            const date = new Date(timestamp)
+
+            return formatDate(date)
+        } catch (error) {
+            // If parsing fails, return the original timestamp
+            console.warn('Failed to normalize timestamp:', timestamp, error)
+            return timestamp
+        }
     }
 
     /**
@@ -383,11 +520,8 @@ export class TimeSeriesController {
     /**
      * Normalizes coordinates to 2 decimal places
      */
-    #normalizeCoordinates(lat: string, lon: string) {
-        return {
-            lat: Number(lat).toFixed(2),
-            lon: Number(lon).toFixed(2),
-        }
+    #normalizeCoordinates(coordinates: Array<string>) {
+        return coordinates.map(coord => Number(coord).toFixed(2))
     }
 
     /**
@@ -400,10 +534,12 @@ export class TimeSeriesController {
             )
         }
 
-        const [lat, lon] = this.host.location.split(',')
-        const normalizedLocation = this.#normalizeCoordinates(lat, lon)
-        const location = `${normalizedLocation.lat},%20${normalizedLocation.lon}`
-        return `${this.host.catalogVariable.dataFieldId}_${location}`
+        const normalizedCoordinates = this.#normalizeCoordinates(
+            this.host.location.split(',')
+        )
+        const normalizedLocation = normalizedCoordinates.join(',%20')
+        const environment = this.host.environment ?? 'prod'
+        return `${this.host.catalogVariable.dataFieldId}_${normalizedLocation}_${environment}`
     }
 
     /**
@@ -433,5 +569,29 @@ export class TimeSeriesController {
     confirmDataPointWarning() {
         this.#userConfirmedWarning = true
         this.host.showDataPointWarning = false
+    }
+
+    /**
+     * Clears expired cache entries for the current cache key
+     */
+    async clearExpiredCache() {
+        try {
+            const cacheKey = this.getCacheKey()
+            const existingData = await getDataByKey<VariableDbEntry>(
+                IndexedDbStores.TIME_SERIES,
+                cacheKey
+            )
+
+            if (existingData && !this.#isCacheValid(existingData)) {
+                await deleteDataByKey(IndexedDbStores.TIME_SERIES, cacheKey)
+                console.log(`Cleared expired cache for key: ${cacheKey}`)
+            }
+        } catch (error) {
+            console.warn('Error clearing expired cache:', error)
+        }
+    }
+
+    #getDataService() {
+        return new HarmonyDataService()
     }
 }

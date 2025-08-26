@@ -38,7 +38,11 @@ export class DataSubsetterController {
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
                           collectionEntryId,
-                          { signal, bearerToken: this.#host.bearerToken }
+                          {
+                              signal,
+                              bearerToken: this.#host.bearerToken,
+                              environment: this.#host.environment,
+                          }
                       )
                     : undefined
 
@@ -94,12 +98,18 @@ export class DataSubsetterController {
                     // we already have a job, get it's status
                     job = await this.#dataService.getSubsetJobStatus(
                         this.currentJob.jobID,
-                        { signal, bearerToken: this.#host.bearerToken }
+                        {
+                            signal,
+                            bearerToken: this.#host.bearerToken,
+                            environment: this.#host.environment,
+                        }
                     )
                 } else {
                     const labels = this.#buildJobLabels()
 
                     let subsetOptions = {
+                        collectionConceptId:
+                            this.#host.collectionWithServices?.conceptId ?? '',
                         ...(this.#host.collectionWithServices?.variableSubset && {
                             variableConceptIds: this.#host.selectedVariables.map(
                                 v => v.conceptId
@@ -138,14 +148,11 @@ export class DataSubsetterController {
                     this.currentJob = this.#getEmptyJob()
 
                     // create the new job
-                    job = await this.#dataService.createSubsetJob(
-                        this.#host.collectionWithServices?.conceptId ?? '',
-                        {
-                            ...subsetOptions,
-                            signal,
-                            bearerToken: this.#host.bearerToken,
-                        }
-                    )
+                    job = await this.#dataService.createSubsetJob(subsetOptions, {
+                        signal,
+                        bearerToken: this.#host.bearerToken,
+                        environment: this.#host.environment,
+                    })
                 }
 
                 console.log('Job status: ', job)
@@ -202,6 +209,7 @@ export class DataSubsetterController {
 
         this.#dataService.cancelSubsetJob(this.currentJob.jobID, {
             bearerToken: this.#host.bearerToken,
+            environment: this.#host.environment,
         })
     }
 

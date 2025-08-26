@@ -62,8 +62,11 @@ export const GET_SERVICE_CAPABILITIES = gql`
 
 export const CREATE_SUBSET_JOB = gql`
     mutation CreateSubsetJob(
-        $collectionConceptId: String!
+        $collectionConceptId: String
+        $collectionEntryId: String
         $variableConceptIds: [String]
+        $variableEntryIds: [String]
+        $average: String
         $boundingBox: BoundingBoxInput
         $startDate: String
         $endDate: String
@@ -73,7 +76,10 @@ export const CREATE_SUBSET_JOB = gql`
         createSubsetJob(
             input: {
                 collectionConceptId: $collectionConceptId
+                collectionEntryId: $collectionEntryId
                 variableConceptIds: $variableConceptIds
+                variableEntryIds: $variableEntryIds
+                average: $average
                 boundingBox: $boundingBox
                 startDate: $startDate
                 endDate: $endDate

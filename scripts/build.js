@@ -14,6 +14,8 @@ import * as path from 'path'
 import { readFileSync } from 'fs'
 import { replace } from 'esbuild-plugin-replace'
 
+import { polyfillNode } from 'esbuild-plugin-polyfill-node' // Import used to bypass issues with using open layers in the browser;
+
 const { serve } = commandLineArgs([{ name: 'serve', type: Boolean }])
 const outdir = 'dist'
 const cdndir = 'cdn'
@@ -129,6 +131,7 @@ async function buildTheSource() {
         external: alwaysExternal,
         splitting: true,
         plugins: [
+            polyfillNode(),
             replace({
                 __COMPONENTS_VERSION__: componentsVersion,
             }),

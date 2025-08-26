@@ -30,18 +30,28 @@ export default class TerraLogin extends TerraElement {
 
     #authController = new AuthController(this)
 
-    #handleLogin() {
+    login() {
         this.#authController.login()
+    }
+
+    logout() {
+        this.#authController.logout()
     }
 
     render() {
         if (this.#authController.state.user?.uid) {
-            // by default we don't show nothing in the logged in slot, but if the user wants to show something
+            // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
-            return html`<slot
-                name="logged-in"
-                .user=${this.#authController.state.user}
-            ></slot>`
+            const template = this.querySelector<HTMLTemplateElement>(
+                'template[slot="logged-in"]'
+            )
+
+            return html`${template
+                ? template.content.cloneNode(true)
+                : html`<slot
+                      name="logged-in"
+                      .user=${this.#authController.state.user}
+                  ></slot>`}`
         }
 
         if (this.#authController.state.isLoading) {
@@ -51,8 +61,6 @@ export default class TerraLogin extends TerraElement {
 
         // user is definitely logged out, show the login button
         return html` <slot name="logged-out"></slot
-            ><terra-button @click=${this.#handleLogin}>
-                ${this.buttonLabel}</terra-button
-            >`
+            ><terra-button @click=${this.login}> ${this.buttonLabel}</terra-button>`
     }
 }

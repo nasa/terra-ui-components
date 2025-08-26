@@ -22,6 +22,7 @@ import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb
 import type { VariableDbEntry } from './time-series.types.js'
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
 import { formatDate } from '../../utilities/date.js'
+import { AuthController } from '../../auth/auth.controller.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -86,6 +87,7 @@ export default class TerraTimeSeries extends TerraElement {
 
     /**
      * The point location in "lat,lon" format.
+     * Or the bounding box in "west,south,east,north" format.
      */
     @property({
         reflect: true,
@@ -98,7 +100,7 @@ export default class TerraTimeSeries extends TerraElement {
      * The property's value will be inserted after "Bearer" (the authentication scheme).
      */
     @property({ attribute: 'bearer-token', reflect: false })
-    bearerToken: string
+    bearerToken?: string
 
     @query('terra-plot') plot: TerraPlot
     @query('#menu') menu: HTMLMenuElement
@@ -138,11 +140,12 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #catalog = new GiovanniVariableCatalog()
+    _authController = new AuthController(this)
 
     // @ts-expect-error
     #fetchVariableTask = new Task(this, {
         task: async (_args, { signal }) => {
-            const variableEntryId = this.#getVariableEntryId()
+            const variableEntryId = this.getVariableEntryId()
 
             console.debug('fetch variable ', variableEntryId)
 
@@ -179,20 +182,7 @@ export default class TerraTimeSeries extends TerraElement {
         )
 
         //* instantiate the time series contoller maybe with a token
-        this.#timeSeriesController = new TimeSeriesController(this, this.bearerToken)
-
-        // Add JupyterLite warmup iframe if it doesn't exist
-        if (!document.getElementById('terra-jupyterlite-warmup-iframe')) {
-            const iframe = document.createElement('iframe')
-            iframe.id = 'terra-jupyterlite-warmup-iframe'
-            iframe.src =
-                'https://gesdisc.github.io/jupyterlite/lab/index.html?path=warmup.ipynb'
-            iframe.style.cssText =
-                'width:1px; height:1px; opacity:0.01; pointer-events: none; border: 0; position: fixed; top: 0; left: 0;'
-            iframe.title = 'Notebook Warm-Up Frame'
-            iframe.setAttribute('aria-hidden', 'true')
-            document.body.appendChild(iframe)
-        }
+        this.#timeSeriesController = new TimeSeriesController(this)
     }
 
     disconnectedCallback(): void {
@@ -570,7 +560,7 @@ export default class TerraTimeSeries extends TerraElement {
         `
     }
 
-    #getVariableEntryId() {
+    getVariableEntryId() {
         if (!this.variableEntryId && !(this.collection && this.variable)) {
             return
         }
@@ -745,7 +735,7 @@ export default class TerraTimeSeries extends TerraElement {
                     {
                         id: '870c1384-e706-48ee-ba07-fd552a949869',
                         cell_type: 'code',
-                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.#getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
+                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.getVariableEntryId()}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
                         metadata: {
                             trusted: true,
                         },
@@ -757,7 +747,7 @@ export default class TerraTimeSeries extends TerraElement {
                 jupyterWindow.postMessage(
                     {
                         type: 'load-notebook',
-                        filename: `${encodeURIComponent(this.#getVariableEntryId() ?? 'plot')}.ipynb`,
+                        filename: `${encodeURIComponent(this.getVariableEntryId() ?? 'plot')}.ipynb`,
                         notebook,
                         timeSeriesData,
                         databaseName: DB_NAME,

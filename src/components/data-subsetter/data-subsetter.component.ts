@@ -16,7 +16,6 @@ import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
-import type { LatLng } from '../map/type.js'
 import { getBasePath } from '../../utilities/base-path.js'
 import {
     defaultSubsetFileMimeType,
@@ -25,6 +24,8 @@ import {
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
+import type { LatLng } from 'leaflet'
+import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
 
@@ -820,14 +821,14 @@ export default class TerraDataSubsetter extends TerraElement {
         this.#markFieldTouched('spatial')
         const round2 = (n: number) => parseFloat(Number(n).toFixed(2))
 
-        if (e.detail?.bounds) {
+        if (e.detail.type === MapEventType.BBOX) {
             this.spatialSelection = {
-                e: round2(e.detail.bounds._northEast.lng),
-                n: round2(e.detail.bounds._northEast.lat),
-                w: round2(e.detail.bounds._southWest.lng),
-                s: round2(e.detail.bounds._southWest.lat),
+                e: round2(e.detail.bounds.getNorthEast().lng),
+                n: round2(e.detail.bounds.getNorthEast().lat),
+                w: round2(e.detail.bounds.getSouthWest().lng),
+                s: round2(e.detail.bounds.getSouthWest().lat),
             }
-        } else if (e.detail?.latLng) {
+        } else if (e.detail.type === MapEventType.POINT) {
             this.spatialSelection = e.detail.latLng
         } else {
             this.spatialSelection = null
