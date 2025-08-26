@@ -66,6 +66,7 @@ export class TimeAvgMapController {
                     job = await this.#dataService.createSubsetJob(subsetOptions, {
                         signal,
                         bearerToken: this.#host.bearerToken,
+                        environment: this.#host.environment
                     })
 
                     if (!job) {
@@ -79,6 +80,7 @@ export class TimeAvgMapController {
                     const { blob } = await this.#dataService.getSubsetJobData(jobStatus, {
                         signal,
                         bearerToken: this.#host.bearerToken,
+                        environment: this.#host.environment
                     })
                     this.blobUrl = blob
 
@@ -125,8 +127,8 @@ export class TimeAvgMapController {
                 jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
                     signal,
                     bearerToken: this.#host.bearerToken,
+                    environment: this.#host.environment
                 })
-
                 console.log('Job status', jobStatus)
             } catch (error) {
                 console.error('Error checking harmony job status', error)
