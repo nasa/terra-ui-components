@@ -19,6 +19,13 @@ export default css`
         font-size: 1.25rem;
     }
 
+    .subtitle {
+        font-weight: var(--terra-font-weight-normal);
+        margin: 0;
+        margin-bottom: 0.5em;
+        font-size: 0.875rem;
+    }
+
     .toggles {
         display: flex;
         justify-content: space-between;

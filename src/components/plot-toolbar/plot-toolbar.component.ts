@@ -67,15 +67,28 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     render() {
+        const metadata = [
+            this.catalogVariable.dataProductInstrumentShortName,
+            this.catalogVariable.dataProductTimeInterval,
+            `[${this.catalogVariable.dataProductShortName}_${this.catalogVariable.dataProductVersion}]`,
+        ]
+            .filter(Boolean)
+            .filter(value => value.toLowerCase() !== 'not applicable')
+
         return cache(
             !this.catalogVariable
                 ? html`<div class="spacer"></div>`
                 : html` <header>
-                      <slot name="title">
-                          <h2 class="title">
-                              ${this.catalogVariable.dataFieldLongName}
-                          </h2>
-                      </slot>
+                      <div class="title-container">
+                          <slot name="title">
+                              <h2 class="title">
+                                  ${this.catalogVariable.dataFieldLongName}
+                              </h2>
+                          </slot>
+                          <slot name="subtitle">
+                              <h3 class="subtitle">${metadata.join(' • ')}</h3>
+                          </slot>
+                      </div>
 
                       <div class="toggles">
                           <terra-button
