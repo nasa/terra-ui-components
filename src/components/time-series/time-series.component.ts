@@ -341,12 +341,7 @@ export default class TerraTimeSeries extends TerraElement {
             return
         }
 
-        return [
-            this.catalogVariable.dataFieldLongName,
-            this.catalogVariable.dataFieldUnits,
-        ]
-            .filter(Boolean)
-            .join(', ')
+        return [this.catalogVariable.dataFieldUnits].filter(Boolean).join(', ')
     }
 
     #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
