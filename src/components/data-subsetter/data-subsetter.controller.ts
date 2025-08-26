@@ -20,7 +20,7 @@ const JOB_STATUS_POLL_MILLIS = 3000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
-    fetchCollectionTask: Task<[string], any | undefined>
+    fetchCollectionTask: Task<[string, string | undefined], any | undefined>
     searchCmrTask: Task<[string | undefined, string], any | undefined>
     currentJob: SubsetJobStatus | null
 
@@ -35,6 +35,10 @@ export class DataSubsetterController {
 
         this.fetchCollectionTask = new Task(host, {
             task: async ([collectionEntryId], { signal }) => {
+                if (!this.#host.bearerToken) {
+                    return undefined
+                }
+
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
                           collectionEntryId,
@@ -48,7 +52,10 @@ export class DataSubsetterController {
 
                 return this.#host.collectionWithServices
             },
-            args: (): [string | undefined] => [this.#host.collectionEntryId],
+            args: (): [string | undefined, string | undefined] => [
+                this.#host.collectionEntryId,
+                this.#host.bearerToken,
+            ],
         })
 
         this.searchCmrTask = new Task(host, {
