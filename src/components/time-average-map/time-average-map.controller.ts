@@ -168,7 +168,6 @@ export class TimeAvgMapController {
                     bearerToken: this.#host.bearerToken,
                     environment: this.#host.environment,
                 })
-
                 console.log('Job status', jobStatus)
             } catch (error) {
                 console.error('Error checking harmony job status', error)
