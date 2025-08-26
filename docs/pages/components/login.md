@@ -6,25 +6,10 @@ layout: component
 ---
 
 ```html:preview
-<terra-login></terra-login>
-
-<script type="module">
-  const element = document.querySelector('terra-login')
-
-  element.addEventListener('terra-login', (e) => {
-    console.log(e)
-  })
-</script>
+<terra-login>
+  <span slot="loading">Please wait...checking if you are logged in...</span>
+  <span slot="logged-in">You are logged in!</span>
+</terra-login>
 ```
-
-## Examples
-
-### First Example
-
-TODO
-
-### Second Example
-
-TODO
 
 [component-metadata:terra-login]

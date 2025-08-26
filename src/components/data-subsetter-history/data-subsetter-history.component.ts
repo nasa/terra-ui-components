@@ -13,6 +13,7 @@ import {
 import TerraIcon from '../icon/icon.component.js'
 import TerraDataSubsetter from '../data-subsetter/data-subsetter.component.js'
 import TerraDialog from '../dialog/dialog.component.js'
+import { AuthController } from '../../auth/auth.controller.js'
 
 /**
  * @summary Shows a floating panel with a user's recent data subset requests and their status, with quick access to results and re-submission.
@@ -58,6 +59,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     dialog: TerraDialog
 
     #controller = new DataSubsetterHistoryController(this)
+    _authController = new AuthController(this)
 
     connectedCallback(): void {
         super.connectedCallback()
