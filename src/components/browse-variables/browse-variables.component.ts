@@ -401,6 +401,15 @@ export default class TerraBrowseVariables extends TerraElement {
                 <section class="group">
                     <ul class="variable-list">
                         ${this.#controller.variables.map(variable => {
+                            const metadata = [
+                                variable.dataProductInstrumentShortName,
+                                variable.dataProductTimeInterval,
+                                variable.dataFieldUnits,
+                                `[${variable.dataProductShortName}_${variable.dataProductVersion}]`,
+                            ]
+                                .filter(Boolean)
+                                .join(' • ')
+
                             return html`
                                 <li
                                     aria-selected="false"
@@ -440,13 +449,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                             <strong
                                                 >${variable.dataFieldLongName}</strong
                                             ><br />
-                                            <span
-                                                >${variable.dataProductShortName}
-                                                &bull;
-                                                ${variable.dataProductTimeInterval}
-                                                &bull;
-                                                ${variable.dataProductSpatialResolution}</span
-                                            >
+                                            <span>${metadata}</span>
                                         </label>
 
                                         <sl-drawer contained>

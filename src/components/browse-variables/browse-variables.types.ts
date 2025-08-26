@@ -65,6 +65,7 @@ export type Variable = {
     dataProductDescriptionUrl: string
     // variable landing page
     dataFieldDescriptionUrl: string
+    dataProductInstrumentShortName: string
 } & Partial<ExampleInitialDates>
 
 export type ExampleInitialDates = {
