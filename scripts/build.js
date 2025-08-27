@@ -117,7 +117,6 @@ async function buildTheSource() {
         ],
         outdir: cdndir,
         chunkNames: 'chunks/[name].[hash]',
-        publicPath: './',
         define: {
             // Floating UI requires this to be set
             'process.env.NODE_ENV': '"production"',
