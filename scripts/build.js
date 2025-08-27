@@ -112,6 +112,8 @@ async function buildTheSource() {
             ...(await globby('./src/utilities/**/!(*.(style|test)).ts')),
             // Theme stylesheets
             ...(await globby('./src/themes/**/!(*.test).ts')),
+            // React wrappers
+            ...(await globby('./src/react/**/*.ts')),
         ],
         outdir: cdndir,
         chunkNames: 'chunks/[name].[hash]',
@@ -128,10 +130,6 @@ async function buildTheSource() {
         //
         external: alwaysExternal,
         splitting: true,
-        loader: {
-            // Tell esbuild how to handle image files
-            '.tif': 'file',  // Treat .tif files as static assets (copy to output directory)
-        },
         plugins: [
             polyfillNode(),
             replace({
