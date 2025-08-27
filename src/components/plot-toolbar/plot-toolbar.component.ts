@@ -70,7 +70,6 @@ export default class TerraPlotToolbar extends TerraElement {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
             this.catalogVariable.dataProductTimeInterval,
-            `[${this.catalogVariable.dataProductShortName}_${this.catalogVariable.dataProductVersion}]`,
         ]
             .filter(Boolean)
             .filter(value => value.toLowerCase() !== 'not applicable')
@@ -86,7 +85,17 @@ export default class TerraPlotToolbar extends TerraElement {
                               </h2>
                           </slot>
                           <slot name="subtitle">
-                              <h3 class="subtitle">${metadata.join(' • ')}</h3>
+                              <h3 class="subtitle">
+                                  ${metadata.join(' • ')} •
+                                  <a
+                                      target="_blank"
+                                      href="${this.catalogVariable
+                                          .dataProductDescriptionUrl}"
+                                      >[${this.catalogVariable
+                                          .dataProductShortName}_${this
+                                          .catalogVariable.dataProductVersion}]</a
+                                  >
+                              </h3>
                           </slot>
                       </div>
 

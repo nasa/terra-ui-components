@@ -405,7 +405,6 @@ export default class TerraBrowseVariables extends TerraElement {
                                 variable.dataProductInstrumentShortName,
                                 variable.dataProductTimeInterval,
                                 variable.dataFieldUnits,
-                                `[${variable.dataProductShortName}_${variable.dataProductVersion}]`,
                             ]
                                 .filter(Boolean)
                                 .join(' • ')
@@ -449,7 +448,14 @@ export default class TerraBrowseVariables extends TerraElement {
                                             <strong
                                                 >${variable.dataFieldLongName}</strong
                                             ><br />
-                                            <span>${metadata}</span>
+                                            <span
+                                                >${metadata} •
+                                                <a
+                                                    target="_blank"
+                                                    href="${variable.dataProductDescriptionUrl}"
+                                                    >[${variable.dataProductShortName}_${variable.dataProductVersion}]</a
+                                                ></span
+                                            >
                                         </label>
 
                                         <sl-drawer contained>

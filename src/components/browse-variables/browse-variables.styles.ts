@@ -195,6 +195,10 @@ export default css`
         justify-content: space-between;
     }
 
+    .variable a {
+        color: white;
+    }
+
     .variable label {
         cursor: pointer;
         display: block;

@@ -29,6 +29,7 @@ export default css`
     .toggles {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         gap: 0 1em;
     }
 
