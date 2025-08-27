@@ -12,6 +12,7 @@ import leafletStyles from './leaflet.styles.js'
 import { MapController } from './map.controller.js'
 import styles from './map.styles.js'
 import type { ShapeFilesResponse } from '../../geojson/types.js'
+import { MapEventType } from './type.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -111,14 +112,20 @@ export default class TerraMap extends TerraElement {
             hidePointSelectionDrawTool: this.hidePointSelection,
         })
 
-        this.map.on('draw', (layer: any) =>
+        this.map.on('draw', (layer: any) => {
             this.emit('terra-map-change', {
                 detail: {
                     cause: 'draw',
+                    type:
+                        'latLng' in layer
+                            ? MapEventType.POINT
+                            : 'bounds' in layer
+                              ? MapEventType.BBOX
+                              : undefined,
                     ...layer,
                 },
             })
-        )
+        })
 
         this.map.on('clear', (_e: any) =>
             this.emit('terra-map-change', {

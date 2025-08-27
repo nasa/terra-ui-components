@@ -59,7 +59,6 @@ export class TimeSeriesController {
     //? we want to KEEP the last fetched data when a user cancels, not revert back to an empty plot
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
-    
 
     constructor(host: ReactiveControllerHost & TerraTimeSeries) {
         this.#dataService = this.#getDataService()
@@ -345,7 +344,7 @@ export class TimeSeriesController {
                 bearerToken: this.host.bearerToken,
                 environment: this.host.environment,
             })
-            timeSeriesCsvData =text
+            timeSeriesCsvData = text
         } else {
             const [lat, lon] = this.#normalizeCoordinates(parsedLocation)
 

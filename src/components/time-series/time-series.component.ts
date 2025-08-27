@@ -99,6 +99,7 @@ export default class TerraTimeSeries extends TerraElement {
     bearerToken?: string
 
     @query('terra-plot') plot: TerraPlot
+    @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 
     @state() catalogVariable: Variable
 
@@ -201,7 +202,7 @@ export default class TerraTimeSeries extends TerraElement {
         // Check if we're actually leaving the component by checking if the related target is outside
         const relatedTarget = event.relatedTarget as HTMLElement
         if (!this.contains(relatedTarget)) {
-            // TODO this.activeMenuItem = null
+            this.plotToolbar?.closeMenu()
         }
     }
 

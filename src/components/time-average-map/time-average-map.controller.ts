@@ -12,8 +12,8 @@ import {
     IndexedDbStores,
     getDataByKey,
     storeDataByKey,
-    deleteDataByKey,
 } from '../../internal/indexeddb.js'
+import { formatDate } from '../../utilities/date.js'
 
 const REFRESH_HARMONY_DATA_INTERVAL = 2000
 
@@ -105,6 +105,16 @@ export class TimeAvgMapController {
                         }
                     )
                     this.blobUrl = blob
+
+                    this.#host.emit('terra-time-average-map-data-change', {
+                        detail: {
+                            data: blob,
+                            variable: this.#host.catalogVariable!,
+                            startDate: formatDate(this.#host.startDate!),
+                            endDate: formatDate(this.#host.endDate!),
+                            location: this.#host.location!,
+                        },
+                    })
 
                     // Store in cache
                     await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {

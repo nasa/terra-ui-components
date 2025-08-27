@@ -53,6 +53,9 @@ export default class TerraBrowseVariables extends TerraElement {
     @property()
     catalog: 'giovanni' = 'giovanni'
 
+    @property({ attribute: 'selected-variable-entry-ids', reflect: true })
+    selectedVariableEntryIds?: string
+
     @state()
     searchQuery: string
 
@@ -297,7 +300,8 @@ export default class TerraBrowseVariables extends TerraElement {
                                           facetKey
                                       ]?.includes(field.name)}
                                   />
-                                  ${field.name} (${field.count})</label
+                                  ${field.name}
+                                  <!-- TODO: add count back in once we aren't filtering by Cloud Giovanni Catalog (or Cloud Giovanni supports all variables)(${field.count})--></label
                               >
                           </div>
                       `
@@ -329,8 +333,9 @@ export default class TerraBrowseVariables extends TerraElement {
         // MVP group TBD but must include 'Measurements' and 'Dataset'
         return html`<div class="scrollable variables-container">
             <header>
+                <!-- TODO: add back in once we aren't filtering by Cloud Giovanni Catalog (or Cloud Giovanni supports all variables) 
                 Showing ${this.#controller.total} variables
-                ${this.searchQuery ? `associated with '${this.searchQuery}'` : ''}
+                ${this.searchQuery ? `associated with '${this.searchQuery}'` : ''}-->
                 <!-- Sorting and Grouping feature still needs a UI / UX feature discussion.
                 <menu>
                     <li>

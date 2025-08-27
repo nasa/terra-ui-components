@@ -14,7 +14,7 @@ export function parseBoundingBox(inputString: string) {
     // Check if there are exactly four elements (two pairs of coordinates)
     if (coords.length !== 2 && coords.length !== 4) {
         throw new Error(
-            'Input string must contain exactly two or four numerical values. e.g "9.51, 21.80" or "52.03, -9.38, 96.33, 32.90"'
+            'Input must contain exactly 2 or 4 numbers. e.g "9.51, 21.80" or "52.03, -9.38, 96.33, 32.90"'
         )
     }
 
@@ -132,7 +132,11 @@ export class Leaflet {
                 return
             }
 
-            if ((options.initialValue as LatLngBoundsLiteral)?.length > 0) {
+            if (
+                options.initialValue &&
+                ((options.initialValue as LatLngBoundsLiteral)?.length > 0 ||
+                    'getNorthEast' in options.initialValue)
+            ) {
                 L.rectangle(options.initialValue as LatLngBoundsExpression, {
                     stroke: true,
                     color: '#3388ff',
