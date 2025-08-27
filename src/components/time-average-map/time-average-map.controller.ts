@@ -2,15 +2,18 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
-import {
-    type SubsetJobStatus,
-    Status,
-} from '../../data-services/types.js'
+import { type SubsetJobStatus, Status } from '../../data-services/types.js'
 import {
     FINAL_STATUSES,
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
+import {
+    IndexedDbStores,
+    getDataByKey,
+    storeDataByKey,
+    deleteDataByKey,
+} from '../../internal/indexeddb.js'
 
 const REFRESH_HARMONY_DATA_INTERVAL = 2000
 
@@ -30,18 +33,19 @@ export class TimeAvgMapController {
             task: async ([], { signal }) => {
                 let job
 
-                const start_date = new Date(this.#host?.startDate ?? Date.now());
-                const end_date = new Date(this.#host?.endDate ?? Date.now());;
-                const [w, s, e, n] = this.#host.location?.split(',') ?? [];
+                const start_date = new Date(this.#host?.startDate ?? Date.now())
+                const end_date = new Date(this.#host?.endDate ?? Date.now())
+                const [w, s, e, n] = this.#host.location?.split(',') ?? []
 
-                const parts = this.#host.collection!.split('_');
-                const collectionEntryId = parts[0] + '_' + parts.slice(1).join('.');
-
+                const parts = this.#host.collection!.split('_')
+                const collectionEntryId = parts[0] + '_' + parts.slice(1).join('.')
 
                 let subsetOptions = {
                     collectionEntryId: `${collectionEntryId}`,
                     variableConceptIds: ['parameter_vars'],
-                    variableEntryIds: [`${this.#host.collection!}_${this.#host.variable}`],
+                    variableEntryIds: [
+                        `${this.#host.collection!}_${this.#host.variable}`,
+                    ],
                     startDate: format(start_date, 'yyyy-MM-dd') + 'T00%3A00%3A00',
                     endDate: format(end_date, 'yyyy-MM-dd') + 'T00%3A00%3A00',
                     format: 'text/csv',
@@ -53,41 +57,68 @@ export class TimeAvgMapController {
                     },
                     average: 'time',
                 }
-                console.log(
-                    `Creating a job with options`,
-                    subsetOptions
-                )
+                console.log(`Creating a job with options`, subsetOptions)
 
                 // we'll start with an empty job to clear out any existing job
                 this.currentJob = this.#getEmptyJob()
 
                 try {
-                    console.log("Calling create subset job..")
+                    // Try cache first
+                    const cacheKey = this.getCacheKey()
+                    const existing = await getDataByKey<{
+                        key: string
+                        cachedAt: number
+                        environment?: string
+                        blob: Blob
+                    }>(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey)
+
+                    if (existing) {
+                        console.log(
+                            'Returning existing map blob from cache',
+                            cacheKey
+                        )
+                        this.blobUrl = existing.blob
+                        return existing.blob
+                    }
+
+                    console.log('Calling create subset job..')
                     job = await this.#dataService.createSubsetJob(subsetOptions, {
                         signal,
                         bearerToken: this.#host.bearerToken,
+                        environment: this.#host.environment,
                     })
 
                     if (!job) {
                         throw new Error('Failed to create subset job')
                     }
 
-                    console.log("Waiting for harmony job..")
+                    console.log('Waiting for harmony job..')
                     const jobStatus = await this.#waitForHarmonyJob(job, signal)
 
                     // the job is completed, fetch the data for the job
-                    const { blob } = await this.#dataService.getSubsetJobData(jobStatus, {
-                        signal,
-                        bearerToken: this.#host.bearerToken,
-                    })
+                    const { blob } = await this.#dataService.getSubsetJobData(
+                        jobStatus,
+                        {
+                            signal,
+                            bearerToken: this.#host.bearerToken,
+                            environment: this.#host.environment,
+                        }
+                    )
                     this.blobUrl = blob
 
+                    // Store in cache
+                    await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {
+                        key: cacheKey,
+                        cachedAt: new Date().getTime(),
+                        environment: this.#host.environment,
+                        blob,
+                    })
+
                     return blob
-                }
-                catch (err) {
+                } catch (err) {
                     const error_msg = `Failed to create subset job: ${err}`
                     console.error(error_msg)
-                    throw new Error(error_msg);
+                    throw new Error(error_msg)
                 }
             },
             args: (): any => [],
@@ -125,6 +156,7 @@ export class TimeAvgMapController {
                 jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
                     signal,
                     bearerToken: this.#host.bearerToken,
+                    environment: this.#host.environment,
                 })
 
                 console.log('Job status', jobStatus)
@@ -143,8 +175,6 @@ export class TimeAvgMapController {
         })
     }
 
-
-
     #getDataService() {
         return new HarmonyDataService()
     }
@@ -162,5 +192,15 @@ export class TimeAvgMapController {
             numInputGranules: 0,
             links: [],
         }
+    }
+
+    getCacheKey(): string {
+        const environment = this.#host.environment ?? 'prod'
+        const location = this.#host.location ?? ''
+        const collection = this.#host.collection ?? ''
+        const variable = this.#host.variable ?? ''
+        const start = this.#host.startDate ?? ''
+        const end = this.#host.endDate ?? ''
+        return `map_${collection}_${variable}_${start}_${end}_${location}_${environment}`
     }
 }
