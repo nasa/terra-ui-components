@@ -37,7 +37,6 @@ export class TimeAvgMapController {
                 const end_date = new Date(this.#host?.endDate ?? Date.now())
                 const [w, s, e, n] = this.#host.location?.split(',') ?? []
 
-
                 const collection = `${this.#host.catalogVariable!.dataProductShortName}_${this.#host.catalogVariable!.dataProductVersion}`
 
                 let subsetOptions = {

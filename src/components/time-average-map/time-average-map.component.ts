@@ -121,7 +121,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     /**
      * anytime the collection or variable changes, we'll fetch the variable from the catalog to get all of it's metadata
      */
-    _fetchVariableTask = getFetchVariableTask(this)
+    _fetchVariableTask = getFetchVariableTask(this, false)
 
     async firstUpdated() {
         this.#controller = new TimeAvgMapController(this)

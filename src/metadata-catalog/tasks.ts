@@ -3,7 +3,10 @@ import { GiovanniVariableCatalog } from './giovanni-variable-catalog.js'
 import type { HostWithMaybeProperties } from './types.js'
 import { getVariableEntryId } from './utilities.js'
 
-export function getFetchVariableTask(host: HostWithMaybeProperties) {
+export function getFetchVariableTask(
+    host: HostWithMaybeProperties,
+    autoRun: boolean = true
+) {
     const catalog = new GiovanniVariableCatalog() // TODO: replace this with a factory call when we switch to CMR
 
     return new Task(host, {
@@ -34,5 +37,6 @@ export function getFetchVariableTask(host: HostWithMaybeProperties) {
             host.variableEntryId = variableEntryId
         },
         args: () => [host.variableEntryId, host.collection, host.variable],
+        autoRun,
     })
 }
