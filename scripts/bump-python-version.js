@@ -39,15 +39,43 @@ try {
 
     console.log(`Updated base.py version to: ${newVersion}`)
 
-    // Stage both files
+    // Update notebook files in src/components/plot-toolbar/notebooks/
+    const notebooksDir = path.join('src', 'components', 'plot-toolbar', 'notebooks')
+    const notebookFiles = fs
+        .readdirSync(notebooksDir)
+        .filter(file => file.endsWith('.ts'))
+
+    for (const notebookFile of notebookFiles) {
+        const notebookPath = path.join(notebooksDir, notebookFile)
+        let notebookContent = fs.readFileSync(notebookPath, 'utf8')
+
+        // Replace terra_ui_components==VERSION pattern
+        const updatedContent = notebookContent.replace(
+            /"terra_ui_components==\d+\.\d+\.\d+"/g,
+            `"terra_ui_components==${newVersion}"`
+        )
+
+        if (updatedContent !== notebookContent) {
+            fs.writeFileSync(notebookPath, updatedContent, 'utf8')
+            console.log(`Updated ${notebookFile} version to: ${newVersion}`)
+        }
+    }
+
+    // Stage all updated files
     execSync('git add pyproject.toml')
     execSync(`git add ${basePyPath}`)
+
+    // Stage notebook files if they were updated
+    for (const notebookFile of notebookFiles) {
+        const notebookPath = path.join(notebooksDir, notebookFile)
+        execSync(`git add ${notebookPath}`)
+    }
 
     // Amend the previous commit to include the updated versions
     execSync('git commit --amend --no-edit')
 
     console.log(
-        'Amended commit to include updated pyproject.toml and base.py versions.'
+        'Amended commit to include updated pyproject.toml, base.py, and notebook versions.'
     )
 } catch (error) {
     console.error('Error updating Python version:', error.message)
