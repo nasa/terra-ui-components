@@ -457,7 +457,7 @@ export default class TerraPlotToolbar extends TerraElement {
                     {
                         id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
                         cell_type: 'code',
-                        source: '%pip install -q "terra_ui_components==0.0.70" "anywidget==0.9.15"',
+                        source: '%pip install -q "terra_ui_components==0.0.70" "anywidget==0.9.15" "pandas"',
                         metadata: {
                             trusted: true,
                         },
@@ -496,7 +496,14 @@ export default class TerraPlotToolbar extends TerraElement {
                         id: '6b81a089-884d-4fd7-9d4e-c45a53307c20',
                         metadata: {},
                         outputs: [],
-                        source: ['timeseries.data'],
+                        source: [
+                            'import pandas as pd\n',
+                            'df = pd.DataFrame(timeseries.data)\n',
+                            "df['timestamp'] = pd.to_datetime(df['timestamp'])\n",
+                            "df['value'] = pd.to_numeric(df['value'])\n",
+                            'print(df.dtypes)\n',
+                            'print(df.head())',
+                        ],
                     },
                 ]
 
