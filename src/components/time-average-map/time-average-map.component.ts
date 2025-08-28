@@ -101,8 +101,6 @@ export default class TerraTimeAverageMap extends TerraElement {
                 this.endDate ?? variable.exampleInitialEndDate?.toISOString()
 
             this.catalogVariable = variable
-
-            console.log("HERE I AM: ", this.catalogVariable)
         },
         args: () => [this.collection, this.variable],
         autoRun: false

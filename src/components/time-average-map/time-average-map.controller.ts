@@ -1,4 +1,4 @@
-import { initialState, Task } from '@lit/task'
+import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
