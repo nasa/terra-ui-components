@@ -498,11 +498,12 @@ export default class TerraPlotToolbar extends TerraElement {
                         outputs: [],
                         source: [
                             'import pandas as pd\n',
-                            'df = pd.DataFrame(timeseries.data)\n',
-                            "df['timestamp'] = pd.to_datetime(df['timestamp'])\n",
-                            "df['value'] = pd.to_numeric(df['value'])\n",
-                            'print(df.dtypes)\n',
-                            'print(df.head())',
+                            'if getattr(timeseries, "data", None):\n',
+                            '    df = pd.DataFrame(timeseries.data)\n',
+                            "    df['timestamp'] = pd.to_datetime(df['timestamp'])\n",
+                            "    df['value'] = pd.to_numeric(df['value'])\n",
+                            '    print(df.dtypes)\n',
+                            '    print(df.head())',
                         ],
                     },
                 ]
