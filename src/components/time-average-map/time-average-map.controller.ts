@@ -31,12 +31,6 @@ export class TimeAvgMapController {
 
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
-
-                if (!this.#host.catalogVariable) {
-                    console.log("ANDY")
-                    return initialState
-                }
-
                 let job
 
                 const start_date = new Date(this.#host?.startDate ?? Date.now())
@@ -45,8 +39,6 @@ export class TimeAvgMapController {
 
 
                 const collection = `${this.#host.catalogVariable!.dataProductShortName}_${this.#host.catalogVariable!.dataProductVersion}`
-                console.log("ANDY DEBUG: ", collection)
-
 
                 let subsetOptions = {
                     collectionEntryId: `${collection}`,
