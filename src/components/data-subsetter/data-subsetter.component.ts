@@ -1662,7 +1662,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 {
                     id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
                     cell_type: 'code',
-                    source: '%pip install -q terra_ui_components',
+                    source: '%pip install -q "terra_ui_components==0.0.70" "anywidget==0.9.15"',
                     metadata: {
                         trusted: true,
                     },
