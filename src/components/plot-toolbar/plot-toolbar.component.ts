@@ -16,6 +16,8 @@ import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
+import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
+import { getTimeSeriesNotebook } from './notebooks/time-series-notebook.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -432,7 +434,15 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #sendDataToJupyterNotebook(jupyterWindow: Window) {
-        console.log('Sending data to JupyterLite...')
+        if (this.dataType === 'geotiff') {
+            this.#sendMapDataToJupyterNotebook(jupyterWindow)
+        } else {
+            this.#sendTimeSeriesDataToJupyterNotebook(jupyterWindow)
+        }
+    }
+
+    #sendTimeSeriesDataToJupyterNotebook(jupyterWindow: Window) {
+        console.log('Sending time series data to JupyterLite...')
 
         // Fetch the time series data from IndexedDB
         getDataByKey<VariableDbEntry>(
@@ -441,77 +451,12 @@ export default class TerraPlotToolbar extends TerraElement {
         ).then(timeSeriesData => {
             // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
             setTimeout(() => {
-                const notebook = [
-                    {
-                        cell_type: 'markdown',
-                        id: '367f56b9-7ca8-4435-9dcc-89bf586f33ab',
-                        metadata: {},
-                        source: [
-                            '### Prerequisites:\n',
-                            '\n',
-                            'This notebook uses the `terra_ui_components` and `anywidget` packages.\n',
-                            '\n',
-                            'After running the `pip install` cell for the first time, please reload the page to ensure the dependencies are active.',
-                        ],
-                    },
-                    {
-                        id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
-                        cell_type: 'code',
-                        source: '%pip install -q "terra_ui_components==0.0.70" "anywidget==0.9.15" "pandas"',
-                        metadata: {
-                            trusted: true,
-                        },
-                        outputs: [],
-                        execution_count: null,
-                    },
-                    {
-                        cell_type: 'markdown',
-                        id: '35aa4a00-8e2c-4478-9df7-de633fd8f6ce',
-                        metadata: {},
-                        source: ['### Render a point-based time series plot'],
-                    },
-                    {
-                        id: '870c1384-e706-48ee-ba07-fd552a949869',
-                        cell_type: 'code',
-                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.variableEntryId}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
-                        metadata: {
-                            trusted: true,
-                        },
-                        outputs: [],
-                        execution_count: null,
-                    },
-                    {
-                        cell_type: 'markdown',
-                        id: '25b87ed4-2ad9-4c7d-b851-bc8fea3ded5a',
-                        metadata: {},
-                        source: [
-                            '### Access the time series data\n',
-                            '\n',
-                            'Once the time series runs and you see a plot, you can access the data:',
-                        ],
-                    },
-                    {
-                        cell_type: 'code',
-                        execution_count: null,
-                        id: '6b81a089-884d-4fd7-9d4e-c45a53307c20',
-                        metadata: {},
-                        outputs: [],
-                        source: [
-                            'import pandas as pd\n',
-                            'if getattr(timeseries, "data", None):\n',
-                            '    df = pd.DataFrame(timeseries.data)\n',
-                            "    df['timestamp'] = pd.to_datetime(df['timestamp'])\n",
-                            "    df['value'] = pd.to_numeric(df['value'])\n",
-                            '    print(df.dtypes)\n',
-                            '    print(df.head())',
-                        ],
-                    },
-                ]
+                const notebook = getTimeSeriesNotebook(this)
 
                 jupyterWindow.postMessage(
                     {
                         type: 'load-notebook',
-                        filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}.ipynb`,
+                        filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}-timeseries.ipynb`,
                         notebook,
                         timeSeriesData,
                         databaseName: DB_NAME,
@@ -522,6 +467,33 @@ export default class TerraPlotToolbar extends TerraElement {
                 )
             }, 500)
         })
+    }
+
+    #sendMapDataToJupyterNotebook(jupyterWindow: Window) {
+        console.log('Sending map data to JupyterLite...')
+
+        // Fetch the time series data from IndexedDB
+        getDataByKey<Blob>(IndexedDbStores.TIME_AVERAGE_MAP, this.cacheKey).then(
+            blob => {
+                // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+                setTimeout(() => {
+                    const notebook = getTimeAveragedMapNotebook(this)
+
+                    jupyterWindow.postMessage(
+                        {
+                            type: 'load-notebook',
+                            filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}-map.ipynb`,
+                            notebook,
+                            blob,
+                            databaseName: DB_NAME,
+                            storeName: IndexedDbStores.TIME_AVERAGE_MAP,
+                            token: this.bearerToken,
+                        },
+                        '*'
+                    )
+                }, 500)
+            }
+        )
     }
 
     #downloadPNG(_event: Event) {
