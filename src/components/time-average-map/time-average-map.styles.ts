@@ -7,13 +7,15 @@ export default css`
   }
 
   #map {
+    position: relative
     width: 100%;
     height: 100%;
   }
 
   #settings{
+    opacity: 0.75,
     position: absolute;
-    bottom: 10px;
+    bottom: 150px;
     left: 10px;
     background: rgba(255, 255, 255, 0.9);
     padding: 8px 10px;

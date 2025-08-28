@@ -1,4 +1,4 @@
-import { Task } from '@lit/task'
+import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
@@ -31,17 +31,25 @@ export class TimeAvgMapController {
 
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
+
+                if (!this.#host.catalogVariable) {
+                    console.log("ANDY")
+                    return initialState
+                }
+
                 let job
 
                 const start_date = new Date(this.#host?.startDate ?? Date.now())
                 const end_date = new Date(this.#host?.endDate ?? Date.now())
                 const [w, s, e, n] = this.#host.location?.split(',') ?? []
 
-                const parts = this.#host.collection!.split('_')
-                const collectionEntryId = parts[0] + '_' + parts.slice(1).join('.')
+
+                const collection = `${this.#host.catalogVariable!.dataProductShortName}_${this.#host.catalogVariable!.dataProductVersion}`
+                console.log("ANDY DEBUG: ", collection)
+
 
                 let subsetOptions = {
-                    collectionEntryId: `${collectionEntryId}`,
+                    collectionEntryId: `${collection}`,
                     variableConceptIds: ['parameter_vars'],
                     variableEntryIds: [
                         `${this.#host.collection!}_${this.#host.variable}`,

@@ -101,8 +101,11 @@ export default class TerraTimeAverageMap extends TerraElement {
                 this.endDate ?? variable.exampleInitialEndDate?.toISOString()
 
             this.catalogVariable = variable
+
+            console.log("HERE I AM: ", this.catalogVariable)
         },
         args: () => [this.collection, this.variable],
+        autoRun: false
     })
 
     async firstUpdated() {
@@ -113,6 +116,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     async updateGeoTIFFLayer() {
+        await this._fetchVariableTask.run()
         await this.#controller.jobStatusTask.run()
         // The task returns the blob upon completion
         let job_status_value = this.#controller.jobStatusTask.value
