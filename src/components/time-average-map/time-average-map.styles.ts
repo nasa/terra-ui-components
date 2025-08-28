@@ -13,7 +13,7 @@ export default css`
   }
 
   #settings{
-    opacity: 0.75,
+    opacity: 0.75;
     position: absolute;
     bottom: 150px;
     left: 10px;
