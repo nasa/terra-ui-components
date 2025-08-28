@@ -76,7 +76,9 @@ export class TimeAvgMapController {
                             'Returning existing map blob from cache',
                             cacheKey
                         )
-                        this.blobUrl = existing.blob
+
+                        this.#updateGeoTIFFLayer(existing.blob)
+
                         return existing.blob
                     }
 
@@ -103,17 +105,6 @@ export class TimeAvgMapController {
                             environment: this.#host.environment,
                         }
                     )
-                    this.blobUrl = blob
-
-                    this.#host.emit('terra-time-average-map-data-change', {
-                        detail: {
-                            data: blob,
-                            variable: this.#host.catalogVariable!,
-                            startDate: formatDate(this.#host.startDate!),
-                            endDate: formatDate(this.#host.endDate!),
-                            location: this.#host.location!,
-                        },
-                    })
 
                     // Store in cache
                     await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {
@@ -122,6 +113,8 @@ export class TimeAvgMapController {
                         environment: this.#host.environment,
                         blob,
                     })
+
+                    this.#updateGeoTIFFLayer(blob)
 
                     return blob
                 } catch (err) {
@@ -133,6 +126,22 @@ export class TimeAvgMapController {
             args: (): any => [],
             autoRun: false,
         })
+    }
+
+    #updateGeoTIFFLayer(blob: Blob) {
+        this.blobUrl = blob
+
+        this.#host.emit('terra-time-average-map-data-change', {
+            detail: {
+                data: blob,
+                variable: this.#host.catalogVariable!,
+                startDate: formatDate(this.#host.startDate!),
+                endDate: formatDate(this.#host.endDate!),
+                location: this.#host.location!,
+            },
+        })
+
+        this.#host.updateGeoTIFFLayer(blob)
     }
 
     render(renderFunctions: StatusRenderer<any>) {

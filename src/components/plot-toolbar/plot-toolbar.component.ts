@@ -420,17 +420,9 @@ export default class TerraPlotToolbar extends TerraElement {
 
             console.log('JupyterLite is ready!')
             this.#sendDataToJupyterNotebook(jupyterWindow)
-
-            window.removeEventListener('message', handleMessage.bind(this))
         }
 
-        window.addEventListener('message', handleMessage.bind(this))
-
-        // fallback option if we don't hear something in 5 seconds
-        setTimeout(() => {
-            console.log('JupyterLite is not ready!')
-            window.removeEventListener('message', handleMessage.bind(this))
-        }, 5000)
+        window.addEventListener('message', handleMessage.bind(this), { once: true })
     }
 
     #sendDataToJupyterNotebook(jupyterWindow: Window) {

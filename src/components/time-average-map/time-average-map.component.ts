@@ -19,6 +19,7 @@ import { toLonLat } from 'ol/proj.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 import colormap from 'colormap'
+import { watch } from '../../internal/watch.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -123,19 +124,30 @@ export default class TerraTimeAverageMap extends TerraElement {
      */
     _fetchVariableTask = getFetchVariableTask(this, false)
 
+    @watch(['startDate', 'endDate', 'location', 'catalogVariable'])
+    handlePropertyChange() {
+        if (
+            !this.startDate ||
+            !this.endDate ||
+            !this.location ||
+            !this.catalogVariable
+        ) {
+            return
+        }
+
+        this.#controller.jobStatusTask.run()
+    }
+
     async firstUpdated() {
         this.#controller = new TimeAvgMapController(this)
         // Initialize the base layer open street map
         this.intializeMap()
-        this.updateGeoTIFFLayer()
+        this._fetchVariableTask.run()
     }
 
-    async updateGeoTIFFLayer() {
-        await this._fetchVariableTask.run()
-        await this.#controller.jobStatusTask.run()
+    async updateGeoTIFFLayer(blob: Blob) {
         // The task returns the blob upon completion
-        let job_status_value = this.#controller.jobStatusTask.value
-        const blobUrl = URL.createObjectURL(job_status_value)
+        const blobUrl = URL.createObjectURL(blob)
 
         const gtSource = new GeoTIFF({
             sources: [
@@ -201,7 +213,6 @@ export default class TerraTimeAverageMap extends TerraElement {
                 zoom: 2,
                 projection: 'EPSG:3857',
             }),
-            controls: [],
         })
     }
 
