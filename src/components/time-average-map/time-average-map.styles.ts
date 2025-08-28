@@ -7,7 +7,7 @@ export default css`
   }
 
   #map {
-    position: relative
+    position: relative;
     width: 100%;
     height: 100%;
   }
