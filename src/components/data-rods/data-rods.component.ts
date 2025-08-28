@@ -7,8 +7,6 @@ import type { CSSResultGroup } from 'lit'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
-import { Task } from '@lit/task'
-import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { getUTCDate } from '../../utilities/date.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
@@ -16,6 +14,8 @@ import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-chang
 import TerraTimeSeries from '../time-series/time-series.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { MapEventType } from '../map/type.js'
+import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
+import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
@@ -90,37 +90,7 @@ export default class TerraDataRods extends TerraElement {
 
     @state() catalogVariable: Variable
 
-    #catalog = new GiovanniVariableCatalog()
-
-    // @ts-expect-error
-    #fetchVariableTask = new Task(this, {
-        task: async (_args, { signal }) => {
-            const variableEntryId = this.#getVariableEntryId()
-
-            console.debug('fetch variable ', variableEntryId)
-
-            if (!variableEntryId) {
-                return
-            }
-
-            const variable = await this.#catalog.getVariable(variableEntryId, {
-                signal,
-            })
-
-            console.debug('found variable ', variable)
-
-            if (!variable) {
-                return
-            }
-
-            this.startDate =
-                this.startDate ?? variable.exampleInitialStartDate?.toISOString()
-            this.endDate =
-                this.endDate ?? variable.exampleInitialEndDate?.toISOString()
-            this.catalogVariable = variable
-        },
-        args: () => [this.variableEntryId, this.collection, this.variable],
-    })
+    _fetchVariableTask = getFetchVariableTask(this)
 
     render() {
         const minDate = this.catalogVariable
@@ -133,7 +103,7 @@ export default class TerraDataRods extends TerraElement {
         return html`
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
-                .value=${this.#getVariableEntryId()}
+                .value=${getVariableEntryId(this)}
                 .bearerToken=${this.bearerToken ?? null}
                 .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
@@ -147,7 +117,7 @@ export default class TerraDataRods extends TerraElement {
             ></terra-spatial-picker>
 
             <terra-time-series
-                variable-entry-id=${this.#getVariableEntryId()}
+                variable-entry-id=${getVariableEntryId(this)}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
                 location=${this.location}
@@ -164,14 +134,6 @@ export default class TerraDataRods extends TerraElement {
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
             ></terra-date-range-slider>
         `
-    }
-
-    #getVariableEntryId() {
-        if (!this.variableEntryId && !(this.collection && this.variable)) {
-            return
-        }
-
-        return this.variableEntryId ?? `${this.collection}_${this.variable}`
     }
 
     /**

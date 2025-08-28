@@ -15,6 +15,7 @@ import type { VariableDbEntry } from '../time-series/time-series.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import { cache } from 'lit/directives/cache.js'
+import { AuthController } from '../../auth/auth.controller.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -52,6 +53,8 @@ export default class TerraPlotToolbar extends TerraElement {
     activeMenuItem: MenuNames = null
 
     @query('#menu') menu: HTMLMenuElement
+
+    _authController = new AuthController(this)
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
@@ -408,6 +411,29 @@ export default class TerraPlotToolbar extends TerraElement {
             return
         }
 
+        const handleMessage = (event: any) => {
+            if (event.data?.type !== 'jupyterlite-ready') {
+                return
+            }
+
+            console.log('JupyterLite is ready!')
+            this.#sendDataToJupyterNotebook(jupyterWindow)
+
+            window.removeEventListener('message', handleMessage.bind(this))
+        }
+
+        window.addEventListener('message', handleMessage.bind(this))
+
+        // fallback option if we don't hear something in 5 seconds
+        setTimeout(() => {
+            console.log('JupyterLite is not ready!')
+            window.removeEventListener('message', handleMessage.bind(this))
+        }, 5000)
+    }
+
+    #sendDataToJupyterNotebook(jupyterWindow: Window) {
+        console.log('Sending data to JupyterLite...')
+
         // Fetch the time series data from IndexedDB
         getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
@@ -416,6 +442,18 @@ export default class TerraPlotToolbar extends TerraElement {
             // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
             setTimeout(() => {
                 const notebook = [
+                    {
+                        cell_type: 'markdown',
+                        id: '367f56b9-7ca8-4435-9dcc-89bf586f33ab',
+                        metadata: {},
+                        source: [
+                            '### Prerequisites:\n',
+                            '\n',
+                            'This notebook uses the `terra_ui_components` and `anywidget` packages.\n',
+                            '\n',
+                            'After running the `pip install` cell for the first time, please reload the page to ensure the dependencies are active.',
+                        ],
+                    },
                     {
                         id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
                         cell_type: 'code',
@@ -427,6 +465,12 @@ export default class TerraPlotToolbar extends TerraElement {
                         execution_count: null,
                     },
                     {
+                        cell_type: 'markdown',
+                        id: '35aa4a00-8e2c-4478-9df7-de633fd8f6ce',
+                        metadata: {},
+                        source: ['### Render a point-based time series plot'],
+                    },
+                    {
                         id: '870c1384-e706-48ee-ba07-fd552a949869',
                         cell_type: 'code',
                         source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.variableEntryId}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
@@ -435,6 +479,24 @@ export default class TerraPlotToolbar extends TerraElement {
                         },
                         outputs: [],
                         execution_count: null,
+                    },
+                    {
+                        cell_type: 'markdown',
+                        id: '25b87ed4-2ad9-4c7d-b851-bc8fea3ded5a',
+                        metadata: {},
+                        source: [
+                            '### Access the time series data\n',
+                            '\n',
+                            'Once the time series runs and you see a plot, you can access the data:',
+                        ],
+                    },
+                    {
+                        cell_type: 'code',
+                        execution_count: null,
+                        id: '6b81a089-884d-4fd7-9d4e-c45a53307c20',
+                        metadata: {},
+                        outputs: [],
+                        source: ['timeseries.data'],
                     },
                 ]
 
@@ -446,6 +508,7 @@ export default class TerraPlotToolbar extends TerraElement {
                         timeSeriesData,
                         databaseName: DB_NAME,
                         storeName: IndexedDbStores.TIME_SERIES,
+                        token: this.bearerToken,
                     },
                     '*'
                 )

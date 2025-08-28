@@ -13,14 +13,14 @@ import { TimeAvgMapController } from './time-average-map.controller.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
-import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
-import { Task } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { toLonLat } from 'ol/proj.js'
 // @ts-ignore
 import colormap from 'colormap'
+import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
+import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -135,7 +135,6 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() catalogVariable: Variable
 
     #controller: TimeAvgMapController
-    #catalog = new GiovanniVariableCatalog()
     _authController = new AuthController(this)
 
     #map: Map | null = null
@@ -144,36 +143,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     /**
      * anytime the collection or variable changes, we'll fetch the variable from the catalog to get all of it's metadata
      */
-    _fetchVariableTask = new Task(this, {
-        task: async (_args, { signal }) => {
-            const variableEntryId = this.getVariableEntryId()
-
-            if (!variableEntryId) {
-                return
-            }
-
-            console.debug('Fetch variable ', variableEntryId)
-
-            const variable = await this.#catalog.getVariable(variableEntryId, {
-                signal,
-            })
-
-            console.debug('Found variable ', variable)
-
-            if (!variable) {
-                return
-            }
-
-            // if we don't have dates, use the example initial dates, which is the last 7 days of data
-            this.startDate =
-                this.startDate ?? variable.exampleInitialStartDate?.toISOString()
-            this.endDate =
-                this.endDate ?? variable.exampleInitialEndDate?.toISOString()
-
-            this.catalogVariable = variable
-        },
-        args: () => [this.collection, this.variable],
-    })
+    _fetchVariableTask = getFetchVariableTask(this)
 
     async firstUpdated() {
         this.#controller = new TimeAvgMapController(this)
@@ -373,14 +343,6 @@ export default class TerraTimeAverageMap extends TerraElement {
         }
     }
 
-    getVariableEntryId() {
-        if (!this.collection || !this.variable) {
-            return
-        }
-
-        return `${this.collection}_${this.variable}`
-    }
-
     render() {
         return html`
             ${cache(
@@ -393,7 +355,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                           .startDate=${this.startDate}
                           .endDate=${this.endDate}
                           .cacheKey=${this.#controller.getCacheKey()}
-                          .variableEntryId=${this.getVariableEntryId()}
+                          .variableEntryId=${getVariableEntryId(this)}
                       ></terra-plot-toolbar>`
                     : html`<div class="spacer"></div>`
             )}
