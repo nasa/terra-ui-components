@@ -450,11 +450,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                             ><br />
                                             <span
                                                 >${metadata} •
-                                                <a
-                                                    target="_blank"
-                                                    href="${variable.dataProductDescriptionUrl}"
-                                                    >[${variable.dataProductShortName}_${variable.dataProductVersion}]</a
-                                                ></span
+                                                [${variable.dataProductShortName}_${variable.dataProductVersion}]</span
                                             >
                                         </label>
 

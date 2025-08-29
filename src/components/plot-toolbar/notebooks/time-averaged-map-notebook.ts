@@ -37,7 +37,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
         {
             id: '870c1384-e706-48ee-ba07-fd552a949869',
             cell_type: 'code',
-            source: `from terra_ui_components import TerraTimeAverageMap\nmap = TerraTimeAverageMap()\nmap.collection='${host.catalogVariable.dataFieldId.replace(`_${host.catalogVariable.dataFieldShortName}`, '')}'\nmap.variable = '${host.catalogVariable.dataFieldShortName}'\nmap.startDate = '${host.startDate}'\nmap.endDate = '${host.endDate}'\nmap.location = '${host.location}'\n\nmap`,
+            source: `from terra_ui_components import TerraTimeAverageMap\nmap = TerraTimeAverageMap()\nmap.collection='${host.catalogVariable.dataFieldId.replace(`_${host.catalogVariable.dataFieldAccessName}`, '')}'\nmap.variable = '${host.catalogVariable.dataFieldAccessName}'\nmap.startDate = '${host.startDate}'\nmap.endDate = '${host.endDate}'\nmap.location = '${host.location}'\n\nmap`,
             metadata: {
                 trusted: true,
             },
