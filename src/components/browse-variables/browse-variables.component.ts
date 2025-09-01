@@ -256,7 +256,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                                     role="button"
                                                     tabindex="0"
                                                     aria-selected="false"
-                                                    data-facet="disciplines"
+                                                    data-facet=${column.facetKey}
                                                     @click=${this.toggleFacetSelect}
                                                 >
                                                     ${field.name}
