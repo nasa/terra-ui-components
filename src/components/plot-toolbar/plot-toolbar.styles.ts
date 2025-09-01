@@ -94,7 +94,15 @@ export default css`
     }
 
     .location-text {
+        cursor: pointer;
         transition: color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .location-icon {
+        vertical-align: middle;
+        color: var(--terra-color-nasa-blue);
     }
 
     .location-text:hover {

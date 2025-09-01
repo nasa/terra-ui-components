@@ -108,6 +108,18 @@ export default class TerraPlotToolbar extends TerraElement {
         this.showLocationTooltip = false
     }
 
+    #getLocationIcon() {
+        if (!this.location) return ''
+
+        return html`<terra-icon
+            name="outline-map-pin"
+            library="heroicons"
+            font-size="1em"
+            class="location-icon"
+            label="Point location"
+        ></terra-icon>`
+    }
+
     render() {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
@@ -138,14 +150,13 @@ export default class TerraPlotToolbar extends TerraElement {
                                           .catalogVariable.dataProductVersion}]</a
                                   >
                                   ${this.showLocation
-                                      ? html`• Location:
+                                      ? html`• ${this.#getLocationIcon()}
                                             <span
                                                 class="location-text"
                                                 @mouseenter=${this
                                                     .#handleLocationMouseEnter}
                                                 @mouseleave=${this
                                                     .#handleLocationMouseLeave}
-                                                style="cursor: pointer; text-decoration: underline;"
                                                 >${this.location.replace(
                                                     /,/g,
                                                     ', '
