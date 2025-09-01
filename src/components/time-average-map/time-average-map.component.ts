@@ -21,6 +21,7 @@ import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 import colormap from 'colormap'
 import { watch } from '../../internal/watch.js'
 import { TaskStatus } from '@lit/task'
+import TerraLoader from '../loader/loader.component.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -28,6 +29,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
         'terra-plot-toolbar': TerraPlotToolbar,
+        'terra-loader': TerraLoader,
     }
 
     /**
