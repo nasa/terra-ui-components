@@ -70,6 +70,9 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     hidePointSelection?: boolean
 
+    @property({ type: Boolean })
+    staticMode?: boolean = false
+
     @property({ type: Array })
     value: any = []
 
@@ -110,6 +113,7 @@ export default class TerraMap extends TerraElement {
             initialValue: this.value,
             hideBoundingBoxDrawTool: this.hideBoundingBoxSelection,
             hidePointSelectionDrawTool: this.hidePointSelection,
+            staticMode: this.staticMode,
         })
 
         this.map.on('draw', (layer: any) => {
@@ -197,10 +201,12 @@ export default class TerraMap extends TerraElement {
 
     render() {
         return html`
-            <!-- select goes here -->
             ${this.hasShapeSelector ? this.selectTemplate() : nothing}
-            <!-- "Map goes here" -->
-            <div part="map" id="map" class="map"></div>
+            <div
+                part="map"
+                id="map"
+                class=${`map ${this.staticMode ? 'static' : ''}`}
+            ></div>
         `
     }
 

@@ -13,6 +13,10 @@ export default css`
         border: solid 1px var(--terra-map-border-color);
     }
 
+    .map.static .leaflet-control-container {
+        display: none;
+    }
+
     .leaflet-mouse-position-container {
         color: var(--terra-input-color);
         padding: 5px;
