@@ -47,12 +47,23 @@ export default css`
         width: 1.4rem;
     }
 
-    terra-map:not(.inline) {
+    .spatial-picker__map-container {
         position: absolute;
         top: 100%;
         left: 0;
         width: 100%;
         z-index: 200;
+        margin-top: 8px;
+    }
+
+    .spatial-picker__map-container.flipped {
+        top: auto;
+        bottom: 100%;
+        margin-bottom: 8px;
+    }
+
+    terra-map:not(.inline) {
+        width: 100%;
     }
 
     .button-icon {
