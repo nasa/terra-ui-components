@@ -257,10 +257,18 @@ export default class TerraTimeSeries extends TerraElement {
             </div>
 
             <dialog
-                ?open=${this.#timeSeriesController.task.status === TaskStatus.PENDING}
+                ?open=${this.#timeSeriesController.task.status ===
+                    TaskStatus.PENDING ||
+                this._fetchVariableTask.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
-                <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
+
+                ${this.#timeSeriesController.task.status === TaskStatus.PENDING
+                    ? html`<p>
+                          Plotting ${this.catalogVariable?.dataFieldId}&hellip;
+                      </p>`
+                    : html`<p>Preparing plot&hellip;</p>`}
+
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
 
