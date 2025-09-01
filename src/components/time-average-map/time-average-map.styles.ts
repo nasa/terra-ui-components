@@ -2,20 +2,38 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        display: block;
-        height: 800px;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        grid-template-columns: 1fr;
+    }
+
+    .spacer {
+        padding-block: 1.375rem;
+    }
+
+    .toolbar-container {
+        grid-row: 1;
+    }
+
+    .map-container {
+        grid-row: 2;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 500px;
     }
 
     #map {
         position: relative;
         width: 100%;
         height: 100%;
+        min-height: 400px;
     }
 
     #settings {
         opacity: 0.75;
         position: absolute;
-        bottom: 150px;
+        bottom: 10px;
         left: 10px;
         background: rgba(255, 255, 255, 0.9);
         padding: 8px 10px;
@@ -25,6 +43,51 @@ export default css`
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         z-index: 10;
         pointer-events: auto;
+    }
+
+    dialog {
+        opacity: 1;
+        transition: opacity 0.3s ease-out 0.4s;
+
+        @starting-style {
+            opacity: 0;
+        }
+
+        place-self: center;
+        z-index: var(--terra-z-index-dialog);
+    }
+
+    dialog {
+        width: 450px;
+        max-width: 90vw;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid var(--terra-color-neutral-200, #e5e7eb);
+        box-shadow:
+            0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        background-color: var(--terra-color-neutral-0, #ffffff);
+    }
+
+    dialog h2 {
+        margin-top: 0;
+        color: var(--terra-color-danger-600, #dc2626);
+        font-size: 1.2rem;
+    }
+
+    dialog ul {
+        margin-bottom: 1.5rem;
+    }
+
+    dialog li {
+        margin-bottom: 0.5rem;
+    }
+
+    .dialog-buttons {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1.5rem;
     }
 
     label {
@@ -337,5 +400,44 @@ export default css`
 
     .ol-overviewmap .ol-viewport:hover {
         cursor: pointer;
+    }
+
+    /* Responsive design for smaller screens */
+    @media (max-width: 768px) {
+        :host {
+            gap: 1rem 0.5rem;
+        }
+
+        .map-container {
+            min-height: 300px;
+        }
+
+        #map {
+            min-height: 300px;
+        }
+
+        #settings {
+            bottom: 100px;
+            left: 5px;
+            padding: 6px 8px;
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .map-container {
+            min-height: 250px;
+        }
+
+        #map {
+            min-height: 250px;
+        }
+
+        #settings {
+            bottom: 80px;
+            left: 5px;
+            padding: 4px 6px;
+            font-size: 10px;
+        }
     }
 `

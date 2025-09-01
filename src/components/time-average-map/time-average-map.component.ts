@@ -20,6 +20,7 @@ import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 import colormap from 'colormap'
 import { watch } from '../../internal/watch.js'
+import { TaskStatus } from '@lit/task'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -214,6 +215,17 @@ export default class TerraTimeAverageMap extends TerraElement {
                 projection: 'EPSG:3857',
             }),
         })
+
+        if (this.#map) {
+            const resizeObserver = new ResizeObserver(() => {
+                this.#map?.updateSize()
+            })
+
+            const mapElement = this.shadowRoot?.getElementById('map')
+            if (mapElement) {
+                resizeObserver.observe(mapElement)
+            }
+        }
     }
 
     async fetchGeotiffMetadata(
@@ -336,66 +348,93 @@ export default class TerraTimeAverageMap extends TerraElement {
         }
     }
 
+    /**
+     * aborts the underlying data loading task, which cancels the network request
+     */
+    #abortDataLoad() {
+        this.#controller.jobStatusTask?.abort()
+    }
+
     render() {
         return html`
-            ${cache(
-                this.catalogVariable
-                    ? html`<terra-plot-toolbar
-                          dataType="geotiff"
-                          .catalogVariable=${this.catalogVariable}
-                          .timeSeriesData=${this.#controller.jobStatusTask?.value}
-                          .location=${this.location}
-                          .startDate=${this.startDate}
-                          .endDate=${this.endDate}
-                          .cacheKey=${this.#controller.getCacheKey()}
-                          .variableEntryId=${getVariableEntryId(this)}
-                      ></terra-plot-toolbar>`
-                    : html`<div class="spacer"></div>`
-            )}
+            <div class="toolbar-container">
+                ${cache(
+                    this.catalogVariable
+                        ? html`<terra-plot-toolbar
+                              dataType="geotiff"
+                              .catalogVariable=${this.catalogVariable}
+                              .timeSeriesData=${this.#controller.jobStatusTask?.value}
+                              .location=${this.location}
+                              .startDate=${this.startDate}
+                              .endDate=${this.endDate}
+                              .cacheKey=${this.#controller.getCacheKey()}
+                              .variableEntryId=${getVariableEntryId(this)}
+                          ></terra-plot-toolbar>`
+                        : html`<div class="spacer"></div>`
+                )}
+            </div>
 
-            <div id="map">
-                <!-- Settings for pixel value, coordinates, opacity, and colormap -->
-                <div id="settings">
-                    <div>
-                        <strong>Value:</strong> <span id="pixelValue">N/A</span>
+            <div class="map-container">
+                <div id="map">
+                    <!-- Settings for pixel value, coordinates, opacity, and colormap -->
+                    <div id="settings">
+                        <div>
+                            <strong>Value:</strong> <span id="pixelValue">N/A</span>
+                        </div>
+                        <div>
+                            <strong>Coordinate: </strong>
+                            <span id="cursorCoordinates">N/A</span>
+                        </div>
+
+                        <label>
+                            Layer opacity
+                            <input
+                                id="opacity-input"
+                                type="range"
+                                min="0"
+                                max="1"
+                                step="0.01"
+                                value="1"
+                            />
+                            <span id="opacity-output"></span>
+                        </label>
+
+                        <label>
+                            ColorMap:
+                            <select
+                                id="colormap-select"
+                                @change=${this.#onColorMapChange}
+                            >
+                                ${this.colormaps.map(
+                                    cm =>
+                                        html` <option
+                                            value="${cm}"
+                                            ?selected=${cm === this.colorMapName}
+                                        >
+                                            ${cm}
+                                        </option>`
+                                )}
+                            </select>
+                        </label>
                     </div>
-                    <div>
-                        <strong>Coordinate: </strong>
-                        <span id="cursorCoordinates">N/A</span>
-                    </div>
-
-                    <label>
-                        Layer opacity
-                        <input
-                            id="opacity-input"
-                            type="range"
-                            min="0"
-                            max="1"
-                            step="0.01"
-                            value="1"
-                        />
-                        <span id="opacity-output"></span>
-                    </label>
-
-                    <label>
-                        ColorMap:
-                        <select
-                            id="colormap-select"
-                            @change=${this.#onColorMapChange}
-                        >
-                            ${this.colormaps.map(
-                                cm =>
-                                    html` <option
-                                        value="${cm}"
-                                        ?selected=${cm === this.colorMapName}
-                                    >
-                                        ${cm}
-                                    </option>`
-                            )}
-                        </select>
-                    </label>
                 </div>
             </div>
+
+            <dialog
+                ?open=${this.#controller?.jobStatusTask?.status ===
+                    TaskStatus.PENDING ||
+                this._fetchVariableTask.status === TaskStatus.PENDING}
+            >
+                <terra-loader indeterminate></terra-loader>
+
+                ${this.#controller?.jobStatusTask?.status === TaskStatus.PENDING
+                    ? html`<p>
+                          Plotting ${this.catalogVariable?.dataFieldId}&hellip;
+                      </p>`
+                    : html`<p>Preparing plot&hellip;</p>`}
+
+                <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
+            </dialog>
         `
     }
 }
