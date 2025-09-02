@@ -362,9 +362,11 @@ export class TimeSeriesController {
                 signal,
                 headers: {
                     Accept: 'application/json',
+                    /* TODO: figure out why bearer tokens are not working
                     ...(this.host.bearerToken
                         ? { Authorization: `Bearer: ${this.host.bearerToken}` }
                         : {}),
+                        */
                 },
             })
 
