@@ -165,6 +165,7 @@ export default class TerraTimeSeries extends TerraElement {
      * aborts the underlying data loading task, which cancels the network request
      */
     #abortDataLoad() {
+        console.log('Aborting data load')
         this.#timeSeriesController.task?.abort()
     }
 
