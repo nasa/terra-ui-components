@@ -118,11 +118,31 @@ export class TimeSeriesController {
         const cacheKey = this.getCacheKey()
         const variableEntryId = this.host.catalogVariable!.dataFieldId
 
+        console.log(
+            'Loading time series for variable',
+            this.host.catalogVariable,
+            this.host.startDate,
+            this.host.endDate,
+            this.host.location
+        )
+
         // check the database for any existing data
         const existingTerraData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
             cacheKey
         )
+
+        console.log('Existing data?', existingTerraData ? 'Yes' : 'No')
+        console.log(
+            'Is date range contained?',
+            isDateRangeContained(
+                startDate,
+                endDate,
+                new Date(existingTerraData?.startDate),
+                new Date(existingTerraData?.endDate)
+            )
+        )
+        console.log('Is cache valid?', this.#isCacheValid(existingTerraData))
 
         if (
             existingTerraData &&
