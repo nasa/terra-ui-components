@@ -242,9 +242,9 @@ export class TimeSeriesController {
     /**
      * Checks if cached data is still valid (not expired)
      */
-    #isCacheValid(existingData: VariableDbEntry): boolean {
+    #isCacheValid(existingData?: VariableDbEntry): boolean {
         // If cachedAt is not present (backward compatibility), consider it expired
-        if (!existingData.cachedAt) {
+        if (!existingData?.cachedAt) {
             this.clearExpiredCache()
             return false
         }
