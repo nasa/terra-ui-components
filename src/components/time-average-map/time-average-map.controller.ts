@@ -37,11 +37,11 @@ export class TimeAvgMapController {
                 const end_date = new Date(this.#host?.endDate ?? Date.now())
                 const [w, s, e, n] = this.#host.location?.split(',') ?? []
 
-                const parts = this.#host.collection!.split('_')
-                const collectionEntryId = parts[0] + '_' + parts.slice(1).join('.')
+
+                const collection = `${this.#host.catalogVariable!.dataProductShortName}_${this.#host.catalogVariable!.dataProductVersion}`
 
                 let subsetOptions = {
-                    collectionEntryId: `${collectionEntryId}`,
+                    collectionEntryId: `${collection}`,
                     variableConceptIds: ['parameter_vars'],
                     variableEntryIds: [
                         `${this.#host.collection!}_${this.#host.variable}`,

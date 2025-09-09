@@ -5,6 +5,11 @@ declare module '*.css' {
     export default styles
 }
 
+declare module 'colormap' {
+    function colormap(options: any): string[]
+    export = colormap
+    }
+
 declare namespace Chai {
     interface Assertion {
         // chai-a11y-axe returns a promise-like object and should be awaited but the types are incorrect

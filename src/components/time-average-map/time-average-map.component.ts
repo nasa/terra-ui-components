@@ -1,6 +1,6 @@
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { Map, View } from 'ol'
+import { Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import OSM from 'ol/source/OSM.js'
 import GeoTIFF from 'ol/source/GeoTIFF.js'
@@ -18,6 +18,8 @@ import { Task } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
+import { toLonLat } from 'ol/proj.js'
+import colormap from 'colormap'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -27,69 +29,45 @@ export default class TerraTimeAverageMap extends TerraElement {
         'terra-plot-toolbar': TerraPlotToolbar,
     }
 
-    /**
-     * a collection entry id (ex: GPM_3IMERGHH_06)
-     */
-    @property({ reflect: true })
-    collection?: string
+    // Data properties
+    @property({ reflect: true }) collection?: string;
+    @property({ reflect: true }) variable?: string;
+    @property({ attribute: 'start-date', reflect: true }) startDate?: string;
+    @property({ attribute: 'end-date', reflect: true }) endDate?: string;
+    @property({ reflect: true }) location?: string;
+    @property({ attribute: 'bearer-token', reflect: false })
+    bearerToken: string;
+    @property({ type: String }) long_name = '';
 
-    @property({ reflect: true })
-    variable?: string
+    // State Variables
+    @state() activeMenuItem: any = null;
+    @state() catalogVariable: Variable;
+    @state() colormaps = [
+        'jet', 'hsv', 'hot', 'cool', 'spring', 'summer', 'autumn', 'winter', 'bone',
+        'copper', 'greys', 'YIGnBu', 'greens', 'YIOrRd', 'bluered', 'RdBu', 'picnic',
+        'rainbow', 'portland', 'blackbody', 'earth', 'electric', 'viridis', 'inferno',
+        'magma', 'plasma', 'warm', 'cool', 'bathymetry', 'cdom', 'chlorophyll', 'density',
+        'fressurface-blue', 'freesurface-red', 'oxygen', 'par', 'phase', 'salinity',
+        'temperature', 'turbidity', 'velocity-blue', 'velocity-green', 'cubhelix'
+    ];
+    @state() colorMapName = 'density';
 
-    @property({
-        attribute: 'start-date',
-        reflect: true,
-    })
-    startDate?: string
-
-    @property({
-        attribute: 'end-date',
-        reflect: true,
-    })
-    endDate?: string
-
-    /**
-     * The point location in "lat,lon" format.
-     * Or the bounding box in "west,south,east,north" format.
-     */
-    @property({
-        reflect: true,
-    })
-    location?: string
-
-    @state()
-    activeMenuItem: any = null
-
+    // Query and watchers
+    @query('#menu') menu: HTMLMenuElement;
     @watch('activeMenuItem')
     handleFocus(_oldValue: any, newValue: any) {
-        if (newValue === null) {
-            return
+        if (newValue !== null) {
+            this.menu.focus();
         }
-
-        this.menu.focus()
     }
+    // Private fields 
+    #controller: TimeAvgMapController;
+    #catalog = new GiovanniVariableCatalog();
+    #map: Map | null = null;
+    #gtLayer: WebGLTileLayer | null = null;
+    // Auth Controller
+    _authController = new AuthController(this);
 
-    /**
-     * The token to be used for authentication with remote servers.
-     * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
-     * The property's value will be inserted after "Bearer" (the authentication scheme).
-     */
-    @property({ attribute: 'bearer-token', reflect: false })
-    bearerToken: string
-
-    @property({ type: String })
-    long_name = ''
-
-    @query('#menu') menu: HTMLMenuElement
-
-    @state() catalogVariable: Variable
-
-    #controller: TimeAvgMapController
-    #catalog = new GiovanniVariableCatalog()
-    _authController = new AuthController(this)
-
-    #map: Map | null = null
-    #gtLayer: WebGLTileLayer | null = null
 
     /**
      * anytime the collection or variable changes, we'll fetch the variable from the catalog to get all of it's metadata
@@ -123,6 +101,7 @@ export default class TerraTimeAverageMap extends TerraElement {
             this.catalogVariable = variable
         },
         args: () => [this.collection, this.variable],
+        autoRun: false
     })
 
     async firstUpdated() {
@@ -133,6 +112,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     async updateGeoTIFFLayer() {
+        await this._fetchVariableTask.run()
         await this.#controller.jobStatusTask.run()
         // The task returns the blob upon completion
         let job_status_value = this.#controller.jobStatusTask.value
@@ -160,6 +140,30 @@ export default class TerraTimeAverageMap extends TerraElement {
 
         const metadata = await this.fetchGeotiffMetadata(gtSource)
         this.long_name = metadata['long_name'] ?? ''
+
+        if (this.#map && this.#gtLayer) {
+            this.renderPixelValues(this.#map, this.#gtLayer)
+            this.applyColorToLayer(gtSource, "density") // Initial color for layer is density
+
+            const opacityInput = this.shadowRoot?.getElementById('opacity-input') as HTMLInputElement | null
+            const opacityOutput = this.shadowRoot?.getElementById('opacity-output') as HTMLElement | null
+
+            if (opacityInput && opacityOutput) {
+                const updateOpacity = () => {
+                    const opacity = parseFloat(opacityInput.value)
+                    if (this.#gtLayer) {
+                        this.#gtLayer.setOpacity(opacity)
+                    }
+                    opacityOutput.innerText = opacity.toFixed(2)
+                }
+
+                opacityInput.addEventListener('input', updateOpacity)
+
+                // Initialize output display with default slider value
+                updateOpacity()
+            }
+
+        }
     }
 
     intializeMap() {
@@ -213,11 +217,101 @@ export default class TerraTimeAverageMap extends TerraElement {
         return `${this.collection}_${this.variable}`
     }
 
+    renderPixelValues(map: Map, gtLayer: WebGLTileLayer) {
+        const pixelValueEl = this.shadowRoot?.getElementById('pixelValue')
+        const coordEl = this.shadowRoot?.getElementById('cursorCoordinates')
+
+        map.on('pointermove', (event: MapBrowserEvent) => {
+            const data = gtLayer.getData(event.pixel)
+            const coordinate = toLonLat(event.coordinate)
+
+            if (
+                !data ||
+                !(data instanceof Uint8Array || data instanceof Uint8ClampedArray || data instanceof Float32Array) ||
+                isNaN(data[0]) ||
+                data[0] === 0
+            ) {
+                if (pixelValueEl) pixelValueEl.textContent = 'N/A'
+                if (coordEl) coordEl.textContent = 'N/A'
+                return
+            }
+            const val = Number(data[0]).toExponential(4)
+            const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
+
+            if (pixelValueEl) pixelValueEl.textContent = val
+            if (coordEl) coordEl.textContent = coordStr
+        })
+    }
+    async getMinMax(gtSource: any) {
+        await gtSource.getView()
+        const gtImage = gtSource.sourceImagery_[0][0]
+
+        // read raster data from band 1 
+        const rasterData = await gtImage.readRasters({ samples: [0] })
+        const pixels = rasterData[0]
+
+        let min = Infinity
+        let max = -Infinity
+
+        // Loop through pixels and get min and max values. This gives us a range to determine color mapping styling
+        for (let i = 0; i < pixels.length; i++) {
+            const val = pixels[i]
+            if (!isNaN(val)) { // skip no-data pixels or NaN
+                if (val < min) min = val
+                if (val > max) max = val
+            }
+        }
+
+        return { min, max }
+    }
+    // Referencing workshop example from https://openlayers.org/workshop/en/cog/colormap.html 
+    getColorStops(name: any, min: any, max: any, steps: any, reverse: any) {
+        const delta = (max - min) / (steps - 1)
+        const stops = new Array(steps * 2)
+        const colors = colormap({ colormap: name, nshades: steps, format: 'rgba' })
+        if (reverse) {
+            colors.reverse()
+        }
+        for (let i = 0; i < steps; i++) {
+            stops[i * 2] = min + i * delta
+            stops[i * 2 + 1] = colors[i]
+        }
+        return stops
+    }
+
+    async applyColorToLayer(gtSource: any, color: String) {
+        var { min, max } = await this.getMinMax(gtSource)
+        let gtStyle = {
+            color: [
+                'case',
+                ['==', ['band', 2], 0],
+                [0, 0, 0, 0],
+                [
+                    'interpolate',
+                    ['linear'],
+                    ['band', 1],
+                    ...this.getColorStops(color, min, max, 72, false),
+                ]
+            ]
+        }
+
+        this.#gtLayer?.setStyle(gtStyle)
+
+    }
+    #onColorMapChange(event: Event) {
+        const selectedColormap = (event.target as HTMLSelectElement).value;
+        // Reapply the style with the new colormap to the layer
+        if (this.#gtLayer && this.#gtLayer.getSource()) {
+            this.applyColorToLayer(this.#gtLayer.getSource(), selectedColormap);
+        }
+
+    }
+
     render() {
         return html`
             ${cache(
-                this.catalogVariable
-                    ? html`<terra-plot-toolbar
+            this.catalogVariable
+                ? html`<terra-plot-toolbar
                           dataType="geotiff"
                           .catalogVariable=${this.catalogVariable}
                           .timeSeriesData=${this.#controller.jobStatusTask?.value}
@@ -227,10 +321,33 @@ export default class TerraTimeAverageMap extends TerraElement {
                           .cacheKey=${this.#controller.getCacheKey()}
                           .variableEntryId=${this.getVariableEntryId()}
                       ></terra-plot-toolbar>`
-                    : html`<div class="spacer"></div>`
-            )}
+                : html`<div class="spacer"></div>`
+        )}
 
-            <div id="map"></div>
+        <div id="map">
+        <!-- Settings for pixel value, coordinates, opacity, and colormap -->
+        <div id="settings">
+            <div><strong>Value:</strong> <span id="pixelValue">N/A</span></div>
+            <div><strong>Coordinate: </strong> <span id="cursorCoordinates">N/A</span></div>
+
+            <label>
+            Layer opacity
+            <input id="opacity-input" type="range" min="0" max="1" step="0.01" value="1" />
+            <span id="opacity-output"></span>
+            </label>
+
+            <label>
+            ColorMap:
+            <select id="colormap-select" @change=${this.#onColorMapChange}>
+                ${this.colormaps.map(cm => html`
+                <option value="${cm}" ?selected=${cm === this.colorMapName}>
+                ${cm}
+                </option>`)}
+            </select>
+            </label>
+
+        </div>
+        </div>
         `
     }
 }
