@@ -19,8 +19,6 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { toLonLat } from 'ol/proj.js'
-// @ts-ignore
-// TODO: Fix "Could not find module for declaration colormap..." type script error
 import colormap from 'colormap'
 
 export default class TerraTimeAverageMap extends TerraElement {
