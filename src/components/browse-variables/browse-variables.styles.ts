@@ -2,14 +2,7 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --light-blue-color: color-mix(
-            in hsl,
-            var(--terra-color-nasa-blue-tint) 65%,
-            white
-        ); /* this color doesn't exist in HDS, perhaps the design should change? */
-
-        background-color: var(--terra-color-nasa-blue-dark);
-        color: white;
+        background-color: var(--terra-color-carbon-5);
         display: block;
         padding-bottom: 55% !important;
         position: relative;
@@ -17,7 +10,7 @@ export default css`
     }
 
     h3 {
-        color: var(--light-blue-color);
+        color: var(--terra-color-nasa-blue-shade);
         margin-bottom: 1rem;
     }
 
@@ -49,7 +42,7 @@ export default css`
     }
 
     header.search {
-        border-bottom: 1px solid var(--terra-color-nasa-blue-shade);
+        border-bottom: 1px solid var(--terra-color-carbon-30);
         grid-column: span 2;
         padding: 15px;
         padding-bottom: 25px;
@@ -104,17 +97,44 @@ export default css`
     }
 
     .browse-by-category terra-button::part(base) {
-        color: white;
     }
 
     label {
-        color: white;
         display: flex;
-        align-items: center;
+        line-height: var(--terra-line-height-normal);
     }
 
     input[type='radio'] {
+        appearance: none;         /* removes OS default styling */
+        -webkit-appearance: none; /* for Safari */
+        -moz-appearance: none;    /* for Firefox */
         margin-right: 10px;
+        width: 1em;
+        height: 1em;
+        border: 0.125em solid var(--terra-color-carbon-40);
+        border-radius: 50%;
+        background-color: var(--terra-color-spacesuit-white);
+        cursor: pointer;
+        position: relative; /* for the dot */        
+    }
+
+    /* Selected state */
+    input[type='radio']:checked {
+        border-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-color-spacesuit-white); /* keep white bg */
+    }
+
+    /* Inner dot */
+    input[type='radio']:checked::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0.5em;   /* size of the dot */
+        height: 0.5em;
+        background-color: var(--terra-color-nasa-blue);
+        border-radius: 50%; /* makes it circular */
+        transform: translate(-50%, -50%); /* center it */
     }
 
     .variables-container {
@@ -156,6 +176,15 @@ export default css`
         padding: 15px;
     }
 
+    .variables-container aside details {
+        margin-bottom: .5rem;
+    }   
+
+    summary::marker {
+        color: var(--terra-color-nasa-blue); /* changes the arrow color */
+        cursor: pointer;
+    }
+
     .variables-container main {
         grid-area: main;
         display: grid;
@@ -169,12 +198,66 @@ export default css`
         margin-left: 10px;
     }
 
+    .facet label {
+        align-items: center;   /* vertical alignment */
+        line-height: var(--terra-line-height-loose);
+    }
+
+    .facet label input[type='checkbox'] {
+        appearance: none;         /* removes OS default styling */
+        -webkit-appearance: none; /* for Safari */
+        -moz-appearance: none;    /* for Firefox */
+        width: 1em;
+        height: 1em;
+        border: 0.125em solid var(--terra-color-carbon-40);
+        border-radius: 0.25em;
+        background-color: var(--terra-color-spacesuit-white);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .facet label input[type='checkbox']:checked {
+        background-color: var(--terra-color-nasa-blue);
+        accent-color: var(--terra-color-nasa-blue);
+    }
+    
+    /* Draw the checkmark */
+    .facet label input[type='checkbox']:checked::before,
+    .facet label input[type='checkbox']:checked::after {
+        content: "";
+        position: absolute;
+        height: 2px;              /* thickness of the line */
+        background-color: white;  /* checkmark color */
+        transform-origin: left center;
+    }
+
+    /* First stroke of the checkmark */
+    .facet label input[type='checkbox']:checked::before {
+        width: 0.37em;
+        top: 38%;
+        left: 23%;
+        transform: rotate(45deg);
+    }
+
+    /* Second stroke of the checkmark */
+    .facet label input[type='checkbox']:checked::after {
+        width: 0.58em;
+        top: 60%;
+        left: 45%;
+        transform: rotate(-49deg);
+    }
+
     .variable-list {
         margin: 0;
         padding: 0;
     }
 
     .variable-list-item {
+        border: 0.0625em var(--terra-color-nasa-blue-tint) solid;
+        border-radius: 0.25em;
+        background-color: var(--terra-color-carbon-10);
+        padding: 0.5em 1em;
+        margin-bottom: 8px
     }
 
     .variable-list-item::marker {
@@ -197,7 +280,8 @@ export default css`
 
     .variable label {
         cursor: pointer;
-        display: block;
+        display: flex;
+        flex-direction: column;
         font-weight: 400;
     }
 
@@ -225,15 +309,19 @@ export default css`
     }
 
     .variable sl-drawer::part(panel) {
-        background-color: var(--terra-color-nasa-blue-shade);
-        border: 0.0625em solid var(--terra-color-carbon-10);
+        background-color: var(--terra-color-blue-light);
+        border: 0.0625em solid var(--terra-color-nasa-blue-shade);
+        border-radius: 0.25em;
+        padding: 0.5em 1em;
+        box-shadow: 0 0.125em 0.25em rgb(0 0 0 / 0.075);
         left: auto;
         right: 0;
         top: 4.25rem;
     }
 
     .variable sl-drawer::part(body) {
-        padding-block-end: 6em;
+        /*padding-block-end: 6em;*/
+        line-height: var(--terra-line-height-dense);
     }
 
     .variable sl-drawer > * {
@@ -243,6 +331,11 @@ export default css`
     .variable sl-drawer h4 {
         font-weight: 400;
     }
+    .variable sl-drawer p {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 1em;
+    }
 
     .variable-details-button {
         position: static;
@@ -250,6 +343,10 @@ export default css`
 
     .variable-details-button::part(base) {
         border-color: transparent;
-        color: var(--spacesuit-white);
+        color: var(--terra-color-nasa-blue);
     }
+
+    .variable-details-button:hover::part(base) {
+        color: var(--terra-color-spacesuit-white);
+    }    
 `
