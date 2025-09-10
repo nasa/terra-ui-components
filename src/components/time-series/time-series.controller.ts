@@ -580,8 +580,10 @@ export class TimeSeriesController {
         }
 
         // show warning and require confirmation from the user
-        this.host.showDataPointWarning = true
-        return false
+        // TODO: temporarily turning this off
+        // this.host.showDataPointWarning = true
+        // return false
+        return true
     }
 
     /**
