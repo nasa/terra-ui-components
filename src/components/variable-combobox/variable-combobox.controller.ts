@@ -22,7 +22,7 @@ export class FetchController {
         this.#apiTask = new Task(host, {
             task: async () => {
                 const response = await fetch(
-                    'https://lb.gesdisc.eosdis.nasa.gov/windmill/api/r/website/data-rods-variables',
+                    'https://4nad4npjmf.execute-api.us-east-1.amazonaws.com/default/data-rods',
                     {
                         headers: {
                             Accept: 'application/json',
