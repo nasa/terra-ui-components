@@ -48,7 +48,6 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() endDate: string
     @property() cacheKey: string
     @property() dataType: DataType
-    @property({ type: Boolean }) showPixelValues = false
     @property({ type: String }) colormap = 'viridis' // default colormap
     @property({ type: Number }) opacity = 1;
     @property() pixelValue = 'N/A';

@@ -43,7 +43,6 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() catalogVariable: Variable;
     @state() pixelValue: string = 'N/A';
     @state() pixelCoordinates: string = 'N/A';
-    @state() loadingDialogOpen = false
 
     // Private fields 
     #controller: TimeAvgMapController;
@@ -95,7 +94,6 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     async updateGeoTIFFLayer() {
-        this.loadingDialogOpen = true
 
         await this._fetchVariableTask.run()
         await this.#controller.jobStatusTask.run()
