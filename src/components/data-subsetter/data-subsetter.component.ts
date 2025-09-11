@@ -28,6 +28,8 @@ import type { LatLng } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
+import { TaskStatus } from '@lit/task'
+import TerraLoader from '../loader/loader.component.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -50,6 +52,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-login': TerraLogin,
+        'terra-loader': TerraLoader,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -255,6 +258,10 @@ export default class TerraDataSubsetter extends TerraElement {
         const showSpatialSection =
             spatialExtent &&
             spatialExtent.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+
+        if (this.#controller.fetchCollectionTask.status === TaskStatus.PENDING) {
+            return html`<terra-loader indeterminate></terra-loader>`
+        }
 
         return html`
             ${hasSubsetOption && estimates

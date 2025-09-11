@@ -35,10 +35,6 @@ export class DataSubsetterController {
 
         this.fetchCollectionTask = new Task(host, {
             task: async ([collectionEntryId], { signal }) => {
-                if (!this.#host.bearerToken) {
-                    return undefined
-                }
-
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
                           collectionEntryId,

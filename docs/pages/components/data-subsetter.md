@@ -62,12 +62,6 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 </div>
 ```
 
-### Displaying an Existing Job
-
-```html:preview
-<terra-data-subsetter job-id="harmony-job-123456"></terra-data-subsetter>
-```
-
 ## Best Practices
 
 -   Use `collection-entry-id` to pre-select a collection and skip the search UI for a streamlined experience.
