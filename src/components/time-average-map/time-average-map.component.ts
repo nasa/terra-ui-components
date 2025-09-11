@@ -1,5 +1,5 @@
 import { html } from 'lit'
-import { property, query, state } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import { Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import OSM from 'ol/source/OSM.js'
@@ -8,18 +8,18 @@ import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
 import type { CSSResultGroup } from 'lit'
-import { watch } from '../../internal/watch.js'
 import { TimeAvgMapController } from './time-average-map.controller.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
-import { Task } from '@lit/task'
+import { Task, TaskStatus } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { toLonLat } from 'ol/proj.js'
 import colormap from 'colormap'
+import TerraLoader from '../loader/loader.component.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -27,6 +27,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
         'terra-plot-toolbar': TerraPlotToolbar,
+        'terra-loader': TerraLoader
     }
 
     // Data properties
@@ -38,28 +39,12 @@ export default class TerraTimeAverageMap extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken: string;
     @property({ type: String }) long_name = '';
-
     // State Variables
-    @state() activeMenuItem: any = null;
     @state() catalogVariable: Variable;
-    @state() colormaps = [
-        'jet', 'hsv', 'hot', 'cool', 'spring', 'summer', 'autumn', 'winter', 'bone',
-        'copper', 'greys', 'YIGnBu', 'greens', 'YIOrRd', 'bluered', 'RdBu', 'picnic',
-        'rainbow', 'portland', 'blackbody', 'earth', 'electric', 'viridis', 'inferno',
-        'magma', 'plasma', 'warm', 'cool', 'bathymetry', 'cdom', 'chlorophyll', 'density',
-        'fressurface-blue', 'freesurface-red', 'oxygen', 'par', 'phase', 'salinity',
-        'temperature', 'turbidity', 'velocity-blue', 'velocity-green', 'cubhelix'
-    ];
-    @state() colorMapName = 'density';
+    @state() pixelValue: string = 'N/A';
+    @state() pixelCoordinates: string = 'N/A';
+    @state() loadingDialogOpen = false
 
-    // Query and watchers
-    @query('#menu') menu: HTMLMenuElement;
-    @watch('activeMenuItem')
-    handleFocus(_oldValue: any, newValue: any) {
-        if (newValue !== null) {
-            this.menu.focus();
-        }
-    }
     // Private fields 
     #controller: TimeAvgMapController;
     #catalog = new GiovanniVariableCatalog();
@@ -106,16 +91,18 @@ export default class TerraTimeAverageMap extends TerraElement {
 
     async firstUpdated() {
         this.#controller = new TimeAvgMapController(this)
-        // Initialize the base layer open street map
-        this.intializeMap()
         this.updateGeoTIFFLayer()
     }
 
     async updateGeoTIFFLayer() {
+        this.loadingDialogOpen = true
+
         await this._fetchVariableTask.run()
         await this.#controller.jobStatusTask.run()
+
         // The task returns the blob upon completion
         let job_status_value = this.#controller.jobStatusTask.value
+        this.intializeMap()
         const blobUrl = URL.createObjectURL(job_status_value)
 
         const gtSource = new GeoTIFF({
@@ -144,25 +131,6 @@ export default class TerraTimeAverageMap extends TerraElement {
         if (this.#map && this.#gtLayer) {
             this.renderPixelValues(this.#map, this.#gtLayer)
             this.applyColorToLayer(gtSource, "density") // Initial color for layer is density
-
-            const opacityInput = this.shadowRoot?.getElementById('opacity-input') as HTMLInputElement | null
-            const opacityOutput = this.shadowRoot?.getElementById('opacity-output') as HTMLElement | null
-
-            if (opacityInput && opacityOutput) {
-                const updateOpacity = () => {
-                    const opacity = parseFloat(opacityInput.value)
-                    if (this.#gtLayer) {
-                        this.#gtLayer.setOpacity(opacity)
-                    }
-                    opacityOutput.innerText = opacity.toFixed(2)
-                }
-
-                opacityInput.addEventListener('input', updateOpacity)
-
-                // Initialize output display with default slider value
-                updateOpacity()
-            }
-
         }
     }
 
@@ -218,9 +186,6 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     renderPixelValues(map: Map, gtLayer: WebGLTileLayer) {
-        const pixelValueEl = this.shadowRoot?.getElementById('pixelValue')
-        const coordEl = this.shadowRoot?.getElementById('cursorCoordinates')
-
         map.on('pointermove', (event: MapBrowserEvent) => {
             const data = gtLayer.getData(event.pixel)
             const coordinate = toLonLat(event.coordinate)
@@ -231,15 +196,15 @@ export default class TerraTimeAverageMap extends TerraElement {
                 isNaN(data[0]) ||
                 data[0] === 0
             ) {
-                if (pixelValueEl) pixelValueEl.textContent = 'N/A'
-                if (coordEl) coordEl.textContent = 'N/A'
                 return
             }
             const val = Number(data[0]).toExponential(4)
             const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
 
-            if (pixelValueEl) pixelValueEl.textContent = val
-            if (coordEl) coordEl.textContent = coordStr
+
+            if (val) this.pixelValue = val
+            if (coordStr) this.pixelCoordinates = coordStr
+
         })
     }
     async getMinMax(gtSource: any) {
@@ -279,6 +244,26 @@ export default class TerraTimeAverageMap extends TerraElement {
         return stops
     }
 
+    #handleOpacityChange(e: any) {
+        var opacity_val = e.detail
+        if (this.#gtLayer) {
+            this.#gtLayer.setOpacity(opacity_val)
+        }
+
+    }
+    #handleColorMapChange(e: any) {
+        const selectedColormap = e.detail
+        // Reapply the style with the new colormap to the layer
+        if (this.#gtLayer && this.#gtLayer.getSource()) {
+            this.applyColorToLayer(this.#gtLayer.getSource(), selectedColormap);
+        }
+
+    }
+
+    #abortJobStatusTask() {
+        this.#controller.jobStatusTask?.abort()
+    }
+
     async applyColorToLayer(gtSource: any, color: String) {
         var { min, max } = await this.getMinMax(gtSource)
         let gtStyle = {
@@ -298,15 +283,6 @@ export default class TerraTimeAverageMap extends TerraElement {
         this.#gtLayer?.setStyle(gtStyle)
 
     }
-    #onColorMapChange(event: Event) {
-        const selectedColormap = (event.target as HTMLSelectElement).value;
-        // Reapply the style with the new colormap to the layer
-        if (this.#gtLayer && this.#gtLayer.getSource()) {
-            this.applyColorToLayer(this.#gtLayer.getSource(), selectedColormap);
-        }
-
-    }
-
     render() {
         return html`
             ${cache(
@@ -320,34 +296,24 @@ export default class TerraTimeAverageMap extends TerraElement {
                           .endDate=${this.endDate}
                           .cacheKey=${this.#controller.getCacheKey()}
                           .variableEntryId=${this.getVariableEntryId()}
+                          @show-opacity-value=${this.#handleOpacityChange}
+                          @show-color-map=${this.#handleColorMapChange}
+                          .pixelValue=${this.pixelValue}
+                          .pixelCoordinates=${this.pixelCoordinates}
                       ></terra-plot-toolbar>`
                 : html`<div class="spacer"></div>`
         )}
 
         <div id="map">
-        <!-- Settings for pixel value, coordinates, opacity, and colormap -->
-        <div id="settings">
-            <div><strong>Value:</strong> <span id="pixelValue">N/A</span></div>
-            <div><strong>Coordinate: </strong> <span id="cursorCoordinates">N/A</span></div>
-
-            <label>
-            Layer opacity
-            <input id="opacity-input" type="range" min="0" max="1" step="0.01" value="1" />
-            <span id="opacity-output"></span>
-            </label>
-
-            <label>
-            ColorMap:
-            <select id="colormap-select" @change=${this.#onColorMapChange}>
-                ${this.colormaps.map(cm => html`
-                <option value="${cm}" ?selected=${cm === this.colorMapName}>
-                ${cm}
-                </option>`)}
-            </select>
-            </label>
-
         </div>
-        </div>
+
+        <dialog 
+        ?open=${this.#controller?.jobStatusTask?.status === TaskStatus.PENDING}
+        > 
+         <terra-loader indeterminate variant='orbit'></terra-loader>
+         <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p> 
+         <terra-button @click=${this.#abortJobStatusTask}>Cancel</terra-button>
+         </dialog>
         `
     }
 }
