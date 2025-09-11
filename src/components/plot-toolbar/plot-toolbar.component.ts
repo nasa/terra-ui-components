@@ -15,6 +15,7 @@ import type { VariableDbEntry } from '../time-series/time-series.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import { cache } from 'lit/directives/cache.js'
+import { nothing } from 'lit';
 
 /**
  * @summary Short summary of the component's intended use.
@@ -47,9 +48,27 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() endDate: string
     @property() cacheKey: string
     @property() dataType: DataType
+    @property({ type: Boolean }) showPixelValues = false
+    @property({ type: String }) colormap = 'viridis' // default colormap
+    @property({ type: Number }) opacity = 1;
+    @property() pixelValue = 'N/A';
+    @property() pixelCoordinates = 'N/A';
+
+
+
 
     @state()
     activeMenuItem: MenuNames = null
+
+    @state() colormaps = [
+        'jet', 'hsv', 'hot', 'cool', 'spring', 'summer', 'autumn', 'winter', 'bone',
+        'copper', 'greys', 'YIGnBu', 'greens', 'YIOrRd', 'bluered', 'RdBu', 'picnic',
+        'rainbow', 'portland', 'blackbody', 'earth', 'electric', 'viridis', 'inferno',
+        'magma', 'plasma', 'warm', 'cool', 'bathymetry', 'cdom', 'chlorophyll', 'density',
+        'fressurface-blue', 'freesurface-red', 'oxygen', 'par', 'phase', 'salinity',
+        'temperature', 'turbidity', 'velocity-blue', 'velocity-green', 'cubhelix'
+    ];
+    @state() colorMapName = 'density';
 
     @query('#menu') menu: HTMLMenuElement
 
@@ -61,7 +80,6 @@ export default class TerraPlotToolbar extends TerraElement {
 
         this.menu.focus()
     }
-
     closeMenu() {
         this.activeMenuItem = null
     }
@@ -160,6 +178,26 @@ export default class TerraPlotToolbar extends TerraElement {
                                   font-size="1.5em"
                               ></terra-icon>
                           </terra-button>
+                        
+                          ${this.dataType == 'geotiff' ? html`
+                              <terra-button
+                              circle
+                              outline
+                              aria-expanded=${this.activeMenuItem === 'GeoTIFF'}
+                              aria-controls="menu"
+                              aria-haspopup="true" 
+                              class="toggle"
+                              @mouseenter=${this.#handleActiveMenuItem}
+                              data-menu-name="GeoTIFF"
+                          >
+                              <terra-icon
+                                  name="outline-cog-8-tooth"
+                                  library="heroicons"
+                                  font-size="1.5em"
+                              ></terra-icon>
+                          </terra-button>
+                            `:
+                        nothing}
                       </div>
 
                       <menu
@@ -196,6 +234,13 @@ export default class TerraPlotToolbar extends TerraElement {
                           >
                               ${this.#renderJupyterNotebookPanel()}
                           </li>
+
+                          <li
+                              role="menuitem"
+                              ?hidden=${this.activeMenuItem !== 'GeoTIFF'}
+                          >
+                              ${this.#renderGeotiffPanel()}
+                          </li>
                       </menu>
                   </header>`
         )
@@ -211,10 +256,75 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #handleMenuLeave(event: MouseEvent) {
         // Only close if we're not moving to another element within the component
+        // If the GeoTIFF menu is in use, it will only close if you hover outside of the time average map component
         const relatedTarget = event.relatedTarget as HTMLElement
+
         if (!this.contains(relatedTarget)) {
-            this.activeMenuItem = null
+            if (this.activeMenuItem !== 'GeoTIFF') {
+                this.closeMenu()
+            }
+            else {
+                if (relatedTarget.className !== 'ol-layer') {
+                    this.closeMenu()
+                }
+            }
         }
+    }
+
+    #onShowOpacityChange = (e: Event) => {
+        this.opacity = parseFloat((e.target as HTMLInputElement).value);
+        this.dispatchEvent(new CustomEvent('show-opacity-value', {
+            detail: this.opacity,
+            bubbles: true,
+            composed: true
+        }));
+
+    };
+
+    #onColorMapChange = (e: Event) => {
+
+        this.colorMapName = (e.target as HTMLInputElement).value
+        this.dispatchEvent(new CustomEvent('show-color-map', {
+            detail: this.colorMapName,
+            bubbles: true,
+            composed: true
+        }));
+
+    };
+    #renderGeotiffPanel() {
+        return html`
+          <h3 class="sr-only">GeoTIFF Settings</h3>
+      
+          ${this.dataType === 'geotiff' ? html`
+            <p>Select opacity, display pixel values, and apply colormaps</p>
+
+            <div ><strong>Value:</strong> <span id="pixelValue"> ${this.pixelValue}</span></div>
+            <div><strong>Coordinate: </strong> <span id="cursorCoordinates">${this.pixelCoordinates}</span></div>
+
+            <label>
+                Layer opacity
+                <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                .value=${String(this.opacity)}
+                @change=${this.#onShowOpacityChange}
+                />
+                <span id="opacity-output">${this.opacity.toFixed(2)}</span>
+            </label>
+
+            <label>
+                ColorMap:
+                <select id="colormap-select" @change=${this.#onColorMapChange}>
+                    ${this.colormaps.map(cm => html`
+                    <option value="${cm}" ?selected=${cm === this.colorMapName}>
+                    ${cm}
+                    </option>`)}
+                </select>
+                </label>
+          ` : nothing}
+        `
     }
 
     #renderInfoPanel() {
@@ -228,7 +338,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 <dt>Variable Shortname</dt>
                 <dd>
                     ${this.catalogVariable.dataFieldShortName ??
-                    this.catalogVariable.dataFieldAccessName}
+            this.catalogVariable.dataFieldAccessName}
                 </dd>
 
                 <dt>Units</dt>
@@ -364,9 +474,9 @@ export default class TerraPlotToolbar extends TerraElement {
             <a
                 href="#"
                 @click=${(e: Event) => {
-                    e.preventDefault()
-                    this.#handleJupyterNotebookClick()
-                }}
+                e.preventDefault()
+                this.#handleJupyterNotebookClick()
+            }}
             >
                 Open in Jupyter Notebook
                 <terra-icon
@@ -514,5 +624,7 @@ export default class TerraPlotToolbar extends TerraElement {
         a.click()
         document.body.removeChild(a)
         console.log('Successfully downloaded tiff file...')
+
+
     }
 }
