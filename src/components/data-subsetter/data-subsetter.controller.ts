@@ -35,6 +35,10 @@ export class DataSubsetterController {
 
         this.fetchCollectionTask = new Task(host, {
             task: async ([collectionEntryId], { signal }) => {
+                console.log(
+                    'fetching collection with available services for ',
+                    collectionEntryId
+                )
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
                           collectionEntryId,
@@ -45,6 +49,12 @@ export class DataSubsetterController {
                           }
                       )
                     : undefined
+
+                console.log(
+                    'collection with available services for ',
+                    collectionEntryId,
+                    this.#host.collectionWithServices
+                )
 
                 return this.#host.collectionWithServices
             },

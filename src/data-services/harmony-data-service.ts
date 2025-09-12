@@ -39,28 +39,34 @@ export class HarmonyDataService implements DataServiceInterface {
 
         console.log(
             'Getting collection with available services for ',
-            collectionEntryId
+            collectionEntryId,
+            options
         )
 
-        const response = await client.query<{
-            getServiceCapabilities: CollectionWithAvailableServices
-        }>({
-            query: GET_SERVICE_CAPABILITIES,
-            variables: {
-                collectionEntryId,
-            },
-            context: {
-                headers: {
-                    ...(options?.bearerToken && {
-                        authorization: options.bearerToken,
-                    }),
-                    'x-environment': options?.environment ?? 'prod',
+        const response = await client
+            .query<{
+                getServiceCapabilities: CollectionWithAvailableServices
+            }>({
+                query: GET_SERVICE_CAPABILITIES,
+                variables: {
+                    collectionEntryId,
                 },
-                fetchOptions: {
-                    signal: options?.signal,
+                context: {
+                    headers: {
+                        ...(options?.bearerToken && {
+                            authorization: options.bearerToken,
+                        }),
+                        'x-environment': options?.environment ?? 'prod',
+                    },
+                    fetchOptions: {
+                        signal: options?.signal,
+                    },
                 },
-            },
-        })
+            })
+            .catch(err => {
+                console.error('getCollectionWithAvailableServices ERROR: ', err)
+                throw err
+            })
 
         console.log('response', response)
 
