@@ -39,16 +39,22 @@ export class DataSubsetterController {
                     'fetching collection with available services for ',
                     collectionEntryId
                 )
-                this.#host.collectionWithServices = collectionEntryId
-                    ? await this.#dataService.getCollectionWithAvailableServices(
-                          collectionEntryId,
-                          {
-                              signal,
-                              bearerToken: this.#host.bearerToken,
-                              environment: this.#host.environment,
-                          }
-                      )
-                    : undefined
+
+                try {
+                    this.#host.collectionWithServices = collectionEntryId
+                        ? await this.#dataService.getCollectionWithAvailableServices(
+                              collectionEntryId,
+                              {
+                                  signal,
+                                  bearerToken: this.#host.bearerToken,
+                                  environment: this.#host.environment,
+                              }
+                          )
+                        : undefined
+                } catch (err) {
+                    console.error('fetchCollectionTask ERROR: ', err)
+                    this.#host.collectionWithServices = undefined
+                }
 
                 console.log(
                     'collection with available services for ',
