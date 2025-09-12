@@ -62,6 +62,8 @@ export class HarmonyDataService implements DataServiceInterface {
             },
         })
 
+        console.log('response', response)
+
         if (response.errors) {
             throw new Error(
                 `Failed to create subset job: ${response.errors[0].message}`
