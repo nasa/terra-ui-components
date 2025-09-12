@@ -20,7 +20,7 @@ const JOB_STATUS_POLL_MILLIS = 3000
 
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
-    fetchCollectionTask: Task<[string, string | undefined], any | undefined>
+    fetchCollectionTask: Task<[string], any | undefined>
     searchCmrTask: Task<[string | undefined, string], any | undefined>
     currentJob: SubsetJobStatus | null
 
@@ -35,39 +35,19 @@ export class DataSubsetterController {
 
         this.fetchCollectionTask = new Task(host, {
             task: async ([collectionEntryId], { signal }) => {
-                console.log(
-                    'fetching collection with available services for ',
-                    collectionEntryId
-                )
-
-                try {
-                    this.#host.collectionWithServices = collectionEntryId
-                        ? await this.#dataService.getCollectionWithAvailableServices(
-                              collectionEntryId,
-                              {
-                                  signal,
-                                  bearerToken: this.#host.bearerToken,
-                                  environment: this.#host.environment,
-                              }
-                          )
-                        : undefined
-                } catch (err) {
-                    console.error('fetchCollectionTask ERROR: ', err)
-                    this.#host.collectionWithServices = undefined
-                }
-
-                console.log(
-                    'collection with available services for ',
-                    collectionEntryId,
-                    this.#host.collectionWithServices
-                )
+                this.#host.collectionWithServices = collectionEntryId
+                    ? await this.#dataService.getCollectionWithAvailableServices(
+                          collectionEntryId,
+                          {
+                              signal,
+                              environment: this.#host.environment,
+                          }
+                      )
+                    : undefined
 
                 return this.#host.collectionWithServices
             },
-            args: (): [string | undefined, string | undefined] => [
-                this.#host.collectionEntryId,
-                this.#host.bearerToken,
-            ],
+            args: (): [string | undefined] => [this.#host.collectionEntryId],
         })
 
         this.searchCmrTask = new Task(host, {
