@@ -39,27 +39,33 @@ try {
 
     console.log(`Updated base.py version to: ${newVersion}`)
 
-    // Update notebook files in src/components/plot-toolbar/notebooks/
-    const notebooksDir = path.join('src', 'components', 'plot-toolbar', 'notebooks')
-    const notebookFiles = fs
-        .readdirSync(notebooksDir)
-        .filter(file => file.endsWith('.ts'))
+    function updateNotebookVersion(notebookDir) {
+        const notebookFiles = fs
+            .readdirSync(notebookDir)
+            .filter(file => file.endsWith('.ts'))
 
-    for (const notebookFile of notebookFiles) {
-        const notebookPath = path.join(notebooksDir, notebookFile)
-        let notebookContent = fs.readFileSync(notebookPath, 'utf8')
+        for (const notebookFile of notebookFiles) {
+            const notebookPath = path.join(notebookDir, notebookFile)
+            let notebookContent = fs.readFileSync(notebookPath, 'utf8')
 
-        // Replace terra_ui_components==VERSION pattern
-        const updatedContent = notebookContent.replace(
-            /"terra_ui_components==\d+\.\d+\.\d+"/g,
-            `"terra_ui_components==${newVersion}"`
-        )
+            // Replace terra_ui_components==VERSION pattern
+            const updatedContent = notebookContent.replace(
+                /"terra_ui_components==\d+\.\d+\.\d+"/g,
+                `"terra_ui_components==${newVersion}"`
+            )
 
-        if (updatedContent !== notebookContent) {
-            fs.writeFileSync(notebookPath, updatedContent, 'utf8')
-            console.log(`Updated ${notebookFile} version to: ${newVersion}`)
+            if (updatedContent !== notebookContent) {
+                fs.writeFileSync(notebookPath, updatedContent, 'utf8')
+                console.log(`Updated ${notebookFile} version to: ${newVersion}`)
+            }
         }
     }
+
+    // Update notebook files
+    updateNotebookVersion(path.join('src', 'components', 'plot-toolbar', 'notebooks'))
+    updateNotebookVersion(
+        path.join('src', 'components', 'data-subsetter', 'notebooks')
+    )
 
     // Stage all updated files
     execSync('git add pyproject.toml')
