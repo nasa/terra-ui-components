@@ -90,9 +90,6 @@ export class DataSubsetterController {
             task: async ([], { signal }) => {
                 let job
 
-                // TODO: can this go elsewhere? Feels like an odd place
-                this.#host.renderHistoryPanel()
-
                 if (this.currentJob?.jobID) {
                     // we already have a job, get it's status
                     job = await this.#dataService.getSubsetJobStatus(

@@ -30,6 +30,8 @@ import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
 import { TaskStatus } from '@lit/task'
 import TerraLoader from '../loader/loader.component.js'
+import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
+import { getNotebook } from './notebooks/subsetter-notebook.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -60,6 +62,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
     showCollectionSearch?: boolean = true
+
+    @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
+    showHistoryPanel?: boolean = false
 
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
@@ -151,6 +156,10 @@ export default class TerraDataSubsetter extends TerraElement {
 
         if (this.closest('terra-dialog')) {
             this.renderedInDialog = true
+        }
+
+        if (this.showHistoryPanel) {
+            this.renderHistoryPanel()
         }
     }
 
@@ -1655,50 +1664,15 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #handleJupyterNotebookClick() {
-        const jupyterLiteUrl = 'https://gesdisc.github.io/jupyterlite/lab/index.html'
-        const jupyterWindow = window.open(jupyterLiteUrl, '_blank')
+        const notebook = getNotebook(this)
 
-        if (!jupyterWindow) {
-            console.error('Failed to open JupyterLite!')
-            return
-        }
+        console.log('sending data to JupyterLite')
 
-        // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
-        setTimeout(() => {
-            const notebook = [
-                {
-                    id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
-                    cell_type: 'code',
-                    source: '%pip install -q "terra_ui_components==0.0.70" "anywidget==0.9.15"',
-                    metadata: {
-                        trusted: true,
-                    },
-                    outputs: [],
-                    execution_count: null,
-                },
-                {
-                    id: '870c1384-e706-48ee-ba07-fd552a949869',
-                    cell_type: 'code',
-                    source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\nsubsetter.jobId = '${this.#controller.currentJob?.jobID}'\n\nsubsetter`,
-                    metadata: {
-                        trusted: true,
-                    },
-                    outputs: [],
-                    execution_count: null,
-                },
-            ]
-
-            console.log('posting to JupyterLite ', notebook)
-
-            jupyterWindow.postMessage(
-                {
-                    type: 'load-notebook',
-                    filename: `subset_${this.#controller.currentJob?.jobID}.ipynb`,
-                    notebook,
-                },
-                '*'
-            )
-        }, 500)
+        sendDataToJupyterNotebook('load-notebook', {
+            filename: `subset_${this.#controller.currentJob?.jobID}.ipynb`,
+            notebook,
+            token: this.bearerToken,
+        })
     }
 
     renderHistoryPanel() {
@@ -1714,6 +1688,10 @@ export default class TerraDataSubsetter extends TerraElement {
 
             if (this.bearerToken) {
                 historyPanel.setAttribute('bearer-token', this.bearerToken)
+            }
+
+            if (this.environment) {
+                historyPanel.setAttribute('environment', this.environment)
             }
 
             document.body.appendChild(historyPanel)
