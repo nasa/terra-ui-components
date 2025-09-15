@@ -81,4 +81,4 @@ class TerraDataSubsetter(TerraBaseWidget):
     showCollectionSearch = traitlets.Unicode('').tag(sync=True)
     jobId = traitlets.Unicode('').tag(sync=True)
     bearerToken = traitlets.Unicode('').tag(sync=True)
-    job = traitlets.List(trait=traitlets.Dict(), default_value=[]).tag(sync=True)
+    job = traitlets.Dict(trait=traitlets.Dict(), default_value={}).tag(sync=True)
