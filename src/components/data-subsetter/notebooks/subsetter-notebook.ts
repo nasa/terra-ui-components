@@ -37,7 +37,7 @@ export function getNotebook(host: TerraDataSubsetter) {
         {
             id: '870c1384-e706-48ee-ba07-fd552a949869',
             cell_type: 'code',
-            source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\n${host.collectionEntryId ? `subsetter.collectionEntryId = '${host.collectionEntryId}'\n` : ''}${host.jobId ? `subsetter.jobId = '${host.jobId}'\n` : ''}${host.environment ? `subsetter.environment = '${host.environment}'` : ''}\nsubsetter`,
+            source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\n${host.collectionEntryId ? `subsetter.collectionEntryId = '${host.collectionEntryId}'\n` : ''}${host.jobId ? `subsetter.jobId = '${host.jobId}'\n` : ''}${host.environment && host.environment !== 'prod' ? `subsetter.environment = '${host.environment}'` : ''}\nsubsetter`,
             metadata: {
                 trusted: true,
             },

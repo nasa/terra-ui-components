@@ -532,7 +532,7 @@ export default class TerraPlotToolbar extends TerraElement {
                         timeSeriesData,
                         databaseName: DB_NAME,
                         storeName: IndexedDbStores.TIME_SERIES,
-                        token: this.bearerToken,
+                        bearerToken: this.bearerToken,
                     },
                     '*'
                 )

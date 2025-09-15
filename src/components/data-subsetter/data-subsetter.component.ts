@@ -1671,7 +1671,7 @@ export default class TerraDataSubsetter extends TerraElement {
         sendDataToJupyterNotebook('load-notebook', {
             filename: `subset_${this.#controller.currentJob?.jobID}.ipynb`,
             notebook,
-            token: this.bearerToken,
+            bearerToken: this.bearerToken,
         })
     }
 
