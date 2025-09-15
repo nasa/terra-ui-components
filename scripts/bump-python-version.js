@@ -70,12 +70,8 @@ try {
     // Stage all updated files
     execSync('git add pyproject.toml')
     execSync(`git add ${basePyPath}`)
-
-    // Stage notebook files if they were updated
-    for (const notebookFile of notebookFiles) {
-        const notebookPath = path.join(notebooksDir, notebookFile)
-        execSync(`git add ${notebookPath}`)
-    }
+    execSync('git add src/components/plot-toolbar/notebooks')
+    execSync('git add src/components/data-subsetter/notebooks')
 
     // Amend the previous commit to include the updated versions
     execSync('git commit --amend --no-edit')
