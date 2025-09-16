@@ -3,7 +3,7 @@ import type { TerraFormControl } from '../terra-element.js'
 
 type CreateControlFn = () => Promise<TerraFormControl>
 
-/** Runs a set of generic tests for Shoelace form controls */
+/** Runs a set of generic tests for Terra form controls */
 export function runFormControlBaseTests<
     T extends TerraFormControl = TerraFormControl,
 >(
@@ -40,7 +40,7 @@ export function runFormControlBaseTests<
 }
 
 //
-// Applicable for all Shoelace form controls. This function checks the behavior of:
+// Applicable for all Terra form controls. This function checks the behavior of:
 //   - `.validity`
 //   - `.validationMessage`,
 //   - `.checkValidity()`
@@ -319,7 +319,7 @@ function runSpecialTests_standard(createControl: CreateControlFn) {
 // Local helper functions
 //
 
-// Creates a testable Shoelace form control instance
+// Creates a testable Terra form control instance
 async function createFormControl<T extends TerraFormControl = TerraFormControl>(
     tagName: string
 ): Promise<T> {
@@ -350,7 +350,7 @@ function checkEventEmissions(
 }
 
 // Component `terra-button` behaves quite different to the other components. To keep things simple we use simple conditions
-// here. `terra-button` might stay the only component in Shoelace core behaves that way, so we just hard code it here.
+// here. `terra-button` might stay the only component in Terra core behaves that way, so we just hard code it here.
 function getMode(control: TerraFormControl) {
     if (
         control.localName === 'terra-button' && //
