@@ -57,7 +57,7 @@ export function getNotebook(host: TerraDataSubsetter) {
         {
             id: '870c1384-e706-48ee-ba07-fd552a949868',
             cell_type: 'code',
-            source: `subsetter.job`,
+            source: `subsetter.job['links']`,
             metadata: {
                 trusted: true,
             },
