@@ -188,8 +188,9 @@ export default css`
     .variables-container main {
         grid-area: main;
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-        gap: 2rem;
+        grid-template-columns: 1fr 400px; /* left flexible, right fixed */
+        gap: 1rem;
+        min-height: 100%;
         overflow-x: auto;
         padding: 15px;
     }
@@ -250,6 +251,7 @@ export default css`
     .variable-list {
         margin: 0;
         padding: 0;
+        list-style: none;
     }
 
     .variable-list-item {
@@ -257,7 +259,11 @@ export default css`
         border-radius: 0.25em;
         background-color: var(--terra-color-carbon-10);
         padding: 0.5em 1em;
-        margin-bottom: 8px
+        margin-bottom: 0.5em
+    }
+
+    .variable-list-item:hover {
+        background-color: var(--terra-color-blue-light);
     }
 
     .variable-list-item::marker {
@@ -285,68 +291,36 @@ export default css`
         font-weight: 400;
     }
 
-    .variable sl-drawer {
-        font-style: italic;
+    .left-column {
+        overflow-y: auto;
     }
 
-    .variable sl-drawer::part(base) {
-        --body-spacing: 0.25em;
-        --header-spacing: 0.25em;
-        --footer-spacing: 1em 0;
-    }
-
-    .variable sl-drawer::part(header-actions) {
-        --header-spacing: 0.25em;
-
-        align-items: flex-start;
-        margin-block-start: 1em;
-        margin-inline-end: 0.5em;
-    }
-
-    .variable sl-drawer::part(close-button__base) {
-        --sl-focus-ring: var(--terra-focus-ring);
-        --sl-focus-ring-offset: var(--terra-focus-ring-offset);
-    }
-
-    .variable sl-drawer::part(panel) {
+    /* Right column (details panel) */
+    .right-column {
+        display: flex;
+        flex-direction: column;
         background-color: var(--terra-color-blue-light);
-        border: 0.0625em solid var(--terra-color-nasa-blue-shade);
+        border: 0.0625em solid var(--terra-color-nasa-blue-tint);
         border-radius: 0.25em;
         padding: 0.5em 1em;
         box-shadow: 0 0.125em 0.25em rgb(0 0 0 / 0.075);
-        left: auto;
-        right: 0;
-        top: 4.25rem;
+        padding: 1rem;
+        overflow-y: auto;
     }
 
-    .variable sl-drawer::part(body) {
-        /*padding-block-end: 6em;*/
-        line-height: var(--terra-line-height-dense);
+    .right-column h4 {
+        margin-top: 0;
+        margin-bottom: 1rem;
     }
 
-    .variable sl-drawer > * {
-        margin-block-start: 0;
+    .right-column p {
+        margin: 0.5rem 0;
+        line-height: 1.4;
     }
 
-    .variable sl-drawer h4 {
-        font-weight: 400;
-    }
-    .variable sl-drawer p {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 1em;
+    .placeholder {
+        color: var(--terra-color-carbon-50);
+        font-style: italic;
     }
 
-    .variable-details-button {
-        position: static;
-    }
-
-    .variable-details-button::part(base) {
-        border-color: transparent;
-        color: var(--terra-color-nasa-blue);
-    }
-
-    .variable-details-button:hover::part(base) {
-        color: var(--terra-color-spacesuit-white);
-    }    
 `
