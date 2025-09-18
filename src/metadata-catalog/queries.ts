@@ -105,6 +105,7 @@ export const GET_VARIABLES = gql`
                 dataFieldUnits
                 dataProductDescriptionUrl
                 dataFieldDescriptionUrl
+                dataProductInstrumentShortName
             }
             facets {
                 category

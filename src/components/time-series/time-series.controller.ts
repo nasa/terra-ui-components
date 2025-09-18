@@ -118,11 +118,31 @@ export class TimeSeriesController {
         const cacheKey = this.getCacheKey()
         const variableEntryId = this.host.catalogVariable!.dataFieldId
 
+        console.log(
+            'Loading time series for variable',
+            this.host.catalogVariable,
+            this.host.startDate,
+            this.host.endDate,
+            this.host.location
+        )
+
         // check the database for any existing data
         const existingTerraData = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
             cacheKey
         )
+
+        console.log('Existing data?', existingTerraData ? 'Yes' : 'No')
+        console.log(
+            'Is date range contained?',
+            isDateRangeContained(
+                startDate,
+                endDate,
+                new Date(existingTerraData?.startDate),
+                new Date(existingTerraData?.endDate)
+            )
+        )
+        console.log('Is cache valid?', this.#isCacheValid(existingTerraData))
 
         if (
             existingTerraData &&
@@ -222,9 +242,9 @@ export class TimeSeriesController {
     /**
      * Checks if cached data is still valid (not expired)
      */
-    #isCacheValid(existingData: VariableDbEntry): boolean {
+    #isCacheValid(existingData?: VariableDbEntry): boolean {
         // If cachedAt is not present (backward compatibility), consider it expired
-        if (!existingData.cachedAt) {
+        if (!existingData?.cachedAt) {
             this.clearExpiredCache()
             return false
         }
@@ -362,9 +382,11 @@ export class TimeSeriesController {
                 signal,
                 headers: {
                     Accept: 'application/json',
+                    /* TODO: figure out why bearer tokens are not working
                     ...(this.host.bearerToken
                         ? { Authorization: `Bearer: ${this.host.bearerToken}` }
                         : {}),
+                        */
                 },
             })
 
@@ -558,8 +580,10 @@ export class TimeSeriesController {
         }
 
         // show warning and require confirmation from the user
-        this.host.showDataPointWarning = true
-        return false
+        // TODO: temporarily turning this off
+        // this.host.showDataPointWarning = true
+        // return false
+        return true
     }
 
     /**

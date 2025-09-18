@@ -28,6 +28,10 @@ import type { LatLng } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
+import { TaskStatus } from '@lit/task'
+import TerraLoader from '../loader/loader.component.js'
+import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
+import { getNotebook } from './notebooks/subsetter-notebook.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -50,6 +54,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-login': TerraLogin,
+        'terra-loader': TerraLoader,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -57,6 +62,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
     showCollectionSearch?: boolean = true
+
+    @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
+    showHistoryPanel?: boolean = false
 
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
@@ -125,13 +133,13 @@ export default class TerraDataSubsetter extends TerraElement {
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
-    #controller = new DataSubsetterController(this)
+    controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
-            this.#controller.fetchJobByID(this.jobId)
+            this.controller.fetchJobByID(this.jobId)
         }
     }
 
@@ -141,13 +149,17 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         if (this.jobId) {
-            this.#controller.fetchJobByID(this.jobId)
+            this.controller.fetchJobByID(this.jobId)
         }
 
         document.addEventListener('click', this.#handleClickOutside.bind(this))
 
         if (this.closest('terra-dialog')) {
             this.renderedInDialog = true
+        }
+
+        if (this.showHistoryPanel) {
+            this.renderHistoryPanel()
         }
     }
 
@@ -168,7 +180,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     render() {
-        const showJobStatus = this.#controller.currentJob && !this.refineParameters
+        const showJobStatus = this.controller.currentJob && !this.refineParameters
         const showMinimizeButton = showJobStatus && this.renderedInDialog
 
         return html`
@@ -255,6 +267,10 @@ export default class TerraDataSubsetter extends TerraElement {
         const showSpatialSection =
             spatialExtent &&
             spatialExtent.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+
+        if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
+            return html`<terra-loader indeterminate></terra-loader>`
+        }
 
         return html`
             ${hasSubsetOption && estimates
@@ -1025,7 +1041,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderJobStatus() {
-        if (!this.#controller.currentJob?.jobID) {
+        if (!this.controller.currentJob?.jobID) {
             return html`<div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
 
@@ -1048,11 +1064,11 @@ export default class TerraDataSubsetter extends TerraElement {
             <div class="results-section" id="job-status-section">
                 <h2 class="results-title">Results:</h2>
 
-                ${this.#controller.currentJob!.status !== 'canceled' &&
-                this.#controller.currentJob!.status !== 'failed'
+                ${this.controller.currentJob!.status !== 'canceled' &&
+                this.controller.currentJob!.status !== 'failed'
                     ? html` <div class="progress-container">
                           <div class="progress-text">
-                              ${this.#controller.currentJob!.progress >= 100
+                              ${this.controller.currentJob!.progress >= 100
                                   ? html`
                                         <span class="status-complete"
                                             >✓ Search complete</span
@@ -1062,7 +1078,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                         <span class="spinner"></span>
                                         <span class="status-running"
                                             >Searching for data...
-                                            (${this.#controller.currentJob!
+                                            (${this.controller.currentJob!
                                                 .progress}%)</span
                                         >
                                     `}
@@ -1071,7 +1087,7 @@ export default class TerraDataSubsetter extends TerraElement {
                           <div class="progress-bar">
                               <div
                                   class="progress-fill"
-                                  style="width: ${this.#controller.currentJob!
+                                  style="width: ${this.controller.currentJob!
                                       .progress}%"
                               ></div>
                           </div>
@@ -1084,12 +1100,12 @@ export default class TerraDataSubsetter extends TerraElement {
                     >
                     out of estimated
                     <span class="estimated-total"
-                        >${this.#controller.currentJob!.numInputGranules.toLocaleString()}</span
+                        >${this.controller.currentJob!.numInputGranules.toLocaleString()}</span
                     >
                 </div>
 
                 ${this.#renderJobMessage()}
-                ${this.#controller.currentJob!.errors?.length
+                ${this.controller.currentJob!.errors?.length
                     ? html`
                           <terra-accordion>
                               <div slot="summary">
@@ -1097,7 +1113,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       class="accordion-title"
                                       style="color: #dc3545;"
                                       >Errors
-                                      (${this.#controller.currentJob!.errors
+                                      (${this.controller.currentJob!.errors
                                           .length})</span
                                   >
                               </div>
@@ -1105,7 +1121,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                   <ul
                                       style="color: #dc3545; font-size: 14px; padding-left: 20px;"
                                   >
-                                      ${this.#controller.currentJob!.errors.map(
+                                      ${this.controller.currentJob!.errors.map(
                                           (err: {
                                               url: string
                                               message: string
@@ -1197,8 +1213,8 @@ export default class TerraDataSubsetter extends TerraElement {
             </div>
 
             <div class="footer">
-                ${this.#controller.currentJob!.status === Status.SUCCESSFUL ||
-                this.#controller.currentJob!.status === Status.COMPLETE_WITH_ERRORS
+                ${this.controller.currentJob!.status === Status.SUCCESSFUL ||
+                this.controller.currentJob!.status === Status.COMPLETE_WITH_ERRORS
                     ? html`
                           <div>
                               <div
@@ -1307,7 +1323,7 @@ export default class TerraDataSubsetter extends TerraElement {
                           </div>
                       `
                     : nothing}
-                ${this.#controller.currentJob!.status === 'running'
+                ${this.controller.currentJob!.status === 'running'
                     ? html`<button
                           class="btn btn-success"
                           @click=${this.#cancelJob}
@@ -1323,11 +1339,11 @@ export default class TerraDataSubsetter extends TerraElement {
                         ${this.bearerToken
                             ? html`<a
                                   href="https://harmony.earthdata.nasa.gov/jobs/${this
-                                      .#controller.currentJob!.jobID}"
+                                      .controller.currentJob!.jobID}"
                                   target="_blank"
-                                  >${this.#controller.currentJob!.jobID}</a
+                                  >${this.controller.currentJob!.jobID}</a
                               >`
-                            : this.#controller.currentJob!.jobID}
+                            : this.controller.currentJob!.jobID}
                     </span>
                     <span class="info-icon">?</span>
                 </div>
@@ -1385,7 +1401,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #cancelJob() {
         this.cancelingGetData = true
-        this.#controller.cancelCurrentJob()
+        this.controller.cancelCurrentJob()
     }
 
     #getData() {
@@ -1393,10 +1409,10 @@ export default class TerraDataSubsetter extends TerraElement {
         this.#touchAllFields() // touch all fields, so errors will show if fields are invalid
 
         // cancel any existing running job
-        this.#controller.cancelCurrentJob()
-        this.#controller.currentJob = null
+        this.controller.cancelCurrentJob()
+        this.controller.currentJob = null
 
-        this.#controller.jobStatusTask.run() // go ahead and create the new job and start polling
+        this.controller.jobStatusTask.run() // go ahead and create the new job and start polling
 
         // scroll the job-status-section into view
         setTimeout(() => {
@@ -1413,20 +1429,20 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #numberOfFilesFoundEstimate() {
         return Math.floor(
-            (this.#controller.currentJob!.numInputGranules *
-                this.#controller.currentJob!.progress) /
+            (this.controller.currentJob!.numInputGranules *
+                this.controller.currentJob!.progress) /
                 100
         )
     }
 
     #getDocumentationLinks() {
-        return this.#controller.currentJob!.links.filter(
+        return this.controller.currentJob!.links.filter(
             link => link.rel === 'stac-catalog-json'
         )
     }
 
     #getDataLinks() {
-        return this.#controller.currentJob!.links.filter(link => link.rel === 'data')
+        return this.controller.currentJob!.links.filter(link => link.rel === 'data')
     }
 
     #hasAtLeastOneSubsetOption() {
@@ -1454,9 +1470,9 @@ export default class TerraDataSubsetter extends TerraElement {
         const errorStatuses = [Status.FAILED]
 
         let type = 'normal'
-        if (warningStatuses.includes(this.#controller.currentJob!.status)) {
+        if (warningStatuses.includes(this.controller.currentJob!.status)) {
             type = 'warning'
-        } else if (errorStatuses.includes(this.#controller.currentJob!.status)) {
+        } else if (errorStatuses.includes(this.controller.currentJob!.status)) {
             type = 'error'
         }
 
@@ -1489,7 +1505,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #getJobMessageText() {
-        return this.#controller.currentJob?.message.replace(
+        return this.controller.currentJob?.message.replace(
             /\b(The job|the job|job|Job)\b/g,
             match => {
                 switch (match) {
@@ -1559,7 +1575,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #downloadLinksAsTxt(event: Event) {
         event.stopPropagation()
-        if (!this.#controller.currentJob?.links) {
+        if (!this.controller.currentJob?.links) {
             return
         }
 
@@ -1576,7 +1592,7 @@ export default class TerraDataSubsetter extends TerraElement {
         // Create a temporary link element and trigger download
         const a = document.createElement('a')
         a.href = url
-        a.download = `subset_links_${this.#controller.currentJob!.jobID}.txt`
+        a.download = `subset_links_${this.controller.currentJob!.jobID}.txt`
         document.body.appendChild(a)
         a.click()
 
@@ -1588,7 +1604,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
     async #downloadPythonScript(event: Event) {
         event.stopPropagation()
-        if (!this.#controller.currentJob?.links) {
+        if (!this.controller.currentJob?.links) {
             return
         }
 
@@ -1604,7 +1620,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
         const content = (await response.text()).replace(
             /{{jobId}}/gi,
-            this.#controller.currentJob!.jobID
+            this.controller.currentJob!.jobID
         )
         const blob = new Blob([content], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
@@ -1612,7 +1628,7 @@ export default class TerraDataSubsetter extends TerraElement {
         // Create a temporary link element and trigger download
         const a = document.createElement('a')
         a.href = url
-        a.download = `download_subset_files_${this.#controller.currentJob!.jobID}.py`
+        a.download = `download_subset_files_${this.controller.currentJob!.jobID}.py`
         document.body.appendChild(a)
         a.click()
 
@@ -1624,7 +1640,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
     async #downloadEarthdataDownload(event: Event) {
         event.stopPropagation()
-        if (!this.#controller.currentJob?.links) {
+        if (!this.controller.currentJob?.links) {
             return
         }
 
@@ -1648,50 +1664,15 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #handleJupyterNotebookClick() {
-        const jupyterLiteUrl = 'https://gesdisc.github.io/jupyterlite/lab/index.html'
-        const jupyterWindow = window.open(jupyterLiteUrl, '_blank')
+        const notebook = getNotebook(this)
 
-        if (!jupyterWindow) {
-            console.error('Failed to open JupyterLite!')
-            return
-        }
+        console.log('sending data to JupyterLite')
 
-        // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
-        setTimeout(() => {
-            const notebook = [
-                {
-                    id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
-                    cell_type: 'code',
-                    source: '%pip install -q terra_ui_components',
-                    metadata: {
-                        trusted: true,
-                    },
-                    outputs: [],
-                    execution_count: null,
-                },
-                {
-                    id: '870c1384-e706-48ee-ba07-fd552a949869',
-                    cell_type: 'code',
-                    source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\nsubsetter.jobId = '${this.#controller.currentJob?.jobID}'\n\nsubsetter`,
-                    metadata: {
-                        trusted: true,
-                    },
-                    outputs: [],
-                    execution_count: null,
-                },
-            ]
-
-            console.log('posting to JupyterLite ', notebook)
-
-            jupyterWindow.postMessage(
-                {
-                    type: 'load-notebook',
-                    filename: `subset_${this.#controller.currentJob?.jobID}.ipynb`,
-                    notebook,
-                },
-                '*'
-            )
-        }, 500)
+        sendDataToJupyterNotebook('load-notebook', {
+            filename: `subset_${this.controller.currentJob?.jobID}.ipynb`,
+            notebook,
+            bearerToken: this.bearerToken,
+        })
     }
 
     renderHistoryPanel() {
@@ -1707,6 +1688,10 @@ export default class TerraDataSubsetter extends TerraElement {
 
             if (this.bearerToken) {
                 historyPanel.setAttribute('bearer-token', this.bearerToken)
+            }
+
+            if (this.environment) {
+                historyPanel.setAttribute('environment', this.environment)
             }
 
             document.body.appendChild(historyPanel)

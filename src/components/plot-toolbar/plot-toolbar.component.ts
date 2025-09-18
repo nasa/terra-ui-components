@@ -14,7 +14,12 @@ import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb
 import type { VariableDbEntry } from '../time-series/time-series.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
+import TerraMap from '../map/map.component.js'
+import { parseBoundingBox } from '../map/leaflet-utils.js'
 import { cache } from 'lit/directives/cache.js'
+import { AuthController } from '../../auth/auth.controller.js'
+import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
+import { getTimeSeriesNotebook } from './notebooks/time-series-notebook.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -36,6 +41,7 @@ export default class TerraPlotToolbar extends TerraElement {
     static dependencies = {
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
+        'terra-map': TerraMap,
     }
 
     @property() catalogVariable: Variable
@@ -47,11 +53,23 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() endDate: string
     @property() cacheKey: string
     @property() dataType: DataType
+    @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean =
+        true
 
     @state()
     activeMenuItem: MenuNames = null
 
+    @state()
+    showLocationTooltip: boolean = false
+
+    @state()
+    locationMapValue: any = []
+
+    #tooltipTimeout: number | null = null
+
     @query('#menu') menu: HTMLMenuElement
+
+    _authController = new AuthController(this)
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
@@ -66,16 +84,88 @@ export default class TerraPlotToolbar extends TerraElement {
         this.activeMenuItem = null
     }
 
+    #handleLocationMouseEnter() {
+        if (this.location && this.location.trim()) {
+            try {
+                this.locationMapValue = parseBoundingBox(this.location.trim())
+                // Add a small delay to prevent flickering
+                this.#tooltipTimeout = window.setTimeout(() => {
+                    this.showLocationTooltip = true
+                }, 150)
+            } catch (error) {
+                console.warn('Failed to parse location for tooltip:', error)
+                // Don't show tooltip if parsing fails
+                this.showLocationTooltip = false
+            }
+        }
+    }
+
+    #handleLocationMouseLeave() {
+        if (this.#tooltipTimeout) {
+            clearTimeout(this.#tooltipTimeout)
+            this.#tooltipTimeout = null
+        }
+        this.showLocationTooltip = false
+    }
+
+    #getLocationIcon() {
+        if (!this.location) return ''
+
+        return html`<terra-icon
+            name="outline-map-pin"
+            library="heroicons"
+            font-size="1em"
+            class="location-icon"
+            label="Point location"
+        ></terra-icon>`
+    }
+
     render() {
+        const metadata = [
+            this.catalogVariable.dataProductInstrumentShortName,
+            this.catalogVariable.dataProductTimeInterval,
+        ]
+            .filter(Boolean)
+            .filter(value => value.toLowerCase() !== 'not applicable')
+
         return cache(
             !this.catalogVariable
                 ? html`<div class="spacer"></div>`
                 : html` <header>
-                      <slot name="title">
-                          <h2 class="title">
-                              ${this.catalogVariable.dataFieldLongName}
-                          </h2>
-                      </slot>
+                      <div class="title-container">
+                          <slot name="title">
+                              <h2 class="title">
+                                  ${this.catalogVariable.dataFieldLongName}
+                              </h2>
+                          </slot>
+                          <slot name="subtitle">
+                              <h3 class="subtitle">
+                                  ${metadata.join(' • ')} •
+                                  <a
+                                      target="_blank"
+                                      href="${this.catalogVariable
+                                          .dataProductDescriptionUrl}"
+                                      >[${this.catalogVariable
+                                          .dataProductShortName}_${this
+                                          .catalogVariable.dataProductVersion}]</a
+                                  >
+                                  ${this.showLocation
+                                      ? html`• ${this.#getLocationIcon()}
+                                            <span
+                                                class="location-text"
+                                                @mouseenter=${this
+                                                    .#handleLocationMouseEnter}
+                                                @mouseleave=${this
+                                                    .#handleLocationMouseLeave}
+                                                >${this.location.replace(
+                                                    /,/g,
+                                                    ', '
+                                                )}</span
+                                            >`
+                                      : ''}
+                              </h3>
+                          </slot>
+                      </div>
 
                       <div class="toggles">
                           <terra-button
@@ -197,6 +287,22 @@ export default class TerraPlotToolbar extends TerraElement {
                               ${this.#renderJupyterNotebookPanel()}
                           </li>
                       </menu>
+
+                      ${this.showLocationTooltip
+                          ? html`
+                                <div class="location-tooltip">
+                                    <terra-map
+                                        .value=${this.locationMapValue}
+                                        zoom="4"
+                                        has-navigation="false"
+                                        hide-bounding-box-selection="true"
+                                        hide-point-selection="true"
+                                        .staticMode=${true}
+                                        style="width: 300px; height: 200px;"
+                                    ></terra-map>
+                                </div>
+                            `
+                          : ''}
                   </header>`
         )
     }
@@ -386,6 +492,29 @@ export default class TerraPlotToolbar extends TerraElement {
             return
         }
 
+        const handleMessage = (event: any) => {
+            if (event.data?.type !== 'jupyterlite-ready') {
+                return
+            }
+
+            console.log('JupyterLite is ready!')
+            this.#sendDataToJupyterNotebook(jupyterWindow)
+        }
+
+        window.addEventListener('message', handleMessage.bind(this), { once: true })
+    }
+
+    #sendDataToJupyterNotebook(jupyterWindow: Window) {
+        if (this.dataType === 'geotiff') {
+            this.#sendMapDataToJupyterNotebook(jupyterWindow)
+        } else {
+            this.#sendTimeSeriesDataToJupyterNotebook(jupyterWindow)
+        }
+    }
+
+    #sendTimeSeriesDataToJupyterNotebook(jupyterWindow: Window) {
+        console.log('Sending time series data to JupyterLite...')
+
         // Fetch the time series data from IndexedDB
         getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
@@ -393,42 +522,49 @@ export default class TerraPlotToolbar extends TerraElement {
         ).then(timeSeriesData => {
             // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
             setTimeout(() => {
-                const notebook = [
-                    {
-                        id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
-                        cell_type: 'code',
-                        source: '%pip install -q terra_ui_components',
-                        metadata: {
-                            trusted: true,
-                        },
-                        outputs: [],
-                        execution_count: null,
-                    },
-                    {
-                        id: '870c1384-e706-48ee-ba07-fd552a949869',
-                        cell_type: 'code',
-                        source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${this.variableEntryId}'\ntimeseries.startDate = '${this.startDate}'\ntimeseries.endDate = '${this.endDate}'\ntimeseries.location = '${this.location}'\n\ntimeseries`,
-                        metadata: {
-                            trusted: true,
-                        },
-                        outputs: [],
-                        execution_count: null,
-                    },
-                ]
+                const notebook = getTimeSeriesNotebook(this)
 
                 jupyterWindow.postMessage(
                     {
                         type: 'load-notebook',
-                        filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}.ipynb`,
+                        filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}-timeseries.ipynb`,
                         notebook,
                         timeSeriesData,
                         databaseName: DB_NAME,
                         storeName: IndexedDbStores.TIME_SERIES,
+                        bearerToken: this.bearerToken,
                     },
                     '*'
                 )
             }, 500)
         })
+    }
+
+    #sendMapDataToJupyterNotebook(jupyterWindow: Window) {
+        console.log('Sending map data to JupyterLite...')
+
+        // Fetch the time series data from IndexedDB
+        getDataByKey<Blob>(IndexedDbStores.TIME_AVERAGE_MAP, this.cacheKey).then(
+            blob => {
+                // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+                setTimeout(() => {
+                    const notebook = getTimeAveragedMapNotebook(this)
+
+                    jupyterWindow.postMessage(
+                        {
+                            type: 'load-notebook',
+                            filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}-map.ipynb`,
+                            notebook,
+                            blob,
+                            databaseName: DB_NAME,
+                            storeName: IndexedDbStores.TIME_AVERAGE_MAP,
+                            token: this.bearerToken,
+                        },
+                        '*'
+                    )
+                }, 500)
+            }
+        )
     }
 
     #downloadPNG(_event: Event) {

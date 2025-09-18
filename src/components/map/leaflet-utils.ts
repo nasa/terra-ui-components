@@ -66,6 +66,7 @@ export interface MapViewOptions {
     maxZoom: number
     hasCoordTracker?: boolean
     hasNavigation?: boolean
+    staticMode?: boolean
     hideBoundingBoxDrawTool?: boolean
     hidePointSelectionDrawTool?: boolean
     initialValue?: LatLngBoundsExpression
@@ -86,7 +87,7 @@ export class Leaflet {
 
     // map initialization function
     initializeMap(container: HTMLElement, options: MapViewOptions) {
-        this.map = new L.Map(container, {
+        let mapOptions: L.MapOptions = {
             center:
                 options.latitude && options.longitude
                     ? L.latLng(options.latitude, options.longitude)
@@ -95,7 +96,18 @@ export class Leaflet {
             attributionControl: false,
             minZoom: options.minZoom,
             maxZoom: options.maxZoom,
-        })
+        }
+
+        if (options.staticMode) {
+            mapOptions.zoomControl = false
+            mapOptions.doubleClickZoom = false
+            mapOptions.scrollWheelZoom = false
+            mapOptions.dragging = false
+            mapOptions.touchZoom = false
+            mapOptions.boxZoom = false
+        }
+
+        this.map = new L.Map(container, mapOptions)
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: options.maxZoom,

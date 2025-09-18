@@ -1,12 +1,12 @@
 ---
 meta:
     title: Vue (version 2)
-    description: Tips for using Shoelace in your Vue 2 app.
+    description: Tips for using Terra in your Vue 2 app.
 ---
 
 # Vue (version 2)
 
-Vue [plays nice](https://custom-elements-everywhere.com/#vue) with custom elements, so you can use Shoelace in your Vue apps with ease.
+Vue [plays nice](https://custom-elements-everywhere.com/#vue) with custom elements, so you can use Terra in your Vue apps with ease.
 
 :::tip
 These instructions are for Vue 2. If you're using Vue 3 or above, please see the [Vue 3 instructions](/frameworks/vue).
@@ -14,7 +14,7 @@ These instructions are for Vue 2. If you're using Vue 3 or above, please see the
 
 ## Installation
 
-To add Shoelace to your Vue app, install the package from npm.
+To add Terra to your Vue app, install the package from npm.
 
 ```bash
 npm install @nasa-terra/components
@@ -35,7 +35,7 @@ If you'd rather not use the CDN for assets, you can create a build task that cop
 
 ## Configuration
 
-You'll need to tell Vue to ignore Shoelace components. This is pretty easy because they all start with `terra-`.
+You'll need to tell Vue to ignore Terra components. This is pretty easy because they all start with `terra-`.
 
 ```js
 import Vue from 'vue'
@@ -50,7 +50,7 @@ const app = new Vue({
 app.$mount('#app')
 ```
 
-Now you can start using Shoelace components in your app!
+Now you can start using Terra components in your app!
 
 ## Usage
 
@@ -72,36 +72,3 @@ One caveat is there's currently [no support for v-model on custom elements](http
 <!-- This works, but it's a bit longer -->
 <sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
-
-If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-terra-model) adds a custom directive that will work just like `v-model` but for Shoelace components. To install it, use this command.
-
-```bash
-npm install @shoelace-style/vue-terra-model@1
-```
-
-Next, import the directive and enable it like this.
-
-```js
-import Vue from 'vue'
-import ShoelaceModelDirective from '@shoelace-style/vue-terra-model'
-import App from './App.vue'
-
-Vue.use(ShoelaceModelDirective)
-Vue.config.ignoredElements = [/terra-/]
-
-const app = new Vue({
-    render: h => h(App),
-})
-
-app.$mount('#app')
-```
-
-Now you can use the `v-terra-model` directive to keep your data in sync!
-
-```html
-<sl-input v-terra-model="name"></sl-input>
-```
-
-:::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/nasa/terra-ui-components/blob/next/docs/frameworks/vue-2.md)
-:::

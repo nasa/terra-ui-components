@@ -1,12 +1,12 @@
 ---
 meta:
     title: Vue
-    description: Tips for using Shoelace in your Vue 3 app.
+    description: Tips for using terra in your Vue 3 app.
 ---
 
 # Vue
 
-Vue [plays nice](https://custom-elements-everywhere.com/#vue) with custom elements, so you can use Shoelace in your Vue apps with ease.
+Vue [plays nice](https://custom-elements-everywhere.com/#vue) with custom elements, so you can use Terra in your Vue apps with ease.
 
 :::tip
 These instructions are for Vue 3 and above. If you're using Vue 2, please see the [Vue 2 instructions](/frameworks/vue-2).
@@ -14,7 +14,7 @@ These instructions are for Vue 3 and above. If you're using Vue 2, please see th
 
 ## Installation
 
-To add Shoelace to your Vue app, install the package from npm.
+To add Terra to your Vue app, install the package from npm.
 
 ```bash
 npm install @nasa-terra/components
@@ -37,11 +37,11 @@ If you'd rather not use the CDN for assets, you can create a build task that cop
 
 If you haven't configured your Vue.js project to work with custom elements/web components, follow [the instructions here](https://vuejs.org/guide/extras/web-components.html#using-custom-elements-in-vue) based on your project type to ensure your project will not throw an error when it encounters a custom element.
 
-Now you can start using Shoelace components in your app!
+Now you can start using Terra components in your app!
 
 ## Types
 
-Once you have configured your application for custom elements, you should be able to use Shoelace in your application without it causing any errors. Unfortunately, this doesn't register the custom elements to behave like components built using Vue. To provide autocomplete information and type safety for your components, you can import the Shoelace Vue types into your `tsconfig.json` to get better integration in your standard Vue and JSX templates.
+Once you have configured your application for custom elements, you should be able to use Terra in your application without it causing any errors. Unfortunately, this doesn't register the custom elements to behave like components built using Vue. To provide autocomplete information and type safety for your components, you can import the Terra Vue types into your `tsconfig.json` to get better integration in your standard Vue and JSX templates.
 
 ```json
 {
@@ -105,15 +105,9 @@ One caveat is there's currently [no support for v-model on custom elements](http
 <sl-input :value="name" @input="name = $event.target.value"></sl-input>
 ```
 
-If that's too verbose for your liking, you can use a custom directive instead. [This utility](https://www.npmjs.com/package/@shoelace-style/vue-terra-model) adds a custom directive that will work just like `v-model` but for Shoelace components.
-
-:::tip
-Are you using Shoelace with Vue? [Help us improve this page!](https://github.com/nasa/terra-ui-components/blob/next/docs/frameworks/vue.md)
-:::
-
 ### Slots
 
-Slots in Shoelace/web components are functionally the same as basic slots in Vue. Slots can be assigned to elements using the `slot` attribute followed by the name of the slot it is being assigned to.
+Slots in Terra/web components are functionally the same as basic slots in Vue. Slots can be assigned to elements using the `slot` attribute followed by the name of the slot it is being assigned to.
 
 Here is an example:
 

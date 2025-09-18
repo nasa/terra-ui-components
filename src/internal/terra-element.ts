@@ -87,6 +87,7 @@ export default class TerraElement extends LitElement {
     @property() dir: string
     @property() lang: string
     @property() environment?: Environment = getEnvironment()
+    @property() bearerToken?: string
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(

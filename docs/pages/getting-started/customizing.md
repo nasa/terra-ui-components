@@ -1,16 +1,16 @@
 ---
 meta:
     title: Customizing
-    description: Learn how to customize Shoelace through parts and custom properties.
+    description: Learn how to customize Terra through parts and custom properties.
 ---
 
 # Customizing
 
-Shoelace components can be customized at a high level through design tokens. This gives you control over theme colors and general styling. For more advanced customizations, you can make use of CSS parts and custom properties to target individual components.
+Terra components can be customized at a high level through design tokens. This gives you control over theme colors and general styling. For more advanced customizations, you can make use of CSS parts and custom properties to target individual components.
 
 ## Design Tokens
 
-Shoelace makes use of several design tokens to provide a consistent appearance across components. You can customize them and use them in your own application with pure CSS — no preprocessor required.
+Terra makes use of several design tokens to provide a consistent appearance across components. You can customize them and use them in your own application with pure CSS — no preprocessor required.
 
 Design tokens offer a high-level way to customize the library with minimal effort. There are no component-specific variables, however, as design tokens are intended to be generic and highly reusable. To customize an individual component, refer to the section entitled [CSS Parts](#css-parts).
 
@@ -41,7 +41,7 @@ Many design tokens are described further along in this documentation. For a comp
 
 Whereas design tokens offer a high-level way to customize the library, CSS parts offer a low-level way to customize individual components. Again, this is done with pure CSS — no preprocessor required.
 
-Shoelace components use a [shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) to encapsulate their styles and behaviors. As a result, you can't simply target their internals with the usual CSS selectors. Instead, components expose "parts" that can be targeted with the [CSS part selector](https://developer.mozilla.org/en-US/docs/Web/CSS/::part), or `::part()`.
+Terra components use a [shadow DOM](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) to encapsulate their styles and behaviors. As a result, you can't simply target their internals with the usual CSS selectors. Instead, components expose "parts" that can be targeted with the [CSS part selector](https://developer.mozilla.org/en-US/docs/Web/CSS/::part), or `::part()`.
 
 Here's an example that modifies buttons with the `tomato-button` class.
 
@@ -112,7 +112,7 @@ Not all components expose CSS custom properties. For those that do, they can be 
 
 ## Animations
 
-Some components use animation, such as when a dialog is shown or hidden. Animations are performed using the [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) rather than CSS. However, you can still customize them through Shoelace's animation registry. If a component has customizable animations, they'll be listed in the "Animation" section of its documentation.
+Some components use animation, such as when a dialog is shown or hidden. Animations are performed using the [Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API) rather than CSS. However, you can still customize them through Terra's animation registry. If a component has customizable animations, they'll be listed in the "Animation" section of its documentation.
 
 To customize a default animation, use the `setDefaultAnimation()` method. The function accepts an animation name (found in the component's docs) and an object with `keyframes`, and `options` or `null` to disable the animation.
 

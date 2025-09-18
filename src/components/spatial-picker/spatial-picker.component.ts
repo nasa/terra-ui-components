@@ -110,11 +110,31 @@ export default class TerraSpatialPicker extends TerraElement {
     @state()
     error: string = ''
 
+    @state()
+    private _popoverFlipped: boolean = false
+
     @query('.spatial-picker__input')
     spatialInput: HTMLInputElement
 
     @query('terra-map')
     map: TerraMap
+
+    @query('.spatial-picker')
+    spatialPicker: HTMLElement
+
+    setValue(value: string) {
+        try {
+            this.mapValue = parseBoundingBox(value)
+            this.error = ''
+
+            this._emitMapChange()
+        } catch (error) {
+            this.error =
+                error instanceof Error
+                    ? error.message
+                    : 'Invalid spatial area (format: LAT, LNG or LAT, LNG, LAT, LNG)'
+        }
+    }
 
     private _blur(e: FocusEvent) {
         try {
@@ -135,18 +155,41 @@ export default class TerraSpatialPicker extends TerraElement {
         // Don't hide if clicking within the map component
         const relatedTarget = e.relatedTarget as HTMLElement
         if (!relatedTarget?.closest('terra-map')) {
-            this.isExpanded = false
+            this.close()
         }
     }
 
     private _focus() {
         if (this.showMapOnFocus) {
-            this.isExpanded = true
+            this.open()
         }
     }
 
     private _click() {
-        this.isExpanded = !this.isExpanded
+        if (this.isExpanded) {
+            this.close()
+        } else {
+            this.open()
+        }
+    }
+
+    /**
+     * The spatial picker will either be positioned above or below the input depending on the space available
+     * @returns
+     */
+    private _checkPopoverPosition() {
+        if (this.inline) return
+
+        const viewportHeight = window.innerHeight
+        const pickerRect = this.spatialPicker.getBoundingClientRect()
+        const spaceBelow = viewportHeight - pickerRect.bottom
+        const spaceAbove = pickerRect.top
+
+        if (spaceBelow < 450 && spaceBelow < spaceAbove) {
+            this._popoverFlipped = true
+        } else {
+            this._popoverFlipped = false
+        }
     }
 
     private _emitMapChange() {
@@ -185,6 +228,7 @@ export default class TerraSpatialPicker extends TerraElement {
 
     open() {
         this.isExpanded = true
+        this._checkPopoverPosition()
     }
 
     close() {
@@ -223,9 +267,23 @@ export default class TerraSpatialPicker extends TerraElement {
                 this.initialValue === '' ? [] : parseBoundingBox(this.initialValue)
         }
 
+        // Add resize listener to handle viewport changes
+        window.addEventListener('resize', this._handleResize.bind(this))
+
         setTimeout(() => {
             this.invalidateSize()
         }, 500)
+    }
+
+    private _handleResize() {
+        if (this.isExpanded && !this.inline) {
+            this._checkPopoverPosition()
+        }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+        window.removeEventListener('resize', this._handleResize.bind(this))
     }
 
     renderMap() {
@@ -296,6 +354,9 @@ export default class TerraSpatialPicker extends TerraElement {
                     : nothing}
                 ${expanded
                     ? html`<div
+                          class="spatial-picker__map-container ${this._popoverFlipped
+                              ? 'flipped'
+                              : ''}"
                           style="${this.inline
                               ? 'position: static; width: 100%;'
                               : ''}"

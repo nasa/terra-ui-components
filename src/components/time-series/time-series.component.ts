@@ -8,16 +8,16 @@ import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
 import { html } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { Task, TaskStatus } from '@lit/task'
+import { TaskStatus } from '@lit/task'
 import { TimeSeriesController } from './time-series.controller.js'
 import type { CSSResultGroup } from 'lit'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
-import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
 import { formatDate } from '../../utilities/date.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
+import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -120,39 +120,9 @@ export default class TerraTimeSeries extends TerraElement {
     @state()
     estimatedDataPoints = 0
 
-    #catalog = new GiovanniVariableCatalog()
     _authController = new AuthController(this)
 
-    // @ts-expect-error
-    #fetchVariableTask = new Task(this, {
-        task: async (_args, { signal }) => {
-            const variableEntryId = this.getVariableEntryId()
-
-            console.debug('fetch variable ', variableEntryId)
-
-            if (!variableEntryId) {
-                return
-            }
-
-            const variable = await this.#catalog.getVariable(variableEntryId, {
-                signal,
-            })
-
-            console.debug('found variable ', variable)
-
-            if (!variable) {
-                return
-            }
-
-            this.startDate =
-                this.startDate ?? variable.exampleInitialStartDate?.toISOString()
-            this.endDate =
-                this.endDate ?? variable.exampleInitialEndDate?.toISOString()
-
-            this.catalogVariable = variable
-        },
-        args: () => [this.variableEntryId, this.collection, this.variable],
-    })
+    _fetchVariableTask = getFetchVariableTask(this)
 
     connectedCallback(): void {
         super.connectedCallback()
@@ -195,6 +165,7 @@ export default class TerraTimeSeries extends TerraElement {
      * aborts the underlying data loading task, which cancels the network request
      */
     #abortDataLoad() {
+        console.log('Aborting data load')
         this.#timeSeriesController.task?.abort()
     }
 
@@ -287,10 +258,18 @@ export default class TerraTimeSeries extends TerraElement {
             </div>
 
             <dialog
-                ?open=${this.#timeSeriesController.task.status === TaskStatus.PENDING}
+                ?open=${this.#timeSeriesController.task.status ===
+                    TaskStatus.PENDING ||
+                this._fetchVariableTask.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
-                <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
+
+                ${this.#timeSeriesController.task.status === TaskStatus.PENDING
+                    ? html`<p>
+                          Plotting ${this.catalogVariable?.dataFieldId}&hellip;
+                      </p>`
+                    : html`<p>Preparing plot&hellip;</p>`}
+
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
 
@@ -328,25 +307,12 @@ export default class TerraTimeSeries extends TerraElement {
         `
     }
 
-    getVariableEntryId() {
-        if (!this.variableEntryId && !(this.collection && this.variable)) {
-            return
-        }
-
-        return this.variableEntryId ?? `${this.collection}_${this.variable}`
-    }
-
     #getYAxisLabel() {
         if (!this.catalogVariable) {
             return
         }
 
-        return [
-            this.catalogVariable.dataFieldLongName,
-            this.catalogVariable.dataFieldUnits,
-        ]
-            .filter(Boolean)
-            .join(', ')
+        return [this.catalogVariable.dataFieldUnits].filter(Boolean).join(', ')
     }
 
     #handlePlotRelayout(e: TerraPlotRelayoutEvent) {

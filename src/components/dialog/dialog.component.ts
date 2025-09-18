@@ -5,6 +5,7 @@ import { html } from 'lit'
 import { property, query } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 
+// TODO: review commit 8e9cdd43 and move back to modal. We'll need to review anything with a popover (datepicker, spatial picker, etc.) to ensure it works with the new dialog.
 /**
  * @summary Used to create both modal and non-modal dialog boxes.
  * @documentation https://disc.gsfc.nasa.gov/components/dialog
@@ -30,6 +31,10 @@ export default class TerraDialog extends TerraElement {
     @property({ reflect: true })
     width: string = 'fit-content'
 
+    /** used to set the dialog's open state */
+    @property({ type: Boolean, reflect: true })
+    open: boolean = false
+
     /** allow closing the dialog when clicking outside of it */
     @property({ attribute: 'click-outside-to-close', type: Boolean, reflect: true })
     clickOutsideToClose: boolean = true
@@ -39,16 +44,16 @@ export default class TerraDialog extends TerraElement {
     showBackdrop: boolean = true
 
     toggle() {
-        this.dialogEl.open ? this.hide('toggle') : this.show()
+        this.open ? this.hide() : this.show()
     }
 
     show() {
-        this.dialogEl.showModal()
+        this.open = true
         this.emit('terra-dialog-show')
     }
 
-    hide(reason?: string) {
-        this.dialogEl.close(reason)
+    hide() {
+        this.open = false
         this.emit('terra-dialog-hide')
     }
 
@@ -56,18 +61,28 @@ export default class TerraDialog extends TerraElement {
         if (this.clickOutsideToClose) {
             const target = event.target as HTMLElement
 
-            if (target.nodeName === 'DIALOG') {
-                this.hide('backdrop')
+            if (target.classList.contains('dialog-backdrop')) {
+                this.hide()
             }
         }
     }
 
     render() {
         return html`
+            <div
+                class="dialog-backdrop ${this.showBackdrop ? 'visible' : ''} ${this
+                    .open
+                    ? 'active'
+                    : ''} ${this.clickOutsideToClose ? 'clickable' : ''}"
+                part="backdrop"
+                @click=${this.#handleBackdropClick}
+            ></div>
+
             <dialog
                 @click=${this.#handleBackdropClick}
                 aria-modal="true"
                 id=${this.id}
+                ?open=${this.open}
                 part="dialog"
                 role="dialog"
                 style="width: ${this.width}"

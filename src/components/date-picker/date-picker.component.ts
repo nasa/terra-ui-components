@@ -36,7 +36,7 @@ export default class TerraDatePicker extends TerraElement {
     @property({ attribute: 'start-date' }) startDate?: string
     @property({ attribute: 'end-date' }) endDate?: string
     @property({ attribute: 'default-date' }) defaultDate?: string
-    @property({ type: Boolean, attribute: 'allow-input' }) allowInput = false
+    @property({ type: Boolean, attribute: 'allow-input' }) allowInput = true
     @property({ attribute: 'alt-format' }) altFormat = 'F j, Y'
     @property({ type: Boolean, attribute: 'alt-input' }) altInput = false
     @property({ attribute: 'alt-input-class' }) altInputClass = ''

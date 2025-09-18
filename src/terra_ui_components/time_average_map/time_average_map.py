@@ -20,7 +20,12 @@ class TerraTimeAverageMap(TerraBaseWidget):
          *
          * model.get() pulls from the Jupyter notebooks state. We'll use the state to set the initial value for each property
          */
-        component.attr = model.get('attr')
+        component.collection = model.get('collection')
+        component.variable = model.get('variable')
+        component.startDate = model.get('startDate')
+        component.endDate = model.get('endDate')
+        component.location = model.get('location')
+        component.long_name = model.get('long_name')
 
         /**
          * add the component to the cell
@@ -36,8 +41,41 @@ class TerraTimeAverageMap(TerraBaseWidget):
          * 
          * If this isn't here, the component can't be changed after it's initial render
          */
-        model.on('change:attr', () => {
-            component.attr = model.get('attr')
+        model.on('change:collection', () => {
+            component.collection = model.get('collection')
+        })
+        model.on('change:variable', () => {
+            component.variable = model.get('variable')
+        })
+        model.on('change:startDate', () => {
+            component.startDate = model.get('startDate')
+        })
+        model.on('change:endDate', () => {
+            component.endDate = model.get('endDate')
+        })
+        model.on('change:location', () => {
+            component.location = model.get('location')
+        })
+        model.on('change:long_name', () => {
+            component.long_name = model.get('long_name')
+        })
+
+        /**
+         * Add event listeners.
+         * These are used to communicate back to the Jupyter notebook
+         */
+        component.addEventListener('terra-time-average-map-data-change', (e) => {
+            // hide the loading overlay, if it exists
+            const loadingOverlay = document.getElementById('jupyterlite-loading-overlay')
+
+            if (loadingOverlay) {
+                loadingOverlay.remove()
+            }
+
+            console.log('caught the event!! ', e)
+
+            model.set('data', e.detail.data.data)
+            model.save_changes()
         })
     }
 
@@ -45,6 +83,13 @@ class TerraTimeAverageMap(TerraBaseWidget):
     """
 
     # Component properties
-    # While we have properties in the component, we also need to tell Python about them as well. 
+    # While we have properties in the component, we also need to tell Python about them as well.
     # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
-    attr = traitlets.Unicode('').tag(sync=True)
+    collection = traitlets.Unicode('').tag(sync=True)
+    variable = traitlets.Unicode('').tag(sync=True)
+    startDate = traitlets.Unicode('').tag(sync=True)
+    endDate = traitlets.Unicode('').tag(sync=True)
+    location = traitlets.Unicode('').tag(sync=True)
+    long_name = traitlets.Unicode('').tag(sync=True)
+    data = traitlets.List(trait=traitlets.Dict(),
+                          default_value=[]).tag(sync=True)

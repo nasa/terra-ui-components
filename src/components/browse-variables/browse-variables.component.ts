@@ -256,7 +256,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                                     role="button"
                                                     tabindex="0"
                                                     aria-selected="false"
-                                                    data-facet="disciplines"
+                                                    data-facet=${column.facetKey}
                                                     @click=${this.toggleFacetSelect}
                                                 >
                                                     ${field.name}
@@ -401,6 +401,14 @@ export default class TerraBrowseVariables extends TerraElement {
                 <section class="group">
                     <ul class="variable-list">
                         ${this.#controller.variables.map(variable => {
+                            const metadata = [
+                                variable.dataProductInstrumentShortName,
+                                variable.dataProductTimeInterval,
+                                variable.dataFieldUnits,
+                            ]
+                                .filter(Boolean)
+                                .join(' • ')
+
                             return html`
                                 <li
                                     aria-selected="false"
@@ -441,11 +449,8 @@ export default class TerraBrowseVariables extends TerraElement {
                                                 >${variable.dataFieldLongName}</strong
                                             >
                                             <span
-                                                >${variable.dataProductShortName}
-                                                &bull;
-                                                ${variable.dataProductTimeInterval}
-                                                &bull;
-                                                ${variable.dataProductSpatialResolution}</span
+                                                >${metadata} •
+                                                [${variable.dataProductShortName}_${variable.dataProductVersion}]</span
                                             >
                                         </label>
 

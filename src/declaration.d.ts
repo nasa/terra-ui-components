@@ -18,6 +18,11 @@ declare namespace Chai {
     }
 }
 
+declare module 'colormap' {
+    function colormap(options: any): string[]
+    export = colormap
+}
+
 interface HTMLInputElement {
     showPicker: () => void
 }

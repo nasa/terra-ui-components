@@ -39,7 +39,8 @@ export class HarmonyDataService implements DataServiceInterface {
 
         console.log(
             'Getting collection with available services for ',
-            collectionEntryId
+            collectionEntryId,
+            options
         )
 
         const response = await client.query<{
@@ -51,9 +52,6 @@ export class HarmonyDataService implements DataServiceInterface {
             },
             context: {
                 headers: {
-                    ...(options?.bearerToken && {
-                        authorization: options.bearerToken,
-                    }),
                     'x-environment': options?.environment ?? 'prod',
                 },
                 fetchOptions: {

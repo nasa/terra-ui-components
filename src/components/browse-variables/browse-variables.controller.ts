@@ -71,7 +71,7 @@ export class BrowseVariablesController {
             return (
                 variableEntryIds.includes(variable.dataFieldId) ||
                 variableEntryIds.includes(
-                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldShortName}`
+                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldAccessName}`
                 )
             )
         })
