@@ -28,6 +28,22 @@ export default class TerraLogin extends TerraElement {
     @property({ attribute: 'button-label' })
     buttonLabel: string = 'Earthdata Login'
 
+    /**
+     * The message to show when the user is logged in
+     * You can use the following placeholders:
+     * {username} - The username of the user
+     * {first_name} - The first name of the user
+     * {last_name} - The last name of the user
+     */
+    @property({ attribute: 'logged-in-message' })
+    loggedInMessage?: string
+
+    @property({ attribute: 'logged-out-message' })
+    loggedOutMessage?: string
+
+    @property({ attribute: 'loading-message' })
+    loadingMessage?: string
+
     #authController = new AuthController(this)
 
     login() {
@@ -48,19 +64,28 @@ export default class TerraLogin extends TerraElement {
 
             return html`${template
                 ? template.content.cloneNode(true)
-                : html`<slot
-                      name="logged-in"
-                      .user=${this.#authController.state.user}
-                  ></slot>`}`
+                : html`<slot name="logged-in" .user=${this.#authController.state.user}
+                      >${this.#applyUserToMessage(this.loggedInMessage)}</slot
+                  >`}`
         }
 
         if (this.#authController.state.isLoading) {
             // we don't know yet if the user is logged in or out, so show the loading slot
-            return html`<slot name="loading"></slot>`
+            return html`<slot name="loading">${this.loadingMessage}</slot>`
         }
 
         // user is definitely logged out, show the login button
-        return html` <slot name="logged-out"></slot
+        return html` <slot name="logged-out">${this.loggedOutMessage}</slot
             ><terra-button @click=${this.login}> ${this.buttonLabel}</terra-button>`
+    }
+
+    #applyUserToMessage(message?: string) {
+        return (message ?? '')
+            .replace('{username}', this.#authController.state.user?.uid ?? '')
+            .replace(
+                '{first_name}',
+                this.#authController.state.user?.first_name ?? ''
+            )
+            .replace('{last_name}', this.#authController.state.user?.last_name ?? '')
     }
 }

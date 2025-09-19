@@ -181,7 +181,14 @@ export default class TerraElement extends LitElement {
                 // This really shouldn't happen normally. Most websites/apps will be using the same environment.
                 // The docs site is an exception, as we allow for switching between UAT and PROD.
                 purgeGraphQLCache()
-                authService.logout()
+
+                if (
+                    localStorage.getItem('terra-environment') !==
+                    event.detail.environment
+                ) {
+                    authService.logout()
+                }
+
                 this.environment = event.detail.environment
             }
         )
