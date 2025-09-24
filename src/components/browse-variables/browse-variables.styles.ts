@@ -105,9 +105,9 @@ export default css`
     }
 
     input[type='radio'] {
-        appearance: none;         /* removes OS default styling */
+        appearance: none; /* removes OS default styling */
         -webkit-appearance: none; /* for Safari */
-        -moz-appearance: none;    /* for Firefox */
+        -moz-appearance: none; /* for Firefox */
         margin-right: 10px;
         width: 1em;
         height: 1em;
@@ -115,7 +115,7 @@ export default css`
         border-radius: 50%;
         background-color: var(--terra-color-spacesuit-white);
         cursor: pointer;
-        position: relative; /* for the dot */        
+        position: relative; /* for the dot */
     }
 
     /* Selected state */
@@ -126,11 +126,11 @@ export default css`
 
     /* Inner dot */
     input[type='radio']:checked::after {
-        content: "";
+        content: '';
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 0.5em;   /* size of the dot */
+        width: 0.5em; /* size of the dot */
         height: 0.5em;
         background-color: var(--terra-color-nasa-blue);
         border-radius: 50%; /* makes it circular */
@@ -177,8 +177,8 @@ export default css`
     }
 
     .variables-container aside details {
-        margin-bottom: .5rem;
-    }   
+        margin-bottom: 0.5rem;
+    }
 
     summary::marker {
         color: var(--terra-color-nasa-blue); /* changes the arrow color */
@@ -199,14 +199,14 @@ export default css`
     }
 
     .facet label {
-        align-items: center;   /* vertical alignment */
+        align-items: center; /* vertical alignment */
         line-height: var(--terra-line-height-loose);
     }
 
     .facet label input[type='checkbox'] {
-        appearance: none;         /* removes OS default styling */
+        appearance: none; /* removes OS default styling */
         -webkit-appearance: none; /* for Safari */
-        -moz-appearance: none;    /* for Firefox */
+        -moz-appearance: none; /* for Firefox */
         width: 1em;
         height: 1em;
         border: 0.125em solid var(--terra-color-carbon-40);
@@ -220,14 +220,14 @@ export default css`
         background-color: var(--terra-color-nasa-blue);
         accent-color: var(--terra-color-nasa-blue);
     }
-    
+
     /* Draw the checkmark */
     .facet label input[type='checkbox']:checked::before,
     .facet label input[type='checkbox']:checked::after {
-        content: "";
+        content: '';
         position: absolute;
-        height: 2px;              /* thickness of the line */
-        background-color: white;  /* checkmark color */
+        height: 2px; /* thickness of the line */
+        background-color: white; /* checkmark color */
         transform-origin: left center;
     }
 
@@ -257,7 +257,7 @@ export default css`
         border-radius: 0.25em;
         background-color: var(--terra-color-carbon-10);
         padding: 0.5em 1em;
-        margin-bottom: 8px
+        margin-bottom: 8px;
     }
 
     .variable-list-item::marker {
@@ -352,5 +352,5 @@ export default css`
 
     .variable-details-button:hover::part(base) {
         color: var(--terra-color-spacesuit-white);
-    }    
+    }
 `

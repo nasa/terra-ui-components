@@ -8,7 +8,7 @@ declare module '*.css' {
 declare module 'colormap' {
     function colormap(options: any): string[]
     export = colormap
-    }
+}
 
 declare namespace Chai {
     interface Assertion {

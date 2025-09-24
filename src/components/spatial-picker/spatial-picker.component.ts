@@ -6,7 +6,6 @@ import { html, nothing } from 'lit'
 import { parseBoundingBox, StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
-import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { MapEventType } from '../map/type.js'
 
 /**
