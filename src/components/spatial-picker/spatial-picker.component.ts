@@ -235,25 +235,38 @@ export default class TerraSpatialPicker extends TerraElement {
         this.isExpanded = false
     }
 
-    private _handleMapChange(event: TerraMapChangeEvent) {
+    private _updateURLParam(value: string | null) {
+        const url = new URL(window.location.href)
+        if (value) {
+            url.searchParams.set('spatial', value)
+        } else {
+            url.searchParams.delete('spatial')
+        }
+
+        // Use history.replaceState to avoid creating a new history entry
+        window.history.replaceState({}, '', url.toString())
+    }
+
+    private _handleMapChange(event: CustomEvent) {
         switch (event.detail.cause) {
             case 'clear':
                 this.spatialInput.value = ''
+                // Reset spatial constraints to default value on map clear
+                this.spatialConstraints = '-180, -90, 180, 90'
+                this._updateURLParam(null)
                 break
 
             case 'draw':
-                if (event.detail.type === MapEventType.BBOX) {
-                    this.spatialInput.value = StringifyBoundingBox(
-                        event.detail.bounds
-                    )
-                } else if (event.detail.type === MapEventType.POINT) {
-                    this.spatialInput.value = StringifyBoundingBox(
-                        event.detail.latLng
-                    )
+                let stringified = ''
+                if (event.detail.bounds) {
+                    stringified = StringifyBoundingBox(event.detail.bounds)
+                    this.spatialInput.value = stringified
+                } else if (event.detail.latLng) {
+                    stringified = StringifyBoundingBox(event.detail.latLng)
+                    this.spatialInput.value = stringified
                 }
-
+                this._updateURLParam(stringified)
                 this._emitMapChange()
-
                 break
 
             default:
@@ -262,7 +275,14 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     firstUpdated() {
-        if (this.initialValue) {
+        const urlParams = new URLSearchParams(window.location.search)
+        const spatialParam = urlParams.get('spatial')
+
+        if (spatialParam) {
+            this.initialValue = spatialParam
+            this.mapValue = parseBoundingBox(spatialParam)
+            this.spatialInput.value = spatialParam
+        } else if (this.initialValue) {
             this.mapValue =
                 this.initialValue === '' ? [] : parseBoundingBox(this.initialValue)
         }
