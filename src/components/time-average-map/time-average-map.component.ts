@@ -3,7 +3,7 @@ import { property, state } from 'lit/decorators.js'
 import { Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import OSM from 'ol/source/OSM.js'
-import GeoTIFF from 'ol/source/GeoTIFF.js'
+import type GeoTIFF from 'ol/source/GeoTIFF.js'
 import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -18,7 +18,6 @@ import { AuthController } from '../../auth/auth.controller.js'
 import { toLonLat } from 'ol/proj.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
-import colormap from 'colormap'
 import { watch } from '../../internal/watch.js'
 import { TaskStatus } from '@lit/task'
 import TerraLoader from '../loader/loader.component.js'
@@ -151,6 +150,8 @@ export default class TerraTimeAverageMap extends TerraElement {
     async updateGeoTIFFLayer(blob: Blob) {
         // The task returns the blob upon completion
         const blobUrl = URL.createObjectURL(blob)
+
+        const { default: GeoTIFF } = await import('ol/source/GeoTIFF.js')
 
         const gtSource = new GeoTIFF({
             sources: [
@@ -309,10 +310,14 @@ export default class TerraTimeAverageMap extends TerraElement {
 
         return { min, max }
     }
+
     // Referencing workshop example from https://openlayers.org/workshop/en/cog/colormap.html
-    getColorStops(name: any, min: any, max: any, steps: any, reverse: any) {
+    async getColorStops(name: any, min: any, max: any, steps: any, reverse: any) {
         const delta = (max - min) / (steps - 1)
         const stops = new Array(steps * 2)
+
+        const { default: colormap } = await import('colormap')
+
         const colors = colormap({ colormap: name, nshades: steps, format: 'rgba' })
         if (reverse) {
             colors.reverse()
@@ -335,7 +340,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                     'interpolate',
                     ['linear'],
                     ['band', 1],
-                    ...this.getColorStops(color, min, max, 72, false),
+                    ...(await this.getColorStops(color, min, max, 72, false)),
                 ],
             ],
         }

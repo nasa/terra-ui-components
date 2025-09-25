@@ -14,6 +14,8 @@ describe('<terra-loader percent="50">', () => {
         const el = await fixture(html` <terra-loader percent="50"></terra-loader> `)
 
         expect(el).to.exist
-        expect(el.querySelector('div.percent')?.innerHTML).to.equal('50%')
+        expect(
+            el.shadowRoot?.querySelector('div.percent')?.textContent?.trim()
+        ).to.equal('50%')
     })
 })

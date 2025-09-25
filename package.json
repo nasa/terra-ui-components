@@ -81,7 +81,6 @@
     "colormap": "^2.3.2",
     "composed-offset-position": "^0.0.4",
     "date-fns": "^3.6.0",
-    "dayjs": "^1.11.11",
     "esbuild-plugin-polyfill-node": "^0.3.0",
     "fuse.js": "^7.0.0",
     "graphql": "^16.11.0",

@@ -1,11 +1,4 @@
-import { isValid } from 'date-fns'
-import dayjs from 'dayjs'
-import timezone from 'dayjs/plugin/timezone.js'
-import utc from 'dayjs/plugin/utc.js'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
-dayjs.tz.setDefault('Etc/GMT')
+import { isValid, format } from 'date-fns'
 
 type MaybeDate = string | number | Date
 
@@ -15,22 +8,49 @@ export function isValidDate(date: any): boolean {
 }
 
 export function getUTCDate(date: MaybeDate, endOfDay: boolean = false) {
-    const utcDate = dayjs.utc(date).toDate()
+    let utcDate: Date
 
-    if (endOfDay) utcDate.setUTCHours(23, 59, 59, 999)
+    if (date instanceof Date) {
+        utcDate = new Date(date.getTime())
+    } else if (typeof date === 'string') {
+        utcDate = new Date(date)
+    } else if (typeof date === 'number') {
+        utcDate = new Date(date)
+    } else {
+        utcDate = new Date()
+    }
+
+    // Convert to UTC by adjusting for timezone offset
+    const offset = utcDate.getTimezoneOffset()
+    utcDate = new Date(utcDate.getTime() + offset * 60000)
+
+    if (endOfDay) {
+        utcDate.setUTCHours(23, 59, 59, 999)
+    }
 
     return utcDate
 }
 
 /**
- * formats a date, see https://day.js.org/docs/en/display/format for available formatting options
+ * formats a date using date-fns format patterns
+ * See https://date-fns.org/v3.6.0/docs/format for available formatting options
  */
-export function formatDate(date: dayjs.Dayjs | MaybeDate, format?: string) {
-    if (!dayjs.isDayjs(date)) {
-        date = dayjs.utc(date)
+export function formatDate(date: MaybeDate, formatString?: string) {
+    let dateObj: Date
+
+    if (date instanceof Date) {
+        dateObj = date
+    } else if (typeof date === 'string') {
+        dateObj = new Date(date)
+    } else if (typeof date === 'number') {
+        dateObj = new Date(date)
+    } else {
+        dateObj = new Date()
     }
 
-    return date.format(format)
+    // Default format if none provided
+    const defaultFormat = 'yyyy-MM-dd'
+    return format(dateObj, formatString || defaultFormat)
 }
 
 /**

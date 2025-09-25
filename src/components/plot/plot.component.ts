@@ -5,15 +5,7 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
-import {
-    newPlot,
-    Plots,
-    type Data,
-    type Layout,
-    type Config,
-    type PlotlyHTMLElement,
-    type PlotRelayoutEvent,
-} from 'plotly.js-dist-min'
+import * as Plotly from 'plotly.js-dist-min'
 
 /**
  * @summary A web component for interactive graphs using Plotly.js.
@@ -29,19 +21,19 @@ export default class TerraPlot extends TerraElement {
     #resizeObserver: ResizeObserver
 
     @query('[part="base"]')
-    base: PlotlyHTMLElement
+    base: Plotly.PlotlyHTMLElement
 
     @property()
     plotTitle?: string
 
     @property()
-    layout?: Partial<Layout> = {}
+    layout?: Partial<Plotly.Layout> = {}
 
     @property()
-    config?: Partial<Config> = {}
+    config?: Partial<Plotly.Config> = {}
 
     @property({ type: Array })
-    data: Array<Partial<Data>> = []
+    data: Array<Partial<Plotly.Data>> = []
 
     @watch('data')
     handleDataChange() {
@@ -50,7 +42,7 @@ export default class TerraPlot extends TerraElement {
 
     firstUpdated(): void {
         this.#resizeObserver = new ResizeObserver(() => {
-            Plots.resize(this.base)
+            Plotly.Plots.resize(this.base)
         })
 
         this.#resizeObserver.observe(this.base)
@@ -72,7 +64,7 @@ export default class TerraPlot extends TerraElement {
             return
         }
 
-        newPlot(
+        Plotly.newPlot(
             this.base,
             this.data,
             {
@@ -94,7 +86,7 @@ export default class TerraPlot extends TerraElement {
         this.shadowRoot?.querySelector('.gtitle')?.part.add('plot-title')
     }
 
-    #handlePlotlyRelayout(e: PlotRelayoutEvent) {
+    #handlePlotlyRelayout(e: Plotly.PlotRelayoutEvent) {
         const detail = {
             ...(e['xaxis.range[0]'] && { xAxisMin: e['xaxis.range[0]'] }),
             ...(e['xaxis.range[1]'] && { xAxisMax: e['xaxis.range[1]'] }),

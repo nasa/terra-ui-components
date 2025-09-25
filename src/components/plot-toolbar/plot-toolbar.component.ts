@@ -7,7 +7,7 @@ import styles from './plot-toolbar.styles.js'
 import type { CSSResultGroup } from 'lit'
 import type { DataType, MenuNames } from './plot-toolbar.types.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
-import { downloadImage, type Data } from 'plotly.js-dist-min'
+import * as Plotly from 'plotly.js-dist-min'
 import type TerraPlot from '../plot/plot.component.js'
 import type { Plot } from '../plot/plot.types.js'
 import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
@@ -47,7 +47,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() catalogVariable: Variable
     @property() variableEntryId: string
     @property() plot?: TerraPlot
-    @property() timeSeriesData?: Partial<Data>[] | Blob
+    @property() timeSeriesData?: Partial<Plotly.Data>[] | Blob
     @property() location: string
     @property() startDate: string
     @property() endDate: string
@@ -568,7 +568,7 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #downloadPNG(_event: Event) {
-        downloadImage(this.plot!.base, {
+        Plotly.downloadImage(this.plot!.base, {
             filename: this.catalogVariable!.dataFieldId,
             format: 'png',
             width: 1920,
