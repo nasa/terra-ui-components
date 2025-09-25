@@ -13,7 +13,6 @@ import { property, state } from 'lit/decorators.js'
 import { TaskStatus } from '@lit/task'
 import { watch } from '../../internal/watch.js'
 import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
-import type { SlDrawer } from '@shoelace-style/shoelace'
 import type { CSSResultGroup } from 'lit'
 import type {
     FacetField,
@@ -67,6 +66,9 @@ export default class TerraBrowseVariables extends TerraElement {
 
     @state()
     showVariablesBrowse: boolean = false
+
+    @state()
+    private activeIndex: number | undefined = undefined
 
     #controller = new BrowseVariablesController(this)
 
@@ -328,6 +330,8 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Portal', facetKey: 'portals' },
         ]
 
+        const variables = this.#controller.variables
+
         // TODO: create "sort by" menu and "group by" menu
         // MVP sort TBD but must include alpha, reverse-alpha, start data and end date, based on Variable Long Name
         // MVP group TBD but must include 'Measurements' and 'Dataset'
@@ -397,22 +401,20 @@ export default class TerraBrowseVariables extends TerraElement {
                 )}
             </aside>
 
-            <main>
-                <section class="group">
+            <main class="variable-layout">
+                <!-- LEFT COLUMN -->
+                <section class="left-column">
                     <ul class="variable-list">
-                        ${this.#controller.variables.map(variable => {
-                            const metadata = [
-                                variable.dataProductInstrumentShortName,
-                                variable.dataProductTimeInterval,
-                                variable.dataFieldUnits,
-                            ]
-                                .filter(Boolean)
-                                .join(' • ')
-
-                            return html`
+                        ${variables.map(
+                            (variable, index) => html`
                                 <li
                                     aria-selected="false"
                                     class="variable-list-item"
+                                    @mouseenter=${() => (this.activeIndex = index)}
+                                    @mouseleave=${() =>
+                                        (this.activeIndex = undefined)}
+                                    @focusin=${() => (this.activeIndex = index)}
+                                    @focusout=${() => (this.activeIndex = undefined)}
                                     @click=${(event: Event) => {
                                         const target =
                                             event.currentTarget as HTMLLIElement
@@ -449,68 +451,62 @@ export default class TerraBrowseVariables extends TerraElement {
                                                 >${variable.dataFieldLongName}</strong
                                             >
                                             <span
-                                                >${metadata} •
-                                                [${variable.dataProductShortName}_${variable.dataProductVersion}]</span
+                                                >${variable.dataProductShortName}
+                                                &bull;
+                                                ${variable.dataProductTimeInterval}
+                                                &bull;
+                                                ${variable.dataProductSpatialResolution}</span
                                             >
                                         </label>
-
-                                        <sl-drawer contained>
-                                            <h4 slot="label">
-                                                <strong>Science Name</strong><br />
-                                                ${variable.dataFieldLongName}
-                                            </h4>
-                                            <p>
-                                                <strong>Spatial Resolution</strong>
-                                                ${variable.dataProductSpatialResolution}
-                                            </p>
-                                            <p>
-                                                <strong>Temporal Coverage</strong>
-                                                ${variable.dataProductBeginDateTime}&puncsp;&ndash;&puncsp;${variable.dataProductEndDateTime}
-                                            </p>
-                                            <p>
-                                                <strong>Region Coverage</strong>
-                                                ${variable.dataProductWest},${variable.dataProductSouth},${variable.dataProductEast},${variable.dataProductNorth}
-                                            </p>
-                                            <p>
-                                                <strong>Dataset</strong>
-                                                ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                            </p>
-                                        </sl-drawer>
-
-                                        <terra-button
-                                            @click=${(event: Event) => {
-                                                const button =
-                                                    event.currentTarget as HTMLElement
-                                                const drawer = button
-                                                    .closest('.variable')
-                                                    ?.querySelector(
-                                                        'sl-drawer'
-                                                    ) as SlDrawer
-
-                                                drawer.show()
-                                            }}
-                                            aria-label="View variable details."
-                                            circle
-                                            class="variable-details-button"
-                                            outline
-                                            type="button"
-                                        >
-                                            <slot name="label">
-                                                <terra-icon
-                                                    font-size="1.5em"
-                                                    library="heroicons"
-                                                    name="outline-information-circle"
-                                                ></terra-icon>
-                                            </slot>
-                                        </terra-button>
                                     </div>
                                 </li>
                             `
-                        })}
+                        )}
                     </ul>
                 </section>
+
+                <!-- RIGHT COLUMN -->
+                <section class="right-column">
+                    ${this.activeIndex !== undefined
+                        ? html`
+                              <h4>
+                                  Science Name:<br />
+                                  ${variables[this.activeIndex].dataFieldLongName}
+                              </h4>
+                              <p>
+                                  <label><strong>Spatial Resolution:</strong></label>
+                                  ${variables[this.activeIndex]
+                                      .dataProductSpatialResolution}
+                              </p>
+                              <p>
+                                  <label><strong>Temporal Coverage:</strong></label>
+                                  ${variables[this.activeIndex]
+                                      .dataProductBeginDateTime}
+                                  –
+                                  ${variables[this.activeIndex]
+                                      .dataProductEndDateTime}
+                              </p>
+                              <p>
+                                  <label><strong>Region Coverage:</strong></label>
+                                  ${variables[this.activeIndex].dataProductWest},
+                                  ${variables[this.activeIndex].dataProductSouth},
+                                  ${variables[this.activeIndex].dataProductEast},
+                                  ${variables[this.activeIndex].dataProductNorth}
+                              </p>
+                              <p>
+                                  <label><strong>Dataset:</strong></label>
+                                  ${variables[this.activeIndex]
+                                      .dataProductShortName}_${variables[
+                                      this.activeIndex
+                                  ].dataProductVersion}
+                              </p>
+                          `
+                        : html`<p class="placeholder">
+                              Hover over a variable to see details
+                          </p>`}
+                </section>
             </main>
-        </div>`
+        </div> `
     }
 
     render() {
