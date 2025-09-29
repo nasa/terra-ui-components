@@ -58,11 +58,31 @@ export default css`
         flex-wrap: wrap;
         align-content: center;
         padding-inline-start: 0.5rem;
+        max-inline-size: 60%;
+        overflow: hidden;
     }
 
     .tag {
         --terra-button-height-small: 1.25rem;
         --terra-spacing-small: 0.5rem;
+        max-inline-size: 100%;
+        min-inline-size: 0;
+        text-align: left;
+    }
+
+    /* Ensure the label area can shrink and ellipsize while suffix (X) stays visible */
+    .tag::part(label) {
+        display: block;
+        flex: 1 1 auto;
+        min-inline-size: 0;
+        max-inline-size: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .tag::part(suffix) {
+        flex: 0 0 auto;
     }
 
     .tag:hover .tag-icon,

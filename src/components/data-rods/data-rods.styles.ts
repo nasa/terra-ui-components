@@ -5,7 +5,7 @@ export default css`
         display: grid;
         gap: 1.5rem 0.75rem;
         grid-template-rows: auto;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 2fr 1fr;
     }
 
     terra-variable-combobox {

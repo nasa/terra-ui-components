@@ -354,6 +354,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 variant="default"
                 outline
                 class="tag"
+                title=${tag}
                 aria-label=${`Clear tag ${tag}`}
                 @click=${() => {
                     this.tags = []
@@ -366,6 +367,7 @@ export default class TerraVariableCombobox extends TerraElement {
                                 .width as number
                     }, 100)
                 }}
+                title=${tag}
             >
                 ${tag}
                 <terra-icon
