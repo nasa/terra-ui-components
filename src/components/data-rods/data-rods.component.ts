@@ -122,6 +122,7 @@ export default class TerraDataRods extends TerraElement {
                 end-date=${this.endDate}
                 location=${this.location}
                 bearer-token=${this.bearerToken}
+                show-citation=${true}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             ></terra-time-series>
 

@@ -7,11 +7,44 @@ export type SearchOptions = {
 }
 
 export interface MetadataCatalogInterface {
+    getCollectionCitation(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CmrCollectionCitationItem>
+
     searchCmr(
         keyword: string,
         type: 'collection' | 'variable' | 'all',
         options?: SearchOptions
     ): Promise<Array<CmrSearchResult>>
+}
+
+export type CmrCollectionCitationsResponse = {
+    collections: {
+        items: Array<CmrCollectionCitationItem>
+    }
+}
+
+export type CmrCollectionCitationItem = {
+    doi: {
+        doi: string
+    }
+    collectionCitations: Array<CmrCollectionCitation>
+}
+
+export type CmrCollectionCitation = {
+    creator: string
+    editor: string
+    dataPresentationForm: string
+    onlineResource: {
+        linkage: string
+    }
+    publisher: string
+    title: string
+    seriesName: string
+    releaseDate: string
+    version: string
+    releasePlace: string
 }
 
 export type CmrSearchResult = {
