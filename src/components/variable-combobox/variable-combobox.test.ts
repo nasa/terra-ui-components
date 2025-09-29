@@ -80,8 +80,6 @@ describe('<terra-variable-combobox>', () => {
 
         const options = [...el.shadowRoot.querySelectorAll('.listbox-option')]
 
-        console.log(options.map(o => o.dataset.longName))
-
         expect(options.map(o => o.dataset.longName)).to.deep.equal([
             'A',
             'B',
