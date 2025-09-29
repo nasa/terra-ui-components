@@ -160,7 +160,7 @@ export default class TerraVariableCombobox extends TerraElement {
 
             if (this.useTags) {
                 // Sets one tag, but obviously could be refactored for multiple tags.
-                this.tags = [`${selectedVariable.name}`]
+                this.tags = [`${selectedVariable.longName}`]
                 // Clear out the value of the text input, which is decoupled from the query since we're using tags.
                 this.#combobox!.value = TerraVariableCombobox.initialQuery
                 // Clear out the stored query so that there is no filtering of listbox options.
@@ -325,7 +325,7 @@ export default class TerraVariableCombobox extends TerraElement {
     }
 
     #selectOption = (option: HTMLLIElement) => {
-        const { longName, eventDetail, name } = option.dataset
+        const { longName, eventDetail } = option.dataset
 
         this.query = `${longName}`
         this.#dispatchChange(eventDetail as string)
@@ -339,7 +339,7 @@ export default class TerraVariableCombobox extends TerraElement {
 
         if (this.useTags) {
             // Sets one tag, but obviously could be refactored for multiple tags.
-            this.tags = [`${name}`]
+            this.tags = [`${longName}`]
             // Clear out the value of the text input, which is decoupled from the query since we're using tags.
             this.#combobox!.value = TerraVariableCombobox.initialQuery
             // Clear out the stored query so that there is no filtering of listbox options.
