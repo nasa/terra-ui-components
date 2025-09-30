@@ -1,10 +1,13 @@
-import { property } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-access.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { DataAccessController } from './data-access.controller.js'
+import type { CmrGranule } from '../../metadata-catalog/types.js'
+import '@lit-labs/virtualizer'
+import type { RangeChangedEvent } from '@lit-labs/virtualizer'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -27,11 +30,29 @@ export default class TerraDataAccess extends TerraElement {
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
 
+    @state()
+    limit = 100
+
+    @state()
+    page = 1
+
     #controller = new DataAccessController(this)
 
-    render() {
-        console.log('here', this.#controller.granules)
+    #handleRangeChanged(event: RangeChangedEvent) {
+        if (event.last >= this.page * this.limit - 1) {
+            this.page++
+        }
+    }
 
-        return html` <slot></slot> `
+    render() {
+        return html`<h2>Data Access</h2>
+            <lit-virtualizer
+                style="height: 300px;"
+                scroller
+                .items=${this.#controller.granules}
+                .renderItem=${(granule: CmrGranule) =>
+                    html`<div>${granule.title}</div>`}
+                @rangeChanged=${this.#handleRangeChanged}
+            ></lit-virtualizer>`
     }
 }

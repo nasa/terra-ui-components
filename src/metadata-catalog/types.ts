@@ -4,6 +4,8 @@ import type { Variable } from '../components/browse-variables/browse-variables.t
 export type SearchOptions = {
     signal?: AbortSignal
     bearerToken?: string
+    limit?: number
+    offset?: number
 }
 
 export interface MetadataCatalogInterface {

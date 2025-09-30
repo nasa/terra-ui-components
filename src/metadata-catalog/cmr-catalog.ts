@@ -77,14 +77,15 @@ export class CmrCatalog implements MetadataCatalogInterface {
             query: GET_CMR_GRANULES_BY_ENTRY_ID,
             variables: {
                 collectionEntryId,
-                limit: 100,
-                offset: 0,
+                limit: options?.limit ?? 100,
+                offset: options?.offset ?? 0,
             },
             context: {
                 fetchOptions: {
                     signal: options?.signal,
                 },
             },
+            fetchPolicy: 'network-only',
         })
 
         if (response.errors) {
