@@ -16,6 +16,7 @@ import {
     formatGranuleSize,
 } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
+import { debounce } from '../../internal/debounce.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -54,6 +55,9 @@ export default class TerraDataAccess extends TerraElement {
     @state()
     sortDirection = 'asc'
 
+    @state()
+    search = ''
+
     #controller = new DataAccessController(this)
 
     #handleRangeChanged(event: RangeChangedEvent) {
@@ -86,19 +90,36 @@ export default class TerraDataAccess extends TerraElement {
         `
     }
 
+    @debounce(500)
+    handleSearch(search: string) {
+        this.search = search
+    }
+
     render() {
         return html`<h2>Data Access</h2>
             ${this.#controller.granules?.length
                 ? html`
                       <div class="info-bar">
-                          <strong>${this.#controller.totalGranules}</strong> files
-                          selected
-                          (~${formatGranuleSize(
-                              calculateMeanGranuleSize(this.#controller.granules) *
-                                  this.#controller.totalGranules
-                          )}),
-                          <strong>${this.#controller.granules.length}</strong>
-                          displayed
+                          <div>
+                              <strong>${this.#controller.totalGranules}</strong> files
+                              selected
+                              (~${formatGranuleSize(
+                                  calculateMeanGranuleSize(
+                                      this.#controller.granules
+                                  ) * this.#controller.totalGranules
+                              )})
+                          </div>
+                          <input
+                              type="text"
+                              class="search-input"
+                              placeholder="Search file names"
+                              .value=${this.search ?? ''}
+                              @input=${(event: Event) => {
+                                  this.handleSearch(
+                                      (event.target as HTMLInputElement).value
+                                  )
+                              }}
+                          />
                       </div>
 
                       <div class="grid-container">

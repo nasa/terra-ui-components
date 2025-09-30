@@ -83,6 +83,7 @@ export class CmrCatalog implements MetadataCatalogInterface {
                     options?.sortBy ?? 'title',
                     options?.sortDirection ?? 'asc'
                 ),
+                search: options?.search ? [`*${options.search}*`] : undefined,
             },
             context: {
                 fetchOptions: {

@@ -7,7 +7,22 @@ export default css`
 
     .info-bar {
         margin-bottom: 20px;
+        font-size: 14px;
         color: #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .search-input {
+        padding: 5px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 250px;
+    }
+
+    .search-input::placeholder {
+        color: #999;
     }
 
     .grid-container {

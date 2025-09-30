@@ -8,6 +8,7 @@ export type SearchOptions = {
     offset?: number
     sortBy?: string
     sortDirection?: string
+    search?: string
 }
 
 export interface MetadataCatalogInterface {

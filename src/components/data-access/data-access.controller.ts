@@ -9,7 +9,7 @@ import type TerraDataAccess from './data-access.component.js'
 
 export class DataAccessController {
     #fetchGranulesTask: Task<
-        [string | undefined, number, number, string, string],
+        [string | undefined, number, number, string, string, string],
         CmrGranule[] | undefined
     >
     #host: ReactiveControllerHost & TerraDataAccess
@@ -18,6 +18,7 @@ export class DataAccessController {
     #granules: CmrGranule[] = []
     #lastSortBy = 'title'
     #lastSortDirection = 'asc'
+    #lastSearch = ''
 
     constructor(host: ReactiveControllerHost & TerraDataAccess) {
         this.#host = host
@@ -25,7 +26,7 @@ export class DataAccessController {
 
         this.#fetchGranulesTask = new Task(host, {
             task: async (
-                [collectionEntryId, page, limit, sortBy, sortDirection],
+                [collectionEntryId, page, limit, sortBy, sortDirection, search],
                 { signal }
             ) => {
                 if (!collectionEntryId) {
@@ -38,11 +39,13 @@ export class DataAccessController {
                     limit,
                     sortBy,
                     sortDirection,
+                    search,
                 })
 
                 if (
                     sortBy !== this.#lastSortBy ||
-                    sortDirection !== this.#lastSortDirection
+                    sortDirection !== this.#lastSortDirection ||
+                    search !== this.#lastSearch
                 ) {
                     this.#granules = []
                     this.#totalGranules = 0
@@ -50,6 +53,7 @@ export class DataAccessController {
 
                 this.#lastSortBy = sortBy
                 this.#lastSortDirection = sortDirection
+                this.#lastSearch = search
 
                 // rather than returning what we received, we concatenate new granules with existing granules
                 // this allows us to show ALL the granules to the user, rather than just a few at a time
@@ -63,12 +67,20 @@ export class DataAccessController {
 
                 return this.#granules
             },
-            args: (): [string | undefined, number, number, string, string] => [
+            args: (): [
+                string | undefined,
+                number,
+                number,
+                string,
+                string,
+                string,
+            ] => [
                 this.#host.collectionEntryId,
                 this.#host.page,
                 this.#host.limit,
                 this.#host.sortBy,
                 this.#host.sortDirection,
+                this.#host.search,
             ],
         })
     }

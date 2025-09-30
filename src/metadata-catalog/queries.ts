@@ -63,6 +63,7 @@ export const GET_CMR_SEARCH_RESULTS_VARIABLES = gql`
 export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
     query Collections(
         $collectionEntryId: String!
+        $search: [String]
         $limit: Int
         $offset: Int
         $sortKey: String
@@ -71,7 +72,13 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
             items {
                 conceptId
                 granules(
-                    params: { limit: $limit, offset: $offset, sortKey: [$sortKey] }
+                    params: {
+                        limit: $limit
+                        offset: $offset
+                        sortKey: [$sortKey]
+                        readableGranuleName: $search
+                        options: { readableGranuleName: { pattern: true } }
+                    }
                 ) {
                     count
                     items {
