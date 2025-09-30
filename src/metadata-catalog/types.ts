@@ -35,12 +35,26 @@ export type CmrGranulesResponse = {
 
 export type CmrGranule = {
     conceptId: string
-    dataCenter: string
-    dataGranule: string
-    granuleUr: string
-    links: Array<string>
-    relatedUrls: Array<string>
+    dataGranule: CmrGranuleDataGranule
     title: string
+    timeEnd: string
+    timeStart: string
+    relatedUrls: Array<{
+        type: string
+        url: string
+    }>
+}
+
+export type CmrGranuleDataGranule = {
+    archiveAndDistributionInformation: Array<ArchiveAndDistributionInformation>
+}
+
+export type ArchiveAndDistributionInformation = {
+    name: string
+    size: number
+    sizeUnit: string
+    sizeInBytes?: number
+    files?: Array<ArchiveAndDistributionInformation>
 }
 
 export type CmrSearchResult = {

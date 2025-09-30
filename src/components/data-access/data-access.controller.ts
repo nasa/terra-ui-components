@@ -3,20 +3,25 @@ import type {
     MetadataCatalogInterface,
 } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
-import { Task } from '@lit/task'
+import { Task, type StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type TerraDataAccess from './data-access.component.js'
 
 export class DataAccessController {
+    #fetchGranulesTask: Task<
+        [string | undefined, number, number],
+        CmrGranule[] | undefined
+    >
     #host: ReactiveControllerHost & TerraDataAccess
     #catalog: MetadataCatalogInterface
+    #totalGranules: number = 0
     #granules: CmrGranule[] = []
 
     constructor(host: ReactiveControllerHost & TerraDataAccess) {
         this.#host = host
         this.#catalog = this.#getCatalogRepository()
 
-        new Task(host, {
+        this.#fetchGranulesTask = new Task(host, {
             task: async ([collectionEntryId, page, limit], { signal }) => {
                 if (!collectionEntryId) {
                     return undefined
@@ -35,7 +40,10 @@ export class DataAccessController {
                     ...(granules?.collections?.items?.[0]?.granules?.items ?? []),
                 ]
 
-                return granules
+                this.#totalGranules =
+                    granules?.collections?.items?.[0]?.granules?.count ?? 0
+
+                return this.#granules
             },
             args: (): [string | undefined, number, number] => [
                 this.#host.collectionEntryId,
@@ -47,6 +55,14 @@ export class DataAccessController {
 
     get granules() {
         return this.#granules
+    }
+
+    get totalGranules() {
+        return this.#totalGranules
+    }
+
+    render(renderFunctions: StatusRenderer<Partial<CmrGranule[] | undefined>>) {
+        return this.#fetchGranulesTask.render(renderFunctions)
     }
 
     #getCatalogRepository() {

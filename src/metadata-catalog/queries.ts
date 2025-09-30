@@ -69,12 +69,11 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
                     count
                     items {
                         conceptId
-                        dataCenter
                         dataGranule
-                        granuleUr
-                        links
-                        relatedUrls
                         title
+                        timeEnd
+                        timeStart
+                        relatedUrls
                     }
                 }
             }
