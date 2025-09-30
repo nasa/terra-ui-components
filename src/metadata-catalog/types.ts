@@ -6,6 +6,8 @@ export type SearchOptions = {
     bearerToken?: string
     limit?: number
     offset?: number
+    sortBy?: string
+    sortDirection?: string
 }
 
 export interface MetadataCatalogInterface {

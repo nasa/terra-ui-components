@@ -28,7 +28,14 @@ export default css`
 
     .grid-header > div {
         padding: 12px 16px;
+        cursor: pointer;
         background: #1e3a5f;
+        display: flex;
+        align-items: center;
+    }
+
+    .grid-header > div terra-icon {
+        margin-left: 5px;
     }
 
     .grid-body {

@@ -77,8 +77,12 @@ export class CmrCatalog implements MetadataCatalogInterface {
             query: GET_CMR_GRANULES_BY_ENTRY_ID,
             variables: {
                 collectionEntryId,
-                limit: options?.limit ?? 100,
+                limit: options?.limit ?? 50,
                 offset: options?.offset ?? 0,
+                sortKey: this.#getGranuleSortKey(
+                    options?.sortBy ?? 'title',
+                    options?.sortDirection ?? 'asc'
+                ),
             },
             context: {
                 fetchOptions: {
@@ -93,5 +97,30 @@ export class CmrCatalog implements MetadataCatalogInterface {
         }
 
         return response.data
+    }
+
+    /**
+     * the GraphQL properties and the sort keys differ (https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#sorting-granule-results)
+     * this function returns the correct sort key for the GraphQL query
+     */
+    #getGranuleSortKey(sortBy: string, sortDirection: string) {
+        let sortKey = sortBy
+
+        switch (sortBy) {
+            case 'title':
+                sortKey = 'granuleUr' // not a typo, this should NOT be "granuleUrl"
+                break
+            case 'size':
+                sortKey = 'dataSize'
+                break
+            case 'timeStart':
+                sortKey = 'startDate'
+                break
+            case 'timeEnd':
+                sortKey = 'endDate'
+                break
+        }
+
+        return sortDirection === 'asc' ? sortKey : `-${sortKey}`
     }
 }

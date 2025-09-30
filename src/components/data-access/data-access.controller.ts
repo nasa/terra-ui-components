@@ -9,20 +9,25 @@ import type TerraDataAccess from './data-access.component.js'
 
 export class DataAccessController {
     #fetchGranulesTask: Task<
-        [string | undefined, number, number],
+        [string | undefined, number, number, string, string],
         CmrGranule[] | undefined
     >
     #host: ReactiveControllerHost & TerraDataAccess
     #catalog: MetadataCatalogInterface
     #totalGranules: number = 0
     #granules: CmrGranule[] = []
+    #lastSortBy = 'title'
+    #lastSortDirection = 'asc'
 
     constructor(host: ReactiveControllerHost & TerraDataAccess) {
         this.#host = host
         this.#catalog = this.#getCatalogRepository()
 
         this.#fetchGranulesTask = new Task(host, {
-            task: async ([collectionEntryId, page, limit], { signal }) => {
+            task: async (
+                [collectionEntryId, page, limit, sortBy, sortDirection],
+                { signal }
+            ) => {
                 if (!collectionEntryId) {
                     return undefined
                 }
@@ -31,7 +36,20 @@ export class DataAccessController {
                     signal,
                     offset: (page - 1) * limit,
                     limit,
+                    sortBy,
+                    sortDirection,
                 })
+
+                if (
+                    sortBy !== this.#lastSortBy ||
+                    sortDirection !== this.#lastSortDirection
+                ) {
+                    this.#granules = []
+                    this.#totalGranules = 0
+                }
+
+                this.#lastSortBy = sortBy
+                this.#lastSortDirection = sortDirection
 
                 // rather than returning what we received, we concatenate new granules with existing granules
                 // this allows us to show ALL the granules to the user, rather than just a few at a time
@@ -45,10 +63,12 @@ export class DataAccessController {
 
                 return this.#granules
             },
-            args: (): [string | undefined, number, number] => [
+            args: (): [string | undefined, number, number, string, string] => [
                 this.#host.collectionEntryId,
                 this.#host.page,
                 this.#host.limit,
+                this.#host.sortBy,
+                this.#host.sortDirection,
             ],
         })
     }

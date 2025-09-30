@@ -15,6 +15,7 @@ import {
     calculateMeanGranuleSize,
     formatGranuleSize,
 } from '../../metadata-catalog/utilities.js'
+import TerraIcon from '../icon/icon.component.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -35,16 +36,23 @@ export default class TerraDataAccess extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-loader': TerraLoader,
+        'terra-icon': TerraIcon,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
 
     @state()
-    limit = 100
+    limit = 50
 
     @state()
     page = 1
+
+    @state()
+    sortBy = 'title'
+
+    @state()
+    sortDirection = 'asc'
 
     #controller = new DataAccessController(this)
 
@@ -52,6 +60,30 @@ export default class TerraDataAccess extends TerraElement {
         if (event.last >= this.page * this.limit - 1) {
             this.page++
         }
+    }
+
+    #handleSortBy(field: string) {
+        if (this.sortBy === field) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc'
+        } else {
+            this.sortBy = field
+            this.sortDirection = 'asc'
+        }
+    }
+
+    #renderSortBy(field: string) {
+        if (this.sortBy !== field) {
+            return nothing
+        }
+
+        return html`
+            <terra-icon
+                .name=${this.sortDirection === 'desc'
+                    ? 'chevron-down-circle'
+                    : 'chevron-up-circle'}
+                font-size="24px"
+            ></terra-icon>
+        `
     }
 
     render() {
@@ -71,10 +103,18 @@ export default class TerraDataAccess extends TerraElement {
 
                       <div class="grid-container">
                           <div class="grid-header">
-                              <div>File Name</div>
-                              <div>Size (MB)</div>
-                              <div>Start Time</div>
-                              <div>End Time</div>
+                              <div @click=${() => this.#handleSortBy('title')}>
+                                  File Name ${this.#renderSortBy('title')}
+                              </div>
+                              <div @click=${() => this.#handleSortBy('size')}>
+                                  Size (MB) ${this.#renderSortBy('size')}
+                              </div>
+                              <div @click=${() => this.#handleSortBy('timeStart')}>
+                                  Start Time ${this.#renderSortBy('timeStart')}
+                              </div>
+                              <div @click=${() => this.#handleSortBy('timeEnd')}>
+                                  End Time ${this.#renderSortBy('timeEnd')}
+                              </div>
                           </div>
 
                           <div class="grid-body">
