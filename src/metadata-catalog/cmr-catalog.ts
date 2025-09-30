@@ -1,5 +1,6 @@
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
+    GET_CMR_GRANULES_BY_ENTRY_ID,
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
     GET_CMR_SEARCH_RESULTS_VARIABLES,
@@ -9,6 +10,7 @@ import {
     type CmrSearchResult,
     type MetadataCatalogInterface,
     type SearchOptions,
+    type CmrGranulesResponse,
 } from './types.js'
 
 export class CmrCatalog implements MetadataCatalogInterface {
@@ -66,5 +68,29 @@ export class CmrCatalog implements MetadataCatalogInterface {
             })) ?? []
 
         return [...collections, ...variables]
+    }
+
+    async getGranules(collectionEntryId: string, options?: SearchOptions) {
+        const client = await getGraphQLClient('cmr')
+
+        const response = await client.query<CmrGranulesResponse>({
+            query: GET_CMR_GRANULES_BY_ENTRY_ID,
+            variables: {
+                collectionEntryId,
+                limit: 100,
+                offset: 0,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+        })
+
+        if (response.errors) {
+            throw new Error(`Failed to fetch granules: ${response.errors[0].message}`)
+        }
+
+        return response.data
     }
 }

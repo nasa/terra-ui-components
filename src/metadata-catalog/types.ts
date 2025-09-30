@@ -12,6 +12,33 @@ export interface MetadataCatalogInterface {
         type: 'collection' | 'variable' | 'all',
         options?: SearchOptions
     ): Promise<Array<CmrSearchResult>>
+
+    getGranules(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CmrGranulesResponse>
+}
+
+export type CmrGranulesResponse = {
+    collections?: {
+        items: Array<{
+            conceptId: string
+            granules: {
+                count: number
+                items: Array<CmrGranule>
+            }
+        }>
+    }
+}
+
+export type CmrGranule = {
+    conceptId: string
+    dataCenter: string
+    dataGranule: string
+    granuleUr: string
+    links: Array<string>
+    relatedUrls: Array<string>
+    title: string
 }
 
 export type CmrSearchResult = {

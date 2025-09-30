@@ -60,6 +60,28 @@ export const GET_CMR_SEARCH_RESULTS_VARIABLES = gql`
     }
 `
 
+export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
+    query Collections($collectionEntryId: String!, $limit: Int, $offset: Int) {
+        collections(params: { entryId: [$collectionEntryId] }) {
+            items {
+                conceptId
+                granules(params: { limit: $limit, offset: $offset }) {
+                    count
+                    items {
+                        conceptId
+                        dataCenter
+                        dataGranule
+                        granuleUr
+                        links
+                        relatedUrls
+                        title
+                    }
+                }
+            }
+        }
+    }
+`
+
 export const GET_SEARCH_KEYWORDS = gql`
     query {
         aesirKeywords {

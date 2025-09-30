@@ -24,6 +24,7 @@ export { default as TerraDataSubsetter } from './components/data-subsetter/data-
 export { default as TerraDataSubsetterHistory } from './components/data-subsetter-history/data-subsetter-history.js'
 export { default as TerraTimeAverageMap } from './components/time-average-map/time-average-map.js'
 export { default as TerraPlotToolbar } from './components/plot-toolbar/plot-toolbar.js'
+export { default as TerraDataAccess } from './components/data-access/data-access.js';
 /* plop:component */
 
 // Utilities
