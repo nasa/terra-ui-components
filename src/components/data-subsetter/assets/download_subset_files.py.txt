@@ -54,7 +54,7 @@ def get_login_credentials():
 
     try:
         nrc = netrc.netrc()
-        if({{HARMONY_ENV}}==Environment.Prod){
+        if({{HARMONY_ENV}}==Environment.PROD){
         login, _account, password = nrc.authenticators("urs.earthdata.nasa.gov")
         }
         else{
