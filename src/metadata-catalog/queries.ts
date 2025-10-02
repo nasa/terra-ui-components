@@ -67,6 +67,8 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
         $limit: Int
         $offset: Int
         $sortKey: String
+        $temporal: String
+        $boundingBox: [String]
     ) {
         collections(params: { entryId: [$collectionEntryId] }) {
             items {
@@ -78,6 +80,8 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
                         sortKey: [$sortKey]
                         readableGranuleName: $search
                         options: { readableGranuleName: { pattern: true } }
+                        temporal: $temporal
+                        boundingBox: $boundingBox
                     }
                 ) {
                     count

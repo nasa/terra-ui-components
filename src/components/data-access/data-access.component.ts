@@ -17,6 +17,10 @@ import {
 } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
 import { debounce } from '../../internal/debounce.js'
+import TerraDatePicker from '../date-picker/date-picker.component.js'
+import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import type { MapEventDetail } from '../map/type.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -38,6 +42,8 @@ export default class TerraDataAccess extends TerraElement {
     static dependencies = {
         'terra-loader': TerraLoader,
         'terra-icon': TerraIcon,
+        'terra-date-picker': TerraDatePicker,
+        'terra-spatial-picker': TerraSpatialPicker,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -57,6 +63,15 @@ export default class TerraDataAccess extends TerraElement {
 
     @state()
     search = ''
+
+    @state()
+    startDate = ''
+
+    @state()
+    endDate = ''
+
+    @state()
+    location: MapEventDetail | null = null
 
     #controller = new DataAccessController(this)
 
@@ -95,50 +110,84 @@ export default class TerraDataAccess extends TerraElement {
         this.search = search
     }
 
+    #handleDateChange(event: CustomEvent) {
+        const datePicker = event.currentTarget as TerraDatePicker
+
+        this.startDate = datePicker.selectedDates.startDate ?? ''
+        this.endDate = datePicker.selectedDates.endDate ?? ''
+    }
+
+    #handleMapChange(event: TerraMapChangeEvent) {
+        this.location = event.detail
+    }
+
     render() {
-        return html`<h2>Data Access</h2>
-            ${this.#controller.granules?.length
-                ? html`
-                      <div class="info-bar">
-                          <div>
-                              <strong>${this.#controller.totalGranules}</strong> files
-                              selected
+        return html`
+            <div class="info-bar">
+                <div style="width: 500px" ;>
+                    <terra-date-picker
+                        range
+                        show-months="2"
+                        label="Date Range"
+                        allow-input
+                        class="w-full"
+                        @terra-change=${this.#handleDateChange}
+                    ></terra-date-picker>
+
+                    <terra-spatial-picker
+                        hasShapeSelector
+                        class="w-full"
+                        has-shape-selector
+                        @terra-map-change=${this.#handleMapChange}
+                    ></terra-spatial-picker>
+                </div>
+            </div>
+
+            <div class="info-bar">
+                <div>
+                    <strong>${this.#controller.totalGranules}</strong> files selected
+                    ${this.#controller.granules?.length
+                        ? html`
                               (~${formatGranuleSize(
                                   calculateMeanGranuleSize(
                                       this.#controller.granules
                                   ) * this.#controller.totalGranules
-                              )})
-                          </div>
-                          <input
-                              type="text"
-                              class="search-input"
-                              placeholder="Search file names"
-                              .value=${this.search ?? ''}
-                              @input=${(event: Event) => {
-                                  this.handleSearch(
-                                      (event.target as HTMLInputElement).value
-                                  )
-                              }}
-                          />
-                      </div>
+                              )}),
+                              showing
+                              <strong>${this.#controller.granules?.length}</strong>
+                          `
+                        : nothing}
+                </div>
+                <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Search file names"
+                    .value=${this.search ?? ''}
+                    @input=${(event: Event) => {
+                        this.handleSearch((event.target as HTMLInputElement).value)
+                    }}
+                />
+            </div>
 
-                      <div class="grid-container">
-                          <div class="grid-header">
-                              <div @click=${() => this.#handleSortBy('title')}>
-                                  File Name ${this.#renderSortBy('title')}
-                              </div>
-                              <div @click=${() => this.#handleSortBy('size')}>
-                                  Size (MB) ${this.#renderSortBy('size')}
-                              </div>
-                              <div @click=${() => this.#handleSortBy('timeStart')}>
-                                  Start Time ${this.#renderSortBy('timeStart')}
-                              </div>
-                              <div @click=${() => this.#handleSortBy('timeEnd')}>
-                                  End Time ${this.#renderSortBy('timeEnd')}
-                              </div>
-                          </div>
+            <div class="grid-container">
+                <div class="grid-header">
+                    <div @click=${() => this.#handleSortBy('title')}>
+                        File Name ${this.#renderSortBy('title')}
+                    </div>
+                    <div @click=${() => this.#handleSortBy('size')}>
+                        Size (MB) ${this.#renderSortBy('size')}
+                    </div>
+                    <div @click=${() => this.#handleSortBy('timeStart')}>
+                        Start Time ${this.#renderSortBy('timeStart')}
+                    </div>
+                    <div @click=${() => this.#handleSortBy('timeEnd')}>
+                        End Time ${this.#renderSortBy('timeEnd')}
+                    </div>
+                </div>
 
-                          <div class="grid-body">
+                <div class="grid-body">
+                    ${this.#controller.granules?.length
+                        ? html`
                               <lit-virtualizer
                                   style="height: 300px;"
                                   scroller
@@ -180,16 +229,18 @@ export default class TerraDataAccess extends TerraElement {
                                   }}
                                   @rangeChanged=${this.#handleRangeChanged}
                               ></lit-virtualizer>
-                          </div>
-                      </div>
-                  `
-                : nothing}
+                          `
+                        : nothing}
+                </div>
+            </div>
+
             ${this.#controller.render({
                 initial: () => this.#renderLoader(),
                 pending: () => nothing,
                 complete: () => nothing,
                 error: () => nothing,
-            })} `
+            })}
+        `
     }
 
     #renderLoader(more?: boolean) {

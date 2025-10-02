@@ -84,6 +84,14 @@ export class CmrCatalog implements MetadataCatalogInterface {
                     options?.sortDirection ?? 'asc'
                 ),
                 search: options?.search ? [`*${options.search}*`] : undefined,
+                temporal:
+                    options?.startDate && options?.endDate
+                        ? `${options.startDate},${options.endDate}`
+                        : undefined,
+                boundingBox:
+                    options?.location?.type === 'bbox'
+                        ? options.location.bounds.toBBoxString()
+                        : undefined,
             },
             context: {
                 fetchOptions: {

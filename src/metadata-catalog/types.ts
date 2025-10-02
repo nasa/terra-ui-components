@@ -1,5 +1,6 @@
 import type { ReactiveControllerHost } from 'lit'
 import type { Variable } from '../components/browse-variables/browse-variables.types.js'
+import type { MapEventDetail } from '../components/map/type.js'
 
 export type SearchOptions = {
     signal?: AbortSignal
@@ -9,6 +10,9 @@ export type SearchOptions = {
     sortBy?: string
     sortDirection?: string
     search?: string
+    startDate?: string
+    endDate?: string
+    location?: MapEventDetail | null
 }
 
 export interface MetadataCatalogInterface {
