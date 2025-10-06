@@ -278,12 +278,12 @@ export default class TerraPlotToolbar extends TerraElement {
                           </terra-button>
 
                           <terra-button
-                              circle
                               outline
                               aria-expanded=${this.activeMenuItem === 'jupyter'}
                               aria-controls="menu"
                               aria-haspopup="true"
-                              class="toggle"
+                              class="toggle square-button"
+                              variant="warning"
                               @mouseenter=${this.#handleActiveMenuItem}
                               data-menu-name="jupyter"
                           >

@@ -48,6 +48,12 @@ export default css`
         position: absolute;
     }
 
+    .square-button {
+        border-radius: 0 !important; /* square corners */
+        width: 2.5em;
+        height: 2.5em;
+    }
+
     menu {
         all: unset;
         position: absolute;
