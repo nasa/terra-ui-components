@@ -41,7 +41,12 @@ export class FetchController {
                     response: { docs },
                 } = await response.json()
 
-                return cherryPickDocInfo(docs)
+                return cherryPickDocInfo(docs).sort(
+                    (a, b) =>
+                        // sort by collection short name, then by long name if variables are in the same collection
+                        a.collectionShortName.localeCompare(b.collectionShortName) ||
+                        a.longName.localeCompare(b.longName)
+                )
             },
             args: (): any => [],
         })
