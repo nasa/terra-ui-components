@@ -409,6 +409,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                     });
 
                     const xValues = coords.map((_, index) => index); //Mapping indexes to each coordinate for the x-axis of the scatter plot
+
                     // Configure plot data for plot component
                     this.plotData = [
                         {
@@ -420,22 +421,23 @@ export default class TerraTimeAverageMap extends TerraElement {
                             marker: { size: 6 }
                         }
                     ];
+
                     // Configure layout for plot component
                     this.layout = {
-                        title: 'Raster Values Along Line',
+                        title: 'Data Values Along Line',
                         xaxis: {
                             title: 'Point Index',
                         },
                         yaxis: {
-                            title: `Raster value (${this.metadata["units"]})`,
-                            tickformat: '.2e' // force scientific notation (e.g., 2.21e-7)
-                            // or tickformat: '.6f' // for fixed decimal (e.g., 0.000000221)
+                            title: `Data value (${this.metadata["units"]})`,
+                            tickformat: '.2e'
                         }
                     };
                 });
             }
         }
-        else { // Clean up if check box is toggled off
+        else { 
+            // Clean up if check box is toggled off
             // Safely remove interaction and layer if they exist
             if (this.#map && this.#draw && this.#vectorLayer) {
                 this.#map.removeInteraction(this.#draw);
