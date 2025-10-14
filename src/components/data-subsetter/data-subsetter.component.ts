@@ -64,7 +64,7 @@ export default class TerraDataSubsetter extends TerraElement {
     showCollectionSearch?: boolean = true
 
     @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
-    showHistoryPanel?: boolean = false
+    showHistoryPanel?: boolean = true
 
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
@@ -1333,22 +1333,56 @@ export default class TerraDataSubsetter extends TerraElement {
                       </button>`
                     : nothing}
 
-                <div class="job-info">
-                    Job ID:
-                    <span class="job-id">
-                        ${this.bearerToken
-                            ? html`<a
-                                  href="https://harmony.earthdata.nasa.gov/jobs/${this
-                                      .controller.currentJob!.jobID}"
-                                  target="_blank"
-                                  >${this.controller.currentJob!.jobID}</a
-                              >`
-                            : this.controller.currentJob!.jobID}
-                    </span>
-                    <span class="info-icon">?</span>
-                </div>
-            </div>
-        `
+                    <div class="job-info">
+    <div class="job-details">
+        <div>
+            <strong>Job ID:</strong>
+            <span class="job-id">
+                ${this.bearerToken
+                    ? html`<a
+                          href="https://harmony.earthdata.nasa.gov/jobs/${this
+                              .controller.currentJob!.jobID}"
+                          target="_blank"
+                          >${this.controller.currentJob!.jobID}</a
+                      >`
+                    : this.controller.currentJob!.jobID}
+            </span>
+            <span class="info-icon">?</span>
+        </div>
+
+        <div>
+            <strong>Collection Entry ID:</strong>
+            ${this.collectionEntryId}
+        </div>
+
+        <div>
+            <strong>Date Range:</strong>
+            ${this.selectedDateRange['startDate']} – ${this.selectedDateRange['endDate']}
+        </div>
+
+        <div>
+            <strong>Spatial Area:</strong>
+            ${this.spatialSelection ? this.spatialSelection : 'Not specified'}
+        </div>
+
+        <div>
+            <strong>Variables:</strong>
+            ${this.selectedVariables.length
+                ? this.selectedVariables
+                      .map(v => v.name.split('/').pop())
+                      .join(', ')
+                : 'None selected'}
+        </div>
+
+        <div>
+            <strong>Output Format:</strong>
+            ${this.selectedFormat}
+        </div>
+    </div>
+</div>
+
+
+</div>`
     }
 
     #renderSelectedParams() {
@@ -1695,7 +1729,6 @@ export default class TerraDataSubsetter extends TerraElement {
             if (this.environment) {
                 historyPanel.setAttribute('environment', this.environment)
             }
-
             document.body.appendChild(historyPanel)
         }
     }

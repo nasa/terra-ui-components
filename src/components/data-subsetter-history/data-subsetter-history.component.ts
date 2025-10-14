@@ -44,7 +44,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
      * this prop allows you to override that behavior and always show the history panel
      */
     @property({ attribute: 'always-show', type: Boolean })
-    alwaysShow: boolean
+    alwaysShow: boolean= true
 
     @state()
     collapsed: boolean = true
