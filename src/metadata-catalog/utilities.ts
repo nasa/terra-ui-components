@@ -1,6 +1,8 @@
 import type {
     ArchiveAndDistributionInformation,
     CmrGranule,
+    CmrGranuleDataGranule,
+    CmrSamplingOfGranules,
     HostWithMaybeProperties,
 } from './types.js'
 
@@ -34,13 +36,15 @@ export function formatGranuleSize(sizeInMB: number): string {
     return `${size.toFixed(decimals)} ${UNITS[unitIndex]}`
 }
 
-export function calculateMeanGranuleSize(granules: CmrGranule[]) {
+export function calculateMeanGranuleSize(
+    granules: { dataGranule: CmrGranuleDataGranule }[]
+) {
     const sizes = granules.map(granule => calculateGranuleSize(granule, 'MB'))
     return sizes.reduce((a, b) => a + b, 0) / sizes.length
 }
 
 export function calculateGranuleSize(
-    granule: CmrGranule,
+    granule: { dataGranule: CmrGranuleDataGranule },
     unit: 'MB' | 'GB' | 'TB' | 'PB'
 ) {
     const archiveInfo = granule.dataGranule.archiveAndDistributionInformation

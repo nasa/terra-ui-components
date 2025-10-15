@@ -99,6 +99,28 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
     }
 `
 
+export const GET_FIRST_AND_LAST_GRANULES_BY_ENTRY_ID = gql`
+    query Collections($collectionEntryId: String!) {
+        collections(params: { entryId: [$collectionEntryId] }) {
+            items {
+                conceptId
+                firstGranules: granules(params: { limit: 2, sortKey: "startDate" }) {
+                    count
+                    items {
+                        dataGranule
+                    }
+                }
+                lastGranules: granules(params: { limit: 2, sortKey: "-endDate" }) {
+                    count
+                    items {
+                        dataGranule
+                    }
+                }
+            }
+        }
+    }
+`
+
 export const GET_SEARCH_KEYWORDS = gql`
     query {
         aesirKeywords {

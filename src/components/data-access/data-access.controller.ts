@@ -1,11 +1,16 @@
 import type {
     CmrGranule,
+    CmrSamplingOfGranules,
     MetadataCatalogInterface,
 } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 import { Task, type StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type TerraDataAccess from './data-access.component.js'
+import {
+    calculateMeanGranuleSize,
+    formatGranuleSize,
+} from '../../metadata-catalog/utilities.js'
 
 export type FetchGranulesOptions = {
     collectionEntryId: string
@@ -25,6 +30,7 @@ export class DataAccessController {
     #catalog: MetadataCatalogInterface
     #totalGranules: number = 0
     #granules: CmrGranule[] = []
+    #sampling?: CmrSamplingOfGranules
 
     constructor(host: ReactiveControllerHost & TerraDataAccess) {
         this.#host = host
@@ -64,6 +70,26 @@ export class DataAccessController {
             },
             autoRun: false,
         })
+
+        new Task(host, {
+            task: async ([collectionEntryId], { signal }) => {
+                if (!collectionEntryId) {
+                    return
+                }
+
+                const sampling = await this.#catalog.getSamplingOfGranules(
+                    collectionEntryId,
+                    {
+                        signal,
+                    }
+                )
+
+                this.#sampling = sampling?.collections?.items?.[0] ?? []
+
+                return this.#sampling
+            },
+            args: () => [this.#host.collectionEntryId],
+        })
     }
 
     get granules() {
@@ -72,6 +98,18 @@ export class DataAccessController {
 
     get totalGranules() {
         return this.#totalGranules
+    }
+
+    get estimatedSize() {
+        const firstAndLastGranules = this.#sampling?.firstGranules.items.concat(
+            this.#sampling?.lastGranules.items
+        )
+
+        return firstAndLastGranules
+            ? formatGranuleSize(
+                  calculateMeanGranuleSize(firstAndLastGranules) * this.#totalGranules
+              )
+            : null
     }
 
     async fetchGranules({
@@ -83,7 +121,7 @@ export class DataAccessController {
         search,
     }: FetchGranulesOptions) {
         console.log(
-            'fetching granules ',
+            'Fetching granules ',
             collectionEntryId,
             startRow,
             endRow,

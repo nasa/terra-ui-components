@@ -26,6 +26,11 @@ export interface MetadataCatalogInterface {
         collectionEntryId: string,
         options?: SearchOptions
     ): Promise<CmrGranulesResponse>
+
+    getSamplingOfGranules(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CmrSamplingOfGranulesResponse>
 }
 
 export type CmrGranulesResponse = {
@@ -36,6 +41,28 @@ export type CmrGranulesResponse = {
                 count: number
                 items: Array<CmrGranule>
             }
+        }>
+    }
+}
+
+export type CmrSamplingOfGranulesResponse = {
+    collections: {
+        items: Array<CmrSamplingOfGranules>
+    }
+}
+
+export type CmrSamplingOfGranules = {
+    conceptId: string
+    firstGranules: {
+        count: number
+        items: Array<{
+            dataGranule: CmrGranuleDataGranule
+        }>
+    }
+    lastGranules: {
+        count: number
+        items: Array<{
+            dataGranule: CmrGranuleDataGranule
         }>
     }
 }

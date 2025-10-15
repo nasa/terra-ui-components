@@ -119,13 +119,6 @@ export default class TerraDataAccess extends TerraElement {
                         ? this.#controller.totalGranules
                         : -1
 
-                console.log(
-                    'Granules returned: ',
-                    this.#controller.granules,
-                    ' lastRow: ',
-                    lastRow
-                )
-
                 params.successCallback(this.#controller.granules, lastRow)
             },
         }
@@ -186,8 +179,6 @@ export default class TerraDataAccess extends TerraElement {
         }
 
         this.#gridApi = createGrid(this.#gridRef.value!, gridOptions)
-
-        console.log('Grid API: ', this.#gridApi)
     }
 
     @debounce(500)
@@ -357,11 +348,8 @@ export default class TerraDataAccess extends TerraElement {
                         >${this.#controller.totalGranules.toLocaleString()}</strong
                     >
                     files selected
-                    ${this.#controller.granules?.length
-                        ? html` (~${formatGranuleSize(
-                              calculateMeanGranuleSize(this.#controller.granules) *
-                                  this.#controller.totalGranules
-                          )})`
+                    ${this.#controller.estimatedSize
+                        ? html` (~${this.#controller.estimatedSize})`
                         : nothing}
                 </div>
             </div>

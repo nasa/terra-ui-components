@@ -4,6 +4,7 @@ import {
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
     GET_CMR_SEARCH_RESULTS_VARIABLES,
+    GET_FIRST_AND_LAST_GRANULES_BY_ENTRY_ID,
 } from './queries.js'
 import {
     type CmrSearchResultsResponse,
@@ -11,6 +12,7 @@ import {
     type MetadataCatalogInterface,
     type SearchOptions,
     type CmrGranulesResponse,
+    type CmrSamplingOfGranulesResponse,
 } from './types.js'
 
 export class CmrCatalog implements MetadataCatalogInterface {
@@ -92,6 +94,29 @@ export class CmrCatalog implements MetadataCatalogInterface {
                     options?.location?.type === 'bbox'
                         ? options.location.bounds.toBBoxString()
                         : undefined,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+            fetchPolicy: 'network-only',
+        })
+
+        if (response.errors) {
+            throw new Error(`Failed to fetch granules: ${response.errors[0].message}`)
+        }
+
+        return response.data
+    }
+
+    async getSamplingOfGranules(collectionEntryId: string, options?: SearchOptions) {
+        const client = await getGraphQLClient('cmr')
+
+        const response = await client.query<CmrSamplingOfGranulesResponse>({
+            query: GET_FIRST_AND_LAST_GRANULES_BY_ENTRY_ID,
+            variables: {
+                collectionEntryId,
             },
             context: {
                 fetchOptions: {
