@@ -4,6 +4,11 @@ import type {
     HostWithMaybeProperties,
 } from './types.js'
 
+export function getGranuleUrl(granule: CmrGranule) {
+    const getDataUrl = granule.relatedUrls.find(url => url.type === 'GET DATA')
+    return getDataUrl?.url
+}
+
 export function getVariableEntryId(host: HostWithMaybeProperties) {
     if (!host.variableEntryId && !(host.collection && host.variable)) {
         return

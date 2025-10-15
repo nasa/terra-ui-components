@@ -28,10 +28,10 @@ import type { LatLng } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
-import { TaskStatus } from '@lit/task'
 import TerraLoader from '../loader/loader.component.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import { getNotebook } from './notebooks/subsetter-notebook.js'
+import TerraDataAccess from '../data-access/data-access.component.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -55,6 +55,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-login': TerraLogin,
         'terra-loader': TerraLoader,
+        'terra-data-access': TerraDataAccess,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -129,6 +130,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     collectionAccordionOpen: boolean = true
+
+    @state()
+    dataAccessMode: 'original' | 'subset' = 'original'
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -208,9 +212,19 @@ export default class TerraDataSubsetter extends TerraElement {
                         : nothing}
                 </div>
 
-                ${showJobStatus
-                    ? this.#renderJobStatus()
-                    : this.#renderSubsetOptions()}
+                <div class="section">${this.#renderDataAccessModeSelection()}</div>
+
+                ${this.dataAccessMode === 'original'
+                    ? html`
+                          <div class="section">
+                              <terra-data-access
+                                  collection-entry-id=${this.collectionEntryId || ''}
+                              ></terra-data-access>
+                          </div>
+                      `
+                    : showJobStatus
+                      ? this.#renderJobStatus()
+                      : this.#renderSubsetOptions()}
             </div>
         `
     }
@@ -268,54 +282,58 @@ export default class TerraDataSubsetter extends TerraElement {
             spatialExtent &&
             spatialExtent.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
-        if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
-            return html`<terra-loader indeterminate></terra-loader>`
-        }
-
         return html`
-            ${hasSubsetOption && estimates
-                ? this.#renderSizeInfo(estimates)
-                : nothing}
-            ${this.showCollectionSearch
-                ? html`
-                      <div class="section">
-                          <h2 class="section-title">
-                              Select Data Collection
-                              <span class="help-icon">?</span>
-                          </h2>
+            ${this.dataAccessMode === 'original'
+                ? nothing
+                : hasSubsetOption
+                  ? html`
+                        ${hasSubsetOption && estimates
+                            ? this.#renderSizeInfo(estimates)
+                            : nothing}
+                        ${this.showCollectionSearch
+                            ? html`
+                                  <div class="section">
+                                      <h2 class="section-title">
+                                          Select Data Collection
+                                          <span class="help-icon">?</span>
+                                      </h2>
 
-                          ${this.#renderSearchForCollection()}
-                      </div>
-                  `
-                : nothing}
-            ${hasSubsetOption
-                ? html`
-                      <div class="section">
-                          <h2 class="section-title">
-                              Method Options
-                              <span class="help-icon">?</span>
-                          </h2>
+                                      ${this.#renderSearchForCollection()}
+                                  </div>
+                              `
+                            : nothing}
+                        <div class="section">
+                            <h2 class="section-title">
+                                Subset Options
+                                <span class="help-icon">?</span>
+                            </h2>
+                            <p style="color: #666; margin-bottom: 16px;">
+                                Generate file links supporting geo-spatial search and
+                                crop, selection of variables and dimensions, selection
+                                of time of day, and data presentation, in netCDF or
+                                HDF-EOS5 formats.
+                            </p>
 
-                          ${this.collectionWithServices?.temporalSubset
-                              ? this.#renderDateRangeSelection()
-                              : nothing}
-                          ${this.#hasSpatialSubset()
-                              ? this.#renderSpatialSelection()
-                              : nothing}
-                          ${this.collectionWithServices?.variableSubset
-                              ? this.#renderVariableSelection()
-                              : nothing}
-                      </div>
-                  `
-                : html`
-                      ${showTemporalSection &&
-                      !this.collectionWithServices?.temporalSubset
-                          ? this.#renderAvailableTemporalRangeSection()
-                          : nothing}
-                      ${showSpatialSection && !this.#hasSpatialSubset()
-                          ? this.#renderAvailableSpatialRangeSection()
-                          : nothing}
-                  `}
+                            ${this.collectionWithServices?.temporalSubset
+                                ? this.#renderDateRangeSelection()
+                                : nothing}
+                            ${this.#hasSpatialSubset()
+                                ? this.#renderSpatialSelection()
+                                : nothing}
+                            ${this.collectionWithServices?.variableSubset
+                                ? this.#renderVariableSelection()
+                                : nothing}
+                        </div>
+                    `
+                  : html`
+                        ${showTemporalSection &&
+                        !this.collectionWithServices?.temporalSubset
+                            ? this.#renderAvailableTemporalRangeSection()
+                            : nothing}
+                        ${showSpatialSection && !this.#hasSpatialSubset()
+                            ? this.#renderAvailableSpatialRangeSection()
+                            : nothing}
+                    `}
             ${this.collectionWithServices?.outputFormats?.length && hasSubsetOption
                 ? html`
                       <div class="section">
@@ -341,13 +359,16 @@ export default class TerraDataSubsetter extends TerraElement {
                       </div>
                   `
                 : nothing}
-
-            <div class="footer">
-                <button class="btn btn-secondary">Reset All</button>
-                <button class="btn btn-primary" @click=${this.#getData}>
-                    Get Data
-                </button>
-            </div>
+            ${this.dataAccessMode === 'subset'
+                ? html`
+                      <div class="footer">
+                          <button class="btn btn-secondary">Reset All</button>
+                          <button class="btn btn-primary" @click=${this.#getData}>
+                              Get Data
+                          </button>
+                      </div>
+                  `
+                : nothing}
         `
     }
 
@@ -1737,6 +1758,54 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
                 <div style="font-size: 0.95em; color: #666;">
                     This collection does not support spatial subsetting.
+                </div>
+            </div>
+        `
+    }
+
+    #renderDataAccessModeSelection() {
+        return html`
+            <div class="mode-selection">
+                <div class="mode-options">
+                    <label
+                        class="mode-option ${this.dataAccessMode === 'original'
+                            ? 'selected'
+                            : ''}"
+                    >
+                        <input
+                            type="radio"
+                            name="data-access-mode"
+                            value="original"
+                            .checked=${this.dataAccessMode === 'original'}
+                            @change=${() => (this.dataAccessMode = 'original')}
+                        />
+                        <div class="mode-content">
+                            <div class="mode-title">Get Original Files</div>
+                            <div class="mode-description">
+                                Filter file links directly from the archive.
+                            </div>
+                        </div>
+                    </label>
+
+                    <label
+                        class="mode-option ${this.dataAccessMode === 'subset'
+                            ? 'selected'
+                            : ''}"
+                    >
+                        <input
+                            type="radio"
+                            name="data-access-mode"
+                            value="subset"
+                            .checked=${this.dataAccessMode === 'subset'}
+                            @change=${() => (this.dataAccessMode = 'subset')}
+                        />
+                        <div class="mode-content">
+                            <div class="mode-title">Subset Data</div>
+                            <div class="mode-description">
+                                Subset the data to your specific needs.
+                            </div>
+                        </div>
+                    </label>
                 </div>
             </div>
         `

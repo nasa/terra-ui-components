@@ -89,6 +89,7 @@ export default class TerraDatePicker extends TerraElement {
                 : null,
         }
 
+        /*
         const url = new URL(window.location.href)
         const timeStartISO = selectedDates[0]?.toISOString()
         const timeEndISO = this.range ? selectedDates[1]?.toISOString() : undefined
@@ -106,7 +107,7 @@ export default class TerraDatePicker extends TerraElement {
             url.searchParams.delete('time_end')
         }
 
-        window.history.replaceState({}, '', url)
+        window.history.replaceState({}, '', url)*/
 
         this.emit('terra-change')
     }
