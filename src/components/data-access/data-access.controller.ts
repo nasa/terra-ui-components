@@ -1,4 +1,5 @@
 import type {
+    CloudCoverRange,
     CmrGranule,
     CmrSamplingOfGranules,
     MetadataCatalogInterface,
@@ -19,11 +20,23 @@ export type FetchGranulesOptions = {
     sortBy?: string
     sortDirection?: string
     search?: string
+    cloudCover?: {
+        min?: number
+        max?: number
+    }
 }
 
 export class DataAccessController {
     fetchGranulesTask: Task<
-        [string, number, number, string, string, string],
+        [
+            string,
+            number,
+            number,
+            string,
+            string,
+            string,
+            { min?: number; max?: number },
+        ],
         CmrGranule[] | undefined
     >
     #host: ReactiveControllerHost & TerraDataAccess
@@ -31,6 +44,7 @@ export class DataAccessController {
     #totalGranules: number = 0
     #granules: CmrGranule[] = []
     #sampling?: CmrSamplingOfGranules
+    #cloudCoverRange: CloudCoverRange | null = null
 
     constructor(host: ReactiveControllerHost & TerraDataAccess) {
         this.#host = host
@@ -38,11 +52,17 @@ export class DataAccessController {
 
         this.fetchGranulesTask = new Task(host, {
             task: async (
-                [collectionEntryId, startRow, endRow, sortBy, sortDirection, search],
+                [
+                    collectionEntryId,
+                    startRow,
+                    endRow,
+                    sortBy,
+                    sortDirection,
+                    search,
+                    cloudCover,
+                ],
                 { signal }
             ) => {
-                console.log('fetching granules ', collectionEntryId, startRow, endRow)
-
                 if (!collectionEntryId) {
                     return undefined
                 }
@@ -54,23 +74,23 @@ export class DataAccessController {
                     sortBy,
                     sortDirection,
                     search,
+                    cloudCover,
                     startDate: this.#host.startDate,
                     endDate: this.#host.endDate,
                     location: this.#host.location,
                 })
 
-                ;(this.#granules =
-                    granules?.collections?.items?.[0]?.granules?.items ?? []),
-                    (this.#totalGranules =
-                        granules?.collections?.items?.[0]?.granules?.count ?? 0)
-
-                console.log('Granules: ', this.#granules)
+                this.#granules =
+                    granules?.collections?.items?.[0]?.granules?.items ?? []
+                this.#totalGranules =
+                    granules?.collections?.items?.[0]?.granules?.count ?? 0
 
                 return this.#granules
             },
             autoRun: false,
         })
 
+        // fetch sampling of granules
         new Task(host, {
             task: async ([collectionEntryId], { signal }) => {
                 if (!collectionEntryId) {
@@ -87,6 +107,27 @@ export class DataAccessController {
                 this.#sampling = sampling?.collections?.items?.[0] ?? []
 
                 return this.#sampling
+            },
+            args: () => [this.#host.collectionEntryId],
+        })
+
+        // fetch cloud cover range
+        new Task(host, {
+            task: async ([collectionEntryId], { signal }) => {
+                if (!collectionEntryId) {
+                    return
+                }
+
+                const cloudCoverRange = await this.#catalog.getCloudCoverRange(
+                    collectionEntryId,
+                    {
+                        signal,
+                    }
+                )
+
+                this.#cloudCoverRange = cloudCoverRange
+
+                return this.#cloudCoverRange
             },
             args: () => [this.#host.collectionEntryId],
         })
@@ -112,6 +153,10 @@ export class DataAccessController {
             : null
     }
 
+    get cloudCoverRange() {
+        return this.#cloudCoverRange
+    }
+
     async fetchGranules({
         collectionEntryId,
         startRow,
@@ -119,16 +164,8 @@ export class DataAccessController {
         sortBy,
         sortDirection,
         search,
+        cloudCover,
     }: FetchGranulesOptions) {
-        console.log(
-            'Fetching granules ',
-            collectionEntryId,
-            startRow,
-            endRow,
-            sortBy,
-            sortDirection
-        )
-
         return this.fetchGranulesTask.run([
             collectionEntryId,
             startRow,
@@ -136,6 +173,7 @@ export class DataAccessController {
             sortBy ?? 'title',
             sortDirection ?? 'asc',
             search ?? '',
+            cloudCover ?? { min: undefined, max: undefined },
         ])
     }
 

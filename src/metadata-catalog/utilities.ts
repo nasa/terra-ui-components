@@ -2,7 +2,6 @@ import type {
     ArchiveAndDistributionInformation,
     CmrGranule,
     CmrGranuleDataGranule,
-    CmrSamplingOfGranules,
     HostWithMaybeProperties,
 } from './types.js'
 

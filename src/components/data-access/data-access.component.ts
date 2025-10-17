@@ -9,8 +9,6 @@ import type { CmrGranule } from '../../metadata-catalog/types.js'
 import TerraLoader from '../loader/loader.component.js'
 import {
     calculateGranuleSize,
-    calculateMeanGranuleSize,
-    formatGranuleSize,
     getGranuleUrl,
 } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
@@ -18,6 +16,7 @@ import { debounce } from '../../internal/debounce.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import type { MapEventDetail } from '../map/type.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import {
@@ -30,6 +29,7 @@ import {
     type IGetRowsParams,
     type ICellRendererParams,
 } from 'ag-grid-community'
+import TerraSlider from '../slider/slider.component.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -53,6 +53,7 @@ export default class TerraDataAccess extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-date-picker': TerraDatePicker,
         'terra-spatial-picker': TerraSpatialPicker,
+        'terra-slider': TerraSlider,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -77,10 +78,16 @@ export default class TerraDataAccess extends TerraElement {
     location: MapEventDetail | null = null
 
     @state()
+    cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
+
+    @state()
     showDateFilters = false
 
     @state()
     showSpatialFilters = false
+
+    @state()
+    showCloudCoverFilters = false
 
     @state()
     showDownloadMenu = false
@@ -99,12 +106,6 @@ export default class TerraDataAccess extends TerraElement {
             rowCount: undefined, // behave as infinite scroll
 
             getRows: async (params: IGetRowsParams) => {
-                console.log(
-                    'asking for ' + params.startRow + ' to ' + params.endRow,
-                    params,
-                    this.search
-                )
-
                 await this.#controller.fetchGranules({
                     collectionEntryId: this.collectionEntryId ?? '',
                     startRow: params.startRow,
@@ -112,12 +113,22 @@ export default class TerraDataAccess extends TerraElement {
                     sortBy: params.sortModel?.[0]?.colId ?? 'title',
                     sortDirection: params.sortModel?.[0]?.sort ?? 'asc',
                     search: this.search,
+                    cloudCover: this.cloudCover,
                 })
 
                 const lastRow =
                     this.#controller.totalGranules <= params.endRow
                         ? this.#controller.totalGranules
                         : -1
+
+                this.#gridApi.applyColumnState({
+                    state: [
+                        {
+                            colId: 'cloudCover',
+                            hide: !this.#controller.cloudCoverRange,
+                        },
+                    ],
+                })
 
                 params.successCallback(this.#controller.granules, lastRow)
             },
@@ -163,6 +174,7 @@ export default class TerraDataAccess extends TerraElement {
                 },
                 { field: 'timeStart' },
                 { field: 'timeEnd' },
+                { field: 'cloudCover', hide: true },
             ],
             defaultColDef: {
                 flex: 1,
@@ -234,6 +246,15 @@ export default class TerraDataAccess extends TerraElement {
         console.log('opening jupyter notebook ', this, this.#gridApi)
     }
 
+    #handleCloudCoverChange(event: TerraSliderChangeEvent) {
+        const cloudCover = event.detail as any
+        this.cloudCover = {
+            min: cloudCover.startValue ?? undefined,
+            max: cloudCover.endValue ?? undefined,
+        }
+        this.#gridApi?.purgeInfiniteCache()
+    }
+
     render() {
         return html`
             <div class="filters-compact">
@@ -276,6 +297,26 @@ export default class TerraDataAccess extends TerraElement {
                         ></terra-icon>
                         <span>Spatial Area</span>
                     </button>
+
+                    ${this.#controller.cloudCoverRange
+                        ? html`
+                              <button
+                                  class="filter-btn ${this.showCloudCoverFilters
+                                      ? 'active'
+                                      : ''}"
+                                  @click=${() =>
+                                      (this.showCloudCoverFilters =
+                                          !this.showCloudCoverFilters)}
+                              >
+                                  <terra-icon
+                                      name="outline-cloud"
+                                      library="heroicons"
+                                      font-size="18px"
+                                  ></terra-icon>
+                                  <span>Cloud Cover</span>
+                              </button>
+                          `
+                        : nothing}
                 </div>
 
                 ${this.showDateFilters
@@ -340,6 +381,37 @@ export default class TerraDataAccess extends TerraElement {
                               </button>
                           </div>
                           <div class="divider"></div>
+                      `
+                    : nothing}
+                ${this.showCloudCoverFilters
+                    ? html`
+                          <div class="filter-row">
+                              <terra-slider
+                                  mode="range"
+                                  min=${this.#controller.cloudCoverRange?.min}
+                                  max=${this.#controller.cloudCoverRange?.max}
+                                  start-value=${this.#controller.cloudCoverRange?.min}
+                                  end-value=${this.#controller.cloudCoverRange?.max}
+                                  step="0.1"
+                                  label="Cloud Cover"
+                                  @terra-slider-change=${this.#handleCloudCoverChange}
+                                  show-inputs
+                              ></terra-slider>
+                              <button
+                                  class="clear-btn"
+                                  @click=${() => {
+                                      this.showCloudCoverFilters = false
+                                      this.cloudCover = {
+                                          min: undefined,
+                                          max: undefined,
+                                      }
+                                      this.#gridApi?.purgeInfiniteCache()
+                                  }}
+                                  aria-label="Clear cloud cover filters"
+                              >
+                                  ×
+                              </button>
+                          </div>
                       `
                     : nothing}
 

@@ -13,6 +13,10 @@ export type SearchOptions = {
     startDate?: string
     endDate?: string
     location?: MapEventDetail | null
+    cloudCover?: {
+        min?: number
+        max?: number
+    }
 }
 
 export interface MetadataCatalogInterface {
@@ -31,6 +35,11 @@ export interface MetadataCatalogInterface {
         collectionEntryId: string,
         options?: SearchOptions
     ): Promise<CmrSamplingOfGranulesResponse>
+
+    getCloudCoverRange(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CloudCoverRange | null>
 }
 
 export type CmrGranulesResponse = {
@@ -67,6 +76,11 @@ export type CmrSamplingOfGranules = {
     }
 }
 
+export type CloudCoverRange = {
+    min: number
+    max: number
+}
+
 export type CmrGranule = {
     conceptId: string
     dataGranule: CmrGranuleDataGranule
@@ -77,6 +91,7 @@ export type CmrGranule = {
         type: string
         url: string
     }>
+    cloudCover: any
 }
 
 export type CmrGranuleDataGranule = {

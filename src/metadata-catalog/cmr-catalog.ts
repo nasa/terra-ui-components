@@ -1,10 +1,10 @@
+import { gql } from '@apollo/client/core'
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
     GET_CMR_GRANULES_BY_ENTRY_ID,
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
     GET_CMR_SEARCH_RESULTS_VARIABLES,
-    GET_FIRST_AND_LAST_GRANULES_BY_ENTRY_ID,
 } from './queries.js'
 import {
     type CmrSearchResultsResponse,
@@ -13,6 +13,7 @@ import {
     type SearchOptions,
     type CmrGranulesResponse,
     type CmrSamplingOfGranulesResponse,
+    type CloudCoverRange,
 } from './types.js'
 
 export class CmrCatalog implements MetadataCatalogInterface {
@@ -94,6 +95,10 @@ export class CmrCatalog implements MetadataCatalogInterface {
                     options?.location?.type === 'bbox'
                         ? options.location.bounds.toBBoxString()
                         : undefined,
+                cloudCover:
+                    options?.cloudCover?.min && options?.cloudCover?.max
+                        ? `${options.cloudCover.min ?? ''},${options.cloudCover.max ?? ''}`
+                        : undefined,
             },
             context: {
                 fetchOptions: {
@@ -114,7 +119,31 @@ export class CmrCatalog implements MetadataCatalogInterface {
         const client = await getGraphQLClient('cmr')
 
         const response = await client.query<CmrSamplingOfGranulesResponse>({
-            query: GET_FIRST_AND_LAST_GRANULES_BY_ENTRY_ID,
+            query: gql`
+                query Collections($collectionEntryId: String!) {
+                    collections(params: { entryId: [$collectionEntryId] }) {
+                        items {
+                            conceptId
+                            firstGranules: granules(
+                                params: { limit: 2, sortKey: "startDate" }
+                            ) {
+                                count
+                                items {
+                                    dataGranule
+                                }
+                            }
+                            lastGranules: granules(
+                                params: { limit: 2, sortKey: "-endDate" }
+                            ) {
+                                count
+                                items {
+                                    dataGranule
+                                }
+                            }
+                        }
+                    }
+                }
+            `,
             variables: {
                 collectionEntryId,
             },
@@ -131,6 +160,81 @@ export class CmrCatalog implements MetadataCatalogInterface {
         }
 
         return response.data
+    }
+
+    async getCloudCoverRange(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CloudCoverRange | null> {
+        const client = await getGraphQLClient('cmr')
+
+        const response = await client.query({
+            query: gql`
+                query Collections($collectionEntryId: String!) {
+                    collections(params: { entryId: [$collectionEntryId] }) {
+                        items {
+                            lowestCloudCover: granules(
+                                params: { sortKey: "cloudCover", limit: 1 }
+                            ) {
+                                items {
+                                    cloudCover
+                                }
+                            }
+                            highestCloudCover: granules(
+                                params: { sortKey: "-cloudCover", limit: 1 }
+                            ) {
+                                items {
+                                    cloudCover
+                                }
+                            }
+                        }
+                    }
+                }
+            `,
+            variables: {
+                collectionEntryId,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+            fetchPolicy: 'network-only',
+        })
+
+        if (response.errors) {
+            throw new Error(`Failed to fetch granules: ${response.errors[0].message}`)
+        }
+
+        console.log(
+            'Response data: ',
+            response.data,
+            response.data.collections.items[0].lowestCloudCover.items[0].cloudCover,
+            response.data.collections.items[0].highestCloudCover.items[0].cloudCover
+        )
+
+        if (
+            typeof response.data.collections.items[0].lowestCloudCover.items[0]
+                .cloudCover === 'number' &&
+            typeof response.data.collections.items[0].highestCloudCover.items[0]
+                .cloudCover === 'number'
+        ) {
+            console.log('Returning cloud cover range: ', {
+                min: response.data.collections.items[0].lowestCloudCover.items[0]
+                    .cloudCover,
+                max: response.data.collections.items[0].highestCloudCover.items[0]
+                    .cloudCover,
+            })
+
+            return {
+                min: response.data.collections.items[0].lowestCloudCover.items[0]
+                    .cloudCover,
+                max: response.data.collections.items[0].highestCloudCover.items[0]
+                    .cloudCover,
+            }
+        }
+
+        return null
     }
 
     /**

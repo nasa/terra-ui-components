@@ -317,4 +317,10 @@ export default css`
     .download-option:last-child {
         border-radius: 0 0 6px 6px;
     }
+
+    terra-slider {
+        min-width: 300px;
+        width: 80%;
+        padding-top: 20px;
+    }
 `

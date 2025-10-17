@@ -69,6 +69,7 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
         $sortKey: String
         $temporal: String
         $boundingBox: [String]
+        $cloudCover: JSON
     ) {
         collections(params: { entryId: [$collectionEntryId] }) {
             items {
@@ -82,6 +83,7 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
                         options: { readableGranuleName: { pattern: true } }
                         temporal: $temporal
                         boundingBox: $boundingBox
+                        cloudCover: $cloudCover
                     }
                 ) {
                     count
@@ -92,28 +94,7 @@ export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
                         timeEnd
                         timeStart
                         relatedUrls
-                    }
-                }
-            }
-        }
-    }
-`
-
-export const GET_FIRST_AND_LAST_GRANULES_BY_ENTRY_ID = gql`
-    query Collections($collectionEntryId: String!) {
-        collections(params: { entryId: [$collectionEntryId] }) {
-            items {
-                conceptId
-                firstGranules: granules(params: { limit: 2, sortKey: "startDate" }) {
-                    count
-                    items {
-                        dataGranule
-                    }
-                }
-                lastGranules: granules(params: { limit: 2, sortKey: "-endDate" }) {
-                    count
-                    items {
-                        dataGranule
+                        cloudCover
                     }
                 }
             }

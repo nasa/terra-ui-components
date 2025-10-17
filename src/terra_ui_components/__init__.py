@@ -11,4 +11,5 @@ from .data_subsetter_history import TerraDataSubsetterHistory
 from .time_average_map import TerraTimeAverageMap
 from .plot_toolbar import TerraPlotToolbar
 from .data_access import TerraDataAccess
-__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods", "TerraAccordion", "TerraDataSubsetter", "TerraDataSubsetterHistory", "TerraTimeAverageMap", "TerraPlotToolbar", "TerraDataAccess"]
+from .slider import TerraSlider
+__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods", "TerraAccordion", "TerraDataSubsetter", "TerraDataSubsetterHistory", "TerraTimeAverageMap", "TerraPlotToolbar", "TerraDataAccess", "TerraSlider"]
