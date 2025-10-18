@@ -35,6 +35,23 @@ export default class TerraPlot extends TerraElement {
     @property({ type: Array })
     data: Array<Partial<Plotly.Data>> = []
 
+    /**
+     * Optional: Colors to assign to each time series line
+     */
+    @property({ type: Array })
+    colors: string[] = [
+        '#1f77b4', // blue
+        '#ff7f0e', // orange
+        '#2ca02c', // green
+        '#d62728', // red
+        '#9467bd', // purple
+        '#8c564b', // brown
+        '#e377c2', // pink
+        '#7f7f7f', // gray
+        '#bcbd22', // yellow-green
+        '#17becf', // cyan
+    ]
+
     @watch('data')
     handleDataChange() {
         this.updatePlotWithData()
@@ -60,13 +77,31 @@ export default class TerraPlot extends TerraElement {
     }
 
     updatePlotWithData() {
-        if (!this.base) {
-            return
-        }
+        if (!this.base) return
+
+        const coloredData = this.data.map((trace, index) => {
+            // Only assign color if not already defined
+            const color = this.colors[index % this.colors.length]
+
+            if (!trace.type || trace.type === 'scatter') {
+                const scatterTrace = trace as Partial<Plotly.ScatterData>
+
+                return {
+                    type: 'scatter',
+                    mode: 'lines',
+                    ...scatterTrace,
+                    line: {
+                        color,
+                        ...(scatterTrace.line || {}),
+                    },
+                }
+            }
+            return trace
+        })
 
         Plotly.newPlot(
             this.base,
-            this.data,
+            coloredData as Plotly.Data[],
             {
                 title: this.plotTitle, // support for adding a title directly
                 ...this.layout, // or complete access to the Plotly layout
