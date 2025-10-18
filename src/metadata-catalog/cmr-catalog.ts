@@ -2,6 +2,7 @@ import { gql } from '@apollo/client/core'
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
     GET_CMR_GRANULES_BY_ENTRY_ID,
+    GET_CMR_COLLECTION_CITATIONS_BY_ENTRY_ID,
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
     GET_CMR_SEARCH_RESULTS_VARIABLES,
@@ -14,6 +15,8 @@ import {
     type CmrGranulesResponse,
     type CmrSamplingOfGranulesResponse,
     type CloudCoverRange,
+    type CmrCollectionCitationsResponse,
+    type CmrCollectionCitationItem,
 } from './types.js'
 
 export class CmrCatalog implements MetadataCatalogInterface {
@@ -235,6 +238,38 @@ export class CmrCatalog implements MetadataCatalogInterface {
         }
 
         return null
+    }
+
+    async getCollectionCitation(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CmrCollectionCitationItem> {
+        const client = await getGraphQLClient('cmr')
+
+        const response = await client.query<CmrCollectionCitationsResponse>({
+            query: GET_CMR_COLLECTION_CITATIONS_BY_ENTRY_ID,
+            variables: {
+                entryId: collectionEntryId,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+            fetchPolicy: 'network-only',
+        })
+
+        if (
+            response.errors ||
+            response.data.collections.items.length === 0 ||
+            response.data.collections.items[0].collectionCitations.length === 0
+        ) {
+            throw new Error(
+                `Failed to retrieve collection citations from CMR: ${response.errors?.[0]?.message}`
+            )
+        }
+
+        return response.data.collections.items[0]
     }
 
     /**

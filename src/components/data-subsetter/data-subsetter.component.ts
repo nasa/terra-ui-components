@@ -1639,10 +1639,12 @@ export default class TerraDataSubsetter extends TerraElement {
             )
         }
 
-        const content = (await response.text()).replace(
-            /{{jobId}}/gi,
-            this.controller.currentJob!.jobID
-        )
+        const content = (await response.text())
+        .replace(/{{jobId}}/gi, this.controller.currentJob!.jobID)
+        .replace(/{{HARMONY_ENV}}/gi, `Environment.${this.environment?.toUpperCase()}`)
+        .replace(/{{EARTHACCESS_ENV}}/gi,`earthaccess.${this.environment?.toUpperCase()}`)
+
+
         const blob = new Blob([content], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
 

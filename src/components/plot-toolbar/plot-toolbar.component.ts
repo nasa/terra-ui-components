@@ -21,6 +21,8 @@ import { AuthController } from '../../auth/auth.controller.js'
 import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
 import { getTimeSeriesNotebook } from './notebooks/time-series-notebook.js'
 import { nothing } from 'lit'
+import { PlotToolbarController } from './plot-toolbar.controller.js'
+import { formatDate } from '../../utilities/date.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -58,6 +60,13 @@ export default class TerraPlotToolbar extends TerraElement {
         true
     @property({ type: String }) colormap = 'viridis' // default colormap
     @property({ type: Number }) opacity = 1
+    @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
+        false
+
+    /**
+     * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
+     */
+    @property({ attribute: 'application-citation' }) applicationCitation?: string
 
     @state()
     activeMenuItem: MenuNames = null
@@ -119,6 +128,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @query('#menu') menu: HTMLMenuElement
 
     _authController = new AuthController(this)
+    #controller = new PlotToolbarController(this)
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
@@ -234,6 +244,33 @@ export default class TerraPlotToolbar extends TerraElement {
                               <terra-icon name="info" font-size="1em"></terra-icon>
                           </terra-button>
 
+                          ${this.showCitation
+                              ? html`
+                                    <terra-button
+                                        circle
+                                        outline
+                                        aria-expanded=${this.activeMenuItem ===
+                                        'citation'}
+                                        aria-controls="menu"
+                                        aria-haspopup="true"
+                                        class="toggle"
+                                        @mouseenter=${this.#handleActiveMenuItem}
+                                        data-menu-name="citation"
+                                    >
+                                        <span class="sr-only"
+                                            >Citation for
+                                            ${this.catalogVariable
+                                                .dataFieldLongName}</span
+                                        >
+
+                                        <span
+                                            style="font-weight: 500; font-size: 1.2em"
+                                            >C</span
+                                        >
+                                    </terra-button>
+                                `
+                              : nothing}
+
                           <terra-button
                               circle
                               outline
@@ -278,12 +315,12 @@ export default class TerraPlotToolbar extends TerraElement {
                           </terra-button>
 
                           <terra-button
-                              circle
                               outline
                               aria-expanded=${this.activeMenuItem === 'jupyter'}
                               aria-controls="menu"
                               aria-haspopup="true"
-                              class="toggle"
+                              class="toggle square-button"
+                              variant="warning"
                               @mouseenter=${this.#handleActiveMenuItem}
                               data-menu-name="jupyter"
                           >
@@ -334,6 +371,13 @@ export default class TerraPlotToolbar extends TerraElement {
                               ?hidden=${this.activeMenuItem !== 'information'}
                           >
                               ${this.#renderInfoPanel()}
+                          </li>
+
+                          <li
+                              role="menuitem"
+                              ?hidden=${this.activeMenuItem !== 'citation'}
+                          >
+                              ${this.#renderCitationPanel()}
                           </li>
 
                           <li
@@ -516,6 +560,47 @@ export default class TerraPlotToolbar extends TerraElement {
                     </a>
                 </dd>
             </dl>
+        `
+    }
+
+    #renderCitationPanel() {
+        const citation = this.#controller.collectionCitation?.collectionCitations[0]
+
+        if (!citation) {
+            return html`<div class="spacer"></div>`
+        }
+
+        return html`
+            <h3 class="sr-only">Citation</h3>
+
+            ${this.applicationCitation
+                ? html`
+                      <p>
+                          Please cite both the data used and the application itself.
+                      </p>
+                  `
+                : nothing}
+
+            <p>
+                <strong>Data Citation</strong>
+            </p>
+
+            <p>
+                ${citation?.creator} (${formatDate(citation?.releaseDate, 'yyyy')}),
+                ${citation?.title}, Edited by ${citation?.editor},
+                ${citation?.releasePlace}, ${citation?.publisher},
+                ${this.#controller.collectionCitation?.doi.doi}
+            </p>
+
+            ${this.applicationCitation
+                ? html`
+                      <p>
+                          <strong>Application Citation</strong>
+                      </p>
+
+                      <p>${this.applicationCitation}</p>
+                  `
+                : nothing}
         `
     }
 

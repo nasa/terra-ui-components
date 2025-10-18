@@ -1,5 +1,16 @@
 import { gql } from '@apollo/client/core'
 
+export const GET_CMR_COLLECTION_CITATIONS_BY_ENTRY_ID = gql`
+    query GetCMRCollectionByEntryId($entryId: String!) {
+        collections(params: { entryId: [$entryId] }) {
+            items {
+                doi
+                collectionCitations
+            }
+        }
+    }
+`
+
 export const GET_CMR_SEARCH_RESULTS_ALL = gql`
     query GetCMRSearchResultsAll($keyword: String!) {
         collections(params: { keyword: $keyword }) {

@@ -90,6 +90,14 @@ export default class TerraTimeSeries extends TerraElement {
     })
     location?: string
 
+    @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
+        false
+
+    /**
+     * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
+     */
+    @property({ attribute: 'application-citation' }) applicationCitation?: string
+
     /**
      * The token to be used for authentication with remote servers.
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
@@ -217,6 +225,7 @@ export default class TerraTimeSeries extends TerraElement {
                               .endDate=${this.endDate}
                               .cacheKey=${this.#timeSeriesController.getCacheKey()}
                               .variableEntryId=${this.variableEntryId}
+                              .showCitation=${this.showCitation}
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}
