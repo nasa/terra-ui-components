@@ -226,7 +226,9 @@ export default class TerraTimeSeries extends TerraElement {
                               .cacheKey=${this.#timeSeriesController.getCacheKey()}
                               .variableEntryId=${this.variableEntryId}
                               .showCitation=${this.showCitation}
-                          ></terra-plot-toolbar>`
+                          >
+                            <slot name="help-links" slot="help-links"></slot>
+                          </terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}
 
