@@ -108,7 +108,7 @@ export class DataAccessController {
 
                 return this.#sampling
             },
-            args: () => [this.#host.collectionEntryId],
+            args: () => [`${this.#host.shortName}_${this.#host.version}`],
         })
 
         // fetch cloud cover range
@@ -129,7 +129,7 @@ export class DataAccessController {
 
                 return this.#cloudCoverRange
             },
-            args: () => [this.#host.collectionEntryId],
+            args: () => [`${this.#host.shortName}_${this.#host.version}`],
         })
     }
 

@@ -30,6 +30,7 @@ import {
     type ICellRendererParams,
 } from 'ag-grid-community'
 import TerraSlider from '../slider/slider.component.js'
+import { getBasePath } from '../../utilities/base-path.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -56,8 +57,11 @@ export default class TerraDataAccess extends TerraElement {
         'terra-slider': TerraSlider,
     }
 
-    @property({ reflect: true, attribute: 'collection-entry-id' })
-    collectionEntryId?: string
+    @property({ reflect: true, attribute: 'short-name' })
+    shortName?: string
+
+    @property({ reflect: true, attribute: 'version' })
+    version?: string
 
     @state()
     limit = 50
@@ -107,7 +111,7 @@ export default class TerraDataAccess extends TerraElement {
 
             getRows: async (params: IGetRowsParams) => {
                 await this.#controller.fetchGranules({
-                    collectionEntryId: this.collectionEntryId ?? '',
+                    collectionEntryId: `${this.shortName}_${this.version}`,
                     startRow: params.startRow,
                     endRow: params.endRow,
                     sortBy: params.sortModel?.[0]?.colId ?? 'title',
@@ -227,7 +231,47 @@ export default class TerraDataAccess extends TerraElement {
     async #downloadPythonScript(event: Event) {
         event.stopPropagation()
 
-        console.log('downloading python script ', this, this.#gridApi)
+        if (!this.#controller.granules) {
+            return
+        }
+
+        const response = await fetch(
+            getBasePath('assets/data-access/download_files.py.txt')
+        )
+
+        if (!response.ok) {
+            alert(
+                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime'
+            )
+        }
+
+        const content = (await response.text())
+            .replace(/{{short_name}}/gi, this.shortName ?? '')
+            .replace(/{{version}}/gi, this.version ?? '')
+            .replace(
+                /{{filter_temporal}}/gi,
+                this.startDate && this.endDate
+                    ? this.startDate + ',' + this.endDate
+                    : ''
+            )
+            .replace(
+                /{{filter_bbox}}/gi,
+                this.location?.geoJson?.bbox?.join(',') ?? ''
+            )
+            .replace(/{{filter_search}}/gi, this.search ?? '')
+
+        const blob = new Blob([content], { type: 'text/plain' })
+        const url = URL.createObjectURL(blob)
+
+        // Create a temporary link element and trigger download
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `download_files_${this.shortName}_${this.version}.py`
+        document.body.appendChild(a)
+        a.click()
+
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
 
         this.showDownloadMenu = false
     }
