@@ -1,7 +1,7 @@
 {
   "name": "@nasa-terra/components",
   "description": "A collection of NASA Earthdata components",
-  "version": "0.0.107",
+  "version": "0.0.108",
   "homepage": "https://github.com/nasa/terra-ui-components",
   "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
   "license": "MIT",
