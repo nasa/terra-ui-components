@@ -63,6 +63,17 @@ export class DataAccessController {
                 ],
                 { signal }
             ) => {
+                console.log(
+                    'fetch granules',
+                    collectionEntryId,
+                    startRow,
+                    endRow,
+                    sortBy,
+                    sortDirection,
+                    search,
+                    cloudCover
+                )
+
                 if (!collectionEntryId) {
                     return undefined
                 }
@@ -142,6 +153,10 @@ export class DataAccessController {
     }
 
     get estimatedSize() {
+        if (!this.#sampling?.firstGranules) {
+            return null
+        }
+
         const firstAndLastGranules = this.#sampling?.firstGranules.items.concat(
             this.#sampling?.lastGranules.items
         )

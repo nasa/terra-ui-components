@@ -61,6 +61,12 @@ export default class TerraDataSubsetter extends TerraElement {
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
 
+    @property({ reflect: true, attribute: 'short-name' })
+    shortName?: string
+
+    @property({ reflect: true, attribute: 'version' })
+    version?: string
+
     @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
     showCollectionSearch?: boolean = true
 
@@ -147,6 +153,13 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
+    @watch(['shortName', 'version'])
+    shortNameAndVersionChanged() {
+        if (this.shortName && this.version) {
+            this.collectionEntryId = `${this.shortName}_${this.version}`
+        }
+    }
+
     firstUpdated() {
         if (this.collectionEntryId) {
             this.showCollectionSearch = false
@@ -218,7 +231,10 @@ export default class TerraDataSubsetter extends TerraElement {
                     ? html`
                           <div class="section">
                               <terra-data-access
-                                  collection-entry-id=${this.collectionEntryId || ''}
+                                  short-name=${this.shortName ??
+                                  this.collectionWithServices?.collection?.ShortName}
+                                  version=${this.version ??
+                                  this.collectionWithServices?.collection?.Version}
                               ></terra-data-access>
                           </div>
                       `
@@ -1640,10 +1656,15 @@ export default class TerraDataSubsetter extends TerraElement {
         }
 
         const content = (await response.text())
-        .replace(/{{jobId}}/gi, this.controller.currentJob!.jobID)
-        .replace(/{{HARMONY_ENV}}/gi, `Environment.${this.environment?.toUpperCase()}`)
-        .replace(/{{EARTHACCESS_ENV}}/gi,`earthaccess.${this.environment?.toUpperCase()}`)
-
+            .replace(/{{jobId}}/gi, this.controller.currentJob!.jobID)
+            .replace(
+                /{{HARMONY_ENV}}/gi,
+                `Environment.${this.environment?.toUpperCase()}`
+            )
+            .replace(
+                /{{EARTHACCESS_ENV}}/gi,
+                `earthaccess.${this.environment?.toUpperCase()}`
+            )
 
         const blob = new Blob([content], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
