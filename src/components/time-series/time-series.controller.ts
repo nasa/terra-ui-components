@@ -68,12 +68,25 @@ export class TimeSeriesController {
         this.task = new Task(host, {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
+                console.log('here ')
+                console.log('Catalog variable', this.host.catalogVariable)
+                console.log('Start date', this.host.startDate)
+                console.log('End date', this.host.endDate)
+                console.log('Location', this.host.location)
+
                 if (
                     !this.host.catalogVariable ||
                     !this.host.startDate ||
                     !this.host.endDate ||
                     !this.host.location
                 ) {
+                    // TODO: remove debug logs after testing
+                    console.log('Requirements not met to fetch the time series data ')
+                    /*console.log('Catalog variable', this.host.catalogVariable)
+                    console.log('Start date', this.host.startDate)
+                    console.log('End date', this.host.endDate)
+                    console.log('Location', this.host.location)
+*/
                     // requirements not yet met to fetch the time series data
                     return initialState
                 }
