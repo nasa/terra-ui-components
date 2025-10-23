@@ -10,7 +10,7 @@ export function getFetchVariableTask(
     const catalog = new GiovanniVariableCatalog() // TODO: replace this with a factory call when we switch to CMR
 
     return new Task(host, {
-        task: async (_args, { signal }) => {
+        task: async _args => {
             const variableEntryId = getVariableEntryId(host)
 
             console.debug('fetch variable ', variableEntryId)
@@ -19,9 +19,7 @@ export function getFetchVariableTask(
                 return
             }
 
-            const variable = await catalog.getVariable(variableEntryId, {
-                signal,
-            })
+            const variable = await catalog.getVariable(variableEntryId)
 
             console.debug('found variable ', variable)
 
