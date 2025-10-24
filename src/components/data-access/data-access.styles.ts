@@ -323,4 +323,20 @@ export default css`
         width: 80%;
         padding-top: 20px;
     }
+
+    .loading-modal {
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: absolute;
+        top: 100px;
+        width: 200px;
+        height: 100px;
+        left: 50%;
+        margin-left: -100px;
+    }
 `

@@ -470,14 +470,16 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
             </div>
 
-            <div class="file-grid" ${ref(this.#gridRef)}></div>
+            <div class="grid-container" style="position: relative;">
+                <div class="file-grid" ${ref(this.#gridRef)}></div>
 
-            ${this.#controller.render({
-                initial: () => this.#renderLoader(),
-                pending: () => nothing,
-                complete: () => nothing,
-                error: () => nothing,
-            })}
+                ${this.#controller.render({
+                    initial: () => this.#renderLoadingOverlay(),
+                    pending: () => this.#renderLoadingOverlay(),
+                    complete: () => nothing,
+                    error: () => nothing,
+                })}
+            </div>
 
             <div>
                 <div class="download-dropdown ${this.showDownloadMenu ? 'open' : ''}">
@@ -553,10 +555,10 @@ export default class TerraDataAccess extends TerraElement {
         `
     }
 
-    #renderLoader(more?: boolean) {
-        return html`<div style="display: flex; align-items: center; gap: 10px;">
+    #renderLoadingOverlay() {
+        return html` <div class="loading-modal">
             <terra-loader indeterminate variant="small"></terra-loader>
-            <span>${more ? 'Loading More Granules' : 'Loading Granules'}</span>
+            <span>Loading</span>
         </div>`
     }
 }
