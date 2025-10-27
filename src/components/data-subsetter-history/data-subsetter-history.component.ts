@@ -44,7 +44,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
      * this prop allows you to override that behavior and always show the history panel
      */
     @property({ attribute: 'always-show', type: Boolean })
-    alwaysShow: boolean= true
+    alwaysShow: boolean = true
 
     @state()
     collapsed: boolean = true
@@ -87,17 +87,17 @@ export default class TerraDataSubsetterHistory extends TerraElement {
 
                 <div class="history-panel">
                     ${hasJobs
-                        ? html`
+                ? html`
                               <div class="history-link-row">
                                   <label>
                                       <input
                                           type="checkbox"
                                           .checked=${this.hideCancelled}
                                           @change=${(e: Event) => {
-                                              this.hideCancelled = (
-                                                  e.target as HTMLInputElement
-                                              ).checked
-                                          }}
+                        this.hideCancelled = (
+                            e.target as HTMLInputElement
+                        ).checked
+                    }}
                                       />
                                       Hide Cancelled
                                   </label>
@@ -117,28 +117,28 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                                   </a>
                               </div>
                           `
-                        : nothing}
+                : nothing}
 
                     <div class="history-list">
                         ${jobs
-                            ? hasJobs
-                                ? this.#renderHistoryItems(jobs)
-                                : html`<div class="history-alert-message">
+                ? hasJobs
+                    ? this.#renderHistoryItems(jobs)
+                    : html`<div class="history-alert-message">
                                       You haven't made any requests yet.<br />
                                       Get started by
                                       <a
                                           href="#"
                                           class="history-alert-link"
                                           @click=${(e: Event) => {
-                                              e.preventDefault()
-                                              this.selectedJob = undefined
-                                              this.dialog?.show()
-                                          }}
+                            e.preventDefault()
+                            this.selectedJob = undefined
+                            this.dialog?.show()
+                        }}
                                       >
                                           creating your first request!</a
                                       >.
                                   </div>`
-                            : html`<div class="history-alert-message">
+                : html`<div class="history-alert-message">
                                   Retrieving your requests....
                               </div>`}
                     </div>
@@ -178,10 +178,10 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                         href="#"
                         class="history-alert-link"
                         @click=${(e: Event) => {
-                            e.preventDefault()
-                            this.selectedJob = undefined
-                            this.dialog?.show()
-                        }}
+                    e.preventDefault()
+                    this.selectedJob = undefined
+                    this.dialog?.show()
+                }}
                     >
                         create a new request.</a
                     >
@@ -220,8 +220,8 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                     <div class="item-header">
                         <span class="item-title">
                             ${job.labels?.length
-                                ? job.labels.join(' ')
-                                : job.request.split('.nasa.gov').pop()}
+                    ? job.labels.join(' ')
+                    : job.request.split('.nasa.gov').pop()}
                         </span>
                     </div>
 
@@ -239,6 +239,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     }
 
     #handleHistoryItemClick(job: SubsetJobStatus) {
+        console.log("I have been clicked..")
         this.selectedJob = job.jobID
         this.dialog?.show()
     }
