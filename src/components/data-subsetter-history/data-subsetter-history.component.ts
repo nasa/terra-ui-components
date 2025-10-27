@@ -239,7 +239,6 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     }
 
     #handleHistoryItemClick(job: SubsetJobStatus) {
-        console.log("I have been clicked..")
         this.selectedJob = job.jobID
         this.dialog?.show()
     }
