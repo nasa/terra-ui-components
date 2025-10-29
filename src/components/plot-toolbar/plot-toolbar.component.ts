@@ -74,7 +74,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Boolean, attribute: 'mobile-view', reflect: true }) mobileView =
         false
 
-    @property({}) productLabel: string
+    @property({ attribute: 'product-label' }) productLabel?: string
 
     @state()
     hideTitle: boolean = false
@@ -897,7 +897,7 @@ export default class TerraPlotToolbar extends TerraElement {
         )
     }
 
-    #downloadPNG(_event?: Event) {
+    #downloadPNG(_event: Event) {
         Plotly.downloadImage(this.plot!.base, {
             filename: this.catalogVariable!.dataFieldId,
             format: 'png',
