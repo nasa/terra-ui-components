@@ -87,7 +87,6 @@
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "lit": "^3.0.0",
-    "lit-flatpickr": "^0.4.1",
     "localforage": "^1.10.0",
     "nouislider": "^15.7.1",
     "ol": "^10.6.1",
