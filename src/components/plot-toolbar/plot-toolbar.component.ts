@@ -74,7 +74,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Boolean, attribute: 'mobile-view', reflect: true }) mobileView =
         false
 
-    @property({ attribute: 'product-label' }) productLabel?: string
+    @property({}) productLabel: string
 
     @state()
     hideTitle: boolean = false
@@ -98,7 +98,6 @@ export default class TerraPlotToolbar extends TerraElement {
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
         if (this.mobileView) return
-
         if (newValue === null) {
             return
         }
@@ -178,7 +177,8 @@ export default class TerraPlotToolbar extends TerraElement {
         return cache(
             !this.catalogVariable
                 ? html`<div class="spacer"></div>`
-                : html` <header>
+                : html`
+                      <header>
                           <div class="title-container">
                               <slot name="title">
                                   <h2 class="title" @click=${this.#toggleMobileTitle}>
@@ -321,6 +321,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                       font-size="1em"
                                   ></terra-icon>
                               </terra-button>
+
                               <terra-button
                                   outline
                                   aria-expanded=${this.activeMenuItem === 'jupyter'}
@@ -448,11 +449,11 @@ export default class TerraPlotToolbar extends TerraElement {
                                 ?open=${!!this.activeMenuItem}
                                 class="menu-dialog"
                             >
-                                <terra-button outline @click=${this.closeMenu}>
-                                    Close
-                                </terra-button>
-                                <div class="spacer"></div>
-                                <div>
+                                <div class="menu-dialog-content">
+                                    <terra-button outline @click=${this.closeMenu}>
+                                        Close
+                                    </terra-button>
+                                    <div class="spacer"></div>
                                     ${this.activeMenuItem === 'information'
                                         ? this.#renderInfoPanel()
                                         : ''}
@@ -473,7 +474,8 @@ export default class TerraPlotToolbar extends TerraElement {
                                         : ''}
                                 </div>
                             </dialog>`
-                          : nothing}`
+                          : nothing}
+                  `
         )
     }
 
@@ -491,7 +493,6 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #handleMenuLeave(event: MouseEvent) {
         if (this.mobileView) return
-
         // Only close if we're not moving to another element within the component
         // If the GeoTIFF menu is in use, it will only close if you hover outside of the time average map component
         const relatedTarget = event.relatedTarget as HTMLElement
@@ -896,7 +897,7 @@ export default class TerraPlotToolbar extends TerraElement {
         )
     }
 
-    #downloadPNG(_event: Event) {
+    #downloadPNG(_event?: Event) {
         Plotly.downloadImage(this.plot!.base, {
             filename: this.catalogVariable!.dataFieldId,
             format: 'png',

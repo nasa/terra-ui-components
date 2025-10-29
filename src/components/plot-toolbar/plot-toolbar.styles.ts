@@ -118,7 +118,7 @@ export default css`
         color: var(--terra-font-color-primary);
     }
 
-    .menu-dialog[open] {
+    .menu-dialog-content {
         display: flex;
         flex-direction: column;
     }
