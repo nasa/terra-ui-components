@@ -106,6 +106,47 @@ export default class TerraTimeSeries extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken?: string
 
+    /**
+     *
+     * ======= BEGIN MOBILE APP
+     *
+     */
+    @property({
+        attribute: 'mobile-view',
+        type: Boolean,
+        reflect: true,
+    })
+    mobileView = false
+
+    @property({
+        attribute: 'hide-toolbar',
+        type: Boolean,
+        reflect: true,
+    })
+    hideToolbar = false
+
+    @property({
+        attribute: 'product-label',
+        reflect: true,
+    })
+    productLabel: string
+
+    // TODO: REMOVE THIS before PR
+    //  Expose a public API
+    downloadPlot() {
+        console.log(
+            this.#timeSeriesController.lastTaskValue ??
+                this.#timeSeriesController.emptyPlotData
+        )
+        // this.plotToolbar?.downloadPNG()
+    }
+
+    /**
+     *
+     * ======= END MOBILE APP
+     *
+     */
+
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 
@@ -178,6 +219,7 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #handleComponentLeave(event: MouseEvent) {
+        if (this.mobileView) return
         // Check if we're actually leaving the component by checking if the related target is outside
         const relatedTarget = event.relatedTarget as HTMLElement
         if (!this.contains(relatedTarget)) {
@@ -213,7 +255,7 @@ export default class TerraTimeSeries extends TerraElement {
                       `
                     : ''}
                 ${cache(
-                    this.catalogVariable
+                    this.catalogVariable && !this.hideToolbar
                         ? html`<terra-plot-toolbar
                               .catalogVariable=${this.catalogVariable}
                               .plot=${this.plot}
@@ -226,6 +268,8 @@ export default class TerraTimeSeries extends TerraElement {
                               .cacheKey=${this.#timeSeriesController.getCacheKey()}
                               .variableEntryId=${this.variableEntryId}
                               .showCitation=${this.showCitation}
+                              .mobileView=${this.mobileView}
+                              .productLabel=${this.productLabel}
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}

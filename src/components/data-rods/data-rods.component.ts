@@ -124,6 +124,8 @@ export default class TerraDataRods extends TerraElement {
                 bearer-token=${this.bearerToken}
                 show-citation=${true}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
+                mobile-view=${true}
+                product-label="Precipitation - Half Hourly"
             ></terra-time-series>
 
             <terra-date-range-slider
