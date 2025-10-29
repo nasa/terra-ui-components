@@ -103,7 +103,12 @@ export class DataAccessController {
 
         // fetch sampling of granules
         new Task(host, {
-            task: async ([collectionEntryId], { signal }) => {
+            task: async ([shortName, version], { signal }) => {
+                const collectionEntryId = this.#getCollectionEntryId(
+                    shortName,
+                    version
+                )
+
                 if (!collectionEntryId) {
                     return
                 }
@@ -119,12 +124,17 @@ export class DataAccessController {
 
                 return this.#sampling
             },
-            args: () => [`${this.#host.shortName}_${this.#host.version}`],
+            args: () => [this.#host.shortName, this.#host.version],
         })
 
         // fetch cloud cover range
         new Task(host, {
-            task: async ([collectionEntryId], { signal }) => {
+            task: async ([shortName, version], { signal }) => {
+                const collectionEntryId = this.#getCollectionEntryId(
+                    shortName,
+                    version
+                )
+
                 if (!collectionEntryId) {
                     return
                 }
@@ -140,7 +150,7 @@ export class DataAccessController {
 
                 return this.#cloudCoverRange
             },
-            args: () => [`${this.#host.shortName}_${this.#host.version}`],
+            args: () => [this.#host.shortName, this.#host.version],
         })
     }
 
@@ -198,5 +208,13 @@ export class DataAccessController {
 
     #getCatalogRepository() {
         return new CmrCatalog()
+    }
+
+    #getCollectionEntryId(shortName?: string, version?: string) {
+        if (!shortName || !version) {
+            return
+        }
+
+        return `${shortName}_${version}`
     }
 }
