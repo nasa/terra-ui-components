@@ -1,5 +1,5 @@
 import { LitElement } from 'lit'
-import { property } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import { Environment, getEnvironment } from '../utilities/environment.js'
 import { purgeGraphQLCache } from '../lib/graphql-client.js'
 import { authService } from '../auth/auth.service.js'
@@ -88,13 +88,14 @@ export default class TerraElement extends LitElement {
     @property() lang: string
     @property() environment?: Environment = getEnvironment()
     @property() bearerToken?: string
+    @state() isVisible: boolean = false
 
     #io?: IntersectionObserver
 
     connectedCallback(): void {
         super.connectedCallback()
 
-        this.#waitForFirstVisible()
+        this.#observeVisibility()
     }
 
     disconnectedCallback(): void {
@@ -103,12 +104,14 @@ export default class TerraElement extends LitElement {
         this.#io = undefined
     }
 
-    #waitForFirstVisible() {
+    #observeVisibility() {
         if (this.#io) {
             return
         }
 
-        if (this.isVisible()) {
+        this.isVisible = this.#isComponentVisible()
+
+        if (this.isVisible) {
             this.firstVisible()
             return
         }
@@ -121,6 +124,7 @@ export default class TerraElement extends LitElement {
                     // Component is visible! Call "firstVisible"
                     this.#io?.disconnect()
                     this.#io = undefined
+                    this.isVisible = true
 
                     // Give dialog animations time to finish
                     setTimeout(() => this.firstVisible(), 500)
@@ -141,10 +145,10 @@ export default class TerraElement extends LitElement {
     }
 
     /**
-     * Check if the component is visible in the DOM
+     * Check if the component is visible on the page
      * @returns true if the component is visible, false otherwise
      */
-    isVisible(): boolean {
+    #isComponentVisible(): boolean {
         // Check if the element is connected to the DOM
         if (!this.isConnected) {
             return false
