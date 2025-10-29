@@ -89,6 +89,79 @@ export default class TerraElement extends LitElement {
     @property() environment?: Environment = getEnvironment()
     @property() bearerToken?: string
 
+    #io?: IntersectionObserver
+
+    connectedCallback(): void {
+        super.connectedCallback()
+
+        this.#waitForFirstVisible()
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.#io?.disconnect()
+        this.#io = undefined
+    }
+
+    #waitForFirstVisible() {
+        if (this.#io) {
+            return
+        }
+
+        if (this.isVisible()) {
+            this.firstVisible()
+            return
+        }
+
+        // Component isn't visible, probably in a modal/dialog
+        // instead we'll setup an IntersectionObserver to wait for visibility
+        this.#io = new IntersectionObserver(
+            entries => {
+                if (entries.some(e => e.isIntersecting)) {
+                    // Component is visible! Call "firstVisible"
+                    this.#io?.disconnect()
+                    this.#io = undefined
+
+                    // Give dialog animations time to finish
+                    setTimeout(() => this.firstVisible(), 500)
+                }
+            },
+            { root: null, threshold: 0 }
+        )
+
+        this.#io.observe(this)
+    }
+
+    /**
+     * Called when the component is visible on the page
+     * Example: if the component is in a dialog, this will be triggered the first time the dialog opens
+     */
+    firstVisible() {
+        // no-op, components can override this
+    }
+
+    /**
+     * Check if the component is visible in the DOM
+     * @returns true if the component is visible, false otherwise
+     */
+    isVisible(): boolean {
+        // Check if the element is connected to the DOM
+        if (!this.isConnected) {
+            return false
+        }
+
+        // Check if the element has dimensions and is not hidden
+        const rect = this.getBoundingClientRect()
+        const style = getComputedStyle(this)
+
+        return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden'
+        )
+    }
+
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
         name: EventTypeDoesNotRequireDetail<T>,

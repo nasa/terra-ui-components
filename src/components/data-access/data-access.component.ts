@@ -99,41 +99,14 @@ export default class TerraDataAccess extends TerraElement {
     #controller = new DataAccessController(this)
     #gridApi: GridApi<CmrGranule>
     #gridRef = createRef<HTMLElement>()
-    #io?: IntersectionObserver
 
     connectedCallback(): void {
         super.connectedCallback()
         ModuleRegistry.registerModules([AllCommunityModule])
     }
 
-    firstUpdated() {
-        if (this.isVisible()) {
-            this.#initializeGrid()
-            return
-        }
-
-        // Component isn't visible, probably in a modal/dialog
-        // instead we'll setup an IntersectionObserver to wait for visibility
-        this.#io = new IntersectionObserver(
-            entries => {
-                if (entries.some(e => e.isIntersecting)) {
-                    // Component is visible! Initialize the grid
-                    this.#io?.disconnect()
-                    this.#io = undefined
-
-                    // Give dialog animations time to finish
-                    setTimeout(() => this.#initializeGrid(), 500)
-                }
-            },
-            { root: null, threshold: 0 }
-        )
-
-        this.#io.observe(this)
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback()
-        this.#io?.disconnect()
+    firstVisible(): void {
+        this.#initializeGrid()
     }
 
     #initializeGrid() {
@@ -231,29 +204,6 @@ export default class TerraDataAccess extends TerraElement {
         }
 
         this.#gridApi = createGrid(this.#gridRef.value!, gridOptions)
-    }
-
-    /**
-     * Check if the component is visible in the DOM
-     * @returns true if the component is visible, false otherwise
-     */
-    isVisible(): boolean {
-        // Check if the element is connected to the DOM
-        if (!this.isConnected) {
-            return false
-        }
-
-        // Check if the element has dimensions and is not hidden
-        const rect = this.getBoundingClientRect()
-        const style = getComputedStyle(this)
-
-        return (
-            rect.width > 0 &&
-            rect.height > 0 &&
-            style.display !== 'none' &&
-            style.visibility !== 'hidden' &&
-            style.opacity !== '0'
-        )
     }
 
     @debounce(500)
