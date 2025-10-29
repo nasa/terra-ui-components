@@ -71,7 +71,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Boolean, attribute: 'mobile-view', reflect: true }) mobileView =
         false
 
-    @property({}) productLabel: string
+    @property({ attribute: 'product-label' }) productLabel?: string
 
     @state()
     hideTitle: boolean = false
@@ -206,8 +206,8 @@ export default class TerraPlotToolbar extends TerraElement {
                 : html`
                       <header>
                           <div class="title-container">
-                              <slot name="title" @click=${this.#toggleMobileTitle}>
-                                  <h2 class="title">
+                              <slot name="title">
+                                  <h2 class="title" @click=${this.#toggleMobileTitle}>
                                       ${this.productLabel || ''}
                                       ${this.productLabel ? html`<br />` : ''}
                                       ${!this.hideTitle
@@ -735,7 +735,7 @@ export default class TerraPlotToolbar extends TerraElement {
                       <terra-button
                           outline
                           variant="default"
-                          @click=${this.downloadPNG}
+                          @click=${this.#downloadPNG}
                       >
                           <span class="sr-only">Download Plot Data as </span>
                           PNG
@@ -885,7 +885,7 @@ export default class TerraPlotToolbar extends TerraElement {
         )
     }
 
-    downloadPNG(_event?: Event) {
+    #downloadPNG(_event: Event) {
         Plotly.downloadImage(this.plot!.base, {
             filename: this.catalogVariable!.dataFieldId,
             format: 'png',

@@ -106,11 +106,6 @@ export default class TerraTimeSeries extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken?: string
 
-    /**
-     *
-     * ======= BEGIN MOBILE APP
-     *
-     */
     @property({
         attribute: 'mobile-view',
         type: Boolean,
@@ -129,23 +124,7 @@ export default class TerraTimeSeries extends TerraElement {
         attribute: 'product-label',
         reflect: true,
     })
-    productLabel: string
-
-    // TODO: REMOVE THIS before PR
-    //  Expose a public API
-    downloadPlot() {
-        console.log(
-            this.#timeSeriesController.lastTaskValue ??
-                this.#timeSeriesController.emptyPlotData
-        )
-        // this.plotToolbar?.downloadPNG()
-    }
-
-    /**
-     *
-     * ======= END MOBILE APP
-     *
-     */
+    productLabel?: string
 
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
@@ -254,25 +233,27 @@ export default class TerraTimeSeries extends TerraElement {
                           </terra-alert>
                       `
                     : ''}
-                ${cache(
-                    this.catalogVariable && !this.hideToolbar
-                        ? html`<terra-plot-toolbar
-                              .catalogVariable=${this.catalogVariable}
-                              .plot=${this.plot}
-                              .timeSeriesData=${this.#timeSeriesController
-                                  .lastTaskValue ??
-                              this.#timeSeriesController.emptyPlotData}
-                              .location=${this.location}
-                              .startDate=${this.startDate}
-                              .endDate=${this.endDate}
-                              .cacheKey=${this.#timeSeriesController.getCacheKey()}
-                              .variableEntryId=${this.variableEntryId}
-                              .showCitation=${this.showCitation}
-                              .mobileView=${this.mobileView}
-                              .productLabel=${this.productLabel}
-                          ></terra-plot-toolbar>`
-                        : html`<div class="spacer"></div>`
-                )}
+                ${!this.hideToolbar
+                    ? cache(
+                          this.catalogVariable
+                              ? html`<terra-plot-toolbar
+                                    .catalogVariable=${this.catalogVariable}
+                                    .plot=${this.plot}
+                                    .timeSeriesData=${this.#timeSeriesController
+                                        .lastTaskValue ??
+                                    this.#timeSeriesController.emptyPlotData}
+                                    .location=${this.location}
+                                    .startDate=${this.startDate}
+                                    .endDate=${this.endDate}
+                                    .cacheKey=${this.#timeSeriesController.getCacheKey()}
+                                    .variableEntryId=${this.variableEntryId}
+                                    .showCitation=${this.showCitation}
+                                    .mobileView=${this.mobileView}
+                                    .productLabel=${this.productLabel}
+                                ></terra-plot-toolbar>`
+                              : html`<div class="spacer"></div>`
+                      )
+                    : ''}
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
