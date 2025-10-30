@@ -5,6 +5,7 @@ import TerraElement from '../../internal/terra-element.js'
 import styles from './date-picker.styles.js'
 import type { CSSResultGroup } from 'lit'
 import TerraButton from '../button/button.component.js'
+import TerraInput from '../input/input.component.js'
 
 interface DateRange {
     startDate: Date | null
@@ -33,6 +34,7 @@ export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-button': TerraButton,
+        'terra-input': TerraInput,
     }
 
     @property() id: string
@@ -1123,45 +1125,31 @@ export default class TerraDatePicker extends TerraElement {
     render() {
         return html`
             <div class="date-picker" @click=${(e: Event) => e.stopPropagation()}>
-                <label
-                    for="date-picker__input"
-                    class=${this.hideLabel ? 'sr-only' : 'date-picker__label'}
+                <terra-input
+                    .label=${this.label}
+                    .hideLabel=${this.hideLabel}
+                    .value=${this.getDisplayValue()}
+                    readonly
+                    @click=${this.toggleDropdown}
                 >
-                    ${this.label}
-                </label>
-                <div class="date-picker__input-wrapper">
-                    <button
-                        type="button"
-                        id="date-picker__input"
-                        class="date-picker__input"
-                        @click=${this.toggleDropdown}
+                    <svg
+                        slot="suffix"
+                        class="date-picker__icon"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
                     >
-                        <span class="date-picker__value">
-                            ${this.getDisplayValue()}
-                        </span>
-                        <svg
-                            class="date-picker__icon"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                        >
-                            <rect
-                                x="3"
-                                y="4"
-                                width="18"
-                                height="18"
-                                rx="2"
-                                ry="2"
-                            ></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                    </button>
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </terra-input>
 
+                <div class="date-picker__dropdown-wrapper">
                     ${this.isOpen
                         ? html`
                               <div class="date-picker__dropdown" part="calendar">

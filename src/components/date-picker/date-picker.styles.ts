@@ -7,67 +7,30 @@ export default css`
 
     .date-picker {
         position: relative;
-        display: inline-block;
         width: 100%;
     }
 
-    .date-picker__label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--terra-color-neutral-700, #374151);
-    }
-
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border-width: 0;
-    }
-
-    .date-picker__input-wrapper {
+    .date-picker__dropdown-wrapper {
         position: relative;
-    }
-
-    .date-picker__input {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-        padding: 0.625rem 1rem;
-        background: white;
-        border: 1px solid var(--terra-color-neutral-300, #d1d5db);
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        color: var(--terra-color-neutral-900, #111827);
-        cursor: pointer;
-        transition: all 0.15s ease;
-    }
-
-    .date-picker__input:hover {
-        border-color: var(--terra-color-neutral-400, #9ca3af);
-    }
-
-    .date-picker__input:focus {
-        outline: none;
-        border-color: var(--terra-color-primary-500, #3b82f6);
-        box-shadow: 0 0 0 3px var(--terra-color-primary-100, #dbeafe);
-    }
-
-    .date-picker__value {
-        flex: 1;
-        text-align: left;
     }
 
     .date-picker__icon {
         flex-shrink: 0;
         color: var(--terra-color-neutral-500, #6b7280);
+        cursor: pointer;
+    }
+
+    /* Make the terra-input look clickable */
+    terra-input {
+        cursor: pointer;
+    }
+
+    terra-input::part(base) {
+        cursor: pointer;
+    }
+
+    terra-input::part(input) {
+        cursor: pointer;
     }
 
     .date-picker__dropdown {

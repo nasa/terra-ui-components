@@ -66,9 +66,11 @@ export default css`
         padding: 0.625rem 1rem;
         background: transparent;
         border: none;
+        border-right: none !important;
         font-size: 0.875rem;
         color: var(--terra-color-neutral-900, #111827);
         outline: none;
+        box-shadow: none;
     }
 
     .input__control::placeholder {
@@ -77,6 +79,10 @@ export default css`
 
     .input__control:disabled {
         cursor: not-allowed;
+    }
+
+    .input__control:read-only {
+        cursor: pointer;
     }
 
     /* Hide browser spinners for number inputs */
@@ -96,14 +102,17 @@ export default css`
         display: flex;
         align-items: center;
         color: var(--terra-color-neutral-500, #6b7280);
+        flex-shrink: 0;
     }
 
     .input__prefix {
         padding-left: 1rem;
+        gap: 0.5rem;
     }
 
     .input__suffix {
         padding-right: 1rem;
+        gap: 0.5rem;
     }
 
     .input--has-prefix .input__control {
