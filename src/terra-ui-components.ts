@@ -26,6 +26,7 @@ export { default as TerraTimeAverageMap } from './components/time-average-map/ti
 export { default as TerraPlotToolbar } from './components/plot-toolbar/plot-toolbar.js'
 export { default as TerraDataAccess } from './components/data-access/data-access.js';
 export { default as TerraSlider } from './components/slider/slider.js';
+export { default as TerraInput } from './components/input/input.js';
 /* plop:component */
 
 // Utilities

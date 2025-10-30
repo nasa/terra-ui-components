@@ -21,3 +21,6 @@ export type { TerraSubsetJobCompleteEvent } from './terra-subset-job-complete.js
 export type { TerraAccordionToggleEvent } from './terra-accordion-toggle.js'
 export type { TerraTimeAverageMapDataChangeEvent } from './terra-time-average-map-data-change.js'
 export type { TerraSliderChangeEvent } from './terra-slider-change.js'
+export type { TerraInputEvent } from './terra-input.js'
+export type { TerraFocusEvent } from './terra-focus.js'
+export type { TerraBlurEvent } from './terra-blur.js'
