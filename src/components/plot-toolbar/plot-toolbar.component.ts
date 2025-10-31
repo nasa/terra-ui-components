@@ -486,11 +486,11 @@ export default class TerraPlotToolbar extends TerraElement {
                                 ?open=${!!this.activeMenuItem}
                                 class="menu-dialog"
                             >
-                                <div class="menu-dialog-content">
-                                    <terra-button outline @click=${this.closeMenu}>
-                                        Close
-                                    </terra-button>
-                                    <div class="spacer"></div>
+                                <terra-button outline @click=${this.closeMenu}>
+                                    Close
+                                </terra-button>
+                                <div class="spacer"></div>
+                                <div>
                                     ${this.activeMenuItem === 'information'
                                         ? this.#renderInfoPanel()
                                         : ''}
