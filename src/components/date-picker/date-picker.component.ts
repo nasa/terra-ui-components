@@ -1,5 +1,5 @@
 import { property, state, query } from 'lit/decorators.js'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './date-picker.styles.js'
@@ -88,10 +88,30 @@ export default class TerraDatePicker extends TerraElement {
         'November',
         'December',
     ]
+    private ignoreClickOutside = false
 
     constructor() {
         super()
         this.initializePresets()
+    }
+
+    open() {
+        this.isOpen = true
+        this.ignoreClickOutside = true
+        this.requestUpdate()
+    }
+
+    close() {
+        this.isOpen = false
+        this.requestUpdate()
+    }
+
+    setOpen(open: boolean) {
+        if (open) {
+            this.open()
+        } else {
+            this.close()
+        }
     }
 
     private initializePresets() {
@@ -202,6 +222,11 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private handleClickOutside(event: MouseEvent) {
+        if (this.ignoreClickOutside) {
+            this.ignoreClickOutside = false
+            return
+        }
+
         if (!this.contains(event.target as Node)) {
             this.isOpen = false
         }

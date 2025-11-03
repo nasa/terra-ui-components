@@ -48,6 +48,22 @@ export default css`
         margin-bottom: 8px;
     }
 
+    .filter {
+        position: relative;
+    }
+
+    terra-date-picker {
+        --terra-input-border-width: 0;
+        --terra-input-border-color: transparent;
+        --terra-input-suffix-display: none;
+
+        width: 0;
+        height: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
     .filter-btn {
         display: inline-flex;
         align-items: center;
@@ -69,6 +85,30 @@ export default css`
         border-color: #2f6bb8;
         background: #e9f1ff;
         color: #1f4f8a;
+    }
+
+    .clear-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        margin-left: 4px;
+        padding: 0;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        font-size: 16px;
+        line-height: 1;
+        color: #666;
+        cursor: pointer;
+        transition: all 0.15s;
+    }
+
+    .clear-badge:hover {
+        background: white;
+        color: #333;
+        border-color: rgba(0, 0, 0, 0.2);
     }
 
     .filter-row {

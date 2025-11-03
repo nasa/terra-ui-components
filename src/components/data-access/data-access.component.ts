@@ -85,9 +85,6 @@ export default class TerraDataAccess extends TerraElement {
     cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
 
     @state()
-    showDateFilters = false
-
-    @state()
     showSpatialFilters = false
 
     @state()
@@ -95,6 +92,11 @@ export default class TerraDataAccess extends TerraElement {
 
     @state()
     showDownloadMenu = false
+
+    @state()
+    datePickerOpen = false
+
+    datePickerRef = createRef<TerraDatePicker>()
 
     #controller = new DataAccessController(this)
     #gridApi: GridApi<CmrGranule>
@@ -232,6 +234,45 @@ export default class TerraDataAccess extends TerraElement {
         }
     }
 
+    #handleDateRangeChange(event: CustomEvent) {
+        const detail = event.detail
+        this.startDate = detail.startDate || ''
+        this.endDate = detail.endDate || ''
+
+        if (this.startDate && this.endDate) {
+            this.#gridApi?.purgeInfiniteCache()
+        }
+    }
+
+    #getDateRangeButtonText(): string {
+        if (this.startDate && this.endDate) {
+            // Format dates to be more readable
+            const formatDate = (dateStr: string) => {
+                const date = new Date(dateStr)
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    timeZone: 'UTC',
+                })
+            }
+            return `${formatDate(this.startDate)} – ${formatDate(this.endDate)}`
+        }
+        return 'Date Range'
+    }
+
+    #toggleDatePicker() {
+        this.datePickerOpen = !this.datePickerOpen
+        this.datePickerRef.value?.setOpen(this.datePickerOpen)
+    }
+
+    #clearDateRange() {
+        this.startDate = ''
+        this.endDate = ''
+        this.datePickerOpen = false
+        this.#gridApi?.purgeInfiniteCache()
+    }
+
     #toggleDownloadMenu(event: Event) {
         event.stopPropagation()
         this.showDownloadMenu = !this.showDownloadMenu
@@ -327,17 +368,47 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
 
                 <div class="toggle-row">
-                    <button
-                        class="filter-btn ${this.showDateFilters ? 'active' : ''}"
-                        @click=${() => (this.showDateFilters = !this.showDateFilters)}
-                    >
-                        <terra-icon
-                            name="outline-calendar"
-                            library="heroicons"
-                            font-size="18px"
-                        ></terra-icon>
-                        <span>Date Range</span>
-                    </button>
+                    <div class="filter">
+                        <button
+                            class="filter-btn ${this.startDate && this.endDate
+                                ? 'active'
+                                : ''}"
+                            @click=${this.#toggleDatePicker}
+                        >
+                            <terra-icon
+                                name="outline-calendar"
+                                library="heroicons"
+                                font-size="18px"
+                            ></terra-icon>
+                            <span>${this.#getDateRangeButtonText()}</span>
+                            ${this.startDate && this.endDate
+                                ? html`
+                                      <button
+                                          class="clear-badge"
+                                          @click=${(e: Event) => {
+                                              e.stopPropagation()
+                                              this.#clearDateRange()
+                                          }}
+                                          aria-label="Clear date range"
+                                      >
+                                          ×
+                                      </button>
+                                  `
+                                : nothing}
+                        </button>
+
+                        <!-- hidden date picker to show when clicking the filter -->
+                        <terra-date-picker
+                            ${ref(this.datePickerRef)}
+                            range
+                            hide-label
+                            hide-input
+                            .startDate=${this.startDate}
+                            .endDate=${this.endDate}
+                            @terra-date-range-change=${this.#handleDateRangeChange}
+                        ></terra-date-picker>
+                    </div>
+
                     <button
                         class="filter-btn ${this.showSpatialFilters ? 'active' : ''}"
                         @click=${() =>
@@ -372,45 +443,6 @@ export default class TerraDataAccess extends TerraElement {
                         : nothing}
                 </div>
 
-                ${this.showDateFilters
-                    ? html`
-                          <div class="filter-row">
-                              <div class="filter-field">
-                                  <terra-date-picker
-                                      label="Start"
-                                      name="startDate"
-                                      allow-input
-                                      class="inline-control"
-                                      .defaultDate=${this.startDate}
-                                      @terra-change=${this.#handleDateChange}
-                                  ></terra-date-picker>
-                              </div>
-                              <div class="filter-field">
-                                  <terra-date-picker
-                                      label="End"
-                                      name="endDate"
-                                      allow-input
-                                      class="inline-control"
-                                      .defaultDate=${this.endDate}
-                                      @terra-change=${this.#handleDateChange}
-                                  ></terra-date-picker>
-                              </div>
-                              <button
-                                  class="clear-btn"
-                                  @click=${() => {
-                                      this.showDateFilters = false
-                                      this.startDate = ''
-                                      this.endDate = ''
-                                      this.#gridApi?.purgeInfiniteCache()
-                                  }}
-                                  aria-label="Clear date filters"
-                              >
-                                  ×
-                              </button>
-                          </div>
-                          <div class="divider"></div>
-                      `
-                    : nothing}
                 ${this.showSpatialFilters
                     ? html`
                           <div class="filter-row">

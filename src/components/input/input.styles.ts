@@ -11,10 +11,13 @@ export default css`
 
     .input__label {
         display: block;
-        margin-bottom: 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: var(--terra-color-neutral-700, #374151);
+        margin: var(--terra-input-label-margin, 0 0 0.5rem 0);
+        font-size: var(--terra-input-label-font-size, 0.875rem);
+        font-weight: var(--terra-input-label-font-weight, 500);
+        color: var(
+            --terra-input-label-color,
+            var(--terra-color-neutral-700, #374151)
+        );
     }
 
     .input__label--hidden {
@@ -30,7 +33,10 @@ export default css`
     }
 
     .input__required-indicator {
-        color: var(--terra-color-error-500, #ef4444);
+        color: var(
+            --terra-input-required-color,
+            var(--terra-color-error-500, #ef4444)
+        );
         margin-left: 0.125rem;
     }
 
@@ -39,42 +45,60 @@ export default css`
         display: flex;
         align-items: center;
         width: 100%;
-        background: white;
-        border: 1px solid var(--terra-color-neutral-300, #d1d5db);
-        border-radius: 0.375rem;
+        background: var(--terra-input-background-color, white);
+        border-width: var(--terra-input-border-width, 1px);
+        border-color: var(
+            --terra-input-border-color,
+            var(--terra-color-neutral-300, #d1d5db)
+        );
+        border-style: var(--terra-input-border-style, solid);
+        border-radius: var(--terra-input-border-radius, 0.375rem);
         transition: all 0.15s ease;
     }
 
     .input:hover:not(.input--disabled) {
-        border-color: var(--terra-color-neutral-400, #9ca3af);
+        border-color: var(
+            --terra-input-border-color-hover,
+            var(--terra-color-neutral-400, #9ca3af)
+        );
     }
 
     .input--focused:not(.input--disabled) {
         outline: none;
-        border-color: var(--terra-color-primary-500, #3b82f6);
-        box-shadow: 0 0 0 3px var(--terra-color-primary-100, #dbeafe);
+        border-color: var(
+            --terra-input-border-color-focus,
+            var(--terra-color-primary-500, #3b82f6)
+        );
+        box-shadow: 0 0 0 var(--terra-input-focus-ring-width, 3px)
+            var(
+                --terra-input-focus-ring-color,
+                var(--terra-color-primary-100, #dbeafe)
+            );
     }
 
     .input--disabled {
-        opacity: 0.5;
+        opacity: var(--terra-input-opacity-disabled, 0.5);
         cursor: not-allowed;
     }
 
     .input__control {
         flex: 1;
         width: 100%;
-        padding: 0.625rem 1rem;
+        padding: var(--terra-input-padding, 0.625rem 1rem);
         background: transparent;
         border: none;
         border-right: none !important;
-        font-size: 0.875rem;
+        font-size: var(--terra-input-font-size, 0.875rem);
         color: var(--terra-color-neutral-900, #111827);
         outline: none;
         box-shadow: none;
     }
 
     .input__control::placeholder {
-        color: var(--terra-color-neutral-400, #9ca3af);
+        color: var(
+            --terra-input-placeholder-color,
+            var(--terra-color-neutral-400, #9ca3af)
+        );
     }
 
     .input__control:disabled {
@@ -99,18 +123,19 @@ export default css`
     /* Prefix and Suffix */
     .input__prefix,
     .input__suffix {
-        display: flex;
         align-items: center;
         color: var(--terra-color-neutral-500, #6b7280);
         flex-shrink: 0;
     }
 
     .input__prefix {
+        display: var(--terra-input-prefix-display, flex);
         padding-left: 1rem;
         gap: 0.5rem;
     }
 
     .input__suffix {
+        display: var(--terra-input-suffix-display, flex);
         padding-right: 1rem;
         gap: 0.5rem;
     }
