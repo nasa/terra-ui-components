@@ -232,6 +232,9 @@ export default css`
         font-family: var(--terra-font-family--inter);
         font-weight: 700;
         margin-block: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .listbox-option {
@@ -280,5 +283,21 @@ export default css`
             stroke-dasharray: 42 150;
             stroke-dashoffset: -59;
         }
+    }
+
+    .info-icon {
+        margin-left: 0.4rem;
+        cursor: pointer;
+        color: var(--terra-color-primary, #0071bc);
+        vertical-align: middle;
+    }
+
+    .info-icon:hover {
+        color: var(--terra-color-primary-hover, #004f8c);
+    }
+
+    .info-toggle {
+        --terra-button-size: 1.25em;
+        margin-left: 0.5rem;
     }
 `
