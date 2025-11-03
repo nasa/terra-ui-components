@@ -15,6 +15,7 @@ import { getUTCDate } from '../../utilities/date.js'
 import Fuse from 'fuse.js'
 import type { MetadataCatalogInterface } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
+import { key } from 'localforage'
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
@@ -37,12 +38,12 @@ export class DataSubsetterController {
             task: async ([collectionEntryId], { signal }) => {
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
-                          collectionEntryId,
-                          {
-                              signal,
-                              environment: this.#host.environment,
-                          }
-                      )
+                        collectionEntryId,
+                        {
+                            signal,
+                            environment: this.#host.environment,
+                        }
+                    )
                     : undefined
 
                 return this.#host.collectionWithServices
@@ -101,7 +102,6 @@ export class DataSubsetterController {
                         }
                     )
                 } else {
-                    const labels = this.#buildJobLabels()
 
                     let subsetOptions = {
                         collectionConceptId:
@@ -113,27 +113,29 @@ export class DataSubsetterController {
                         }),
                         ...('w' in (this.#host.spatialSelection ?? {}) &&
                             this.#host.collectionWithServices?.bboxSubset && {
-                                boundingBox: this.#host
-                                    .spatialSelection as BoundingBox,
-                            }),
+                            boundingBox: this.#host
+                                .spatialSelection as BoundingBox,
+                        }),
                         ...(this.#host.selectedDateRange.startDate &&
                             this.#host.selectedDateRange.endDate &&
                             this.#host.collectionWithServices?.temporalSubset && {
-                                startDate: getUTCDate(
-                                    this.#host.selectedDateRange.startDate
-                                ).toISOString(),
-                                endDate: getUTCDate(
-                                    this.#host.selectedDateRange.endDate,
-                                    true
-                                ).toISOString(),
-                            }),
+                            startDate: getUTCDate(
+                                this.#host.selectedDateRange.startDate
+                            ).toISOString(),
+                            endDate: getUTCDate(
+                                this.#host.selectedDateRange.endDate,
+                                true
+                            ).toISOString(),
+                        }),
                         ...(this.#host.selectedFormat &&
                             this.#host.collectionWithServices?.outputFormats
                                 ?.length && {
-                                format: this.#host.selectedFormat,
-                            }),
-                        labels,
+                            format: this.#host.selectedFormat,
+                        }),
+                        labels: [] as string[]
                     }
+                    subsetOptions.labels = this.#buildJobLabels(subsetOptions) // Overwrite the empty labels
+
 
                     console.log(
                         `Creating a job for collection, ${this.#host.collectionWithServices?.conceptId}, with subset options`,
@@ -232,17 +234,28 @@ export class DataSubsetterController {
         }
     }
 
-    #buildJobLabels(): string[] {
-        const labels = []
+    #buildJobLabels(subsetOptions: Record<string, any>): Array<string> {
+        const labels: string[] = []
+        // Using every subsetOptions key/value pair as a label to append
+        for (const key of Object.keys(subsetOptions)) {
+            if (key !== 'labels') { // Prevents empty label from being
+                const value = subsetOptions[key]
 
-        if (this.#host.collectionWithServices?.collection?.EntryTitle) {
-            labels.push(
-                encodeURIComponent(
-                    this.#host.collectionWithServices?.collection?.EntryTitle
-                )
-            )
+                // Convert to string
+                const valueStr = (typeof value === 'object') ? JSON.stringify(value) : value
+                labels.push(encodeURIComponent(`${key}: ${valueStr}`))
+            }
         }
 
+        // Extra labels not from subsetOptions
+        if (this.#host.collectionEntryId) {
+            labels.push(encodeURIComponent(`collection-entry-id: ${this.#host.collectionEntryId}`))
+        }
+
+        if (this.#host.collectionWithServices?.collection?.EntryTitle) {
+            labels.push(encodeURIComponent(`collection-entry-title: ${this.#host.collectionWithServices.collection.EntryTitle}`))
+        }
         return labels
     }
+
 }
