@@ -427,6 +427,66 @@ export default class TerraDataAccess extends TerraElement {
             )
         }
 
+        // Helper function to get bbox string from location
+        const getBboxString = (): string => {
+            if (!this.location) {
+                return ''
+            }
+
+            try {
+                // For bbox type, use the bounds directly
+                if (
+                    this.location.type === MapEventType.BBOX &&
+                    this.location.bounds
+                ) {
+                    // StringifyBoundingBox returns format: "lng1, lat1, lng2, lat2" (with spaces)
+                    // We need to remove spaces and ensure it's west,south,east,north
+                    const boundsStr = StringifyBoundingBox(this.location.bounds)
+                    // Remove spaces and split to verify format
+                    const coords = boundsStr.split(',').map(c => parseFloat(c.trim()))
+                    if (coords.length === 4) {
+                        // StringifyBoundingBox returns: west, south, east, north already
+                        return coords.join(',')
+                    }
+                    return boundsStr.replace(/\s+/g, '')
+                }
+
+                // For point type, create a small bbox around the point (0.01 degree buffer)
+                if (
+                    this.location.type === MapEventType.POINT &&
+                    this.location.latLng
+                ) {
+                    const { lat, lng } = this.location.latLng
+                    const buffer = 0.01
+                    // Format: west,south,east,north
+                    return `${(lng - buffer).toFixed(2)},${(lat - buffer).toFixed(2)},${(lng + buffer).toFixed(2)},${(lat + buffer).toFixed(2)}`
+                }
+
+                // For shapes (geoJson), try to extract bbox from geoJson
+                if (
+                    this.location.geoJson?.bbox &&
+                    Array.isArray(this.location.geoJson.bbox)
+                ) {
+                    // GeoJSON bbox format is [west, south, east, north] which matches CMR format
+                    return this.location.geoJson.bbox.join(',')
+                }
+
+                // Fallback: try to get bbox from geoJson features if available
+                if (this.location.geoJson?.features?.[0]?.geometry) {
+                    const geometry = this.location.geoJson.features[0].geometry
+                    if (geometry.type === 'Point' && geometry.coordinates) {
+                        const [lng, lat] = geometry.coordinates
+                        const buffer = 0.01
+                        return `${(lng - buffer).toFixed(2)},${(lat - buffer).toFixed(2)},${(lng + buffer).toFixed(2)},${(lat + buffer).toFixed(2)}`
+                    }
+                }
+            } catch (error) {
+                console.warn('Error formatting bbox for Python script:', error)
+            }
+
+            return ''
+        }
+
         const content = (await response.text())
             .replace(/{{short_name}}/gi, this.shortName ?? '')
             .replace(/{{version}}/gi, this.version ?? '')
@@ -436,11 +496,16 @@ export default class TerraDataAccess extends TerraElement {
                     ? this.startDate + ',' + this.endDate
                     : ''
             )
-            .replace(
-                /{{filter_bbox}}/gi,
-                this.location?.geoJson?.bbox?.join(',') ?? ''
-            )
+            .replace(/{{filter_bbox}}/gi, getBboxString())
             .replace(/{{filter_search}}/gi, this.search ?? '')
+            .replace(
+                /{{filter_cloud_cover_min}}/gi,
+                this.cloudCover.min?.toString() ?? ''
+            )
+            .replace(
+                /{{filter_cloud_cover_max}}/gi,
+                this.cloudCover.max?.toString() ?? ''
+            )
 
         const blob = new Blob([content], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)

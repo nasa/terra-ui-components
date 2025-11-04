@@ -20,6 +20,8 @@ VERSION = "{{version}}"
 FILTER_TEMPORAL = "{{filter_temporal}}"
 FILTER_BBOX = "{{filter_bbox}}"
 FILTER_SEARCH = "{{filter_search}}"
+FILTER_CLOUD_COVER_MIN = "{{filter_cloud_cover_min}}"
+FILTER_CLOUD_COVER_MAX = "{{filter_cloud_cover_max}}"
 DOWNLOAD_DIR = f"./{SHORT_NAME}_{VERSION}"
 MAX_WORKERS = 5  # Number of parallel downloads
 
@@ -173,14 +175,20 @@ def fetch_total_granules_count_from_cmr(short_name: str, version: str, **params)
 
 def main():
     """Main function to download data from the CMR API"""
-    filter_params = {
-        "temporal": FILTER_TEMPORAL,
-        "bounding_box": FILTER_BBOX,
-    }
+    filter_params = {}
+
+    if FILTER_TEMPORAL:
+        filter_params["temporal"] = FILTER_TEMPORAL
+
+    if FILTER_BBOX:
+        filter_params["bounding_box"] = FILTER_BBOX
 
     if FILTER_SEARCH:
         filter_params["producer_granule_id[]"] = FILTER_SEARCH
         filter_params["options[producer_granule_id][pattern]"] = 'true'
+
+    if FILTER_CLOUD_COVER_MIN and FILTER_CLOUD_COVER_MAX:
+        filter_params["cloud_cover"] = f"{FILTER_CLOUD_COVER_MIN},{FILTER_CLOUD_COVER_MAX}"
 
     total_granules = fetch_total_granules_count_from_cmr(
         SHORT_NAME, VERSION, **filter_params
