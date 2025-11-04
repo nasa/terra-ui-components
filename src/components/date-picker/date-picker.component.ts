@@ -1,5 +1,5 @@
 import { property, state, query } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
+import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './date-picker.styles.js'
@@ -93,6 +93,55 @@ export default class TerraDatePicker extends TerraElement {
     constructor() {
         super()
         this.initializePresets()
+    }
+
+    private isDateWithinBounds(date: Date | null): boolean {
+        if (!date) return false
+        if (this.minDate) {
+            const min = new Date(this.minDate)
+            if (date < min) return false
+        }
+        if (this.maxDate) {
+            const max = new Date(this.maxDate)
+            if (date > max) return false
+        }
+        return true
+    }
+
+    private getBounds(): { min?: Date; max?: Date } {
+        const min = this.minDate ? new Date(this.minDate) : undefined
+        const max = this.maxDate ? new Date(this.maxDate) : undefined
+        return { min, max }
+    }
+
+    private doesRangeOverlapBounds(range: DateRange): boolean {
+        const { startDate, endDate } = range
+        const { min, max } = this.getBounds()
+
+        if (!this.range) {
+            if (!startDate) return false
+            if (min && startDate < min) return false
+            if (max && startDate > max) return false
+            return true
+        }
+
+        const start = startDate ?? new Date(-8640000000000000)
+        const end = endDate ?? new Date(8640000000000000)
+
+        if (!min && !max) return true
+        const windowStart = min ?? new Date(-8640000000000000)
+        const windowEnd = max ?? new Date(8640000000000000)
+        return end >= windowStart && start <= windowEnd
+    }
+
+    private isPresetWithinBounds(range: DateRange): boolean {
+        return this.doesRangeOverlapBounds(range)
+    }
+
+    private get filteredPresets(): PresetRange[] {
+        return (this.presets || []).filter(preset =>
+            this.isPresetWithinBounds(preset.getValue())
+        )
     }
 
     open() {
@@ -253,15 +302,6 @@ export default class TerraDatePicker extends TerraElement {
         event.stopPropagation()
         this.setOpen(!this.isOpen)
     }
-
-    /*
-    private formatDate(date: Date | null): string {
-        if (!date) return ''
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const day = String(date.getDate()).padStart(2, '0')
-        const year = date.getFullYear()
-        return `${month}/${day}/${year}`
-    }*/
 
     private formatDisplayDate(date: Date | null, isStart: boolean = true): string {
         if (!date) return ''
@@ -512,8 +552,34 @@ export default class TerraDatePicker extends TerraElement {
 
     private selectPreset(preset: PresetRange) {
         const { startDate, endDate } = preset.getValue()
-        this.selectedStart = startDate
-        this.selectedEnd = endDate
+
+        if (!this.isPresetWithinBounds({ startDate, endDate })) {
+            return
+        }
+
+        const { min, max } = this.getBounds()
+
+        if (this.range) {
+            let s = startDate
+            let e = endDate
+            if (s && min && s < min) s = new Date(min)
+            if (s && max && s > max) s = new Date(max)
+            if (e && min && e < min) e = new Date(min)
+            if (e && max && e > max) e = new Date(max)
+            if (s && e && e < s) {
+                const tmp = s
+                s = e
+                e = tmp
+            }
+            this.selectedStart = s
+            this.selectedEnd = e
+        } else {
+            let s = startDate
+            if (s && min && s < min) s = new Date(min)
+            if (s && max && s > max) s = new Date(max)
+            this.selectedStart = s
+            this.selectedEnd = null
+        }
 
         if (this.selectedStart) {
             this.leftMonth = new Date(this.selectedStart)
@@ -1196,13 +1262,14 @@ export default class TerraDatePicker extends TerraElement {
                         ? html`
                               <div class="date-picker__dropdown" part="calendar">
                                   <div class="date-picker__content">
-                                      ${this.showPresets
+                                      ${this.showPresets &&
+                                      this.filteredPresets.length > 0
                                           ? html`
                                                 <div
                                                     class="date-picker__sidebar"
                                                     part="sidebar"
                                                 >
-                                                    ${this.presets.map(
+                                                    ${this.filteredPresets.map(
                                                         preset => html`
                                                             <button
                                                                 type="button"

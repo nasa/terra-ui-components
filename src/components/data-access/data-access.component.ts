@@ -389,6 +389,7 @@ export default class TerraDataAccess extends TerraElement {
                             range
                             hide-label
                             hide-input
+                            show-presets
                             .startDate=${this.startDate}
                             .endDate=${this.endDate}
                             .minDate=${this.#controller.granuleMinDate}

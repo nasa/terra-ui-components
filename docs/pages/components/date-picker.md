@@ -39,32 +39,29 @@ const App = () => <TerraDatePicker />;
 
 ## Properties
 
-| Property        | Type                                                                                                                                  | Default    | Description                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------------------- |
-| `id`            | `string`                                                                                                                              | -          | The unique identifier for the date picker                                                          |
-| `range`         | `boolean`                                                                                                                             | `false`    | Whether to show a date range picker (two inputs) or a single date picker                           |
-| `minDate`       | `string`                                                                                                                              | -          | The minimum allowed date (format: YYYY-MM-DD)                                                      |
-| `maxDate`       | `string`                                                                                                                              | -          | The maximum allowed date (format: YYYY-MM-DD)                                                      |
-| `startDate`     | `string`                                                                                                                              | -          | The selected start date (in range mode) or single date (format: YYYY-MM-DD)                        |
-| `endDate`       | `string`                                                                                                                              | -          | The selected end date (in range mode) (format: YYYY-MM-DD)                                         |
-| `allowInput`    | `boolean`                                                                                                                             | `false`    | Allows the user to enter a date directly into the input field                                      |
-| `altFormat`     | `string`                                                                                                                              | `'F j, Y'` | The format for the alternative input display (e.g., "March 20, 2024")                              |
-| `altInput`      | `boolean`                                                                                                                             | `false`    | Shows a more readable date format in the input while maintaining the original format for the value |
-| `altInputClass` | `string`                                                                                                                              | `''`       | Custom CSS class for the alternative input                                                         |
-| `dateFormat`    | `string`                                                                                                                              | `'Y-m-d'`  | The format for the date display (e.g., "2024-03-20")                                               |
-| `enableTime`    | `boolean`                                                                                                                             | `false`    | Enables time selection in the picker                                                               |
-| `time24hr`      | `boolean`                                                                                                                             | `false`    | Uses 24-hour time format when time selection is enabled                                            |
-| `weekNumbers`   | `boolean`                                                                                                                             | `false`    | Shows week numbers in the calendar                                                                 |
-| `static`        | `boolean`                                                                                                                             | `false`    | Controls whether the calendar is positioned statically                                             |
-| `position`      | `'auto' \| 'above' \| 'below'`                                                                                                        | `'auto'`   | Controls the calendar's position relative to the input                                             |
-| `theme`         | `'light' \| 'dark' \| 'material_blue' \| 'material_red' \| 'material_green' \| 'material_orange' \| 'airbnb' \| 'confetti' \| 'none'` | `'light'`  | The visual theme of the date picker                                                                |
+| Property        | Attribute        | Type            | Default                               | Description                                                                                   |
+| --------------- | ---------------- | --------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `id`            | `id`             | `string`        | -                                     | The unique identifier for the date picker                                                     |
+| `range`         | `range`          | `boolean`       | `false`                               | Enables date range picking (two calendars)                                                    |
+| `minDate`       | `min-date`       | `string`        | -                                     | Minimum selectable date (YYYY-MM-DD)                                                          |
+| `maxDate`       | `max-date`       | `string`        | -                                     | Maximum selectable date (YYYY-MM-DD)                                                          |
+| `startDate`     | `start-date`     | `string`        | -                                     | Initial start/single date (ISO or YYYY-MM-DD)                                                 |
+| `endDate`       | `end-date`       | `string`        | -                                     | Initial end date (range mode; ISO or YYYY-MM-DD)                                              |
+| `label`         | `label`          | `string`        | `"Select Date"`                       | Input label text                                                                              |
+| `hideLabel`     | `hide-label`     | `boolean`       | `false`                               | Visually hide the label while keeping it accessible                                           |
+| `enableTime`    | `enable-time`    | `boolean`       | `false`                               | Enables time selection UI (12-hour with AM/PM)                                                |
+| `displayFormat` | `display-format` | `string`        | `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss` | Display format for the input value                                                            |
+| `showPresets`   | `show-presets`   | `boolean`       | `false`                               | Shows a sidebar with preset ranges; shown if preset overlaps `min/max`. Hidden if none remain |
+| `presets`       | `presets`        | `PresetRange[]` | `[]` (auto-fill)                      | Custom preset ranges; when empty, a default set is provided                                   |
 
 ## Events
 
-The component emits the following events:
+The component emits:
 
--   `change`: Fired when a date is selected
-    -   Event detail contains `selectedDates` array with the selected date(s)
+-   `terra-date-range-change`: Fired when a selection is made or changed
+    -   Event `detail`: `{ startDate: string, endDate: string }`
+        -   If `enable-time` is off, values are `YYYY-MM-DD`
+        -   If `enable-time` is on, values are ISO strings (e.g., `2024-03-20T10:00:00.000Z`)
 
 ## Examples
 
@@ -77,62 +74,102 @@ The component emits the following events:
 ></terra-date-picker>
 ```
 
-### Date Range with Time Selection
+### Date Range
+
+```html:preview
+<terra-date-picker
+  id="range-picker"
+  range
+  start-date="2024-03-20"
+  end-date="2024-03-25"
+></terra-date-picker>
+```
+
+### With Time Selection
 
 ```html:preview
 <terra-date-picker
   id="range-time-picker"
   range
   enable-time
-  time-24hr
-  start-date="2024-03-20T10:00"
-  end-date="2024-03-25T15:30"
+  start-date="2024-03-20T10:00:00Z"
+  end-date="2024-03-25T15:30:00Z"
 ></terra-date-picker>
 ```
 
-### Custom Format and Theme
+### Custom Display Format
 
 ```html:preview
 <terra-date-picker
-  id="custom-picker"
-  date-format="Y-m-d"
-  alt-format="F j, Y"
-  alt-input
-  theme="material_blue"
-></terra-date-picker>
-```
-
-### With Week Numbers
-
-```html:preview
-<terra-date-picker
-  id="week-picker"
-  week-numbers
-  position="below"
-></terra-date-picker>
-```
-
-### Range with Two Months
-
-```html:preview
-<terra-date-picker
-  id="two-month-picker"
-  range
-  show-months="2"
+  id="custom-format-picker"
   start-date="2024-03-20"
-  end-date="2024-04-15"
+  display-format="YYYY/MM/DD"
+></terra-date-picker>
+```
+
+### Labels and Accessibility
+
+```html:preview
+<terra-date-picker
+  id="labeled-picker"
+  label="Acquisition Date"
+  start-date="2024-06-01"
+></terra-date-picker>
+
+<!-- Visually hide the label but keep it accessible -->
+<terra-date-picker
+  id="hidden-label-picker"
+  label="Acquisition Date"
+  hide-label
+  start-date="2024-06-01"
+></terra-date-picker>
+```
+
+### Preset Ranges Sidebar
+
+```html:preview
+<!-- Default presets provided when show-presets is enabled -->
+<terra-date-picker
+  id="preset-picker"
+  range
+  show-presets
+></terra-date-picker>
+```
+
+Note: Presets are shown if any part of the preset range overlaps the `min-date`/`max-date` window. When a preset is selected, dates are clamped to the allowed range. If no presets overlap, the sidebar is hidden.
+
+### Min/Max Constraints
+
+```html:preview
+<terra-date-picker
+  id="bounded-picker"
+  range
   min-date="2024-01-01"
   max-date="2024-12-31"
 ></terra-date-picker>
 ```
 
+### Presets With Min/Max
+
+```html:preview
+<terra-date-picker
+  id="preset-bounded-picker"
+  range
+  show-presets
+  min-date="2024-03-15"
+  max-date="2024-03-20"
+></terra-date-picker>
+```
+
+Only presets whose start and end are within the bounds are shown. If none qualify, the sidebar is hidden.
+
 ## Best Practices
 
 1. Always provide an `id` for accessibility and to ensure unique identification
 2. Use `minDate` and `maxDate` to prevent selection of invalid dates
-3. Consider using `altInput` with `altFormat` for a more user-friendly display
+3. Use `displayFormat` to match the expected input display in your application
 4. Use `enableTime` only when time selection is necessary
-5. Choose an appropriate theme that matches your application's design system
+5. Show `showPresets` to accelerate common range selections when helpful
 
 ## Accessibility
 
