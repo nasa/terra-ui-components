@@ -87,10 +87,10 @@ export default class TerraDataAccess extends TerraElement {
     cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
 
     @state()
-    showCloudCoverFilters = false
+    showDownloadMenu = false
 
     @state()
-    showDownloadMenu = false
+    cloudCoverPickerOpen = false
 
     @state()
     datePickerOpen = false
@@ -100,14 +100,46 @@ export default class TerraDataAccess extends TerraElement {
 
     datePickerRef = createRef<TerraDatePicker>()
     spatialPickerRef = createRef<TerraSpatialPicker>()
+    cloudCoverSliderRef = createRef<TerraSlider>()
 
     #controller = new DataAccessController(this)
     #gridApi: GridApi<CmrGranule>
     #gridRef = createRef<HTMLElement>()
+    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
     connectedCallback(): void {
         super.connectedCallback()
         ModuleRegistry.registerModules([AllCommunityModule])
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        if (this.#boundHandleCloudCoverClickOutside) {
+            document.removeEventListener(
+                'click',
+                this.#boundHandleCloudCoverClickOutside
+            )
+            this.#boundHandleCloudCoverClickOutside = null
+        }
+    }
+
+    #handleCloudCoverClickOutside(event: MouseEvent) {
+        const target = event.target as Node
+        const dropdown = this.shadowRoot?.querySelector('.cloud-cover-dropdown')
+        const filterContainer = dropdown?.closest('.filter')
+
+        if (filterContainer?.contains(target)) {
+            return
+        }
+
+        this.cloudCoverPickerOpen = false
+        if (this.#boundHandleCloudCoverClickOutside) {
+            document.removeEventListener(
+                'click',
+                this.#boundHandleCloudCoverClickOutside
+            )
+            this.#boundHandleCloudCoverClickOutside = null
+        }
     }
 
     firstVisible(): void {
@@ -325,6 +357,54 @@ export default class TerraDataAccess extends TerraElement {
         this.#gridApi?.purgeInfiniteCache()
     }
 
+    #toggleCloudCoverPicker() {
+        // Use setTimeout to ensure the click event has been processed
+        setTimeout(() => {
+            this.cloudCoverPickerOpen = !this.cloudCoverPickerOpen
+
+            if (this.cloudCoverPickerOpen) {
+                // Add click-outside handler
+                if (!this.#boundHandleCloudCoverClickOutside) {
+                    this.#boundHandleCloudCoverClickOutside =
+                        this.#handleCloudCoverClickOutside.bind(this)
+                    document.addEventListener(
+                        'click',
+                        this.#boundHandleCloudCoverClickOutside
+                    )
+                }
+            } else {
+                // Remove click-outside handler
+                if (this.#boundHandleCloudCoverClickOutside) {
+                    document.removeEventListener(
+                        'click',
+                        this.#boundHandleCloudCoverClickOutside
+                    )
+                    this.#boundHandleCloudCoverClickOutside = null
+                }
+            }
+        }, 0)
+    }
+
+    #clearCloudCoverFilter() {
+        this.cloudCover = { min: undefined, max: undefined }
+        this.cloudCoverPickerOpen = false
+        if (this.#boundHandleCloudCoverClickOutside) {
+            document.removeEventListener(
+                'click',
+                this.#boundHandleCloudCoverClickOutside
+            )
+            this.#boundHandleCloudCoverClickOutside = null
+        }
+        this.#gridApi?.purgeInfiniteCache()
+    }
+
+    #getCloudCoverButtonText(): string {
+        if (this.cloudCover.min !== undefined && this.cloudCover.max !== undefined) {
+            return `${this.cloudCover.min.toFixed(1)}% – ${this.cloudCover.max.toFixed(1)}%`
+        }
+        return 'Cloud Cover'
+    }
+
     #toggleDownloadMenu(event: Event) {
         event.stopPropagation()
         this.showDownloadMenu = !this.showDownloadMenu
@@ -505,56 +585,70 @@ export default class TerraDataAccess extends TerraElement {
 
                     ${this.#controller.cloudCoverRange
                         ? html`
-                              <button
-                                  class="filter-btn ${this.showCloudCoverFilters
-                                      ? 'active'
-                                      : ''}"
-                                  @click=${() =>
-                                      (this.showCloudCoverFilters =
-                                          !this.showCloudCoverFilters)}
-                              >
-                                  <terra-icon
-                                      name="outline-cloud"
-                                      library="heroicons"
-                                      font-size="18px"
-                                  ></terra-icon>
-                                  <span>Cloud Cover</span>
-                              </button>
+                              <div class="filter">
+                                  <button
+                                      class="filter-btn ${this.cloudCover.min !==
+                                          undefined &&
+                                      this.cloudCover.max !== undefined
+                                          ? 'active'
+                                          : ''}"
+                                      @click=${(e: Event) => {
+                                          e.stopPropagation()
+                                          this.#toggleCloudCoverPicker()
+                                      }}
+                                  >
+                                      <terra-icon
+                                          name="outline-cloud"
+                                          library="heroicons"
+                                          font-size="18px"
+                                      ></terra-icon>
+                                      <span>${this.#getCloudCoverButtonText()}</span>
+                                      ${this.cloudCover.min !== undefined &&
+                                      this.cloudCover.max !== undefined
+                                          ? html`
+                                                <button
+                                                    class="clear-badge"
+                                                    @click=${(e: Event) => {
+                                                        e.stopPropagation()
+                                                        this.#clearCloudCoverFilter()
+                                                    }}
+                                                    aria-label="Clear cloud cover filter"
+                                                >
+                                                    ×
+                                                </button>
+                                            `
+                                          : nothing}
+                                  </button>
+
+                                  <!-- hidden slider to show when clicking the filter -->
+                                  <div
+                                      class="cloud-cover-dropdown ${this
+                                          .cloudCoverPickerOpen
+                                          ? 'open'
+                                          : ''}"
+                                      @click=${(e: Event) => e.stopPropagation()}
+                                  >
+                                      <terra-slider
+                                          ${ref(this.cloudCoverSliderRef)}
+                                          mode="range"
+                                          min=${this.#controller.cloudCoverRange?.min}
+                                          max=${this.#controller.cloudCoverRange?.max}
+                                          start-value=${this.cloudCover.min ??
+                                          this.#controller.cloudCoverRange?.min}
+                                          end-value=${this.cloudCover.max ??
+                                          this.#controller.cloudCoverRange?.max}
+                                          step="0.1"
+                                          hide-label
+                                          label="Cloud Cover"
+                                          @terra-slider-change=${this
+                                              .#handleCloudCoverChange}
+                                          show-inputs
+                                      ></terra-slider>
+                                  </div>
+                              </div>
                           `
                         : nothing}
                 </div>
-
-                ${this.showCloudCoverFilters
-                    ? html`
-                          <div class="filter-row">
-                              <terra-slider
-                                  mode="range"
-                                  min=${this.#controller.cloudCoverRange?.min}
-                                  max=${this.#controller.cloudCoverRange?.max}
-                                  start-value=${this.#controller.cloudCoverRange?.min}
-                                  end-value=${this.#controller.cloudCoverRange?.max}
-                                  step="0.1"
-                                  label="Cloud Cover"
-                                  @terra-slider-change=${this.#handleCloudCoverChange}
-                                  show-inputs
-                              ></terra-slider>
-                              <button
-                                  class="clear-btn"
-                                  @click=${() => {
-                                      this.showCloudCoverFilters = false
-                                      this.cloudCover = {
-                                          min: undefined,
-                                          max: undefined,
-                                      }
-                                      this.#gridApi?.purgeInfiniteCache()
-                                  }}
-                                  aria-label="Clear cloud cover filters"
-                              >
-                                  ×
-                              </button>
-                          </div>
-                      `
-                    : nothing}
 
                 <div class="results-info">
                     <strong

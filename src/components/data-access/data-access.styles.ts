@@ -458,9 +458,36 @@ export default css`
         border-radius: 0 0 6px 6px;
     }
 
-    terra-slider {
+    .cloud-cover-dropdown {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        left: 0;
+        z-index: 1000;
+        width: 400px;
+        max-width: 90vw;
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow:
+            0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s;
+        pointer-events: none;
+    }
+
+    .cloud-cover-dropdown.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .cloud-cover-dropdown terra-slider {
+        width: 100%;
         min-width: 300px;
-        width: 80%;
         padding-top: 20px;
     }
 
