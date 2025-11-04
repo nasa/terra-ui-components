@@ -101,6 +101,7 @@ export type CmrGranule = {
 
 export type CmrGranuleDataGranule = {
     archiveAndDistributionInformation: Array<ArchiveAndDistributionInformation>
+    productionDateTime: string
 }
 
 export type ArchiveAndDistributionInformation = {

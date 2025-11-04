@@ -162,6 +162,27 @@ export class DataAccessController {
         return this.#totalGranules
     }
 
+    get sampling() {
+        return this.#sampling
+    }
+
+    get granuleMinDate() {
+        if (!this.#sampling?.firstGranules) {
+            return null
+        }
+
+        return this.#sampling.firstGranules.items[0].dataGranule.productionDateTime
+    }
+
+    get granuleMaxDate() {
+        if (!this.#sampling?.lastGranules) {
+            return null
+        }
+
+        const granules = this.#sampling.lastGranules.items
+        return granules[granules.length - 1].dataGranule.productionDateTime
+    }
+
     get estimatedSize() {
         if (!this.#sampling?.firstGranules) {
             return null

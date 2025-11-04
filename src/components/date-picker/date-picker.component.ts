@@ -98,6 +98,23 @@ export default class TerraDatePicker extends TerraElement {
     open() {
         this.isOpen = true
         this.ignoreClickOutside = true
+
+        // If a max date is provided and no explicit selection exists,
+        // open the calendar to the max date's month (right calendar in range mode)
+        if (this.maxDate && !this.selectedStart && !this.selectedEnd) {
+            const max = new Date(this.maxDate)
+            if (!isNaN(max.getTime())) {
+                if (this.range) {
+                    this.rightMonth = new Date(max)
+                    const left = new Date(max)
+                    left.setMonth(left.getMonth() - 1)
+                    this.leftMonth = left
+                } else {
+                    this.leftMonth = new Date(max)
+                }
+            }
+        }
+
         this.requestUpdate()
     }
 
@@ -234,7 +251,7 @@ export default class TerraDatePicker extends TerraElement {
 
     private toggleDropdown(event: Event) {
         event.stopPropagation()
-        this.isOpen = !this.isOpen
+        this.setOpen(!this.isOpen)
     }
 
     /*

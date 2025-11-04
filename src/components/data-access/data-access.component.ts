@@ -220,20 +220,6 @@ export default class TerraDataAccess extends TerraElement {
         this.#gridApi?.purgeInfiniteCache()
     }
 
-    #handleDateChange(event: CustomEvent) {
-        const datePicker = event.currentTarget as TerraDatePicker
-
-        if (datePicker.getAttribute('name') === 'startDate') {
-            this.startDate = datePicker.selectedDates.startDate ?? ''
-        } else if (datePicker.getAttribute('name') === 'endDate') {
-            this.endDate = datePicker.selectedDates.startDate ?? ''
-        }
-
-        if (this.startDate && this.endDate) {
-            this.#gridApi?.purgeInfiniteCache()
-        }
-    }
-
     #handleDateRangeChange(event: CustomEvent) {
         const detail = event.detail
         this.startDate = detail.startDate || ''
@@ -405,6 +391,8 @@ export default class TerraDataAccess extends TerraElement {
                             hide-input
                             .startDate=${this.startDate}
                             .endDate=${this.endDate}
+                            .minDate=${this.#controller.granuleMinDate}
+                            .maxDate=${this.#controller.granuleMaxDate}
                             @terra-date-range-change=${this.#handleDateRangeChange}
                         ></terra-date-picker>
                     </div>
