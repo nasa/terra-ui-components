@@ -42,7 +42,7 @@ export default css`
 
     .input {
         position: relative;
-        display: flex;
+        display: var(--terra-input-display, flex);
         align-items: center;
         width: 100%;
         background: var(--terra-input-background-color, white);

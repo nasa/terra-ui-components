@@ -18,6 +18,8 @@ import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import type { MapEventDetail } from '../map/type.js'
+import { MapEventType } from '../map/type.js'
+import { StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import {
     createGrid,
@@ -85,9 +87,6 @@ export default class TerraDataAccess extends TerraElement {
     cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
 
     @state()
-    showSpatialFilters = false
-
-    @state()
     showCloudCoverFilters = false
 
     @state()
@@ -96,7 +95,11 @@ export default class TerraDataAccess extends TerraElement {
     @state()
     datePickerOpen = false
 
+    @state()
+    spatialPickerOpen = false
+
     datePickerRef = createRef<TerraDatePicker>()
+    spatialPickerRef = createRef<TerraSpatialPicker>()
 
     #controller = new DataAccessController(this)
     #gridApi: GridApi<CmrGranule>
@@ -247,6 +250,55 @@ export default class TerraDataAccess extends TerraElement {
         return 'Date Range'
     }
 
+    #getSpatialButtonText(): string {
+        if (!this.location) {
+            return 'Spatial Area'
+        }
+
+        try {
+            if (this.location.type === MapEventType.POINT && this.location.latLng) {
+                const { lat, lng } = this.location.latLng
+                return `${lat.toFixed(2)}, ${lng.toFixed(2)}`
+            }
+
+            if (this.location.type === MapEventType.BBOX && this.location.bounds) {
+                const boundsStr = StringifyBoundingBox(this.location.bounds)
+                const coords = boundsStr.split(', ').map(c => parseFloat(c.trim()))
+
+                if (coords.length === 4) {
+                    return `${coords[1].toFixed(2)}, ${coords[0].toFixed(2)}, ${coords[3].toFixed(2)}, ${coords[2].toFixed(2)}`
+                }
+
+                return boundsStr
+            }
+
+            // Check if it's a shape from geoJson
+            if (this.location.geoJson?.features?.[0]?.properties) {
+                const props = this.location.geoJson.features[0].properties
+                // Try to find a name property
+                const name =
+                    props.LAKE_NAME ||
+                    props.COUNTRY ||
+                    props.DAM_NAME ||
+                    props.TYPE ||
+                    props.name
+                if (name) {
+                    return name
+                }
+            }
+
+            // Fallback: show bounds if available
+            if (this.location.type === MapEventType.BBOX && this.location.bounds) {
+                return StringifyBoundingBox(this.location.bounds)
+            }
+        } catch (error) {
+            // If formatting fails, return default
+            console.warn('Error formatting spatial selection:', error)
+        }
+
+        return 'Spatial Area'
+    }
+
     #toggleDatePicker() {
         this.datePickerOpen = !this.datePickerOpen
         this.datePickerRef.value?.setOpen(this.datePickerOpen)
@@ -256,6 +308,20 @@ export default class TerraDataAccess extends TerraElement {
         this.startDate = ''
         this.endDate = ''
         this.datePickerOpen = false
+        this.#gridApi?.purgeInfiniteCache()
+    }
+
+    #toggleSpatialPicker() {
+        // Use setTimeout to ensure the click event has been processed
+        setTimeout(() => {
+            this.spatialPickerOpen = !this.spatialPickerOpen
+            this.spatialPickerRef.value?.setOpen(this.spatialPickerOpen)
+        }, 0)
+    }
+
+    #clearSpatialFilter() {
+        this.location = null
+        this.spatialPickerOpen = false
         this.#gridApi?.purgeInfiniteCache()
     }
 
@@ -398,18 +464,44 @@ export default class TerraDataAccess extends TerraElement {
                         ></terra-date-picker>
                     </div>
 
-                    <button
-                        class="filter-btn ${this.showSpatialFilters ? 'active' : ''}"
-                        @click=${() =>
-                            (this.showSpatialFilters = !this.showSpatialFilters)}
-                    >
-                        <terra-icon
-                            name="outline-globe-alt"
-                            library="heroicons"
-                            font-size="18px"
-                        ></terra-icon>
-                        <span>Spatial Area</span>
-                    </button>
+                    <div class="filter">
+                        <button
+                            class="filter-btn ${this.location ? 'active' : ''}"
+                            @click=${(e: Event) => {
+                                e.stopPropagation()
+                                this.#toggleSpatialPicker()
+                            }}
+                        >
+                            <terra-icon
+                                name="outline-globe-alt"
+                                library="heroicons"
+                                font-size="18px"
+                            ></terra-icon>
+                            <span>${this.#getSpatialButtonText()}</span>
+                            ${this.location
+                                ? html`
+                                      <button
+                                          class="clear-badge"
+                                          @click=${(e: Event) => {
+                                              e.stopPropagation()
+                                              this.#clearSpatialFilter()
+                                          }}
+                                          aria-label="Clear spatial filter"
+                                      >
+                                          ×
+                                      </button>
+                                  `
+                                : nothing}
+                        </button>
+
+                        <!-- hidden spatial picker to show when clicking the filter -->
+                        <terra-spatial-picker
+                            ${ref(this.spatialPickerRef)}
+                            has-shape-selector
+                            hide-label
+                            @terra-map-change=${this.#handleMapChange}
+                        ></terra-spatial-picker>
+                    </div>
 
                     ${this.#controller.cloudCoverRange
                         ? html`
@@ -432,31 +524,6 @@ export default class TerraDataAccess extends TerraElement {
                         : nothing}
                 </div>
 
-                ${this.showSpatialFilters
-                    ? html`
-                          <div class="filter-row">
-                              <label style="min-width: 56px;">Spatial:</label>
-                              <terra-spatial-picker
-                                  class="inline-map"
-                                  has-shape-selector
-                                  hide-label
-                                  @terra-map-change=${this.#handleMapChange}
-                              ></terra-spatial-picker>
-                              <button
-                                  class="clear-btn"
-                                  @click=${() => {
-                                      this.showSpatialFilters = false
-                                      this.location = null
-                                      this.#gridApi?.purgeInfiniteCache()
-                                  }}
-                                  aria-label="Clear spatial filter"
-                              >
-                                  ×
-                              </button>
-                          </div>
-                          <div class="divider"></div>
-                      `
-                    : nothing}
                 ${this.showCloudCoverFilters
                     ? html`
                           <div class="filter-row">
