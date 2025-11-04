@@ -6,6 +6,7 @@ import styles from './date-picker.styles.js'
 import type { CSSResultGroup } from 'lit'
 import TerraButton from '../button/button.component.js'
 import TerraInput from '../input/input.component.js'
+import { watch } from '../../internal/watch.js'
 
 interface DateRange {
     startDate: Date | null
@@ -95,19 +96,6 @@ export default class TerraDatePicker extends TerraElement {
         this.initializePresets()
     }
 
-    private isDateWithinBounds(date: Date | null): boolean {
-        if (!date) return false
-        if (this.minDate) {
-            const min = new Date(this.minDate)
-            if (date < min) return false
-        }
-        if (this.maxDate) {
-            const max = new Date(this.maxDate)
-            if (date > max) return false
-        }
-        return true
-    }
-
     private getBounds(): { min?: Date; max?: Date } {
         const min = this.minDate ? new Date(this.minDate) : undefined
         const max = this.maxDate ? new Date(this.maxDate) : undefined
@@ -177,6 +165,38 @@ export default class TerraDatePicker extends TerraElement {
             this.open()
         } else {
             this.close()
+        }
+    }
+
+    @watch(['startDate', 'endDate'])
+    handleStartEndDateChange() {
+        // Sync internal state with props when they change
+        if (this.startDate) {
+            const start = new Date(this.startDate)
+            if (!isNaN(start.getTime())) {
+                this.selectedStart = start
+                if (this.enableTime) {
+                    this.initializeTimeFromDate(start, true)
+                }
+            }
+        } else {
+            this.selectedStart = null
+        }
+
+        if (this.range) {
+            if (this.endDate) {
+                const end = new Date(this.endDate)
+                if (!isNaN(end.getTime())) {
+                    this.selectedEnd = end
+                    if (this.enableTime) {
+                        this.initializeTimeFromDate(end, false)
+                    }
+                }
+            } else {
+                this.selectedEnd = null
+            }
+        } else {
+            this.selectedEnd = null
         }
     }
 
