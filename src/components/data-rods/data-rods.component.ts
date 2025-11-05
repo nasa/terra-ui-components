@@ -24,9 +24,6 @@ import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
  * @since 1.0
  *
  * @event terra-date-range-change - Emitted whenever the date range of the date slider is updated
- * @event terra-open-info-panel - Fired when an info icon in the variable combobox is clicked.
- * The event detail contains the associated collection metadata.
- * @type {CustomEvent<{ collection: any }>}
  */
 
 export default class TerraDataRods extends TerraElement {
