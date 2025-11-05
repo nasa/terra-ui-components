@@ -35,19 +35,19 @@ import TerraSlider from '../slider/slider.component.js'
 import { getBasePath } from '../../utilities/base-path.js'
 
 /**
- * @summary Short summary of the component's intended use.
+ * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
  * @documentation https://disc.gsfc.nasa.gov/components/data-access
- * @status experimental
+ * @status stable
  * @since 1.0
  *
- * @dependency terra-example
+ * @dependency terra-loader
+ * @dependency terra-icon
+ * @dependency terra-date-picker
+ * @dependency terra-spatial-picker
+ * @dependency terra-slider
  *
- * @slot - The default slot.
- * @slot example - An example slot.
- *
- * @csspart base - The component's base wrapper.
- *
- * @cssproperty --example - An example CSS custom property.
+ * @attr short-name - Collection short name used to build the Collection Entry ID.
+ * @attr version - Collection version used to build the Collection Entry ID.
  */
 export default class TerraDataAccess extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
