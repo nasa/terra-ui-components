@@ -15,7 +15,7 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                 tabindex="-1"
                 class="info-toggle"
                 aria-haspopup="true"
-                aria-controls="menu"
+                aria-controls="variable-info-menu"
                 data-menu-name="information"
                 @mouseenter=${(e: MouseEvent) => {
                     e.preventDefault()
@@ -34,8 +34,10 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                         dataFieldDescriptionUrl: detail.variableLandingPage,
                     }
 
-                    const event = new CustomEvent('terra-show-info', {
-                        detail: { collection: mappedCollection },
+                    const event = new CustomEvent('terra-show-variable-info', {
+                        detail: {
+                            collection: mappedCollection,
+                        },
                         bubbles: true,
                         composed: true,
                     })

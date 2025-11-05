@@ -142,15 +142,6 @@ export default class TerraPlotToolbar extends TerraElement {
         this.activeMenuItem = null
     }
 
-    connectedCallback() {
-        super.connectedCallback()
-        window.addEventListener('terra-open-info-panel', (event: CustomEvent) => {
-            this.catalogVariable = event.detail.collection
-            this.activeMenuItem = 'information'
-            console.log('🎯 Toolbar received terra-open-info-panel', event.detail)
-        })
-    }
-
     #handleLocationMouseEnter() {
         if (this.location && this.location.trim()) {
             try {

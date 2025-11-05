@@ -111,7 +111,6 @@ export default class TerraDataRods extends TerraElement {
                 .bearerToken=${this.bearerToken ?? null}
                 .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
-                @terra-show-info=${this.#handleShowInfo}
             ></terra-variable-combobox>
 
             <terra-spatial-picker
@@ -171,27 +170,5 @@ export default class TerraDataRods extends TerraElement {
     #handleTimeSeriesDateRangeChange(event: CustomEvent) {
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
-    }
-
-    #handleShowInfo(event: any) {
-        const { collection } = event.detail
-        if (typeof window === 'undefined') return
-        console.log('📡 Received terra-show-info', event.detail)
-
-        // Option 1: Directly trigger your info menu if you have terra-plot-toolbar in scope
-        const toolbar = this.renderRoot.querySelector('terra-plot-toolbar')
-        if (toolbar) {
-            toolbar.activeMenuItem = 'information'
-            toolbar.catalogVariable = collection
-        }
-
-        // Option 2 (recommended): broadcast to the toolbar if it’s in a parent component
-        this.dispatchEvent(
-            new CustomEvent('terra-open-info-panel', {
-                detail: { collection },
-                bubbles: true,
-                composed: true,
-            })
-        )
     }
 }

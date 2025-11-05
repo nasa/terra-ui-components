@@ -300,4 +300,42 @@ export default css`
         --terra-button-size: 1.25em;
         margin-left: 0.5rem;
     }
+
+    menu#variable-info-menu {
+        all: unset;
+        position: absolute;
+        top: 1.5rem;
+        left: 100%;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 0.5em;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        width: max-content;
+        min-width: 20ch;
+        max-width: 100%;
+        padding: 1em;
+        display: none;
+        margin-left: 0.5rem;
+    }
+
+    menu#variable-info-menu[data-expanded='true'] {
+        display: block;
+    }
+
+    menu#variable-info-menu [role='menuitem'] {
+        display: block;
+        list-style: none;
+        margin: 0;
+        padding: 0.5em 0;
+    }
+
+    menu#variable-info-menu dt {
+        font-weight: var(--terra-font-weight-semibold);
+    }
+
+    menu#variable-info-menu dd {
+        font-style: italic;
+        text-wrap: balance;
+    }
 `
