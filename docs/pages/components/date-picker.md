@@ -48,11 +48,15 @@ const App = () => <TerraDatePicker />;
 | `startDate`     | `start-date`     | `string`        | -                                     | Initial start/single date (ISO or YYYY-MM-DD)                                                 |
 | `endDate`       | `end-date`       | `string`        | -                                     | Initial end date (range mode; ISO or YYYY-MM-DD)                                              |
 | `label`         | `label`          | `string`        | `"Select Date"`                       | Input label text                                                                              |
+| `startLabel`    | `start-label`    | `string`        | -                                     | Custom label for the start date input (only used when `split-inputs` and `range` are true)    |
+| `endLabel`      | `end-label`      | `string`        | -                                     | Custom label for the end date input (only used when `split-inputs` and `range` are true)      |
 | `hideLabel`     | `hide-label`     | `boolean`       | `false`                               | Visually hide the label while keeping it accessible                                           |
 | `enableTime`    | `enable-time`    | `boolean`       | `false`                               | Enables time selection UI (12-hour with AM/PM)                                                |
 | `displayFormat` | `display-format` | `string`        | `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss` | Display format for the input value                                                            |
 | `showPresets`   | `show-presets`   | `boolean`       | `false`                               | Shows a sidebar with preset ranges; shown if preset overlaps `min/max`. Hidden if none remain |
 | `presets`       | `presets`        | `PresetRange[]` | `[]` (auto-fill)                      | Custom preset ranges; when empty, a default set is provided                                   |
+| `inline`        | `inline`         | `boolean`       | `false`                               | Displays the calendar inline (always visible) instead of as a popover dropdown                |
+| `splitInputs`   | `split-inputs`   | `boolean`       | `false`                               | When `range` is true, displays two separate inputs side by side (one for start, one for end)  |
 
 ## Events
 
@@ -163,6 +167,76 @@ Note: Presets are shown if any part of the preset range overlaps the `min-date`/
 
 Only presets whose start and end are within the bounds are shown. If none qualify, the sidebar is hidden.
 
+### Split Inputs
+
+When using range mode, you can optionally display two separate inputs side by side instead of a single combined input. This is useful when you want clearer visual separation between the start and end dates.
+
+```html:preview
+<!-- Range picker with split inputs -->
+<terra-date-picker
+  id="split-inputs-picker"
+  range
+  split-inputs
+  start-date="2024-03-20"
+  end-date="2024-03-25"
+></terra-date-picker>
+
+<!-- Split inputs with inline calendar -->
+<terra-date-picker
+  id="split-inline-picker"
+  range
+  split-inputs
+  inline
+  start-date="2024-03-20"
+  end-date="2024-03-25"
+></terra-date-picker>
+```
+
+Note: The `split-inputs` prop only has an effect when `range` is `true`. When enabled, the labels will automatically append "(Start)" and "(End)" to the provided label, or use "Start Date" and "End Date" if no label is provided. You can customize the labels using the `start-label` and `end-label` properties.
+
+```html:preview
+<!-- Custom labels for split inputs -->
+<terra-date-picker
+  id="custom-labels-picker"
+  range
+  split-inputs
+  start-label="From"
+  end-label="To"
+  start-date="2024-03-20"
+  end-date="2024-03-25"
+></terra-date-picker>
+```
+
+### Inline Mode
+
+When `inline` is enabled, the calendar is always visible and displayed as part of the page flow rather than as a popover dropdown. The input field remains visible and displays the selected date(s), but clicking it does not toggle the calendar visibility since it's always shown.
+
+```html:preview
+<!-- Inline single date picker -->
+<terra-date-picker
+  id="inline-picker"
+  inline
+  start-date="2024-03-20"
+></terra-date-picker>
+
+<!-- Inline date range picker -->
+<terra-date-picker
+  id="inline-range-picker"
+  inline
+  range
+  start-date="2024-03-20"
+  end-date="2024-03-25"
+></terra-date-picker>
+
+<!-- Inline with presets -->
+<terra-date-picker
+  id="inline-preset-picker"
+  inline
+  range
+  show-presets
+></terra-date-picker>
+```
+
 ## Best Practices
 
 1. Always provide an `id` for accessibility and to ensure unique identification
@@ -170,6 +244,7 @@ Only presets whose start and end are within the bounds are shown. If none qualif
 3. Use `displayFormat` to match the expected input display in your application
 4. Use `enableTime` only when time selection is necessary
 5. Show `showPresets` to accelerate common range selections when helpful
+6. Use `inline` mode when you want the calendar to be permanently visible as part of the page layout
 
 ## Accessibility
 

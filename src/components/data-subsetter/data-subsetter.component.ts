@@ -24,7 +24,7 @@ import {
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
-import type { LatLng } from 'leaflet'
+import { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
@@ -32,6 +32,7 @@ import TerraLoader from '../loader/loader.component.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import { getNotebook } from './notebooks/subsetter-notebook.js'
 import TerraDataAccess from '../data-access/data-access.component.js'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -691,24 +692,20 @@ export default class TerraDataSubsetter extends TerraElement {
                     </button>
                 </div>
 
-                <div style="display: flex; gap: 16px;">
+                <div style="width: 300px">
                     <terra-date-picker
-                        label="Start Date"
                         allow-input
-                        class="w-full"
+                        inline
+                        range
+                        split-inputs
+                        show-presets
+                        start-label="Start Date"
+                        end-label="End Date"
                         .minDate=${defaultStartDate}
-                        .maxDate=${endDate}
-                        .defaultDate=${startDate}
-                        @terra-change=${this.#handleStartDateChange}
-                    ></terra-date-picker>
-                    <terra-date-picker
-                        label="End Date"
-                        allow-input
-                        class="w-full"
-                        .minDate=${startDate}
                         .maxDate=${defaultEndDate}
-                        .defaultDate=${endDate}
-                        @terra-change=${this.#handleEndDateChange}
+                        .startDate=${this.selectedDateRange.startDate}
+                        .endDate=${this.selectedDateRange.endDate}
+                        @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
                 </div>
 
@@ -727,23 +724,12 @@ export default class TerraDataSubsetter extends TerraElement {
         `
     }
 
-    #handleStartDateChange = (e: CustomEvent) => {
+    #handleDateChange = (e: TerraDateRangeChangeEvent) => {
         this.#markFieldTouched('date')
-        const datePicker = e.currentTarget as TerraDatePicker
-
         this.selectedDateRange = {
             ...this.selectedDateRange,
-            startDate: datePicker.selectedDates.startDate,
-        }
-    }
-
-    #handleEndDateChange = (e: CustomEvent) => {
-        this.#markFieldTouched('date')
-        const datePicker = e.currentTarget as TerraDatePicker
-
-        this.selectedDateRange = {
-            ...this.selectedDateRange,
-            endDate: datePicker.selectedDates.startDate,
+            startDate: e.detail.startDate,
+            endDate: e.detail.endDate,
         }
     }
 
@@ -803,6 +789,26 @@ export default class TerraDataSubsetter extends TerraElement {
         if (boundingRects && !Array.isArray(boundingRects)) {
             boundingRects = [boundingRects]
         }
+
+        let spatialString = ''
+
+        // convert spatial to string
+        if (this.spatialSelection instanceof LatLng) {
+            spatialString = `${this.spatialSelection.lat}, ${this.spatialSelection.lng}`
+        } else if (this.spatialSelection instanceof LatLngBounds) {
+            spatialString = `${this.spatialSelection.getSouthWest().lat}, ${this.spatialSelection.getSouthWest().lng}, ${this.spatialSelection.getNorthEast().lat}, ${this.spatialSelection.getNorthEast().lng}`
+        } else if (
+            this.spatialSelection &&
+            'w' in this.spatialSelection &&
+            's' in this.spatialSelection &&
+            'e' in this.spatialSelection &&
+            'n' in this.spatialSelection
+        ) {
+            spatialString = `${this.spatialSelection.w}, ${this.spatialSelection.s}, ${this.spatialSelection.e}, ${this.spatialSelection.n}`
+        } else if (this.spatialSelection) {
+            spatialString = this.spatialSelection
+        }
+
         return html`
             <terra-accordion
                 @terra-accordion-toggle=${this.#handleRegionAccordionToggle}
@@ -819,20 +825,11 @@ export default class TerraDataSubsetter extends TerraElement {
                         ? html`<span class="accordion-value error"
                               >Please select a region</span
                           >`
-                        : this.spatialSelection && 'w' in this.spatialSelection
+                        : spatialString
                           ? html`<span class="accordion-value"
-                                >${this.spatialSelection.w},${this.spatialSelection
-                                    .s},${this.spatialSelection.e},${this
-                                    .spatialSelection.n}</span
+                                >${spatialString}</span
                             >`
-                          : this.spatialSelection &&
-                              'lat' in this.spatialSelection &&
-                              'lng' in this.spatialSelection
-                            ? html`<span class="accordion-value"
-                                  >${this.spatialSelection.lat},${this
-                                      .spatialSelection.lng}</span
-                              >`
-                            : nothing}
+                          : nothing}
                     <button class="reset-btn" @click=${this.#resetSpatialSelection}>
                         Reset
                     </button>
@@ -844,7 +841,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         hide-label
                         has-shape-selector
                         hide-point-selection
-                        .initialValue=${this.spatialSelection ?? ''}
+                        .initialValue=${spatialString}
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
                     ${boundingRects &&

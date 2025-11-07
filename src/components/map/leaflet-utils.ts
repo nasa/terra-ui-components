@@ -7,7 +7,16 @@ import { GiovanniGeoJsonShapes } from '../../geojson/giovanni-geojson.js'
 // @ts-expect-error
 globalThis.type = ''
 
-export function parseBoundingBox(inputString: string) {
+export function parseBoundingBox(input: string | L.LatLng | L.LatLngBounds) {
+    let inputString = input
+
+    // input is a Leaflet type, convert to string
+    if (inputString instanceof L.LatLng) {
+        inputString = `${inputString.lat}, ${inputString.lng}`
+    } else if (inputString instanceof L.LatLngBounds) {
+        inputString = `${inputString.getSouthWest().lat}, ${inputString.getSouthWest().lng}, ${inputString.getNorthEast().lat}, ${inputString.getNorthEast().lng}`
+    }
+
     // Split the string by commas to create an array of strings
     const coords = inputString.split(',')
 

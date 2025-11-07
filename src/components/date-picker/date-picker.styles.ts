@@ -48,8 +48,74 @@ export default css`
         overflow: hidden;
     }
 
+    .date-picker--inline {
+        width: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .date-picker--inline terra-input {
+        width: auto;
+        display: inline-block;
+        min-width: 280px;
+    }
+
+    .date-picker--inline terra-input::part(base) {
+        width: auto;
+        min-width: 280px;
+    }
+
+    .date-picker__inputs {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .date-picker--split-inputs .date-picker__inputs {
+        width: 100%;
+    }
+
+    .date-picker--split-inputs .date-picker__inputs terra-input {
+        flex: 1;
+    }
+
+    .date-picker--inline.date-picker--split-inputs .date-picker__inputs {
+        width: auto;
+    }
+
+    .date-picker--inline.date-picker--split-inputs .date-picker__inputs terra-input {
+        flex: none;
+        width: auto;
+        min-width: 280px;
+    }
+
+    .date-picker--inline .date-picker__dropdown-wrapper {
+        position: static;
+        width: fit-content;
+        display: inline-block;
+    }
+
+    .date-picker__dropdown--inline {
+        position: static;
+        top: auto;
+        left: auto;
+        z-index: auto;
+        box-shadow: none;
+        border: 1px solid var(--terra-color-neutral-200, #e5e7eb);
+        margin-top: 0;
+        overflow: visible;
+        width: fit-content;
+        min-width: fit-content;
+        max-width: fit-content;
+    }
+
     .date-picker__content {
         display: flex;
+    }
+
+    .date-picker__dropdown--inline .date-picker__content {
+        width: fit-content;
+        min-width: fit-content;
     }
 
     .date-picker__sidebar {
