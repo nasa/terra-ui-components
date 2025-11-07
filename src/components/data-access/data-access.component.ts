@@ -737,7 +737,7 @@ export default class TerraDataAccess extends TerraElement {
                 })}
             </div>
 
-            <div>
+            <div style="margin-top: 15px;">
                 <div class="download-dropdown ${this.showDownloadMenu ? 'open' : ''}">
                     <terra-button @click=${(e: Event) => this.#toggleDownloadMenu(e)}>
                         Download Options
