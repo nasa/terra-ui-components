@@ -14,6 +14,7 @@ import {
 } from '../../data-services/types.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
+import TerraInput from '../input/input.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { getBasePath } from '../../utilities/base-path.js'
@@ -53,6 +54,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-accordion': TerraAccordion,
         'terra-date-picker': TerraDatePicker,
         'terra-icon': TerraIcon,
+        'terra-input': TerraInput,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-login': TerraLogin,
         'terra-loader': TerraLoader,
@@ -88,6 +90,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     expandedVariableGroups: Set<string> = new Set()
+
+    @state()
+    variableFilterText: string = ''
 
     @state()
     touchedFields: Set<string> = new Set()
@@ -924,6 +929,17 @@ export default class TerraDataSubsetter extends TerraElement {
                     </button>
                 </div>
                 <div class="accordion-content">
+                    <terra-input
+                        label="Filter variables"
+                        placeholder="Search by variable name..."
+                        .value=${this.variableFilterText}
+                        @input=${(e: Event) => {
+                            const input = e.target as HTMLInputElement
+                            this.variableFilterText = input.value
+                            this.#handleVariableFilterChange()
+                        }}
+                        style="margin-bottom: 10px;"
+                    ></terra-input>
                     <button
                         class="reset-btn"
                         style="margin-bottom: 10px;"
@@ -935,10 +951,98 @@ export default class TerraDataSubsetter extends TerraElement {
                         ? html`<p style="color: #666; font-style: italic;">
                               No variables available for this collection.
                           </p>`
-                        : this.#renderVariableTree(tree, [])}
+                        : this.#renderVariableTree(
+                              this.#filterVariableTree(tree),
+                              []
+                          )}
                 </div>
             </terra-accordion>
         `
+    }
+
+    #filterVariableTree(tree: Record<string, any>): Record<string, any> {
+        if (!this.variableFilterText.trim()) {
+            return tree
+        }
+
+        const filterText = this.variableFilterText.toLowerCase().trim()
+
+        const filterNode = (node: Record<string, any>): Record<string, any> => {
+            const result: Record<string, any> = {}
+            for (const [key, value] of Object.entries(node)) {
+                if (value.__isLeaf) {
+                    // Check if variable name matches filter
+                    const variableName = value.__variable.name.toLowerCase()
+                    if (variableName.includes(filterText)) {
+                        result[key] = value
+                    }
+                } else {
+                    // Recursively filter children
+                    const filteredChildren = filterNode(value.__children)
+                    // Include group if it has matching children or if group name matches
+                    if (
+                        Object.keys(filteredChildren).length > 0 ||
+                        key.toLowerCase().includes(filterText)
+                    ) {
+                        result[key] = {
+                            ...value,
+                            __children: filteredChildren,
+                        }
+                    }
+                }
+            }
+            return result
+        }
+
+        return filterNode(tree)
+    }
+
+    #handleVariableFilterChange() {
+        if (!this.variableFilterText.trim()) {
+            return
+        }
+
+        const variables = this.collectionWithServices?.variables || []
+        const tree = this.#buildVariableTree(variables)
+        const filterText = this.variableFilterText.toLowerCase().trim()
+
+        // Find all groups that contain matching variables and auto-expand them
+        const groupsToExpand = new Set<string>()
+
+        const findMatchingGroups = (
+            node: Record<string, any>,
+            path: string[] = []
+        ) => {
+            for (const [key, value] of Object.entries(node)) {
+                if (value.__isLeaf) {
+                    const variableName = value.__variable.name.toLowerCase()
+                    if (variableName.includes(filterText)) {
+                        // Add all parent groups to the expand set
+                        for (let i = 0; i < path.length; i++) {
+                            const groupPath = path.slice(0, i + 1).join('/')
+                            groupsToExpand.add(groupPath)
+                        }
+                    }
+                } else {
+                    const groupPath = [...path, key].join('/')
+                    findMatchingGroups(value.__children, [...path, key])
+                    // Also check if group name matches
+                    if (key.toLowerCase().includes(filterText)) {
+                        groupsToExpand.add(groupPath)
+                    }
+                }
+            }
+        }
+
+        findMatchingGroups(tree)
+
+        // Update expanded groups
+        if (groupsToExpand.size > 0) {
+            this.expandedVariableGroups = new Set([
+                ...this.expandedVariableGroups,
+                ...groupsToExpand,
+            ])
+        }
     }
 
     #buildVariableTree(variables: Variable[]): Record<string, any> {
