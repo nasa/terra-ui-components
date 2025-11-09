@@ -1,5 +1,5 @@
 import { LitElement } from 'lit'
-import { property } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import { Environment, getEnvironment } from '../utilities/environment.js'
 import { purgeGraphQLCache } from '../lib/graphql-client.js'
 import { authService } from '../auth/auth.service.js'
@@ -88,6 +88,83 @@ export default class TerraElement extends LitElement {
     @property() lang: string
     @property() environment?: Environment = getEnvironment()
     @property() bearerToken?: string
+    @state() isVisible: boolean = false
+
+    #io?: IntersectionObserver
+
+    connectedCallback(): void {
+        super.connectedCallback()
+
+        this.#observeVisibility()
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.#io?.disconnect()
+        this.#io = undefined
+    }
+
+    #observeVisibility() {
+        if (this.#io) {
+            return
+        }
+
+        this.isVisible = this.#isComponentVisible()
+
+        if (this.isVisible) {
+            this.firstVisible()
+            return
+        }
+
+        // Component isn't visible, probably in a modal/dialog
+        // instead we'll setup an IntersectionObserver to wait for visibility
+        this.#io = new IntersectionObserver(
+            entries => {
+                if (entries.some(e => e.isIntersecting)) {
+                    // Component is visible! Call "firstVisible"
+                    this.#io?.disconnect()
+                    this.#io = undefined
+                    this.isVisible = true
+
+                    // Give dialog animations time to finish
+                    setTimeout(() => this.firstVisible(), 500)
+                }
+            },
+            { root: null, threshold: 0 }
+        )
+
+        this.#io.observe(this)
+    }
+
+    /**
+     * Called when the component is visible on the page
+     * Example: if the component is in a dialog, this will be triggered the first time the dialog opens
+     */
+    firstVisible() {
+        // no-op, components can override this
+    }
+
+    /**
+     * Check if the component is visible on the page
+     * @returns true if the component is visible, false otherwise
+     */
+    #isComponentVisible(): boolean {
+        // Check if the element is connected to the DOM
+        if (!this.isConnected) {
+            return false
+        }
+
+        // Check if the element has dimensions and is not hidden
+        const rect = this.getBoundingClientRect()
+        const style = getComputedStyle(this)
+
+        return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden'
+        )
+    }
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(

@@ -70,16 +70,14 @@
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@ctrl/tinycolor": "^4.0.2",
-    "@floating-ui/dom": "^1.5.3",
     "@lit/react": "^1.0.0",
     "@lit/task": "^1.0.0",
     "@shoelace-style/animations": "^1.1.0",
     "@shoelace-style/localize": "^3.1.2",
     "@shoelace-style/shoelace": "^2.15.0",
+    "ag-grid-community": "^34.2.0",
     "apollo3-cache-persist": "^0.15.0",
     "colormap": "^2.3.2",
-    "composed-offset-position": "^0.0.4",
     "date-fns": "^3.6.0",
     "esbuild-plugin-polyfill-node": "^0.3.0",
     "fuse.js": "^7.0.0",
@@ -89,12 +87,10 @@
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "lit": "^3.0.0",
-    "lit-flatpickr": "^0.4.1",
     "localforage": "^1.10.0",
     "nouislider": "^15.7.1",
     "ol": "^10.6.1",
-    "plotly.js-dist-min": "^2.30.1",
-    "qr-creator": "^1.0.0"
+    "plotly.js-dist-min": "^2.30.1"
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
