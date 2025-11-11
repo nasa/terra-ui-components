@@ -4,12 +4,12 @@ import { Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import OSM from 'ol/source/OSM.js'
 import type GeoTIFF from 'ol/source/GeoTIFF.js'
-import Draw from 'ol/interaction/Draw.js';
-import VectorSource from 'ol/source/Vector.js';
-import Point from 'ol/geom/Point.js';
-import { getLength } from 'ol/sphere.js';
-import Feature from 'ol/Feature.js';
-import VectorLayer from 'ol/layer/Vector.js';
+import Draw from 'ol/interaction/Draw.js'
+import VectorSource from 'ol/source/Vector.js'
+import Point from 'ol/geom/Point.js'
+import { getLength } from 'ol/sphere.js'
+import Feature from 'ol/Feature.js'
+import VectorLayer from 'ol/layer/Vector.js'
 import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -54,13 +54,14 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() pixelCoordinates: string = 'N/A'
     @state() metadata: { [key: string]: string } = {}
     @state() toggleState = false
+    @state() minimized = false
 
     #controller: TimeAvgMapController
     #map: Map | null = null
     #gtLayer: WebGLTileLayer | null = null
-    #vectorSource: VectorSource | null = null;
-    #vectorLayer: VectorLayer | null = null;
-    #draw: Draw | null = null;
+    #vectorSource: VectorSource | null = null
+    #vectorLayer: VectorLayer | null = null
+    #draw: Draw | null = null
 
     _authController = new AuthController(this)
 
@@ -338,126 +339,191 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     #getNumberOfPoints(line: any) {
-        const length = getLength(line); // Getting the length of the line between data points in meters
-        let pointCount;
-        // Splitting
+        const length = getLength(line) // Getting the length of the line between data points in meters
+        let pointCount
+        /*
+
+        Determines how many equally spaced points should be sampled along the line.
+
+        Logic:
+            - For short lines (≤ 100 meters): sample approximately every 10 meters.
+            - For long lines (> 100 meters): sample approximately every 60 kilometers.
+
+        Examples:
+        Suppose the length of the line is 50 meters then there will be a total of 5 points (50/10)
+
+        Suppose the length of the line is 2,472,280 meters then there will be ~41 points
+
+        pointCount = 2472280/1000 = 2472.28 km
+        pointCount = 2472.28/ 60 = 41.20466
+
+        There will be ~41 total points
+        */
         if (length > 100) {
-            pointCount = (length / 1000) / 60;
+            // Convert meters to km and sample roughly every 60 km
+            pointCount = (length / 1000) / 60
         } else {
-            pointCount = length / 10;
+            // For shorter lines, sample every 10 meters
+            pointCount = length / 10
         }
-        return Math.max(2, Math.round(pointCount)); // Always at least 2
+        return Math.max(2, Math.round(pointCount)) // Always at least 2
     }
     #quantizeLineString(geo: any) {
-        const numPoints = this.#getNumberOfPoints(geo);
-        const points = [];
-        for (let i = 0; i <= numPoints; i++) {
-            const fraction = i / numPoints; // Calculates how far you are along the full line 
 
-            points.push(geo.getCoordinateAt(fraction));
+        /*
+
+        Breaks a drawn line into evenly spaced points.
+    
+        Uses the number of points calculated from #getNumberOfPoints(line)
+        to split the line into equal segments.
+    
+        Example:
+
+        If numPoints = 4, the fractions along the line will be:
+            i = 0  → 0.0   (start)
+            i = 1  → 0.25  (25% along)
+            i = 2  → 0.5   (middle)
+            i = 3  → 0.75  (75% along)
+            i = 4  → 1.0   (end)
+    
+        Returns an array of coordinates representing these evenly spaced points.
+        */
+
+        const numPoints = this.#getNumberOfPoints(geo)
+        const points = [] // Stores each coordinate
+        for (let i = 0; i <= numPoints; i++) {
+            const fraction = i / numPoints // Calculates how far you are along the full line 
+
+            points.push(geo.getCoordinateAt(fraction)) // Get coordinate at this position along the line
         }
-        return points;
+        return points // Return evenly spaced coordinates
+    }
+
+    #minifyMapPopover() {
+        this.minimized = !this.minimized
+
+    }
+
+    #cleanUpMap() {
+        this.toggleState = false
+        if (this.#map && this.#draw && this.#vectorLayer) {
+            this.#map.removeInteraction(this.#draw)
+            this.#map.removeLayer(this.#vectorLayer)
+        }
+
+        // Clear vector features
+        this.#vectorSource?.clear()
+
+        // Clean up references
+        this.#draw = null
+        this.#vectorLayer = null
+        this.#vectorSource = null
+    }
+
+    #getRasterValueAtCoordinate(coord: [number, number]): number {
+        if (!this.#map || !this.#gtLayer) return NaN
+
+        const pixel = this.#map.getPixelFromCoordinate(coord)
+        if (!pixel) return NaN
+
+        const data = this.#gtLayer.getData(pixel)
+        if (!data) return NaN
+
+        if (data instanceof Uint8Array || data instanceof Uint8ClampedArray || data instanceof Float32Array) {
+            return !isNaN(data[0]) ? data[0] : NaN
+        }
+
+        if (data instanceof DataView) {
+            const val = data.getFloat32(0, true)
+            return !isNaN(val) ? val : NaN
+        }
+
+        return NaN
     }
 
     #handleCheckBoxToggle(e: any) {
         var isToggled = e.detail
-        this.toggleState = isToggled
         if (isToggled) { // If the button is toggled, then the pixel value interpolation and scatter plotting logic will take effect
-            this.#vectorSource = new VectorSource({ wrapX: false });
+            this.toggleState = isToggled
+            this.#vectorSource = new VectorSource({ wrapX: false })
             this.#vectorLayer = new VectorLayer({
                 source: this.#vectorSource,
-            });
+            })
 
             this.#draw = new Draw({
                 source: this.#vectorSource,
                 type: 'LineString',
-            });
+            })
             if (this.#map) {
                 this.#map.addLayer(this.#vectorLayer)
                 this.#map.addInteraction(this.#draw)
 
                 this.#draw.on('drawend', (event: any) => {
-                    const line = event.feature.getGeometry(); // Getting line geometry
+                    const line = event.feature.getGeometry() // Getting line geometry
 
-                    const coords = this.#quantizeLineString(line); // Break line into chunks of points
+                    const coords = this.#quantizeLineString(line) // Break line into chunks of points
 
                     // Create point features for each sampled location
                     const pointFeatures = coords.map(coord => new Feature({
                         geometry: new Point(coord),
-                    }));
-
-                    this.#vectorSource?.addFeatures(pointFeatures); // Each point will show up in the UI
+                    }))
+                    this.#vectorSource?.addFeatures(pointFeatures) // Each point will show up in the UI
 
                     // Obtaining geotiff data values by using list of coordinates to grab the geotiff layers corresponding data value
-                    const rasterValues = coords.map(coord => {
-                        const pixel = this.#map?.getPixelFromCoordinate(coord);
-                        if (!pixel) return NaN;
+                    const rasterValues = coords.map(coord => this.#getRasterValueAtCoordinate(coord))
+                    const xValues = coords.map((_, index) => index) //Mapping indexes to each coordinate for the x-axis of the scatter plot
 
-                        const data = this.#gtLayer?.getData(pixel);
-                        if (!data) return NaN;
+                    // Returns a list for formatted lon,lat, and data value to be used by hover tool tip
+                    const lonLatCoords = coords.map(coord => {
+                        const [lon, lat] = toLonLat(coord)
+                        const val = this.#getRasterValueAtCoordinate(coord)
+                        const rastervalue = !isNaN(val) ? val.toExponential(4) : 'N/A'
+                        return [parseFloat(lon.toFixed(2)), parseFloat(lat.toFixed(2)), rastervalue]
+                    })
 
-                        if (data instanceof Uint8Array || data instanceof Uint8ClampedArray || data instanceof Float32Array) {
-                            return !isNaN(data[0]) ? data[0] : NaN;
-                        }
-
-                        if (data instanceof DataView) {
-                            const val = data.getFloat32(0, true);
-                            return !isNaN(val) ? val : NaN;
-                        }
-
-                        return NaN;
-                    });
-
-                    const xValues = coords.map((_, index) => index); //Mapping indexes to each coordinate for the x-axis of the scatter plot
+                    // Formatting hover tool tip over each point that displays point index, data value, and coordinate
+                    const hoverTexts = lonLatCoords.map((coord, idx) => {
+                        const x = idx
+                        const value = coord[2]
+                        return `Index: ${x}<br>Value: ${value}<br>Coordinates: [${coord[0]}, ${coord[1]}]`
+                    })
 
                     // Configure plot data for plot component
                     this.plotData = [
                         {
                             x: xValues,
                             y: rasterValues,
+                            text: hoverTexts,
+                            hoverinfo: 'text',
                             type: 'scatter',
                             mode: 'lines+markers',
-                            line: { color: 'blue' },
-                            marker: { size: 6 }
+                            line: { color: 'blue' }
                         }
-                    ];
+                    ]
 
-                    // Configure layout for plot component
                     this.layout = {
-                        title: 'Data Values Along Line',
+                        title: 'Data Profile',
                         xaxis: {
                             title: 'Point Index',
                         },
                         yaxis: {
-                            title: `Data value (${this.metadata["units"]})`,
+                            title: `Cloud Coverage (${this.metadata["units"]})`,
                             tickformat: '.2e'
-                        }
-                    };
-                });
+                        },
+                    }
+
+
+                })
             }
         }
-        else { 
-            // Clean up if check box is toggled off
-            // Safely remove interaction and layer if they exist
-            if (this.#map && this.#draw && this.#vectorLayer) {
-                this.#map.removeInteraction(this.#draw);
-                this.#map.removeLayer(this.#vectorLayer);
-            }
-
-            // Clear vector features
-            this.#vectorSource?.clear();
-
-            // Clean up references
-            this.#draw = null;
-            this.#vectorLayer = null;
-            this.#vectorSource = null;
-
+        else {
+            this.#cleanUpMap()
         }
     }
     render() {
         return html`
-            <div class="toolbar-container">
-                ${cache(
+        <div class="toolbar-container">
+            ${cache(
             this.catalogVariable
                 ? html`<terra-plot-toolbar
                               dataType="geotiff"
@@ -476,42 +542,56 @@ export default class TerraTimeAverageMap extends TerraElement {
                           ></terra-plot-toolbar>`
                 : html`<div class="spacer"></div>`
         )}
-            </div>
+        </div>
 
-            <div class="map-container">
-                <div id="map">
-                    <div id="settings">
-                        <div>
-                            <strong>Value:</strong>
-                            <span id="pixelValue">${this.pixelValue}</span>
-                        </div>
+        <div class="map-container">
+            <div id="map">
+                <div id="settings">
+                    <div>
+                        <strong>Value:</strong>
+                        <span id="pixelValue">${this.pixelValue}</span>
+                    </div>
 
-                        <div>
-                            <strong>Coordinate: </strong>
-                            <span id="cursorCoordinates"
-                                >${this.pixelCoordinates}</span
-                            >
-                        </div>
+                    <div>
+                        <strong>Coordinate: </strong>
+                        <span id="cursorCoordinates">${this.pixelCoordinates}</span>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <dialog
-                ?open=${this.#controller?.jobStatusTask?.status ===
-            TaskStatus.PENDING}
-            >
-                <terra-loader indeterminate variant="orbit"></terra-loader>
-                <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
-                <terra-button @click=${this.#abortJobStatusTask}>Cancel</terra-button>
-            </dialog>
-
-            ${this.toggleState && this.plotData && Object.keys(this.plotData).length && this.layout && Object.keys(this.layout).length
-                ? html`<terra-plot
+         <!-- Floating Popover for Plot -->
+                ${this.toggleState &&
+                this.plotData &&
+                Object.keys(this.plotData).length &&
+                this.layout &&
+                Object.keys(this.layout).length
+                ? html`
+                <div class="plot-popover ${this.minimized ? 'minimized' : ''}">
+                <terra-plot
+                    style="display: ${this.minimized ? 'none' : 'block'}"
                     .data=${this.plotData}
-                    plotTitle="Raster Profile"
-                    .layout=${this.layout}
-                ></terra-plot>`
+                    plotTitle= "Data Profile"
+                    .layout=${this.layout}>
+                </terra-plot>
+
+                <terra-button class="minify-btn" @click=${this.#minifyMapPopover}>
+                    ${this.minimized ? 'Restore' : 'Minimize'}
+                </terra-button>
+                </div>
+                    `
                 : null}
-        `
+
+        <dialog
+            ?open=${this.#controller?.jobStatusTask?.status === TaskStatus.PENDING}
+        >
+            <terra-loader indeterminate variant="orbit"></terra-loader>
+            <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
+            <terra-button @click=${this.#abortJobStatusTask}>Cancel</terra-button>
+        </dialog>
+
+
+    `
     }
+
 }

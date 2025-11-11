@@ -480,7 +480,7 @@ export default class TerraPlotToolbar extends TerraElement {
           type="checkbox"
           @change=${this.#showCheckBoxToggle}
         />
-        <slot>Draw Line</slot>
+        <slot>Draw Profile</slot>
         </label>
       </label>
                 
