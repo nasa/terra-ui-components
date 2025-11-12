@@ -71,6 +71,48 @@ export const GET_CMR_SEARCH_RESULTS_VARIABLES = gql`
     }
 `
 
+export const GET_CMR_GRANULES_BY_ENTRY_ID = gql`
+    query Collections(
+        $collectionEntryId: String!
+        $search: [String]
+        $limit: Int
+        $offset: Int
+        $sortKey: String
+        $temporal: String
+        $boundingBox: [String]
+        $cloudCover: JSON
+    ) {
+        collections(params: { entryId: [$collectionEntryId] }) {
+            items {
+                conceptId
+                granules(
+                    params: {
+                        limit: $limit
+                        offset: $offset
+                        sortKey: [$sortKey]
+                        readableGranuleName: $search
+                        options: { readableGranuleName: { pattern: true } }
+                        temporal: $temporal
+                        boundingBox: $boundingBox
+                        cloudCover: $cloudCover
+                    }
+                ) {
+                    count
+                    items {
+                        conceptId
+                        dataGranule
+                        title
+                        timeEnd
+                        timeStart
+                        relatedUrls
+                        cloudCover
+                    }
+                }
+            }
+        }
+    }
+`
+
 export const GET_SEARCH_KEYWORDS = gql`
     query {
         aesirKeywords {

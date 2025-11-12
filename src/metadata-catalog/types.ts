@@ -1,9 +1,22 @@
 import type { ReactiveControllerHost } from 'lit'
 import type { Variable } from '../components/browse-variables/browse-variables.types.js'
+import type { MapEventDetail } from '../components/map/type.js'
 
 export type SearchOptions = {
     signal?: AbortSignal
     bearerToken?: string
+    limit?: number
+    offset?: number
+    sortBy?: string
+    sortDirection?: string
+    search?: string
+    startDate?: string
+    endDate?: string
+    location?: MapEventDetail | null
+    cloudCover?: {
+        min?: number
+        max?: number
+    }
 }
 
 export interface MetadataCatalogInterface {
@@ -17,6 +30,86 @@ export interface MetadataCatalogInterface {
         type: 'collection' | 'variable' | 'all',
         options?: SearchOptions
     ): Promise<Array<CmrSearchResult>>
+
+    getGranules(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CmrGranulesResponse>
+
+    getSamplingOfGranules(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CmrSamplingOfGranulesResponse>
+
+    getCloudCoverRange(
+        collectionEntryId: string,
+        options?: SearchOptions
+    ): Promise<CloudCoverRange | null>
+}
+
+export type CmrGranulesResponse = {
+    collections?: {
+        items: Array<{
+            conceptId: string
+            granules: {
+                count: number
+                items: Array<CmrGranule>
+            }
+        }>
+    }
+}
+
+export type CmrSamplingOfGranulesResponse = {
+    collections: {
+        items: Array<CmrSamplingOfGranules>
+    }
+}
+
+export type CmrSamplingOfGranules = {
+    conceptId: string
+    firstGranules: {
+        count: number
+        items: Array<{
+            dataGranule: CmrGranuleDataGranule
+        }>
+    }
+    lastGranules: {
+        count: number
+        items: Array<{
+            dataGranule: CmrGranuleDataGranule
+        }>
+    }
+}
+
+export type CloudCoverRange = {
+    min: number
+    max: number
+}
+
+export type CmrGranule = {
+    conceptId: string
+    dataGranule: CmrGranuleDataGranule
+    title: string
+    timeEnd: string
+    timeStart: string
+    relatedUrls: Array<{
+        type: string
+        url: string
+    }>
+    cloudCover: any
+}
+
+export type CmrGranuleDataGranule = {
+    archiveAndDistributionInformation: Array<ArchiveAndDistributionInformation>
+    productionDateTime: string
+}
+
+export type ArchiveAndDistributionInformation = {
+    name: string
+    size: number
+    sizeUnit: string
+    sizeInBytes?: number
+    files?: Array<ArchiveAndDistributionInformation>
 }
 
 export type CmrCollectionCitationsResponse = {
