@@ -156,6 +156,7 @@ export default class TerraDataSubsetter extends TerraElement {
     jobIdChanged() {
         if (this.jobId) {
             this.controller.fetchJobByID(this.jobId)
+            this.dataAccessMode = 'subset'
         }
     }
 
@@ -173,6 +174,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
         if (this.jobId) {
             this.controller.fetchJobByID(this.jobId)
+            this.dataAccessMode = 'subset'
         }
 
         document.addEventListener('click', this.#handleClickOutside.bind(this))
@@ -231,8 +233,13 @@ export default class TerraDataSubsetter extends TerraElement {
                         : nothing}
                 </div>
 
-                <div class="section">${this.#renderDataAccessModeSelection()}</div>
-
+                ${!this.jobId
+                    ? html`
+                          <div class="section">
+                              ${this.#renderDataAccessModeSelection()}
+                          </div>
+                      `
+                    : nothing}
                 ${this.dataAccessMode === 'original'
                     ? html`
                           <div class="section">
