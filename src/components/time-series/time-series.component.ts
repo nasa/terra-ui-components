@@ -227,7 +227,7 @@ export default class TerraTimeSeries extends TerraElement {
                               .variableEntryId=${this.variableEntryId}
                               .showCitation=${this.showCitation}
                           >
-                            <slot name="help-links" slot="help-links"></slot>
+                              <slot name="help-links" slot="help-links"></slot>
                           </terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}

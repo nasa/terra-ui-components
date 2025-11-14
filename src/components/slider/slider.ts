@@ -1,12 +1,12 @@
-import TerraSlider from './slider.component.js';
+import TerraSlider from './slider.component.js'
 
-export * from './slider.component.js';
-export default TerraSlider;
+export * from './slider.component.js'
+export default TerraSlider
 
-TerraSlider.define('terra-slider');
+TerraSlider.define('terra-slider')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-slider': TerraSlider;
+        'terra-slider': TerraSlider
     }
 }

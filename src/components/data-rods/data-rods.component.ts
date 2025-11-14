@@ -125,7 +125,12 @@ export default class TerraDataRods extends TerraElement {
                 show-citation=${true}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             >
-              <li slot="help-links"><a href="https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series">User Guide</a></li>
+                <li slot="help-links">
+                    <a
+                        href="https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series"
+                        >User Guide</a
+                    >
+                </li>
             </terra-time-series>
 
             <terra-date-range-slider
