@@ -3,6 +3,7 @@ meta:
     title: Slider
     description:
 layout: component
+sidebarSection: Elements
 ---
 
 ```html:preview

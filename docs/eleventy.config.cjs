@@ -17,6 +17,8 @@ const prettier = require('./_utilities/prettier.cjs')
 const scrollingTables = require('./_utilities/scrolling-tables.cjs')
 const typography = require('./_utilities/typography.cjs')
 const replacer = require('./_utilities/replacer.cjs')
+const matter = require('gray-matter')
+const { globbySync } = require('globby')
 
 const assetsDir = 'assets'
 const cdndir = 'cdn'
@@ -31,6 +33,42 @@ module.exports = function (eleventyConfig) {
     eleventyConfig.addGlobalData('baseUrl', 'https://disc.gsfc.nasa.gov/') // the production URL
     eleventyConfig.addGlobalData('layout', 'default') // make 'default' the default layout
     eleventyConfig.addGlobalData('toc', true) // enable the table of contents
+    // Read component markdown files to get sidebarSection from front matter
+    const componentSectionMap = {}
+    const componentMarkdownFiles = globbySync('pages/components/*.md')
+    componentMarkdownFiles.forEach(file => {
+        const content = fs.readFileSync(file, 'utf8')
+        const { data } = matter(content)
+        if (data.sidebarSection) {
+            // Extract component name from filename (e.g., "avatar.md" -> "terra-avatar")
+            const componentName = path.basename(file, '.md')
+            componentSectionMap[`terra-${componentName}`] = data.sidebarSection
+        }
+    })
+
+    // Group components by sidebar section
+    const componentsBySection = {}
+    allComponents.forEach(component => {
+        // Get section from markdown front matter, default to "Components"
+        const section = componentSectionMap[component.tagName] || 'Components'
+        if (!componentsBySection[section]) {
+            componentsBySection[section] = []
+        }
+        componentsBySection[section].push(component)
+    })
+
+    // Sort components within each section
+    Object.keys(componentsBySection).forEach(section => {
+        componentsBySection[section].sort((a, b) => {
+            if (a.name < b.name) return -1
+            if (a.name > b.name) return 1
+            return 0
+        })
+    })
+
+    // Define the order of sections in the sidebar
+    const sidebarSectionOrder = ['Elements', 'Components']
+
     eleventyConfig.addGlobalData('meta', {
         title: 'Terra UI Components',
         description:
@@ -38,6 +76,8 @@ module.exports = function (eleventyConfig) {
         image: 'images/og-image.png',
         version: customElementsManifest.package.version,
         components: allComponents,
+        componentsBySection,
+        sidebarSectionOrder,
         cdndir,
         npmdir,
     })

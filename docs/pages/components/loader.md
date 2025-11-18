@@ -3,6 +3,7 @@ meta:
     title: Loader
     description: Loaders are used to indicate there is content that is loading.
 layout: component
+sidebarSection: Elements
 ---
 
 ```html:preview
