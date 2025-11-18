@@ -27,6 +27,11 @@ export { default as TerraPlotToolbar } from './components/plot-toolbar/plot-tool
 export { default as TerraDataAccess } from './components/data-access/data-access.js'
 export { default as TerraSlider } from './components/slider/slider.js'
 export { default as TerraInput } from './components/input/input.js'
+export { default as TerraDropdown } from './components/dropdown/dropdown.js';
+export { default as TerraPopup } from './components/popup/popup.js';
+export { default as TerraMenu } from './components/menu/menu.js';
+export { default as TerraMenuItem } from './components/menu-item/menu-item.js';
+export { default as TerraAvatar } from './components/avatar/avatar.js';
 /* plop:component */
 
 // Utilities

@@ -211,6 +211,10 @@
 })()
 
 //
+// Top navigation dropdown menu item clicks (now handled by terra-dropdown component)
+//
+
+//
 // Open details when printing
 //
 ;(() => {

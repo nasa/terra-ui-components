@@ -23,6 +23,8 @@
     --docs-content-vertical-spacing: 2rem;
     --docs-search-overlay-background: rgb(0 0 0 / 0.2);
     --docs-skip-to-main-width: 200px;
+    --docs-top-nav-height: 85px;
+    --docs-top-nav-bg: var(--terra-color-carbon-80);
 }
 
 /* Light theme */
@@ -727,11 +729,160 @@ pre:hover .copy-code-button,
     );
 }
 
+/* Top Navigation Bar */
+#top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--docs-top-nav-height);
+    background-color: var(--docs-top-nav-bg);
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    border-bottom: solid var(--docs-border-width) var(--docs-border-color);
+}
+
+.terra-theme-dark #top-nav {
+    background-color: var(--terra-color-carbon-20);
+}
+
+.top-nav__left {
+    display: flex;
+    align-items: center;
+}
+
+.top-nav__logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    gap: 0.75rem;
+}
+
+.top-nav__logo img {
+    width: 40px;
+    height: auto;
+    display: block;
+}
+
+.top-nav__logo terra-icon {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.top-nav__title {
+    font-size: var(--terra-font-size-large);
+    font-weight: var(--terra-font-weight-semibold);
+    color: white;
+}
+
+.top-nav__center {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.top-nav__center sl-dropdown terra-button::part(base) {
+    color: white;
+    font-size: var(--terra-font-size-medium);
+}
+
+.top-nav__center sl-dropdown terra-button:hover::part(base) {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.top-nav__right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.top-nav__search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: var(--docs-border-radius);
+    transition: background-color 150ms ease;
+}
+
+.top-nav__search:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.terra-theme-dark .top-nav__search:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.top-nav__icon-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    text-decoration: none;
+    border-radius: var(--docs-border-radius);
+    transition: background-color 150ms ease;
+}
+
+.top-nav__icon-link:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.terra-theme-dark .top-nav__icon-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.top-nav__right sl-dropdown terra-button::part(base) {
+    color: white;
+}
+
+.top-nav__right sl-dropdown terra-button:hover::part(base) {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Fix dropdown menu items to be clickable */
+.top-nav__center sl-menu sl-menu-item {
+    padding: 0;
+}
+
+.top-nav__center sl-menu sl-menu-item a,
+.top-nav__center sl-menu sl-menu-item a:visited {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+}
+
+@media screen and (max-width: 900px) {
+    #top-nav {
+        padding: 0 1rem;
+    }
+
+    .top-nav__center {
+        display: none;
+    }
+
+    .top-nav__title {
+        font-size: var(--terra-font-size-medium);
+    }
+}
+
 /* Sidebar */
 #sidebar {
     position: fixed;
     flex: 0;
-    top: 0;
+    top: var(--docs-top-nav-height);
     left: 0;
     bottom: 0;
     z-index: 20;
@@ -855,6 +1006,7 @@ main {
     padding: var(--docs-content-vertical-spacing) var(--docs-content-padding)
         calc(var(--docs-content-vertical-spacing) * 2) var(--docs-content-padding);
     margin-left: var(--docs-sidebar-width);
+    margin-top: var(--docs-top-nav-height);
 }
 
 .sidebar-open .content {
@@ -910,8 +1062,8 @@ main {
 
 .content__toc ul {
     position: sticky;
-    top: 5rem;
-    max-height: calc(100vh - 6rem);
+    top: calc(var(--docs-top-nav-height) + 1rem);
+    max-height: calc(100vh - var(--docs-top-nav-height) - 2rem);
     font-size: var(--terra-font-size-small);
     line-height: 1.33;
     border-left: solid 1px var(--terra-color-carbon-20);
@@ -1021,7 +1173,7 @@ main {
     display: none;
     position: fixed;
     z-index: 30;
-    top: 0.25rem;
+    top: calc(var(--docs-top-nav-height) + 0.25rem);
     left: 0.25rem;
     height: auto;
     width: auto;
@@ -1063,7 +1215,7 @@ html.sidebar-open #menu-toggle {
 /* Skip to main content */
 #skip-to-main {
     position: fixed;
-    top: 0.25rem;
+    top: calc(var(--docs-top-nav-height) + 0.25rem);
     left: calc(50% - var(--docs-skip-to-main-width) / 2);
     z-index: 100;
     width: var(--docs-skip-to-main-width);
@@ -1075,17 +1227,9 @@ html.sidebar-open #menu-toggle {
     padding: 0.5rem;
 }
 
-/* Icon toolbar */
+/* Icon toolbar - now integrated into top nav, hide old one */
 #icon-toolbar {
-    display: flex;
-    position: fixed;
-    top: 0;
-    right: 1rem;
-    z-index: 10;
-    background: var(--terra-color-carbon-80);
-    border-bottom-left-radius: calc(var(--docs-border-radius) * 2);
-    border-bottom-right-radius: calc(var(--docs-border-radius) * 2);
-    padding: 0.125rem 0.25rem;
+    display: none;
 }
 
 #icon-toolbar button,

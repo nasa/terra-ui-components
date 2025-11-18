@@ -102,6 +102,19 @@
     --terra-icon-large: 2.2rem; /* 68px */
     --terra-icon-x-large: 3rem; /* 76px */
 
+    /* Avatar sizes */
+    --terra-avatar-size-small: 2rem; /* 32px */
+    --terra-avatar-size-medium: 2.5rem; /* 40px */
+    --terra-avatar-size-large: 3.5rem; /* 56px */
+
+    /* Avatar colors */
+    --terra-avatar-background-color: var(--terra-color-carbon-40);
+    --terra-avatar-color: var(--terra-color-spacesuit-white);
+
+    /* Avatar typography */
+    --terra-avatar-font-family: var(--terra-font-family--inter);
+    --terra-avatar-font-weight: var(--terra-font-weight-normal);
+
     /*
     * Theme Tokens
     */
