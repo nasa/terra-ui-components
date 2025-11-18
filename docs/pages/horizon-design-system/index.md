@@ -47,19 +47,21 @@ The theme is automatically applied to `:root`, so all CSS variables are availabl
 
 ### Dark Mode
 
-For dark mode support, also import the dark theme:
+The `horizon.css` theme file includes both light and dark themes. Dark mode is automatically enabled when the user's system preference is set to dark mode, or you can manually control it with the `terra-theme-dark` class:
 
 ```html
-<link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon-dark.css"
-/>
-```
+<!-- Automatic dark mode (based on system preference) -->
+<html>
+    ...
+</html>
 
-Then apply the `terra-theme-dark` class to activate dark mode:
-
-```html
+<!-- Manual dark mode override -->
 <html class="terra-theme-dark">
+    ...
+</html>
+
+<!-- Force light mode -->
+<html class="terra-theme-horizon">
     ...
 </html>
 ```

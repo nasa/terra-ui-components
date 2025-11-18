@@ -1,18 +1,22 @@
 import { css } from 'lit'
 
 export default css`
+    :host {
+        display: block;
+    }
+
     .chip {
         display: inline-flex;
         flex-direction: row;
-        background-color: var(--terra-color-carbon-5);
-        border: 1.5px solid var(--terra-color-nasa-blue);
+        background-color: var(--terra-chip-background-color);
+        border: var(--terra-chip-border-width) solid var(--terra-chip-border-color);
         cursor: default;
         border-radius: var(--terra-border-radius-medium);
         padding: 0;
-        margin: 5px;
-        color: var(--terra-color-carbon-50);
-        font-family: var(--terra-font-family--inter);
-        font-weight: var(--terra-font-weight-bold);
+        margin: var(--terra-chip-margin);
+        color: var(--terra-chip-color);
+        font-family: var(--terra-chip-font-family);
+        font-weight: var(--terra-chip-font-weight);
         white-space: nowrap;
         align-items: center;
         vertical-align: middle;
@@ -21,7 +25,7 @@ export default css`
     }
 
     .chip:hover {
-        color: var(--terra-color-carbon-90);
+        color: var(--terra-chip-color-hover);
     }
 
     .chip:focus {
@@ -31,19 +35,19 @@ export default css`
 
     .chip--small {
         height: auto;
-        min-height: 1.375rem;
+        min-height: var(--terra-chip-height-small);
         font-size: var(--terra-font-size-x-small);
     }
 
     .chip--medium {
         height: auto;
-        min-height: 1.875rem;
+        min-height: var(--terra-chip-height-medium);
         font-size: var(--terra-font-size-small);
     }
 
     .chip--large {
         height: auto;
-        min-height: 2.5rem;
+        min-height: var(--terra-chip-height-large);
         font-size: var(--terra-font-size-large);
     }
 
@@ -56,26 +60,26 @@ export default css`
     }
 
     .chip-content--small {
-        padding-left: 8px;
-        padding-right: 8px;
+        padding-left: var(--terra-chip-padding-small);
+        padding-right: var(--terra-chip-padding-small);
     }
 
     .chip-content--medium {
-        padding-left: 12px;
-        padding-right: 12px;
+        padding-left: var(--terra-chip-padding-medium);
+        padding-right: var(--terra-chip-padding-medium);
     }
 
     .chip-content--large {
-        padding-left: 15px;
-        padding-right: 15px;
+        padding-left: var(--terra-chip-padding-large);
+        padding-right: var(--terra-chip-padding-large);
     }
 
     .chip-svg {
         cursor: pointer;
         height: auto;
-        fill: var(--terra-color-carbon-50);
+        fill: var(--terra-chip-icon-color);
         display: inline-block;
-        transition: fill 200ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
+        transition: var(--terra-chip-transition);
         user-select: none;
         flex-shrink: 0;
     }
@@ -102,7 +106,7 @@ export default css`
     }
 
     .chip:hover .chip-svg {
-        fill: var(--terra-color-carbon-90);
+        fill: var(--terra-chip-icon-color-hover);
     }
 
     .chip-close {

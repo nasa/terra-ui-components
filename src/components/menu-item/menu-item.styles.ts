@@ -15,12 +15,12 @@ export default css`
         position: relative;
         display: flex;
         align-items: stretch;
-        font-family: var(--terra-font-sans);
+        font-family: var(--terra-menu-item-font-family);
         font-size: var(--terra-font-size-medium);
         font-weight: var(--terra-font-weight-normal);
         line-height: var(--terra-line-height-normal);
         letter-spacing: var(--terra-letter-spacing-normal);
-        color: var(--terra-color-neutral-700);
+        color: var(--terra-menu-item-color);
         padding: var(--terra-spacing-2x-small) var(--terra-spacing-2x-small);
         transition: var(--terra-transition-fast) fill;
         user-select: none;
@@ -40,11 +40,11 @@ export default css`
         cursor: wait;
     }
 
-    .menu-item.menu-item--loading *:not(sl-spinner) {
+    .menu-item.menu-item--loading *:not(terra-loader) {
         opacity: 0.5;
     }
 
-    .menu-item--loading sl-spinner {
+    .menu-item--loading terra-loader {
         --indicator-color: currentColor;
         --track-width: 1px;
         position: absolute;
@@ -105,14 +105,14 @@ export default css`
 
     :host(:hover:not([aria-disabled='true'], :focus-visible)) .menu-item,
     .menu-item--submenu-expanded {
-        background-color: var(--terra-color-neutral-100);
-        color: var(--terra-color-neutral-1000);
+        background-color: var(--terra-menu-item-background-color-hover);
+        color: var(--terra-menu-item-color-hover);
     }
 
     :host(:focus-visible) .menu-item {
         outline: none;
-        background-color: var(--terra-color-primary-600);
-        color: var(--terra-color-neutral-0);
+        background-color: var(--terra-menu-item-background-color-focus);
+        color: var(--terra-menu-item-color-focus);
         opacity: 1;
     }
 
@@ -132,13 +132,13 @@ export default css`
     }
 
     /* Add elevation and z-index to submenus */
-    sl-popup::part(popup) {
+    terra-popup::part(popup) {
         box-shadow: var(--terra-shadow-large);
         z-index: var(--terra-z-index-dropdown);
         margin-left: var(--submenu-offset);
     }
 
-    .menu-item--rtl sl-popup::part(popup) {
+    .menu-item--rtl terra-popup::part(popup) {
         margin-left: calc(-1 * var(--submenu-offset));
     }
 
@@ -150,7 +150,7 @@ export default css`
         }
     }
 
-    ::slotted(sl-menu) {
+    ::slotted(terra-menu) {
         max-width: var(--auto-size-available-width) !important;
         max-height: var(--auto-size-available-height) !important;
     }

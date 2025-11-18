@@ -2,8 +2,8 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --arrow-color: var(--terra-color-carbon-black);
-        --arrow-size: 6px;
+        --arrow-color: var(--terra-popup-arrow-color);
+        --arrow-size: var(--terra-popup-arrow-size);
 
         /*
         * These properties are computed to account for the arrow's dimensions after being rotated 45º. The constant
@@ -46,7 +46,7 @@ export default css`
 
     .popup-hover-bridge {
         position: fixed;
-        z-index: calc(var(--sl-z-index-dropdown) - 1);
+        z-index: calc(var(--terra-z-index-dropdown) - 1);
         top: 0;
         right: 0;
         bottom: 0;

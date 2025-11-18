@@ -2,9 +2,6 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --terra-dialog-backdrop-color: rgba(0, 0, 0, 0.5);
-        --terra-dialog-z-index: 1000;
-
         display: block;
     }
 
@@ -17,12 +14,12 @@ export default css`
         bottom: auto;
         width: 0;
         height: 0;
-        z-index: calc(var(--terra-dialog-z-index) - 1);
+        z-index: calc(var(--terra-z-index-dialog) - 1);
         /* TODO: fade in the backdrop */
     }
 
     .dialog-backdrop.visible {
-        background-color: var(--terra-dialog-backdrop-color);
+        background-color: var(--terra-overlay-background-color);
     }
 
     .dialog-backdrop.clickable {
@@ -45,7 +42,7 @@ export default css`
         padding: 0;
         position: fixed;
         inset: 0px;
-        z-index: var(--terra-dialog-z-index);
+        z-index: var(--terra-z-index-dialog);
         max-width: 90vw;
     }
 

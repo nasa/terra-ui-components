@@ -133,29 +133,39 @@ The built-in dark theme uses an inverted color scale so, if you're using design 
 
 The dark theme works by taking the light theme's [color tokens](/tokens/color) and "flipping" the scale so 100 becomes 900, 200 becomes 800, 300 becomes 700, etc. Next, the luminance of each primitive was fine-tuned to avoid true black, which is often undesirable in dark themes, and provide a richer experience. The result is a custom dark palette that complements the light theme and makes it easy to offer light and dark modes with minimal effort.
 
-To install the dark theme, add the following to the `<head>` section of your page.
+:::tip
+The `horizon.css` theme file contains both light and dark themes. Dark mode is automatically activated based on the user's system preference (`prefers-color-scheme: dark`), or you can manually control it with the `terra-theme-dark` class.
+:::
+
+To install the theme (which includes both light and dark modes), add the following to the `<head>` section of your page.
 
 ```html
 <link
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/dark.css"
+    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.css"
 />
 ```
 
-To activate the theme, apply the `terra-theme-dark` class to the `<html>` element.
+### Automatic Dark Mode
 
+Dark mode is automatically enabled when the user's system preference is set to dark mode. No additional code is required - the theme uses CSS `@media (prefers-color-scheme: dark)` to detect and apply dark mode automatically.
+
+### Manual Theme Control
+
+You can manually override the system preference by applying theme classes to the `<html>` element:
+
+**Force dark mode:**
 ```html
 <html class="terra-theme-dark">
     ...
 </html>
 ```
 
-### Detecting the User's Color Scheme Preference
+**Force light mode:**
+```html
+<html class="terra-theme-horizon">
+    ...
+</html>
+```
 
-Terra doesn't try to auto-detect the user's light/dark mode preference. This should be done at the application level. As a best practice, to provide a dark theme in your app, you should:
-
--   Check for [`prefers-color-scheme`](https://stackoverflow.com/a/57795495/567486) and use its value by default
--   Allow the user to override the setting in your app
--   Remember the user's preference and restore it on subsequent logins
-
-Terra avoids using the `prefers-color-scheme` media query because not all apps support dark mode, and it would break things for the ones that don't.
+The class-based approach takes precedence over system preference, allowing you to give users control over the theme regardless of their system settings.

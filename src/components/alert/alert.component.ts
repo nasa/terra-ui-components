@@ -11,9 +11,9 @@ import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary Alerts are used to display important messages inline or as toast notifications.
- * @documentation https://shoelace.style/components/alert
+ * @documentation https://disc.gsfc.nasa.gov/components/alert
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot - The alert's main content.
  *
@@ -69,6 +69,12 @@ export default class TerraAlert extends TerraElement {
         | 'neutral'
         | 'warning'
         | 'danger' = 'primary'
+
+    /**
+     * The alert's appearance style. "filled" uses a colored background with white text (HDS default).
+     * "white" uses a white background with a colored top border and dark text.
+     */
+    @property({ reflect: true }) appearance: 'filled' | 'white' = 'filled'
 
     /**
      * The length of time, in milliseconds, the alert will show before closing itself. If the user interacts with
@@ -241,6 +247,8 @@ export default class TerraAlert extends TerraElement {
                     'alert--neutral': this.variant === 'neutral',
                     'alert--warning': this.variant === 'warning',
                     'alert--danger': this.variant === 'danger',
+                    'alert--filled': this.appearance === 'filled',
+                    'alert--white': this.appearance === 'white',
                 })}
                 role="alert"
                 aria-hidden=${this.open ? 'false' : 'true'}

@@ -6,7 +6,7 @@ export default css`
     }
 
     .dropdown::part(popup) {
-        z-index: var(--sl-z-index-dropdown);
+        z-index: var(--terra-z-index-dropdown);
     }
 
     .dropdown[data-current-placement^='top']::part(popup) {
@@ -30,11 +30,11 @@ export default css`
     }
 
     .dropdown__panel {
-        font-family: var(--sl-font-sans);
-        font-size: var(--sl-font-size-medium);
-        font-weight: var(--sl-font-weight-normal);
-        box-shadow: var(--sl-shadow-large);
-        border-radius: var(--sl-border-radius-medium);
+        font-family: var(--terra-font-family--inter);
+        font-size: var(--terra-font-size-medium);
+        font-weight: var(--terra-font-weight-normal);
+        box-shadow: var(--terra-shadow-large);
+        border-radius: var(--terra-border-radius-medium);
         pointer-events: none;
     }
 
@@ -44,7 +44,7 @@ export default css`
     }
 
     /* When users slot a menu, make sure it conforms to the popup's auto-size */
-    ::slotted(sl-menu) {
+    ::slotted(terra-menu) {
         max-width: var(--auto-size-available-width) !important;
         max-height: var(--auto-size-available-height) !important;
     }

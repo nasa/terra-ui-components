@@ -2,20 +2,24 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --border-radius: 4px;
-        --color: hsl(240 5.9% 50%);
-        --sheen-color: hsl(240 5.9% 60%);
+        --border-radius: var(--terra-skeleton-border-radius);
+        --color: var(--terra-skeleton-background-color);
+        --sheen-color: var(--terra-skeleton-sheen-color);
 
         display: block;
         position: relative;
-        margin-bottom: 10px;
     }
 
     .skeleton {
         display: flex;
         width: 100%;
         height: 100%;
-        min-height: 1rem;
+        min-height: var(--terra-skeleton-min-height);
+        margin-bottom: var(--terra-skeleton-margin-bottom);
+    }
+
+    .skeleton:last-child {
+        margin-bottom: 0;
     }
 
     .skeleton__indicator {
