@@ -122,7 +122,7 @@ export default class TerraTimeSeries extends TerraElement {
         type: Boolean,
         reflect: true,
     })
-    mobileView = false
+    mobileView = true
 
     @property({
         attribute: 'hide-toolbar',
