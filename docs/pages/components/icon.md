@@ -3,6 +3,7 @@ meta:
     title: Icon
     description: Icons are symbols that can be used to represent various options within an application.
 layout: component
+sidebarSection: Elements
 ---
 
 Terra UI Components come bundled with two sets of icons: `default` and `heroicons`. `default` icons are pulled from the [Horizon Design System](https://website.nasa.gov/hds/foundations/iconography/) (HDS), and `heroicons` icons consist of over 500 icons courtesy of the [Heroicons](https://heroicons.com/) project. If you prefer, you can register [custom icon libraries](#custom-icon-libraries) as well.

@@ -66,103 +66,9 @@ The `horizon.css` theme file includes both light and dark themes. Dark mode is a
 </html>
 ```
 
-## CSS Variables Overview
-
-The Horizon theme provides CSS variables organized into several categories:
-
-### Colors
-
-HDS uses a restricted color palette focused on NASA's brand colors:
-
-**Primary Palette:**
-- `--terra-color-carbon-black`: Pure black
-- `--terra-color-spacesuit-white`: Pure white
-- `--terra-color-nasa-red`: NASA red (#F64137)
-- `--terra-color-nasa-blue`: NASA blue (#1C67E3)
-
-**Extended Palette:**
-- Tints and shades of the primary colors for accessibility
-- `--terra-color-nasa-red-tint` / `--terra-color-nasa-red-shade`
-- `--terra-color-nasa-blue-tint` / `--terra-color-nasa-blue-shade`
-
-**Neutrals:**
-- Carbon scale from `--terra-color-carbon-5` (lightest) to `--terra-color-carbon-90` (darkest)
-- Used for text, backgrounds, and subtle UI elements
-
-**Additional Colors:**
-- `--terra-color-international-orange`: Used sparingly for emphasis
-- `--terra-color-active-green`: Used for success states
-
-### Typography
-
-HDS provides three font families:
-
-- `--terra-font-family--inter`: Primary sans-serif font
-- `--terra-font-family--public-sans`: Secondary sans-serif font
-- `--terra-font-family--dm-mono`: Monospace font for code
-
-**Font Sizes:**
-- From `--terra-font-size-2x-small` (10px) to `--terra-font-size-4x-large` (72px)
-
-**Font Weights:**
-- `--terra-font-weight-light`: 300
-- `--terra-font-weight-normal`: 400
-- `--terra-font-weight-semibold`: 600
-- `--terra-font-weight-bold`: 700
-
-**Line Heights:**
-- `--terra-line-height-denser`: 1
-- `--terra-line-height-dense`: 1.4
-- `--terra-line-height-normal`: 1.8
-- `--terra-line-height-loose`: 2.2
-- `--terra-line-height-looser`: 2.6
-
-### Spacing
-
-Consistent spacing scale:
-
-- `--terra-spacing-3x-small`: 2px
-- `--terra-spacing-2x-small`: 4px
-- `--terra-spacing-x-small`: 8px
-- `--terra-spacing-small`: 12px
-- `--terra-spacing-medium`: 16px
-- `--terra-spacing-large`: 20px
-- `--terra-spacing-x-large`: 28px
-- `--terra-spacing-2x-large`: 36px
-- `--terra-spacing-3x-large`: 48px
-- `--terra-spacing-4x-large`: 72px
-
-### Border Radius
-
-- `--terra-border-radius-small`: 2px
-- `--terra-border-radius-medium`: 4px
-- `--terra-border-radius-large`: 8px
-- `--terra-border-radius-x-large`: 16px
-- `--terra-border-radius-circle`: 50%
-
-### Shadows
-
-Elevation system using shadows:
-
-- `--terra-shadow-x-small`: Subtle shadow
-- `--terra-shadow-small`: Small shadow
-- `--terra-shadow-medium`: Medium shadow
-- `--terra-shadow-large`: Large shadow
-- `--terra-shadow-x-large`: Extra large shadow
-
-### Transitions
-
-Timing functions for animations:
-
-- `--terra-transition-x-fast`: 50ms
-- `--terra-transition-fast`: 150ms
-- `--terra-transition-medium`: 250ms
-- `--terra-transition-slow`: 500ms
-- `--terra-transition-x-slow`: 1000ms
-
 ## Using CSS Variables in Your Code
 
-Once you've imported the Horizon theme, you can use any of these CSS variables in your own stylesheets:
+Once you've imported the Horizon theme, you can use any of the design tokens in your own stylesheets. See the [Design Tokens](/tokens/typography) section for a complete reference of all available tokens.
 
 ```css
 .my-button {
@@ -242,7 +148,7 @@ Then apply the theme class to activate it:
 
 ## Best Practices
 
-1. **Use Design Tokens**: Always use CSS variables instead of hardcoded values to maintain consistency and enable theming.
+1. **Use Design Tokens**: Always use CSS variables instead of hardcoded values to maintain consistency and enable theming. See the [Design Tokens](/tokens/typography) section for available tokens.
 
 2. **Respect the Color Palette**: Stick to the HDS color palette for brand consistency. Use neutrals for text and backgrounds.
 
@@ -252,13 +158,193 @@ Then apply the theme class to activate it:
 
 5. **Consistent Spacing**: Use the spacing scale for margins, padding, and gaps to maintain visual rhythm.
 
+## Adoption Status
+
+This page tracks the progress of Terra UI Components in adopting the Horizon Design System. Components are marked based on their current implementation status.
+
+### Status Legend
+
+-   ✅ **Fully Supported** - Component fully implements HDS design tokens and guidelines
+-   🟡 **In Progress** - Component partially implements HDS, with known gaps
+-   ❌ **Not Supported** - Component not yet implemented or not planned
+
+### Elements
+
+| Component                                         | Status             | Notes                                                                                                     |
+| ------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
+| [Avatar](/components/avatar)                      | ✅ Fully Supported | Implements HDS avatar guidelines with image, initials, and icon support. Full dark mode support.          |
+| Badges                                            | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Button](/components/button)                      | 🟡 In Progress     | Core HDS styles implemented. Some variants may need refinement.                                           |
+| [Caption](/components/caption)                    | ✅ Fully Supported | CSS-only component for displaying captions with support for credits. Full dark mode support.              |
+| Checkbox                                          | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Chip](/components/chip)                          | ✅ Fully Supported | Fully implements HDS chip design with dark mode support.                                                  |
+| [Date Picker](/components/date-picker)            | 🟡 In Progress     | Functional but may need HDS design token updates.                                                         |
+| File Upload                                       | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| Links                                             | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Loader](/components/loader)                      | ✅ Fully Supported | Implements HDS loader patterns with design tokens.                                                        |
+| [Pagination](/components/pagination)              | ✅ Fully Supported | Implements HDS pagination patterns with design tokens, circular icon buttons, and full dark mode support. |
+| Radio Buttons                                     | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Scroll Hint](/components/scroll-hint)            | ✅ Fully Supported | Implements HDS scroll hint patterns with animation and dark mode support.                                 |
+| [Slider](/components/slider)                      | ✅ Fully Supported | Implements HDS slider patterns with design tokens, tooltip merging, and full dark mode support.           |
+| [Status Indicator](/components/status-indicator)  | ✅ Fully Supported | Displays mission/project status with a colored dot and label. Full dark mode support.                     |
+| [Tag](/components/tag)                            | ✅ Fully Supported | Supports content, topic, and urgent variants with icons, stacking, and full dark mode support.            |
+| Text & Select Fields ([Input](/components/input)) | 🟡 In Progress     | Core styles implemented. Some advanced features may need HDS alignment.                                   |
+| [Toggle](/components/toggle)                      | ✅ Fully Supported | Implements HDS toggle patterns with design tokens and full dark mode support.                             |
+
+### Components
+
+| Component                          | Status             | Notes                                                                       |
+| ---------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| [Accordion](/components/accordion) | ✅ Fully Supported | Implements HDS accordion patterns with design tokens and dark mode support. |
+| Article Building Blocks            | ❌ Not Supported   | Not yet implemented.                                                        |
+| Audio Player                       | ❌ Not Supported   | Not yet implemented.                                                        |
+| Blockquote                         | ❌ Not Supported   | Not yet implemented.                                                        |
+| Breadcrumbs                        | ❌ Not Supported   | Not yet implemented.                                                        |
+| Cards                              | ❌ Not Supported   | Not yet implemented.                                                        |
+| Carousel Thumbnails                | ❌ Not Supported   | Not yet implemented.                                                        |
+| Countdown                          | ❌ Not Supported   | Not yet implemented.                                                        |
+| [Dialog](/components/dialog)       | ✅ Fully Supported | Implements HDS modal patterns with design tokens. Dialogs & Modals.         |
+| [Dropdown](/components/dropdown)   | ✅ Fully Supported | Uses HDS design tokens. Dropdown Menus.                                     |
+| Filter & Sorts                     | ❌ Not Supported   | Not yet implemented.                                                        |
+| Gallery Thumbnails                 | ❌ Not Supported   | Not yet implemented.                                                        |
+| Image with Caption                 | ❌ Not Supported   | Not yet implemented.                                                        |
+| List                               | ❌ Not Supported   | Not yet implemented.                                                        |
+| Live Event Ticker                  | ❌ Not Supported   | Not yet implemented.                                                        |
+| Quick Facts Carousel               | ❌ Not Supported   | Not yet implemented.                                                        |
+| Search Fields                      | ❌ Not Supported   | Not yet implemented.                                                        |
+| Sign Up                            | ❌ Not Supported   | Not yet implemented.                                                        |
+| Social Media Share                 | ❌ Not Supported   | Not yet implemented.                                                        |
+| Stepper                            | ❌ Not Supported   | Not yet implemented.                                                        |
+| Table of Contents                  | ❌ Not Supported   | Not yet implemented.                                                        |
+| Tabs                               | ❌ Not Supported   | Not yet implemented.                                                        |
+| [Popup](/components/popup)         | ✅ Fully Supported | Implements HDS popup patterns. Tooltips and Popovers.                       |
+| Video Player                       | ❌ Not Supported   | Not yet implemented.                                                        |
+| Vitals                             | ❌ Not Supported   | Not yet implemented.                                                        |
+
+### Modules
+
+| Component                         | Status           | Notes                |
+| --------------------------------- | ---------------- | -------------------- |
+| 3D Model Module                   | ❌ Not Supported | Not yet implemented. |
+| About the Author                  | ❌ Not Supported | Not yet implemented. |
+| Article Hero Image                | ❌ Not Supported | Not yet implemented. |
+| Ask NASA                          | ❌ Not Supported | Not yet implemented. |
+| Banners                           | ❌ Not Supported | Not yet implemented. |
+| Callout                           | ❌ Not Supported | Not yet implemented. |
+| Card Carousel                     | ❌ Not Supported | Not yet implemented. |
+| Card Grid                         | ❌ Not Supported | Not yet implemented. |
+| Centers & Facilities              | ❌ Not Supported | Not yet implemented. |
+| Contingency Homepage              | ❌ Not Supported | Not yet implemented. |
+| Credits & Resources               | ❌ Not Supported | Not yet implemented. |
+| Event List                        | ❌ Not Supported | Not yet implemented. |
+| Eyes on the Solar System Embed    | ❌ Not Supported | Not yet implemented. |
+| Feature 50/50                     | ❌ Not Supported | Not yet implemented. |
+| Feature/Chapter Divider           | ❌ Not Supported | Not yet implemented. |
+| Feature/Feature Nav               | ❌ Not Supported | Not yet implemented. |
+| Feature/Fullscreen Carousel       | ❌ Not Supported | Not yet implemented. |
+| Feature/Hero Numbers              | ❌ Not Supported | Not yet implemented. |
+| Feature/Hero Quote                | ❌ Not Supported | Not yet implemented. |
+| Feature/Intro                     | ❌ Not Supported | Not yet implemented. |
+| Feature/Oversized Text            | ❌ Not Supported | Not yet implemented. |
+| Feature/Scrapbook Gallery         | ❌ Not Supported | Not yet implemented. |
+| Featured Image                    | ❌ Not Supported | Not yet implemented. |
+| Featured Link                     | ❌ Not Supported | Not yet implemented. |
+| Featured Link List                | ❌ Not Supported | Not yet implemented. |
+| Featured Mission                  | ❌ Not Supported | Not yet implemented. |
+| Featured Podcast                  | ❌ Not Supported | Not yet implemented. |
+| Featured Story                    | ❌ Not Supported | Not yet implemented. |
+| Featured Video                    | ❌ Not Supported | Not yet implemented. |
+| Featured/Content Banner           | ❌ Not Supported | Not yet implemented. |
+| File List                         | ❌ Not Supported | Not yet implemented. |
+| Forms Embed                       | ❌ Not Supported | Not yet implemented. |
+| Gallery Hero                      | ❌ Not Supported | Not yet implemented. |
+| Gallery Preview                   | ❌ Not Supported | Not yet implemented. |
+| Hero Numbers                      | ❌ Not Supported | Not yet implemented. |
+| Iframe Embeds                     | ❌ Not Supported | Not yet implemented. |
+| Image Before/After                | ❌ Not Supported | Not yet implemented. |
+| Image Carousel and Image Timeline | ❌ Not Supported | Not yet implemented. |
+| Image Detail Modal                | ❌ Not Supported | Not yet implemented. |
+| Inline Case Study                 | ❌ Not Supported | Not yet implemented. |
+| Interactive Exhibit               | ❌ Not Supported | Not yet implemented. |
+| Listicle                          | ❌ Not Supported | Not yet implemented. |
+| Map                               | ❌ Not Supported | Not yet implemented. |
+| Math Equations                    | ❌ Not Supported | Not yet implemented. |
+| Meet the…                         | ❌ Not Supported | Not yet implemented. |
+| Mission Hero                      | ❌ Not Supported | Not yet implemented. |
+| NASA Live                         | ❌ Not Supported | Not yet implemented. |
+| NASA Mag                          | ❌ Not Supported | Not yet implemented. |
+| Navigation                        | ❌ Not Supported | Not yet implemented. |
+| News Modules                      | ❌ Not Supported | Not yet implemented. |
+| Page Intro                        | ❌ Not Supported | Not yet implemented. |
+| Parallax Image                    | ❌ Not Supported | Not yet implemented. |
+| Planet Hero                       | ❌ Not Supported | Not yet implemented. |
+| Q&A                               | ❌ Not Supported | Not yet implemented. |
+| Quiz                              | ❌ Not Supported | Not yet implemented. |
+| Related Articles                  | ❌ Not Supported | Not yet implemented. |
+| Slideshow                         | ❌ Not Supported | Not yet implemented. |
+| Social Media Feed                 | ❌ Not Supported | Not yet implemented. |
+| Story Block                       | ❌ Not Supported | Not yet implemented. |
+| Subscription Banner               | ❌ Not Supported | Not yet implemented. |
+| Tabbed Section                    | ❌ Not Supported | Not yet implemented. |
+| Tables                            | ❌ Not Supported | Not yet implemented. |
+| Team Member Spotlight             | ❌ Not Supported | Not yet implemented. |
+| Timeline                          | ❌ Not Supported | Not yet implemented. |
+| Topic Cards                       | ❌ Not Supported | Not yet implemented. |
+| Topic Hero                        | ❌ Not Supported | Not yet implemented. |
+| Topic Spotlight                   | ❌ Not Supported | Not yet implemented. |
+
+### Templates
+
+| Component               | Status           | Notes                |
+| ----------------------- | ---------------- | -------------------- |
+| 404 Page                | ❌ Not Supported | Not yet implemented. |
+| About                   | ❌ Not Supported | Not yet implemented. |
+| About NASA              | ❌ Not Supported | Not yet implemented. |
+| Articles                | ❌ Not Supported | Not yet implemented. |
+| Bio Page                | ❌ Not Supported | Not yet implemented. |
+| Blog Overview           | ❌ Not Supported | Not yet implemented. |
+| Blog Page               | ❌ Not Supported | Not yet implemented. |
+| Blog Post               | ❌ Not Supported | Not yet implemented. |
+| Careers                 | ❌ Not Supported | Not yet implemented. |
+| Center/Org/Institution  | ❌ Not Supported | Not yet implemented. |
+| Centers & Facilities    | ❌ Not Supported | Not yet implemented. |
+| Contact NASA            | ❌ Not Supported | Not yet implemented. |
+| Encyclopedic Reference  | ❌ Not Supported | Not yet implemented. |
+| Event Calendar          | ❌ Not Supported | Not yet implemented. |
+| Galleries Home          | ❌ Not Supported | Not yet implemented. |
+| Homepage                | ❌ Not Supported | Not yet implemented. |
+| Impacts and Benefits    | ❌ Not Supported | Not yet implemented. |
+| Mission Hubs            | ❌ Not Supported | Not yet implemented. |
+| NASA TV Page            | ❌ Not Supported | Not yet implemented. |
+| News and Events         | ❌ Not Supported | Not yet implemented. |
+| Press Kit               | ❌ Not Supported | Not yet implemented. |
+| Q&A Interactive Archive | ❌ Not Supported | Not yet implemented. |
+| Q&A Page                | ❌ Not Supported | Not yet implemented. |
+| Quiz Template           | ❌ Not Supported | Not yet implemented. |
+| Raw Image Gallery       | ❌ Not Supported | Not yet implemented. |
+| Sitemap                 | ❌ Not Supported | Not yet implemented. |
+| Special Features        | ❌ Not Supported | Not yet implemented. |
+| Subtopic Hub            | ❌ Not Supported | Not yet implemented. |
+| Topic Galleries         | ❌ Not Supported | Not yet implemented. |
+| Topic Hubs              | ❌ Not Supported | Not yet implemented. |
+
+:::tip
+If you need a component that's not listed here or marked as "Not Supported", please [create a GitHub issue](https://github.com/nasa/terra-ui-components/issues/new) to request it.
+:::
+
+## Contributing
+
+If you're working on implementing HDS support for a component, please:
+
+1. Use design tokens from `horizon.css` instead of hardcoded values
+2. Ensure dark mode support using the provided dark mode tokens
+3. Follow HDS accessibility guidelines
+4. Update this page when status changes
+
 ## Next Steps
 
-- Learn about [HDS Buttons](/horizon-design-system/button)
-- Explore [HDS Icons](/horizon-design-system/icon)
-- Check out [HDS Accordions](/horizon-design-system/accordion)
-- See [HDS Chips](/horizon-design-system/chip)
-
-For more information about Horizon Design System, visit the [official HDS website](https://website.nasa.gov/hds/).
+- Explore [Design Tokens](/tokens/typography) to see all available CSS variables
+- Learn about [HDS Components](/components/avatar) in the component documentation
+- Visit the [official HDS website](https://website.nasa.gov/hds/) for more information
 
 

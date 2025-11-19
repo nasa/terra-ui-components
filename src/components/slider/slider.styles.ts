@@ -5,12 +5,58 @@ export default css`
         display: block;
     }
 
+    .slider__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--terra-spacing-small, 0.75rem);
+    }
+
     .slider__label {
         display: block;
         font-size: var(--terra-font-size-small);
-        font-weight: var(--terra-font-weight-medium);
-        color: var(--terra-color-text-primary);
-        margin-bottom: var(--terra-spacing-xs);
+        font-weight: var(--terra-font-weight-semibold);
+        color: var(--terra-slider-label-color);
+        margin: 0;
+        font-family: var(--terra-font-family--inter);
+    }
+
+    .slider__header-right {
+        display: flex;
+        align-items: center;
+        gap: var(--terra-spacing-small, 0.75rem);
+    }
+
+    .slider__clear {
+        display: inline-block;
+        padding: 0;
+        background: transparent;
+        border: none;
+        color: var(--terra-link-color);
+        font-size: var(--terra-font-size-small);
+        font-weight: var(--terra-font-weight-semibold);
+        font-family: var(--terra-font-family--inter);
+        cursor: pointer;
+        text-decoration: var(--terra-link-text-decoration);
+        text-decoration-style: var(--terra-link-text-decoration-style);
+        text-underline-offset: var(--terra-link-underline-offset);
+    }
+
+    .slider__clear:hover {
+        color: var(--terra-link-color-hover);
+    }
+
+    .slider__clear:focus {
+        outline: 2px solid var(--terra-color-nasa-blue);
+        outline-offset: 2px;
+        border-radius: var(--terra-border-radius-small);
+    }
+
+    .slider__current-range {
+        font-size: var(--terra-font-size-small);
+        font-weight: var(--terra-font-weight-normal);
+        color: var(--terra-slider-range-color);
+        font-family: var(--terra-font-family--inter);
     }
 
     .sr-only {
@@ -107,13 +153,13 @@ export default css`
     }
     /* Slider size and handle placement */
     .noUi-horizontal {
-        height: 18px;
+        height: 4px;
     }
     .noUi-horizontal .noUi-handle {
-        width: 30px;
-        height: 30px;
-        right: -15px;
-        top: -7px;
+        width: 20px;
+        height: 20px;
+        right: -10px;
+        top: -8px;
     }
     .noUi-vertical {
         width: 18px;
@@ -130,18 +176,16 @@ export default css`
     }
     /* Styling */
     .noUi-target {
-        background: #fafafa;
-        border-radius: 4px;
-        border: 1px solid var(--terra-input-border-color);
-        box-shadow:
-            inset 0 1px 1px #f0f0f0,
-            0 3px 6px -5px #bbb;
+        background: var(--terra-slider-track-background-color);
+        border-radius: 2px;
+        border: 1px solid var(--terra-slider-track-border-color);
+        box-shadow: none;
     }
     .noUi-connects {
-        border-radius: 3px;
+        border-radius: 2px;
     }
     .noUi-connect {
-        background: rgb(119, 164, 238);
+        background: var(--terra-slider-connect-color);
     }
     /* Handles and cursors */
     .noUi-draggable {
@@ -151,8 +195,8 @@ export default css`
         cursor: ns-resize;
     }
     .noUi-handle {
-        background: #1c67e3;
-        border: 1px solid rgb(119, 164, 238);
+        background: var(--terra-slider-handle-background-color);
+        border: 1px solid var(--terra-slider-handle-border-color);
         border-radius: 99px;
         cursor: default;
         box-shadow:;

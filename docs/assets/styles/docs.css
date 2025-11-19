@@ -785,13 +785,21 @@ pre:hover .copy-code-button,
     gap: 0.5rem;
 }
 
-.top-nav__center sl-dropdown terra-button::part(base) {
-    color: white;
+.top-nav__center terra-dropdown terra-button::part(base) {
+    color: var(--terra-color-spacesuit-white);
     font-size: var(--terra-font-size-medium);
 }
 
-.top-nav__center sl-dropdown terra-button:hover::part(base) {
+.top-nav__center terra-dropdown terra-button:hover::part(base) {
     color: rgba(255, 255, 255, 0.8);
+}
+
+.terra-theme-dark .top-nav__center terra-dropdown terra-button::part(base) {
+    color: var(--terra-color-carbon-80);
+}
+
+.terra-theme-dark .top-nav__center terra-dropdown terra-button:hover::part(base) {
+    color: var(--terra-color-carbon-70);
 }
 
 .top-nav__right {
@@ -842,21 +850,32 @@ pre:hover .copy-code-button,
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.top-nav__right sl-dropdown terra-button::part(base) {
-    color: white;
+.top-nav__right terra-dropdown terra-button::part(base) {
+    color: var(--terra-color-spacesuit-white);
 }
 
-.top-nav__right sl-dropdown terra-button:hover::part(base) {
+.top-nav__right terra-dropdown terra-button:hover::part(base) {
     color: rgba(255, 255, 255, 0.8);
 }
 
+.terra-theme-dark .top-nav__right terra-dropdown terra-button::part(base) {
+    color: var(--terra-color-carbon-80);
+}
+
+.terra-theme-dark .top-nav__right terra-dropdown terra-button:hover::part(base) {
+    color: var(--terra-color-carbon-70);
+}
+
 /* Fix dropdown menu items to be clickable */
-.top-nav__center sl-menu sl-menu-item {
+.top-nav__center terra-menu terra-menu-item,
+.top-nav__right terra-menu terra-menu-item {
     padding: 0;
 }
 
-.top-nav__center sl-menu sl-menu-item a,
-.top-nav__center sl-menu sl-menu-item a:visited {
+.top-nav__center terra-menu terra-menu-item a,
+.top-nav__center terra-menu terra-menu-item a:visited,
+.top-nav__right terra-menu terra-menu-item a,
+.top-nav__right terra-menu terra-menu-item a:visited {
     color: inherit;
     text-decoration: none;
     display: block;
@@ -1563,7 +1582,7 @@ body[data-page^='/tokens/'] .table-wrapper td:first-child code {
 /* Color palettes */
 .color-palette {
     display: grid;
-    grid-template-columns: 200px repeat(11, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 1rem var(--terra-spacing-2x-small);
     margin: 2rem 0;
 }
@@ -1571,7 +1590,6 @@ body[data-page^='/tokens/'] .table-wrapper td:first-child code {
 .color-palette__name {
     font-size: var(--terra-font-size-medium);
     font-weight: var(--terra-font-weight-semibold);
-    grid-template-columns: repeat(11, 1fr);
 }
 
 .color-palette__name code {
@@ -1595,11 +1613,7 @@ body[data-page^='/tokens/'] .table-wrapper td:first-child code {
 
 @media screen and (max-width: 1200px) {
     .color-palette {
-        grid-template-columns: repeat(6, 1fr);
-    }
-
-    .color-palette__name {
-        grid-column-start: span 6;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     }
 }
 

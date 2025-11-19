@@ -2,11 +2,6 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --terra-status-indicator-font-family: var(--terra-font-family--inter);
-        --terra-status-indicator-font-size: var(--terra-font-size-small);
-        --terra-status-indicator-font-weight: var(--terra-font-weight-normal);
-        --terra-status-indicator-label-color: var(--terra-color-carbon-90);
-
         display: inline-flex;
         align-items: center;
         gap: var(--terra-spacing-x-small, 0.5rem);
@@ -67,15 +62,5 @@ export default css`
         );
     }
 
-    /* Dark mode support - automatic via system preference (when dark prop is not set) */
-    @media (prefers-color-scheme: dark) {
-        :host:not([dark]) {
-            --terra-status-indicator-label-color: var(--terra-color-carbon-60);
-        }
-    }
-
-    /* Dark mode support - forced via dark prop (takes precedence over system preference) */
-    :host([dark]) {
-        --terra-status-indicator-label-color: var(--terra-color-carbon-60);
-    }
+    /* Dark mode support - handled by horizon.css design tokens */
 `

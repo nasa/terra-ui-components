@@ -94,6 +94,21 @@ Use the `distance` attribute to set the distance between the trigger and panel, 
 </terra-dropdown>
 ```
 
+### Hover Trigger
+
+By default, dropdowns open on click. Use the `hover` attribute to open the dropdown on mouse hover instead.
+
+```html:preview
+<terra-dropdown hover>
+  <terra-button slot="trigger" caret>Hover to Open</terra-button>
+  <terra-menu>
+    <terra-menu-item>Item 1</terra-menu-item>
+    <terra-menu-item>Item 2</terra-menu-item>
+    <terra-menu-item>Item 3</terra-menu-item>
+  </terra-menu>
+</terra-dropdown>
+```
+
 ### Hoisting
 
 When a dropdown is inside a container with `overflow: auto` or `overflow: scroll`, the panel might get clipped. Use the `hoist` attribute to render the panel using fixed positioning, which prevents it from being clipped.

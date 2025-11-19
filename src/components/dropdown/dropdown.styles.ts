@@ -36,6 +36,8 @@ export default css`
         box-shadow: var(--terra-shadow-large);
         border-radius: var(--terra-border-radius-medium);
         pointer-events: none;
+        background: var(--terra-panel-background-color);
+        border: solid var(--terra-panel-border-width) var(--terra-panel-border-color);
     }
 
     .dropdown--open .dropdown__panel {

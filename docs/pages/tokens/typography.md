@@ -10,13 +10,13 @@ Typography tokens are used to maintain a consistent set of font styles throughou
 
 ## Font Family
 
-The default font stack is designed to be simple and highly available on as many devices as possible.
+HDS provides three font families for consistent typography:
 
-| Token                | Value                                                                                                                                         | Example                                                                                                 |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `--terra-font-sans`  | -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol' | <span style="font-family: var(--terra-font-sans)">The quick brown fox jumped over the lazy dog.</span>  |
-| `--terra-font-serif` | Georgia, 'Times New Roman', serif                                                                                                             | <span style="font-family: var(--terra-font-serif)">The quick brown fox jumped over the lazy dog.</span> |
-| `--terra-font-mono`  | SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;                                                                                | <span style="font-family: var(--terra-font-mono)">The quick brown fox jumped over the lazy dog.</span>  |
+| Token                           | Value                    | Example                                                                                                 |
+| ------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `--terra-font-family--inter`    | 'Inter', sans-serif      | <span style="font-family: var(--terra-font-family--inter)">The quick brown fox jumped over the lazy dog.</span> |
+| `--terra-font-family--public-sans` | 'Public Sans', sans-serif | <span style="font-family: var(--terra-font-family--public-sans)">The quick brown fox jumped over the lazy dog.</span> |
+| `--terra-font-family--dm-mono`  | 'DM Mono', monospace     | <span style="font-family: var(--terra-font-family--dm-mono)">The quick brown fox jumped over the lazy dog.</span> |
 
 ## Font Size
 
@@ -40,7 +40,7 @@ Font sizes use `rem` units so they scale with the base font size. The pixel valu
 | ------------------------------ | ----- | ------------------------------------------------------------------------------------------------------------------ |
 | `--terra-font-weight-light`    | 300   | <span style="font-weight: var(--terra-font-weight-light);">The quick brown fox jumped over the lazy dog.</span>    |
 | `--terra-font-weight-normal`   | 400   | <span style="font-weight: var(--terra-font-weight-normal);">The quick brown fox jumped over the lazy dog.</span>   |
-| `--terra-font-weight-semibold` | 500   | <span style="font-weight: var(--terra-font-weight-semibold);">The quick brown fox jumped over the lazy dog.</span> |
+| `--terra-font-weight-semibold` | 600   | <span style="font-weight: var(--terra-font-weight-semibold);">The quick brown fox jumped over the lazy dog.</span> |
 | `--terra-font-weight-bold`     | 700   | <span style="font-weight: var(--terra-font-weight-bold);">The quick brown fox jumped over the lazy dog.</span>     |
 
 ## Letter Spacing

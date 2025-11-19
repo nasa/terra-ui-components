@@ -19,17 +19,25 @@ interface PresetRange {
 }
 
 /**
- * @summary A date picker component that supports single date selection or date range selection.
+ * @summary A date picker component that implements the Horizon Design System (HDS) Date Picker patterns. Supports single date selection or date range selection with calendar popup.
  * @documentation https://terra-ui.netlify.app/components/date-picker
  * @status experimental
  * @since 2.0
  *
+ * @dependency terra-input
+ * @dependency terra-button
+ *
  * @slot - The default slot.
  *
+ * @event terra-date-range-change - Emitted when a date selection is made or changed.
+ * @eventDetail { startDate: string, endDate: string } - ISO date strings or YYYY-MM-DD format.
+ *
  * @csspart base - The component's base wrapper.
- * @csspart input - The date input element.
+ * @csspart input - The date input element (terra-input).
  * @csspart calendar - The calendar dropdown.
  * @csspart sidebar - The preset ranges sidebar.
+ *
+ * @cssproperty --terra-date-picker-* - All date picker design tokens from horizon.css are supported.
  */
 export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -46,6 +54,7 @@ export default class TerraDatePicker extends TerraElement {
     @property({ attribute: 'end-date' }) endDate?: string
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Date'
+    @property({ attribute: 'help-text' }) helpText = ''
     @property({ attribute: 'start-label' }) startLabel?: string
     @property({ attribute: 'end-label' }) endLabel?: string
     @property({ type: Boolean, attribute: 'show-presets' }) showPresets = false
@@ -1344,6 +1353,7 @@ export default class TerraDatePicker extends TerraElement {
                                       ? `${this.label} (Start)`
                                       : 'Start Date')}
                                   .hideLabel=${this.hideLabel}
+                                  .helpText=${this.helpText}
                                   .value=${this.getStartDateDisplayValue()}
                                   readonly
                                   @click=${this.inline
@@ -1356,6 +1366,7 @@ export default class TerraDatePicker extends TerraElement {
                                   .label=${this.endLabel ||
                                   (this.label ? `${this.label} (End)` : 'End Date')}
                                   .hideLabel=${this.hideLabel}
+                                  .helpText=${this.helpText}
                                   .value=${this.getEndDateDisplayValue()}
                                   readonly
                                   @click=${this.inline
@@ -1370,6 +1381,7 @@ export default class TerraDatePicker extends TerraElement {
                           <terra-input
                               .label=${this.label}
                               .hideLabel=${this.hideLabel}
+                              .helpText=${this.helpText}
                               .value=${this.getDisplayValue()}
                               readonly
                               @click=${this.inline ? undefined : this.toggleDropdown}

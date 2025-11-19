@@ -1,4 +1,4 @@
-import { property, query } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
 import { html } from 'lit'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
@@ -6,6 +6,7 @@ import TerraElement from '../../internal/terra-element.js'
 import styles from './slider.styles.js'
 import type { CSSResultGroup } from 'lit'
 import noUiSlider, { type API, type Options, PipsMode } from 'nouislider'
+import { mergeTooltips } from '../date-range-slider/noui-slider-utilities.js'
 
 /**
  * @summary A flexible slider component for selecting single values or ranges with optional input fields.
@@ -81,10 +82,11 @@ export default class TerraSlider extends TerraElement {
 
     /**
      * Shows tooltips on the slider handles.
-     * @default true
+     * When false (default), selected values are shown in the top right instead.
+     * @default false
      */
     @property({ type: Boolean, reflect: true, attribute: 'has-tooltips' })
-    hasTooltips: boolean = true
+    hasTooltips: boolean = false
 
     /**
      * Shows input fields below the slider for precise value entry.
@@ -125,6 +127,11 @@ export default class TerraSlider extends TerraElement {
      */
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel: boolean = false
+
+    @state() private currentStartValue?: number
+    @state() private currentEndValue?: number
+    @state() private currentValue?: number
+    @state() private hasBeenManipulated = false
 
     @watch([
         'mode',
@@ -210,16 +217,59 @@ export default class TerraSlider extends TerraElement {
 
         noUiSlider.create(this.slider, options)
 
+        // Initialize current values
+        const initialValues = this.slider.noUiSlider.get()
+        if (this.mode === 'range') {
+            const [start, end] = Array.isArray(initialValues)
+                ? initialValues.map(Number)
+                : [min, max]
+            this.currentStartValue = start
+            this.currentEndValue = end
+            this.hasBeenManipulated = start !== min || end !== max
+        } else {
+            const [val] = Array.isArray(initialValues)
+                ? initialValues.map(Number)
+                : [min]
+            this.currentValue = val
+            this.hasBeenManipulated = val !== min
+        }
+
+        // Merge tooltips when they get close together (only for range mode with tooltips)
+        if (this.hasTooltips && this.mode === 'range') {
+            mergeTooltips(this.slider, 15, '-')
+        }
+
+        // Track value updates for display in header
+        this.slider.noUiSlider.on('update', (values: string[]) => {
+            if (this.mode === 'range') {
+                const [start, end] = values.map(Number)
+                this.currentStartValue = start
+                this.currentEndValue = end
+                this.hasBeenManipulated = start !== min || end !== max
+            } else {
+                const [val] = values.map(Number)
+                this.currentValue = val
+                this.hasBeenManipulated = val !== min
+            }
+            this.requestUpdate()
+        })
+
         this.slider.noUiSlider.on('change', (values: string[]) => {
             if (this.mode === 'range') {
                 const [start, end] = values.map(Number)
+                this.currentStartValue = start
+                this.currentEndValue = end
+                this.hasBeenManipulated = start !== min || end !== max
                 this.emit('terra-slider-change', {
                     detail: { startValue: start, endValue: end },
                 })
             } else {
                 const [val] = values.map(Number)
+                this.currentValue = val
+                this.hasBeenManipulated = val !== min
                 this.emit('terra-slider-change', { detail: { value: val } })
             }
+            this.requestUpdate()
         })
 
         // Update input fields when slider changes
@@ -322,15 +372,80 @@ export default class TerraSlider extends TerraElement {
         }
     }
 
+    private handleClear() {
+        const min = Number(this.min)
+        const max = Number(this.max)
+
+        if (this.mode === 'range') {
+            this.slider.noUiSlider.set([min, max])
+            this.currentStartValue = min
+            this.currentEndValue = max
+            this.hasBeenManipulated = false
+        } else {
+            this.slider.noUiSlider.set([min])
+            this.currentValue = min
+            this.hasBeenManipulated = false
+        }
+
+        this.requestUpdate()
+    }
+
     render() {
         const containerClass = 'container' + (this.hasPips ? ' hasPips' : '')
+        const min = Number(this.min)
+        const max = Number(this.max)
+
+        // Get current values for display
+        const startValue =
+            this.currentStartValue ?? (this.mode === 'range' ? min : undefined)
+        const endValue =
+            this.currentEndValue ?? (this.mode === 'range' ? max : undefined)
+        const singleValue =
+            this.currentValue ?? (this.mode === 'single' ? min : undefined)
+
+        // Current range display (for header)
+        const currentRangeDisplay =
+            this.mode === 'range'
+                ? `${this._formatValue(startValue!)}–${this._formatValue(endValue!)}`
+                : this._formatValue(singleValue!)
+
         return html`
             <div class="slider">
-                <label
-                    for="slider-control"
-                    class=${this.hideLabel ? 'sr-only' : 'slider__label'}
-                    >${this.label}</label
-                >
+                ${!this.hasTooltips
+                    ? html`
+                          <div class="slider__header">
+                              <label
+                                  for="slider-control"
+                                  class=${this.hideLabel
+                                      ? 'sr-only'
+                                      : 'slider__label'}
+                                  >${this.label}</label
+                              >
+                              <div class="slider__header-right">
+                                  ${this.hasBeenManipulated
+                                      ? html`
+                                            <button
+                                                class="slider__clear"
+                                                @click="${this.handleClear}"
+                                                type="button"
+                                            >
+                                                Clear
+                                            </button>
+                                        `
+                                      : ''}
+                                  <span class="slider__current-range"
+                                      >${currentRangeDisplay}</span
+                                  >
+                              </div>
+                          </div>
+                      `
+                    : html`
+                          <label
+                              for="slider-control"
+                              class=${this.hideLabel ? 'sr-only' : 'slider__label'}
+                              >${this.label}</label
+                          >
+                      `}
                 <div class="${containerClass}">
                     <div part="slider" id="slider-control"></div>
                     ${this.showInputs ? this._renderInputFields() : ''}

@@ -2,11 +2,6 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --terra-scroll-hint-icon-background-color: var(--terra-color-carbon-black);
-        --terra-scroll-hint-icon-color: var(--terra-color-spacesuit-white);
-        --terra-scroll-hint-text-color: var(--terra-color-carbon-black);
-        --terra-scroll-hint-ring-color: var(--terra-color-nasa-red);
-
         display: block;
         position: fixed;
         bottom: var(--terra-spacing-large, 1.25rem);
@@ -94,21 +89,7 @@ export default css`
         user-select: none;
     }
 
-    /* Dark mode support - automatic via system preference (when dark prop is not set) */
-    @media (prefers-color-scheme: dark) {
-        :host:not([dark]) {
-            --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
-            --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
-            --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
-        }
-    }
-
-    /* Dark mode support - forced via dark prop (takes precedence over system preference) */
-    :host([dark]) {
-        --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
-        --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
-        --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
-    }
+    /* Dark mode support - handled by horizon.css design tokens */
 
     /* Pulsing ring animation */
     @keyframes pulse-ring {

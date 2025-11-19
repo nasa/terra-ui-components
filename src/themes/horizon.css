@@ -309,7 +309,7 @@
     --terra-line-height-looser: 2.6;
 
     /* Focus rings */
-    --terra-focus-ring-color: var(--terra-color-primary-600);
+    --terra-focus-ring-color: var(--terra-color-nasa-blue);
     --terra-focus-ring-style: solid;
     --terra-focus-ring-width: 3px;
     --terra-focus-ring: var(--terra-focus-ring-style) var(--terra-focus-ring-width)
@@ -404,10 +404,84 @@
     --terra-input-help-text-font-size-large: var(--terra-font-size-medium);
     --terra-input-help-text-color: var(--terra-color-carbon-50);
 
-    /* Toggles (checkboxes, radios, switches) */
+    /*
+     * Toggle Component
+     * Toggles allow the user to toggle an option on or off.
+     */
+
+    /* Toggle sizes */
     --terra-toggle-size-small: 0.875rem; /* 14px */
     --terra-toggle-size-medium: 1.125rem; /* 18px */
     --terra-toggle-size-large: 1.375rem; /* 22px */
+
+    /* Toggle colors */
+    --terra-toggle-background-color-off: var(--terra-color-carbon-30);
+    --terra-toggle-background-color-on: var(--terra-color-nasa-blue);
+    --terra-toggle-border-color-off: var(--terra-color-carbon-30);
+    --terra-toggle-border-color-on: var(--terra-color-nasa-blue);
+    --terra-toggle-thumb-background-color: var(--terra-color-spacesuit-white);
+    --terra-toggle-thumb-border-color-off: var(--terra-color-carbon-30);
+    --terra-toggle-thumb-border-color-on: var(--terra-color-nasa-blue);
+    --terra-toggle-label-color: var(--terra-color-carbon-90);
+
+    /* Toggle focus */
+    --terra-toggle-focus-ring-color: var(--terra-color-nasa-blue);
+
+    /*
+     * Links
+     * Link styles for interactive text elements.
+     */
+
+    --terra-link-color: var(--terra-color-carbon-90);
+    --terra-link-color-hover: var(--terra-color-carbon-90);
+    --terra-link-text-decoration: underline;
+    --terra-link-text-decoration-style: dotted;
+    --terra-link-underline-offset: 2px;
+
+    /*
+     * Pagination Component
+     * Pagination is a navigational element that allows users to navigate between content or pages.
+     */
+
+    /* Pagination button colors */
+    --terra-pagination-button-color: var(--terra-color-carbon-90);
+    --terra-pagination-button-color-hover: var(--terra-color-carbon-90);
+    --terra-pagination-button-color-current: var(--terra-color-carbon-black);
+
+    /* Pagination icon button colors (for circular prev/next buttons) */
+    --terra-pagination-icon-button-background-color: var(
+        --terra-color-spacesuit-white
+    );
+    --terra-pagination-icon-button-border-color: var(--terra-color-carbon-30);
+    --terra-pagination-icon-button-background-color-hover: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-hover: var(--terra-color-carbon-40);
+    --terra-pagination-icon-button-background-color-disabled: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-disabled: var(
+        --terra-color-carbon-20
+    );
+    --terra-pagination-icon-button-icon-color-disabled: var(--terra-color-carbon-40);
+
+    /*
+     * Slider Component
+     * Sliders are form fields that allow for selection of a range of values.
+     */
+
+    /* Slider track */
+    --terra-slider-track-background-color: #fafafa;
+    --terra-slider-track-border-color: var(--terra-input-border-color);
+    --terra-slider-connect-color: var(--terra-color-nasa-blue);
+
+    /* Slider handle */
+    --terra-slider-handle-background-color: var(--terra-color-spacesuit-white);
+    --terra-slider-handle-border-color: var(--terra-color-nasa-blue);
+
+    /* Slider label */
+    --terra-slider-label-color: var(--terra-color-carbon-90);
+    --terra-slider-range-color: var(--terra-color-carbon-90);
 
     /*
    * Overlays
@@ -464,6 +538,61 @@
     --terra-caption-line-height: var(--terra-line-height-normal);
     --terra-caption-color: var(--terra-color-carbon-50);
     --terra-caption-credit-color: var(--terra-color-carbon-70);
+
+    /*
+   * Status Indicator Component
+   * Status indicators are dynamic labels that indicate the current state of a mission or project.
+   */
+
+    --terra-status-indicator-font-family: var(--terra-font-family--inter);
+    --terra-status-indicator-font-size: var(--terra-font-size-small);
+    --terra-status-indicator-font-weight: var(--terra-font-weight-normal);
+    --terra-status-indicator-label-color: var(--terra-color-carbon-90);
+    --terra-status-indicator-dot-color-active: var(--terra-color-active-green);
+    --terra-status-indicator-dot-color-completed: var(--terra-color-carbon-40);
+    --terra-status-indicator-dot-color-testing: var(
+        --terra-color-international-orange
+    );
+    --terra-status-indicator-dot-color-future: var(--terra-color-nasa-blue);
+
+    /*
+   * Tag Component
+   * Tags are simple labels that help categorize items.
+   */
+
+    /* Tag typography */
+    --terra-tag-font-family: var(--terra-font-family--inter);
+    --terra-tag-font-size-small: var(--terra-font-size-x-small);
+    --terra-tag-font-size-medium: var(--terra-font-size-small);
+    --terra-tag-font-size-large: var(--terra-font-size-medium);
+    --terra-tag-font-weight: var(--terra-font-weight-normal);
+    --terra-tag-font-weight-urgent: var(--terra-font-weight-bold, 700);
+
+    /* Tag icon sizes (content tags) */
+    --terra-tag-icon-size-small: 1.25rem;
+    --terra-tag-icon-size-medium: 1.5rem;
+    --terra-tag-icon-size-large: 1.75rem;
+    --terra-tag-icon-inner-size-small: 0.75rem;
+    --terra-tag-icon-inner-size-medium: 0.875rem;
+    --terra-tag-icon-inner-size-large: 1rem;
+    --terra-tag-icon-border-color: var(--terra-color-carbon-40);
+
+    /* Tag colors */
+    --terra-tag-color: var(--terra-color-carbon-90);
+    --terra-tag-background-color: transparent;
+    --terra-tag-border-color: var(--terra-color-carbon-30);
+    --terra-tag-border-color-hover: var(--terra-color-carbon-40);
+    --terra-tag-background-color-hover: var(--terra-color-carbon-5);
+
+    /* Tag urgent variant colors */
+    --terra-tag-urgent-color: var(--terra-color-spacesuit-white);
+    --terra-tag-urgent-background-color: var(--terra-color-nasa-red);
+
+    /* Tag padding by size */
+    --terra-tag-padding-small: 0.25rem 0.5rem;
+    --terra-tag-padding-medium: var(--terra-spacing-x-small, 0.5rem)
+        var(--terra-spacing-small, 0.75rem);
+    --terra-tag-padding-large: 0.625rem 1rem;
 
     /*
    * Scroll Hint Component
@@ -542,10 +671,58 @@
         --terra-caption-color: var(--terra-color-carbon-60);
         --terra-caption-credit-color: var(--terra-color-carbon-70);
 
+        /* Status Indicator - Dark Mode */
+        --terra-status-indicator-label-color: var(--terra-color-carbon-60);
+
+        /* Tag - Dark Mode */
+        --terra-tag-color: var(--terra-color-carbon-60);
+        --terra-tag-icon-border-color: var(--terra-color-carbon-30);
+        --terra-tag-border-color: var(--terra-color-carbon-20);
+        --terra-tag-border-color-hover: var(--terra-color-carbon-30);
+        --terra-tag-background-color-hover: var(--terra-color-carbon-10);
+
         /* Scroll Hint - Dark Mode */
         --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
         --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
         --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
+
+        /* Toggle - Dark Mode */
+        --terra-toggle-label-color: var(--terra-color-carbon-60);
+
+        /* Links - Dark Mode */
+        --terra-link-color: var(--terra-color-carbon-60);
+        --terra-link-color-hover: var(--terra-color-carbon-60);
+
+        /* Pagination - Dark Mode */
+        --terra-pagination-button-color: var(--terra-color-carbon-60);
+        --terra-pagination-button-color-hover: var(--terra-color-carbon-80);
+        --terra-pagination-button-color-current: var(--terra-color-carbon-90);
+        --terra-pagination-icon-button-background-color: var(--terra-color-carbon-10);
+        --terra-pagination-icon-button-border-color: var(--terra-color-carbon-30);
+        --terra-pagination-icon-button-background-color-hover: var(
+            --terra-color-carbon-5
+        );
+        --terra-pagination-icon-button-border-color-hover: var(
+            --terra-color-carbon-40
+        );
+        --terra-pagination-icon-button-background-color-disabled: var(
+            --terra-color-carbon-5
+        );
+        --terra-pagination-icon-button-border-color-disabled: var(
+            --terra-color-carbon-20
+        );
+        --terra-pagination-icon-button-icon-color-disabled: var(
+            --terra-color-carbon-40
+        );
+
+        /* Slider - Dark Mode */
+        --terra-slider-track-background-color: var(--terra-color-carbon-10);
+        --terra-slider-track-border-color: var(--terra-color-carbon-20);
+        --terra-slider-connect-color: var(--terra-color-nasa-blue-tint);
+        --terra-slider-handle-background-color: var(--terra-color-carbon-black);
+        --terra-slider-handle-border-color: var(--terra-color-nasa-blue-tint);
+        --terra-slider-label-color: var(--terra-color-carbon-60);
+        --terra-slider-range-color: var(--terra-color-carbon-60);
     }
 }
 
@@ -619,8 +796,52 @@
     --terra-caption-color: var(--terra-color-carbon-60);
     --terra-caption-credit-color: var(--terra-color-carbon-70);
 
+    /* Status Indicator - Dark Mode */
+    --terra-status-indicator-label-color: var(--terra-color-carbon-60);
+
+    /* Tag - Dark Mode */
+    --terra-tag-color: var(--terra-color-carbon-60);
+    --terra-tag-icon-border-color: var(--terra-color-carbon-30);
+    --terra-tag-border-color: var(--terra-color-carbon-20);
+    --terra-tag-border-color-hover: var(--terra-color-carbon-30);
+    --terra-tag-background-color-hover: var(--terra-color-carbon-10);
+
     /* Scroll Hint - Dark Mode */
     --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
     --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
     --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
+
+    /* Toggle - Dark Mode */
+    --terra-toggle-label-color: var(--terra-color-carbon-60);
+
+    /* Links - Dark Mode */
+    --terra-link-color: var(--terra-color-carbon-60);
+    --terra-link-color-hover: var(--terra-color-carbon-60);
+
+    /* Pagination - Dark Mode */
+    --terra-pagination-button-color: var(--terra-color-carbon-60);
+    --terra-pagination-button-color-hover: var(--terra-color-carbon-80);
+    --terra-pagination-button-color-current: var(--terra-color-carbon-90);
+    --terra-pagination-icon-button-background-color: var(--terra-color-carbon-10);
+    --terra-pagination-icon-button-border-color: var(--terra-color-carbon-30);
+    --terra-pagination-icon-button-background-color-hover: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-hover: var(--terra-color-carbon-40);
+    --terra-pagination-icon-button-background-color-disabled: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-disabled: var(
+        --terra-color-carbon-20
+    );
+    --terra-pagination-icon-button-icon-color-disabled: var(--terra-color-carbon-40);
+
+    /* Slider - Dark Mode */
+    --terra-slider-track-background-color: var(--terra-color-carbon-10);
+    --terra-slider-track-border-color: var(--terra-color-carbon-20);
+    --terra-slider-connect-color: var(--terra-color-nasa-blue-tint);
+    --terra-slider-handle-background-color: var(--terra-color-carbon-black);
+    --terra-slider-handle-border-color: var(--terra-color-nasa-blue-tint);
+    --terra-slider-label-color: var(--terra-color-carbon-60);
+    --terra-slider-range-color: var(--terra-color-carbon-60);
 }

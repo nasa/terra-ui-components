@@ -18,18 +18,27 @@ const App = () => <TerraDatePicker />;
 
 ## Usage
 
+The Date Picker component implements the [Horizon Design System (HDS) Date Picker](https://website.nasa.gov/hds/) patterns. It is a form field that includes a calendar popup, which is used to select a single date. The component uses the `terra-input` component for the input field.
+
+The date picker is useful for forms involving scheduling (for example, requesting a speaker for an event on a specific day). It allows users to type a date like a normal text field, or open the calendar popup, which helps format the date correctly.
+
+Use help text to display the desired date formatting, in case visitors choose to type their date into the field.
+
 ```html:preview
 <!-- Single date picker -->
 <terra-date-picker
   id="my-date-picker"
+  label="Event Date"
   start-date="2024-03-20"
   min-date="2024-01-01"
   max-date="2024-12-31"
+  help-text="Format: YYYY-MM-DD"
 ></terra-date-picker>
 
 <!-- Date range picker -->
 <terra-date-picker
   id="my-range-picker"
+  label="Date Range"
   range
   start-date="2024-03-20"
   end-date="2024-03-25"
@@ -49,6 +58,7 @@ const App = () => <TerraDatePicker />;
 | `startDate`     | `start-date`     | `string`        | -                                     | Initial start/single date (ISO or YYYY-MM-DD)                                                 |
 | `endDate`       | `end-date`       | `string`        | -                                     | Initial end date (range mode; ISO or YYYY-MM-DD)                                              |
 | `label`         | `label`          | `string`        | `"Select Date"`                       | Input label text                                                                              |
+| `helpText`      | `help-text`      | `string`        | `''`                                  | Help text displayed below the input (e.g., "Format: YYYY-MM-DD")                              |
 | `startLabel`    | `start-label`    | `string`        | -                                     | Custom label for the start date input (only used when `split-inputs` and `range` are true)    |
 | `endLabel`      | `end-label`      | `string`        | -                                     | Custom label for the end date input (only used when `split-inputs` and `range` are true)      |
 | `hideLabel`     | `hide-label`     | `boolean`       | `false`                               | Visually hide the label while keeping it accessible                                           |
@@ -112,12 +122,13 @@ The component emits:
 ></terra-date-picker>
 ```
 
-### Labels and Accessibility
+### Labels and Help Text
 
 ```html:preview
 <terra-date-picker
   id="labeled-picker"
   label="Acquisition Date"
+  help-text="Format: YYYY-MM-DD"
   start-date="2024-06-01"
 ></terra-date-picker>
 
@@ -126,6 +137,7 @@ The component emits:
   id="hidden-label-picker"
   label="Acquisition Date"
   hide-label
+  help-text="Format: YYYY-MM-DD"
   start-date="2024-06-01"
 ></terra-date-picker>
 ```
@@ -240,12 +252,14 @@ When `inline` is enabled, the calendar is always visible and displayed as part o
 
 ## Best Practices
 
-1. Always provide an `id` for accessibility and to ensure unique identification
-2. Use `minDate` and `maxDate` to prevent selection of invalid dates
-3. Use `displayFormat` to match the expected input display in your application
-4. Use `enableTime` only when time selection is necessary
-5. Show `showPresets` to accelerate common range selections when helpful
-6. Use `inline` mode when you want the calendar to be permanently visible as part of the page layout
+1. Always provide a `label` for accessibility - the component uses `terra-input` which requires proper labeling
+2. Use `help-text` to display the desired date formatting (e.g., "Format: YYYY-MM-DD") in case visitors choose to type their date into the field
+3. Always provide an `id` for accessibility and to ensure unique identification
+4. Use `minDate` and `maxDate` to prevent selection of invalid dates
+5. Use `displayFormat` to match the expected input display in your application
+6. Use `enableTime` only when time selection is necessary
+7. Show `showPresets` to accelerate common range selections when helpful
+8. Use `inline` mode when you want the calendar to be permanently visible as part of the page layout
 
 ## Accessibility
 

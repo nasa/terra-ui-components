@@ -11,13 +11,12 @@ export default css`
 
     .input__label {
         display: block;
-        margin: var(--terra-input-label-margin, 0 0 0.5rem 0);
-        font-size: var(--terra-input-label-font-size, 0.875rem);
-        font-weight: var(--terra-input-label-font-weight, 500);
-        color: var(
-            --terra-input-label-color,
-            var(--terra-color-neutral-700, #374151)
-        );
+        margin: 0 0 var(--terra-spacing-x-small, 0.5rem) 0;
+        font-family: var(--terra-input-label-font-family);
+        font-size: var(--terra-input-label-font-size);
+        font-weight: var(--terra-input-label-line-weight);
+        line-height: var(--terra-input-label-line-height);
+        color: var(--terra-input-label-color);
     }
 
     .input__label--hidden {
@@ -33,80 +32,81 @@ export default css`
     }
 
     .input__required-indicator {
-        color: var(
-            --terra-input-required-color,
-            var(--terra-color-error-500, #ef4444)
-        );
-        margin-left: 0.125rem;
+        color: var(--terra-input-required-content-color);
+        margin-left: var(--terra-input-required-content-offset);
     }
 
     .input {
         position: relative;
-        display: var(--terra-input-display, flex);
+        display: flex;
         align-items: center;
         width: 100%;
-        background: var(--terra-input-background-color, white);
-        border-width: var(--terra-input-border-width, 1px);
-        border-color: var(
-            --terra-input-border-color,
-            var(--terra-color-neutral-300, #d1d5db)
-        );
-        border-style: var(--terra-input-border-style, solid);
-        border-radius: var(--terra-input-border-radius, 0.375rem);
-        transition: all 0.15s ease;
+        background: var(--terra-input-background-color);
+        border-width: var(--terra-input-border-width);
+        border-color: var(--terra-input-border-color);
+        border-style: solid;
+        border-radius: var(--terra-input-border-radius);
+        transition:
+            border-color var(--terra-transition-fast),
+            box-shadow var(--terra-transition-fast);
     }
 
     .input:hover:not(.input--disabled) {
-        border-color: var(
-            --terra-input-border-color-hover,
-            var(--terra-color-neutral-400, #9ca3af)
-        );
+        border-color: var(--terra-input-border-color-hover);
     }
 
     .input--focused:not(.input--disabled) {
         outline: none;
-        border-color: var(
-            --terra-input-border-color-focus,
-            var(--terra-color-primary-500, #3b82f6)
-        );
-        box-shadow: 0 0 0 var(--terra-input-focus-ring-width, 3px)
-            var(
-                --terra-input-focus-ring-color,
-                var(--terra-color-primary-100, #dbeafe)
-            );
+        border-color: var(--terra-input-border-color-focus);
+        box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
+            var(--terra-input-focus-ring-color);
     }
 
     .input--disabled {
-        opacity: var(--terra-input-opacity-disabled, 0.5);
+        background-color: var(--terra-input-background-color-disabled);
+        border-color: var(--terra-input-border-color-disabled);
         cursor: not-allowed;
     }
 
     .input__control {
         flex: 1;
         width: 100%;
-        padding: var(--terra-input-padding, 0.625rem 1rem);
+        padding: var(--terra-input-spacing-medium) var(--terra-input-spacing-medium);
         background: transparent;
         border: none;
-        border-right: none !important;
-        font-size: var(--terra-input-font-size, 0.875rem);
-        color: var(--terra-color-neutral-900, #111827);
         outline: none;
         box-shadow: none;
+        font-family: var(--terra-input-font-family);
+        font-size: var(--terra-input-font-size);
+        font-weight: var(--terra-input-font-weight);
+        line-height: var(--terra-input-line-height);
+        letter-spacing: var(--terra-input-letter-spacing);
+        color: var(--terra-input-color);
     }
 
     .input__control::placeholder {
-        color: var(
-            --terra-input-placeholder-color,
-            var(--terra-color-neutral-400, #9ca3af)
-        );
+        color: var(--terra-input-placeholder-color);
     }
 
     .input__control:disabled {
+        color: var(--terra-input-color-disabled);
         cursor: not-allowed;
     }
 
+    .input__control:disabled::placeholder {
+        color: var(--terra-input-placeholder-color-disabled);
+    }
+
+    .input__control:hover:not(:disabled) {
+        color: var(--terra-input-color-hover);
+    }
+
+    .input__control:focus:not(:disabled) {
+        color: var(--terra-input-color-focus);
+    }
+
     .input__control:read-only {
-        cursor: pointer;
+        cursor: default;
     }
 
     /* Hide browser spinners for number inputs */
@@ -123,49 +123,59 @@ export default css`
     /* Prefix and Suffix */
     .input__prefix,
     .input__suffix {
+        display: flex;
         align-items: center;
-        color: var(--terra-color-neutral-500, #6b7280);
+        color: var(--terra-input-icon-color);
         flex-shrink: 0;
     }
 
     .input__prefix {
-        display: var(--terra-input-prefix-display, flex);
-        padding-left: 1rem;
-        gap: 0.5rem;
+        padding-left: var(--terra-input-spacing-medium);
+        gap: var(--terra-spacing-x-small);
     }
 
     .input__suffix {
-        display: var(--terra-input-suffix-display, flex);
-        padding-right: 1rem;
-        gap: 0.5rem;
+        padding-right: var(--terra-input-spacing-medium);
+        gap: var(--terra-spacing-x-small);
     }
 
     .input--has-prefix .input__control {
-        padding-left: 0.5rem;
+        padding-left: var(--terra-input-spacing-small);
     }
 
     .input--has-suffix .input__control {
-        padding-right: 0.5rem;
+        padding-right: var(--terra-input-spacing-small);
+    }
+
+    .input:hover:not(.input--disabled) .input__prefix,
+    .input:hover:not(.input--disabled) .input__suffix {
+        color: var(--terra-input-icon-color-hover);
+    }
+
+    .input--focused:not(.input--disabled) .input__prefix,
+    .input--focused:not(.input--disabled) .input__suffix {
+        color: var(--terra-input-icon-color-focus);
     }
 
     /* Help Text */
     .input__help-text {
-        margin-top: 0.375rem;
-        font-size: 0.875rem;
-        color: var(--terra-color-neutral-600, #4b5563);
+        margin-top: var(--terra-spacing-x-small);
+        font-size: var(--terra-input-help-text-font-size-medium);
+        color: var(--terra-input-help-text-color);
     }
 
     /* Error State (can be enhanced with a prop later) */
     .input--error {
-        border-color: var(--terra-color-error-500, #ef4444);
+        border-color: var(--terra-color-nasa-red);
     }
 
     .input--error:hover:not(.input--disabled) {
-        border-color: var(--terra-color-error-600, #dc2626);
+        border-color: var(--terra-color-nasa-red-shade);
     }
 
     .input--error.input--focused:not(.input--disabled) {
-        border-color: var(--terra-color-error-500, #ef4444);
-        box-shadow: 0 0 0 3px var(--terra-color-error-100, #fee2e2);
+        border-color: var(--terra-color-nasa-red);
+        box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
+            var(--terra-color-nasa-red-tint);
     }
 `

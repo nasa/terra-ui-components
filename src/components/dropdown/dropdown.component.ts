@@ -105,6 +105,15 @@ export default class TerraDropdown extends TerraElement {
     @property({ type: Boolean }) hoist = false
 
     /**
+     * When true, the dropdown opens on mouse hover instead of click.
+     * @default false
+     */
+    @property({ type: Boolean, reflect: true }) hover = false
+
+    private hoverTimeout: number | null = null
+    private hideTimeout: number | null = null
+
+    /**
      * Syncs the popup width or height to that of the trigger element.
      */
     @property({ reflect: true }) sync: 'width' | 'height' | 'both' | undefined =
@@ -121,17 +130,61 @@ export default class TerraDropdown extends TerraElement {
     firstUpdated() {
         this.panel.hidden = !this.open
 
+        // Attach hover listeners if needed (after update completes)
+        this.updateComplete.then(() => {
+            this.attachHoverListeners()
+        })
+
         // If the dropdown is visible on init, update its position
         if (this.open) {
             this.addOpenListeners()
             this.popup.active = true
+            this.attachPanelHoverListeners()
         }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback()
         this.removeOpenListeners()
+        this.removeHoverListeners()
         this.hide()
+        // Clear any pending timeouts
+        if (this.hoverTimeout !== null) {
+            clearTimeout(this.hoverTimeout)
+            this.hoverTimeout = null
+        }
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout)
+            this.hideTimeout = null
+        }
+    }
+
+    private removeHoverListeners() {
+        const assignedElements =
+            this.trigger?.assignedElements({ flatten: true }) || []
+        const triggerElement = assignedElements[0] as HTMLElement | undefined
+
+        if (!triggerElement) {
+            return
+        }
+
+        // For terra-button, try to get the internal button element
+        let targetElement: HTMLElement = triggerElement
+        if (triggerElement.tagName.toLowerCase() === 'terra-button') {
+            const button = (triggerElement as any).button as HTMLElement | undefined
+            if (button) {
+                targetElement = button
+            }
+        }
+
+        targetElement.removeEventListener('mouseenter', this.handleTriggerMouseEnter)
+        targetElement.removeEventListener('mouseleave', this.handleTriggerMouseLeave)
+
+        const popupElement = this.popup?.popup as HTMLElement | undefined
+        if (popupElement) {
+            popupElement.removeEventListener('mouseenter', this.handlePanelMouseEnter)
+            popupElement.removeEventListener('mouseleave', this.handlePanelMouseLeave)
+        }
     }
 
     focusOnTrigger() {
@@ -242,12 +295,75 @@ export default class TerraDropdown extends TerraElement {
     }
 
     handleTriggerClick() {
+        if (this.hover) {
+            return // Don't handle clicks when hover is enabled
+        }
         if (this.open) {
             this.hide()
         } else {
             this.show()
             this.focusOnTrigger()
         }
+    }
+
+    private handleTriggerMouseEnter = () => {
+        if (!this.hover || this.disabled) {
+            return
+        }
+        // Clear any pending hide timeout
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout)
+            this.hideTimeout = null
+        }
+        // Show after a short delay to prevent accidental triggers
+        this.hoverTimeout = window.setTimeout(() => {
+            if (!this.open) {
+                this.show()
+            }
+            this.hoverTimeout = null
+        }, 150)
+    }
+
+    private handleTriggerMouseLeave = () => {
+        if (!this.hover) {
+            return
+        }
+        // Clear any pending show timeout
+        if (this.hoverTimeout !== null) {
+            clearTimeout(this.hoverTimeout)
+            this.hoverTimeout = null
+        }
+        // Hide after a delay to allow moving to the panel
+        this.hideTimeout = window.setTimeout(() => {
+            if (this.open) {
+                this.hide()
+            }
+            this.hideTimeout = null
+        }, 200)
+    }
+
+    private handlePanelMouseEnter = () => {
+        if (!this.hover) {
+            return
+        }
+        // Clear any pending hide timeout when mouse enters panel
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout)
+            this.hideTimeout = null
+        }
+    }
+
+    private handlePanelMouseLeave = () => {
+        if (!this.hover) {
+            return
+        }
+        // Hide when mouse leaves panel
+        this.hideTimeout = window.setTimeout(() => {
+            if (this.open) {
+                this.hide()
+            }
+            this.hideTimeout = null
+        }, 200)
     }
 
     async handleTriggerKeyDown(event: KeyboardEvent) {
@@ -307,6 +423,74 @@ export default class TerraDropdown extends TerraElement {
 
     handleTriggerSlotChange() {
         this.updateAccessibleTrigger()
+        // Use requestAnimationFrame to ensure the element is fully rendered
+        requestAnimationFrame(() => {
+            this.attachHoverListeners()
+        })
+    }
+
+    private attachHoverListeners() {
+        if (!this.hover || !this.trigger) {
+            return
+        }
+
+        const assignedElements = this.trigger.assignedElements({ flatten: true })
+        const triggerElement = assignedElements[0] as HTMLElement | undefined
+
+        if (!triggerElement) {
+            return
+        }
+
+        // Remove old listeners if they exist
+        triggerElement.removeEventListener('mouseenter', this.handleTriggerMouseEnter)
+        triggerElement.removeEventListener('mouseleave', this.handleTriggerMouseLeave)
+
+        // For terra-button, try to get the internal button element
+        let targetElement: HTMLElement = triggerElement
+        if (triggerElement.tagName.toLowerCase() === 'terra-button') {
+            // Try to access the internal button element
+            const button = (triggerElement as any).button as HTMLElement | undefined
+            if (button) {
+                targetElement = button
+            }
+        }
+
+        // Add listeners to the target element
+        targetElement.addEventListener('mouseenter', this.handleTriggerMouseEnter)
+        targetElement.addEventListener('mouseleave', this.handleTriggerMouseLeave)
+    }
+
+    private attachPanelHoverListeners() {
+        if (!this.hover) {
+            return
+        }
+
+        // Attach listeners to the popup's popup element (the actual visible panel)
+        // We need to wait for the popup to be rendered
+        this.updateComplete.then(() => {
+            const popupElement = this.popup?.popup as HTMLElement | undefined
+            if (popupElement) {
+                // Remove old listeners if they exist
+                popupElement.removeEventListener(
+                    'mouseenter',
+                    this.handlePanelMouseEnter
+                )
+                popupElement.removeEventListener(
+                    'mouseleave',
+                    this.handlePanelMouseLeave
+                )
+
+                // Add new listeners
+                popupElement.addEventListener(
+                    'mouseenter',
+                    this.handlePanelMouseEnter
+                )
+                popupElement.addEventListener(
+                    'mouseleave',
+                    this.handlePanelMouseLeave
+                )
+            }
+        })
     }
 
     //
@@ -414,6 +598,7 @@ export default class TerraDropdown extends TerraElement {
             // Show
             this.emit('terra-show')
             this.addOpenListeners()
+            this.attachPanelHoverListeners()
 
             await stopAnimations(this)
             this.panel.hidden = false
@@ -439,6 +624,11 @@ export default class TerraDropdown extends TerraElement {
 
             this.emit('terra-after-hide')
         }
+    }
+
+    @watch('hover', { waitUntilFirstUpdate: true })
+    handleHoverChange() {
+        this.attachHoverListeners()
     }
 
     render() {

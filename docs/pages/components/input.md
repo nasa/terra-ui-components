@@ -3,6 +3,7 @@ meta:
     title: Input
     description: A text input component with consistent styling across the design system.
 layout: component
+sidebarSection: Elements
 ---
 
 ```html:preview
@@ -18,6 +19,10 @@ const App = () => <TerraInput placeholder="Enter text..." />;
 ## Usage
 
 The Input component provides a standardized text input field with support for labels, help text, and various input types.
+
+Text fields are used in forms to capture short strings of text. Each field should include a clear label that explains what should be entered. If only some fields in a form are required, indicate required fields by adding "(required)" to the end of the field's label, or use the `required` prop which will show an asterisk.
+
+The component supports help text, which can be used to provide guidance on what type of text is expected, character count limits, accepted characters, etc.
 
 ```html:preview
 <terra-input
@@ -192,9 +197,11 @@ The Input component provides a standardized text input field with support for la
 1. Always provide a `label` for accessibility - use `hide-label` if you need to hide it visually
 2. Use `help-text` to provide additional context or validation requirements
 3. Use appropriate input `type` for better mobile keyboard support
-4. Add `required` attribute for mandatory fields
+4. Add `required` prop for mandatory fields (shows asterisk indicator)
 5. Use `placeholder` as a hint, not as a replacement for labels
 6. Consider using prefix/suffix slots for icons to improve visual hierarchy
+7. For compact fields (e.g., single email field), you can use `hide-label` and place the label text in the `placeholder`
+8. If only some fields in a form are required, indicate required fields. If most fields are required, indicate optional fields with "(optional)" in the label
 
 ## Accessibility
 

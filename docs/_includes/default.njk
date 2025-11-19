@@ -80,57 +80,57 @@
             </div>
             </nav>
             <div class="top-nav__right">
-                <terra-dropdown id="about-dropdown" placement="bottom-start" distance="3">
+                <terra-dropdown id="about-dropdown" placement="bottom-start" distance="3" hover>
                     <terra-button slot="trigger" size="medium" variant="text" caret title="About">
                         About
                     </terra-button>
-                    <ul role="menu">
-                        <li value="project-overview">
+                    <terra-menu role="menu">
+                        <terra-menu-item value="project-overview">
                             <a href="{{ '/about/project-overview' | url }}">Project Overview</a>
-                        </li>
-                        <li value="contributing">
+                        </terra-menu-item>
+                        <terra-menu-item value="contributing">
                             <a href="{{ '/about/contributing' | url }}">Contributing</a>
-                        </li>
-                    </ul>
+                        </terra-menu-item>
+                    </terra-menu>
                 </terra-dropdown>
-                <terra-dropdown id="getting-started-dropdown" placement="bottom-start" distance="3">
+                <terra-dropdown id="getting-started-dropdown" placement="bottom-start" distance="3" hover>
                     <terra-button slot="trigger" size="medium" variant="text" caret title="Getting Started">
                         Getting Started
                     </terra-button>
-                    <ul role="menu">
-                        <li value="home">
+                    <terra-menu role="menu">
+                        <terra-menu-item value="home">
                             <a href="{{ '/' | url }}">Home</a>
-                        </li>
-                        <li value="installation">
+                        </terra-menu-item>
+                        <terra-menu-item value="installation">
                             <a href="{{ '/getting-started/installation' | url }}">Installation</a>
-                        </li>
-                        <li value="usage">
+                        </terra-menu-item>
+                        <terra-menu-item value="usage">
                             <a href="{{ '/getting-started/usage' | url }}">Usage</a>
-                        </li>
-                        <li value="themes">
+                        </terra-menu-item>
+                        <terra-menu-item value="themes">
                             <a href="{{ '/getting-started/themes' | url }}">Themes</a>
-                        </li>
-                        <li value="customizing">
+                        </terra-menu-item>
+                        <terra-menu-item value="customizing">
                             <a href="{{ '/getting-started/customizing' | url }}">Customizing</a>
-                        </li>
-                    </ul>
+                        </terra-menu-item>
+                    </terra-menu>
                 </terra-dropdown>
 
-                <terra-dropdown id="frameworks-dropdown" placement="bottom-start" distance="3">
+                <terra-dropdown id="frameworks-dropdown" placement="bottom-start" distance="3" hover>
                     <terra-button slot="trigger" size="medium" variant="text" caret title="Frameworks">
                         Frameworks
                     </terra-button>
-                    <ul role="menu">
-                        <li value="react">
+                    <terra-menu role="menu">
+                        <terra-menu-item value="react">
                             <a href="{{ '/frameworks/react' | url }}">React</a>
-                        </li>
-                        <li value="vue">
+                        </terra-menu-item>
+                        <terra-menu-item value="vue">
                             <a href="{{ '/frameworks/vue' | url }}">Vue</a>
-                        </li>
-                        <li value="angular">
+                        </terra-menu-item>
+                        <terra-menu-item value="angular">
                             <a href="{{ '/frameworks/angular' | url }}">Angular</a>
-                        </li>
-                    </ul>
+                        </terra-menu-item>
+                    </terra-menu>
                 </terra-dropdown>
                 
                 <button class="top-nav__search" type="button" title="Press / to search" aria-label="Search" data-plugin="search">
@@ -139,27 +139,27 @@
                 <a href="https://github.com/nasa/terra-ui-components" title="View Terra UI Components on GitHub" class="top-nav__icon-link">
                     <sl-icon name="github"></sl-icon>
                 </a>
-                <sl-dropdown id="environment-selector" placement="bottom-end" distance="3">
+                <terra-dropdown id="environment-selector" placement="bottom-end" distance="3" hover>
                     <terra-button slot="trigger" size="medium" variant="text" caret="" title="Environment" data-optional="" data-valid="" data-user-valid="">
                         <span id="environment-display">UAT</span>
                     </terra-button>
-                    <sl-menu role="menu">
-                        <sl-menu-item type="checkbox" value="uat" tabindex="-1" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">UAT</sl-menu-item>
-                        <sl-menu-item type="checkbox" value="prod" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">PROD</sl-menu-item>
-                    </sl-menu>
-                </sl-dropdown>
-                <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
+                    <terra-menu role="menu">
+                        <terra-menu-item type="checkbox" value="uat" tabindex="-1" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">UAT</terra-menu-item>
+                        <terra-menu-item type="checkbox" value="prod" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">PROD</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+                <terra-dropdown id="theme-selector" placement="bottom-end" distance="3" hover>
                     <terra-button slot="trigger" size="medium" variant="text" caret="" title="Press \ to toggle" data-optional="" data-valid="" data-user-valid="">
                         <sl-icon class="only-light" name="sun-fill" aria-hidden="true" library="default"></sl-icon>
                         <sl-icon class="only-dark" name="moon-fill" aria-hidden="true" library="default"></sl-icon>
                     </terra-button>
-                    <sl-menu role="menu">
-                        <sl-menu-item type="checkbox" value="light" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Light</sl-menu-item>
-                        <sl-menu-item type="checkbox" value="dark" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Dark</sl-menu-item>
-                        <sl-divider role="separator" aria-orientation="horizontal"></sl-divider>
-                        <sl-menu-item type="checkbox" value="auto" tabindex="0" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">System</sl-menu-item>
-                    </sl-menu>
-                </sl-dropdown>
+                    <terra-menu role="menu">
+                        <terra-menu-item type="checkbox" value="light" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Light</terra-menu-item>
+                        <terra-menu-item type="checkbox" value="dark" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Dark</terra-menu-item>
+                        <hr role="separator" aria-orientation="horizontal" style="margin: var(--terra-spacing-x-small) 0; border: none; border-top: 1px solid var(--terra-panel-border-color);">
+                        <terra-menu-item type="checkbox" value="auto" tabindex="0" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">System</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
             </div>
         </header>
 

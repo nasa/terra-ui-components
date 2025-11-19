@@ -35,6 +35,9 @@ export { default as TerraAvatar } from './components/avatar/avatar.js'
 export { default as TerraCaption } from './components/caption/caption.js'
 export { default as TerraScrollHint } from './components/scroll-hint/scroll-hint.js';
 export { default as TerraStatusIndicator } from './components/status-indicator/status-indicator.js';
+export { default as TerraTag } from './components/tag/tag.js';
+export { default as TerraToggle } from './components/toggle/toggle.js';
+export { default as TerraPagination } from './components/pagination/pagination.js';
 /* plop:component */
 
 // Utilities
