@@ -37,7 +37,7 @@ import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-ch
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
- * @documentation https://disc.gsfc.nasa.gov/components/data-subsetter
+ * @documentation https://terra-ui.netlify.app/components/data-subsetter
  * @status stable
  * @since 1.0
  *

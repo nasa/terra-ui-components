@@ -10,7 +10,7 @@ import TerraElement from '../../internal/terra-element.js'
 
 /**
  * @summary Avatars are used to represent a person or object.
- * @documentation https://disc.gsfc.nasa.gov/components/avatar
+ * @documentation https://terra-ui.netlify.app/components/avatar
  * @status stable
  * @since 1.0
  *

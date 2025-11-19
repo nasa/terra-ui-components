@@ -8,7 +8,7 @@ import type { CSSResultGroup } from 'lit'
 // TODO: review commit 8e9cdd43 and move back to modal. We'll need to review anything with a popover (datepicker, spatial picker, etc.) to ensure it works with the new dialog.
 /**
  * @summary Used to create both modal and non-modal dialog boxes.
- * @documentation https://disc.gsfc.nasa.gov/components/dialog
+ * @documentation https://terra-ui.netlify.app/components/dialog
  * @status stable
  * @since 1.0
  *

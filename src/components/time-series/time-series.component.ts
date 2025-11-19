@@ -21,7 +21,7 @@ import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
- * @documentation https://disc.gsfc.nasa.gov/components/time-series
+ * @documentation https://terra-ui.netlify.app/components/time-series
  * @status mvp
  * @since 1.0
  *

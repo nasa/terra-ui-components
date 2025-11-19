@@ -16,7 +16,7 @@ import { MapEventType } from './type.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
- * @documentation https://disc.gsfc.nasa.gov/components/map
+ * @documentation https://terra-ui.netlify.app/components/map
  * @status mvp
  * @since 1.0
  *

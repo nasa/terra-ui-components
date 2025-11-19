@@ -6,7 +6,7 @@ import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary Captions are small text blocks that describe photos, provide additional context and information, and give credit to photographers and other content owners and creators.
- * @documentation https://disc.gsfc.nasa.gov/components/caption
+ * @documentation https://terra-ui.netlify.app/components/caption
  * @status stable
  * @since 1.0
  *

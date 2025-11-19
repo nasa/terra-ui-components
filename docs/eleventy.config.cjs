@@ -30,7 +30,7 @@ module.exports = function (eleventyConfig) {
     //
     // Global data
     //
-    eleventyConfig.addGlobalData('baseUrl', 'https://disc.gsfc.nasa.gov/') // the production URL
+    eleventyConfig.addGlobalData('baseUrl', 'https://terra-ui.netlify.app/') // the production URL
     eleventyConfig.addGlobalData('layout', 'default') // make 'default' the default layout
     eleventyConfig.addGlobalData('toc', true) // enable the table of contents
     // Read component markdown files to get sidebarSection from front matter

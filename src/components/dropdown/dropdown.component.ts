@@ -20,7 +20,7 @@ import TerraElement from '../../internal/terra-element.js'
 
 /**
  * @summary Dropdowns expose additional content that "drops down" in a panel.
- * @documentation https://disc.gsfc.nasa.gov/components/dropdown
+ * @documentation https://terra-ui.netlify.app/components/dropdown
  * @status stable
  * @since 2.0
  *

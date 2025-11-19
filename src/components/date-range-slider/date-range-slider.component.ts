@@ -19,7 +19,7 @@ export type TimeScale = 'half-hourly' | 'hourly' | 'daily'
 
 /**
  * @summary Short summary of the component's intended use.
- * @documentation https://disc.gsfc.nasa.gov/components/date-range-slider
+ * @documentation https://terra-ui.netlify.app/components/date-range-slider
  * @status experimental
  * @since 1.0
  *

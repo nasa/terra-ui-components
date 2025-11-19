@@ -14,7 +14,7 @@ import TerraLoader from '../loader/loader.component.js'
 
 /**
  * @summary Menu items provide options for the user to pick from in a menu.
- * @documentation https://disc.gsfc.nasa.gov/components/menu-item
+ * @documentation https://terra-ui.netlify.app/components/menu-item
  * @status stable
  * @since 2.0
  *

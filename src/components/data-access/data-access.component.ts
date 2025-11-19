@@ -36,7 +36,7 @@ import { getBasePath } from '../../utilities/base-path.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
- * @documentation https://disc.gsfc.nasa.gov/components/data-access
+ * @documentation https://terra-ui.netlify.app/components/data-access
  * @status stable
  * @since 1.0
  *

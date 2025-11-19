@@ -26,7 +26,7 @@ import { formatDate } from '../../utilities/date.js'
 
 /**
  * @summary Short summary of the component's intended use.
- * @documentation https://disc.gsfc.nasa.gov/components/plot-toolbar
+ * @documentation https://terra-ui.netlify.app/components/plot-toolbar
  * @status experimental
  * @since 1.0
  *

@@ -33,7 +33,7 @@ function isVirtualElement(e: unknown): e is VirtualElement {
 
 /**
  * @summary Popup is a utility that lets you declaratively anchor "popup" containers to another element.
- * @documentation https://disc.gsfc.nasa.gov/components/popup
+ * @documentation https://terra-ui.netlify.app/components/popup
  * @status stable
  * @since 2.0
  *

@@ -10,7 +10,7 @@ import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary A text input component with consistent styling across the design system.
- * @documentation https://disc.gsfc.nasa.gov/components/input
+ * @documentation https://terra-ui.netlify.app/components/input
  * @status stable
  * @since 2.0
  *

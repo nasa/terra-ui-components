@@ -20,7 +20,7 @@ interface PresetRange {
 
 /**
  * @summary A date picker component that supports single date selection or date range selection.
- * @documentation https://disc.gsfc.nasa.gov/components/date-picker
+ * @documentation https://terra-ui.netlify.app/components/date-picker
  * @status experimental
  * @since 2.0
  *

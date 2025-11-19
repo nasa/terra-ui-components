@@ -23,7 +23,7 @@ import type { ListItem } from './variable-combobox.types.js'
 
 /**
  * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
- * @documentation https://disc.gsfc.nasa.gov/components/variable-combobox
+ * @documentation https://terra-ui.netlify.app/components/variable-combobox
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
  * @status MVP
  * @since 1.0

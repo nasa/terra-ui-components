@@ -11,7 +11,7 @@ import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary Alerts are used to display important messages inline or as toast notifications.
- * @documentation https://disc.gsfc.nasa.gov/components/alert
+ * @documentation https://terra-ui.netlify.app/components/alert
  * @status stable
  * @since 1.0
  *

@@ -8,7 +8,7 @@ import { classMap } from 'lit/directives/class-map.js'
 
 /**
  * @summary Loaders are used to indicate there is content that is loading.
- * @documentation https://disc.gsfc.nasa.gov/components/loader
+ * @documentation https://terra-ui.netlify.app/components/loader
  * @status experimental
  * @since 1.0
  *

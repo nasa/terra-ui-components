@@ -9,7 +9,7 @@ import noUiSlider, { type API, type Options, PipsMode } from 'nouislider'
 
 /**
  * @summary A flexible slider component for selecting single values or ranges with optional input fields.
- * @documentation https://disc.gsfc.nasa.gov/components/slider
+ * @documentation https://terra-ui.netlify.app/components/slider
  * @status experimental
  * @since 1.0
  *

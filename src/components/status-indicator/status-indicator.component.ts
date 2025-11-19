@@ -8,7 +8,7 @@ import { classMap } from 'lit/directives/class-map.js'
 
 /**
  * @summary Status indicators are dynamic labels that indicate the current state of a mission or project.
- * @documentation https://disc.gsfc.nasa.gov/components/status-indicator
+ * @documentation https://terra-ui.netlify.app/components/status-indicator
  * @status stable
  * @since 1.0
  *
@@ -28,7 +28,11 @@ export default class TerraStatusIndicator extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /** The status variant. Determines the color of the indicator dot. */
-    @property({ reflect: true }) variant: 'active' | 'completed' | 'testing' | 'future' = 'active'
+    @property({ reflect: true }) variant:
+        | 'active'
+        | 'completed'
+        | 'testing'
+        | 'future' = 'active'
 
     /** When true, forces dark mode styles regardless of system preference. Useful when placing the component on a dark background. */
     @property({ type: Boolean, reflect: true }) dark = false

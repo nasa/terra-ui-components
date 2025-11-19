@@ -9,7 +9,7 @@ import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary Scroll hint is an animated button that prompts visitors to scroll.
- * @documentation https://disc.gsfc.nasa.gov/components/scroll-hint
+ * @documentation https://terra-ui.netlify.app/components/scroll-hint
  * @status stable
  * @since 1.0
  *
