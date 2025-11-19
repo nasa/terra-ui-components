@@ -31,3 +31,4 @@ export type { TerraDropdownAfterHideEvent } from './terra-dropdown-after-hide.js
 export type { TerraDropdownSelectEvent } from './terra-dropdown-select.js'
 export type { TerraRepositionEvent } from './terra-reposition.js'
 export type { TerraSelectEvent } from './terra-select.js'
+export type { TerraScrollEvent } from './terra-scroll.js'

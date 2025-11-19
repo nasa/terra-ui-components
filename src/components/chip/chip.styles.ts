@@ -2,6 +2,10 @@ import { css } from 'lit'
 
 export default css`
     :host {
+        display: inline-block;
+    }
+
+    :host([stack]) {
         display: block;
     }
 
@@ -88,21 +92,21 @@ export default css`
         margin: 3px 3px 0px -6px;
         width: 0.75em;
         height: 0.75em;
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .chip-svg--medium {
         margin: 4px 4px 0px -8px;
         width: 1em;
         height: 1em;
-        font-size: 24px;
+        font-size: 18px;
     }
 
     .chip-svg--large {
         margin: 6px 6px 0px -12px;
         width: 1.4em;
         height: 1.4em;
-        font-size: 24px;
+        font-size: 20px;
     }
 
     .chip:hover .chip-svg {

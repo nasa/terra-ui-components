@@ -2,7 +2,7 @@
 meta:
     title: Caption
     description: Captions are small text blocks that describe photos, provide additional context and information, and give credit to photographers and other content owners and creators.
-    layout: component
+layout: component
 sidebarSection: Elements
 ---
 

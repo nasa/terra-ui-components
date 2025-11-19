@@ -33,6 +33,8 @@ export { default as TerraMenu } from './components/menu/menu.js'
 export { default as TerraMenuItem } from './components/menu-item/menu-item.js'
 export { default as TerraAvatar } from './components/avatar/avatar.js'
 export { default as TerraCaption } from './components/caption/caption.js'
+export { default as TerraScrollHint } from './components/scroll-hint/scroll-hint.js';
+export { default as TerraStatusIndicator } from './components/status-indicator/status-indicator.js';
 /* plop:component */
 
 // Utilities

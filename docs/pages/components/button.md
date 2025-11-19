@@ -6,8 +6,6 @@ layout: component
 sidebarSection: Elements
 ---
 
-<!-- TODO: @shoelace-style/shoelace/dist/react/button needs to be replaced with our dist -->
-
 ```html:preview
 <terra-button>Button</terra-button>
 ```

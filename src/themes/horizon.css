@@ -464,6 +464,16 @@
     --terra-caption-line-height: var(--terra-line-height-normal);
     --terra-caption-color: var(--terra-color-carbon-50);
     --terra-caption-credit-color: var(--terra-color-carbon-70);
+
+    /*
+   * Scroll Hint Component
+   * Scroll hint is an animated button that prompts visitors to scroll.
+   */
+
+    --terra-scroll-hint-icon-background-color: var(--terra-color-carbon-black);
+    --terra-scroll-hint-icon-color: var(--terra-color-spacesuit-white);
+    --terra-scroll-hint-text-color: var(--terra-color-carbon-black);
+    --terra-scroll-hint-ring-color: var(--terra-color-nasa-red);
 }
 
 /* ============================================================================
@@ -531,6 +541,11 @@
         /* Caption - Dark Mode */
         --terra-caption-color: var(--terra-color-carbon-60);
         --terra-caption-credit-color: var(--terra-color-carbon-70);
+
+        /* Scroll Hint - Dark Mode */
+        --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
+        --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
+        --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
     }
 }
 
@@ -603,4 +618,9 @@
     /* Caption - Dark Mode */
     --terra-caption-color: var(--terra-color-carbon-60);
     --terra-caption-credit-color: var(--terra-color-carbon-70);
+
+    /* Scroll Hint - Dark Mode */
+    --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
+    --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
+    --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
 }
