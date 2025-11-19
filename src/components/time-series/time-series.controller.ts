@@ -60,6 +60,8 @@ export class TimeSeriesController {
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
 
+    metadata: TimeSeriesMetadata
+
     constructor(host: ReactiveControllerHost & TerraTimeSeries) {
         this.#dataService = this.#getDataService()
 
@@ -80,6 +82,7 @@ export class TimeSeriesController {
 
                 // fetch the time series data
                 const timeSeries = await this.#loadTimeSeries(signal)
+                this.metadata = timeSeries.metadata
 
                 // now that we have actual data, map it to a Plotly plot definition
                 // see https://plotly.com/javascript/time-series/

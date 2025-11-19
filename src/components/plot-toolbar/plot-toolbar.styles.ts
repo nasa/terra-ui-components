@@ -3,6 +3,9 @@ import { css } from 'lit'
 export default css`
     :host {
         display: block;
+
+        --bottom-sheet-handle-height: 5px;
+        --bottom-sheet-handle-margin: 10px;
     }
 
     header {
@@ -91,36 +94,99 @@ export default css`
         margin-block: 0.5em;
     }
 
-    menu dt,
-    .menu-dialog dt {
+    menu dt {
         font-weight: var(--terra-font-weight-semibold);
     }
 
-    menu dd,
-    .menu-dialog dd {
+    menu dd {
         font-style: italic;
         text-wrap: balance;
     }
 
-    .menu-dialog {
+    .bottom-sheet-backdrop {
         position: fixed;
-        left: 0;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.3);
+        transition: opacity 0.35s ease;
+        z-index: 10;
+    }
+
+    .bottom-sheet-backdrop[data-state='close'] {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .bottom-sheet-backdrop[data-state='open'] {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .bottom-sheet {
+        position: fixed;
+        left: 50%;
         bottom: 0;
-        width: 100%;
-        height: 100%;
-        border: 0;
         z-index: 1002;
+        width: 100%;
+        max-width: 768px;
+        min-height: 50vh;
+        border: 0;
         background: var(--terra-color-spacesuit-white);
         color: var(--terra-font-color-primary);
+        transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
+        will-change: transform;
+        user-select: none;
+        pointer-events: all;
+        touch-action: none;
+        overflow: auto;
+        cursor: grab;
     }
 
-    .menu-dialog[open] {
+    .bottom-sheet[data-state='open'] {
         display: flex;
         flex-direction: column;
+
+        transform: translate(-50%, 0);
+        visibility: visible;
     }
 
-    .menu-dialog terra-button {
-        align-self: flex-end;
+    .bottom-sheet[data-state='close'] {
+        transform: translate(-50%, 100%);
+        visibility: hidden;
+    }
+
+    .bottom-sheet-list {
+        list-style: none;
+        padding-left: 0.5rem;
+    }
+
+    .bottom-sheet-list li {
+        padding: 0.5rem 0.3rem;
+        border-bottom: 1px solid silver;
+    }
+
+    .bottom-sheet h3:not(.sr-only) {
+        background-color: var(--terra-color-nasa-blue);
+        color: var(--terra-color-spacesuit-white);
+        padding: 0.3rem 0.7rem;
+    }
+
+    .bottom-sheet-handle {
+        width: 40px;
+        height: var(--bottom-sheet-handle-height);
+        background-color: var(--terra-color-carbon-20);
+        border-radius: 10px;
+        margin: var(--bottom-sheet-handle-margin) auto;
+    }
+
+    .bottom-sheet-content {
+        padding: 15px;
+        height: calc(
+            97vh - var(--bottom-sheet-handle-height) - var(
+                    --bottom-sheet-handle-margin
+                )
+        );
+        overflow-y: auto;
     }
 
     .spacer {

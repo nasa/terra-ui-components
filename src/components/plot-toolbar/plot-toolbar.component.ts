@@ -11,7 +11,10 @@ import * as Plotly from 'plotly.js-dist-min'
 import type TerraPlot from '../plot/plot.component.js'
 import type { Plot } from '../plot/plot.types.js'
 import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
-import type { VariableDbEntry } from '../time-series/time-series.types.js'
+import type {
+    VariableDbEntry,
+    TimeSeriesMetadata,
+} from '../time-series/time-series.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
@@ -68,10 +71,15 @@ export default class TerraPlotToolbar extends TerraElement {
      */
     @property({ attribute: 'application-citation' }) applicationCitation?: string
 
-    @property({ type: Boolean, attribute: 'mobile-view', reflect: true }) mobileView =
-        false
+    @property() mobileView = false
 
-    @property({ attribute: 'product-label' }) productLabel?: string
+    @property() productLabel?: string
+
+    metadata: TimeSeriesMetadata
+
+    @property({ type: Number }) bottomSheetDragY = 0
+    #isBottomSheetDragging = false
+    #bottomSheetStartY = 0
 
     @state()
     hideTitle: boolean = false
@@ -134,6 +142,8 @@ export default class TerraPlotToolbar extends TerraElement {
     @state() colorMapName = 'density'
 
     @query('#menu') menu: HTMLMenuElement
+
+    @query('.bottom-sheet') private bottomSheet: HTMLDivElement
 
     _authController = new AuthController(this)
     #controller = new PlotToolbarController(this)
@@ -482,38 +492,112 @@ export default class TerraPlotToolbar extends TerraElement {
                       </header>
 
                       ${this.mobileView
-                          ? html`<dialog
-                                ?open=${!!this.activeMenuItem}
-                                class="menu-dialog"
-                            >
-                                <terra-button outline @click=${this.closeMenu}>
-                                    Close
-                                </terra-button>
-                                <div class="spacer"></div>
-                                <div>
-                                    ${this.activeMenuItem === 'information'
-                                        ? this.#renderInfoPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'citation'
-                                        ? this.#renderCitationPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'download'
-                                        ? this.#renderDownloadPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'help'
-                                        ? this.#renderHelpPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'jupyter'
-                                        ? this.#renderJupyterNotebookPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'GeoTIFF'
-                                        ? this.#renderGeotiffPanel()
-                                        : ''}
-                                </div>
-                            </dialog>`
+                          ? html` <div
+                                    class="bottom-sheet-backdrop"
+                                    data-state=${this.activeMenuItem
+                                        ? 'open'
+                                        : 'close'}
+                                    @click=${this.#handleBottomSheetClose}
+                                ></div>
+                                <div
+                                    data-state=${this.activeMenuItem
+                                        ? 'open'
+                                        : 'close'}
+                                    class="bottom-sheet"
+                                    @touchstart=${this.#onBottomSheetTouchStart}
+                                    @touchmove=${this.#onBottomSheetTouchMove}
+                                    @touchend=${this.#handleBottomSheetEndDrag}
+                                    @mousedown=${this.#onBottomSheetMouseDown}
+                                >
+                                    <div class="bottom-sheet-handle"></div>
+                                    <div class="bottom-sheet-content">
+                                        ${this.activeMenuItem === 'information'
+                                            ? this.#renderMobileInfoPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'citation'
+                                            ? this.#renderCitationPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'download'
+                                            ? this.#renderDownloadPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'help'
+                                            ? this.#renderHelpPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'jupyter'
+                                            ? this.#renderJupyterNotebookPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'GeoTIFF'
+                                            ? this.#renderGeotiffPanel()
+                                            : ''}
+                                    </div>
+                                </div>`
                           : nothing}
                   `
         )
+    }
+
+    #onBottomSheetTouchStart(e: TouchEvent) {
+        this.#handleBottomSheetStartDrag(e.touches[0].clientY)
+    }
+
+    #onBottomSheetTouchMove(e: TouchEvent) {
+        if (!this.#isBottomSheetDragging) return
+        this.#handleBottomSheetMoveDrag(e.touches[0].clientY)
+        if (this.bottomSheetDragY > 0) e.preventDefault()
+    }
+
+    #onBottomSheetMouseDown(e: MouseEvent) {
+        this.#handleBottomSheetStartDrag(e.clientY)
+        const move = (ev: MouseEvent) => this.#handleBottomSheetMoveDrag(ev.clientY)
+        const up = () => {
+            this.#handleBottomSheetEndDrag()
+            window.removeEventListener('mousemove', move)
+            window.removeEventListener('mouseup', up)
+        }
+        window.addEventListener('mousemove', move)
+        window.addEventListener('mouseup', up)
+    }
+
+    #handleBottomSheetStartDrag(y: number) {
+        if (!this.activeMenuItem) return
+        this.#isBottomSheetDragging = true
+        this.#bottomSheetStartY = y
+        this.bottomSheetDragY = 0
+        this.bottomSheet.style.transition = 'none'
+    }
+
+    #handleBottomSheetMoveDrag(y: number) {
+        this.bottomSheetDragY = y - this.#bottomSheetStartY
+
+        if (!this.#isBottomSheetDragging) return
+        if (this.bottomSheetDragY > 0) {
+            this.bottomSheet.style.transform = `translate(-50%, ${this.bottomSheetDragY}px)`
+        }
+    }
+
+    #handleBottomSheetEndDrag() {
+        const SWIPE_TO_CLOSE_THRESHOLD = 20
+
+        if (!this.#isBottomSheetDragging) return
+
+        this.#isBottomSheetDragging = false
+        this.bottomSheet.style.transition =
+            'transform 0.35s cubic-bezier(0.25,1,0.5,1)'
+
+        if (this.bottomSheetDragY > SWIPE_TO_CLOSE_THRESHOLD) {
+            this.#handleBottomSheetClose()
+        } else {
+            this.bottomSheet.style.transform = 'translate(-50%, 0)'
+        }
+        this.bottomSheetDragY = 0
+    }
+
+    #handleBottomSheetClose() {
+        this.bottomSheet.style.transform = 'translate(-50%, 100%)'
+        setTimeout(() => {
+            this.closeMenu()
+            this.bottomSheet.style.transform = ''
+        }, 150)
     }
 
     #handleActiveMenuItem(event: Event) {
@@ -649,6 +733,67 @@ export default class TerraPlotToolbar extends TerraElement {
                     </a>
                 </dd>
             </dl>
+        `
+    }
+
+    #renderMobileInfoPanel() {
+        // We need to render different html when this.dataType === 'geotiff'
+        return html`
+            <h3 class="bottom-sheet-list">Request</h3>
+            <ul class="bottom-sheet-list">
+                <li>
+                    <strong>Timestamp: </strong>${formatDate(
+                        this.metadata.Request_time,
+                        'yyyy-MM-dd HH:mm'
+                    )}
+                </li>
+                <li>
+                    <strong>Begin Datetime: </strong>${formatDate(
+                        this.metadata.begin_time
+                    )}
+                </li>
+                <li>
+                    <strong>End Datetime: </strong>${formatDate(
+                        this.metadata.end_time
+                    )}
+                </li>
+                <li><strong>Lat: </strong>${this.metadata.lat}</li>
+                <li><strong>Lon: </strong>${this.metadata.lon}</li>
+            </ul>
+
+            <h3>Data Variable</h3>
+            <ul class="bottom-sheet-list">
+                ${this.productLabel
+                    ? html`<li><strong>Label: </strong>${this.productLabel}</li>`
+                    : ''}
+                <li><strong>Longname: </strong>${this.metadata.param_name}</li>
+                <li><strong>Shortname: </strong>${this.metadata.param_short_name}</li>
+                <li><strong>Units: </strong>${this.metadata.unit}</li>
+                <li><strong>Fill Value: </strong>${this.metadata.undef}</li>
+                <li><strong>Mean Value: </strong>${this.metadata.mean}</li>
+                <li>
+                    <strong>Lat. Resolution: </strong>${this.metadata.lat_resolution}
+                </li>
+                <li>
+                    <strong>Lon. Resolution: </strong>${this.metadata.lon_resolution}
+                </li>
+                <li>
+                    <strong>Data Product Name: </strong>${this.metadata.prod_name}
+                </li>
+                <li><strong>DOI: </strong>${this.metadata.doi}</li>
+                <li>
+                    <a
+                        href=${this.catalogVariable.dataProductDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >Dataset Information
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </li>
+            </ul>
         `
     }
 

@@ -111,7 +111,7 @@ export default class TerraTimeSeries extends TerraElement {
         type: Boolean,
         reflect: true,
     })
-    mobileView = false
+    mobileView = true
 
     @property({
         attribute: 'hide-toolbar',
@@ -250,6 +250,7 @@ export default class TerraTimeSeries extends TerraElement {
                                     .showCitation=${this.showCitation}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
+                                    .metadata=${this.#timeSeriesController.metadata}
                                 ></terra-plot-toolbar>`
                               : html`<div class="spacer"></div>`
                       )
