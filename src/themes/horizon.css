@@ -451,6 +451,19 @@
     --terra-z-index-dropdown: 900;
     --terra-z-index-toast: 950;
     --terra-z-index-tooltip: 1000;
+
+    /*
+   * Caption Component
+   * Captions are small text blocks that describe photos, provide additional context and information,
+   * and give credit to photographers and other content owners and creators.
+   */
+
+    --terra-caption-font-family: var(--terra-font-family--public-sans);
+    --terra-caption-font-size: var(--terra-font-size-small);
+    --terra-caption-font-weight: var(--terra-font-weight-normal);
+    --terra-caption-line-height: var(--terra-line-height-normal);
+    --terra-caption-color: var(--terra-color-carbon-50);
+    --terra-caption-credit-color: var(--terra-color-carbon-70);
 }
 
 /* ============================================================================
@@ -514,6 +527,10 @@
         --terra-chip-color-hover: var(--terra-color-carbon-80);
         --terra-chip-icon-color: var(--terra-color-carbon-60);
         --terra-chip-icon-color-hover: var(--terra-color-carbon-80);
+
+        /* Caption - Dark Mode */
+        --terra-caption-color: var(--terra-color-carbon-60);
+        --terra-caption-credit-color: var(--terra-color-carbon-70);
     }
 }
 
@@ -582,4 +599,8 @@
     --terra-accordion-summary-background-color-hover: var(--terra-color-carbon-10);
     --terra-accordion-summary-border-color: var(--terra-color-carbon-20);
     --terra-accordion-summary-color: var(--terra-color-carbon-60);
+
+    /* Caption - Dark Mode */
+    --terra-caption-color: var(--terra-color-carbon-60);
+    --terra-caption-credit-color: var(--terra-color-carbon-70);
 }

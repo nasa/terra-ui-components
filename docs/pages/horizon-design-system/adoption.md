@@ -20,6 +20,7 @@ This page tracks the progress of Terra UI Components in adopting the [Horizon De
 | ---------------------------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
 | [Avatar](/components/avatar)       | ✅ Fully Supported | Implements HDS avatar guidelines with image, initials, and icon support. Full dark mode support. |
 | [Button](/components/button)       | 🟡 In Progress     | Core HDS styles implemented. Some variants may need refinement.                                  |
+| [Caption](/components/caption)     | ✅ Fully Supported | CSS-only component for displaying captions with support for credits. Full dark mode support.     |
 | [Chip](/components/chip)           | ✅ Fully Supported | Fully implements HDS chip design with dark mode support.                                         |
 | [Icon](/components/icon)           | ✅ Fully Supported | Icon system compatible with HDS guidelines.                                                      |
 | [Accordion](/components/accordion) | ✅ Fully Supported | Implements HDS accordion patterns with design tokens and dark mode support.                      |
@@ -44,9 +45,8 @@ This page tracks the progress of Terra UI Components in adopting the [Horizon De
 
 The following HDS components/elements are not currently implemented in Terra UI Components:
 
-| Component | Status           | Reason                                                                                 | Request                                                                                                          |
-| --------- | ---------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Caption   | ❌ Not Supported | Doesn't seem to make sense as a component, you can use CSS variables to replicate this | [Request Component](https://github.com/nasa/terra-ui-components/issues/new?title=Component%20Request:%20Caption) |
+| Component | Status | Reason | Request |
+| --------- | ------ | ------ | ------- |
 
 :::tip
 If you need a component that's not listed here or marked as "Not Supported", please [create a GitHub issue](https://github.com/nasa/terra-ui-components/issues/new) to request it.
