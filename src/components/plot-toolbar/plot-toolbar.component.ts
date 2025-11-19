@@ -192,6 +192,11 @@ export default class TerraPlotToolbar extends TerraElement {
         this.hideTitle = !this.hideTitle
     }
 
+    firstUpdated() {
+        // Title should be hidden by default if mobileView is true and product label has a value
+        this.hideTitle = !!(this.mobileView && this.productLabel)
+    }
+
     render() {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
