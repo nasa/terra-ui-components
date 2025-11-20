@@ -33,11 +33,17 @@ export { default as TerraMenu } from './components/menu/menu.js'
 export { default as TerraMenuItem } from './components/menu-item/menu-item.js'
 export { default as TerraAvatar } from './components/avatar/avatar.js'
 export { default as TerraCaption } from './components/caption/caption.js'
-export { default as TerraScrollHint } from './components/scroll-hint/scroll-hint.js';
-export { default as TerraStatusIndicator } from './components/status-indicator/status-indicator.js';
-export { default as TerraTag } from './components/tag/tag.js';
-export { default as TerraToggle } from './components/toggle/toggle.js';
-export { default as TerraPagination } from './components/pagination/pagination.js';
+export { default as TerraScrollHint } from './components/scroll-hint/scroll-hint.js'
+export { default as TerraStatusIndicator } from './components/status-indicator/status-indicator.js'
+export { default as TerraTag } from './components/tag/tag.js'
+export { default as TerraToggle } from './components/toggle/toggle.js'
+export { default as TerraPagination } from './components/pagination/pagination.js'
+export { default as TerraCheckbox } from './components/checkbox/checkbox.js'
+export { default as TerraRadio } from './components/radio/radio.js'
+export { default as TerraRadioGroup } from './components/radio-group/radio-group.js'
+export { default as TerraSelect } from './components/select/select.js'
+export { default as TerraOption } from './components/option/option.js';
+export { default as TerraFileUpload } from './components/file-upload/file-upload.js';
 /* plop:component */
 
 // Utilities

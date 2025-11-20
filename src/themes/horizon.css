@@ -405,6 +405,73 @@
     --terra-input-help-text-color: var(--terra-color-carbon-50);
 
     /*
+     * Checkbox Component
+     * Checkboxes are a form field used when there are multiple options to select from a list.
+     */
+
+    /* Checkbox sizes */
+    --terra-checkbox-size-small: 0.875rem; /* 14px */
+    --terra-checkbox-size-medium: 1.125rem; /* 18px */
+    --terra-checkbox-size-large: 1.375rem; /* 22px */
+
+    /* Checkbox colors */
+    --terra-checkbox-background-color: var(--terra-color-spacesuit-white);
+    --terra-checkbox-background-color-hover: var(--terra-color-spacesuit-white);
+    --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-checkbox-border-color: var(--terra-color-carbon-20);
+    --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
+    --terra-checkbox-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-checkbox-border-width: 1px;
+    --terra-checkbox-border-radius: 2px;
+    --terra-checkbox-icon-color: var(--terra-color-spacesuit-white);
+    --terra-checkbox-label-color: var(--terra-color-carbon-80);
+    --terra-checkbox-label-font-family: var(--terra-font-family--inter);
+    --terra-checkbox-label-font-size: var(--terra-font-size-small);
+    --terra-checkbox-label-font-weight: var(--terra-font-weight-normal);
+
+    /* Checkbox focus */
+    --terra-checkbox-focus-ring-color: var(--terra-color-nasa-blue);
+    --terra-checkbox-focus-ring-width: var(--terra-focus-ring-width);
+    --terra-checkbox-focus-ring-offset: var(--terra-focus-ring-offset);
+
+    /*
+     * Radio Component
+     * Radio buttons are a form field used when only a single selection can be made from a list.
+     */
+
+    /* Radio sizes */
+    --terra-radio-size-small: 0.875rem; /* 14px */
+    --terra-radio-size-medium: 1.125rem; /* 18px */
+    --terra-radio-size-large: 1.375rem; /* 22px */
+
+    /* Radio colors */
+    --terra-radio-background-color: var(--terra-color-spacesuit-white);
+    --terra-radio-background-color-hover: var(--terra-color-spacesuit-white);
+    --terra-radio-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-radio-border-color: var(--terra-color-carbon-20);
+    --terra-radio-border-color-hover: var(--terra-color-carbon-40);
+    --terra-radio-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-radio-border-width: 1px;
+    --terra-radio-icon-color: var(--terra-color-spacesuit-white);
+    --terra-radio-label-color: var(--terra-color-carbon-80);
+    --terra-radio-label-font-family: var(--terra-font-family--inter);
+    --terra-radio-label-font-size: var(--terra-font-size-small);
+    --terra-radio-label-font-weight: var(--terra-font-weight-normal);
+
+    /* Radio focus */
+    --terra-radio-focus-ring-color: var(--terra-color-nasa-blue);
+    --terra-radio-focus-ring-width: var(--terra-focus-ring-width);
+    --terra-radio-focus-ring-offset: var(--terra-focus-ring-offset);
+
+    /*
      * Toggle Component
      * Toggles allow the user to toggle an option on or off.
      */
@@ -810,6 +877,32 @@
     --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
     --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
     --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
+
+    /* Checkbox - Dark Mode */
+    --terra-checkbox-background-color: var(--terra-color-carbon-10);
+    --terra-checkbox-background-color-hover: var(--terra-color-carbon-10);
+    --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-checkbox-border-color: var(--terra-color-carbon-20);
+    --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
+    --terra-checkbox-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-checkbox-label-color: var(--terra-color-carbon-60);
+
+    /* Radio - Dark Mode */
+    --terra-radio-background-color: var(--terra-color-carbon-10);
+    --terra-radio-background-color-hover: var(--terra-color-carbon-10);
+    --terra-radio-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-radio-border-color: var(--terra-color-carbon-20);
+    --terra-radio-border-color-hover: var(--terra-color-carbon-40);
+    --terra-radio-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-radio-label-color: var(--terra-color-carbon-60);
 
     /* Toggle - Dark Mode */
     --terra-toggle-label-color: var(--terra-color-carbon-60);
