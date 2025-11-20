@@ -56,6 +56,8 @@ export default css`
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
+        --terra-input-spacing-small: 0;
+        --terra-input-spacing-medium: 0;
 
         width: 0;
         height: 0;
@@ -64,7 +66,7 @@ export default css`
         left: 0;
     }
 
-    .filter terra-spatial-picker {
+    terra-spatial-picker {
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
@@ -76,7 +78,7 @@ export default css`
         left: 0;
     }
 
-    .filter terra-spatial-picker .spatial-picker {
+    terra-spatial-picker .spatial-picker {
         width: 0 !important;
         min-height: 38px !important;
         height: 38px !important;
@@ -86,7 +88,7 @@ export default css`
         left: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__input_fields {
+    terra-spatial-picker .spatial-picker__input_fields {
         display: none !important;
         visibility: hidden !important;
         width: 0 !important;
@@ -97,8 +99,8 @@ export default css`
         opacity: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__input_label,
-    .filter terra-spatial-picker label {
+    terra-spatial-picker .spatial-picker__input_label,
+    terra-spatial-picker label {
         display: none !important;
         visibility: hidden !important;
         width: 0 !important;
@@ -109,12 +111,12 @@ export default css`
         line-height: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__error {
+    terra-spatial-picker .spatial-picker__error {
         display: none !important;
         visibility: hidden !important;
     }
 
-    .filter terra-spatial-picker terra-input {
+    terra-spatial-picker terra-input {
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
@@ -126,11 +128,11 @@ export default css`
         left: 0;
     }
 
-    .filter terra-spatial-picker .spatial-picker__input_icon {
+    terra-spatial-picker .spatial-picker__input_icon {
         display: none !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__map-container {
+    terra-spatial-picker .spatial-picker__map-container {
         position: absolute !important;
         top: 100% !important;
         left: 0 !important;
@@ -152,14 +154,14 @@ export default css`
         margin-bottom: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__map-container.flipped {
+    terra-spatial-picker .spatial-picker__map-container.flipped {
         top: auto !important;
         bottom: calc(100% + 0.5rem) !important;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
     }
 
-    .filter terra-spatial-picker terra-map {
+    terra-spatial-picker terra-map {
         width: 100% !important;
         min-width: 100% !important;
     }
@@ -346,7 +348,7 @@ export default css`
     .download-dropdown {
         position: relative;
         display: inline-block;
-        z-index: 10000;
+        z-index: 800;
     }
 
     .download-btn {
@@ -388,7 +390,7 @@ export default css`
         border: 1px solid #dee2e6;
         border-radius: 6px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 9999;
+        z-index: 801;
         opacity: 0;
         visibility: hidden;
         transform: translateY(-10px);

@@ -599,6 +599,7 @@ export default class TerraDataAccess extends TerraElement {
                             ${ref(this.datePickerRef)}
                             range
                             hide-label
+                            enable-time
                             hide-input
                             show-presets
                             .startDate=${this.startDate}

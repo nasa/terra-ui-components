@@ -38,7 +38,7 @@ export default css`
 
     .input {
         position: relative;
-        display: flex;
+        display: var(--terra-input-display, flex);
         align-items: center;
         width: 100%;
         background: var(--terra-input-background-color);
@@ -123,18 +123,19 @@ export default css`
     /* Prefix and Suffix */
     .input__prefix,
     .input__suffix {
-        display: flex;
         align-items: center;
         color: var(--terra-input-icon-color);
         flex-shrink: 0;
     }
 
     .input__prefix {
+        display: var(--terra-input-prefix-display, flex);
         padding-left: var(--terra-input-spacing-medium);
         gap: var(--terra-spacing-x-small);
     }
 
     .input__suffix {
+        display: var(--terra-input-suffix-display, flex);
         padding-right: var(--terra-input-spacing-medium);
         gap: var(--terra-spacing-x-small);
     }

@@ -14,7 +14,20 @@ export default css`
         position: relative;
     }
 
+    /* Styles for dropdown panel content */
+    terra-dropdown::part(panel) {
+        padding: 0;
+    }
+
+    terra-dropdown .date-picker__dropdown {
+        position: static;
+        box-shadow: none;
+        border: none;
+        margin: 0;
+    }
+
     .date-picker__icon {
+        display: var(--terra-datepicker-icon-display, block);
         flex-shrink: 0;
         color: var(--terra-input-icon-color);
         cursor: pointer;
@@ -34,16 +47,19 @@ export default css`
     }
 
     .date-picker__dropdown {
-        position: absolute;
-        top: calc(100% + var(--terra-spacing-x-small));
-        left: 0;
-        z-index: var(--terra-z-index-dropdown);
         display: flex;
         flex-direction: column;
         background: var(--terra-panel-background-color);
         border-radius: var(--terra-border-radius-large);
         box-shadow: var(--terra-shadow-large);
         overflow: hidden;
+    }
+
+    /* For inline mode, position absolutely */
+    .date-picker--inline .date-picker__dropdown {
+        position: static;
+        box-shadow: none;
+        border: var(--terra-panel-border-width) solid var(--terra-panel-border-color);
     }
 
     .date-picker--inline {

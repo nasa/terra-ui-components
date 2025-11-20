@@ -18,8 +18,7 @@ export function getEnvironment(): Environment {
     const url = window.location.href
     const isUatUrl =
         url.includes('https://uat.') || // e.g. https://uat.urs.earthdata.nasa.gov/
-        url.includes('.uat.') || // e.g. https://cmr.uat.earthdata.nasa.gov/
-        url.includes('-test.') // e.g. https://uui-test.gesdisc.eosdis.nasa.gov/
+        url.includes('.uat.') // e.g. https://cmr.uat.earthdata.nasa.gov/
 
     return isUatUrl ? Environment.UAT : Environment.PROD
 }

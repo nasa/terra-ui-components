@@ -152,7 +152,7 @@
 //
 ;(() => {
     function getEnvironment() {
-        return localStorage.getItem('terra-environment') || 'uat'
+        return localStorage.getItem('terra-environment') || 'prod'
     }
 
     function setEnvironment(newEnvironment) {

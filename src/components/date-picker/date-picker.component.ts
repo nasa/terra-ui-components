@@ -1,11 +1,13 @@
 import { property, state, query } from 'lit/decorators.js'
 import { html } from 'lit'
+import { createRef, ref } from 'lit/directives/ref.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './date-picker.styles.js'
 import type { CSSResultGroup } from 'lit'
 import TerraButton from '../button/button.component.js'
 import TerraInput from '../input/input.component.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
 import { watch } from '../../internal/watch.js'
 
 interface DateRange {
@@ -26,6 +28,7 @@ interface PresetRange {
  *
  * @dependency terra-input
  * @dependency terra-button
+ * @dependency terra-dropdown
  *
  * @slot - The default slot.
  *
@@ -44,6 +47,7 @@ export default class TerraDatePicker extends TerraElement {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-input': TerraInput,
+        'terra-dropdown': TerraDropdown,
     }
 
     @property() id: string
@@ -86,6 +90,7 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     @query('.date-picker__dropdown') dropdown: HTMLElement
+    dropdownRef = createRef<TerraDropdown>()
 
     private readonly DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
     private readonly MONTHS = [
@@ -102,8 +107,6 @@ export default class TerraDatePicker extends TerraElement {
         'November',
         'December',
     ]
-    private ignoreClickOutside = false
-    private boundHandleClickOutside = this.handleClickOutside.bind(this)
 
     constructor() {
         super()
@@ -148,7 +151,6 @@ export default class TerraDatePicker extends TerraElement {
 
     open() {
         this.isOpen = true
-        this.ignoreClickOutside = true
 
         // If a max date is provided and no explicit selection exists,
         // open the calendar to the max date's month (right calendar in range mode)
@@ -166,11 +168,20 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
+        // Open the dropdown if not inline
+        if (!this.inline && this.dropdownRef.value) {
+            this.dropdownRef.value.show()
+        }
+
         this.requestUpdate()
     }
 
     close() {
         this.isOpen = false
+        // Close the dropdown if not inline
+        if (!this.inline && this.dropdownRef.value) {
+            this.dropdownRef.value.hide()
+        }
         this.requestUpdate()
     }
 
@@ -186,11 +197,10 @@ export default class TerraDatePicker extends TerraElement {
     handleInlineChange() {
         if (this.inline) {
             this.isOpen = true
-            // Remove click outside listener if it exists
-            document.removeEventListener('click', this.boundHandleClickOutside)
-        } else {
-            // Add click outside listener if not already added
-            document.addEventListener('click', this.boundHandleClickOutside)
+            // Close dropdown when switching to inline mode
+            if (this.dropdownRef.value) {
+                this.dropdownRef.value.hide()
+            }
         }
     }
 
@@ -339,36 +349,19 @@ export default class TerraDatePicker extends TerraElement {
         if (this.inline) {
             this.isOpen = true
         }
-
-        // Close dropdown when clicking outside (only if not inline)
-        if (!this.inline) {
-            document.addEventListener('click', this.boundHandleClickOutside)
-        }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback()
-        document.removeEventListener('click', this.boundHandleClickOutside)
+        // Dropdown handles its own cleanup
     }
 
-    private handleClickOutside(event: MouseEvent) {
-        if (this.inline) {
-            return
-        }
-
-        if (this.ignoreClickOutside) {
-            this.ignoreClickOutside = false
-            return
-        }
-
-        if (!this.contains(event.target as Node)) {
-            this.isOpen = false
-        }
+    private handleDropdownShow() {
+        this.isOpen = true
     }
 
-    private toggleDropdown(event: Event) {
-        event.stopPropagation()
-        this.setOpen(!this.isOpen)
+    private handleDropdownHide() {
+        this.isOpen = false
     }
 
     private formatDisplayDate(date: Date | null, isStart: boolean = true): string {
@@ -1334,113 +1327,217 @@ export default class TerraDatePicker extends TerraElement {
         `
     }
 
+    private renderCalendarContent() {
+        return html`
+            <div class="date-picker__dropdown" part="calendar">
+                <div class="date-picker__content">
+                    ${this.showPresets && this.filteredPresets.length > 0
+                        ? html`
+                              <div class="date-picker__sidebar" part="sidebar">
+                                  ${this.filteredPresets.map(
+                                      preset => html`
+                                          <button
+                                              type="button"
+                                              class="date-picker__preset"
+                                              @click=${() =>
+                                                  this.selectPreset(preset)}
+                                          >
+                                              ${preset.label}
+                                          </button>
+                                      `
+                                  )}
+                              </div>
+                          `
+                        : ''}
+
+                    <div class="date-picker__calendars">
+                        ${this.renderCalendar(this.leftMonth, true)}
+                        ${this.range
+                            ? this.renderCalendar(this.rightMonth, false)
+                            : ''}
+                    </div>
+                </div>
+
+                ${this.enableTime ? this.renderTimePicker() : ''}
+            </div>
+        `
+    }
+
     render() {
         const showSplitInputs = this.range && this.splitInputs
 
+        // Inline mode: render directly without dropdown
+        if (this.inline) {
+            return html`
+                <div
+                    class="date-picker date-picker--inline ${showSplitInputs
+                        ? 'date-picker--split-inputs'
+                        : ''}"
+                    @click=${(e: Event) => e.stopPropagation()}
+                >
+                    ${showSplitInputs
+                        ? html`
+                              <div class="date-picker__inputs">
+                                  <terra-input
+                                      .label=${this.startLabel ||
+                                      (this.label
+                                          ? `${this.label} (Start)`
+                                          : 'Start Date')}
+                                      .hideLabel=${this.hideLabel}
+                                      .helpText=${this.helpText}
+                                      .value=${this.getStartDateDisplayValue()}
+                                      readonly
+                                  >
+                                      ${this.renderCalendarIcon()}
+                                  </terra-input>
+                                  <terra-input
+                                      .label=${this.endLabel ||
+                                      (this.label
+                                          ? `${this.label} (End)`
+                                          : 'End Date')}
+                                      .hideLabel=${this.hideLabel}
+                                      .helpText=${this.helpText}
+                                      .value=${this.getEndDateDisplayValue()}
+                                      readonly
+                                  >
+                                      ${this.renderCalendarIcon()}
+                                  </terra-input>
+                              </div>
+                          `
+                        : html`
+                              <terra-input
+                                  .label=${this.label}
+                                  .hideLabel=${this.hideLabel}
+                                  .helpText=${this.helpText}
+                                  .value=${this.getDisplayValue()}
+                                  readonly
+                              >
+                                  ${this.renderCalendarIcon()}
+                              </terra-input>
+                          `}
+
+                    <div class="date-picker__dropdown-wrapper">
+                        <div
+                            class="date-picker__dropdown date-picker__dropdown--inline"
+                            part="calendar"
+                        >
+                            <div class="date-picker__content">
+                                ${this.showPresets && this.filteredPresets.length > 0
+                                    ? html`
+                                          <div
+                                              class="date-picker__sidebar"
+                                              part="sidebar"
+                                          >
+                                              ${this.filteredPresets.map(
+                                                  preset => html`
+                                                      <button
+                                                          type="button"
+                                                          class="date-picker__preset"
+                                                          @click=${() =>
+                                                              this.selectPreset(
+                                                                  preset
+                                                              )}
+                                                      >
+                                                          ${preset.label}
+                                                      </button>
+                                                  `
+                                              )}
+                                          </div>
+                                      `
+                                    : ''}
+
+                                <div class="date-picker__calendars">
+                                    ${this.renderCalendar(this.leftMonth, true)}
+                                    ${this.range
+                                        ? this.renderCalendar(this.rightMonth, false)
+                                        : ''}
+                                </div>
+                            </div>
+
+                            ${this.enableTime ? this.renderTimePicker() : ''}
+                        </div>
+                    </div>
+                </div>
+            `
+        }
+
+        // Non-inline mode: use dropdown
         return html`
             <div
-                class="date-picker ${this.inline
-                    ? 'date-picker--inline'
-                    : ''} ${showSplitInputs ? 'date-picker--split-inputs' : ''}"
+                class="date-picker ${showSplitInputs
+                    ? 'date-picker--split-inputs'
+                    : ''}"
                 @click=${(e: Event) => e.stopPropagation()}
             >
                 ${showSplitInputs
                     ? html`
                           <div class="date-picker__inputs">
-                              <terra-input
-                                  .label=${this.startLabel ||
-                                  (this.label
-                                      ? `${this.label} (Start)`
-                                      : 'Start Date')}
-                                  .hideLabel=${this.hideLabel}
-                                  .helpText=${this.helpText}
-                                  .value=${this.getStartDateDisplayValue()}
-                                  readonly
-                                  @click=${this.inline
-                                      ? undefined
-                                      : this.toggleDropdown}
+                              <terra-dropdown
+                                  ${ref(this.dropdownRef)}
+                                  placement="bottom-start"
+                                  distance="4"
+                                  @terra-show=${this.handleDropdownShow}
+                                  @terra-hide=${this.handleDropdownHide}
                               >
-                                  ${this.renderCalendarIcon()}
-                              </terra-input>
-                              <terra-input
-                                  .label=${this.endLabel ||
-                                  (this.label ? `${this.label} (End)` : 'End Date')}
-                                  .hideLabel=${this.hideLabel}
-                                  .helpText=${this.helpText}
-                                  .value=${this.getEndDateDisplayValue()}
-                                  readonly
-                                  @click=${this.inline
-                                      ? undefined
-                                      : this.toggleDropdown}
+                                  <terra-input
+                                      slot="trigger"
+                                      .label=${this.startLabel ||
+                                      (this.label
+                                          ? `${this.label} (Start)`
+                                          : 'Start Date')}
+                                      .hideLabel=${this.hideLabel}
+                                      .helpText=${this.helpText}
+                                      .value=${this.getStartDateDisplayValue()}
+                                      readonly
+                                  >
+                                      ${this.renderCalendarIcon()}
+                                  </terra-input>
+                                  ${this.renderCalendarContent()}
+                              </terra-dropdown>
+                              <terra-dropdown
+                                  placement="bottom-start"
+                                  distance="4"
+                                  @terra-show=${this.handleDropdownShow}
+                                  @terra-hide=${this.handleDropdownHide}
                               >
-                                  ${this.renderCalendarIcon()}
-                              </terra-input>
+                                  <terra-input
+                                      slot="trigger"
+                                      .label=${this.endLabel ||
+                                      (this.label
+                                          ? `${this.label} (End)`
+                                          : 'End Date')}
+                                      .hideLabel=${this.hideLabel}
+                                      .helpText=${this.helpText}
+                                      .value=${this.getEndDateDisplayValue()}
+                                      readonly
+                                  >
+                                      ${this.renderCalendarIcon()}
+                                  </terra-input>
+                                  ${this.renderCalendarContent()}
+                              </terra-dropdown>
                           </div>
                       `
                     : html`
-                          <terra-input
-                              .label=${this.label}
-                              .hideLabel=${this.hideLabel}
-                              .helpText=${this.helpText}
-                              .value=${this.getDisplayValue()}
-                              readonly
-                              @click=${this.inline ? undefined : this.toggleDropdown}
+                          <terra-dropdown
+                              ${ref(this.dropdownRef)}
+                              placement="bottom-start"
+                              distance="4"
+                              @terra-show=${this.handleDropdownShow}
+                              @terra-hide=${this.handleDropdownHide}
                           >
-                              ${this.renderCalendarIcon()}
-                          </terra-input>
-                      `}
-
-                <div class="date-picker__dropdown-wrapper">
-                    ${this.isOpen || this.inline
-                        ? html`
-                              <div
-                                  class="date-picker__dropdown ${this.inline
-                                      ? 'date-picker__dropdown--inline'
-                                      : ''}"
-                                  part="calendar"
+                              <terra-input
+                                  slot="trigger"
+                                  .label=${this.label}
+                                  .hideLabel=${this.hideLabel}
+                                  .helpText=${this.helpText}
+                                  .value=${this.getDisplayValue()}
+                                  readonly
                               >
-                                  <div class="date-picker__content">
-                                      ${this.showPresets &&
-                                      this.filteredPresets.length > 0
-                                          ? html`
-                                                <div
-                                                    class="date-picker__sidebar"
-                                                    part="sidebar"
-                                                >
-                                                    ${this.filteredPresets.map(
-                                                        preset => html`
-                                                            <button
-                                                                type="button"
-                                                                class="date-picker__preset"
-                                                                @click=${() =>
-                                                                    this.selectPreset(
-                                                                        preset
-                                                                    )}
-                                                            >
-                                                                ${preset.label}
-                                                            </button>
-                                                        `
-                                                    )}
-                                                </div>
-                                            `
-                                          : ''}
-
-                                      <div class="date-picker__calendars">
-                                          ${this.renderCalendar(this.leftMonth, true)}
-                                          ${this.range
-                                              ? this.renderCalendar(
-                                                    this.rightMonth,
-                                                    false
-                                                )
-                                              : ''}
-                                      </div>
-                                  </div>
-
-                                  ${this.enableTime ? this.renderTimePicker() : ''}
-                              </div>
-                          `
-                        : ''}
-                </div>
+                                  ${this.renderCalendarIcon()}
+                              </terra-input>
+                              ${this.renderCalendarContent()}
+                          </terra-dropdown>
+                      `}
             </div>
         `
     }
