@@ -22,7 +22,7 @@ While convenient, autoloading may lead to a [Flash of Undefined Custom Elements]
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/light.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.css" />
 <script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
 ```
 
@@ -41,32 +41,9 @@ The traditional CDN loader registers all Terra elements up front. Note that, if 
 </sl-tab-panel>
 </sl-tab-group>
 
-### Dark Theme
+### Dark Mode
 
-The code above will load the light theme. If you want to use the [dark theme](/getting-started/themes#dark-theme) instead, update the stylesheet as shown below and add `<html class="terra-theme-dark">` to your page.
-
-<!-- prettier-ignore -->
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/dark.css" />
-```
-
-### Light & Dark Theme
-
-If you want to load the light or dark theme based on the user's `prefers-color-scheme` setting, use the stylesheets below. The `media` attributes ensure that only the user's preferred theme stylesheet loads and the `onload` attribute sets the appropriate [theme class](/getting-started/themes) on the `<html>` element.
-
-```html
-<link
-    rel="stylesheet"
-    media="(prefers-color-scheme:light)"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/light.css"
-/>
-<link
-    rel="stylesheet"
-    media="(prefers-color-scheme:dark)"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/dark.css"
-    onload="document.documentElement.classList.add('terra-theme-dark');"
-/>
-```
+The Horizon theme includes both light and dark modes. Dark mode is automatically enabled based on the user's system preference. To manually control dark mode, see the [Themes documentation](/getting-started/themes#dark-mode).
 
 Now you can [start using Terra!](/getting-started/usage)
 
@@ -153,7 +130,7 @@ Here's an example that loads only the button component. Again, if you're not usi
 ```html
 <link
     rel="stylesheet"
-    href="/path/to/terra-ui-components/%NPMDIR%/themes/light.css"
+    href="/path/to/terra-ui-components/%NPMDIR%/themes/horizon.css"
 />
 
 <script
@@ -193,8 +170,7 @@ Now it's time to configure your bundler. Configurations vary for each tool, but 
 
 Once your bundler is configured, you'll be able to import Terra components and utilities.
 
-```js
-import '@nasa-terra/components/%NPMDIR%/themes/light.css'
+import '@nasa-terra/components/%NPMDIR%/themes/horizon.css'
 import '@nasa-terra/components/%NPMDIR%/components/button/button.js'
 import '@nasa-terra/components/%NPMDIR%/components/icon/icon.js'
 import '@nasa-terra/components/%NPMDIR%/components/input/input.js'
