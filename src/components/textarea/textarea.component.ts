@@ -10,52 +10,41 @@ import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import formControlStyles from '../../styles/form-control.styles.js'
 import TerraElement, { type TerraFormControl } from '../../internal/terra-element.js'
-import styles from './input.styles.js'
+import styles from './textarea.styles.js'
 import type { CSSResultGroup } from 'lit'
 
 /**
- * @summary A text input component with consistent styling across the design system.
- * @documentation https://terra-ui.netlify.app/components/input
+ * @summary A textarea component with consistent styling across the design system.
+ * @documentation https://terra-ui.netlify.app/components/textarea
  * @status stable
  * @since 2.0
  *
- * @slot prefix - Used to prepend content (like an icon) to the input.
- * @slot suffix - Used to append content (like an icon) to the input.
+ * @slot help-text - Text that describes how to use the textarea. Alternatively, you can use the `help-text` attribute.
  *
- * @event terra-input - Emitted when the input receives input.
+ * @event terra-input - Emitted when the textarea receives input.
  * @event terra-change - Emitted when an alteration to the control's value is committed by the user.
- * @event terra-focus - Emitted when the control gains focus.
- * @event terra-blur - Emitted when the control loses focus.
+ * @event terra-focus - Emitted when the textarea gains focus.
+ * @event terra-blur - Emitted when the textarea loses focus.
  * @event terra-invalid - Emitted when the form control has been checked for validity and its constraints aren't satisfied.
  *
  * @csspart base - The component's base wrapper.
- * @csspart input - The internal input control.
- * @csspart prefix - The container for prefix content.
- * @csspart suffix - The container for suffix content.
+ * @csspart textarea - The internal textarea control.
  * @csspart form-control-help-text - The help text's wrapper.
  */
-export default class TerraInput extends TerraElement implements TerraFormControl {
+export default class TerraTextarea extends TerraElement implements TerraFormControl {
     static styles: CSSResultGroup = [componentStyles, formControlStyles, styles]
 
     private readonly formControlController = new FormControlController(this, {
-        value: (control: TerraInput) => control.value,
-        defaultValue: (control: TerraInput) => control.defaultValue,
-        setValue: (control: TerraInput, value: string) => (control.value = value),
+        value: (control: TerraTextarea) => control.value,
+        defaultValue: (control: TerraTextarea) => control.defaultValue,
+        setValue: (control: TerraTextarea, value: string) => (control.value = value),
     })
     private readonly hasSlotController = new HasSlotController(this, 'help-text')
 
-    @query('.input__control') input: HTMLInputElement
+    @query('.textarea__control') textarea: HTMLTextAreaElement
 
     @state() hasFocus = false
 
-    @property() type:
-        | 'text'
-        | 'email'
-        | 'number'
-        | 'password'
-        | 'search'
-        | 'tel'
-        | 'url' = 'text'
     @property() name = ''
     @property() value = ''
     @property() placeholder = ''
@@ -65,22 +54,13 @@ export default class TerraInput extends TerraElement implements TerraFormControl
     @property() autocomplete?: string
     @property({ type: Number }) minlength?: number
     @property({ type: Number }) maxlength?: number
-    @property() min?: number | string
-    @property() max?: number | string
-    @property() step?: number | 'any'
-    @property() pattern?: string
-    @property({ attribute: 'input-mode' }) inputMode:
-        | 'none'
-        | 'text'
-        | 'decimal'
-        | 'numeric'
-        | 'tel'
-        | 'search'
-        | 'email'
-        | 'url' = 'text'
+    @property({ type: Number }) rows?: number
+    @property({ type: Number }) cols?: number
     @property() label = ''
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property({ attribute: 'help-text' }) helpText = ''
+    @property({ reflect: true }) resize: 'none' | 'both' | 'horizontal' | 'vertical' =
+        'vertical'
 
     /** The default value of the form control. Primarily used for resetting the form control. */
     @defaultValue('value') defaultValue = ''
@@ -94,12 +74,12 @@ export default class TerraInput extends TerraElement implements TerraFormControl
 
     /** Gets the validity state object */
     get validity() {
-        return this.input.validity
+        return this.textarea.validity
     }
 
     /** Gets the validation message */
     get validationMessage() {
-        return this.input.validationMessage
+        return this.textarea.validationMessage
     }
 
     firstUpdated() {
@@ -107,13 +87,13 @@ export default class TerraInput extends TerraElement implements TerraFormControl
     }
 
     handleInput() {
-        this.value = this.input.value
+        this.value = this.textarea.value
         this.formControlController.updateValidity()
         this.emit('terra-input')
     }
 
     handleChange() {
-        this.value = this.input.value
+        this.value = this.textarea.value
         this.formControlController.updateValidity()
         this.emit('terra-change')
     }
@@ -142,7 +122,7 @@ export default class TerraInput extends TerraElement implements TerraFormControl
 
     /** Checks for validity but does not show a validation message. Returns `true` when valid and `false` when invalid. */
     checkValidity() {
-        return this.input.checkValidity()
+        return this.textarea.checkValidity()
     }
 
     /** Gets the associated form, if one exists. */
@@ -152,7 +132,7 @@ export default class TerraInput extends TerraElement implements TerraFormControl
 
     /** Checks for validity and shows the browser's validation message if the control is invalid. */
     reportValidity() {
-        return this.input.reportValidity()
+        return this.textarea.reportValidity()
     }
 
     /**
@@ -160,20 +140,20 @@ export default class TerraInput extends TerraElement implements TerraFormControl
      * the custom validation message, call this method with an empty string.
      */
     setCustomValidity(message: string) {
-        this.input.setCustomValidity(message)
+        this.textarea.setCustomValidity(message)
         this.formControlController.updateValidity()
     }
 
     focus(options?: FocusOptions) {
-        this.input.focus(options)
+        this.textarea.focus(options)
     }
 
     blur() {
-        this.input.blur()
+        this.textarea.blur()
     }
 
     select() {
-        this.input.select()
+        this.textarea.select()
     }
 
     setSelectionRange(
@@ -181,12 +161,14 @@ export default class TerraInput extends TerraElement implements TerraFormControl
         selectionEnd: number,
         selectionDirection: 'forward' | 'backward' | 'none' = 'none'
     ) {
-        this.input.setSelectionRange(selectionStart, selectionEnd, selectionDirection)
+        this.textarea.setSelectionRange(
+            selectionStart,
+            selectionEnd,
+            selectionDirection
+        )
     }
 
     render() {
-        const hasPrefix = this.querySelector('[slot="prefix"]') !== null
-        const hasSuffix = this.querySelector('[slot="suffix"]') !== null
         const hasHelpTextSlot = this.hasSlotController.test('help-text')
         const hasHelpText = this.helpText ? true : !!hasHelpTextSlot
 
@@ -200,15 +182,15 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                 ${this.label
                     ? html`
                           <label
-                              for="input"
+                              for="textarea"
                               part="form-control-label"
                               class=${this.hideLabel
-                                  ? 'input__label input__label--hidden'
-                                  : 'input__label'}
+                                  ? 'textarea__label textarea__label--hidden'
+                                  : 'textarea__label'}
                           >
                               ${this.label}
                               ${this.required
-                                  ? html`<span class="input__required-indicator"
+                                  ? html`<span class="textarea__required-indicator"
                                         >*</span
                                     >`
                                   : ''}
@@ -219,26 +201,19 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                 <div
                     part="base"
                     class=${classMap({
-                        input: true,
-                        'input--disabled': this.disabled,
-                        'input--focused': this.hasFocus,
-                        'input--has-prefix': hasPrefix,
-                        'input--has-suffix': hasSuffix,
+                        textarea: true,
+                        'textarea--disabled': this.disabled,
+                        'textarea--focused': this.hasFocus,
+                        'textarea--resize-none': this.resize === 'none',
+                        'textarea--resize-both': this.resize === 'both',
+                        'textarea--resize-horizontal': this.resize === 'horizontal',
+                        'textarea--resize-vertical': this.resize === 'vertical',
                     })}
                 >
-                    ${hasPrefix
-                        ? html`
-                              <span part="prefix" class="input__prefix">
-                                  <slot name="prefix"></slot>
-                              </span>
-                          `
-                        : ''}
-
-                    <input
-                        part="input"
-                        id="input"
-                        class="input__control"
-                        type=${this.type}
+                    <textarea
+                        part="textarea"
+                        id="textarea"
+                        class="textarea__control"
                         name=${ifDefined(this.name || undefined)}
                         ?disabled=${this.disabled}
                         ?readonly=${this.readonly}
@@ -246,28 +221,17 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                         placeholder=${ifDefined(this.placeholder || undefined)}
                         minlength=${ifDefined(this.minlength)}
                         maxlength=${ifDefined(this.maxlength)}
-                        min=${ifDefined(this.min)}
-                        max=${ifDefined(this.max)}
-                        step=${ifDefined(this.step)}
+                        rows=${ifDefined(this.rows)}
+                        cols=${ifDefined(this.cols)}
                         .value=${live(this.value)}
                         autocomplete=${ifDefined(this.autocomplete)}
-                        pattern=${ifDefined(this.pattern)}
-                        inputmode=${ifDefined(this.inputMode)}
                         aria-describedby="help-text"
                         @input=${this.handleInput}
                         @change=${this.handleChange}
                         @invalid=${this.handleInvalid}
                         @focus=${this.handleFocus}
                         @blur=${this.handleBlur}
-                    />
-
-                    ${hasSuffix
-                        ? html`
-                              <span part="suffix" class="input__suffix">
-                                  <slot name="suffix"></slot>
-                              </span>
-                          `
-                        : ''}
+                    ></textarea>
                 </div>
 
                 <div
@@ -285,6 +249,6 @@ export default class TerraInput extends TerraElement implements TerraFormControl
 
 declare global {
     interface HTMLElementTagNameMap {
-        'terra-input': TerraInput
+        'terra-textarea': TerraTextarea
     }
 }

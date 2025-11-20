@@ -35,6 +35,15 @@
         </ul>
     </li>
     
+    <li>
+        <h2>Forms</h2>
+        <ul>
+            <li>
+                <a href="{{ '/forms' | url }}">Overview</a>
+            </li>
+        </ul>
+    </li>
+    
     {% for sectionName in meta.sidebarSectionOrder %}
         {% if meta.componentsBySection[sectionName] %}
             <li>

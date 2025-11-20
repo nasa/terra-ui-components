@@ -67,7 +67,7 @@ module.exports = function (eleventyConfig) {
     })
 
     // Define the order of sections in the sidebar
-    const sidebarSectionOrder = ['Elements', 'Components']
+    const sidebarSectionOrder = ['Forms', 'Elements', 'Components']
 
     eleventyConfig.addGlobalData('meta', {
         title: 'Terra UI Components',

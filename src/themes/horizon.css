@@ -349,7 +349,7 @@
 
     --terra-input-required-content: '*';
     --terra-input-required-content-offset: -2px;
-    --terra-input-required-content-color: var(--terra-input-label-color);
+    --terra-input-required-content-color: var(--terra-color-nasa-red);
 
     --terra-input-border-radius-small: var(--terra-border-radius-medium);
     --terra-input-border-radius-medium: var(--terra-border-radius-medium);

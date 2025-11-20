@@ -5,11 +5,7 @@ export default css`
         display: block;
     }
 
-    .input-wrapper {
-        width: 100%;
-    }
-
-    .input__label {
+    .textarea__label {
         display: block;
         margin: 0 0 var(--terra-spacing-x-small, 0.5rem) 0;
         font-family: var(--terra-input-label-font-family);
@@ -19,7 +15,7 @@ export default css`
         color: var(--terra-input-label-color);
     }
 
-    .input__label--hidden {
+    .textarea__label--hidden {
         position: absolute;
         width: 1px;
         height: 1px;
@@ -31,15 +27,14 @@ export default css`
         border-width: 0;
     }
 
-    .input__required-indicator {
+    .textarea__required-indicator {
         color: var(--terra-input-required-content-color);
         margin-left: var(--terra-input-required-content-offset);
     }
 
-    .input {
+    .textarea {
         position: relative;
         display: flex;
-        align-items: center;
         width: 100%;
         background: var(--terra-input-background-color);
         border-width: var(--terra-input-border-width);
@@ -51,26 +46,27 @@ export default css`
             box-shadow var(--terra-transition-fast);
     }
 
-    .input:hover:not(.input--disabled) {
+    .textarea:hover:not(.textarea--disabled) {
         border-color: var(--terra-input-border-color-hover);
     }
 
-    .input--focused:not(.input--disabled) {
+    .textarea--focused:not(.textarea--disabled) {
         outline: none;
         border-color: var(--terra-input-border-color-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
             var(--terra-input-focus-ring-color);
     }
 
-    .input--disabled {
+    .textarea--disabled {
         background-color: var(--terra-input-background-color-disabled);
         border-color: var(--terra-input-border-color-disabled);
         cursor: not-allowed;
     }
 
-    .input__control {
+    .textarea__control {
         flex: 1;
         width: 100%;
+        min-height: 6rem; /* ~96px - reasonable default for textarea */
         padding: var(--terra-input-spacing-medium) var(--terra-input-spacing-medium);
         background: transparent;
         border: none;
@@ -82,91 +78,60 @@ export default css`
         line-height: var(--terra-input-line-height);
         letter-spacing: var(--terra-input-letter-spacing);
         color: var(--terra-input-color);
+        resize: vertical;
     }
 
-    .input__control::placeholder {
+    .textarea--resize-none .textarea__control {
+        resize: none;
+    }
+
+    .textarea--resize-both .textarea__control {
+        resize: both;
+    }
+
+    .textarea--resize-horizontal .textarea__control {
+        resize: horizontal;
+    }
+
+    .textarea--resize-vertical .textarea__control {
+        resize: vertical;
+    }
+
+    .textarea__control::placeholder {
         color: var(--terra-input-placeholder-color);
     }
 
-    .input__control:disabled {
+    .textarea__control:disabled {
         color: var(--terra-input-color-disabled);
         cursor: not-allowed;
     }
 
-    .input__control:disabled::placeholder {
+    .textarea__control:disabled::placeholder {
         color: var(--terra-input-placeholder-color-disabled);
     }
 
-    .input__control:hover:not(:disabled) {
+    .textarea__control:hover:not(:disabled) {
         color: var(--terra-input-color-hover);
     }
 
-    .input__control:focus:not(:disabled) {
+    .textarea__control:focus:not(:disabled) {
         color: var(--terra-input-color-focus);
     }
 
-    .input__control:read-only {
+    .textarea__control:read-only {
         cursor: default;
     }
 
-    /* Hide browser spinners for number inputs */
-    .input__control::-webkit-outer-spin-button,
-    .input__control::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        margin: 0;
-    }
-
-    .input__control[type='number'] {
-        -moz-appearance: textfield;
-    }
-
-    /* Prefix and Suffix */
-    .input__prefix,
-    .input__suffix {
-        display: flex;
-        align-items: center;
-        color: var(--terra-input-icon-color);
-        flex-shrink: 0;
-    }
-
-    .input__prefix {
-        padding-left: var(--terra-input-spacing-medium);
-        gap: var(--terra-spacing-x-small);
-    }
-
-    .input__suffix {
-        padding-right: var(--terra-input-spacing-medium);
-        gap: var(--terra-spacing-x-small);
-    }
-
-    .input--has-prefix .input__control {
-        padding-left: var(--terra-input-spacing-small);
-    }
-
-    .input--has-suffix .input__control {
-        padding-right: var(--terra-input-spacing-small);
-    }
-
-    .input:hover:not(.input--disabled) .input__prefix,
-    .input:hover:not(.input--disabled) .input__suffix {
-        color: var(--terra-input-icon-color-hover);
-    }
-
-    .input--focused:not(.input--disabled) .input__prefix,
-    .input--focused:not(.input--disabled) .input__suffix {
-        color: var(--terra-input-icon-color-focus);
-    }
-
     /* Error State - using data attributes from FormControlController */
-    :host([data-user-invalid]) .input {
+    :host([data-user-invalid]) .textarea {
         border-color: var(--terra-color-nasa-red);
     }
 
-    :host([data-user-invalid]) .input:hover:not(.input--disabled) {
+    :host([data-user-invalid]) .textarea:hover:not(.textarea--disabled) {
         border-color: var(--terra-color-nasa-red-shade);
     }
 
-    :host([data-user-invalid]) .input.input--focused:not(.input--disabled) {
+    :host([data-user-invalid]) .textarea.textarea--focused:not(.textarea--disabled) {
         border-color: var(--terra-color-nasa-red);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
             var(--terra-color-nasa-red-tint);
