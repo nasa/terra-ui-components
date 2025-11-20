@@ -1,12 +1,12 @@
-import TerraFileUpload from './file-upload.component.js';
+import TerraFileUpload from './file-upload.component.js'
 
-export * from './file-upload.component.js';
-export default TerraFileUpload;
+export * from './file-upload.component.js'
+export default TerraFileUpload
 
-TerraFileUpload.define('terra-file-upload');
+TerraFileUpload.define('terra-file-upload')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-file-upload': TerraFileUpload;
+        'terra-file-upload': TerraFileUpload
     }
 }

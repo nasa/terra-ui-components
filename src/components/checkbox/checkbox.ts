@@ -1,12 +1,12 @@
-import TerraCheckbox from './checkbox.component.js';
+import TerraCheckbox from './checkbox.component.js'
 
-export * from './checkbox.component.js';
-export default TerraCheckbox;
+export * from './checkbox.component.js'
+export default TerraCheckbox
 
-TerraCheckbox.define('terra-checkbox');
+TerraCheckbox.define('terra-checkbox')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-checkbox': TerraCheckbox;
+        'terra-checkbox': TerraCheckbox
     }
 }

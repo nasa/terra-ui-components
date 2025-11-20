@@ -1,10 +1,10 @@
-import '../../../dist/terra-ui-components.js';
-import { expect, fixture, html } from '@open-wc/testing';
+import '../../../dist/terra-ui-components.js'
+import { expect, fixture, html } from '@open-wc/testing'
 
 describe('<terra-caption>', () => {
     it('should render a component', async () => {
-        const el = await fixture(html` <terra-caption></terra-caption> `);
+        const el = await fixture(html` <terra-caption></terra-caption> `)
 
-        expect(el).to.exist;
-    });
-});
+        expect(el).to.exist
+    })
+})

@@ -14,10 +14,10 @@ A theme is a stylesheet that uses CSS custom properties (design tokens) to defin
 
 The Horizon theme is Terra UI's default theme and implements NASA's Horizon Design System. It includes:
 
-- Complete design token system (colors, typography, spacing, etc.)
-- Automatic dark mode support via `prefers-color-scheme`
-- Manual theme control via CSS classes
-- Full component styling
+-   Complete design token system (colors, typography, spacing, etc.)
+-   Automatic dark mode support via `prefers-color-scheme`
+-   Manual theme control via CSS classes
+-   Full component styling
 
 ### Installing the Horizon Theme
 
@@ -33,7 +33,10 @@ To use the Horizon theme, add the following to the `<head>` section of your page
 Or if you're using npm:
 
 ```html
-<link rel="stylesheet" href="node_modules/@nasa-terra/components/%NPMDIR%/themes/horizon.css" />
+<link
+    rel="stylesheet"
+    href="node_modules/@nasa-terra/components/%NPMDIR%/themes/horizon.css"
+/>
 ```
 
 ### Dark Mode
@@ -41,6 +44,7 @@ Or if you're using npm:
 The Horizon theme includes both light and dark modes in a single file. Dark mode is automatically enabled when the user's system preference is set to dark mode using CSS `@media (prefers-color-scheme: dark)`.
 
 **Automatic dark mode (default):**
+
 ```html
 <html>
     <!-- Dark mode activates automatically based on system preference -->
@@ -49,6 +53,7 @@ The Horizon theme includes both light and dark modes in a single file. Dark mode
 ```
 
 **Force dark mode:**
+
 ```html
 <html class="terra-theme-dark">
     <!-- Always use dark mode, regardless of system preference -->
@@ -57,6 +62,7 @@ The Horizon theme includes both light and dark modes in a single file. Dark mode
 ```
 
 **Force light mode:**
+
 ```html
 <html class="terra-theme-horizon">
     <!-- Always use light mode, regardless of system preference -->
@@ -172,12 +178,12 @@ For component developers, the Horizon theme is also available as a JavaScript mo
 
 The Horizon theme provides a comprehensive set of design tokens that you can use and customize. These include:
 
-- **Colors**: NASA brand colors, neutrals, and semantic colors
-- **Typography**: Font families, sizes, weights, and line heights
-- **Spacing**: Consistent spacing scale
-- **Shadows**: Elevation tokens
-- **Border Radius**: Consistent border radius values
-- **Transitions**: Animation timing values
-- **Z-index**: Layering system
+-   **Colors**: NASA brand colors, neutrals, and semantic colors
+-   **Typography**: Font families, sizes, weights, and line heights
+-   **Spacing**: Consistent spacing scale
+-   **Shadows**: Elevation tokens
+-   **Border Radius**: Consistent border radius values
+-   **Transitions**: Animation timing values
+-   **Z-index**: Layering system
 
 For a complete reference of all available design tokens, see the [Design Tokens](/tokens/typography) section.

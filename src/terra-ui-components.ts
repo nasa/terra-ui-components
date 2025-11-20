@@ -42,9 +42,9 @@ export { default as TerraCheckbox } from './components/checkbox/checkbox.js'
 export { default as TerraRadio } from './components/radio/radio.js'
 export { default as TerraRadioGroup } from './components/radio-group/radio-group.js'
 export { default as TerraSelect } from './components/select/select.js'
-export { default as TerraOption } from './components/option/option.js';
-export { default as TerraFileUpload } from './components/file-upload/file-upload.js';
-export { default as TerraTextarea } from './components/textarea/textarea.js';
+export { default as TerraOption } from './components/option/option.js'
+export { default as TerraFileUpload } from './components/file-upload/file-upload.js'
+export { default as TerraTextarea } from './components/textarea/textarea.js'
 /* plop:component */
 
 // Utilities

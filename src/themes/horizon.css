@@ -418,7 +418,9 @@
     --terra-checkbox-background-color: var(--terra-color-spacesuit-white);
     --terra-checkbox-background-color-hover: var(--terra-color-spacesuit-white);
     --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
-    --terra-checkbox-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-background-color-checked-hover: var(
+        --terra-color-nasa-blue-shade
+    );
     --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
     --terra-checkbox-border-color: var(--terra-color-carbon-20);
     --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
@@ -882,7 +884,9 @@
     --terra-checkbox-background-color: var(--terra-color-carbon-10);
     --terra-checkbox-background-color-hover: var(--terra-color-carbon-10);
     --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
-    --terra-checkbox-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-background-color-checked-hover: var(
+        --terra-color-nasa-blue-shade
+    );
     --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
     --terra-checkbox-border-color: var(--terra-color-carbon-20);
     --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);

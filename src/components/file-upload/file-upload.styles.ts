@@ -210,8 +210,10 @@ export default css`
         border-color: var(--terra-color-carbon-60);
     }
 
-    .terra-theme-dark .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled),
-    :host(.terra-theme-dark) .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled) {
+    .terra-theme-dark
+        .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled),
+    :host(.terra-theme-dark)
+        .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled) {
         border-color: var(--terra-color-nasa-blue);
         background-color: hsla(212, 100%, 58%, 0.1);
     }

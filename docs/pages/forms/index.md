@@ -13,14 +13,14 @@ Forms are essential for collecting user input in web applications. Terra UI prov
 
 Terra UI includes the following form components:
 
-- **[Input](/components/input)** - Text inputs, email, password, number, and more
-- **[Textarea](/components/textarea)** - Multi-line text input for longer content
-- **[Select](/components/select)** - Dropdown select fields with single or multiple selection
-- **[Checkbox](/components/checkbox)** - Checkboxes for multiple selections
-- **[Radio](/components/radio)** - Radio buttons for single selection from a group
-- **[Radio Group](/components/radio-group)** - Groups radio buttons together
-- **[Date Picker](/components/date-picker)** - Date and date range selection
-- **[File Upload](/components/file-upload)** - File upload with drag-and-drop support
+-   **[Input](/components/input)** - Text inputs, email, password, number, and more
+-   **[Textarea](/components/textarea)** - Multi-line text input for longer content
+-   **[Select](/components/select)** - Dropdown select fields with single or multiple selection
+-   **[Checkbox](/components/checkbox)** - Checkboxes for multiple selections
+-   **[Radio](/components/radio)** - Radio buttons for single selection from a group
+-   **[Radio Group](/components/radio-group)** - Groups radio buttons together
+-   **[Date Picker](/components/date-picker)** - Date and date range selection
+-   **[File Upload](/components/file-upload)** - File upload with drag-and-drop support
 
 ## Basic Form Structure
 
@@ -34,7 +34,7 @@ All Terra form components integrate with native HTML forms and support standard 
     required
     placeholder="Enter your full name"
   ></terra-input>
-  
+
   <terra-input
     label="Email"
     name="email"
@@ -43,7 +43,7 @@ All Terra form components integrate with native HTML forms and support standard 
     placeholder="you@example.com"
     help-text="We'll never share your email."
   ></terra-input>
-  
+
   <terra-button type="submit" variant="primary">Submit</terra-button>
 </form>
 ```
@@ -61,27 +61,27 @@ The simplest layout stacks all form fields vertically in a single column. This w
     name="firstName"
     required
   ></terra-input>
-  
+
   <terra-input
     label="Last Name"
     name="lastName"
     required
   ></terra-input>
-  
+
   <terra-input
     label="Email Address"
     name="email"
     type="email"
     required
   ></terra-input>
-  
+
   <terra-input
     label="Phone Number"
     name="phone"
     type="tel"
     placeholder="(555) 123-4567"
   ></terra-input>
-  
+
   <div style="margin-top: var(--terra-spacing-medium);">
     <terra-button type="submit" variant="primary">Submit</terra-button>
     <terra-button type="reset" variant="text" style="margin-left: var(--terra-spacing-small);">Reset</terra-button>
@@ -101,14 +101,14 @@ For longer forms, you can use a two-column layout on larger screens. This makes 
       name="firstName"
       required
     ></terra-input>
-    
+
     <terra-input
       label="Last Name"
       name="lastName"
       required
     ></terra-input>
   </div>
-  
+
   <div style="margin-top: var(--terra-spacing-medium);">
     <terra-input
       label="Email Address"
@@ -117,7 +117,7 @@ For longer forms, you can use a two-column layout on larger screens. This makes 
       required
     ></terra-input>
   </div>
-  
+
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--terra-spacing-medium); margin-top: var(--terra-spacing-medium);">
     <terra-input
       label="Phone Number"
@@ -125,13 +125,13 @@ For longer forms, you can use a two-column layout on larger screens. This makes 
       type="tel"
       placeholder="(555) 123-4567"
     ></terra-input>
-    
+
     <terra-date-picker
       label="Date of Birth"
       name="dateOfBirth"
     ></terra-date-picker>
   </div>
-  
+
   <div style="margin-top: var(--terra-spacing-medium);">
     <terra-button type="submit" variant="primary">Submit</terra-button>
     <terra-button type="reset" variant="text" style="margin-left: var(--terra-spacing-small);">Reset</terra-button>
@@ -147,26 +147,26 @@ Group related fields together using visual separators or fieldset elements for b
 <form style="max-width: 600px;">
   <fieldset style="border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium); padding: var(--terra-spacing-medium); margin-bottom: var(--terra-spacing-medium);">
     <legend style="font-weight: var(--terra-font-weight-semibold); color: var(--terra-color-carbon-80); padding: 0 var(--terra-spacing-small);">Personal Information</legend>
-    
+
     <terra-input
       label="First Name"
       name="firstName"
       required
     ></terra-input>
-    
+
     <terra-input
       label="Last Name"
       name="lastName"
       required
     ></terra-input>
-    
+
     <terra-input
       label="Email"
       name="email"
       type="email"
       required
     ></terra-input>
-    
+
     <terra-textarea
       label="Bio"
       name="bio"
@@ -174,19 +174,19 @@ Group related fields together using visual separators or fieldset elements for b
       placeholder="Tell us about yourself"
     ></terra-textarea>
   </fieldset>
-  
+
   <fieldset style="border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium); padding: var(--terra-spacing-medium);">
     <legend style="font-weight: var(--terra-font-weight-semibold); color: var(--terra-color-carbon-80); padding: 0 var(--terra-spacing-small);">Preferences</legend>
-    
+
     <terra-checkbox name="newsletter" value="subscribe">
       Subscribe to newsletter
     </terra-checkbox>
-    
+
     <terra-checkbox name="updates" value="receive">
       Receive product updates
     </terra-checkbox>
   </fieldset>
-  
+
   <div style="margin-top: var(--terra-spacing-medium);">
     <terra-button type="submit" variant="primary">Submit</terra-button>
   </div>
@@ -199,7 +199,7 @@ Terra form components support native HTML5 validation and provide visual feedbac
 
 ### Required Fields
 
-Mark fields as required using the `required` attribute. Required fields show an asterisk (*) next to the label.
+Mark fields as required using the `required` attribute. Required fields show an asterisk (\*) next to the label.
 
 ```html:preview
 <form>
@@ -210,7 +210,7 @@ Mark fields as required using the `required` attribute. Required fields show an 
     required
     placeholder="you@example.com"
   ></terra-input>
-  
+
   <terra-button type="submit" variant="primary">Submit</terra-button>
 </form>
 ```
@@ -230,7 +230,7 @@ Use the `pattern` attribute to validate input against a regular expression.
     help-text="Format: 555-123-4567"
     required
   ></terra-input>
-  
+
   <terra-button type="submit" variant="primary">Submit</terra-button>
 </form>
 ```
@@ -249,14 +249,14 @@ You can implement custom validation logic using the `setCustomValidity()` method
     placeholder="Enter username"
     help-text="Username must be at least 3 characters"
   ></terra-input>
-  
+
   <terra-button type="submit" variant="primary">Submit</terra-button>
 </form>
 
 <script>
   const form = document.getElementById('custom-validation-form');
   const input = document.getElementById('username-input');
-  
+
   input.addEventListener('terra-input', (e) => {
     const value = e.target.value;
     if (value.length > 0 && value.length < 3) {
@@ -265,7 +265,7 @@ You can implement custom validation logic using the `setCustomValidity()` method
       input.setCustomValidity('');
     }
   });
-  
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (form.checkValidity()) {
@@ -281,18 +281,18 @@ You can implement custom validation logic using the `setCustomValidity()` method
 
 Form controls automatically receive data attributes that reflect their validation state:
 
-- `data-required` - The field is required
-- `data-optional` - The field is optional
-- `data-invalid` - The field is currently invalid
-- `data-valid` - The field is currently valid
-- `data-user-invalid` - The field is invalid and the user has interacted with it
-- `data-user-valid` - The field is valid and the user has interacted with it
+-   `data-required` - The field is required
+-   `data-optional` - The field is optional
+-   `data-invalid` - The field is currently invalid
+-   `data-valid` - The field is currently valid
+-   `data-user-invalid` - The field is invalid and the user has interacted with it
+-   `data-user-valid` - The field is valid and the user has interacted with it
 
 These attributes can be used to style validation states:
 
 ```css
 terra-input[data-user-invalid] {
-  /* Custom invalid styling */
+    /* Custom invalid styling */
 }
 ```
 
@@ -303,21 +303,21 @@ Here's a complete example showing various form components working together:
 ```html:preview
 <form id="complete-form" style="max-width: 600px;">
   <h3 style="margin-top: 0; margin-bottom: var(--terra-spacing-medium);">Contact Form</h3>
-  
+
   <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--terra-spacing-medium);">
     <terra-input
       label="First Name"
       name="firstName"
       required
     ></terra-input>
-    
+
     <terra-input
       label="Last Name"
       name="lastName"
       required
     ></terra-input>
   </div>
-  
+
   <terra-input
     label="Email"
     name="email"
@@ -325,14 +325,14 @@ Here's a complete example showing various form components working together:
     required
     help-text="We'll use this to contact you"
   ></terra-input>
-  
+
   <terra-input
     label="Phone"
     name="phone"
     type="tel"
     placeholder="(555) 123-4567"
   ></terra-input>
-  
+
   <terra-select
     label="Subject"
     name="subject"
@@ -344,7 +344,7 @@ Here's a complete example showing various form components working together:
     <terra-option value="support">Support</terra-option>
     <terra-option value="feedback">Feedback</terra-option>
   </terra-select>
-  
+
   <terra-textarea
     label="Message"
     name="message"
@@ -352,7 +352,7 @@ Here's a complete example showing various form components working together:
     required
     help-text="Please provide details about your inquiry"
   ></terra-textarea>
-  
+
   <terra-radio-group
     label="Preferred Contact Method"
     name="contactMethod"
@@ -363,11 +363,11 @@ Here's a complete example showing various form components working together:
     <terra-radio value="phone">Phone</terra-radio>
     <terra-radio value="either">Either</terra-radio>
   </terra-radio-group>
-  
+
   <terra-checkbox name="newsletter" value="subscribe">
     Subscribe to our newsletter
   </terra-checkbox>
-  
+
   <div style="margin-top: var(--terra-spacing-large); display: flex; gap: var(--terra-spacing-small);">
     <terra-button type="submit" variant="primary">Submit</terra-button>
     <terra-button type="reset" variant="text">Reset</terra-button>
@@ -400,11 +400,10 @@ Here's a complete example showing various form components working together:
 
 All Terra form components are built with accessibility in mind:
 
-- Labels are properly associated with inputs
-- Required fields are clearly indicated
-- Error states are announced to screen readers
-- Keyboard navigation is fully supported
-- Focus indicators are visible and clear
+-   Labels are properly associated with inputs
+-   Required fields are clearly indicated
+-   Error states are announced to screen readers
+-   Keyboard navigation is fully supported
+-   Focus indicators are visible and clear
 
 For more information on individual form components, see their respective documentation pages.
-

@@ -1,12 +1,12 @@
-import TerraCaption from './caption.component.js';
+import TerraCaption from './caption.component.js'
 
-export * from './caption.component.js';
-export default TerraCaption;
+export * from './caption.component.js'
+export default TerraCaption
 
-TerraCaption.define('terra-caption');
+TerraCaption.define('terra-caption')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-caption': TerraCaption;
+        'terra-caption': TerraCaption
     }
 }

@@ -1,12 +1,12 @@
-import TerraRadio from './radio.component.js';
+import TerraRadio from './radio.component.js'
 
-export * from './radio.component.js';
-export default TerraRadio;
+export * from './radio.component.js'
+export default TerraRadio
 
-TerraRadio.define('terra-radio');
+TerraRadio.define('terra-radio')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-radio': TerraRadio;
+        'terra-radio': TerraRadio
     }
 }

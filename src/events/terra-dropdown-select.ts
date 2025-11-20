@@ -8,4 +8,3 @@ declare global {
         'terra-dropdown-select': TerraDropdownSelectEvent
     }
 }
-
