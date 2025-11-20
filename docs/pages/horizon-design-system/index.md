@@ -14,10 +14,10 @@ This section shows you how to use HDS design tokens, CSS variables, and themes t
 
 Horizon Design System is NASA's official design system that provides:
 
-- **Design Tokens**: Colors, typography, spacing, and other design values
-- **Components**: Reusable UI components following NASA design guidelines
-- **Accessibility**: Built-in accessibility standards and best practices
-- **Consistency**: Ensures visual and functional consistency across NASA applications
+-   **Design Tokens**: Colors, typography, spacing, and other design values
+-   **Components**: Reusable UI components following NASA design guidelines
+-   **Accessibility**: Built-in accessibility standards and best practices
+-   **Consistency**: Ensures visual and functional consistency across NASA applications
 
 ## Using the Horizon Theme
 
@@ -104,7 +104,7 @@ To override existing variables, create a new stylesheet and scope it to the same
 .terra-theme-horizon {
     /* Override existing variables */
     --terra-color-nasa-blue: #0066cc;
-    
+
     /* Add new custom variables */
     --my-custom-color: #ff9900;
     --my-custom-spacing: 2.5rem;
@@ -114,14 +114,8 @@ To override existing variables, create a new stylesheet and scope it to the same
 Make sure to import your custom stylesheet **after** the Horizon theme:
 
 ```html
-<link
-    rel="stylesheet"
-    href="path/to/horizon.css"
-/>
-<link
-    rel="stylesheet"
-    href="path/to/my-custom-theme.css"
-/>
+<link rel="stylesheet" href="path/to/horizon.css" />
+<link rel="stylesheet" href="path/to/my-custom-theme.css" />
 ```
 
 ### Creating Theme Variants
@@ -174,21 +168,22 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 | ------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
 | [Avatar](/components/avatar)                      | ✅ Fully Supported | Implements HDS avatar guidelines with image, initials, and icon support. Full dark mode support.          |
 | Badges                                            | ❌ Not Supported   | Not yet implemented.                                                                                      |
-| [Button](/components/button)                      | 🟡 In Progress     | Core HDS styles implemented. Some variants may need refinement.                                           |
+| [Button](/components/button)                      | ✅ Fully Supported | Core HDS styles implemented. Some variants were modified to fit application UI better.                    |
 | [Caption](/components/caption)                    | ✅ Fully Supported | CSS-only component for displaying captions with support for credits. Full dark mode support.              |
-| Checkbox                                          | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Checkbox](/components/checkbox)                  | ✅ Fully Supported | Implements HDS checkbox guidelines with design tokens, form integration, and full dark mode support.      |
 | [Chip](/components/chip)                          | ✅ Fully Supported | Fully implements HDS chip design with dark mode support.                                                  |
-| [Date Picker](/components/date-picker)            | 🟡 In Progress     | Functional but may need HDS design token updates.                                                         |
-| File Upload                                       | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Date Picker](/components/date-picker)            | ✅ Fully Supported | Implements HDS date picker patterns with design tokens, help text support, and full dark mode support.    |
+| [File Upload](/components/file-upload)            | ✅ Fully Supported | Implements HDS file upload patterns with drag-and-drop, previews, and full dark mode support.             |
 | Links                                             | ❌ Not Supported   | Not yet implemented.                                                                                      |
 | [Loader](/components/loader)                      | ✅ Fully Supported | Implements HDS loader patterns with design tokens.                                                        |
 | [Pagination](/components/pagination)              | ✅ Fully Supported | Implements HDS pagination patterns with design tokens, circular icon buttons, and full dark mode support. |
-| Radio Buttons                                     | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Radio](/components/radio)                        | ✅ Fully Supported | Implements HDS radio button guidelines with design tokens, form integration, and full dark mode support.  |
 | [Scroll Hint](/components/scroll-hint)            | ✅ Fully Supported | Implements HDS scroll hint patterns with animation and dark mode support.                                 |
+| [Select](/components/select)                      | ✅ Fully Supported | Implements HDS select field patterns with design tokens, multiple selection, and full dark mode support.  |
 | [Slider](/components/slider)                      | ✅ Fully Supported | Implements HDS slider patterns with design tokens, tooltip merging, and full dark mode support.           |
 | [Status Indicator](/components/status-indicator)  | ✅ Fully Supported | Displays mission/project status with a colored dot and label. Full dark mode support.                     |
 | [Tag](/components/tag)                            | ✅ Fully Supported | Supports content, topic, and urgent variants with icons, stacking, and full dark mode support.            |
-| Text & Select Fields ([Input](/components/input)) | 🟡 In Progress     | Core styles implemented. Some advanced features may need HDS alignment.                                   |
+| Text & Select Fields ([Input](/components/input)) | ✅ Fully Supported | Implements HDS input field patterns with design tokens, prefix/suffix slots, and full dark mode support.  |
 | [Toggle](/components/toggle)                      | ✅ Fully Supported | Implements HDS toggle patterns with design tokens and full dark mode support.                             |
 
 ### Components
@@ -343,8 +338,6 @@ If you're working on implementing HDS support for a component, please:
 
 ## Next Steps
 
-- Explore [Design Tokens](/tokens/typography) to see all available CSS variables
-- Learn about [HDS Components](/components/avatar) in the component documentation
-- Visit the [official HDS website](https://website.nasa.gov/hds/) for more information
-
-
+-   Explore [Design Tokens](/tokens/typography) to see all available CSS variables
+-   Learn about [HDS Components](/components/avatar) in the component documentation
+-   Visit the [official HDS website](https://website.nasa.gov/hds/) for more information
