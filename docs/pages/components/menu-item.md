@@ -3,6 +3,7 @@ meta:
     title: Menu Item
     description: Menu items provide options for the user to pick from in a menu.
 layout: component
+sidebarSection: Hidden
 ---
 
 # Menu Item

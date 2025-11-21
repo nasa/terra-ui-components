@@ -45,6 +45,9 @@ export { default as TerraSelect } from './components/select/select.js'
 export { default as TerraOption } from './components/option/option.js'
 export { default as TerraFileUpload } from './components/file-upload/file-upload.js'
 export { default as TerraTextarea } from './components/textarea/textarea.js'
+export { default as TerraTabs } from './components/tabs/tabs.js';
+export { default as TerraTab } from './components/tab/tab.js';
+export { default as TerraTabPanel } from './components/tab-panel/tab-panel.js';
 /* plop:component */
 
 // Utilities
