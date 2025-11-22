@@ -21,7 +21,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
         {
             id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
             cell_type: 'code',
-            source: '%pip install -q "terra_ui_components==0.0.115" "anywidget==0.9.15" "pandas"',
+            source: '%pip install -q "terra_ui_components==0.0.113" "anywidget==0.9.15" "pandas" "rasterio" "matplotlib"',
             metadata: {
                 trusted: true,
             },
@@ -49,9 +49,11 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
             id: '25b87ed4-2ad9-4c7d-b851-bc8fea3ded5a',
             metadata: {},
             source: [
-                '### Access the map GeoTIFF data\n',
+                '### Access the map GeoTIFF bytes\n',
                 '\n',
-                'Once the map renders, you can access the data:',
+                'Once the map renders, you can access the GeoTIFF as bytes: `print(map.data)`',
+                '\n',
+                'Here is an example of loading the bytes into `rasterio` and plotting via `matplotlib`. Note: The bytes can be loaded into many other Python libraries:',
             ],
         },
         {
@@ -60,7 +62,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
             id: '6b81a089-884d-4fd7-9d4e-c45a53307c20',
             metadata: {},
             outputs: [],
-            source: ['map.data'],
+            source: "import rasterio\nfrom rasterio.io import MemoryFile\nfrom io import BytesIO\nimport matplotlib.pyplot as plt\n\n# map.data contains the rendered GeoTIFF as bytes\nwith MemoryFile(map.data) as memfile:\n    with memfile.open() as dataset:\n        # You can now work with the dataset as if it were opened from a file\n        print(f\"Driver: {dataset.driver}\")\n        print(f\"CRS: {dataset.crs}\")\n        print(f\"Bounds: {dataset.bounds}\")\n        data = dataset.read(1)\n        print(f\"Data shape: {data.shape}\")\n\n        # Example of creating a figure and displaying the data\n        plt.figure(figsize=(10, 8))\n        plt.imshow(data, cmap='viridis')  # You can change the colormap\n        plt.colorbar(label='Values')\n        plt.title('GeoTIFF Visualization')\n        plt.xlabel('X')\n        plt.ylabel('Y')\n        plt.show()",
         },
     ]
 }
