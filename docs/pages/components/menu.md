@@ -118,19 +118,19 @@ Listen for the `terra-select` event to handle menu item selection.
 
 The menu component follows accessibility best practices:
 
-- Uses proper ARIA attributes (`role="menu"`)
-- Supports keyboard navigation (Arrow keys, Home, End, Enter, Space)
-- Implements roving tabindex for focus management
-- Works with screen readers
+-   Uses proper ARIA attributes (`role="menu"`)
+-   Supports keyboard navigation (Arrow keys, Home, End, Enter, Space)
+-   Implements roving tabindex for focus management
+-   Works with screen readers
 
 ## Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `Arrow Down` | Moves focus to the next item |
-| `Arrow Up` | Moves focus to the previous item |
-| `Home` | Moves focus to the first item |
-| `End` | Moves focus to the last item |
-| `Enter` or `Space` | Selects the focused item |
+| Key                | Action                           |
+| ------------------ | -------------------------------- |
+| `Arrow Down`       | Moves focus to the next item     |
+| `Arrow Up`         | Moves focus to the previous item |
+| `Home`             | Moves focus to the first item    |
+| `End`              | Moves focus to the last item     |
+| `Enter` or `Space` | Selects the focused item         |
 
 [component-metadata:terra-menu]

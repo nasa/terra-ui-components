@@ -181,7 +181,8 @@ import { setBasePath } from '@nasa-terra/components/%NPMDIR%/utilities/base-path
 setBasePath('/path/to/terra-ui-components/%NPMDIR%')
 
 // <terra-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
-```
+
+````
 
 :::warning
 Component modules include side effects for registration purposes. Because of this, importing directly from `@nasa-terra/components` may result in a larger bundle size than necessary. For optimal tree shaking, always cherry pick, i.e. import components and utilities from their respective files, as shown above.
@@ -194,7 +195,7 @@ By default, imports to components will auto-register themselves. This may not be
 ```diff
 - import TerraButton from '@nasa-terra/components/%NPMDIR%/components/button/button.js';
 + import TerraButton from '@nasa-terra/components/%NPMDIR%/components/button/button.component.js';
-```
+````
 
 Notice how the import ends with `.component.js`. This is the current convention to convey the import does not register itself.
 

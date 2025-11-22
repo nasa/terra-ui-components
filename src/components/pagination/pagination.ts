@@ -1,12 +1,12 @@
-import TerraPagination from './pagination.component.js';
+import TerraPagination from './pagination.component.js'
 
-export * from './pagination.component.js';
-export default TerraPagination;
+export * from './pagination.component.js'
+export default TerraPagination
 
-TerraPagination.define('terra-pagination');
+TerraPagination.define('terra-pagination')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-pagination': TerraPagination;
+        'terra-pagination': TerraPagination
     }
 }

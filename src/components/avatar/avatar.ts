@@ -1,12 +1,12 @@
-import TerraAvatar from './avatar.component.js';
+import TerraAvatar from './avatar.component.js'
 
-export * from './avatar.component.js';
-export default TerraAvatar;
+export * from './avatar.component.js'
+export default TerraAvatar
 
-TerraAvatar.define('terra-avatar');
+TerraAvatar.define('terra-avatar')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-avatar': TerraAvatar;
+        'terra-avatar': TerraAvatar
     }
 }

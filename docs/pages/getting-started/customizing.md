@@ -22,10 +22,10 @@ To customize a design token, simply override it in your stylesheet using a `:roo
 :root {
     /* Override NASA blue with a custom color */
     --terra-color-nasa-blue: #0052cc;
-    
+
     /* Customize spacing */
     --terra-spacing-small: 0.75rem;
-    
+
     /* Customize border radius */
     --terra-border-radius-medium: 0.375rem;
 }

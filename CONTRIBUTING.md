@@ -6,11 +6,10 @@ For detailed contributing guidelines, please visit:
 
 The documentation includes information on:
 
-- GitHub Issues
-- Pull Requests
-- Creating New Components
-- Python Widgets
-- Testing
-- Documentation
-- Best Practices
-
+-   GitHub Issues
+-   Pull Requests
+-   Creating New Components
+-   Python Widgets
+-   Testing
+-   Documentation
+-   Best Practices

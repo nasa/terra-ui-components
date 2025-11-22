@@ -1,12 +1,12 @@
-import TerraScrollHint from './scroll-hint.component.js';
+import TerraScrollHint from './scroll-hint.component.js'
 
-export * from './scroll-hint.component.js';
-export default TerraScrollHint;
+export * from './scroll-hint.component.js'
+export default TerraScrollHint
 
-TerraScrollHint.define('terra-scroll-hint');
+TerraScrollHint.define('terra-scroll-hint')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-scroll-hint': TerraScrollHint;
+        'terra-scroll-hint': TerraScrollHint
     }
 }

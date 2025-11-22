@@ -24,38 +24,38 @@ The Textarea component provides a standardized multi-line text input field with 
 
 ## Properties
 
-| Property       | Type                                                                                  | Default  | Description                                                   |
-| -------------- | ------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------- |
-| `name`         | `string`                                                                              | `''`     | The name of the textarea, submitted with form data            |
-| `value`        | `string`                                                                              | `''`     | The current value of the textarea                             |
-| `placeholder`  | `string`                                                                              | `''`     | Placeholder text to show when the textarea is empty           |
-| `disabled`     | `boolean`                                                                             | `false`  | Disables the textarea                                          |
-| `readonly`     | `boolean`                                                                             | `false`  | Makes the textarea read-only                                   |
-| `required`     | `boolean`                                                                             | `false`  | Makes the textarea required (shows asterisk in label)         |
-| `autocomplete` | `string`                                                                              | -        | HTML autocomplete attribute                                    |
-| `minlength`    | `number`                                                                              | -        | Minimum length of text                                         |
-| `maxlength`    | `number`                                                                              | -        | Maximum length of text                                         |
-| `rows`         | `number`                                                                              | -        | Number of visible text lines                                   |
-| `cols`         | `number`                                                                              | -        | Visible width of the textarea (in characters)                 |
-| `resize`       | `'none' \| 'both' \| 'horizontal' \| 'vertical'`                                      | `'vertical'` | Controls whether the textarea can be resized              |
-| `label`        | `string`                                                                              | `''`     | Label text displayed above the textarea                        |
-| `hideLabel`    | `boolean`                                                                             | `false`  | Visually hides the label (still accessible to screen readers) |
-| `helpText`     | `string`                                                                              | `''`     | Help text displayed below the textarea                        |
+| Property       | Type                                             | Default      | Description                                                   |
+| -------------- | ------------------------------------------------ | ------------ | ------------------------------------------------------------- |
+| `name`         | `string`                                         | `''`         | The name of the textarea, submitted with form data            |
+| `value`        | `string`                                         | `''`         | The current value of the textarea                             |
+| `placeholder`  | `string`                                         | `''`         | Placeholder text to show when the textarea is empty           |
+| `disabled`     | `boolean`                                        | `false`      | Disables the textarea                                         |
+| `readonly`     | `boolean`                                        | `false`      | Makes the textarea read-only                                  |
+| `required`     | `boolean`                                        | `false`      | Makes the textarea required (shows asterisk in label)         |
+| `autocomplete` | `string`                                         | -            | HTML autocomplete attribute                                   |
+| `minlength`    | `number`                                         | -            | Minimum length of text                                        |
+| `maxlength`    | `number`                                         | -            | Maximum length of text                                        |
+| `rows`         | `number`                                         | -            | Number of visible text lines                                  |
+| `cols`         | `number`                                         | -            | Visible width of the textarea (in characters)                 |
+| `resize`       | `'none' \| 'both' \| 'horizontal' \| 'vertical'` | `'vertical'` | Controls whether the textarea can be resized                  |
+| `label`        | `string`                                         | `''`         | Label text displayed above the textarea                       |
+| `hideLabel`    | `boolean`                                        | `false`      | Visually hides the label (still accessible to screen readers) |
+| `helpText`     | `string`                                         | `''`         | Help text displayed below the textarea                        |
 
 ## Events
 
-| Event          | Description                                                      |
-| -------------- | ---------------------------------------------------------------- |
-| `terra-input`  | Emitted when the textarea receives input (fires on every keystroke) |
-| `terra-change` | Emitted when the textarea value changes and focus is lost        |
-| `terra-focus`  | Emitted when the textarea gains focus                           |
-| `terra-blur`   | Emitted when the textarea loses focus                           |
+| Event           | Description                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| `terra-input`   | Emitted when the textarea receives input (fires on every keystroke)                              |
+| `terra-change`  | Emitted when the textarea value changes and focus is lost                                        |
+| `terra-focus`   | Emitted when the textarea gains focus                                                            |
+| `terra-blur`    | Emitted when the textarea loses focus                                                            |
 | `terra-invalid` | Emitted when the form control has been checked for validity and its constraints aren't satisfied |
 
 ## Slots
 
-| Slot       | Description                                             |
-| ---------- | ------------------------------------------------------- |
+| Slot        | Description                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------------------- |
 | `help-text` | Text that describes how to use the textarea. Alternatively, you can use the `help-text` attribute. |
 
 ## Examples
@@ -125,13 +125,13 @@ The Textarea component provides a standardized multi-line text input field with 
     resize="vertical"
     placeholder="Can only resize vertically"
   ></terra-textarea>
-  
+
   <terra-textarea
     label="Resize: Both"
     resize="both"
     placeholder="Can resize both ways"
   ></terra-textarea>
-  
+
   <terra-textarea
     label="Resize: None"
     resize="none"
@@ -170,16 +170,16 @@ The Textarea component provides a standardized multi-line text input field with 
 
 ## Methods
 
-| Method                                                                    | Description                   |
-| ------------------------------------------------------------------------- | ----------------------------- |
-| `focus(options?: FocusOptions): void`                                     | Sets focus on the textarea    |
-| `blur(): void`                                                            | Removes focus from the textarea |
-| `select(): void`                                                          | Selects all text in the textarea |
-| `setSelectionRange(start: number, end: number, direction?: string): void` | Sets the text selection range |
-| `checkValidity(): boolean`                                                 | Checks for validity without showing validation message |
-| `reportValidity(): boolean`                                                | Checks for validity and shows validation message |
-| `setCustomValidity(message: string): void`                               | Sets a custom validation message |
-| `getForm(): HTMLFormElement \| null`                                      | Gets the associated form, if one exists |
+| Method                                                                    | Description                                            |
+| ------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `focus(options?: FocusOptions): void`                                     | Sets focus on the textarea                             |
+| `blur(): void`                                                            | Removes focus from the textarea                        |
+| `select(): void`                                                          | Selects all text in the textarea                       |
+| `setSelectionRange(start: number, end: number, direction?: string): void` | Sets the text selection range                          |
+| `checkValidity(): boolean`                                                | Checks for validity without showing validation message |
+| `reportValidity(): boolean`                                               | Checks for validity and shows validation message       |
+| `setCustomValidity(message: string): void`                                | Sets a custom validation message                       |
+| `getForm(): HTMLFormElement \| null`                                      | Gets the associated form, if one exists                |
 
 ## Best Practices
 
@@ -193,11 +193,11 @@ The Textarea component provides a standardized multi-line text input field with 
 
 ## Accessibility
 
-- Label is automatically associated with the textarea via `for` attribute
-- Required fields show a visual indicator (red asterisk) and have the `required` attribute
-- Help text is associated with the textarea for screen readers
-- Disabled state is properly conveyed to assistive technologies
-- Hidden labels remain accessible to screen readers
-- Validation states are announced to screen readers
+-   Label is automatically associated with the textarea via `for` attribute
+-   Required fields show a visual indicator (red asterisk) and have the `required` attribute
+-   Help text is associated with the textarea for screen readers
+-   Disabled state is properly conveyed to assistive technologies
+-   Hidden labels remain accessible to screen readers
+-   Validation states are announced to screen readers
 
 [component-metadata:terra-textarea]

@@ -51,10 +51,13 @@ module.exports = function (eleventyConfig) {
     allComponents.forEach(component => {
         // Get section from markdown front matter, default to "Components"
         const section = componentSectionMap[component.tagName] || 'Components'
-        if (!componentsBySection[section]) {
-            componentsBySection[section] = []
+
+        if (section !== 'Hidden') {
+            if (!componentsBySection[section]) {
+                componentsBySection[section] = []
+            }
+            componentsBySection[section].push(component)
         }
-        componentsBySection[section].push(component)
     })
 
     // Sort components within each section

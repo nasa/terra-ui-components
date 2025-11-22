@@ -418,7 +418,9 @@
     --terra-checkbox-background-color: var(--terra-color-spacesuit-white);
     --terra-checkbox-background-color-hover: var(--terra-color-spacesuit-white);
     --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
-    --terra-checkbox-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-background-color-checked-hover: var(
+        --terra-color-nasa-blue-shade
+    );
     --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
     --terra-checkbox-border-color: var(--terra-color-carbon-20);
     --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
@@ -670,6 +672,52 @@
     --terra-scroll-hint-icon-color: var(--terra-color-spacesuit-white);
     --terra-scroll-hint-text-color: var(--terra-color-carbon-black);
     --terra-scroll-hint-ring-color: var(--terra-color-nasa-red);
+
+    /*
+     * Tab Component
+     * Tabs divide content into meaningful, related sections.
+     */
+
+    /* Tab typography */
+    --terra-tab-font-family: var(--terra-font-family--inter);
+    --terra-tab-font-size-large: var(--terra-font-size-medium);
+    --terra-tab-font-size-small: var(--terra-font-size-small);
+    --terra-tab-font-weight-normal: var(--terra-font-weight-normal);
+    --terra-tab-font-weight-active: var(--terra-font-weight-bold);
+
+    /* Tab colors */
+    --terra-tab-color: var(--terra-color-carbon-black);
+    --terra-tab-color-hover: var(--terra-color-carbon-black);
+    --terra-tab-color-active: var(--terra-color-carbon-black);
+
+    /* Tab padding */
+    --terra-tab-padding-large: var(--terra-spacing-small) var(--terra-spacing-medium);
+    --terra-tab-padding-small: var(--terra-spacing-2x-small) var(--terra-spacing-small);
+    --terra-tab-padding-closable: var(--terra-spacing-2x-small);
+
+    /* Tab close button */
+    --terra-tab-close-button-padding: var(--terra-spacing-2x-small);
+    --terra-tab-close-button-margin: var(--terra-spacing-2x-small);
+
+    /* Tab states */
+    --terra-tab-opacity-disabled: 0.5;
+
+    /* Tab focus */
+    --terra-tab-focus-ring-offset: 2px;
+
+    /*
+     * Tabs Component
+     * Tabs organize content into a container that shows one section at a time.
+     */
+
+    /* Tabs indicator */
+    --terra-tabs-indicator-color: var(--terra-color-carbon-black);
+    --terra-tabs-indicator-width: 2px;
+    --terra-tabs-track-color: var(--terra-color-carbon-20);
+    --terra-tabs-track-width: 1px;
+
+    /* Tabs scroll controls */
+    --terra-tabs-scroll-button-width: var(--terra-spacing-x-large);
 }
 
 /* ============================================================================
@@ -790,6 +838,15 @@
         --terra-slider-handle-border-color: var(--terra-color-nasa-blue-tint);
         --terra-slider-label-color: var(--terra-color-carbon-60);
         --terra-slider-range-color: var(--terra-color-carbon-60);
+
+        /* Tab - Dark Mode */
+        --terra-tab-color: var(--terra-color-carbon-60);
+        --terra-tab-color-hover: var(--terra-color-carbon-80);
+        --terra-tab-color-active: var(--terra-color-carbon-90);
+
+        /* Tabs - Dark Mode */
+        --terra-tabs-indicator-color: var(--terra-color-carbon-90);
+        --terra-tabs-track-color: var(--terra-color-carbon-20);
     }
 }
 
@@ -882,7 +939,9 @@
     --terra-checkbox-background-color: var(--terra-color-carbon-10);
     --terra-checkbox-background-color-hover: var(--terra-color-carbon-10);
     --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
-    --terra-checkbox-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-background-color-checked-hover: var(
+        --terra-color-nasa-blue-shade
+    );
     --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
     --terra-checkbox-border-color: var(--terra-color-carbon-20);
     --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
@@ -937,4 +996,13 @@
     --terra-slider-handle-border-color: var(--terra-color-nasa-blue-tint);
     --terra-slider-label-color: var(--terra-color-carbon-60);
     --terra-slider-range-color: var(--terra-color-carbon-60);
+
+    /* Tab - Dark Mode */
+    --terra-tab-color: var(--terra-color-carbon-60);
+    --terra-tab-color-hover: var(--terra-color-carbon-80);
+    --terra-tab-color-active: var(--terra-color-carbon-90);
+
+    /* Tabs - Dark Mode */
+    --terra-tabs-indicator-color: var(--terra-color-carbon-90);
+    --terra-tabs-track-color: var(--terra-color-carbon-20);
 }

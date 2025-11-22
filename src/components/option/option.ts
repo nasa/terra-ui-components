@@ -1,12 +1,12 @@
-import TerraOption from './option.component.js';
+import TerraOption from './option.component.js'
 
-export * from './option.component.js';
-export default TerraOption;
+export * from './option.component.js'
+export default TerraOption
 
-TerraOption.define('terra-option');
+TerraOption.define('terra-option')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-option': TerraOption;
+        'terra-option': TerraOption
     }
 }

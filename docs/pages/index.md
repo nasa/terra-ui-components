@@ -48,12 +48,12 @@ This uses the autoloader, which registers components automatically. For other in
 
 ## Key Features
 
-- **Framework Agnostic**: Works with any modern framework or vanilla JavaScript
-- **Horizon Design System**: Built to match NASA's design standards
-- **Accessible**: WCAG compliant with full keyboard and screen reader support
-- **Customizable**: Fully customizable with CSS variables and design tokens
-- **Dark Mode**: Built-in dark theme support
-- **TypeScript**: Fully typed with TypeScript definitions
+-   **Framework Agnostic**: Works with any modern framework or vanilla JavaScript
+-   **Horizon Design System**: Built to match NASA's design standards
+-   **Accessible**: WCAG compliant with full keyboard and screen reader support
+-   **Customizable**: Fully customizable with CSS variables and design tokens
+-   **Dark Mode**: Built-in dark theme support
+-   **TypeScript**: Fully typed with TypeScript definitions
 
 ## Browser Support
 
@@ -67,7 +67,7 @@ Terra UI Components is tested in the latest two versions of Chrome, Edge, Firefo
 
 ## Next Steps
 
-- [Installation Guide](/getting-started/installation) - Get started with Terra UI
-- [Components](/components/avatar) - Browse available components
-- [Design System](/horizon-design-system) - Learn about design tokens and theming
-- [Contributing](/about/contributing) - Contribute to the project
+-   [Installation Guide](/getting-started/installation) - Get started with Terra UI
+-   [Components](/components/avatar) - Browse available components
+-   [Design System](/horizon-design-system) - Learn about design tokens and theming
+-   [Contributing](/about/contributing) - Contribute to the project

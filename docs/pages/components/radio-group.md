@@ -3,7 +3,7 @@ meta:
     title: Radio Group
     description: Radio groups are used to group multiple radio buttons so they function as a single form control.
 layout: component
-sidebarSection: Elements
+sidebarSection: Hidden
 ---
 
 ```html:preview

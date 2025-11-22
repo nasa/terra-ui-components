@@ -1,12 +1,12 @@
-import TerraTextarea from './textarea.component.js';
+import TerraTextarea from './textarea.component.js'
 
-export * from './textarea.component.js';
-export default TerraTextarea;
+export * from './textarea.component.js'
+export default TerraTextarea
 
-TerraTextarea.define('terra-textarea');
+TerraTextarea.define('terra-textarea')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-textarea': TerraTextarea;
+        'terra-textarea': TerraTextarea
     }
 }

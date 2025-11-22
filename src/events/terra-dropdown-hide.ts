@@ -9,4 +9,3 @@ declare global {
         'terra-dropdown-hide': TerraDropdownHideEvent
     }
 }
-

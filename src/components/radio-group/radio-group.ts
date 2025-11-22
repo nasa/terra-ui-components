@@ -1,12 +1,12 @@
-import TerraRadioGroup from './radio-group.component.js';
+import TerraRadioGroup from './radio-group.component.js'
 
-export * from './radio-group.component.js';
-export default TerraRadioGroup;
+export * from './radio-group.component.js'
+export default TerraRadioGroup
 
-TerraRadioGroup.define('terra-radio-group');
+TerraRadioGroup.define('terra-radio-group')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-radio-group': TerraRadioGroup;
+        'terra-radio-group': TerraRadioGroup
     }
 }

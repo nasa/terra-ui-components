@@ -3,6 +3,7 @@ meta:
     title: Menu Item
     description: Menu items provide options for the user to pick from in a menu.
 layout: component
+sidebarSection: Hidden
 ---
 
 # Menu Item
@@ -122,9 +123,9 @@ Menu items can contain submenus using the `submenu` slot.
 
 The menu item component follows accessibility best practices:
 
-- Uses proper ARIA attributes (`role="menuitem"` or `role="menuitemcheckbox"`)
-- Supports keyboard navigation
-- Works with screen readers
-- Properly handles disabled and checked states
+-   Uses proper ARIA attributes (`role="menuitem"` or `role="menuitemcheckbox"`)
+-   Supports keyboard navigation
+-   Works with screen readers
+-   Properly handles disabled and checked states
 
 [component-metadata:terra-menu-item]

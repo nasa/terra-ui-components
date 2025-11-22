@@ -12,11 +12,11 @@ Typography tokens are used to maintain a consistent set of font styles throughou
 
 HDS provides three font families for consistent typography:
 
-| Token                           | Value                    | Example                                                                                                 |
-| ------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------- |
-| `--terra-font-family--inter`    | 'Inter', sans-serif      | <span style="font-family: var(--terra-font-family--inter)">The quick brown fox jumped over the lazy dog.</span> |
+| Token                              | Value                     | Example                                                                                                               |
+| ---------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `--terra-font-family--inter`       | 'Inter', sans-serif       | <span style="font-family: var(--terra-font-family--inter)">The quick brown fox jumped over the lazy dog.</span>       |
 | `--terra-font-family--public-sans` | 'Public Sans', sans-serif | <span style="font-family: var(--terra-font-family--public-sans)">The quick brown fox jumped over the lazy dog.</span> |
-| `--terra-font-family--dm-mono`  | 'DM Mono', monospace     | <span style="font-family: var(--terra-font-family--dm-mono)">The quick brown fox jumped over the lazy dog.</span> |
+| `--terra-font-family--dm-mono`     | 'DM Mono', monospace      | <span style="font-family: var(--terra-font-family--dm-mono)">The quick brown fox jumped over the lazy dog.</span>     |
 
 ## Font Size
 
