@@ -692,7 +692,8 @@
 
     /* Tab padding */
     --terra-tab-padding-large: var(--terra-spacing-small) var(--terra-spacing-medium);
-    --terra-tab-padding-small: var(--terra-spacing-2x-small) var(--terra-spacing-small);
+    --terra-tab-padding-small: var(--terra-spacing-2x-small)
+        var(--terra-spacing-small);
     --terra-tab-padding-closable: var(--terra-spacing-2x-small);
 
     /* Tab close button */

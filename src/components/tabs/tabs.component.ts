@@ -306,10 +306,9 @@ export default class TerraTabs extends TerraElement {
     private handleScrollToStart() {
         const isRtl = getComputedStyle(this).direction === 'rtl'
         this.nav.scroll({
-            left:
-                isRtl
-                    ? this.nav.scrollLeft + this.nav.clientWidth
-                    : this.nav.scrollLeft - this.nav.clientWidth,
+            left: isRtl
+                ? this.nav.scrollLeft + this.nav.clientWidth
+                : this.nav.scrollLeft - this.nav.clientWidth,
             behavior: 'smooth',
         })
     }
@@ -317,10 +316,9 @@ export default class TerraTabs extends TerraElement {
     private handleScrollToEnd() {
         const isRtl = getComputedStyle(this).direction === 'rtl'
         this.nav.scroll({
-            left:
-                isRtl
-                    ? this.nav.scrollLeft - this.nav.clientWidth
-                    : this.nav.scrollLeft + this.nav.clientWidth,
+            left: isRtl
+                ? this.nav.scrollLeft - this.nav.clientWidth
+                : this.nav.scrollLeft + this.nav.clientWidth,
             behavior: 'smooth',
         })
     }
@@ -359,10 +357,14 @@ export default class TerraTabs extends TerraElement {
             // Emit events
             if (options.emitEvents) {
                 if (previousTab) {
-                    this.emit('terra-tab-hide', { detail: { name: previousTab.panel } })
+                    this.emit('terra-tab-hide', {
+                        detail: { name: previousTab.panel },
+                    })
                 }
 
-                this.emit('terra-tab-show', { detail: { name: this.activeTab.panel } })
+                this.emit('terra-tab-show', {
+                    detail: { name: this.activeTab.panel },
+                })
             }
         }
     }
@@ -593,10 +595,7 @@ export default class TerraTabs extends TerraElement {
                           `
                         : ''}
 
-                    <div
-                        class="tabs__nav"
-                        @scrollend=${this.updateScrollButtons}
-                    >
+                    <div class="tabs__nav" @scrollend=${this.updateScrollButtons}>
                         <div part="tabs" class="tabs__tabs" role="tablist">
                             <div
                                 part="active-tab-indicator"
