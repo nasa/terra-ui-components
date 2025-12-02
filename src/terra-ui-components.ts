@@ -11,7 +11,6 @@ export { default as TerraPlot } from './components/plot/plot.js'
 export { default as TerraSpatialPicker } from './components/spatial-picker/spatial-picker.js'
 export { default as TerraTimeSeries } from './components/time-series/time-series.js'
 export { default as TerraVariableCombobox } from './components/variable-combobox/variable-combobox.js'
-
 export { default as TerraBrowseVariables } from './components/browse-variables/browse-variables.js'
 export { default as TerraLogin } from './components/login/login.js'
 export { default as TerraDialog } from './components/dialog/dialog.js'
@@ -48,6 +47,10 @@ export { default as TerraTextarea } from './components/textarea/textarea.js'
 export { default as TerraTabs } from './components/tabs/tabs.js'
 export { default as TerraTab } from './components/tab/tab.js'
 export { default as TerraTabPanel } from './components/tab-panel/tab-panel.js'
+//export { default as TerraSiteHeader } from './components/site-header/site-header.js'
+//export { default as TerraSiteNavigation } from './components/site-navigation/site-navigation.js'
+export { default as TerraBreadcrumbs } from './components/breadcrumbs/breadcrumbs.js'
+export { default as TerraBreadcrumb } from './components/breadcrumb/breadcrumb.js'
 /* plop:component */
 
 // Utilities

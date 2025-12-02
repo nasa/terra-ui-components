@@ -390,7 +390,7 @@
     --terra-input-label-font-family: var(--terra-font-family--inter);
     --terra-input-label-font-size: var(--terra-font-size-small);
     --terra-input-label-color: var(--terra-color-carbon-80);
-    --terra-input-label-line-weight: var(var(--terra-font-weight-semibold));
+    --terra-input-label-line-weight: var(--terra-font-weight-semibold);
     --terra-input-label-line-height: var(--terra-line-height-looser);
 
     /* Map Component */
