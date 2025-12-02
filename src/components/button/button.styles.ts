@@ -442,6 +442,8 @@ export default css`
 
     .button--caret .button__caret {
         height: auto;
+        display: flex;
+        align-items: center;
     }
 
     /*

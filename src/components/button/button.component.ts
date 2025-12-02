@@ -14,6 +14,7 @@ import type {
     TerraDialogHideEvent,
     TerraDialogShowEvent,
 } from '../../terra-ui-components.js'
+import TerraIcon from '../icon/icon.component.js'
 
 /**
  * @summary Buttons represent actions that are available to the user.
@@ -29,11 +30,14 @@ import type {
  * @csspart prefix - The container that wraps the prefix.
  * @csspart label - The button's label.
  * @csspart suffix - The container that wraps the suffix.
- * @csspart caret - The button's caret icon, an `<sl-icon>` element.
+ * @csspart caret - The button's caret icon, an `<terra-icon>` element.
  * @csspart spinner - The spinner that shows when the button is in the loading state.
  */
 export default class TerraButton extends TerraElement implements TerraFormControl {
     static styles: CSSResultGroup = [componentStyles, styles]
+    static dependencies = {
+        'terra-icon': TerraIcon,
+    }
 
     private readonly formControlController = new FormControlController(this, {
         assumeInteractionOn: ['click'],
@@ -243,7 +247,58 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
         if (this.forDialog) {
             // this is a trigger for a dialog, go ahead and show the dialog
-            const el = document.getElementById(this.forDialog) as TerraDialog
+            // First try document.getElementById (for dialogs in light DOM)
+            let el = document.getElementById(this.forDialog) as TerraDialog
+
+            // If not found, search in shadow DOMs
+            if (!el) {
+                // Helper function to recursively search shadow roots
+                const findInShadowRoots = (
+                    root: Document | ShadowRoot
+                ): TerraDialog | null => {
+                    // Try getElementById if available (Document has it, ShadowRoot doesn't)
+                    if (
+                        'getElementById' in root &&
+                        typeof root.getElementById === 'function'
+                    ) {
+                        const found = root.getElementById(this.forDialog!)
+                        if (found) {
+                            return found as TerraDialog
+                        }
+                    }
+
+                    // Search all elements in this root
+                    const allElements = root.querySelectorAll('*')
+                    for (const element of allElements) {
+                        // Check if this element is the dialog we're looking for
+                        if (
+                            element.id === this.forDialog &&
+                            element.tagName.toLowerCase() === 'terra-dialog'
+                        ) {
+                            return element as TerraDialog
+                        }
+
+                        // If element has a shadow root, search it recursively
+                        if (
+                            element.shadowRoot &&
+                            element.shadowRoot.mode === 'open'
+                        ) {
+                            const found = findInShadowRoots(element.shadowRoot)
+                            if (found) {
+                                return found
+                            }
+                        }
+                    }
+
+                    return null
+                }
+
+                const found = findInShadowRoots(document)
+                if (found) {
+                    el = found
+                }
+            }
+
             el?.show()
         }
     }
@@ -416,6 +471,19 @@ export default class TerraButton extends TerraElement implements TerraFormContro
                     : ``
             }
         </slot>
+        ${
+            this.caret
+                ? html`
+                      <span part="caret" class="button__caret">
+                          <terra-icon
+                              name="solid-chevron-down"
+                              library="heroicons"
+                              aria-hidden="true"
+                          ></terra-icon>
+                      </span>
+                  `
+                : ''
+        }
       </${tag}>
     `
     }

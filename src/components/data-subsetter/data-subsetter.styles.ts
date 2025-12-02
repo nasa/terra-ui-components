@@ -5,6 +5,10 @@ export default css`
         display: block;
     }
 
+    terra-dialog {
+        --terra-font-size-large: 16px;
+    }
+
     :host * {
         box-sizing: border-box;
     }

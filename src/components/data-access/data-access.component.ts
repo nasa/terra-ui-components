@@ -33,6 +33,11 @@ import {
 } from 'ag-grid-community'
 import TerraSlider from '../slider/slider.component.js'
 import { getBasePath } from '../../utilities/base-path.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraMenu from '../menu/menu.component.js'
+import TerraMenuItem from '../menu-item/menu-item.component.js'
+import TerraButton from '../button/button.component.js'
+import type { TerraSelectEvent } from '../../events/terra-select.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -57,6 +62,10 @@ export default class TerraDataAccess extends TerraElement {
         'terra-date-picker': TerraDatePicker,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-slider': TerraSlider,
+        'terra-dropdown': TerraDropdown,
+        'terra-menu': TerraMenu,
+        'terra-menu-item': TerraMenuItem,
+        'terra-button': TerraButton,
     }
 
     @property({ reflect: true, attribute: 'short-name' })
@@ -64,6 +73,12 @@ export default class TerraDataAccess extends TerraElement {
 
     @property({ reflect: true, attribute: 'version' })
     version?: string
+
+    /**
+     * When true, the footer will be rendered with slot="footer" for use in a dialog.
+     */
+    @property({ attribute: 'footer-slot', type: Boolean })
+    footerSlot?: boolean
 
     @state()
     limit = 50
@@ -85,9 +100,6 @@ export default class TerraDataAccess extends TerraElement {
 
     @state()
     cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
-
-    @state()
-    showDownloadMenu = false
 
     @state()
     cloudCoverPickerOpen = false
@@ -405,9 +417,15 @@ export default class TerraDataAccess extends TerraElement {
         return 'Cloud Cover'
     }
 
-    #toggleDownloadMenu(event: Event) {
-        event.stopPropagation()
-        this.showDownloadMenu = !this.showDownloadMenu
+    #handleDownloadSelect(event: TerraSelectEvent) {
+        const item = event.detail.item
+        const value = item.value || item.getTextLabel()
+
+        if (value === 'python-script') {
+            this.#downloadPythonScript(event)
+        } else if (value === 'earthdata-download') {
+            this.#downloadEarthdataDownload(event)
+        }
     }
 
     async #downloadPythonScript(event: Event) {
@@ -519,8 +537,6 @@ export default class TerraDataAccess extends TerraElement {
 
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-
-        this.showDownloadMenu = false
     }
 
     async #downloadEarthdataDownload(event: Event) {
@@ -529,8 +545,6 @@ export default class TerraDataAccess extends TerraElement {
         console.log('downloading earthdata download ', this, this.#gridApi)
 
         alert('Sorry, Earthdata Download is not currently supported')
-
-        this.showDownloadMenu = false
     }
 
     #handleJupyterNotebookClick() {
@@ -738,77 +752,142 @@ export default class TerraDataAccess extends TerraElement {
                 })}
             </div>
 
-            <div style="margin-top: 15px;">
-                <div class="download-dropdown ${this.showDownloadMenu ? 'open' : ''}">
-                    <terra-button @click=${(e: Event) => this.#toggleDownloadMenu(e)}>
-                        Download Options
-                        <svg
-                            class="dropdown-arrow"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-                            <path d="M7 10l5 5 5-5z" />
-                        </svg>
-                    </terra-button>
+            ${this.footerSlot
+                ? html`
+                      <div
+                          slot="footer"
+                          style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
+                      >
+                          <terra-dropdown @terra-select=${this.#handleDownloadSelect}>
+                              <terra-button slot="trigger" caret>
+                                  Download Options
+                              </terra-button>
+                              <terra-menu>
+                                  <terra-menu-item value="python-script">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 128 128"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <path
+                                              fill="currentColor"
+                                              d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
+                                          ></path>
+                                      </svg>
+                                      Python Script
+                                  </terra-menu-item>
+                                  <terra-menu-item value="earthdata-download">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 64 64"
+                                          fill="none"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <circle
+                                              cx="32"
+                                              cy="32"
+                                              r="28"
+                                              fill="currentColor"
+                                          />
+                                          <path
+                                              d="M32 14v26M32 40l-9-9M32 40l9-9"
+                                              stroke="#fff"
+                                              stroke-width="4"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              fill="none"
+                                          />
+                                      </svg>
+                                      Earthdata Download
+                                  </terra-menu-item>
+                              </terra-menu>
+                          </terra-dropdown>
 
-                    <div class="download-menu ${this.showDownloadMenu ? 'open' : ''}">
-                        <button
-                            class="download-option"
-                            @click=${(e: Event) => this.#downloadPythonScript(e)}
-                        >
-                            <svg
-                                class="file-icon"
-                                viewBox="0 0 128 128"
-                                width="16"
-                                height="16"
-                            >
-                                <path
-                                    fill="currentColor"
-                                    d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
-                                ></path>
-                            </svg>
-                            Python Script
-                        </button>
-                        <button
-                            class="download-option"
-                            @click=${(e: Event) => this.#downloadEarthdataDownload(e)}
-                        >
-                            <svg
-                                class="file-icon"
-                                viewBox="0 0 64 64"
-                                fill="none"
-                                width="16"
-                                height="16"
-                            >
-                                <circle cx="32" cy="32" r="28" fill="currentColor" />
-                                <path
-                                    d="M32 14v26M32 40l-9-9M32 40l9-9"
-                                    stroke="#fff"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    fill="none"
-                                />
-                            </svg>
-                            Earthdata Download
-                        </button>
-                    </div>
-                </div>
+                          <terra-button
+                              outline
+                              @click=${() => this.#handleJupyterNotebookClick()}
+                          >
+                              <terra-icon
+                                  name="outline-code-bracket"
+                                  library="heroicons"
+                                  font-size="1.5em"
+                                  style="margin-right: 5px;"
+                              ></terra-icon>
+                              Open in Jupyter Notebook
+                          </terra-button>
+                      </div>
+                  `
+                : html`
+                      <div
+                          style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
+                      >
+                          <terra-dropdown @terra-select=${this.#handleDownloadSelect}>
+                              <terra-button slot="trigger" caret>
+                                  Download Options
+                              </terra-button>
+                              <terra-menu>
+                                  <terra-menu-item value="python-script">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 128 128"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <path
+                                              fill="currentColor"
+                                              d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
+                                          ></path>
+                                      </svg>
+                                      Python Script
+                                  </terra-menu-item>
+                                  <terra-menu-item value="earthdata-download">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 64 64"
+                                          fill="none"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <circle
+                                              cx="32"
+                                              cy="32"
+                                              r="28"
+                                              fill="currentColor"
+                                          />
+                                          <path
+                                              d="M32 14v26M32 40l-9-9M32 40l9-9"
+                                              stroke="#fff"
+                                              stroke-width="4"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              fill="none"
+                                          />
+                                      </svg>
+                                      Earthdata Download
+                                  </terra-menu-item>
+                              </terra-menu>
+                          </terra-dropdown>
 
-                <terra-button
-                    outline
-                    @click=${() => this.#handleJupyterNotebookClick()}
-                    style="margin-left: 8px;"
-                >
-                    <terra-icon
-                        name="outline-code-bracket"
-                        library="heroicons"
-                        font-size="1.5em"
-                        style="margin-right: 5px;"
-                    ></terra-icon>
-                    Open in Jupyter Notebook
-                </terra-button>
-            </div>
+                          <terra-button
+                              outline
+                              @click=${() => this.#handleJupyterNotebookClick()}
+                          >
+                              <terra-icon
+                                  name="outline-code-bracket"
+                                  library="heroicons"
+                                  font-size="1.5em"
+                                  style="margin-right: 5px;"
+                              ></terra-icon>
+                              Open in Jupyter Notebook
+                          </terra-button>
+                      </div>
+                  `}
         `
     }
 
