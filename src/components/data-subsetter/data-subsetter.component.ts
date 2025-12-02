@@ -233,7 +233,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         : nothing}
                 </div>
 
-                ${!this.jobId
+                ${!this.jobId && this.collectionWithServices?.services?.length
                     ? html`
                           <div class="section">
                               ${this.#renderDataAccessModeSelection()}
