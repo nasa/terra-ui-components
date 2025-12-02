@@ -982,12 +982,8 @@ export default css`
     }
 
     .mode-option input[type='radio'] {
-        margin: 0;
-        width: 18px;
-        height: 18px;
-        accent-color: #0066cc;
-        flex-shrink: 0;
-        margin-top: 2px;
+        position: absolute;
+        opacity: 0;
     }
 
     .mode-content {
