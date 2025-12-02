@@ -290,10 +290,6 @@ if (serve) {
                 '/dist': './cdn',
             },
         },
-        https: {
-            key: 'certs/server.key',
-            cert: 'certs/server.crt',
-        },
         middleware: function (req, res, next) {
             res.setHeader('Access-Control-Allow-Origin', '*')
             res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
