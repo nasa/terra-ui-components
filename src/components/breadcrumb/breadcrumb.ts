@@ -1,12 +1,12 @@
-import TerraBreadcrumb from './breadcrumb.component.js';
+import TerraBreadcrumb from './breadcrumb.component.js'
 
-export * from './breadcrumb.component.js';
-export default TerraBreadcrumb;
+export * from './breadcrumb.component.js'
+export default TerraBreadcrumb
 
-TerraBreadcrumb.define('terra-breadcrumb');
+TerraBreadcrumb.define('terra-breadcrumb')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-breadcrumb': TerraBreadcrumb;
+        'terra-breadcrumb': TerraBreadcrumb
     }
 }
