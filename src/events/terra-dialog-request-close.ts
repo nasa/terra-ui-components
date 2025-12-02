@@ -11,4 +11,3 @@ declare global {
         'terra-dialog-request-close': TerraDialogRequestCloseEvent
     }
 }
-

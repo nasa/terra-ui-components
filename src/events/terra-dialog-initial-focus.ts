@@ -9,4 +9,3 @@ declare global {
         'terra-dialog-initial-focus': TerraDialogInitialFocusEvent
     }
 }
-
