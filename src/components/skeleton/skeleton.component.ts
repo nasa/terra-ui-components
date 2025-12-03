@@ -4,7 +4,6 @@ import TerraElement from '../../internal/terra-element.js'
 import { getRandomIntInclusive } from '../../utilities/number.js'
 import { html } from 'lit'
 import { property } from 'lit/decorators.js'
-import { SlSkeleton } from '@shoelace-style/shoelace'
 import type { CSSResultGroup } from 'lit'
 
 /**
@@ -17,9 +16,6 @@ import type { CSSResultGroup } from 'lit'
  */
 export default class TerraSkeleton extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
-    static dependencies = {
-        'sl-skeleton': SlSkeleton,
-    }
 
     @property()
     rows: number = 1
@@ -32,17 +28,18 @@ export default class TerraSkeleton extends TerraElement {
 
     render() {
         return html`
-            ${new Array(parseInt(this.rows.toString()))
-                .fill(0)
-                .map(
-                    () =>
-                        html`<sl-skeleton
-                            effect=${this.effect}
-                            style=${this.variableWidths
-                                ? `width: ${getRandomIntInclusive(60, 100)}%`
-                                : ''}
-                        ></sl-skeleton>`
-                )}
+            ${new Array(parseInt(this.rows.toString())).fill(0).map(
+                () =>
+                    html` <div
+                        part="base"
+                        class=${`skeleton ${this.effect === 'pulse' ? 'skeleton--pulse' : ''} ${this.effect === 'sheen' ? 'skeleton--sheen' : ''}`}
+                        style=${this.variableWidths
+                            ? `width: ${getRandomIntInclusive(60, 100)}%`
+                            : ''}
+                    >
+                        <div part="indicator" class="skeleton__indicator"></div>
+                    </div>`
+            )}
         `
     }
 }

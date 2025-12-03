@@ -227,10 +227,10 @@
         1
     ); /* Use same color for both light & dark theme - don't tie to Neutrals scale */
     --terra-input-font-weight: var(--terra-font-weight-normal);
-    --terra-input-line-height: var(--terra-line-height-loose);
+    --terra-input-line-height: var(--terra-line-height-denser);
     --terra-input-border-color: var(--terra-color-carbon-20);
     --terra-input-background-color: var(--terra-color-spacesuit-white);
-    --terra-input-border-width: 2px;
+    --terra-input-border-width: 1px;
     --terra-input-border-radius: var(--terra-border-radius-medium);
 
     --terra-input-background-color-hover: var(--terra-input-background-color);
