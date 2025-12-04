@@ -1020,3 +1020,33 @@
     --terra-tabs-indicator-color: var(--terra-color-carbon-90);
     --terra-tabs-track-color: var(--terra-color-carbon-20);
 }
+
+/* Toast stack - appears outside of a component so needs it's own styles */
+.terra-toast-stack {
+    position: fixed;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: var(--terra-z-index-toast);
+    width: 28rem;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    padding: var(--terra-spacing-medium);
+    box-sizing: border-box;
+}
+
+.terra-toast-stack terra-alert,
+.terra-toast-stack terra-toast {
+    display: block;
+    margin-bottom: var(--terra-spacing-medium);
+}
+
+.terra-toast-stack terra-alert:last-child,
+.terra-toast-stack terra-toast:last-child {
+    margin-bottom: 0;
+}
+
+.terra-toast-stack terra-alert::part(base),
+.terra-toast-stack terra-toast::part(base) {
+    box-shadow: var(--terra-shadow-large);
+}
