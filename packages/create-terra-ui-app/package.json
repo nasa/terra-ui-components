@@ -1,6 +1,6 @@
 {
   "name": "create-terra-ui-app",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Easily scaffold a new Terra UI app using modern frameworks",
   "type": "module",
   "bin": {
