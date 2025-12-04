@@ -176,12 +176,8 @@ export default {
 
                         if (classDoc?.events) {
                             classDoc.events.forEach(event => {
-                                event.reactName = `on${pascalCase(
-                                    event.name
-                                )}`.replace(/^Sl/, 'Terra')
-                                event.eventName = `${pascalCase(
-                                    event.name
-                                )}Event`.replace(/^Sl/, 'Terra')
+                                event.reactName = `on${pascalCase(event.name)}`
+                                event.eventName = `${pascalCase(event.name)}Event`
                             })
                         }
                     }

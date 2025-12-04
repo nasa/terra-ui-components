@@ -166,7 +166,7 @@ export default css`
         font-size: 0;
     }
 
-    .list-menu-dropdown sl-button::part(base) {
+    .list-menu-dropdown terra-button::part(base) {
         border-color: transparent;
         font-weight: 700;
     }

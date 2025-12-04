@@ -31,7 +31,7 @@ Use the `variant` attribute to set the button's variant.
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -55,7 +55,7 @@ Use the `size` attribute to change a button's size.
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -79,7 +79,7 @@ Use the `outline` attribute to draw outlined buttons with transparent background
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -133,7 +133,7 @@ const App = () => (
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const = App = () => (
   <>
@@ -178,7 +178,7 @@ Use the `text` variant to create text buttons that share the same size as regula
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -206,7 +206,7 @@ Use the `pagelink` variant to create text buttons that use bold text and a red c
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -235,7 +235,7 @@ It's often helpful to have a button that works like a link. This is possible by 
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -270,7 +270,7 @@ As expected, buttons can be given a custom width by passing inline styles to the
 {% raw %}
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -304,7 +304,7 @@ Use the `caret` attribute to add a dropdown indicator when a button will trigger
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -332,7 +332,7 @@ Use the button `shape` attribute to override its radius. Useful for controlling 
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -361,7 +361,7 @@ Use the `loading` attribute to make a button busy. The width will remain the sam
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>
@@ -393,7 +393,7 @@ Use the `disabled` attribute to disable a button.
 ```
 
 ```jsx:react
-import TerraButton from '@shoelace-style/shoelace/dist/react/button';
+import TerraButton from '@nasa-terra/components/dist/react/button';
 
 const App = () => (
   <>

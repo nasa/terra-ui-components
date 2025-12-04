@@ -343,46 +343,46 @@ export default class TerraBrowseVariables extends TerraElement {
                 <!-- Sorting and Grouping feature still needs a UI / UX feature discussion.
                 <menu>
                     <li>
-                        <sl-dropdown class="list-menu-dropdown">
-                            <sl-button slot="trigger" caret>Sort By</sl-button>
-                            <sl-menu>
-                                <sl-menu-item value="aToZ">A&hellip;Z</sl-menu-item>
-                                <sl-menu-item value="zToA">Z&hellip;A</sl-menu-item>
-                            </sl-menu>
-                        </sl-dropdown>
+                        <terra-dropdown class="list-menu-dropdown">
+                            <terra-button slot="trigger" caret>Sort By</terra-button>
+                            <terra-menu>
+                                <terra-menu-item value="aToZ">A&hellip;Z</terra-menu-item>
+                                <terra-menu-item value="zToA">Z&hellip;A</terra-menu-item>
+                            </terra-menu>
+                        </terra-dropdown>
                     </li>
                     <li>
-                        <sl-dropdown class="list-menu-dropdown">
-                            <sl-button slot="trigger" caret>Group By</sl-button>
-                            <sl-menu>
-                                <sl-menu-item value="depths">Depths</sl-menu-item>
-                                <sl-menu-item value="disciplines"
-                                    >Disciplines</sl-menu-item
+                        <terra-dropdown class="list-menu-dropdown">
+                            <terra-button slot="trigger" caret>Group By</terra-button>
+                            <terra-menu>
+                                <terra-menu-item value="depths">Depths</terra-menu-item>
+                                <terra-menu-item value="disciplines"
+                                    >Disciplines</terra-menu-item
                                 >
-                                <sl-menu-item value="measurements"
-                                    >Measurements</sl-menu-item
+                                <terra-menu-item value="measurements"
+                                    >Measurements</terra-menu-item
                                 >
-                                <sl-menu-item value="observations"
-                                    >Observations</sl-menu-item
+                                <terra-menu-item value="observations"
+                                    >Observations</terra-menu-item
                                 >
-                                <sl-menu-item value="platformInstruments"
-                                    >Platform Instruments</sl-menu-item
+                                <terra-menu-item value="platformInstruments"
+                                    >Platform Instruments</terra-menu-item
                                 >
-                                <sl-menu-item value="portals">Portals</sl-menu-item>
-                                <sl-menu-item value="spatialResolutions"
-                                    >Spatial Resolutions</sl-menu-item
+                                <terra-menu-item value="portals">Portals</terra-menu-item>
+                                <terra-menu-item value="spatialResolutions"
+                                    >Spatial Resolutions</terra-menu-item
                                 >
-                                <sl-menu-item value="specialFeatures"
-                                    >Special Features</sl-menu-item
+                                <terra-menu-item value="specialFeatures"
+                                    >Special Features</terra-menu-item
                                 >
-                                <sl-menu-item value="temporalResolutions"
-                                    >Temporal Resolutions</sl-menu-item
+                                <terra-menu-item value="temporalResolutions"
+                                    >Temporal Resolutions</terra-menu-item
                                 >
-                                <sl-menu-item value="wavelengths"
-                                    >Wavelengths</sl-menu-item
+                                <terra-menu-item value="wavelengths"
+                                    >Wavelengths</terra-menu-item
                                 >
-                            </sl-menu>
-                        </sl-dropdown>
+                            </terra-menu>
+                        </terra-dropdown>
                     </li>
                 </menu>
                 -->

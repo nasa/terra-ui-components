@@ -6,8 +6,6 @@ layout: component
 sidebarSection: Elements
 ---
 
-<!-- TODO: @shoelace-style/shoelace/dist/react/alert needs to be replaced with our dist -->
-
 ```html:preview
 <terra-alert open>
   <terra-icon  slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>

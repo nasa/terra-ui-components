@@ -226,12 +226,12 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
     private handleBlur() {
         this.hasFocus = false
-        this.emit('sl-blur')
+        this.emit('terra-blur')
     }
 
     private handleFocus() {
         this.hasFocus = true
-        this.emit('sl-focus')
+        this.emit('terra-focus')
     }
 
     private handleClick() {

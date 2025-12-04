@@ -15,7 +15,7 @@ import TerraPopup from '../popup/popup.component.js'
 import styles from './dropdown.styles.js'
 import type { CSSResultGroup } from 'lit'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
-import type SlMenu from '../menu/menu.js'
+import type TerraMenu from '../menu/menu.js'
 import TerraElement from '../../internal/terra-element.js'
 
 /**
@@ -200,7 +200,7 @@ export default class TerraDropdown extends TerraElement {
         return this.panel
             .assignedElements({ flatten: true })
             .find(el => el.tagName.toLowerCase() === 'terra-menu') as
-            | SlMenu
+            | TerraMenu
             | undefined
     }
 
@@ -516,10 +516,10 @@ export default class TerraDropdown extends TerraElement {
 
         if (accessibleTrigger) {
             switch (accessibleTrigger.tagName.toLowerCase()) {
-                // Shoelace buttons have to update the internal button so it's announced correctly by screen readers
+                // Terra buttons have to update the internal button so it's announced correctly by screen readers
                 case 'terra-button':
                 case 'terra-icon-button':
-                    target = (accessibleTrigger as SlButton | SlIconButton).button
+                    target = (accessibleTrigger as TerraButton | TerraIconButton).button
                     break
 
                 default:

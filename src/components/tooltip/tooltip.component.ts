@@ -273,7 +273,7 @@ export default class TerraTooltip extends TerraElement {
     //
     // NOTE: Tooltip is a bit unique in that we're using aria-live instead of aria-labelledby to trick screen readers into
     // announcing the content. It works really well, but it violates an accessibility rule. We're also adding the
-    // aria-describedby attribute to a slot, which is required by <sl-popup> to correctly locate the first assigned
+    // aria-describedby attribute to a slot, which is required by <terra-popup> to correctly locate the first assigned
     // element, otherwise positioning is incorrect.
     //
     render() {

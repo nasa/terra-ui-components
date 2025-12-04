@@ -165,8 +165,7 @@ npm install @nasa-terra/components
 
 Now it's time to configure your bundler. Configurations vary for each tool, but here are some examples to help you get started.
 
--   [Example webpack config](https://github.com/shoelace-style/webpack-example/blob/master/webpack.config.js)
--   [Example Rollup config](https://github.com/shoelace-style/rollup-example/blob/master/rollup.config.js)
+-   EXAMPLES TBD. Please open an issue if needed
 
 Once your bundler is configured, you'll be able to import Terra components and utilities.
 
@@ -180,7 +179,7 @@ import { setBasePath } from '@nasa-terra/components/%NPMDIR%/utilities/base-path
 // Set the base path to the folder you copied Terra's assets to
 setBasePath('/path/to/terra-ui-components/%NPMDIR%')
 
-// <terra-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
+// <terra-button>, <terra-icon>, and <terra-input> are ready to use!
 
 ````
 

@@ -11,8 +11,6 @@ import type { CSSResultGroup } from 'lit'
  * @documentation https://terra-ui.netlify.app/components/skeleton
  * @status stable
  * @since 1.0
- *
- * @dependency sl-skeleton
  */
 export default class TerraSkeleton extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]

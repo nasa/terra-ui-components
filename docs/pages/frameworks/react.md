@@ -69,18 +69,23 @@ You can find a copy + paste import for each component in the "importing" section
 
 ### Event Handling
 
-Many Terra components emit [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). For example, the [input component](/components/input) emits the `terra-input` event when it receives input. In React, you can listen for the event using `onSlInput`.
+Many Terra components emit [custom events](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). For example, the [input component](/components/input) emits the `terra-input` event when it receives input. In React, you can listen for the event using `onTerraInput`.
 
 Here's how you can bind the input's value to a state variable.
 
 ```jsx
 import { useState } from 'react'
-import SlInput from '@nasa-terra/components/%NPMDIR%/react/input'
+import TerraInput from '@nasa-terra/components/%NPMDIR%/react/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
 
-    return <SlInput value={value} onSlInput={event => setValue(event.target.value)} />
+    return (
+        <TerraInput
+            value={value}
+            onTerraInput={event => setValue(event.target.value)}
+        />
+    )
 }
 
 export default MyComponent
@@ -90,16 +95,18 @@ If you're using TypeScript, it's important to note that `event.target` will be a
 
 ```tsx
 import { useState } from 'react'
-import SlInput from '@nasa-terra/components/%NPMDIR%/react/input'
-import type SlInputElement from '@nasa-terra/components/%NPMDIR%/components/input/input'
+import TerraInput from '@nasa-terra/components/%NPMDIR%/react/input'
+import type TerraInputElement from '@nasa-terra/components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
 
     return (
-        <SlInput
+        <TerraInput
             value={value}
-            onSlInput={event => setValue((event.target as SlInputElement).value)}
+            onTerraInput={event =>
+                setValue((event.target as TerraInputElement).value)
+            }
         />
     )
 }
@@ -111,21 +118,23 @@ You can also import the event type for use in your callbacks, shown below.
 
 ```tsx
 import { useCallback, useState } from 'react'
-import SlInput, {
-    type SlInputEvent,
+import TerraInput, {
+    type TerraInputEvent,
 } from '@nasa-terra/components/%NPMDIR%/react/input'
-import type SlInputElement from '@nasa-terra/components/%NPMDIR%/components/input/input'
+import type TerraInputElement from '@nasa-terra/components/%NPMDIR%/components/input/input'
 
 function MyComponent() {
     const [value, setValue] = useState('')
-    const onInput = useCallback((event: SlInputEvent) => {
+    const onInput = useCallback((event: TerraInputEvent) => {
         setValue(event.detail)
     }, [])
 
     return (
-        <SlInput
+        <TerraInput
             value={value}
-            onSlInput={event => setValue((event.target as SlInputElement).value)}
+            onTerraInput={event =>
+                setValue((event.target as TerraInputElement).value)
+            }
         />
     )
 }

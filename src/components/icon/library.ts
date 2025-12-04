@@ -1,6 +1,6 @@
 import defaultLibrary from './library.default.js'
 import heroiconLibrary from './library.heroicons.js'
-import type SlIcon from '../icon/icon.js'
+import type TerraIcon from '../icon/icon.js'
 
 export type IconLibraryResolver = (name: string) => string
 export type IconLibraryMutator = (svg: SVGElement) => void
@@ -11,15 +11,15 @@ export interface IconLibrary {
 }
 
 let registry: IconLibrary[] = [defaultLibrary, heroiconLibrary]
-let watchedIcons: SlIcon[] = []
+let watchedIcons: TerraIcon[] = []
 
 /** Adds an icon to the list of watched icons. */
-export function watchIcon(icon: SlIcon) {
+export function watchIcon(icon: TerraIcon) {
     watchedIcons.push(icon)
 }
 
 /** Removes an icon from the list of watched icons. */
-export function unwatchIcon(icon: SlIcon) {
+export function unwatchIcon(icon: TerraIcon) {
     watchedIcons = watchedIcons.filter(el => el !== icon)
 }
 

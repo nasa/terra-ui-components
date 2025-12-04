@@ -462,7 +462,7 @@ export default css`
         visibility: hidden;
     }
 
-    .button--loading sl-spinner {
+    .button--loading terra-spinner {
         --indicator-color: currentColor;
         position: absolute;
         font-size: 1em;

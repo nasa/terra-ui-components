@@ -35,7 +35,7 @@ const App = () => {
 
   return (
     <>
-      <TerraDialog label="Dialog" open={open} onSlAfterHide={() => setOpen(false)}>
+      <TerraDialog label="Dialog" open={open} onTerraAfterHide={() => setOpen(false)}>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit.
         <TerraButton slot="footer" variant="primary" onClick={() => setOpen(false)}>
           Close
@@ -84,7 +84,7 @@ const App = () => {
 
   return (
     <>
-      <TerraDialog label="Dialog" open={open} style={{ '--width': '50vw' }} onSlAfterHide={() => setOpen(false)}>
+      <TerraDialog label="Dialog" open={open} style={{ '--width': '50vw' }} onTerraAfterHide={() => setOpen(false)}>
         Lorem ipsum dolor sit amet, consectetur adipiscing elit.
         <TerraButton slot="footer" variant="primary" onClick={() => setOpen(false)}>
           Close
@@ -135,7 +135,7 @@ const App = () => {
 
   return (
     <>
-      <TerraDialog label="Dialog" open={open} onSlAfterHide={() => setOpen(false)}>
+      <TerraDialog label="Dialog" open={open} onTerraAfterHide={() => setOpen(false)}>
         <div
           style={{
             height: '150vh',
@@ -188,15 +188,15 @@ The header shows a functional close button by default. You can use the `header-a
 import { useState } from 'react';
 import TerraButton from '@nasa-terra/components/dist/react/button';
 import TerraDialog from '@nasa-terra/components/dist/react/dialog';
-import SlIconButton from '@nasa-terra/components/dist/react/icon-button';
+import TerraIconButton from '@nasa-terra/components/dist/react/icon-button';
 
 const App = () => {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <TerraDialog label="Dialog" open={open} onSlAfterHide={() => setOpen(false)}>
-        <SlIconButton
+      <TerraDialog label="Dialog" open={open} onTerraAfterHide={() => setOpen(false)}>
+        <TerraIconButton
           class="new-window"
           slot="header-actions"
           name="box-arrow-up-right"
@@ -264,7 +264,7 @@ const App = () => {
 
   return (
     <>
-      <TerraDialog label="Dialog" open={open} onSlRequestClose={handleRequestClose} onSlAfterHide={() => setOpen(false)}>
+      <TerraDialog label="Dialog" open={open} onSlRequestClose={handleRequestClose} onTerraAfterHide={() => setOpen(false)}>
         This dialog will not close when you click on the overlay.
         <TerraButton slot="footer" variant="primary" onClick={() => setOpen(false)}>
           Close
@@ -311,7 +311,7 @@ const App = () => {
 
   return (
     <>
-      <TerraDialog label="Dialog" open={open} onSlAfterHide={() => setOpen(false)}>
+      <TerraDialog label="Dialog" open={open} onTerraAfterHide={() => setOpen(false)}>
         <TerraInput autofocus placeholder="I will have focus when the dialog is opened" />
         <TerraButton slot="footer" variant="primary" onClick={() => setOpen(false)}>
           Close

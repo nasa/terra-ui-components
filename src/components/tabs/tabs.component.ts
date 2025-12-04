@@ -96,9 +96,6 @@ export default class TerraTabs extends TerraElement {
         })
 
         this.mutationObserver = new MutationObserver(mutations => {
-            // Make sure to only observe the direct children of the tabs component
-            // instead of other sub elements that might be slotted in.
-            // @see https://github.com/shoelace-style/shoelace/issues/2320
             const instanceMutations = mutations.filter(({ target }) => {
                 if (target === this) return true // Allow self updates
                 if ((target as HTMLElement).closest('terra-tabs') !== this)
@@ -508,8 +505,6 @@ export default class TerraTabs extends TerraElement {
             // In most cases, we can compare scrollWidth to clientWidth to determine if scroll controls should show. However,
             // Safari appears to calculate this incorrectly when zoomed at 110%, causing the controls to toggle indefinitely.
             // Adding a single pixel to the comparison seems to resolve it.
-            //
-            // See https://github.com/shoelace-style/shoelace/issues/1839
             this.hasScrollControls =
                 ['top', 'bottom'].includes(this.placement) &&
                 this.nav.scrollWidth > this.nav.clientWidth + 1

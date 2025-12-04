@@ -51,12 +51,11 @@ export { default as TerraTabPanel } from './components/tab-panel/tab-panel.js'
 //export { default as TerraSiteNavigation } from './components/site-navigation/site-navigation.js'
 export { default as TerraBreadcrumbs } from './components/breadcrumbs/breadcrumbs.js'
 export { default as TerraBreadcrumb } from './components/breadcrumb/breadcrumb.js'
-export { default as TerraBadge } from './components/badge/badge.js';
-export { default as TerraTooltip } from './components/tooltip/tooltip.js';
+export { default as TerraBadge } from './components/badge/badge.js'
+export { default as TerraTooltip } from './components/tooltip/tooltip.js'
 /* plop:component */
 
 // Utilities
-export * from './utilities/animation.js'
 export * from './utilities/base-path.js'
 export * from './utilities/form.js'
 export * from './utilities/icon-library.js'

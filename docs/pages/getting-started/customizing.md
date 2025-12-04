@@ -102,7 +102,7 @@ terra-avatar.your-class {
 Alternatively, you can set them inline directly on the element.
 
 ```html
-<sl-avatar style="--size: 6rem;"></sl-avatar>
+<terra-avatar style="--size: 6rem;"></terra-avatar>
 ```
 
 Not all components expose CSS custom properties. For those that do, they can be found in the component's API documentation.

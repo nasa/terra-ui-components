@@ -75,7 +75,7 @@ module.exports = function (doc, options) {
         <div class="code-preview__preview">
           ${code.textContent}
           <div class="code-preview__resizer">
-            <sl-icon name="grip-vertical"></sl-icon>
+            <terra-icon name="solid-bars-4" library="heroicons"></terra-icon>
           </div>
         </div>
 
