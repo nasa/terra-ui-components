@@ -1,0 +1,31 @@
+{
+  "name": "create-terra-app",
+  "version": "0.0.1",
+  "description": "Easily scaffold a new Terra UI app using modern frameworks",
+  "type": "module",
+  "bin": {
+    "create-terra-app": "./bin/create-terra-app.js"
+  },
+  "files": [
+    "bin",
+    "boilerplates"
+  ],
+  "keywords": [
+    "terra-ui",
+    "boilerplate",
+    "scaffold",
+    "create-app"
+  ],
+  "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nasa/terra-ui-components.git",
+    "directory": "packages/create-terra-app"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "command-line-args": "^5.2.1",
+    "ora": "^7.0.1"
+  }
+}
