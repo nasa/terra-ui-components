@@ -16,7 +16,14 @@ export default function Layout({ children }: LayoutProps) {
     return (
         <>
             <TerraSiteHeader siteName="Terra UI Demo">
-                <TerraSiteNavigation slot="center">
+                <div
+                    slot="right"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 'var(--terra-spacing-small)',
+                    }}
+                >
                     <TerraDropdown placement="bottom-start" distance={3} hover>
                         <TerraButton
                             slot="trigger"
@@ -35,15 +42,6 @@ export default function Layout({ children }: LayoutProps) {
                             </TerraMenuItem>
                         </TerraMenu>
                     </TerraDropdown>
-                </TerraSiteNavigation>
-                <div
-                    slot="right"
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 'var(--terra-spacing-small)',
-                    }}
-                >
                     <button
                         type="button"
                         style={{
@@ -55,7 +53,10 @@ export default function Layout({ children }: LayoutProps) {
                         }}
                         aria-label="Search"
                     >
-                        <TerraIcon name="magnifying-glass" library="heroicons" />
+                        <TerraIcon
+                            name="solid-magnifying-glass"
+                            library="heroicons"
+                        />
                     </button>
                 </div>
             </TerraSiteHeader>
