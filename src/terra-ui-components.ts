@@ -52,6 +52,7 @@ export { default as TerraTabPanel } from './components/tab-panel/tab-panel.js'
 export { default as TerraBreadcrumbs } from './components/breadcrumbs/breadcrumbs.js'
 export { default as TerraBreadcrumb } from './components/breadcrumb/breadcrumb.js'
 export { default as TerraBadge } from './components/badge/badge.js';
+export { default as TerraTooltip } from './components/tooltip/tooltip.js';
 /* plop:component */
 
 // Utilities

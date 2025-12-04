@@ -571,9 +571,10 @@
     --terra-alert-white-color: var(--terra-color-carbon-70);
 
     /*
-   * Tooltips
+   * Tooltips & Popovers
    */
 
+    /* Tooltip tokens (compact inline help) */
     --terra-tooltip-border-radius: var(--terra-border-radius-medium);
     --terra-tooltip-background-color: var(--terra-color-carbon-80);
     --terra-tooltip-color: var(--terra-color-spacesuit-white);
@@ -584,6 +585,18 @@
     --terra-tooltip-padding: var(--terra-spacing-2x-small)
         var(--terra-spacing-x-small);
     --terra-tooltip-arrow-size: 6px;
+
+    /* Popover tokens (card-like panels attached to an anchor) */
+    --terra-popover-border-radius: var(--terra-border-radius-medium);
+    --terra-popover-background-color: var(--terra-panel-background-color);
+    --terra-popover-color: var(--terra-font-color-primary);
+    --terra-popover-font-family: var(--terra-font-family--public-sans);
+    --terra-popover-font-weight: var(--terra-font-weight-normal);
+    --terra-popover-font-size: var(--terra-font-size-small);
+    --terra-popover-line-height: var(--terra-line-height-normal);
+    --terra-popover-padding: var(--terra-spacing-medium);
+    --terra-popover-shadow: var(--terra-shadow-medium);
+    --terra-popover-arrow-size: var(--terra-tooltip-arrow-size);
 
     /*
    * Z-indexes

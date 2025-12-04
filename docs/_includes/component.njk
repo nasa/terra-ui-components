@@ -142,13 +142,13 @@
               {% if prop.attribute | length > 0 %}
                 {% if prop.attribute != prop.name %}
                   <br>
-                  <sl-tooltip content="This attribute is different from its property">
+                  <terra-tooltip content="This attribute is different from its property">
                     <small>
                       <code class="nowrap">
                         {{ prop.attribute }}
                       </code>
                     </small>
-                  </sl-tooltip>
+                  </terra-tooltip>
                 {% endif %}
               {% endif %}
             </td>
