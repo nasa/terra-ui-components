@@ -82,6 +82,29 @@ export async function create(nextTask, outputDir, boilerplatesDir) {
         await fs.writeFile(indexPath, indexContent, 'utf-8')
     })
 
+    // Step 5: Copy kitchen-sink page
+    await nextTask('Adding kitchen-sink page', async () => {
+        const templatePath = path.join(boilerplatesDir, 'nextjs', 'kitchen-sink.tsx')
+        const kitchenSinkPath = path.join(projectPath, 'pages', 'kitchen-sink.tsx')
+        const kitchenSinkContent = await fs.readFile(templatePath, 'utf-8')
+        await fs.writeFile(kitchenSinkPath, kitchenSinkContent, 'utf-8')
+    })
+
+    // Step 6: Copy components directory
+    await nextTask('Adding Layout component', async () => {
+        const componentsSourceDir = path.join(boilerplatesDir, 'nextjs', 'components')
+        const componentsDestDir = path.join(projectPath, 'pages', 'components')
+
+        // Create components directory
+        await fs.mkdir(componentsDestDir, { recursive: true })
+
+        // Copy Layout.tsx
+        const layoutSourcePath = path.join(componentsSourceDir, 'Layout.tsx')
+        const layoutDestPath = path.join(componentsDestDir, 'Layout.tsx')
+        const layoutContent = await fs.readFile(layoutSourcePath, 'utf-8')
+        await fs.writeFile(layoutDestPath, layoutContent, 'utf-8')
+    })
+
     console.log(
         chalk.green(`\n✔ Boilerplate created successfully at: ${projectPath}`)
     )
