@@ -9,10 +9,6 @@ export default css`
         line-height: 1.5;
     }
 
-    :host([current]) {
-        color: var(--terra-breadcrumb-color-current, var(--terra-color-carbon-black));
-    }
-
     .breadcrumb {
         display: inline-flex;
         align-items: center;
