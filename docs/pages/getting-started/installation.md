@@ -10,11 +10,11 @@ You can load Terra via CDN or by installing it locally. If you're using a framew
 
 ## CDN Installation (Easiest)
 
-<sl-tab-group>
-<sl-tab slot="nav" panel="autoloader" active>Autoloader</sl-tab>
-<sl-tab slot="nav" panel="traditional">Traditional Loader</sl-tab>
+<terra-tabs>
+<terra-tab slot="nav" panel="autoloader" active>Autoloader</terra-tab>
+<terra-tab slot="nav" panel="traditional">Traditional Loader</terra-tab>
 
-<sl-tab-panel name="autoloader">
+<terra-tab-panel name="autoloader">
 
 The experimental autoloader is the easiest and most efficient way to use Terra. A lightweight script watches the DOM for unregistered Terra elements and lazy loads them for you — even if they're added dynamically.
 
@@ -26,9 +26,9 @@ While convenient, autoloading may lead to a [Flash of Undefined Custom Elements]
 <script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
 ```
 
-</sl-tab-panel>
+</terra-tab-panel>
 
-<sl-tab-panel name="traditional">
+<terra-tab-panel name="traditional">
 
 The traditional CDN loader registers all Terra elements up front. Note that, if you're only using a handful of components, it will be much more efficient to stick with the autoloader. However, you can also [cherry pick](#cherry-picking) components if you want to load specific ones up front.
 
@@ -38,8 +38,8 @@ The traditional CDN loader registers all Terra elements up front. Note that, if 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js" ></script>
 ```
 
-</sl-tab-panel>
-</sl-tab-group>
+</terra-tab-panel>
+</terra-tabs>
 
 ### Dark Mode
 

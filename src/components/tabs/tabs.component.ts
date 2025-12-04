@@ -16,7 +16,7 @@ import type TerraTabPanel from '../tab-panel/tab-panel.js'
  * @summary Tabs organize content into a container that shows one section at a time.
  * @documentation https://terra-ui.netlify.app/components/tabs
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @dependency terra-icon
  *

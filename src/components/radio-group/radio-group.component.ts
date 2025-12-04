@@ -20,7 +20,7 @@ import type TerraRadio from '../radio/radio.js'
  * @summary Radio groups are used to group multiple radio buttons so they function as a single form control.
  * @documentation https://terra-ui.netlify.app/components/radio-group
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot - The default slot where `<terra-radio>` elements are placed.
  * @slot label - The radio group's label. Required for proper accessibility. Alternatively, you can use the `label`

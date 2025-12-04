@@ -22,7 +22,7 @@ import {
 /**
  * @summary Fuzzy-search for combobox with list autocomplete.
  * @documentation https://terra-ui.netlify.app/components/combobox
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @csspart base - A `search` element, the component's base.

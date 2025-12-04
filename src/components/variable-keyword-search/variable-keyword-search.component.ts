@@ -17,7 +17,7 @@ import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
  * @summary Fuzzy-search for dataset keywords in combobox with list autocomplete.
  * @documentation https://terra-ui.netlify.app/components/giovanni-serch
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
- * @status MVP
+ * @status stable
  * @since 1.0
  *
  * @csspart base - A `search` element, the component's base.

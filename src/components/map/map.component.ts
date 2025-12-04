@@ -17,7 +17,7 @@ import { MapEventType } from './type.js'
 /**
  * @summary A map component for visualizing and selecting coordinates.
  * @documentation https://terra-ui.netlify.app/components/map
- * @status mvp
+ * @status stable
  * @since 1.0
  *
  */

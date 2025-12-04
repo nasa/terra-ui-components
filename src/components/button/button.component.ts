@@ -18,9 +18,9 @@ import TerraIcon from '../icon/icon.component.js'
 
 /**
  * @summary Buttons represent actions that are available to the user.
- * @documentation https://shoelace.style/components/button
+ * @documentation https://terra-ui.netlify.app/components/button
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot - The button's label.
  * @slot prefix - A presentational prefix icon or similar element.

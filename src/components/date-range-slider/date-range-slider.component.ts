@@ -20,7 +20,7 @@ export type TimeScale = 'half-hourly' | 'hourly' | 'daily'
 /**
  * @summary Short summary of the component's intended use.
  * @documentation https://terra-ui.netlify.app/components/date-range-slider
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @slot - The default slot.

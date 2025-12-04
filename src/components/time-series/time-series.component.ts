@@ -22,7 +22,7 @@ import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
  * @documentation https://terra-ui.netlify.app/components/time-series
- * @status mvp
+ * @status stable
  * @since 1.0
  *
  * @dependency terra-plot

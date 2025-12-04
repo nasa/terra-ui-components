@@ -15,7 +15,7 @@ interface FileWithPreview extends File {
  * @summary File upload fields allow visitors to attach one or multiple files to be submitted with a form.
  * @documentation https://terra-ui.netlify.app/components/file-upload
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot - Custom content to display inside the drop zone.
  *

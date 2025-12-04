@@ -24,7 +24,7 @@ import type {
 /**
  * @summary Browse through the NASA CMR or Giovanni catalogs.
  * @documentation https://terra-ui.netlify.app/components/browse-variables
- * @status MVP
+ * @status stable
  * @since 1.0
  *
  * @emits terra-variables-change - emitted when the user selects or unselects variables

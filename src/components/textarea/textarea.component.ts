@@ -17,7 +17,7 @@ import type { CSSResultGroup } from 'lit'
  * @summary A textarea component with consistent styling across the design system.
  * @documentation https://terra-ui.netlify.app/components/textarea
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot help-text - Text that describes how to use the textarea. Alternatively, you can use the `help-text` attribute.
  *

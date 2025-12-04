@@ -26,12 +26,12 @@
     </div>
 
     <div class="component-header__info">
-      <sl-badge variant="neutral" pill>
+      <terra-badge variant="neutral" pill>
         Since {{component.since or '?' }}
-      </sl-badge>
-      <sl-badge variant="{{ badgeVariant }}" pill style="text-transform: capitalize;">
+      </terra-badge>
+      <terra-badge variant="{{ badgeVariant }}" pill style="text-transform: capitalize;">
         {{ component.status }}
-      </sl-badge>
+      </terra-badge>
     </div>
   </header>
 
@@ -51,42 +51,42 @@
     any of the following snippets to <a href="{{ '/getting-started/installation#cherry-picking' | url }}">cherry pick</a> this component.
   </p>
 
-  <sl-tab-group>
-    <sl-tab slot="nav" panel="script">Script</sl-tab>
-    <sl-tab slot="nav" panel="import">Import</sl-tab>
-    <sl-tab slot="nav" panel="bundler">Bundler</sl-tab>
-    <sl-tab slot="nav" panel="react">React</sl-tab>
+  <terra-tabs>
+    <terra-tab slot="nav" panel="script">Script</terra-tab>
+    <terra-tab slot="nav" panel="import">Import</terra-tab>
+    <terra-tab slot="nav" panel="bundler">Bundler</terra-tab>
+    <terra-tab slot="nav" panel="react">React</terra-tab>
 
-    <sl-tab-panel name="script">
+    <terra-tab-panel name="script">
       <p>
         To import this component from <a href="https://www.jsdelivr.com/package/npm/@nasa-terra/components">the CDN</a>
         using a script tag:
       </p>
       <pre><code class="language-html">&lt;script type=&quot;module&quot; src=&quot;https://cdn.jsdelivr.net/npm/@nasa-terra/components@{{ meta.version }}/{{ meta.cdndir }}/{{ component.path }}&quot;&gt;&lt;/script&gt;</code></pre>
-    </sl-tab-panel>
+    </terra-tab-panel>
 
-    <sl-tab-panel name="import">
+    <terra-tab-panel name="import">
       <p>
         To import this component from <a href="https://www.jsdelivr.com/package/npm/@nasa-terra/components">the CDN</a>
         using a JavaScript import:
       </p>
       <pre><code class="language-js">import 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@{{ meta.version }}/{{ meta.cdndir }}/{{ component.path }}';</code></pre>
-    </sl-tab-panel>
+    </terra-tab-panel>
 
-    <sl-tab-panel name="bundler">
+    <terra-tab-panel name="bundler">
       <p>
         To import this component using <a href="{{ '/getting-started/installation#bundling' | url }}">a bundler</a>:
       </p>
       <pre><code class="language-js">import '@nasa-terra/components/{{ meta.npmdir }}/{{ component.path }}';</code></pre>
-    </sl-tab-panel>
+    </terra-tab-panel>
 
-    <sl-tab-panel name="react">
+    <terra-tab-panel name="react">
       <p>
         To import this component as a <a href="{{ '/frameworks/react' | url }}">React component</a>:
       </p>
       <pre><code class="language-js">import {{ component.name }} from '@nasa-terra/components/{{ meta.npmdir }}/react/{{ component.tagNameWithoutPrefix }}';</code></pre>
-    </sl-tab-panel>
-  </sl-tab-group>
+    </terra-tab-panel>
+  </terra-tabs>
 
   {# Slots #}
   {% if component.slots.length %}

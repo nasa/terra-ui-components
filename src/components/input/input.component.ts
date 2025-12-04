@@ -17,7 +17,7 @@ import type { CSSResultGroup } from 'lit'
  * @summary A text input component with consistent styling across the design system.
  * @documentation https://terra-ui.netlify.app/components/input
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot prefix - Used to prepend content (like an icon) to the input.
  * @slot suffix - Used to append content (like an icon) to the input.

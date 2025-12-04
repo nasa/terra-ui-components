@@ -9,10 +9,8 @@ import { classMap } from 'lit/directives/class-map.js'
 /**
  * @summary Loaders are used to indicate there is content that is loading.
  * @documentation https://terra-ui.netlify.app/components/loader
- * @status experimental
+ * @status stable
  * @since 1.0
- *
- *
  *
  * @csspart base - The component's base wrapper.
  *

@@ -9,7 +9,7 @@ import type { CSSResultGroup } from 'lit'
 /**
  * @summary Skeletons are loading indicators to represent where content will eventually be drawn.
  * @documentation https://terra-ui.netlify.app/components/skeleton
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @dependency sl-skeleton

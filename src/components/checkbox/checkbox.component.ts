@@ -18,7 +18,7 @@ import TerraIcon from '../icon/icon.component.js'
  * @summary Checkboxes are a form field used when there are multiple options to select from a list.
  * @documentation https://terra-ui.netlify.app/components/checkbox
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @dependency terra-icon
  *

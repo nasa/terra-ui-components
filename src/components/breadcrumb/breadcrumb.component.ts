@@ -9,7 +9,7 @@ import type { CSSResultGroup } from 'lit'
 /**
  * @summary A single breadcrumb item used inside `terra-breadcrumbs`.
  * @documentation https://terra-ui.netlify.app/components/breadcrumb
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @slot - The default slot.

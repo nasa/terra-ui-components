@@ -22,7 +22,7 @@ import TerraElement from '../../internal/terra-element.js'
  * @summary Dropdowns expose additional content that "drops down" in a panel.
  * @documentation https://terra-ui.netlify.app/components/dropdown
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @dependency terra-popup
  *

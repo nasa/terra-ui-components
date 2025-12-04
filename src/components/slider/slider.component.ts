@@ -11,7 +11,7 @@ import { mergeTooltips } from '../date-range-slider/noui-slider-utilities.js'
 /**
  * @summary A flexible slider component for selecting single values or ranges with optional input fields.
  * @documentation https://terra-ui.netlify.app/components/slider
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @slot - Additional content below the slider.

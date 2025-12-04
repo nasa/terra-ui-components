@@ -23,8 +23,8 @@ interface PresetRange {
 /**
  * @summary A date picker component that implements the Horizon Design System (HDS) Date Picker patterns. Supports single date selection or date range selection with calendar popup.
  * @documentation https://terra-ui.netlify.app/components/date-picker
- * @status experimental
- * @since 2.0
+ * @status stable
+ * @since 1.0
  *
  * @dependency terra-input
  * @dependency terra-button

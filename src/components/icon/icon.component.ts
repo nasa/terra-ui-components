@@ -26,7 +26,7 @@ interface IconSource {
 /**
  * @summary Icons are symbols that can be used to represent various options within an application.
  * @documentation https://terra-ui.netlify.app/components/icon
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @event terra-load - Emitted when the icon has loaded.

@@ -476,7 +476,7 @@ export default css`
    * Badges
    */
 
-    .button ::slotted(sl-badge) {
+    .button ::slotted(terra-badge) {
         position: absolute;
         top: 0;
         right: 0;
@@ -484,7 +484,7 @@ export default css`
         pointer-events: none;
     }
 
-    .button--rtl ::slotted(sl-badge) {
+    .button--rtl ::slotted(terra-badge) {
         right: auto;
         left: 0;
         translate: -50% -50%;

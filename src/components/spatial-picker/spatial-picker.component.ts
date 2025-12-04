@@ -12,7 +12,7 @@ import { MapEventType } from '../map/type.js'
 /**
  * @summary A component that allows input of coordinates and rendering of map.
  * @documentation https://terra-ui.netlify.app/components/spatial-picker
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  */

@@ -8,7 +8,7 @@ import type { CSSResultGroup } from 'lit'
 /**
  * @summary A collection of breadcrumb items that shows the current page's location in the site hierarchy.
  * @documentation https://terra-ui.netlify.app/components/breadcrumbs
- * @status experimental
+ * @status stable
  * @since 1.0
  *
  * @slot - The breadcrumb items. Typically `<terra-breadcrumb>` elements.

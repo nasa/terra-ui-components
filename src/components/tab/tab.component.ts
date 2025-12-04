@@ -14,7 +14,7 @@ let id = 0
  * @summary Tabs are used inside [tabs](/components/tabs) to represent and activate [tab panels](/components/tab-panel).
  * @documentation https://terra-ui.netlify.app/components/tab
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @dependency terra-icon
  *

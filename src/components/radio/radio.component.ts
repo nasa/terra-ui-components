@@ -16,7 +16,7 @@ import TerraElement, { type TerraFormControl } from '../../internal/terra-elemen
  * @summary Radio buttons are a form field used when only a single selection can be made from a list.
  * @documentation https://terra-ui.netlify.app/components/radio
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot - The radio's label.
  *

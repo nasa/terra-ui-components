@@ -27,7 +27,7 @@ import type TerraOption from '../option/option.component.js'
  * @summary Select fields are a form field used to select one option from a list.
  * @documentation https://terra-ui.netlify.app/components/select
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @dependency terra-icon
  * @dependency terra-popup
