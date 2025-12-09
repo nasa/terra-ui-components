@@ -73,4 +73,10 @@ export default css`
         gap: 1rem;
         margin-top: 1.5rem;
     }
+
+    .no-data-alert,
+    .error-alert {
+        display: block;
+        width: 100%;
+    }
 `

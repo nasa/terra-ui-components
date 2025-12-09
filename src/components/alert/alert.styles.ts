@@ -129,6 +129,15 @@ export default css`
         overflow: hidden;
     }
 
+    .alert__message ::slotted(a) {
+        color: inherit !important;
+        text-decoration-color: inherit !important;
+    }
+
+    .alert__message ::slotted(a):hover {
+        text-decoration: none !important;
+    }
+
     .alert__close-button {
         flex: 0 0 auto;
         display: flex;
