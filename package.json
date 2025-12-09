@@ -83,6 +83,7 @@
     "date-fns": "^3.6.0",
     "esbuild-plugin-polyfill-node": "^0.3.0",
     "fuse.js": "^7.0.0",
+    "geotiff-stats": "^0.1.0",
     "graphql": "^16.11.0",
     "handlebars": "^4.7.8",
     "idb": "^8.0.0",

@@ -10,6 +10,7 @@ import Point from 'ol/geom/Point.js'
 import { getLength } from 'ol/sphere.js'
 import Feature from 'ol/Feature.js'
 import VectorLayer from 'ol/layer/Vector.js'
+//import type { getStats } from 'geotiff-stats'
 import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -28,6 +29,7 @@ import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 import { watch } from '../../internal/watch.js'
 import TerraLoader from '../loader/loader.component.js'
+//import type { DocumentNode } from 'graphql'
 
 
 export default class TerraTimeAverageMap extends TerraElement {
@@ -55,6 +57,8 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() metadata: { [key: string]: string } = {}
     @state() toggleState = false
     @state() minimized = false
+    @state() min: string = "0"
+    @state() max: string = "1"
 
     #controller: TimeAvgMapController
     #map: Map | null = null
@@ -62,10 +66,9 @@ export default class TerraTimeAverageMap extends TerraElement {
     #vectorSource: VectorSource | null = null
     #vectorLayer: VectorLayer | null = null
     #draw: Draw | null = null
+    #palette: HTMLElement = document.getElementById("palette") as HTMLElement
 
     _authController = new AuthController(this)
-
-
 
     @state() colormaps = [
         'jet',
@@ -211,6 +214,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         const internal = gtSource as any
         const gtImage = internal.sourceImagery_[0][0]
         const gtMetadata = gtImage.fileDirectory?.GDAL_METADATA
+        //const gtStats = getStats(gtImage)
 
         const parser = new DOMParser()
         const xmlDoc = parser.parseFromString(gtMetadata, 'application/xml')
@@ -250,12 +254,37 @@ export default class TerraTimeAverageMap extends TerraElement {
                 this.pixelCoordinates = 'N/A'
                 return
             }
-            const val = Number(data[0]).toExponential(4)
+            const val = Number(data[0]).toExponential(3)
             const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
 
             this.pixelValue = val
             this.pixelCoordinates = coordStr
         })
+    }
+
+    // Take colors from the geotiff palette and build the legend.
+    generatePalette(clrs: any, dv: any, min: any, max: any) {
+        this.#palette.innerHTML = "";
+        //let pal:  HTMLElement = document.getElementById("palette") as HTMLElement
+        //pal.innerHTML = ""
+        let curVal = NaN;
+        for (let i=clrs.length-1; i > 0; i--) {
+            curVal = parseFloat(dv[i]);
+            if( curVal >= min && curVal <= max ) {
+                this.createColorDiv(clrs[i], dv[i]);
+            }
+        }
+    }
+    // Create the color div kd
+    createColorDiv(rgb: any, dv: any) {
+        let clrDiv = document.createElement('div');
+        //clrDiv.style = "width:3.5em; height:0.375em; background-color:rgba(" + rgb + ")";
+        let styleStr = "width:3.5em; height:0.375em; background-color:rgba(" + rgb + ")";
+        clrDiv.setAttribute("style", styleStr)
+        clrDiv.title = dv;
+        //let pal: HTMLElement = document.getElementById("palette") as HTMLElement
+        //pal.appendChild(clrDiv)
+        this.#palette.appendChild(clrDiv);
     }
 
     async getMinMax(gtSource: any) {
@@ -278,25 +307,35 @@ export default class TerraTimeAverageMap extends TerraElement {
                 if (val > max) max = val
             }
         }
-
+        this.min = min.toExponential(3)
+        this.max = max.toExponential(3)
         return { min, max }
     }
 
     // Referencing workshop example from https://openlayers.org/workshop/en/cog/colormap.html
-    async getColorStops(name: any, min: any, max: any, steps: any, reverse: any) {
+    async getColorStops(name: any, min: any, max: any, steps: any, reverse: any) { 
         const delta = (max - min) / (steps - 1)
         const stops = new Array(steps * 2)
 
         const { default: colormap } = await import('colormap')
 
+        // array of colors used for both map and legend
         const colors = colormap({ colormap: name, nshades: steps, format: 'rgba' })
+        
+        // simple array of data values to use on the legend
+        const dataVals = []
+
         if (reverse) {
             colors.reverse()
         }
         for (let i = 0; i < steps; i++) {
             stops[i * 2] = min + i * delta
+            dataVals.push((min + i * delta).toExponential(2));
             stops[i * 2 + 1] = colors[i]
         }
+
+        this.generatePalette(colors, dataVals, min, max);
+
         return stops
     }
 
@@ -551,10 +590,14 @@ export default class TerraTimeAverageMap extends TerraElement {
                         <strong>Value:</strong>
                         <span id="pixelValue">${this.pixelValue}</span>
                     </div>
-
                     <div>
                         <strong>Coordinate: </strong>
                         <span id="cursorCoordinates">${this.pixelCoordinates}</span>
+                    </div>
+                    <div id="legend">
+                        <div class="stats" id="statsMax">${this.max}</div>
+                        <div id="palette"></div>
+                        <div class="stats" id="statsMin">${this.min}</div>
                     </div>
                 </div>
             </div>
