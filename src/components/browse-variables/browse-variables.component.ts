@@ -469,37 +469,50 @@ export default class TerraBrowseVariables extends TerraElement {
                 <section class="right-column">
                     ${this.activeIndex !== undefined
                         ? html`
-                              <h4>
-                                  Science Name:<br />
-                                  ${variables[this.activeIndex].dataFieldLongName}
-                              </h4>
-                              <p>
-                                  <label><strong>Spatial Resolution:</strong></label>
-                                  ${variables[this.activeIndex]
-                                      .dataProductSpatialResolution}
-                              </p>
-                              <p>
-                                  <label><strong>Temporal Coverage:</strong></label>
-                                  ${variables[this.activeIndex]
-                                      .dataProductBeginDateTime}
-                                  –
-                                  ${variables[this.activeIndex]
-                                      .dataProductEndDateTime}
-                              </p>
-                              <p>
-                                  <label><strong>Region Coverage:</strong></label>
-                                  ${variables[this.activeIndex].dataProductWest},
-                                  ${variables[this.activeIndex].dataProductSouth},
-                                  ${variables[this.activeIndex].dataProductEast},
-                                  ${variables[this.activeIndex].dataProductNorth}
-                              </p>
-                              <p>
-                                  <label><strong>Dataset:</strong></label>
-                                  ${variables[this.activeIndex]
-                                      .dataProductShortName}_${variables[
-                                      this.activeIndex
-                                  ].dataProductVersion}
-                              </p>
+                              <div class="sticky-element">
+                                  <p>
+                                      <label
+                                          ><strong>Name in Data File:</strong></label
+                                      >
+                                      ${variables[this.activeIndex]
+                                          .dataFieldShortName}
+                                  </p>
+                                  <p>
+                                      <label><strong>Units:</strong></label>
+                                      ${variables[this.activeIndex].dataFieldUnits}
+                                  </p>
+                                  <p>
+                                      <label
+                                          ><strong>Temporal Coverage:</strong></label
+                                      >
+                                      ${variables[this.activeIndex]
+                                          .dataProductBeginDateTime}
+                                      –
+                                      ${variables[this.activeIndex]
+                                          .dataProductEndDateTime}
+                                  </p>
+                                  <p>
+                                      <label><strong>Region Coverage:</strong></label>
+                                      ${variables[this.activeIndex].dataProductWest},
+                                      ${variables[this.activeIndex].dataProductSouth},
+                                      ${variables[this.activeIndex].dataProductEast},
+                                      ${variables[this.activeIndex].dataProductNorth}
+                                  </p>
+                                  <p>
+                                      <label
+                                          ><strong>Spatial Resolution:</strong></label
+                                      >
+                                      ${variables[this.activeIndex]
+                                          .dataProductSpatialResolution}
+                                  </p>
+                                  <p>
+                                      <label><strong>Dataset:</strong></label>
+                                      ${variables[this.activeIndex]
+                                          .dataProductShortName}_${variables[
+                                          this.activeIndex
+                                      ].dataProductVersion}
+                                  </p>
+                              </div>
                           `
                         : html`<p class="placeholder">
                               Hover over a variable to see details
