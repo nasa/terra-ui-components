@@ -16,7 +16,7 @@ import { TaskStatus } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
-import { toLonLat } from 'ol/proj.js'
+import { toLonLat, transformExtent } from 'ol/proj.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 import { watch } from '../../internal/watch.js'
@@ -155,6 +155,28 @@ export default class TerraTimeAverageMap extends TerraElement {
         if (this.#map && this.#gtLayer) {
             this.renderPixelValues(this.#map, this.#gtLayer)
             this.applyColorToLayer(gtSource, 'density') // Initial color for layer is density
+
+            // Try to fit the map view to the GeoTIFF extent
+            try {
+                // Get the GeoTIFF view
+                const view = await this.#gtLayer.getSource()?.getView()
+
+                // Because the GeoTIFF and the map projection's differ, we'll transform the GeoTIFF projection
+                // to the maps projection
+                const transformedExtent = transformExtent(
+                    view!.extent!,
+                    view!.projection!,
+                    this.#map.getView().getProjection()
+                )
+
+                // Now we can change the map view to fit the GeoTIFF
+                this.#map.getView().fit(transformedExtent, {
+                    padding: [50, 50, 50, 50],
+                    duration: 500,
+                })
+            } catch (error) {
+                console.warn('Failed to fit map to GeoTIFF extent:', error)
+            }
         }
     }
 
