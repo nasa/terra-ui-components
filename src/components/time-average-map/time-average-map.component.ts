@@ -156,27 +156,29 @@ export default class TerraTimeAverageMap extends TerraElement {
             this.renderPixelValues(this.#map, this.#gtLayer)
             this.applyColorToLayer(gtSource, 'density') // Initial color for layer is density
 
-            // Try to fit the map view to the GeoTIFF extent
-            try {
-                // Get the GeoTIFF view
-                const view = await this.#gtLayer.getSource()?.getView()
+            setTimeout(async () => {
+                // Try to fit the map view to the GeoTIFF extent
+                try {
+                    // Get the GeoTIFF view
+                    const view = await this.#gtLayer!.getSource()?.getView()
 
-                // Because the GeoTIFF and the map projection's differ, we'll transform the GeoTIFF projection
-                // to the maps projection
-                const transformedExtent = transformExtent(
-                    view!.extent!,
-                    view!.projection!,
-                    this.#map.getView().getProjection()
-                )
+                    // Because the GeoTIFF and the map projection's differ, we'll transform the GeoTIFF projection
+                    // to the maps projection
+                    const transformedExtent = transformExtent(
+                        view!.extent!,
+                        view!.projection!,
+                        this.#map!.getView().getProjection()
+                    )
 
-                // Now we can change the map view to fit the GeoTIFF
-                this.#map.getView().fit(transformedExtent, {
-                    padding: [50, 50, 50, 50],
-                    duration: 500,
-                })
-            } catch (error) {
-                console.warn('Failed to fit map to GeoTIFF extent:', error)
-            }
+                    // Now we can change the map view to fit the GeoTIFF
+                    this.#map!.getView().fit(transformedExtent, {
+                        padding: [50, 50, 50, 50],
+                        duration: 500,
+                    })
+                } catch (error) {
+                    console.warn('Failed to fit map to GeoTIFF extent:', error)
+                }
+            }, 500)
         }
     }
 
