@@ -14,6 +14,10 @@ export default css`
         position: relative;
     }
 
+    terra-dropdown {
+        width: 100%;
+    }
+
     /* Styles for dropdown panel content */
     terra-dropdown::part(panel) {
         padding: 0;
@@ -203,7 +207,7 @@ export default css`
         align-items: center;
         gap: var(--terra-spacing-2x-small);
         padding: var(--terra-spacing-x-small) var(--terra-spacing-small);
-        background: var(--terra-color-carbon-5);
+        background: var(--terra-input-background-color);
         border: var(--terra-input-border-width) solid var(--terra-input-border-color);
         border-radius: var(--terra-border-radius-medium);
         font-size: var(--terra-font-size-small);
@@ -215,7 +219,7 @@ export default css`
     }
 
     .calendar__month-button:hover {
-        background: var(--terra-color-carbon-10);
+        background: var(--terra-input-background-color-hover);
         border-color: var(--terra-input-border-color-hover);
     }
 
@@ -334,12 +338,12 @@ export default css`
     }
 
     .calendar__year-spinner:hover {
-        background: var(--terra-color-carbon-20);
-        color: var(--terra-input-icon-color-hover);
+        background: var(--terra-color-carbon-10);
+        color: var(--terra-color-carbon-90);
     }
 
     .calendar__year-spinner:active {
-        background: var(--terra-color-carbon-30);
+        background: var(--terra-color-carbon-20);
     }
 
     .calendar__nav {

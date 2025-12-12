@@ -784,7 +784,13 @@
         --terra-button-page-link-text-color: var(--terra-color-spacesuit-white);
 
         /* Input Styles */
+        --terra-input-background-color: var(--terra-color-carbon-10);
+        --terra-input-background-color-hover: var(--terra-color-carbon-10);
+        --terra-input-background-color-focus: var(--terra-color-carbon-10);
         --terra-input-border-color: var(--terra-color-carbon-60);
+        --terra-input-color: var(--terra-color-carbon-90);
+        --terra-input-color-hover: var(--terra-color-carbon-90);
+        --terra-input-color-focus: var(--terra-color-carbon-90);
 
         /* Map Component */
         --terra-map-background-color: var(--terra-color-carbon-10);
@@ -1020,6 +1026,14 @@
     /* Tabs - Dark Mode */
     --terra-tabs-indicator-color: var(--terra-color-carbon-90);
     --terra-tabs-track-color: var(--terra-color-carbon-20);
+}
+
+/* Site header - ensures the site header immediately renders and doesn't wait for web component to load */
+terra-site-header {
+    display: block;
+    background-color: var(--terra-color-carbon-black);
+    color: var(--terra-color-spacesuit-white);
+    height: 88px;
 }
 
 /* Toast stack - appears outside of a component so needs it's own styles */
