@@ -1478,6 +1478,7 @@ export default class TerraDatePicker extends TerraElement {
                                   distance="4"
                                   @terra-show=${this.handleDropdownShow}
                                   @terra-hide=${this.handleDropdownHide}
+                                  hoist
                               >
                                   <terra-input
                                       slot="trigger"
@@ -1499,6 +1500,7 @@ export default class TerraDatePicker extends TerraElement {
                                   distance="4"
                                   @terra-show=${this.handleDropdownShow}
                                   @terra-hide=${this.handleDropdownHide}
+                                  hoist
                               >
                                   <terra-input
                                       slot="trigger"
@@ -1524,6 +1526,7 @@ export default class TerraDatePicker extends TerraElement {
                               distance="4"
                               @terra-show=${this.handleDropdownShow}
                               @terra-hide=${this.handleDropdownHide}
+                              hoist
                           >
                               <terra-input
                                   slot="trigger"
