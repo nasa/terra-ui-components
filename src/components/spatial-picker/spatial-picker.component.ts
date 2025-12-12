@@ -105,6 +105,9 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'show-map-on-focus', type: Boolean })
     showMapOnFocus: boolean = false
 
+    @property({ attribute: 'url-state', type: Boolean })
+    urlState: boolean = false
+
     @state()
     mapValue: any
 
@@ -295,6 +298,10 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     private _updateURLParam(value: string | null) {
+        if (!this.urlState) {
+            return
+        }
+
         const url = new URL(window.location.href)
         if (value) {
             url.searchParams.set('spatial', value)
@@ -343,7 +350,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const urlParams = new URLSearchParams(window.location.search)
         const spatialParam = urlParams.get('spatial')
 
-        if (spatialParam) {
+        if (spatialParam && this.urlState) {
             this.initialValue = spatialParam
             this.mapValue = parseBoundingBox(spatialParam)
             if (this.terraInput) {
