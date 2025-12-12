@@ -748,7 +748,10 @@
 @media (prefers-color-scheme: dark) {
     body.terra-prefers-color-scheme :root,
     body.terra-prefers-color-scheme :host,
-    body.terra-prefers-color-scheme {
+    body.terra-prefers-color-scheme,
+    .terra-prefers-color-scheme :root,
+    .terra-prefers-color-scheme :host,
+    .terra-prefers-color-scheme {
         color-scheme: dark;
 
         /* Primary Palette changes for dark mode */
