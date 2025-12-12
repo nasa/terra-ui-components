@@ -2,8 +2,12 @@ import { html } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
+import VectorLayer from 'ol/layer/Vector.js'
 import OSM from 'ol/source/OSM.js'
+import VectorSource from 'ol/source/Vector.js'
+import GeoJSON from 'ol/format/GeoJSON.js'
 import type GeoTIFF from 'ol/source/GeoTIFF.js'
+import { Style, Stroke } from 'ol/style.js'
 import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -47,6 +51,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     #controller: TimeAvgMapController
     #map: Map | null = null
     #gtLayer: WebGLTileLayer | null = null
+    #bordersLayer: VectorLayer<VectorSource> | null = null
 
     _authController = new AuthController(this)
 
@@ -147,6 +152,14 @@ export default class TerraTimeAverageMap extends TerraElement {
 
         if (this.#map) {
             this.#map.addLayer(this.#gtLayer)
+
+            if (this.#bordersLayer) {
+                this.#map.removeLayer(this.#bordersLayer)
+                this.#bordersLayer = null
+            }
+
+            // Add borders/coastlines layer on top of the GeoTIFF layer
+            await this.addBordersLayerForGeoTIFF(gtSource)
         }
 
         const metadata = await this.fetchGeotiffMetadata(gtSource)
@@ -207,6 +220,45 @@ export default class TerraTimeAverageMap extends TerraElement {
                 resizeObserver.observe(mapElement)
             }
         }
+    }
+
+    async addBordersLayerForGeoTIFF(gtSource: GeoTIFF) {
+        if (!this.#map) {
+            return
+        }
+
+        // Get the GeoTIFF extent to clip borders rendering
+        let geoTiffExtent: number[] | undefined
+        try {
+            const view = await gtSource.getView()
+            if (view?.extent) {
+                geoTiffExtent = transformExtent(
+                    view.extent,
+                    view.projection!,
+                    this.#map.getView().getProjection()
+                )
+            }
+        } catch (error) {
+            console.warn('Could not get GeoTIFF extent for border clipping:', error)
+        }
+
+        const vectorSource = new VectorSource({
+            url: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson',
+            format: new GeoJSON(),
+        })
+
+        this.#bordersLayer = new VectorLayer({
+            source: vectorSource,
+            extent: geoTiffExtent,
+            style: new Style({
+                stroke: new Stroke({
+                    color: '#000000',
+                    width: 1,
+                }),
+            }),
+        })
+
+        this.#map.addLayer(this.#bordersLayer)
     }
 
     async fetchGeotiffMetadata(
