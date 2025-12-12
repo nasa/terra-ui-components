@@ -55,7 +55,10 @@ export default function Home() {
         <>
             <Head>
                 <title>Create CMR Collection - Terra UI Demo</title>
-                <meta name="description" content="Example form using Terra UI components" />
+                <meta
+                    name="description"
+                    content="Example form using Terra UI components"
+                />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <link rel="icon" href="/favicon.ico" />
             </Head>
@@ -64,12 +67,33 @@ export default function Home() {
                     <h1 style={{ marginBottom: 'var(--terra-spacing-large)' }}>
                         Create NASA CMR Collection
                     </h1>
-                    <p style={{ marginBottom: 'var(--terra-spacing-large)', color: 'var(--terra-color-carbon-40)' }}>
-                        This form demonstrates various Terra UI form components with validation.
+                    <p
+                        style={{
+                            marginBottom: 'var(--terra-spacing-large)',
+                            color: 'var(--terra-color-carbon-40)',
+                        }}
+                    >
+                        This form demonstrates various Terra UI form components with
+                        validation.
                     </p>
 
-                    <form ref={formRef} onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--terra-spacing-medium)' }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--terra-spacing-medium)' }}>
+                    <form
+                        ref={formRef}
+                        onSubmit={handleSubmit}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 'var(--terra-spacing-medium)',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns:
+                                    'repeat(auto-fit, minmax(250px, 1fr))',
+                                gap: 'var(--terra-spacing-medium)',
+                            }}
+                        >
                             <TerraInput
                                 label="Collection Name"
                                 name="collectionName"
@@ -154,8 +178,18 @@ export default function Home() {
                             </TerraCheckbox>
                         </div>
 
-                        <div style={{ display: 'flex', gap: 'var(--terra-spacing-small)', marginTop: 'var(--terra-spacing-medium)' }}>
-                            <TerraButton type="submit" variant="primary" disabled={isSubmitting}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                gap: 'var(--terra-spacing-small)',
+                                marginTop: 'var(--terra-spacing-medium)',
+                            }}
+                        >
+                            <TerraButton
+                                type="submit"
+                                variant="primary"
+                                disabled={isSubmitting}
+                            >
                                 {isSubmitting ? 'Creating...' : 'Create Collection'}
                             </TerraButton>
                             <TerraButton type="reset" variant="default">

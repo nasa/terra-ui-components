@@ -1,12 +1,12 @@
-import TerraBadge from './badge.component.js';
+import TerraBadge from './badge.component.js'
 
-export * from './badge.component.js';
-export default TerraBadge;
+export * from './badge.component.js'
+export default TerraBadge
 
-TerraBadge.define('terra-badge');
+TerraBadge.define('terra-badge')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-badge': TerraBadge;
+        'terra-badge': TerraBadge
     }
 }

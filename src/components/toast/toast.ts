@@ -1,12 +1,12 @@
-import TerraToast from './toast.component.js';
+import TerraToast from './toast.component.js'
 
-export * from './toast.component.js';
-export default TerraToast;
+export * from './toast.component.js'
+export default TerraToast
 
-TerraToast.define('terra-toast');
+TerraToast.define('terra-toast')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-toast': TerraToast;
+        'terra-toast': TerraToast
     }
 }

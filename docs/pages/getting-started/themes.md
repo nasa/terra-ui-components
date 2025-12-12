@@ -6,7 +6,7 @@ meta:
 
 # Themes
 
-Terra UI Components includes the **Horizon theme**, which implements NASA's [Horizon Design System](https://website.nasa.gov/hds/). The Horizon theme includes both light and dark modes, with automatic dark mode detection based on system preferences. You can also create your own custom themes.
+Terra UI Components includes the **Horizon theme**, which implements NASA's [Horizon Design System](https://website.nasa.gov/hds/). The Horizon theme includes both light and dark modes, with optional automatic dark mode detection based on system preferences. You can also create your own custom themes.
 
 A theme is a stylesheet that uses CSS custom properties (design tokens) to define styling. To create a theme, you will need a decent understanding of CSS, including [CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/--*) and the [`::part` selector](https://developer.mozilla.org/en-US/docs/Web/CSS/::part).
 
@@ -15,7 +15,7 @@ A theme is a stylesheet that uses CSS custom properties (design tokens) to defin
 The Horizon theme is Terra UI's default theme and implements NASA's Horizon Design System. It includes:
 
 -   Complete design token system (colors, typography, spacing, etc.)
--   Automatic dark mode support via `prefers-color-scheme`
+-   Optional automatic dark mode support via `prefers-color-scheme` (requires `terra-prefers-color-scheme` class on body)
 -   Manual theme control via CSS classes
 -   Full component styling
 
@@ -41,16 +41,20 @@ Or if you're using npm:
 
 ### Dark Mode
 
-The Horizon theme includes both light and dark modes in a single file. Dark mode is automatically enabled when the user's system preference is set to dark mode using CSS `@media (prefers-color-scheme: dark)`.
+The Horizon theme includes both light and dark modes in a single file. Dark mode can be enabled in two ways:
 
-**Automatic dark mode (default):**
+**Automatic dark mode (requires opt-in):**
+
+To enable automatic dark mode based on system preference, add the `terra-prefers-color-scheme` class to the `<body>` element:
 
 ```html
-<html>
+<body class="terra-prefers-color-scheme">
     <!-- Dark mode activates automatically based on system preference -->
     ...
-</html>
+</body>
 ```
+
+This allows your application to control whether system preference-based dark mode is enabled. Without this class, dark mode will not activate automatically, even if the user's system preference is set to dark mode.
 
 **Force dark mode:**
 
@@ -70,7 +74,7 @@ The Horizon theme includes both light and dark modes in a single file. Dark mode
 </html>
 ```
 
-The class-based approach takes precedence over system preference, allowing you to give users control over the theme regardless of their system settings.
+The class-based approach (`terra-theme-dark`) takes precedence over system preference, allowing you to give users control over the theme regardless of their system settings.
 
 ## Creating Custom Themes
 

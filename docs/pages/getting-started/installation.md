@@ -43,7 +43,7 @@ The traditional CDN loader registers all Terra elements up front. Note that, if 
 
 ### Dark Mode
 
-The Horizon theme includes both light and dark modes. Dark mode is automatically enabled based on the user's system preference. To manually control dark mode, see the [Themes documentation](/getting-started/themes#dark-mode).
+The Horizon theme includes both light and dark modes. Dark mode can be enabled automatically based on system preference by adding the `terra-prefers-color-scheme` class to the `<body>` element, or you can manually control it with the `terra-theme-dark` class. For more details, see the [Themes documentation](/getting-started/themes#dark-mode).
 
 Now you can [start using Terra!](/getting-started/usage)
 

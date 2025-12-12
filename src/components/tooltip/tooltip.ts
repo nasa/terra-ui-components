@@ -1,12 +1,12 @@
-import TerraTooltip from './tooltip.component.js';
+import TerraTooltip from './tooltip.component.js'
 
-export * from './tooltip.component.js';
-export default TerraTooltip;
+export * from './tooltip.component.js'
+export default TerraTooltip
 
-TerraTooltip.define('terra-tooltip');
+TerraTooltip.define('terra-tooltip')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-tooltip': TerraTooltip;
+        'terra-tooltip': TerraTooltip
     }
 }

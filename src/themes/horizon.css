@@ -739,15 +739,16 @@
  * ============================================================================
  * Dark mode inherits all tokens from the light theme above and only overrides
  * what's different. Dark mode is activated by:
- * 1. System preference: @media (prefers-color-scheme: dark)
+ * 1. System preference: @media (prefers-color-scheme: dark) - only when body has .terra-prefers-color-scheme class
  * 2. Manual override: .terra-theme-dark class
  * 
  * The class-based approach takes precedence over system preference.
  */
 
 @media (prefers-color-scheme: dark) {
-    :root,
-    :host {
+    body.terra-prefers-color-scheme :root,
+    body.terra-prefers-color-scheme :host,
+    body.terra-prefers-color-scheme {
         color-scheme: dark;
 
         /* Primary Palette changes for dark mode */
