@@ -186,6 +186,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                     // Now we can change the map view to fit the GeoTIFF
                     this.#map!.getView().fit(transformedExtent, {
                         padding: [50, 50, 50, 50],
+                        duration: 300,
                     })
                 } catch (error) {
                     console.warn('Failed to fit map to GeoTIFF extent:', error)
