@@ -745,187 +745,7 @@
  * The class-based approach takes precedence over system preference.
  */
 
-@media (prefers-color-scheme: dark) {
-    body.terra-prefers-color-scheme :root,
-    body.terra-prefers-color-scheme :host,
-    body.terra-prefers-color-scheme,
-    html.terra-prefers-color-scheme :root,
-    html.terra-prefers-color-scheme :host,
-    html.terra-prefers-color-scheme {
-        color-scheme: dark;
-
-        /* Primary Palette changes for dark mode */
-        --terra-color-nasa-red: hsl(2, 68%, 52%);
-
-        /* Extended Palette changes for dark mode */
-        --terra-color-nasa-red-shade: hsla(0, 91%, 37%, 1);
-
-        /* Default Button Color - not defined color in the HDS theme */
-        --terra-color-default-gray: hsla(240, 2%, 59%, 1);
-        --terra-color-default-gray-tint: hsla(240, 10%, 70%, 1);
-        --terra-color-default-gray-shade: hsl(240, 9%, 40%, 1);
-
-        /* Neutrals for dark mode
-         * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
-         * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
-         */
-        --terra-color-carbon-90: hsl(0, 0%, 96%);
-        --terra-color-carbon-80: hsla(0, 0%, 89%, 1);
-        --terra-color-carbon-70: hsla(0, 0%, 82%, 1);
-        --terra-color-carbon-60: hsla(240, 1%, 73%, 1);
-        --terra-color-carbon-50: hsla(240, 2%, 59%, 1);
-        --terra-color-carbon-40: hsla(240, 1%, 47%, 1);
-        --terra-color-carbon-30: hsla(240, 2%, 35%, 1);
-        --terra-color-carbon-20: hsl(240, 2%, 27%);
-        --terra-color-carbon-10: hsl(240, 3%, 19%);
-        --terra-color-carbon-5: hsla(240, 8%, 10%, 1);
-
-        /* HDS button styles */
-        --terra-button-outline-text-color: var(--terra-color-spacesuit-white);
-        --terra-button-text-text-color: hsl(217, 78%, 58%);
-        --terra-button-text-text-color-hover: var(--terra-color-nasa-blue);
-        --terra-button-page-link-text-color: var(--terra-color-spacesuit-white);
-
-        /* Input Styles */
-        --terra-input-background-color: var(--terra-color-carbon-10);
-        --terra-input-background-color-hover: var(--terra-color-carbon-10);
-        --terra-input-background-color-focus: var(--terra-color-carbon-10);
-        --terra-input-border-color: var(--terra-color-carbon-60);
-        --terra-input-color: var(--terra-color-carbon-90);
-        --terra-input-color-hover: var(--terra-color-carbon-90);
-        --terra-input-color-focus: var(--terra-color-carbon-90);
-
-        /* Panels - Dark Mode */
-        --terra-panel-background-color: var(--terra-color-carbon-10);
-        --terra-panel-border-color: var(--terra-color-carbon-20);
-
-        /* Map Component */
-        --terra-map-background-color: var(--terra-color-carbon-10);
-        --terra-map-border-color: var(--terra-color-carbon-20);
-
-        /* Chip Component - Dark Mode */
-        --terra-chip-background-color: var(--terra-color-carbon-black);
-        --terra-chip-color: var(--terra-color-carbon-60);
-        --terra-chip-color-hover: var(--terra-color-carbon-80);
-        --terra-chip-icon-color: var(--terra-color-carbon-60);
-        --terra-chip-icon-color-hover: var(--terra-color-carbon-80);
-
-        /* Alert white appearance - Dark Mode */
-        --terra-alert-white-background-color: var(--terra-color-carbon-10);
-        --terra-alert-white-color: var(--terra-color-carbon-60);
-
-        /* Accordion - Dark Mode */
-        --terra-accordion-background-color: var(--terra-color-carbon-10);
-        --terra-accordion-border-color: var(--terra-color-carbon-20);
-        --terra-accordion-summary-background-color: var(--terra-color-carbon-5);
-        --terra-accordion-summary-background-color-hover: var(
-            --terra-color-carbon-10
-        );
-        --terra-accordion-summary-border-color: var(--terra-color-carbon-20);
-        --terra-accordion-summary-color: var(--terra-color-carbon-60);
-
-        /* Caption - Dark Mode */
-        --terra-caption-color: var(--terra-color-carbon-60);
-        --terra-caption-credit-color: var(--terra-color-carbon-70);
-
-        /* Status Indicator - Dark Mode */
-        --terra-status-indicator-label-color: var(--terra-color-carbon-60);
-
-        /* Tag - Dark Mode */
-        --terra-tag-color: var(--terra-color-carbon-60);
-        --terra-tag-icon-border-color: var(--terra-color-carbon-30);
-        --terra-tag-border-color: var(--terra-color-carbon-20);
-        --terra-tag-border-color-hover: var(--terra-color-carbon-30);
-        --terra-tag-background-color-hover: var(--terra-color-carbon-10);
-
-        /* Scroll Hint - Dark Mode */
-        --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
-        --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
-        --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
-
-        /* Checkbox - Dark Mode */
-        --terra-checkbox-background-color: var(--terra-color-carbon-10);
-        --terra-checkbox-background-color-hover: var(--terra-color-carbon-10);
-        --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
-        --terra-checkbox-background-color-checked-hover: var(
-            --terra-color-nasa-blue-shade
-        );
-        --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
-        --terra-checkbox-border-color: var(--terra-color-carbon-20);
-        --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
-        --terra-checkbox-border-color-checked: var(--terra-color-nasa-blue);
-        --terra-checkbox-border-color-checked-hover: var(
-            --terra-color-nasa-blue-shade
-        );
-        --terra-checkbox-border-color-disabled: var(--terra-color-carbon-30);
-        --terra-checkbox-label-color: var(--terra-color-carbon-60);
-
-        /* Radio - Dark Mode */
-        --terra-radio-background-color: var(--terra-color-carbon-10);
-        --terra-radio-background-color-hover: var(--terra-color-carbon-10);
-        --terra-radio-background-color-checked: var(--terra-color-nasa-blue);
-        --terra-radio-background-color-checked-hover: var(
-            --terra-color-nasa-blue-shade
-        );
-        --terra-radio-background-color-disabled: var(--terra-color-carbon-10);
-        --terra-radio-border-color: var(--terra-color-carbon-20);
-        --terra-radio-border-color-hover: var(--terra-color-carbon-40);
-        --terra-radio-border-color-checked: var(--terra-color-nasa-blue);
-        --terra-radio-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
-        --terra-radio-border-color-disabled: var(--terra-color-carbon-30);
-        --terra-radio-label-color: var(--terra-color-carbon-60);
-
-        /* Toggle - Dark Mode */
-        --terra-toggle-label-color: var(--terra-color-carbon-60);
-
-        /* Links - Dark Mode */
-        --terra-link-color: var(--terra-color-carbon-60);
-        --terra-link-color-hover: var(--terra-color-carbon-60);
-
-        /* Pagination - Dark Mode */
-        --terra-pagination-button-color: var(--terra-color-carbon-60);
-        --terra-pagination-button-color-hover: var(--terra-color-carbon-80);
-        --terra-pagination-button-color-current: var(--terra-color-carbon-90);
-        --terra-pagination-icon-button-background-color: var(--terra-color-carbon-10);
-        --terra-pagination-icon-button-border-color: var(--terra-color-carbon-30);
-        --terra-pagination-icon-button-background-color-hover: var(
-            --terra-color-carbon-5
-        );
-        --terra-pagination-icon-button-border-color-hover: var(
-            --terra-color-carbon-40
-        );
-        --terra-pagination-icon-button-background-color-disabled: var(
-            --terra-color-carbon-5
-        );
-        --terra-pagination-icon-button-border-color-disabled: var(
-            --terra-color-carbon-20
-        );
-        --terra-pagination-icon-button-icon-color-disabled: var(
-            --terra-color-carbon-40
-        );
-
-        /* Slider - Dark Mode */
-        --terra-slider-track-background-color: var(--terra-color-carbon-10);
-        --terra-slider-track-border-color: var(--terra-color-carbon-20);
-        --terra-slider-connect-color: var(--terra-color-nasa-blue-tint);
-        --terra-slider-handle-background-color: var(--terra-color-carbon-black);
-        --terra-slider-handle-border-color: var(--terra-color-nasa-blue-tint);
-        --terra-slider-label-color: var(--terra-color-carbon-60);
-        --terra-slider-range-color: var(--terra-color-carbon-60);
-
-        /* Tab - Dark Mode */
-        --terra-tab-color: var(--terra-color-carbon-60);
-        --terra-tab-color-hover: var(--terra-color-carbon-80);
-        --terra-tab-color-active: var(--terra-color-carbon-90);
-
-        /* Tabs - Dark Mode */
-        --terra-tabs-indicator-color: var(--terra-color-carbon-90);
-        --terra-tabs-track-color: var(--terra-color-carbon-20);
-    }
-}
-
-:host,
-.terra-theme-dark {
+@mixin terra-theme-dark {
     color-scheme: dark;
 
     /* Primary Palette changes for dark mode */
@@ -940,9 +760,9 @@
     --terra-color-default-gray-shade: hsl(240, 9%, 40%, 1);
 
     /* Neutrals for dark mode
-     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
-     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
-     */
+        * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+        * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+        */
     --terra-color-carbon-90: hsl(0, 0%, 96%);
     --terra-color-carbon-80: hsla(0, 0%, 89%, 1);
     --terra-color-carbon-70: hsla(0, 0%, 82%, 1);
@@ -1085,6 +905,22 @@
     /* Tabs - Dark Mode */
     --terra-tabs-indicator-color: var(--terra-color-carbon-90);
     --terra-tabs-track-color: var(--terra-color-carbon-20);
+}
+
+:host,
+.terra-theme-dark {
+    @include terra-theme-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    body.terra-prefers-color-scheme :root,
+    body.terra-prefers-color-scheme :host,
+    body.terra-prefers-color-scheme,
+    html.terra-prefers-color-scheme :root,
+    html.terra-prefers-color-scheme :host,
+    html.terra-prefers-color-scheme {
+        @include terra-theme-dark;
+    }
 }
 
 /* Site header - ensures the site header immediately renders and doesn't wait for web component to load */
