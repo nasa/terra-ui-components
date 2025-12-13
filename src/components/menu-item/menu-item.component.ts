@@ -184,8 +184,8 @@ export default class TerraMenuItem extends TerraElement {
             >
                 <span part="checked-icon" class="menu-item__check">
                     <terra-icon
-                        name="check"
-                        library="system"
+                        name="solid-check"
+                        library="heroicons"
                         aria-hidden="true"
                     ></terra-icon>
                 </span>
