@@ -749,9 +749,9 @@
     body.terra-prefers-color-scheme :root,
     body.terra-prefers-color-scheme :host,
     body.terra-prefers-color-scheme,
-    .terra-prefers-color-scheme :root,
-    .terra-prefers-color-scheme :host,
-    .terra-prefers-color-scheme {
+    html.terra-prefers-color-scheme :root,
+    html.terra-prefers-color-scheme :host,
+    html.terra-prefers-color-scheme {
         color-scheme: dark;
 
         /* Primary Palette changes for dark mode */
@@ -795,6 +795,10 @@
         --terra-input-color-hover: var(--terra-color-carbon-90);
         --terra-input-color-focus: var(--terra-color-carbon-90);
 
+        /* Panels - Dark Mode */
+        --terra-panel-background-color: var(--terra-color-carbon-10);
+        --terra-panel-border-color: var(--terra-color-carbon-20);
+
         /* Map Component */
         --terra-map-background-color: var(--terra-color-carbon-10);
         --terra-map-border-color: var(--terra-color-carbon-20);
@@ -805,6 +809,20 @@
         --terra-chip-color-hover: var(--terra-color-carbon-80);
         --terra-chip-icon-color: var(--terra-color-carbon-60);
         --terra-chip-icon-color-hover: var(--terra-color-carbon-80);
+
+        /* Alert white appearance - Dark Mode */
+        --terra-alert-white-background-color: var(--terra-color-carbon-10);
+        --terra-alert-white-color: var(--terra-color-carbon-60);
+
+        /* Accordion - Dark Mode */
+        --terra-accordion-background-color: var(--terra-color-carbon-10);
+        --terra-accordion-border-color: var(--terra-color-carbon-20);
+        --terra-accordion-summary-background-color: var(--terra-color-carbon-5);
+        --terra-accordion-summary-background-color-hover: var(
+            --terra-color-carbon-10
+        );
+        --terra-accordion-summary-border-color: var(--terra-color-carbon-20);
+        --terra-accordion-summary-color: var(--terra-color-carbon-60);
 
         /* Caption - Dark Mode */
         --terra-caption-color: var(--terra-color-carbon-60);
@@ -824,6 +842,38 @@
         --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
         --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
         --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
+
+        /* Checkbox - Dark Mode */
+        --terra-checkbox-background-color: var(--terra-color-carbon-10);
+        --terra-checkbox-background-color-hover: var(--terra-color-carbon-10);
+        --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
+        --terra-checkbox-background-color-checked-hover: var(
+            --terra-color-nasa-blue-shade
+        );
+        --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
+        --terra-checkbox-border-color: var(--terra-color-carbon-20);
+        --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
+        --terra-checkbox-border-color-checked: var(--terra-color-nasa-blue);
+        --terra-checkbox-border-color-checked-hover: var(
+            --terra-color-nasa-blue-shade
+        );
+        --terra-checkbox-border-color-disabled: var(--terra-color-carbon-30);
+        --terra-checkbox-label-color: var(--terra-color-carbon-60);
+
+        /* Radio - Dark Mode */
+        --terra-radio-background-color: var(--terra-color-carbon-10);
+        --terra-radio-background-color-hover: var(--terra-color-carbon-10);
+        --terra-radio-background-color-checked: var(--terra-color-nasa-blue);
+        --terra-radio-background-color-checked-hover: var(
+            --terra-color-nasa-blue-shade
+        );
+        --terra-radio-background-color-disabled: var(--terra-color-carbon-10);
+        --terra-radio-border-color: var(--terra-color-carbon-20);
+        --terra-radio-border-color-hover: var(--terra-color-carbon-40);
+        --terra-radio-border-color-checked: var(--terra-color-nasa-blue);
+        --terra-radio-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+        --terra-radio-border-color-disabled: var(--terra-color-carbon-30);
+        --terra-radio-label-color: var(--terra-color-carbon-60);
 
         /* Toggle - Dark Mode */
         --terra-toggle-label-color: var(--terra-color-carbon-60);
@@ -911,7 +961,13 @@
     --terra-button-page-link-text-color: var(--terra-color-spacesuit-white);
 
     /* Input Styles */
+    --terra-input-background-color: var(--terra-color-carbon-10);
+    --terra-input-background-color-hover: var(--terra-color-carbon-10);
+    --terra-input-background-color-focus: var(--terra-color-carbon-10);
     --terra-input-border-color: var(--terra-color-carbon-60);
+    --terra-input-color: var(--terra-color-carbon-90);
+    --terra-input-color-hover: var(--terra-color-carbon-90);
+    --terra-input-color-focus: var(--terra-color-carbon-90);
 
     /* Panels - Dark Mode */
     --terra-panel-background-color: var(--terra-color-carbon-10);
