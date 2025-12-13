@@ -49,6 +49,10 @@ export class BrowseVariablesController {
         return this.task.value?.total ?? 0
     }
 
+    get catalog(): GiovanniVariableCatalog {
+        return this.#catalog
+    }
+
     render(renderFunctions: StatusRenderer<any>) {
         return this.task.render(renderFunctions)
     }

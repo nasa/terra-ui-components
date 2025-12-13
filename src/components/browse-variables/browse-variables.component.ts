@@ -544,4 +544,8 @@ export default class TerraBrowseVariables extends TerraElement {
             </div>
         `
     }
+
+    getVariable(variableEntryId: string) {
+        return this.#controller.catalog.getVariable(variableEntryId)
+    }
 }
