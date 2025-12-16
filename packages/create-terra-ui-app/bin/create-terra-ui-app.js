@@ -126,6 +126,44 @@ function promptFramework(frameworks) {
     })
 }
 
+function promptAppName() {
+    return new Promise(resolve => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout,
+        })
+
+        console.log()
+        rl.question(
+            chalk.yellow('Enter your app name (e.g., my-terra-app): '),
+            answer => {
+                rl.close()
+                const appName = answer.trim()
+                if (appName) {
+                    // Sanitize the app name: lowercase, replace spaces with hyphens
+                    const sanitized = appName
+                        .toLowerCase()
+                        .replace(/\s+/g, '-')
+                        .replace(/[^a-z0-9-]/g, '')
+                    if (sanitized) {
+                        resolve(sanitized)
+                    } else {
+                        console.log(
+                            chalk.yellow(
+                                'Invalid name after sanitization, using default name'
+                            )
+                        )
+                        resolve(null)
+                    }
+                } else {
+                    console.log(chalk.yellow('No name provided, using default name'))
+                    resolve(null)
+                }
+            }
+        )
+    })
+}
+
 async function main() {
     let frameworkName = options.framework
     const outputDir = options.output
@@ -141,6 +179,9 @@ async function main() {
         )
         process.exit(1)
     }
+
+    // Prompt for app name
+    const appName = await promptAppName()
 
     // Prompt for framework if not provided
     if (!frameworkName) {
@@ -159,7 +200,7 @@ async function main() {
 
     try {
         const selectedFramework = frameworks[frameworkName]
-        await selectedFramework.create(nextTask, outputDir, boilerplatesDir)
+        await selectedFramework.create(nextTask, outputDir, boilerplatesDir, appName)
     } catch (err) {
         console.error(chalk.red('\n✘ Failed to create boilerplate'))
         if (err.message) {

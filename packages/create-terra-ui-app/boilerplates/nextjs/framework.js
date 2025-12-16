@@ -14,12 +14,16 @@ export const framework = {
     projectName: 'terra-ui-nextjs-boilerplate',
 }
 
-export async function create(nextTask, outputDir, boilerplatesDir) {
-    const projectPath = path.join(outputDir || process.cwd(), framework.projectName)
+export async function create(nextTask, outputDir, boilerplatesDir, appName) {
+    // Use provided app name or fall back to default
+    const projectName = appName || framework.projectName
+    const projectPath = path.join(outputDir || process.cwd(), projectName)
 
     // Step 1: Create Next.js app
     await nextTask(`Creating Next.js app with ${framework.displayName}`, async () => {
-        await execPromise(framework.createCommand, {
+        // Build create command with the provided app name
+        const createCommand = `npx create-next-app@latest ${projectName} --ts --tailwind --eslint --use-npm --no-react-compiler --no-src-dir --no-app --no-import-alias`
+        await execPromise(createCommand, {
             cwd: outputDir || process.cwd(),
             stdio: 'inherit',
         })
@@ -123,41 +127,68 @@ export default function Document() {
         }
     })
 
-    // Step 5: Modify index.tsx
-    await nextTask('Updating index.tsx with example components', async () => {
-        const templatePath = path.join(boilerplatesDir, 'nextjs', 'index.tsx')
-        const indexPath = path.join(projectPath, 'pages', 'index.tsx')
-        const indexContent = await fs.readFile(templatePath, 'utf-8')
-        await fs.writeFile(indexPath, indexContent, 'utf-8')
+    // Step 5: Copy boilerplate files
+    await nextTask('Copying boilerplate files', async () => {
+        const filesToCopy = [
+            {
+                source: 'index.tsx',
+                destination: path.join('pages', 'index.tsx'),
+            },
+            {
+                source: 'kitchen-sink.tsx',
+                destination: path.join('pages', 'kitchen-sink.tsx'),
+            },
+            {
+                source: path.join('components', 'Layout.tsx'),
+                destination: path.join('pages', 'components', 'Layout.tsx'),
+                ensureDir: true,
+            },
+            {
+                source: 'AGENTS.md',
+                destination: 'AGENTS.md',
+            },
+            {
+                source: 'CLAUDE.md',
+                destination: 'CLAUDE.md',
+            },
+        ]
+
+        for (const file of filesToCopy) {
+            const sourcePath = path.join(boilerplatesDir, 'nextjs', file.source)
+            const destPath = path.join(projectPath, file.destination)
+
+            // Ensure destination directory exists if needed
+            if (file.ensureDir) {
+                const destDir = path.dirname(destPath)
+                await fs.mkdir(destDir, { recursive: true })
+            }
+
+            // Copy the file
+            const content = await fs.readFile(sourcePath, 'utf-8')
+            await fs.writeFile(destPath, content, 'utf-8')
+        }
     })
 
-    // Step 6: Copy kitchen-sink page
-    await nextTask('Adding kitchen-sink page', async () => {
-        const templatePath = path.join(boilerplatesDir, 'nextjs', 'kitchen-sink.tsx')
-        const kitchenSinkPath = path.join(projectPath, 'pages', 'kitchen-sink.tsx')
-        const kitchenSinkContent = await fs.readFile(templatePath, 'utf-8')
-        await fs.writeFile(kitchenSinkPath, kitchenSinkContent, 'utf-8')
-    })
-
-    // Step 7: Copy components directory
-    await nextTask('Adding Layout component', async () => {
-        const componentsSourceDir = path.join(boilerplatesDir, 'nextjs', 'components')
-        const componentsDestDir = path.join(projectPath, 'pages', 'components')
-
-        // Create components directory
-        await fs.mkdir(componentsDestDir, { recursive: true })
-
-        // Copy Layout.tsx
-        const layoutSourcePath = path.join(componentsSourceDir, 'Layout.tsx')
-        const layoutDestPath = path.join(componentsDestDir, 'Layout.tsx')
-        const layoutContent = await fs.readFile(layoutSourcePath, 'utf-8')
-        await fs.writeFile(layoutDestPath, layoutContent, 'utf-8')
-    })
+    // Step 6: Update package.json with app name
+    if (appName) {
+        await nextTask('Updating package.json with app name', async () => {
+            const packageJsonPath = path.join(projectPath, 'package.json')
+            const packageJson = JSON.parse(
+                await fs.readFile(packageJsonPath, 'utf-8')
+            )
+            packageJson.name = appName
+            await fs.writeFile(
+                packageJsonPath,
+                JSON.stringify(packageJson, null, 2) + '\n',
+                'utf-8'
+            )
+        })
+    }
 
     console.log(
         chalk.green(`\n✔ Boilerplate created successfully at: ${projectPath}`)
     )
     console.log(chalk.cyan(`\nTo get started, run:`))
-    console.log(chalk.white(`  cd ${framework.projectName}`))
+    console.log(chalk.white(`  cd ${projectName}`))
     console.log(chalk.white(`  npm run dev`))
 }
