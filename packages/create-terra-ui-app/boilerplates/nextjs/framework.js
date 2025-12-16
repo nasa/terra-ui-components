@@ -74,7 +74,56 @@ export async function create(nextTask, outputDir, boilerplatesDir) {
         await fs.writeFile(appPath, newContent, 'utf-8')
     })
 
-    // Step 4: Modify index.tsx
+    // Step 4: Create/modify _document.tsx
+    await nextTask('Configuring _document.tsx', async () => {
+        const documentPath = path.join(projectPath, 'pages', '_document.tsx')
+
+        let documentContent
+        try {
+            documentContent = await fs.readFile(documentPath, 'utf-8')
+        } catch (error) {
+            // If _document.tsx does not exist, create a new one
+            if (error && error.code === 'ENOENT') {
+                const newDocumentContent = `import { Html, Head, Main, NextScript } from 'next/document'
+
+export default function Document() {
+  return (
+    <Html className="terra-prefers-color-scheme">
+      <Head />
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  )
+}
+`
+                await fs.writeFile(documentPath, newDocumentContent, 'utf-8')
+                return
+            }
+            throw error
+        }
+
+        // If _document.tsx exists, ensure the Html tag has the terra-prefers-color-scheme class
+        if (!documentContent.includes('terra-prefers-color-scheme')) {
+            const updatedContent = documentContent.replace(
+                /<Html([^>]*)>/,
+                (match, attrs) => {
+                    if (/className=/.test(attrs)) {
+                        return `<Html${attrs.replace(
+                            /className=["']([^"']*)["']/,
+                            'className="$1 terra-prefers-color-scheme"'
+                        )}>`
+                    }
+                    return `<Html${attrs} className="terra-prefers-color-scheme">`
+                }
+            )
+
+            await fs.writeFile(documentPath, updatedContent, 'utf-8')
+        }
+    })
+
+    // Step 5: Modify index.tsx
     await nextTask('Updating index.tsx with example components', async () => {
         const templatePath = path.join(boilerplatesDir, 'nextjs', 'index.tsx')
         const indexPath = path.join(projectPath, 'pages', 'index.tsx')
@@ -82,7 +131,7 @@ export async function create(nextTask, outputDir, boilerplatesDir) {
         await fs.writeFile(indexPath, indexContent, 'utf-8')
     })
 
-    // Step 5: Copy kitchen-sink page
+    // Step 6: Copy kitchen-sink page
     await nextTask('Adding kitchen-sink page', async () => {
         const templatePath = path.join(boilerplatesDir, 'nextjs', 'kitchen-sink.tsx')
         const kitchenSinkPath = path.join(projectPath, 'pages', 'kitchen-sink.tsx')
@@ -90,7 +139,7 @@ export async function create(nextTask, outputDir, boilerplatesDir) {
         await fs.writeFile(kitchenSinkPath, kitchenSinkContent, 'utf-8')
     })
 
-    // Step 6: Copy components directory
+    // Step 7: Copy components directory
     await nextTask('Adding Layout component', async () => {
         const componentsSourceDir = path.join(boilerplatesDir, 'nextjs', 'components')
         const componentsDestDir = path.join(projectPath, 'pages', 'components')
