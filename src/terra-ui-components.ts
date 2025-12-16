@@ -54,6 +54,7 @@ export { default as TerraBreadcrumb } from './components/breadcrumb/breadcrumb.j
 export { default as TerraBadge } from './components/badge/badge.js'
 export { default as TerraTooltip } from './components/tooltip/tooltip.js'
 export { default as TerraToast } from './components/toast/toast.js'
+export { default as TerraDataGrid } from './components/data-grid/data-grid.js';
 /* plop:component */
 
 // Utilities

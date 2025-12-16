@@ -337,6 +337,7 @@
     --terra-input-line-height: var(--terra-line-height-denser);
     --terra-input-border-color: var(--terra-color-carbon-20);
     --terra-input-background-color: var(--terra-color-spacesuit-white);
+    --terra-input-background-color-odd: var(--terra-color-carbon-5);
     --terra-input-border-width: 1px;
     --terra-input-border-radius: var(--terra-border-radius-medium);
 
@@ -732,6 +733,140 @@
 
     /* Tabs scroll controls */
     --terra-tabs-scroll-button-width: var(--terra-spacing-x-large);
+
+    /*
+     * Data Grid Component
+     * Data grid is built on AG Grid and uses Horizon Design System tokens.
+     */
+
+    /* Data Grid - Colors - Primary */
+    --terra-data-grid-active-color: var(--terra-color-nasa-blue);
+    --terra-data-grid-background-color: var(--terra-input-background-color);
+    --terra-data-grid-foreground-color: var(--terra-color-carbon-90);
+    --terra-data-grid-secondary-foreground-color: var(--terra-color-carbon-70);
+    --terra-data-grid-disabled-foreground-color: var(--terra-color-carbon-50);
+
+    /* Data Grid - Colors - Borders */
+    --terra-data-grid-border-color: var(--terra-color-carbon-20);
+    --terra-data-grid-secondary-border-color: var(--terra-color-carbon-10);
+    --terra-data-grid-input-border-color: var(--terra-color-carbon-20);
+    --terra-data-grid-input-border-color-invalid: var(--terra-color-nasa-red);
+    --terra-data-grid-input-disabled-border-color: var(--terra-color-carbon-30);
+
+    /* Data Grid - Colors - Backgrounds */
+    --terra-data-grid-header-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-tooltip-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-odd-row-background-color: var(
+        --terra-input-background-color-odd
+    );
+    --terra-data-grid-control-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-subheader-background-color: var(--terra-color-spacesuit-white);
+    --terra-data-grid-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-menu-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-input-disabled-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-checkbox-background-color: var(--terra-color-spacesuit-white);
+    --terra-data-grid-chip-background-color: var(--terra-color-carbon-10);
+
+    /* Data Grid - Colors - Interactive States */
+    --terra-data-grid-row-hover-color: var(--terra-color-carbon-5);
+    --terra-data-grid-column-hover-color: var(--terra-color-carbon-5);
+    --terra-data-grid-selected-row-background-color: hsla(212, 100%, 58%, 0.2);
+    --terra-data-grid-range-selection-background-color: hsla(212, 100%, 58%, 0.2);
+    --terra-data-grid-range-selection-background-color-2: hsla(212, 100%, 58%, 0.36);
+    --terra-data-grid-range-selection-background-color-3: hsla(212, 100%, 58%, 0.49);
+    --terra-data-grid-range-selection-background-color-4: hsla(212, 100%, 58%, 0.59);
+    --terra-data-grid-range-selection-border-color: var(--terra-color-nasa-blue);
+    --terra-data-grid-input-focus-border-color: hsla(212, 100%, 58%, 0.4);
+
+    /* Data Grid - Colors - Validation & Status */
+    --terra-data-grid-invalid-color: var(--terra-color-nasa-red);
+    --terra-data-grid-checkbox-unchecked-color: var(--terra-color-carbon-50);
+    --terra-data-grid-checkbox-checked-color: var(--terra-color-nasa-blue);
+
+    /* Data Grid - Colors - Advanced Filters */
+    --terra-data-grid-advanced-filter-join-pill-color: var(
+        --terra-color-nasa-red-tint
+    );
+    --terra-data-grid-advanced-filter-column-pill-color: var(
+        --terra-color-active-green
+    );
+    --terra-data-grid-advanced-filter-option-pill-color: var(
+        --terra-color-international-orange
+    );
+    --terra-data-grid-advanced-filter-value-pill-color: var(
+        --terra-color-nasa-blue-tint
+    );
+
+    /* Data Grid - Colors - Find/Search */
+    --terra-data-grid-find-match-color: var(--terra-color-carbon-90);
+    --terra-data-grid-find-match-background-color: #ffff00;
+    --terra-data-grid-find-active-match-color: var(--terra-color-carbon-90);
+    --terra-data-grid-find-active-match-background-color: #ffa500;
+
+    /* Data Grid - Colors - Buttons & Actions */
+    --terra-data-grid-filter-panel-apply-button-color: var(
+        --terra-color-spacesuit-white
+    );
+    --terra-data-grid-filter-panel-apply-button-background-color: var(
+        --terra-color-nasa-blue
+    );
+    --terra-data-grid-selected-tab-underline-color: var(--terra-color-nasa-blue);
+
+    /* Data Grid - Typography */
+    --terra-data-grid-font-family: var(--terra-font-family--inter);
+    --terra-data-grid-font-size: var(--terra-font-size-small);
+    --terra-data-grid-icon-font-family: agGridAlpine;
+
+    /* Data Grid - Spacing & Sizing */
+    --terra-data-grid-grid-size: var(--terra-spacing-x-small);
+    --terra-data-grid-icon-size: var(--terra-icon-small);
+    --terra-data-grid-row-height: calc(var(--terra-data-grid-grid-size) * 7);
+    --terra-data-grid-header-height: calc(var(--terra-data-grid-grid-size) * 8);
+    --terra-data-grid-list-item-height: calc(var(--terra-data-grid-grid-size) * 4);
+    --terra-data-grid-cell-horizontal-padding: calc(
+        var(--terra-data-grid-grid-size) * 3
+    );
+    --terra-data-grid-cell-widget-spacing: calc(var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-widget-container-vertical-padding: calc(
+        var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-widget-container-horizontal-padding: calc(
+        var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-widget-vertical-spacing: calc(
+        var(--terra-data-grid-grid-size) * 1.5
+    );
+    --terra-data-grid-column-select-indent-size: var(--terra-data-grid-icon-size);
+    --terra-data-grid-set-filter-indent-size: var(--terra-data-grid-icon-size);
+    --terra-data-grid-advanced-filter-builder-indent-size: calc(
+        var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-toggle-button-height: 18px;
+    --terra-data-grid-toggle-button-width: 28px;
+    --terra-data-grid-tab-min-width: 240px;
+    --terra-data-grid-side-bar-panel-width: 250px;
+
+    /* Data Grid - Borders & Radius */
+    --terra-data-grid-borders: solid 1px;
+    --terra-data-grid-border-radius: var(--terra-border-radius-medium);
+    --terra-data-grid-borders-side-button: none;
+    --terra-data-grid-side-button-selected-background-color: transparent;
+    --terra-data-grid-header-column-resize-handle-display: block;
+    --terra-data-grid-header-column-resize-handle-width: 2px;
+    --terra-data-grid-header-column-resize-handle-height: 30%;
+
+    /* Data Grid - Shadows */
+    --terra-data-grid-card-shadow: var(--terra-shadow-small);
+    --terra-data-grid-popup-shadow: var(--terra-shadow-small);
+
+    /* Data Grid - Transitions */
+    --terra-data-grid-selected-tab-underline-width: 2px;
+    --terra-data-grid-selected-tab-underline-transition-speed: var(
+        --terra-transition-medium
+    );
+
+    /* Data Grid - Height */
+    --terra-data-grid-height: 400px;
 }
 
 /* ============================================================================
@@ -782,6 +917,7 @@
 
     /* Input Styles */
     --terra-input-background-color: var(--terra-color-carbon-10);
+    --terra-input-background-color-odd: var(--terra-color-carbon-20);
     --terra-input-background-color-hover: var(--terra-color-carbon-10);
     --terra-input-background-color-focus: var(--terra-color-carbon-10);
     --terra-input-border-color: var(--terra-color-carbon-60);
@@ -905,6 +1041,30 @@
     /* Tabs - Dark Mode */
     --terra-tabs-indicator-color: var(--terra-color-carbon-90);
     --terra-tabs-track-color: var(--terra-color-carbon-20);
+
+    /* Data Grid - Dark Mode */
+    --terra-data-grid-background-color: var(--terra-input-background-color);
+    --terra-data-grid-foreground-color: var(--terra-input-color);
+    --terra-data-grid-secondary-foreground-color: var(--terra-color-carbon-60);
+    --terra-data-grid-disabled-foreground-color: var(--terra-color-carbon-50);
+    --terra-data-grid-border-color: var(--terra-input-border-color);
+    --terra-data-grid-secondary-border-color: var(--terra-color-carbon-20);
+    --terra-data-grid-input-border-color: var(--terra-input-border-color);
+    --terra-data-grid-input-disabled-border-color: var(--terra-color-carbon-30);
+    --terra-data-grid-header-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-tooltip-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-odd-row-background-color: var(
+        --terra-input-background-color-odd
+    );
+    --terra-data-grid-control-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-subheader-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-menu-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-input-disabled-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-checkbox-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-chip-background-color: var(--terra-color-carbon-20);
+    --terra-data-grid-row-hover-color: var(--terra-color-carbon-5);
+    --terra-data-grid-column-hover-color: var(--terra-color-carbon-5);
 }
 
 :host,
