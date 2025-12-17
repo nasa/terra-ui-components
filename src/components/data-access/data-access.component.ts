@@ -21,17 +21,15 @@ import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
 import { StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { createRef, ref } from 'lit/directives/ref.js'
-import {
-    createGrid,
-    AllCommunityModule,
-    ModuleRegistry,
-    type GridApi,
-    type GridOptions,
-    type IDatasource,
-    type IGetRowsParams,
-    type ICellRendererParams,
+import type {
+    IDatasource,
+    IGetRowsParams,
+    ICellRendererParams,
+    ColDef,
+    GridApi,
 } from 'ag-grid-community'
 import TerraSlider from '../slider/slider.component.js'
+import TerraDataGrid from '../data-grid/data-grid.component.js'
 import { getBasePath } from '../../utilities/base-path.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
 import TerraMenu from '../menu/menu.component.js'
@@ -50,6 +48,7 @@ import type { TerraSelectEvent } from '../../events/terra-select.js'
  * @dependency terra-date-picker
  * @dependency terra-spatial-picker
  * @dependency terra-slider
+ * @dependency terra-data-grid
  *
  * @attr short-name - Collection short name used to build the Collection Entry ID.
  * @attr version - Collection version used to build the Collection Entry ID.
@@ -66,6 +65,7 @@ export default class TerraDataAccess extends TerraElement {
         'terra-menu': TerraMenu,
         'terra-menu-item': TerraMenuItem,
         'terra-button': TerraButton,
+        'terra-data-grid': TerraDataGrid,
     }
 
     @property({ reflect: true, attribute: 'short-name' })
@@ -113,15 +113,13 @@ export default class TerraDataAccess extends TerraElement {
     datePickerRef = createRef<TerraDatePicker>()
     spatialPickerRef = createRef<TerraSpatialPicker>()
     cloudCoverSliderRef = createRef<TerraSlider>()
+    gridRef = createRef<TerraDataGrid<CmrGranule>>()
 
     #controller = new DataAccessController(this)
-    #gridApi: GridApi<CmrGranule>
-    #gridRef = createRef<HTMLElement>()
     #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
-    connectedCallback(): void {
-        super.connectedCallback()
-        ModuleRegistry.registerModules([AllCommunityModule])
+    get #gridApi(): GridApi<CmrGranule> | undefined {
+        return this.gridRef.value?.getGridApi()
     }
 
     disconnectedCallback(): void {
@@ -159,8 +157,7 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     #initializeGrid() {
-        if (this.#gridApi) {
-            // we already have a grid
+        if (!this.gridRef.value) {
             return
         }
 
@@ -183,61 +180,69 @@ export default class TerraDataAccess extends TerraElement {
                         ? this.#controller.totalGranules
                         : -1
 
-                this.#gridApi.applyColumnState({
-                    state: [
-                        {
-                            colId: 'cloudCover',
-                            hide: !this.#controller.cloudCoverRange,
-                        },
-                    ],
-                })
+                // Update cloud cover column visibility when grid is ready
+                if (this.#gridApi) {
+                    this.#gridApi.applyColumnState({
+                        state: [
+                            {
+                                colId: 'cloudCover',
+                                hide: !this.#controller.cloudCoverRange,
+                            },
+                        ],
+                    })
+                }
 
                 params.successCallback(this.#controller.granules, lastRow)
             },
         }
 
-        const gridOptions: GridOptions<CmrGranule> = {
-            columnDefs: [
-                {
-                    field: 'title',
-                    flex: 3,
-                    cellRenderer: (params: ICellRendererParams<CmrGranule>) => {
-                        if (!params.data) {
-                            return ''
-                        }
+        const columnDefs: ColDef<CmrGranule>[] = [
+            {
+                field: 'title',
+                flex: 3,
+                cellRenderer: (params: ICellRendererParams<CmrGranule>) => {
+                    if (!params.data) {
+                        return ''
+                    }
 
-                        const url = getGranuleUrl(params.data)
+                    const url = getGranuleUrl(params.data)
 
-                        if (url) {
-                            const link = document.createElement('a')
-                            link.href = url
-                            link.target = '_blank'
-                            link.title = url
-                            link.textContent = params.data.title
+                    if (url) {
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.target = '_blank'
+                        link.title = url
+                        link.textContent = params.data.title
 
-                            return link
-                        }
+                        return link
+                    }
 
-                        const span = document.createElement('span')
-                        span.textContent = params.data.title
-                        return span
-                    },
+                    const span = document.createElement('span')
+                    span.textContent = params.data.title
+                    return span
                 },
-                {
-                    colId: 'size',
-                    headerName: 'Size (MB)',
-                    valueGetter: g => {
-                        if (!g.data) {
-                            return undefined
-                        }
+            },
+            {
+                colId: 'size',
+                headerName: 'Size (MB)',
+                valueGetter: g => {
+                    if (!g.data) {
+                        return undefined
+                    }
 
-                        return calculateGranuleSize(g.data, 'MB').toFixed(2)
-                    },
+                    return calculateGranuleSize(g.data, 'MB').toFixed(2)
                 },
-                { field: 'timeStart' },
-                { field: 'timeEnd' },
-                { field: 'cloudCover', hide: true },
-            ],
+            },
+            { field: 'timeStart' },
+            { field: 'timeEnd' },
+            { field: 'cloudCover', hide: true },
+        ]
+
+        // Configure terra-data-grid component
+        this.gridRef.value.rowModelType = 'infinite'
+        this.gridRef.value.columnDefs = columnDefs
+        this.gridRef.value.datasource = datasource
+        this.gridRef.value.gridOptions = {
             defaultColDef: {
                 flex: 1,
                 minWidth: 100,
@@ -248,11 +253,18 @@ export default class TerraDataAccess extends TerraElement {
             cacheBlockSize: 50,
             maxConcurrentDatasourceRequests: 2,
             infiniteInitialRowCount: 50,
-            rowModelType: 'infinite',
-            datasource,
+            onGridReady: params => {
+                // Update cloud cover column visibility when grid is ready
+                params.api.applyColumnState({
+                    state: [
+                        {
+                            colId: 'cloudCover',
+                            hide: !this.#controller.cloudCoverRange,
+                        },
+                    ],
+                })
+            },
         }
-
-        this.#gridApi = createGrid(this.#gridRef.value!, gridOptions)
     }
 
     @debounce(500)
@@ -741,8 +753,12 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
             </div>
 
-            <div class="grid-container" style="position: relative;">
-                <div class="file-grid" ${ref(this.#gridRef)}></div>
+            <div class="grid-container">
+                <terra-data-grid
+                    ${ref(this.gridRef)}
+                    row-model-type="infinite"
+                    height="350px"
+                ></terra-data-grid>
 
                 ${this.#controller.render({
                     initial: () => this.#renderLoadingOverlay(),
