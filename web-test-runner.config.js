@@ -1,6 +1,12 @@
 import { esbuildPlugin } from '@web/dev-server-esbuild'
 import { globbySync } from 'globby'
 import { playwrightLauncher } from '@web/test-runner-playwright'
+import { readFileSync } from 'fs'
+
+const packageJson = JSON.parse(
+    readFileSync(new URL('./package.json', import.meta.url), 'utf-8')
+)
+const componentsVersion = packageJson.version ?? 'test'
 
 export default {
     rootDir: '.',
@@ -19,6 +25,9 @@ export default {
         esbuildPlugin({
             ts: true,
             target: 'es2020',
+            define: {
+                __COMPONENTS_VERSION__: JSON.stringify(componentsVersion),
+            },
         }),
     ],
     browsers: [

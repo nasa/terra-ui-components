@@ -1,7 +1,4 @@
 import { css } from 'lit'
-import 'ag-grid-community/styles/ag-grid.css'
-// Import default alpine theme - users can import additional themes if needed
-import 'ag-grid-community/styles/ag-theme-alpine.css'
 
 export default css`
     :host {

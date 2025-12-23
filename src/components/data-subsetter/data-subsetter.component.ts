@@ -25,7 +25,7 @@ import {
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
-import { LatLng, LatLngBounds } from 'leaflet'
+import type { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
@@ -1047,6 +1047,18 @@ export default class TerraDataSubsetter extends TerraElement {
         this.spatialPicker?.invalidateSize()
     }
 
+    isLatLng(value: any): value is LatLng {
+        return value && typeof value.lat === 'number' && typeof value.lng === 'number'
+    }
+
+    isLatLngBounds(value: any): value is LatLngBounds {
+        return (
+            value &&
+            typeof value.getSouthWest === 'function' &&
+            typeof value.getNorthEast === 'function'
+        )
+    }
+
     #renderSpatialSelection() {
         const showError = this.touchedFields.has('spatial') && !this.spatialSelection
         let boundingRects: any =
@@ -1060,9 +1072,9 @@ export default class TerraDataSubsetter extends TerraElement {
         let spatialString = ''
 
         // convert spatial to string
-        if (this.spatialSelection instanceof LatLng) {
+        if (this.isLatLng(this.spatialSelection)) {
             spatialString = `${this.spatialSelection.lat}, ${this.spatialSelection.lng}`
-        } else if (this.spatialSelection instanceof LatLngBounds) {
+        } else if (this.isLatLngBounds(this.spatialSelection)) {
             spatialString = `${this.spatialSelection.getSouthWest().lat}, ${this.spatialSelection.getSouthWest().lng}, ${this.spatialSelection.getNorthEast().lat}, ${this.spatialSelection.getNorthEast().lng}`
         } else if (
             this.spatialSelection &&

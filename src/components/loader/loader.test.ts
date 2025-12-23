@@ -1,5 +1,5 @@
-import '../../../dist/terra-ui-components.js'
 import { expect, fixture, html } from '@open-wc/testing'
+import './loader.js'
 
 describe('<terra-loader>', () => {
     it('should render a loader component', async () => {
