@@ -113,9 +113,46 @@ export default class TerraDatePicker extends TerraElement {
         this.initializePresets()
     }
 
+    /**
+     * Parse a date string (YYYY-MM-DD) as a local date, avoiding timezone issues.
+     * When you do `new Date("2024-03-20")`, JavaScript interprets it as UTC midnight,
+     * which can cause off-by-one day errors when using getDate() in local timezone.
+     * This function parses the date as a local date instead.
+     */
+    private parseLocalDate(dateString: string): Date {
+        // Check if it's a date-only string (YYYY-MM-DD format)
+        const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
+        if (dateOnlyPattern.test(dateString)) {
+            const [year, month, day] = dateString.split('-').map(Number)
+            return new Date(year, month - 1, day) // month is 0-indexed in Date constructor
+        }
+        // For ISO strings with time, use standard Date parsing
+        return new Date(dateString)
+    }
+
+    /**
+     * Check if two dates are in the same calendar month and year
+     */
+    private isSameMonth(date1: Date, date2: Date): boolean {
+        return (
+            date1.getFullYear() === date2.getFullYear() &&
+            date1.getMonth() === date2.getMonth()
+        )
+    }
+
+    /**
+     * Check if a date's month/year matches a given month Date
+     */
+    private isDateInMonth(date: Date, monthDate: Date): boolean {
+        return (
+            date.getFullYear() === monthDate.getFullYear() &&
+            date.getMonth() === monthDate.getMonth()
+        )
+    }
+
     private getBounds(): { min?: Date; max?: Date } {
-        const min = this.minDate ? new Date(this.minDate) : undefined
-        const max = this.maxDate ? new Date(this.maxDate) : undefined
+        const min = this.minDate ? this.parseLocalDate(this.minDate) : undefined
+        const max = this.maxDate ? this.parseLocalDate(this.maxDate) : undefined
         return { min, max }
     }
 
@@ -155,7 +192,7 @@ export default class TerraDatePicker extends TerraElement {
         // If a max date is provided and no explicit selection exists,
         // open the calendar to the max date's month (right calendar in range mode)
         if (this.maxDate && !this.selectedStart && !this.selectedEnd) {
-            const max = new Date(this.maxDate)
+            const max = this.parseLocalDate(this.maxDate)
             if (!isNaN(max.getTime())) {
                 if (this.range) {
                     this.rightMonth = new Date(max)
@@ -208,10 +245,9 @@ export default class TerraDatePicker extends TerraElement {
     handleStartEndDateChange() {
         // Sync internal state with props when they change
         if (this.startDate) {
-            const start = new Date(this.startDate)
+            const start = this.parseLocalDate(this.startDate)
             if (!isNaN(start.getTime())) {
                 this.selectedStart = start
-                this.leftMonth = new Date(start)
                 if (this.enableTime) {
                     this.initializeTimeFromDate(start, true)
                 }
@@ -222,23 +258,68 @@ export default class TerraDatePicker extends TerraElement {
 
         if (this.range) {
             if (this.endDate) {
-                const end = new Date(this.endDate)
+                const end = this.parseLocalDate(this.endDate)
                 if (!isNaN(end.getTime())) {
                     this.selectedEnd = end
-                    this.rightMonth = new Date(end)
                     if (this.enableTime) {
                         this.initializeTimeFromDate(end, false)
                     }
                 }
             } else {
                 this.selectedEnd = null
-                // If no end date, set right month to be one month ahead of left month
-                if (this.selectedStart) {
-                    this.rightMonth = new Date(this.leftMonth)
-                    this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+            }
+
+            // Handle month synchronization for range mode
+            if (this.selectedStart && this.selectedEnd) {
+                // Check if the range is entirely within one month
+                const isSingleMonthRange = this.isSameMonth(
+                    this.selectedStart,
+                    this.selectedEnd
+                )
+
+                if (isSingleMonthRange) {
+                    // Case 1: Left calendar already shows the selection month
+                    if (this.isDateInMonth(this.selectedStart, this.leftMonth)) {
+                        this.leftMonth = new Date(this.selectedStart)
+                        // If right calendar also shows the same month (initial load scenario),
+                        // set it to the next month. Otherwise, preserve user's navigation.
+                        if (this.isDateInMonth(this.selectedStart, this.rightMonth)) {
+                            // Both calendars show the same month - set right to next month
+                            this.rightMonth = new Date(this.selectedStart)
+                            this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+                        }
+                        // Otherwise, don't change rightMonth - user has navigated it elsewhere
+                    }
+                    // Case 2: Right calendar already shows the selection month
+                    // Skip changing the left calendar
+                    else if (
+                        this.isDateInMonth(this.selectedStart, this.rightMonth)
+                    ) {
+                        // Don't change leftMonth - user is already looking at the month on the right
+                        this.rightMonth = new Date(this.selectedStart)
+                    }
+                    // Case 3: Neither calendar shows the selection month
+                    // Only update the left calendar
+                    else {
+                        this.leftMonth = new Date(this.selectedStart)
+                        // Keep rightMonth as-is
+                    }
+                } else {
+                    // Range spans multiple months - update both calendars normally
+                    this.leftMonth = new Date(this.selectedStart)
+                    this.rightMonth = new Date(this.selectedEnd)
                 }
+            } else if (this.selectedStart) {
+                // Only start date is set - update left month, set right to +1 month
+                this.leftMonth = new Date(this.selectedStart)
+                this.rightMonth = new Date(this.leftMonth)
+                this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
             }
         } else {
+            // Single date mode - always update left month
+            if (this.selectedStart) {
+                this.leftMonth = new Date(this.selectedStart)
+            }
             this.selectedEnd = null
         }
     }
@@ -324,7 +405,7 @@ export default class TerraDatePicker extends TerraElement {
         const timeEndParam = params.get('time_end') || this.endDate
 
         if (timeStartParam) {
-            this.selectedStart = new Date(timeStartParam)
+            this.selectedStart = this.parseLocalDate(timeStartParam)
             this.leftMonth = new Date(this.selectedStart)
             if (this.enableTime) {
                 this.initializeTimeFromDate(this.selectedStart, true)
@@ -332,10 +413,29 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         if (this.range && timeEndParam) {
-            this.selectedEnd = new Date(timeEndParam)
-            this.rightMonth = new Date(this.selectedEnd)
+            this.selectedEnd = this.parseLocalDate(timeEndParam)
             if (this.enableTime) {
                 this.initializeTimeFromDate(this.selectedEnd, false)
+            }
+
+            // Apply the same month synchronization logic as handleStartEndDateChange
+            if (this.selectedStart && this.selectedEnd) {
+                const isSingleMonthRange = this.isSameMonth(
+                    this.selectedStart,
+                    this.selectedEnd
+                )
+
+                if (isSingleMonthRange) {
+                    // For single-month ranges, set right month to next month
+                    this.rightMonth = new Date(this.selectedStart)
+                    this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+                } else {
+                    // For multi-month ranges, set right month to end date month
+                    this.rightMonth = new Date(this.selectedEnd)
+                }
+            } else if (this.selectedEnd) {
+                // Only end date is set (unusual case)
+                this.rightMonth = new Date(this.selectedEnd)
             }
         }
 
@@ -578,12 +678,34 @@ export default class TerraDatePicker extends TerraElement {
 
     private isDisabled(date: Date): boolean {
         if (this.minDate) {
-            const min = new Date(this.minDate)
-            if (date < min) return true
+            const min = this.parseLocalDate(this.minDate)
+            // Normalize to midnight for date-only comparison
+            const minMidnight = new Date(
+                min.getFullYear(),
+                min.getMonth(),
+                min.getDate()
+            )
+            const dateMidnight = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+            )
+            if (dateMidnight < minMidnight) return true
         }
         if (this.maxDate) {
-            const max = new Date(this.maxDate)
-            if (date > max) return true
+            const max = this.parseLocalDate(this.maxDate)
+            // Normalize to midnight for date-only comparison
+            const maxMidnight = new Date(
+                max.getFullYear(),
+                max.getMonth(),
+                max.getDate()
+            )
+            const dateMidnight = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+            )
+            if (dateMidnight > maxMidnight) return true
         }
         return false
     }
