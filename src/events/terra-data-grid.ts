@@ -16,8 +16,7 @@ export type TerraFilterChangedEvent = CustomEvent<FilterChangedEvent>
 export type TerraRowClickedEvent = CustomEvent<RowClickedEvent<any>>
 export type TerraRowDoubleClickedEvent = CustomEvent<RowDoubleClickedEvent<any>>
 export type TerraCellClickedEvent = CustomEvent<CellClickedEvent<any>>
-export type TerraCellValueChangedEvent =
-    CustomEvent<CellValueChangedEvent<any>>
+export type TerraCellValueChangedEvent = CustomEvent<CellValueChangedEvent<any>>
 
 declare global {
     interface GlobalEventHandlersEventMap {
@@ -31,5 +30,3 @@ declare global {
         'terra-cell-value-changed': TerraCellValueChangedEvent
     }
 }
-
-
