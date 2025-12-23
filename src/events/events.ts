@@ -43,3 +43,13 @@ export type { TerraClearEvent } from './terra-clear.js'
 export type { TerraCloseEvent } from './terra-close.js'
 export type { TerraTabShowEvent } from './terra-tab-show.js'
 export type { TerraTabHideEvent } from './terra-tab-hide.js'
+export type {
+    TerraGridReadyEvent,
+    TerraSelectionChangedEvent,
+    TerraSortChangedEvent,
+    TerraFilterChangedEvent,
+    TerraRowClickedEvent,
+    TerraRowDoubleClickedEvent,
+    TerraCellClickedEvent,
+    TerraCellValueChangedEvent,
+} from './terra-data-grid.js'

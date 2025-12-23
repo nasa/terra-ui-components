@@ -1,9 +1,10 @@
-import { property, state } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
-import { createRef, ref } from 'lit/directives/ref.js'
 import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
 import styles from './data-grid.styles.js'
+import TerraElement from '../../internal/terra-element.js'
+import TerraLoader from '../loader/loader.component.js'
+import { createRef, ref } from 'lit/directives/ref.js'
+import { html, nothing } from 'lit'
+import { property, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 import {
     createGrid,
@@ -24,7 +25,6 @@ import {
     type CsvExportParams,
     type ExcelExportParams,
 } from 'ag-grid-community'
-import TerraLoader from '../loader/loader.component.js'
 
 /**
  * @summary A flexible data grid component built on AG Grid with support for various data sources and row models.
@@ -300,7 +300,6 @@ export default class TerraDataGrid<T = any> extends TerraElement {
      */
     exportToExcel(options?: ExcelExportParams): void {
         if (this.#gridApi) {
-            // @ts-expect-error - Excel export requires enterprise license
             this.#gridApi.exportDataAsExcel?.(options)
         }
     }
