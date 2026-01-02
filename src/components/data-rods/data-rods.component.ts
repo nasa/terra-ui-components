@@ -90,6 +90,11 @@ export default class TerraDataRods extends TerraElement {
 
     @state() catalogVariable: Variable
 
+    /**
+     * anytime user selects invalid dates
+     */
+    @state() private dateErrorMessage?: string
+
     _fetchVariableTask = getFetchVariableTask(this)
 
     render() {
@@ -125,7 +130,12 @@ export default class TerraDataRods extends TerraElement {
                 show-citation=${true}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             >
-              <li slot="help-links"><a href="https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series">User Guide</a></li>
+                <li slot="help-links">
+                    <a
+                        href="https://disc.gsfc.nasa.gov/information/tools?title=Hydrology%20Time%20Series"
+                        >User Guide</a
+                    >
+                </li>
             </terra-time-series>
 
             <terra-date-range-slider
@@ -135,7 +145,13 @@ export default class TerraDataRods extends TerraElement {
                 start-date=${this.startDate}
                 end-date=${this.endDate}
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
+                @terra-date-selection-invalid="${this.#handleInvalidDateSelection}"
             ></terra-date-range-slider>
+            ${this.dateErrorMessage
+                ? html`<div class="date-error" style="color: red;">
+                      ${this.dateErrorMessage}
+                  </div>`
+                : null}
         `
     }
 
@@ -145,6 +161,13 @@ export default class TerraDataRods extends TerraElement {
     #handleDateRangeSliderChangeEvent(event: TerraDateRangeChangeEvent) {
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
+    }
+
+    /**
+     * anytime user selects invalid dates outside variable date range
+     */
+    #handleInvalidDateSelection(event: CustomEvent) {
+        this.dateErrorMessage = event.detail.message
     }
 
     #handleVariableChange(event: TerraComboboxChangeEvent) {
