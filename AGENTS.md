@@ -1,13 +1,13 @@
 ## Purpose
 
-This file is instructions for AI coding assistants (like Claude, GPT, or Cursor Agents) working in this repo.
+This file contains **MANDATORY instructions** for AI coding assistants (like Claude, GPT, or Cursor Agents) working in this repo. **You MUST follow these guidelines.**
 
 Your main goals:
 
 -   **Help build, refactor, and debug Terra UI components** (Lit-based web components, React wrappers, and Python widgets).
--   **Use the existing documentation in `docs/` instead of re‑inventing APIs or behavior.**
+-   **ALWAYS use the existing documentation in `docs/` instead of re‑inventing APIs or behavior.**
 
-When in doubt, **prefer reading existing docs and code over guessing.**
+**REQUIRED:** When in doubt, **you MUST read existing docs and code rather than guessing.**
 
 ---
 
@@ -26,13 +26,20 @@ When in doubt, **prefer reading existing docs and code over guessing.**
     -   `docs/pages/getting-started/*.md` – overall usage, themes, installation, localization, etc.
     -   `docs/pages/frameworks/*.md` – using Terra UI with React, Vue, Angular, etc.
 -   **Design tokens**
-    -   `docs/pages/tokens/*.md` – color, typography, spacing, etc. Use these as the single source of truth for design decisions.
+    -   `docs/pages/tokens/*.md` – color, typography, spacing, etc. **You MUST use these as the single source of truth for design decisions.**
 
-**When building or modifying a component:**
+**REQUIRED workflow when building or modifying a component:**
 
-1. **Read the relevant `docs/pages/components/<component>.md`.**
-2. **Review its implementation in `src/components/<component>/<component>.component.ts` (and related controller/utility files).**
-3. Keep the docs, implementation, and examples in sync when making behavior or API changes.
+1. **MUST read the relevant `docs/pages/components/<component>.md` first.**
+2. **MUST review its implementation in `src/components/<component>/<component>.component.ts` (and related controller/utility files).**
+3. **MUST ensure proper tests exist** in `src/components/<component>/<component>.test.ts` covering:
+    - Component rendering
+    - Property changes
+    - Event emission
+    - User interactions (clicks, keyboard navigation)
+    - Edge cases and error states
+    - Accessibility features
+4. **MUST keep the docs, implementation, and examples in sync when making behavior or API changes.**
 
 You can also consult the built documentation site under `_site/` (mirrors `docs/`), but prefer editing/reading the Markdown sources in `docs/`.
 
@@ -57,7 +64,7 @@ You can also consult the built documentation site under `_site/` (mirrors `docs/
     -   `scripts/*.js` – Node build, theming, React wrapper generation, etc.
     -   `scripts/plop/*.js|*.hbs` – code generators for new components/widgets.
 
-When you need to understand how a feature works, **start from the component docs, then read the corresponding `src/components` files and any data services or utilities they depend on.**
+**REQUIRED:** When you need to understand how a feature works, **you MUST start from the component docs, then read the corresponding `src/components` files and any data services or utilities they depend on.**
 
 ---
 
@@ -101,6 +108,7 @@ This uses `plop` to scaffold:
 -   Styles
 -   Jupyter widget support
 -   A docs page in `docs/pages/components/`
+-   **A test file (`*.test.ts`)** – **MUST implement comprehensive tests** before considering the component complete.
 
 After scaffolding, run `git status` to see all new/updated files and **update docs/examples as needed.**
 
@@ -120,26 +128,42 @@ Then open `notebooks/playground.ipynb` to test components in Jupyter.
 ## Code Style & Conventions
 
 -   **Formatting**
-    -   Use **Prettier** with the shared config `@gesdisc/prettier-config`.
-    -   Prefer running `npm run prettier` or relying on `lint-staged` hooks for staged `.ts` and `.js` files.
+    -   **MUST use Prettier** with the shared config `@gesdisc/prettier-config`.
+    -   **MUST run `npm run prettier`** or rely on `lint-staged` hooks for staged `.ts` and `.js` files.
 -   **Languages & frameworks**
     -   Core components are **Lit 3** web components in TypeScript (`lit` package).
-    -   Data-heavy UI uses utilities such as `leaflet`, `ol`, `plotly.js-dist-min`, `ag-grid-community`, etc. Prefer extending existing patterns over inventing new ones.
+    -   Data-heavy UI uses utilities such as `leaflet`, `ol`, `plotly.js-dist-min`, `ag-grid-community`, etc. **MUST extend existing patterns rather than inventing new ones.**
 -   **Component naming**
-    -   Custom elements use the `terra-` prefix: `terra-map`, `terra-time-average-map`, etc.
-    -   Keep tag names stable; if you must change them, update:
+    -   Custom elements **MUST use** the `terra-` prefix: `terra-map`, `terra-time-average-map`, etc.
+    -   **MUST keep tag names stable**; if you must change them, **MUST update:**
         -   Component implementation
         -   Docs in `docs/pages/components/*.md`
         -   Any React/Python wrappers and examples.
 -   **Structure**
     -   For complex components, logic is often split into `*.component.ts` and `*.controller.ts` plus shared utilities.
-    -   Prefer **small, focused controllers and utilities** instead of bloating the component class.
+    -   **MUST use small, focused controllers and utilities** instead of bloating the component class.
 
-When generating or modifying code, **match the patterns already used in similar components.** For example, if editing `time-average-map`, also inspect `map` and `time-series` components to keep UX and API surface consistent.
+**REQUIRED:** When generating or modifying code, **you MUST match the patterns already used in similar components.** For example, if editing `time-average-map`, **MUST also inspect `map` and `time-series` components** to keep UX and API surface consistent.
 
 ---
 
 ## Testing & Quality
+
+**REQUIRED:** **ALL components MUST have comprehensive tests.** This is NOT optional.
+
+-   **Component Testing Requirements**
+
+    -   **MUST create or update test files** (`*.test.ts`) for every component you create or modify.
+    -   **MUST use `@open-wc/testing`** utilities (`fixture`, `expect`, `html`, `waitUntil`, etc.) following existing test patterns.
+    -   **MUST test:**
+        -   Component rendering
+        -   Property changes and attribute reflection
+        -   Event emission
+        -   User interactions (clicks, keyboard navigation, form inputs)
+        -   Edge cases and error states
+        -   Accessibility features (ARIA attributes, keyboard navigation, focus management)
+    -   **MUST follow existing test patterns** found in components like `accordion.test.ts`, `badge.test.ts`, etc.
+    -   **MUST ensure all tests pass** before considering work complete.
 
 -   **JS tests**
 
@@ -148,7 +172,7 @@ npm test            # web-test-runner, default group
 npm run test:watch  # watch mode
 ```
 
-Use these when making non-trivial changes to component behavior or data services.
+**MUST run tests when making ANY changes** to component behavior, properties, events, or data services.
 
 -   **Static checks**
 
@@ -163,29 +187,29 @@ npm run spellcheck
 npm run verify      # prettier + build (placeholder for full test suite)
 ```
 
-If you introduce or modify tests, keep them aligned with **web-test-runner** and follow existing test patterns in the repo.
+**REQUIRED:** If you introduce or modify tests, **MUST keep them aligned with web-test-runner** and **MUST follow existing test patterns** in the repo.
 
 ---
 
 ## Git & Repository Etiquette (for AI Agents)
 
 -   **Branching**
-    -   Prefer feature branches named like:
+    -   **MUST use feature branches** named like:
         -   `feature/<short-description>`
         -   `bugfix/<short-description>`
         -   `docs/<component-or-topic>`
-    -   Avoid committing directly to `main` in automated workflows.
+    -   **MUST NOT commit directly to `main`** in automated workflows.
 -   **Commits**
-    -   Use clear, imperative commit messages:
+    -   **MUST use clear, imperative commit messages:**
         -   `Add time-average-map zoom controls`
         -   `Fix browse-variables search reset bug`
 -   **Merging vs. rebasing**
-    -   It’s acceptable to use either:
+    -   It's acceptable to use either:
         -   **Rebase** small feature branches before opening a PR to keep history linear.
         -   **Merge commits** are fine for human-maintained, multi-commit branches.
-    -   As an AI, **do not perform `git push`, `git commit`, or branching commands** unless the user explicitly asks and understands the implications.
+    -   **STRICTLY PROHIBITED:** As an AI, **you MUST NOT perform `git push`, `git commit`, or branching commands** unless the user explicitly asks and understands the implications.
 
-When suggesting git operations, **describe the commands for the human developer** instead of running them.
+**REQUIRED:** When suggesting git operations, **you MUST describe the commands for the human developer** instead of running them.
 
 ---
 
@@ -196,10 +220,10 @@ When suggesting git operations, **describe the commands for the human developer*
     -   Expect page reloads instead of fine-grained HMR when editing component code.
 -   **Docs generation**
     -   The Eleventy-based docs (`@11ty/eleventy`) use front matter and custom shortcodes (e.g., `[component-metadata:terra-map]`).
-    -   When editing docs, keep front matter and shortcode usage intact; don’t convert to plain markdown headings only.
+    -   **REQUIRED:** When editing docs, **MUST keep front matter and shortcode usage intact**; **MUST NOT convert to plain markdown headings only.**
 -   **Type definitions and metadata**
     -   `dist/custom-elements.json`, `cdn/custom-elements.json`, and `web-types.json` are generated from source.
-    -   Don’t hand-edit generated files; update the relevant source code and rerun builds instead.
+    -   **PROHIBITED:** **MUST NOT hand-edit generated files**; **MUST update the relevant source code and rerun builds instead.**
 
 If behavior seems “magical,” look for:
 
@@ -208,35 +232,40 @@ If behavior seems “magical,” look for:
 
 ---
 
-## How to Work with the Component Docs (Key Guidance)
+## How to Work with the Component Docs (MANDATORY Workflow)
 
-When a user asks about a component:
+**REQUIRED:** When a user asks about a component, **you MUST follow these steps:**
 
--   **Step 1** – Locate its docs in `docs/pages/components/<name>.md`.
-    -   Example: for `terra-map`, read `docs/pages/components/map.md`.
-    -   Example: for `terra-time-average-map`, read `docs/pages/components/time-average-map.md`.
--   **Step 2** – Inspect its implementation in `src/components/<name>/**`.
--   **Step 3** – If the question involves usage in a framework (React/Vue/Angular), also read:
+-   **Step 1 (REQUIRED)** – **MUST locate its docs in `docs/pages/components/<name>.md` first.**
+    -   Example: for `terra-map`, **MUST read `docs/pages/components/map.md`.**
+    -   Example: for `terra-time-average-map`, **MUST read `docs/pages/components/time-average-map.md`.**
+-   **Step 2 (REQUIRED)** – **MUST inspect its implementation in `src/components/<name>/**`.\*\*
+-   **Step 3 (REQUIRED if applicable)** – If the question involves usage in a framework (React/Vue/Angular), **MUST also read:**
     -   `docs/pages/frameworks/react.md`
     -   `docs/pages/frameworks/vue*.md`
     -   `docs/pages/frameworks/angular.md`
 
-When generating example code, **mirror the examples shown in those docs** (props/attributes, events, CSS variables, etc.) and avoid inventing undocumented attributes.
+**REQUIRED:** When generating example code, **you MUST mirror the examples shown in those docs** (props/attributes, events, CSS variables, etc.) and **MUST NOT invent undocumented attributes.**
 
 ---
 
-## Things to Remember as an AI Assistant
+## Things to Remember as an AI Assistant (MANDATORY Rules)
 
--   **Never invent public APIs** for components; always verify attributes, events, and slots in:
-    -   The component’s docs (`docs/pages/components/*.md`)
-    -   The component’s TypeScript source in `src/components/**`
+-   **STRICTLY PROHIBITED:** **MUST NEVER invent public APIs** for components; **MUST always verify attributes, events, and slots in:**
+    -   The component's docs (`docs/pages/components/*.md`)
+    -   The component's TypeScript source in `src/components/**`
     -   Generated metadata (`dist/custom-elements.json`) if necessary.
--   **Keep docs in sync** when changing behavior:
-    -   If you add a new prop/attribute/event, update:
+-   **REQUIRED:** **MUST keep docs in sync** when changing behavior:
+    -   If you add a new prop/attribute/event, **MUST update:**
         -   The relevant component doc in `docs/pages/components/*.md`
         -   Examples in `_site/` if needed (via rebuild)
         -   Any cross-references in tutorials or framework docs.
--   **Prefer minimal, targeted edits** over large refactors unless the user asks for a redesign.
--   **Explain your reasoning briefly** when making substantial code changes, and point to the specific files you touched so the user can review.
+-   **REQUIRED:** **MUST prefer minimal, targeted edits** over large refactors unless the user explicitly asks for a redesign.
+-   **REQUIRED:** **MUST explain your reasoning briefly** when making substantial code changes, and **MUST point to the specific files you touched** so the user can review.
+-   **REQUIRED:** **MUST ensure proper testing** for all components:
+    -   When creating a new component, **MUST create comprehensive tests** in `*.test.ts` covering all functionality.
+    -   When modifying a component, **MUST update or add tests** to cover the new/changed behavior.
+    -   **MUST NOT** submit components without tests or with incomplete test coverage.
+    -   **MUST verify tests pass** using `npm test` or `npm run test:watch` before considering work complete.
 
-If you’re ever uncertain, ask the human developer for clarification rather than guessing about user-facing behavior.
+**REQUIRED:** If you're ever uncertain, **MUST ask the human developer for clarification** rather than guessing about user-facing behavior.

@@ -55,6 +55,10 @@ export { default as TerraBadge } from './components/badge/badge.js'
 export { default as TerraTooltip } from './components/tooltip/tooltip.js'
 export { default as TerraToast } from './components/toast/toast.js'
 export { default as TerraDataGrid } from './components/data-grid/data-grid.js';
+export { default as TerraProgressBar } from './components/progress-bar/progress-bar.js';
+export { default as TerraButtonGroup } from './components/button-group/button-group.js';
+export { default as TerraStepper } from './components/stepper/stepper.js';
+export { default as TerraStepperStep } from './components/stepper-step/stepper-step.js';
 /* plop:component */
 
 // Utilities
