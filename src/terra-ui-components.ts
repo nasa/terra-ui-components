@@ -59,6 +59,7 @@ export { default as TerraProgressBar } from './components/progress-bar/progress-
 export { default as TerraButtonGroup } from './components/button-group/button-group.js';
 export { default as TerraStepper } from './components/stepper/stepper.js';
 export { default as TerraStepperStep } from './components/stepper-step/stepper-step.js';
+export { default as TerraCard } from './components/card/card.js';
 /* plop:component */
 
 // Utilities
