@@ -144,42 +144,35 @@
             </div>
         </terra-site-header>
 
-        {# Menu toggle #}
-        <button id="menu-toggle" type="button" aria-label="Menu">
-            <svg width="148" height="148" viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg">
-                <g stroke="currentColor" stroke-width="18" fill="none" fill-rule="evenodd" stroke-linecap="round">
-                    <path d="M9.5 125.5h129M9.5 74.5h129M9.5 23.5h129"></path>
-                </g>
-            </svg>
-        </button>
+        <section id="content-container">
+            <aside id="sidebar" data-preserve-scroll>
+                <nav>
+                    {% include 'sidebar.njk' %}
+                </nav>
+            </aside>
 
-        <aside id="sidebar" data-preserve-scroll>
-            <nav>
-                {% include 'sidebar.njk' %}
-            </nav>
-        </aside>
+            {# Content #}
+            <main>
+                <a id="main-content"></a>
+                <article id="content" class="content{% if (meta.toc is defined and meta.toc) or (meta.toc is not defined and toc) %} content--with-toc{% endif %}">
+                    {% if (meta.toc is defined and meta.toc) 
+                        or(meta.toc is not defined and toc) %}
+                        <div class="content__toc">
+                            <ul>
+                                <li class="top">
+                                    <a href="#">{{ meta.title }}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
 
-        {# Content #}
-        <main>
-            <a id="main-content"></a>
-            <article id="content" class="content{% if (meta.toc is defined and meta.toc) or (meta.toc is not defined and toc) %} content--with-toc{% endif %}">
-                {% if (meta.toc is defined and meta.toc) 
-                    or(meta.toc is not defined and toc) %}
-                    <div class="content__toc">
-                        <ul>
-                            <li class="top">
-                                <a href="#">{{ meta.title }}</a>
-                            </li>
-                        </ul>
+                    <div class="content__body">
+                        {% block content %}
+                            {{ content | safe }}
+                        {% endblock %}
                     </div>
-                {% endif %}
-
-                <div class="content__body">
-                    {% block content %}
-                        {{ content | safe }}
-                    {% endblock %}
-                </div>
-            </article>
-        </main>
+                </article>
+            </main>
+        </div>
     </body>
 </html>
