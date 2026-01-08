@@ -97,6 +97,29 @@ export default class TerraDataRods extends TerraElement {
 
     _fetchVariableTask = getFetchVariableTask(this)
 
+    get variableBoundingBox() {
+        const variable = this.catalogVariable
+        if (!variable) return undefined
+
+        const {
+            dataProductWest,
+            dataProductSouth,
+            dataProductEast,
+            dataProductNorth,
+        } = variable
+
+        if (
+            dataProductWest == null ||
+            dataProductSouth == null ||
+            dataProductEast == null ||
+            dataProductNorth == null
+        ) {
+            return undefined
+        }
+
+        return `${dataProductWest}, ${dataProductSouth}, ${dataProductEast}, ${dataProductNorth}`
+    }
+
     render() {
         const minDate = this.catalogVariable
             ? getUTCDate(this.catalogVariable.dataProductBeginDateTime)
@@ -116,6 +139,7 @@ export default class TerraDataRods extends TerraElement {
 
             <terra-spatial-picker
                 initial-value=${this.location}
+                .spatialConstraints=${this.variableBoundingBox}
                 exportparts="map:spatial-picker__map, leaflet-bbox:spatial-picker__leaflet-bbox, leaflet-point:spatial-picker__leaflet-point"
                 label="Select Point"
                 @terra-map-change=${this.#handleMapChange}
@@ -125,7 +149,7 @@ export default class TerraDataRods extends TerraElement {
                 variable-entry-id=${getVariableEntryId(this)}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
-                location=${this.location}
+                .location=${this.location ?? undefined}
                 bearer-token=${this.bearerToken}
                 show-citation=${true}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
@@ -171,7 +195,15 @@ export default class TerraDataRods extends TerraElement {
     }
 
     #handleVariableChange(event: TerraComboboxChangeEvent) {
-        this.variableEntryId = event.detail.entryId
+        const newEntryId = event.detail.entryId
+
+        //Do nothing if this is just initial sync
+        if (newEntryId === this.variableEntryId) {
+            return
+        }
+
+        this.variableEntryId = newEntryId
+        this.location = undefined
     }
 
     #handleMapChange(event: TerraMapChangeEvent) {
