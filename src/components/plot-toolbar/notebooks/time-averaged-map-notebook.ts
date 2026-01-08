@@ -32,7 +32,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
             cell_type: 'markdown',
             id: '35aa4a00-8e2c-4478-9df7-de633fd8f6ce',
             metadata: {},
-            source: ['### Render an area-averaged map'],
+            source: ['### Render a time averaged map'],
         },
         {
             id: '870c1384-e706-48ee-ba07-fd552a949869',
