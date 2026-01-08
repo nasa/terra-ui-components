@@ -85,7 +85,7 @@ export default class TerraDataSubsetter extends TerraElement {
     showCollectionSearch?: boolean = true
 
     @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
-    showHistoryPanel?: boolean = false
+    showHistoryPanel?: boolean = true
 
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
@@ -561,6 +561,7 @@ export default class TerraDataSubsetter extends TerraElement {
         const collection = this.collectionWithServices?.collection
         const temporalExtents = collection?.TemporalExtents
         const spatialExtent = collection?.SpatialExtent
+
         const showTemporalSection = temporalExtents && temporalExtents.length
         const showSpatialSection =
             spatialExtent &&
