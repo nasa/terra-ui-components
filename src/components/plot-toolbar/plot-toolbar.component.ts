@@ -654,8 +654,10 @@ export default class TerraPlotToolbar extends TerraElement {
                 ? html`
                       <p>
                           This plot can be downloaded as a
-                          <abbr title="Geotiff">GeoTIFF</abbr>
-                          file
+                          <abbr title="Geotiff">GeoTIFF</abbr>, a
+                          <abbr title="Portable Network Graphic">PNG</abbr>, or a
+                          <abbr title="Joint Photographic Experts Group">JPG</abbr>
+                          image
                       </p>
                   `
                 : html`
@@ -676,6 +678,36 @@ export default class TerraPlotToolbar extends TerraElement {
                       >
                           <span class="sr-only">Download Plot Data as </span>
                           GeoTIFF
+                          <terra-icon
+                              slot="prefix"
+                              name="outline-photo"
+                              library="heroicons"
+                              font-size="1.5em"
+                          ></terra-icon>
+                      </terra-button>
+
+                      <terra-button
+                          outline
+                          variant="default"
+                          @click=${this.#downloadMapPNG}
+                      >
+                          <span class="sr-only">Download Map as </span>
+                          PNG
+                          <terra-icon
+                              slot="prefix"
+                              name="outline-photo"
+                              library="heroicons"
+                              font-size="1.5em"
+                          ></terra-icon>
+                      </terra-button>
+
+                      <terra-button
+                          outline
+                          variant="default"
+                          @click=${this.#downloadMapJPG}
+                      >
+                          <span class="sr-only">Download Map as </span>
+                          JPG
                           <terra-icon
                               slot="prefix"
                               name="outline-photo"
@@ -922,5 +954,27 @@ export default class TerraPlotToolbar extends TerraElement {
         a.click()
         document.body.removeChild(a)
         console.log('Successfully downloaded tiff file...')
+    }
+
+    #downloadMapPNG() {
+        // Dispatch event to request PNG export from parent time-average-map component
+        this.dispatchEvent(
+            new CustomEvent('terra-plot-toolbar-export-image', {
+                bubbles: true,
+                composed: true,
+                detail: { format: 'png' },
+            })
+        )
+    }
+
+    #downloadMapJPG() {
+        // Dispatch event to request JPG export from parent time-average-map component
+        this.dispatchEvent(
+            new CustomEvent('terra-plot-toolbar-export-image', {
+                bubbles: true,
+                composed: true,
+                detail: { format: 'jpg' },
+            })
+        )
     }
 }

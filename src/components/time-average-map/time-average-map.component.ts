@@ -35,6 +35,7 @@ import {
 } from '../../utilities/harmony.js'
 import { watch } from '../../internal/watch.js'
 import TerraLoader from '../loader/loader.component.js'
+import { formatDate } from '../../utilities/date.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -157,6 +158,11 @@ export default class TerraTimeAverageMap extends TerraElement {
             'terra-time-average-map-error',
             this.#handleMapError as EventListener
         )
+
+        this.addEventListener(
+            'terra-plot-toolbar-export-image',
+            this.#handleExportImage as EventListener
+        )
     }
 
     async firstUpdated() {
@@ -203,6 +209,10 @@ export default class TerraTimeAverageMap extends TerraElement {
             'terra-time-average-map-error',
             this.#handleMapError as EventListener
         )
+        this.removeEventListener(
+            'terra-plot-toolbar-export-image',
+            this.#handleExportImage as EventListener
+        )
     }
 
     #handleMapError = (event: CustomEvent) => {
@@ -214,6 +224,259 @@ export default class TerraTimeAverageMap extends TerraElement {
             message,
             context,
         }
+    }
+
+    #handleExportImage = async (event: CustomEvent<{ format: 'png' | 'jpg' }>) => {
+        if (!this.#map) {
+            console.warn('Map not initialized, cannot export image')
+            return
+        }
+
+        const format = event.detail?.format || 'png'
+
+        try {
+            // Wait for map to finish rendering
+            await new Promise<void>(resolve => {
+                this.#map!.once('rendercomplete', () => {
+                    resolve()
+                })
+                // Force a render to ensure we get the rendercomplete event
+                this.#map!.render()
+            })
+
+            // Get the map viewport and size
+            const mapElement = this.#map.getViewport()
+            const mapSize = this.#map.getSize()
+
+            if (!mapSize) {
+                console.warn('Map size is not available')
+                return
+            }
+
+            const mapWidth = mapSize[0]
+            const mapHeight = mapSize[1]
+
+            // Get all canvas elements (OpenLayers can have multiple canvases for different layers)
+            // We need to get them in z-order (bottom to top)
+            const allCanvases = Array.from(
+                mapElement.querySelectorAll('canvas')
+            ) as HTMLCanvasElement[]
+
+            // Also get SVG elements (vector layers might be rendered as SVG)
+            const svgs = Array.from(
+                mapElement.querySelectorAll('svg')
+            ) as SVGElement[]
+
+            if (allCanvases.length === 0 && svgs.length === 0) {
+                console.warn('Could not find map canvas or SVG elements')
+                return
+            }
+
+            // Create a new canvas for the final image with text overlay
+            const finalCanvas = document.createElement('canvas')
+            const ctx = finalCanvas.getContext('2d')
+            if (!ctx) {
+                console.warn('Could not get canvas context')
+                return
+            }
+
+            // Set canvas size (map size + space for text)
+            const textHeight = 80 // Space for text overlay
+            finalCanvas.width = mapWidth
+            finalCanvas.height = mapHeight + textHeight
+
+            // Fill background with white
+            ctx.fillStyle = '#ffffff'
+            ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
+
+            // Draw all canvas layers in order (they should composite correctly)
+            // OpenLayers renders layers from bottom to top, so we draw them in the same order
+            for (const canvas of allCanvases) {
+                // Ensure we're drawing at the correct size
+                ctx.drawImage(
+                    canvas,
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height,
+                    0,
+                    textHeight,
+                    mapWidth,
+                    mapHeight
+                )
+            }
+
+            // Convert SVG elements to images and draw them on top
+            for (const svg of svgs) {
+                try {
+                    // Clone the SVG to avoid modifying the original
+                    const clonedSvg = svg.cloneNode(true) as SVGElement
+
+                    // Set explicit dimensions on the cloned SVG
+                    if (!clonedSvg.hasAttribute('width')) {
+                        clonedSvg.setAttribute('width', String(mapWidth))
+                    }
+                    if (!clonedSvg.hasAttribute('height')) {
+                        clonedSvg.setAttribute('height', String(mapHeight))
+                    }
+
+                    const svgData = new XMLSerializer().serializeToString(clonedSvg)
+                    const svgBlob = new Blob([svgData], {
+                        type: 'image/svg+xml;charset=utf-8',
+                    })
+                    const url = URL.createObjectURL(svgBlob)
+
+                    const img = new Image()
+                    await new Promise<void>((resolve, reject) => {
+                        img.onload = () => {
+                            ctx.drawImage(img, 0, textHeight, mapWidth, mapHeight)
+                            URL.revokeObjectURL(url)
+                            resolve()
+                        }
+                        img.onerror = () => {
+                            URL.revokeObjectURL(url)
+                            reject(new Error('Failed to load SVG image'))
+                        }
+                        img.src = url
+                    })
+                } catch (error) {
+                    console.warn('Failed to render SVG layer:', error)
+                }
+            }
+
+            // Prepare text overlay
+            const textY = 30
+            const lineHeight = 25
+            ctx.fillStyle = '#000000'
+            ctx.font = 'bold 18px Arial, sans-serif'
+            ctx.textAlign = 'left'
+            ctx.textBaseline = 'top'
+
+            // Format the title text
+            const titleText = this.#getMapTitleText()
+            const lines = this.#wrapText(ctx, titleText, mapWidth - 40, 16)
+
+            // Draw text lines
+            lines.forEach((line, index) => {
+                ctx.fillText(line, 20, textY + index * lineHeight)
+            })
+
+            // Convert canvas to blob and download
+            const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png'
+            const fileExtension = format === 'jpg' ? 'jpg' : 'png'
+            const quality = format === 'jpg' ? 0.92 : undefined // JPG quality (0-1), PNG doesn't use quality
+
+            finalCanvas.toBlob(
+                blob => {
+                    if (!blob) {
+                        console.warn('Failed to create blob from canvas')
+                        return
+                    }
+
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    const locationStr = this.location
+                        ? `_${this.location.replace(/,/g, '_')}`
+                        : ''
+                    const dateRange =
+                        this.startDate && this.endDate
+                            ? `_${this.startDate.split('T')[0]}_to_${this.endDate.split('T')[0]}`
+                            : ''
+                    const variableEntryId = getVariableEntryId(this)
+                    const filename = `${variableEntryId || 'map'}${locationStr}${dateRange}.${fileExtension}`
+
+                    a.href = url
+                    a.download = filename
+                    a.style.display = 'none'
+                    document.body.appendChild(a)
+                    a.click()
+                    document.body.removeChild(a)
+                    URL.revokeObjectURL(url)
+                },
+                mimeType,
+                quality
+            )
+        } catch (error) {
+            console.error('Error exporting map as PNG:', error)
+        }
+    }
+
+    #getMapTitleText(): string {
+        if (!this.catalogVariable) {
+            return 'Time Averaged Map'
+        }
+
+        const parts: string[] = []
+
+        // Add "Time Averaged Map of"
+        parts.push('Time Averaged Map of')
+
+        // Add variable long name
+        if (this.catalogVariable.dataFieldLongName) {
+            parts.push(this.catalogVariable.dataFieldLongName)
+        }
+
+        // Add time interval if available
+        if (
+            this.catalogVariable.dataProductTimeInterval &&
+            this.catalogVariable.dataProductTimeInterval.toLowerCase() !==
+                'not applicable'
+        ) {
+            parts.push(this.catalogVariable.dataProductTimeInterval)
+        }
+
+        // Add spatial resolution if available
+        if (
+            this.catalogVariable.dataProductSpatialResolution &&
+            this.catalogVariable.dataProductSpatialResolution.toLowerCase() !==
+                'not applicable'
+        ) {
+            parts.push(this.catalogVariable.dataProductSpatialResolution)
+        }
+
+        // Add dataset info in brackets
+        if (this.catalogVariable.dataProductShortName) {
+            let datasetInfo = `[${this.catalogVariable.dataProductShortName}`
+            if (this.catalogVariable.dataProductVersion) {
+                datasetInfo += ` v${this.catalogVariable.dataProductVersion}`
+            }
+            datasetInfo += ']'
+            parts.push(datasetInfo)
+        }
+
+        // Add date range with "over" prefix
+        if (this.startDate && this.endDate) {
+            const startFormatted = formatDate(this.startDate)
+            const endFormatted = formatDate(this.endDate)
+            parts.push(`over ${startFormatted} - ${endFormatted}`)
+        }
+
+        return parts.join(' ')
+    }
+
+    #wrapText(
+        ctx: CanvasRenderingContext2D,
+        text: string,
+        maxWidth: number,
+        fontSize: number
+    ): string[] {
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`
+        const words = text.split(' ')
+        const lines: string[] = []
+        let currentLine = words[0]
+
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i]
+            const width = ctx.measureText(currentLine + ' ' + word).width
+            if (width < maxWidth) {
+                currentLine += ' ' + word
+            } else {
+                lines.push(currentLine)
+                currentLine = word
+            }
+        }
+        lines.push(currentLine)
+        return lines
     }
 
     async updateGeoTIFFLayer(blob: Blob) {
