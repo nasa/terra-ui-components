@@ -128,7 +128,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         'velocity-green',
         'cubhelix',
     ]
-    @state() colorMapName = 'density'
+    @state() colorMapName = 'viridis'
     @state() plotData = {}
     @state() layout = {}
 
@@ -519,7 +519,7 @@ export default class TerraTimeAverageMap extends TerraElement {
 
         if (this.#map && this.#gtLayer) {
             this.renderPixelValues(this.#map, this.#gtLayer)
-            this.applyColorToLayer(gtSource, 'density') // Initial color for layer is density
+            this.applyColorToLayer(gtSource, 'viridis')
 
             setTimeout(async () => {
                 // Try to fit the map view to the GeoTIFF extent
