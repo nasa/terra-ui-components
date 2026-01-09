@@ -1,4 +1,4 @@
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
@@ -36,6 +36,7 @@ import {
 import { watch } from '../../internal/watch.js'
 import TerraLoader from '../loader/loader.component.js'
 import { formatDate } from '../../utilities/date.js'
+import { Environment } from '../../utilities/environment.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -131,6 +132,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() colorMapName = 'viridis'
     @state() plotData = {}
     @state() layout = {}
+    @state() harmonyJobId?: string
 
     /**
      * anytime the collection or variable changes, we'll fetch the variable from the catalog to get all of it's metadata
@@ -1037,6 +1039,20 @@ export default class TerraTimeAverageMap extends TerraElement {
                     </div>
                 </div>
             </div>
+
+            ${this.harmonyJobId
+                ? html`
+                      <div class="harmony-job-link">
+                          <a
+                              href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                          >
+                              Harmony Job: ${this.harmonyJobId}
+                          </a>
+                      </div>
+                  `
+                : nothing}
 
             <!-- Floating Popover for Plot -->
             ${this.toggleState &&

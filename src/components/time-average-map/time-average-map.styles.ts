@@ -55,4 +55,18 @@ export default css`
         width: 100%;
         margin-bottom: 1rem;
     }
+
+    .harmony-job-link {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .harmony-job-link a {
+        color: var(--terra-color-text-secondary, #666);
+        text-decoration: none;
+    }
+
+    .harmony-job-link a:hover {
+        text-decoration: underline;
+    }
 `

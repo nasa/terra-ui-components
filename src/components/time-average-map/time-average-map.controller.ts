@@ -65,6 +65,7 @@ export class TimeAvgMapController {
 
                 // we'll start with an empty job to clear out any existing job
                 this.currentJob = this.#getEmptyJob()
+                this.#host.harmonyJobId = undefined
 
                 try {
                     // Try cache first
@@ -74,6 +75,7 @@ export class TimeAvgMapController {
                         cachedAt: number
                         environment?: string
                         blob: Blob
+                        harmonyJobId?: string
                     }>(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey)
 
                     if (existing) {
@@ -82,6 +84,7 @@ export class TimeAvgMapController {
                             cacheKey
                         )
 
+                        this.#host.harmonyJobId = existing.harmonyJobId
                         this.#updateGeoTIFFLayer(existing.blob)
 
                         return existing.blob
@@ -156,6 +159,7 @@ export class TimeAvgMapController {
                         cachedAt: new Date().getTime(),
                         environment: this.#host.environment,
                         blob,
+                        harmonyJobId: jobStatus.jobID,
                     })
 
                     this.#updateGeoTIFFLayer(blob)
@@ -226,6 +230,8 @@ export class TimeAvgMapController {
                     environment: this.#host.environment,
                 })
                 console.log('Job status', jobStatus)
+
+                this.#host.harmonyJobId = jobStatus.jobID
             } catch (error) {
                 console.error('Error checking harmony job status', error)
 
