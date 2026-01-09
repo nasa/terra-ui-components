@@ -387,7 +387,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     #abortJobStatusTask() {
-        this.#controller.jobStatusTask?.abort()
+        this.#controller.jobStatusTask?.abort('Cancelled time averaged map request')
     }
 
     async applyColorToLayer(gtSource: any, color: String) {

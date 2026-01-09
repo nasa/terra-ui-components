@@ -245,7 +245,7 @@ export default class TerraTimeSeries extends TerraElement {
      */
     #abortDataLoad() {
         console.log('Aborting data load')
-        this.#timeSeriesController.task?.abort()
+        this.#timeSeriesController.task?.abort('Cancelled time series request')
     }
 
     #handleComponentLeave(event: MouseEvent) {

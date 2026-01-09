@@ -167,7 +167,12 @@ export class TimeAvgMapController {
     }
 
     #waitForHarmonyJob(job: SubsetJobStatus, signal: AbortSignal) {
-        return new Promise<SubsetJobStatus>(async resolve => {
+        return new Promise<SubsetJobStatus>(async (resolve, reject) => {
+            if (signal.aborted) {
+                reject(new Error('Job polling was aborted'))
+                return
+            }
+
             let jobStatus: SubsetJobStatus | undefined
 
             try {
@@ -179,14 +184,47 @@ export class TimeAvgMapController {
                 console.log('Job status', jobStatus)
             } catch (error) {
                 console.error('Error checking harmony job status', error)
+
+                // If aborted, reject the promise to stop polling
+                if (signal.aborted || (error as Error)?.name === 'AbortError') {
+                    reject(error)
+                    return
+                }
+
+                reject(error)
+                return
             }
 
             if (jobStatus && FINAL_STATUSES.has(jobStatus.status)) {
                 console.log('Job is done', jobStatus)
                 resolve(jobStatus)
             } else {
+                if (signal.aborted) {
+                    reject(new Error('Job polling was aborted'))
+                    return
+                }
+
+                // Set up abort listener to immediately reject if aborted during the wait
+                const abortHandler = () => {
+                    reject(new Error('Job polling was aborted'))
+                }
+                signal.addEventListener('abort', abortHandler, { once: true })
+
                 setTimeout(async () => {
-                    resolve(await this.#waitForHarmonyJob(job, signal))
+                    // Remove the abort listener since we're about to check again
+                    signal.removeEventListener('abort', abortHandler)
+
+                    // Check if aborted immediately when timeout fires
+                    if (signal.aborted) {
+                        reject(new Error('Job polling was aborted'))
+                        return
+                    }
+
+                    try {
+                        resolve(await this.#waitForHarmonyJob(job, signal))
+                    } catch (error) {
+                        reject(error)
+                    }
                 }, REFRESH_HARMONY_DATA_INTERVAL)
             }
         })
