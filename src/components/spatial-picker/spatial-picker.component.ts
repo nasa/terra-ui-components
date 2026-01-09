@@ -180,6 +180,11 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     private _keydown(event: KeyboardEvent) {
+        // Prevent space from opening dropdown when typing
+        if (event.key === ' ') {
+            event.stopPropagation()
+            return
+        }
         if (event.key === 'Enter') {
             event.preventDefault()
             this._validateAndSetValue()

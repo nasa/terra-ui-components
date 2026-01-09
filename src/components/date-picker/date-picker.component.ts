@@ -9,6 +9,7 @@ import TerraButton from '../button/button.component.js'
 import TerraInput from '../input/input.component.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
 import { watch } from '../../internal/watch.js'
+import { isValid } from 'date-fns'
 
 interface DateRange {
     startDate: Date | null
@@ -521,24 +522,287 @@ export default class TerraDatePicker extends TerraElement {
             } else if (this.selectedStart) {
                 return this.formatDisplayDate(this.selectedStart, true)
             }
-            return 'Select date range'
+            return ''
         } else {
             return this.selectedStart
                 ? this.formatDisplayDate(this.selectedStart, true)
-                : 'Select date'
+                : ''
         }
     }
 
     private getStartDateDisplayValue(): string {
         return this.selectedStart
             ? this.formatDisplayDate(this.selectedStart, true)
-            : 'Start date'
+            : ''
     }
 
     private getEndDateDisplayValue(): string {
-        return this.selectedEnd
-            ? this.formatDisplayDate(this.selectedEnd, false)
-            : 'End date'
+        return this.selectedEnd ? this.formatDisplayDate(this.selectedEnd, false) : ''
+    }
+
+    private parseAndFormatDate(dateStr: string): string | null {
+        const trimmed = dateStr.trim()
+        if (!trimmed) return null
+
+        // Check if it's already in YYYY-MM-DD format - use parseLocalDate to avoid timezone issues
+        const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
+        let date: Date
+
+        if (dateOnlyPattern.test(trimmed)) {
+            // Use parseLocalDate for YYYY-MM-DD to avoid timezone issues
+            date = this.parseLocalDate(trimmed)
+        } else {
+            // For other formats, try new Date() and validate
+            date = new Date(trimmed)
+            if (!isValid(date)) {
+                return null
+            }
+        }
+
+        if (!isValid(date)) {
+            return null
+        }
+
+        // Format to YYYY-MM-DD using the date's local components to avoid timezone issues
+        const year = date.getFullYear()
+        const month = date.getMonth() + 1
+        const day = date.getDate()
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+    }
+
+    private handleInputBlur(event: Event) {
+        const input = event.target as TerraInput
+        const value = input.value || ''
+
+        if (!value.trim()) {
+            this.selectedStart = null
+            this.selectedEnd = null
+            input.setCustomValidity('')
+            this.emitChange()
+            return
+        }
+
+        if (this.range) {
+            // Split by ' - ' (with spaces)
+            const parts = value.split(' - ')
+            if (parts.length !== 2) {
+                input.setCustomValidity(
+                    'Date range must be in format: YYYY-MM-DD - YYYY-MM-DD'
+                )
+                return
+            }
+
+            const startFormatted = this.parseAndFormatDate(parts[0])
+            const endFormatted = this.parseAndFormatDate(parts[1])
+
+            if (!startFormatted) {
+                input.setCustomValidity('Invalid start date format')
+                return
+            }
+            if (!endFormatted) {
+                input.setCustomValidity('Invalid end date format')
+                return
+            }
+
+            const start = this.parseLocalDate(startFormatted)
+            const end = this.parseLocalDate(endFormatted)
+
+            // Auto-swap if dates are in wrong order
+            let finalStart = start
+            let finalEnd = end
+            if (start > end) {
+                finalStart = end
+                finalEnd = start
+            }
+
+            // Validate against min/max dates
+            if (this.minDate) {
+                const min = this.parseLocalDate(this.minDate)
+                if (finalStart < min) {
+                    input.setCustomValidity(
+                        `Start date must be on or after ${this.minDate}`
+                    )
+                    return
+                }
+            }
+            if (this.maxDate) {
+                const max = this.parseLocalDate(this.maxDate)
+                if (finalEnd > max) {
+                    input.setCustomValidity(
+                        `End date must be on or before ${this.maxDate}`
+                    )
+                    return
+                }
+            }
+
+            this.selectedStart = finalStart
+            this.selectedEnd = finalEnd
+            this.updateMonthViews()
+            input.setCustomValidity('')
+            this.emitChange()
+        } else {
+            const formatted = this.parseAndFormatDate(value)
+            if (!formatted) {
+                input.setCustomValidity('Invalid date format')
+                return
+            }
+
+            const date = this.parseLocalDate(formatted)
+
+            // Validate against min/max dates
+            if (this.minDate) {
+                const min = this.parseLocalDate(this.minDate)
+                if (date < min) {
+                    input.setCustomValidity(
+                        `Date must be on or after ${this.minDate}`
+                    )
+                    return
+                }
+            }
+            if (this.maxDate) {
+                const max = this.parseLocalDate(this.maxDate)
+                if (date > max) {
+                    input.setCustomValidity(
+                        `Date must be on or before ${this.maxDate}`
+                    )
+                    return
+                }
+            }
+
+            this.selectedStart = date
+            this.selectedEnd = null
+            this.updateMonthViews()
+            input.setCustomValidity('')
+            this.emitChange()
+        }
+    }
+
+    private handleStartInputBlur(event: Event) {
+        const input = event.target as TerraInput
+        const value = input.value || ''
+
+        if (!value.trim()) {
+            this.selectedStart = null
+            input.setCustomValidity('')
+            this.emitChange()
+            return
+        }
+
+        const formatted = this.parseAndFormatDate(value)
+        if (!formatted) {
+            input.setCustomValidity('Invalid date format')
+            return
+        }
+
+        const date = this.parseLocalDate(formatted)
+
+        // Validate against min/max
+        if (this.minDate) {
+            const min = this.parseLocalDate(this.minDate)
+            if (date < min) {
+                input.setCustomValidity(`Date must be on or after ${this.minDate}`)
+                return
+            }
+        }
+        if (this.maxDate) {
+            const max = this.parseLocalDate(this.maxDate)
+            if (date > max) {
+                input.setCustomValidity(`Date must be on or before ${this.maxDate}`)
+                return
+            }
+        }
+
+        // Validate start is before end if end exists
+        if (this.selectedEnd && date > this.selectedEnd) {
+            input.setCustomValidity('Start date must be before end date')
+            return
+        }
+
+        this.selectedStart = date
+        this.leftMonth = new Date(date)
+        input.setCustomValidity('')
+        this.emitChange()
+    }
+
+    private handleEndInputBlur(event: Event) {
+        const input = event.target as TerraInput
+        const value = input.value || ''
+
+        if (!value.trim()) {
+            this.selectedEnd = null
+            input.setCustomValidity('')
+            this.emitChange()
+            return
+        }
+
+        const formatted = this.parseAndFormatDate(value)
+        if (!formatted) {
+            input.setCustomValidity('Invalid date format')
+            return
+        }
+
+        const date = this.parseLocalDate(formatted)
+
+        // Validate against min/max
+        if (this.minDate) {
+            const min = this.parseLocalDate(this.minDate)
+            if (date < min) {
+                input.setCustomValidity(`Date must be on or after ${this.minDate}`)
+                return
+            }
+        }
+        if (this.maxDate) {
+            const max = this.parseLocalDate(this.maxDate)
+            if (date > max) {
+                input.setCustomValidity(`Date must be on or before ${this.maxDate}`)
+                return
+            }
+        }
+
+        // Validate end is after start if start exists
+        if (this.selectedStart && date < this.selectedStart) {
+            input.setCustomValidity('End date must be after start date')
+            return
+        }
+
+        this.selectedEnd = date
+        if (
+            this.selectedStart &&
+            this.isSameMonth(this.selectedStart, this.selectedEnd)
+        ) {
+            this.rightMonth = new Date(this.selectedStart)
+            this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+        } else {
+            this.rightMonth = new Date(date)
+        }
+        input.setCustomValidity('')
+        this.emitChange()
+    }
+
+    private updateMonthViews() {
+        if (this.selectedStart) {
+            this.leftMonth = new Date(this.selectedStart)
+            if (this.range && this.selectedEnd) {
+                if (this.isSameMonth(this.selectedStart, this.selectedEnd)) {
+                    this.rightMonth = new Date(this.selectedStart)
+                    this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+                } else {
+                    this.rightMonth = new Date(this.selectedEnd)
+                }
+            }
+        }
+    }
+
+    private handleKeydown(event: KeyboardEvent) {
+        // Prevent space from opening dropdown when typing
+        if (event.key === ' ') {
+            event.stopPropagation()
+            return
+        }
+        if (event.key === 'Enter') {
+            event.preventDefault()
+            this.handleInputBlur(event)
+        }
     }
 
     private previousMonth(isLeft: boolean) {
@@ -1508,7 +1772,9 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
-                                      readonly
+                                      placeholder="Start date"
+                                      @terra-blur=${this.handleStartInputBlur}
+                                      @keydown=${this.handleKeydown}
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1520,7 +1786,9 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
-                                      readonly
+                                      placeholder="End date"
+                                      @terra-blur=${this.handleEndInputBlur}
+                                      @keydown=${this.handleKeydown}
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1532,7 +1800,11 @@ export default class TerraDatePicker extends TerraElement {
                                   .hideLabel=${this.hideLabel}
                                   .helpText=${this.helpText}
                                   .value=${this.getDisplayValue()}
-                                  readonly
+                                  placeholder=${this.range
+                                      ? 'Select date range'
+                                      : 'Select date'}
+                                  @terra-blur=${this.handleInputBlur}
+                                  @keydown=${this.handleKeydown}
                               >
                                   ${this.renderCalendarIcon()}
                               </terra-input>
@@ -1611,7 +1883,9 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
-                                      readonly
+                                      placeholder="Start date"
+                                      @terra-blur=${this.handleStartInputBlur}
+                                      @keydown=${this.handleKeydown}
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1633,7 +1907,9 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
-                                      readonly
+                                      placeholder="End date"
+                                      @terra-blur=${this.handleEndInputBlur}
+                                      @keydown=${this.handleKeydown}
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1656,7 +1932,11 @@ export default class TerraDatePicker extends TerraElement {
                                   .hideLabel=${this.hideLabel}
                                   .helpText=${this.helpText}
                                   .value=${this.getDisplayValue()}
-                                  readonly
+                                  placeholder=${this.range
+                                      ? 'Select date range'
+                                      : 'Select date'}
+                                  @terra-blur=${this.handleInputBlur}
+                                  @keydown=${this.handleKeydown}
                               >
                                   ${this.renderCalendarIcon()}
                               </terra-input>
