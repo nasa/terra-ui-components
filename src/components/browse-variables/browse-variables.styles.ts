@@ -159,7 +159,7 @@ export default css`
         padding: 0;
         margin: 0;
         min-width: 24em;
-        justify-content: space-evenly;
+        justify-content: flex-end;
     }
 
     .variables-container header menu ::marker {

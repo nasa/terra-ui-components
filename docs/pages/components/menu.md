@@ -80,6 +80,22 @@ Show a loading state on menu items.
 </terra-menu>
 ```
 
+### Menu with Dividers
+
+Use dividers to visually group menu items.
+
+```html:preview
+<terra-menu style="max-width: 200px;">
+  <terra-menu-item value="1">Option 1</terra-menu-item>
+  <terra-menu-item value="2">Option 2</terra-menu-item>
+  <terra-menu-item value="3">Option 3</terra-menu-item>
+  <terra-divider></terra-divider>
+  <terra-menu-item value="4">Option 4</terra-menu-item>
+  <terra-menu-item value="5">Option 5</terra-menu-item>
+  <terra-menu-item value="6">Option 6</terra-menu-item>
+</terra-menu>
+```
+
 ### Menu in Dropdown
 
 Menus are typically used inside dropdowns.

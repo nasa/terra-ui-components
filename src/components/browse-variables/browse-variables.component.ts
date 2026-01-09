@@ -13,6 +13,7 @@ import { property, state } from 'lit/decorators.js'
 import { TaskStatus } from '@lit/task'
 import { watch } from '../../internal/watch.js'
 import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
+import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { CSSResultGroup } from 'lit'
 import type {
     FacetField,
@@ -20,6 +21,7 @@ import type {
     SelectedFacets,
     Variable,
 } from './browse-variables.types.js'
+import { getSortLabel, SortOrder } from '../../utilities/sort.js'
 
 /**
  * @summary Browse through the NASA CMR or Giovanni catalogs.
@@ -69,6 +71,9 @@ export default class TerraBrowseVariables extends TerraElement {
 
     @state()
     private activeIndex: number | undefined = undefined
+
+    @state()
+    private sortOrder: SortOrder | string = SortOrder.AtoZ
 
     #controller = new BrowseVariablesController(this)
 
@@ -186,6 +191,85 @@ export default class TerraBrowseVariables extends TerraElement {
                 v => v.dataFieldLongName !== variable.dataFieldLongName
             )
         }
+    }
+
+    #handleSortChange(event: TerraSelectEvent) {
+        const selectedItem = event.detail.item
+        const value = selectedItem.value
+        if (value === SortOrder.AtoZ || value === SortOrder.ZtoA) {
+            this.sortOrder = value
+            // Ensure only the selected item is checked (radio button behavior)
+            // Wait for the next frame to ensure the menu's toggle has completed
+            requestAnimationFrame(() => {
+                const menu = event.target as HTMLElement
+                const allItems = menu.querySelectorAll('terra-menu-item')
+                allItems.forEach(item => {
+                    const itemValue = item.value
+                    if (itemValue === this.sortOrder) {
+                        item.checked = true
+                    } else {
+                        item.checked = false
+                    }
+                })
+            })
+        }
+    }
+
+    #getSortedVariables(): Variable[] {
+        const variables = this.#controller.variables
+        const sorted = [...variables].sort((a, b) => {
+            const nameA = a.dataFieldLongName.toLowerCase()
+            const nameB = b.dataFieldLongName.toLowerCase()
+            if (this.sortOrder === SortOrder.AtoZ) {
+                return nameA.localeCompare(nameB)
+            } else {
+                return nameB.localeCompare(nameA)
+            }
+        })
+        return sorted
+    }
+
+    #getBrowsingText(): string {
+        // Collect all selected facet field names
+        const selectedFacetNames: string[] = []
+        Object.values(this.selectedFacets).forEach(fields => {
+            selectedFacetNames.push(...fields)
+        })
+
+        const hasFacets = selectedFacetNames.length > 0
+        const hasQuery = !!this.searchQuery
+
+        // Show nothing if there's no facets and no query
+        if (!hasFacets && !hasQuery) {
+            return ''
+        }
+
+        let text = 'Browsing'
+
+        // Add facet names if present
+        if (hasFacets) {
+            if (selectedFacetNames.length === 1) {
+                text += ` '${selectedFacetNames[0]}'`
+            } else if (selectedFacetNames.length === 2) {
+                text += ` '${selectedFacetNames[0]}' and '${selectedFacetNames[1]}'`
+            } else {
+                // Three or more: "A', 'B', and 'C"
+                const allButLast = selectedFacetNames.slice(0, -1)
+                const last = selectedFacetNames[selectedFacetNames.length - 1]
+                text += ` '${allButLast.join("', '")}', and '${last}'`
+            }
+            text += ' variables'
+        } else {
+            // No facets, just "Browsing variables"
+            text += ' variables'
+        }
+
+        // Add query if present
+        if (hasQuery) {
+            text += ` for query \`${this.searchQuery}\``
+        }
+
+        return text
     }
 
     #renderCategorySelect() {
@@ -330,32 +414,51 @@ export default class TerraBrowseVariables extends TerraElement {
             { title: 'Portal', facetKey: 'portals' },
         ]
 
-        const variables = this.#controller.variables
+        const variables = this.#getSortedVariables()
 
-        // TODO: create "sort by" menu and "group by" menu
-        // MVP sort TBD but must include alpha, reverse-alpha, start data and end date, based on Variable Long Name
-        // MVP group TBD but must include 'Measurements' and 'Dataset'
+        const browsingText = this.#getBrowsingText()
+
         return html`<div class="scrollable variables-container">
             <header>
-                <!-- TODO: add back in once we aren't filtering by Cloud Giovanni Catalog (or Cloud Giovanni supports all variables) 
-                Showing ${this.#controller.total} variables
-                ${this.searchQuery ? `associated with '${this.searchQuery}'` : ''}-->
-                <!-- Sorting and Grouping feature still needs a UI / UX feature discussion.
+                ${browsingText ? html`<div>${browsingText}</div>` : nothing}
+
                 <menu>
                     <li>
-                        <terra-dropdown class="list-menu-dropdown">
-                            <terra-button slot="trigger" caret>Sort By</terra-button>
-                            <terra-menu>
-                                <terra-menu-item value="aToZ">A&hellip;Z</terra-menu-item>
-                                <terra-menu-item value="zToA">Z&hellip;A</terra-menu-item>
+                        <terra-dropdown
+                            class="list-menu-dropdown"
+                            placement="bottom-end"
+                        >
+                            <terra-button
+                                slot="trigger"
+                                variant="default"
+                                outline
+                                caret
+                                >Sort by ${getSortLabel(this.sortOrder)}</terra-button
+                            >
+                            <terra-menu @terra-select=${this.#handleSortChange}>
+                                <terra-menu-item
+                                    type="checkbox"
+                                    value="aToZ"
+                                    ?checked=${this.sortOrder === SortOrder.AtoZ}
+                                    >A to Z</terra-menu-item
+                                >
+                                <terra-menu-item
+                                    type="checkbox"
+                                    value="zToA"
+                                    ?checked=${this.sortOrder === SortOrder.ZtoA}
+                                    >Z to A</terra-menu-item
+                                >
                             </terra-menu>
                         </terra-dropdown>
                     </li>
+                    <!--
                     <li>
                         <terra-dropdown class="list-menu-dropdown">
                             <terra-button slot="trigger" caret>Group By</terra-button>
                             <terra-menu>
-                                <terra-menu-item value="depths">Depths</terra-menu-item>
+                                <terra-menu-item value="depths"
+                                    >Depths</terra-menu-item
+                                >
                                 <terra-menu-item value="disciplines"
                                     >Disciplines</terra-menu-item
                                 >
@@ -368,7 +471,9 @@ export default class TerraBrowseVariables extends TerraElement {
                                 <terra-menu-item value="platformInstruments"
                                     >Platform Instruments</terra-menu-item
                                 >
-                                <terra-menu-item value="portals">Portals</terra-menu-item>
+                                <terra-menu-item value="portals"
+                                    >Portals</terra-menu-item
+                                >
                                 <terra-menu-item value="spatialResolutions"
                                     >Spatial Resolutions</terra-menu-item
                                 >
@@ -384,8 +489,8 @@ export default class TerraBrowseVariables extends TerraElement {
                             </terra-menu>
                         </terra-dropdown>
                     </li>
+                    -->
                 </menu>
-                -->
             </header>
 
             <aside>

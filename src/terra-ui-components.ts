@@ -60,6 +60,7 @@ export { default as TerraButtonGroup } from './components/button-group/button-gr
 export { default as TerraStepper } from './components/stepper/stepper.js';
 export { default as TerraStepperStep } from './components/stepper-step/stepper-step.js';
 export { default as TerraCard } from './components/card/card.js';
+export { default as TerraDivider } from './components/divider/divider.js';
 /* plop:component */
 
 // Utilities
