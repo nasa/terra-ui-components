@@ -186,6 +186,8 @@ export class TimeAvgMapController {
                 startDate: formatDate(this.#host.startDate!),
                 endDate: formatDate(this.#host.endDate!),
                 location: this.#host.location!,
+                colorMap: this.#host.colorMapName,
+                harmonyJobId: this.#host.harmonyJobId,
             },
         })
 

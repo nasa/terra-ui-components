@@ -7,6 +7,8 @@ export interface TerraTimeAverageMapDataChangeEvent extends CustomEvent {
         startDate: string
         endDate: string
         location: string
+        colorMap: string
+        harmonyJobId?: string
     }
 }
 
