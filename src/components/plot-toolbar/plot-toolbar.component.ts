@@ -662,9 +662,10 @@ export default class TerraPlotToolbar extends TerraElement {
                   `
                 : html`
                       <p>
-                          This plot can be downloaded as either a
-                          <abbr title="Portable Network Graphic">PNG</abbr>
-                          image or
+                          This plot can be downloaded as a
+                          <abbr title="Portable Network Graphic">PNG</abbr> or
+                          <abbr title="Joint Photographic Experts Group">JPG</abbr>
+                          image, or as
                           <abbr title="Comma-Separated Value">CSV</abbr>
                           data.
                       </p>
@@ -685,53 +686,10 @@ export default class TerraPlotToolbar extends TerraElement {
                               font-size="1.5em"
                           ></terra-icon>
                       </terra-button>
-
-                      <terra-button
-                          outline
-                          variant="default"
-                          @click=${this.#downloadMapPNG}
-                      >
-                          <span class="sr-only">Download Map as </span>
-                          PNG
-                          <terra-icon
-                              slot="prefix"
-                              name="outline-photo"
-                              library="heroicons"
-                              font-size="1.5em"
-                          ></terra-icon>
-                      </terra-button>
-
-                      <terra-button
-                          outline
-                          variant="default"
-                          @click=${this.#downloadMapJPG}
-                      >
-                          <span class="sr-only">Download Map as </span>
-                          JPG
-                          <terra-icon
-                              slot="prefix"
-                              name="outline-photo"
-                              library="heroicons"
-                              font-size="1.5em"
-                          ></terra-icon>
-                      </terra-button>
+                      ${this.#renderImageDownloadButtons(true)}
                   `
                 : html`
-                      <terra-button
-                          outline
-                          variant="default"
-                          @click=${this.#downloadPNG}
-                      >
-                          <span class="sr-only">Download Plot Data as </span>
-                          PNG
-                          <terra-icon
-                              slot="prefix"
-                              name="outline-photo"
-                              library="heroicons"
-                              font-size="1.5em"
-                          ></terra-icon>
-                      </terra-button>
-
+                      ${this.#renderImageDownloadButtons(false)}
                       <terra-button
                           outline
                           variant="default"
@@ -747,6 +705,40 @@ export default class TerraPlotToolbar extends TerraElement {
                           ></terra-icon>
                       </terra-button>
                   `}
+        `
+    }
+
+    #renderImageDownloadButtons(isMap: boolean) {
+        return html`
+            <terra-button
+                outline
+                variant="default"
+                @click=${isMap ? this.#downloadMapPNG : this.#downloadPNG}
+            >
+                <span class="sr-only">Download ${isMap ? 'Map' : 'Plot'} as </span>
+                PNG
+                <terra-icon
+                    slot="prefix"
+                    name="outline-photo"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
+
+            <terra-button
+                outline
+                variant="default"
+                @click=${isMap ? this.#downloadMapJPG : this.#downloadJPG}
+            >
+                <span class="sr-only">Download ${isMap ? 'Map' : 'Plot'} as </span>
+                JPG
+                <terra-icon
+                    slot="prefix"
+                    name="outline-photo"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
         `
     }
 
@@ -875,6 +867,15 @@ export default class TerraPlotToolbar extends TerraElement {
         Plotly.downloadImage(this.plot!.base, {
             filename: this.catalogVariable!.dataFieldId,
             format: 'png',
+            width: 1920,
+            height: 1080,
+        })
+    }
+
+    #downloadJPG(_event: Event) {
+        Plotly.downloadImage(this.plot!.base, {
+            filename: this.catalogVariable!.dataFieldId,
+            format: 'jpeg',
             width: 1920,
             height: 1080,
         })
