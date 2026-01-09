@@ -55,6 +55,8 @@ The component supports help text, which can be used to provide guidance on what 
 | `label`        | `string`                                                                              | `''`     | Label text displayed above the input                          |
 | `hideLabel`    | `boolean`                                                                             | `false`  | Visually hides the label (still accessible to screen readers) |
 | `helpText`     | `string`                                                                              | `''`     | Help text displayed below the input                           |
+| `resettable`   | `boolean`                                                                             | `false`  | Shows a reset icon in the suffix that clears the input value  |
+| `defaultValue` | `string`                                                                              | `''`     | The default value used when resetting the input               |
 
 ## Events
 
@@ -140,6 +142,27 @@ The component supports help text, which can be used to provide guidance on what 
     <path d="m21 21-4.35-4.35"></path>
   </svg>
 </terra-input>
+```
+
+### Resettable Input
+
+When `resettable` is true, a clear icon appears in the suffix when the input has a value. Clicking the icon resets the input to its `defaultValue` (or empty string if no `defaultValue` is set). The reset icon only appears when the value differs from the default value.
+
+```html:preview
+<terra-input
+  label="Name"
+  type="text"
+  resettable
+  value="John Smith"
+></terra-input><br /><br />
+
+<terra-input
+  label="Search"
+  type="search"
+  placeholder="Search..."
+  resettable
+  value=""
+></terra-input>
 ```
 
 ### Number Input

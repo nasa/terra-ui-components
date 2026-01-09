@@ -10,6 +10,7 @@ import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import formControlStyles from '../../styles/form-control.styles.js'
 import TerraElement, { type TerraFormControl } from '../../internal/terra-element.js'
+import TerraIcon from '../icon/icon.component.js'
 import styles from './input.styles.js'
 import type { CSSResultGroup } from 'lit'
 
@@ -19,8 +20,10 @@ import type { CSSResultGroup } from 'lit'
  * @status stable
  * @since 1.0
  *
+ * @dependency terra-icon
+ *
  * @slot prefix - Used to prepend content (like an icon) to the input.
- * @slot suffix - Used to append content (like an icon) to the input.
+ * @slot suffix - Used to append content (like an icon) to the input. When `resettable` is true, this slot is overridden by the reset icon.
  *
  * @event terra-input - Emitted when the input receives input.
  * @event terra-change - Emitted when an alteration to the control's value is committed by the user.
@@ -36,6 +39,9 @@ import type { CSSResultGroup } from 'lit'
  */
 export default class TerraInput extends TerraElement implements TerraFormControl {
     static styles: CSSResultGroup = [componentStyles, formControlStyles, styles]
+    static dependencies = {
+        'terra-icon': TerraIcon,
+    }
 
     private readonly formControlController = new FormControlController(this, {
         value: (control: TerraInput) => control.value,
@@ -86,6 +92,12 @@ export default class TerraInput extends TerraElement implements TerraFormControl
     @defaultValue('value') defaultValue = ''
 
     /**
+     * When true, shows a reset icon in the suffix that clears the input value when clicked.
+     * The input will be reset to its `defaultValue` (or empty string if no defaultValue is set).
+     */
+    @property({ type: Boolean, reflect: true }) resettable = false
+
+    /**
      * By default, form controls are associated with the nearest containing `<form>` element. This attribute allows you
      * to place the form control outside of a form and associate it with the form that has this `id`. The form must be in
      * the same document or shadow root for this to work.
@@ -132,6 +144,21 @@ export default class TerraInput extends TerraElement implements TerraFormControl
         this.hasFocus = false
         this.formControlController.updateValidity()
         this.emit('terra-blur')
+    }
+
+    private handleReset(event: Event) {
+        event.preventDefault()
+        event.stopPropagation()
+
+        if (this.disabled || this.readonly) {
+            return
+        }
+
+        this.value = this.defaultValue || ''
+        this.input.value = this.value
+        this.formControlController.updateValidity()
+        this.emit('terra-change')
+        this.input.focus()
     }
 
     @watch('disabled', { waitUntilFirstUpdate: true })
@@ -186,9 +213,17 @@ export default class TerraInput extends TerraElement implements TerraFormControl
 
     render() {
         const hasPrefix = this.querySelector('[slot="prefix"]') !== null
-        const hasSuffix = this.querySelector('[slot="suffix"]') !== null
+        const hasSuffixSlot = this.querySelector('[slot="suffix"]') !== null
+        // When resettable is true, we override the suffix with the reset icon
+        const hasSuffix = this.resettable || hasSuffixSlot
         const hasHelpTextSlot = this.hasSlotController.test('help-text')
         const hasHelpText = this.helpText ? true : !!hasHelpTextSlot
+        // Only show reset icon when there's a value to clear (value differs from defaultValue)
+        const showResetIcon =
+            this.resettable &&
+            this.value !== '' &&
+            this.value !== this.defaultValue &&
+            this.type !== 'search' // search inputs have browser x
 
         return html`
             <div
@@ -264,7 +299,25 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                     ${hasSuffix
                         ? html`
                               <span part="suffix" class="input__suffix">
-                                  <slot name="suffix"></slot>
+                                  ${this.resettable && showResetIcon
+                                      ? html`
+                                            <button
+                                                type="button"
+                                                class="input__reset"
+                                                @click=${this.handleReset}
+                                                ?disabled=${this.disabled ||
+                                                this.readonly}
+                                                aria-label="Clear input"
+                                                tabindex="-1"
+                                            >
+                                                <terra-icon
+                                                    name="solid-x-circle"
+                                                    library="heroicons"
+                                                    font-size="1.2rem"
+                                                ></terra-icon>
+                                            </button>
+                                        `
+                                      : html`<slot name="suffix"></slot>`}
                               </span>
                           `
                         : ''}

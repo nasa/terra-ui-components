@@ -158,6 +158,38 @@ export default css`
         color: var(--terra-input-icon-color-focus);
     }
 
+    .input__reset {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        color: inherit;
+        transition: color var(--terra-transition-fast);
+    }
+
+    .input__reset terra-icon {
+        --color: var(--terra-color-carbon-40);
+    }
+
+    .input__reset:hover {
+        color: var(--terra-input-icon-color-hover);
+    }
+
+    .input__reset:focus-visible {
+        outline: 2px solid var(--terra-input-border-color-focus);
+        outline-offset: 2px;
+        border-radius: var(--terra-border-radius-small);
+    }
+
+    .input--disabled .input__reset {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+
     /* Error State - using data attributes from FormControlController */
     :host([data-user-invalid]) .input {
         border-color: var(--terra-color-nasa-red);

@@ -4,10 +4,24 @@ export default css`
     :host {
         display: block;
         position: relative;
-        max-width: 600px;
+    }
+
+    @media (max-width: 768px) {
+        :host {
+            max-width: 100%;
+        }
+    }
+
+    terra-dropdown {
+        width: 100%;
     }
 
     :host terra-input {
+        width: 100%;
+    }
+
+    .spatial-picker {
+        position: relative;
         width: 100%;
     }
 
@@ -24,22 +38,40 @@ export default css`
     }
 
     .spatial-picker__map-container {
-        position: absolute;
-        top: 100%;
-        left: 0;
         width: 100%;
-        z-index: 200;
-        margin-top: 8px;
+        max-width: min(600px, calc(100vw - 2rem));
+        min-width: min(600px, 100vw);
+        max-height: var(--auto-size-available-height, min(450px, calc(100vh - 2rem)));
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
     }
 
-    .spatial-picker__map-container.flipped {
-        top: auto;
-        bottom: 100%;
-        margin-bottom: 8px;
+    .spatial-picker__map-container--inline {
+        position: static;
+        max-height: none;
+        margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .spatial-picker__map-container {
+            width: calc(100vw - 2rem);
+            max-width: calc(100vw - 2rem);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .spatial-picker__map-container {
+            width: calc(100vw - 1rem);
+            max-width: calc(100vw - 1rem);
+        }
     }
 
     terra-map:not(.inline) {
         width: 100%;
+        height: 100%;
+        min-height: 0;
+        flex: 1;
     }
 
     .button-icon {
