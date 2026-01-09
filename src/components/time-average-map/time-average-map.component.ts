@@ -230,6 +230,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                     nodata: NaN,
                 },
             ],
+            wrapX: true, // Enable wrapping so GeoTIFF is always visible when scrolling
             interpolate: false,
             normalize: false,
         })
