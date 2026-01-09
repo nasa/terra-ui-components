@@ -57,6 +57,8 @@ export default class TerraTimeAverageMap extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken: string
     @property({ type: String }) long_name = ''
+    @property({ type: String, attribute: 'color-map-name', reflect: true })
+    colorMapName: string = 'viridis'
 
     @state() catalogVariable: Variable
     @state() pixelValue: string = 'N/A'
@@ -129,7 +131,6 @@ export default class TerraTimeAverageMap extends TerraElement {
         'velocity-green',
         'cubhelix',
     ]
-    @state() colorMapName = 'viridis'
     @state() plotData = {}
     @state() layout = {}
     @state() harmonyJobId?: string
@@ -521,7 +522,7 @@ export default class TerraTimeAverageMap extends TerraElement {
 
         if (this.#map && this.#gtLayer) {
             this.renderPixelValues(this.#map, this.#gtLayer)
-            this.applyColorToLayer(gtSource, 'viridis')
+            this.applyColorToLayer(gtSource, this.colorMapName)
 
             setTimeout(async () => {
                 // Try to fit the map view to the GeoTIFF extent
@@ -722,7 +723,8 @@ export default class TerraTimeAverageMap extends TerraElement {
         const selectedColormap = e.detail
         // Reapply the style with the new colormap to the layer
         if (this.#gtLayer && this.#gtLayer.getSource()) {
-            this.applyColorToLayer(this.#gtLayer.getSource(), selectedColormap)
+            this.colorMapName = selectedColormap
+            this.applyColorToLayer(this.#gtLayer.getSource(), this.colorMapName)
         }
     }
 
@@ -1017,6 +1019,8 @@ export default class TerraTimeAverageMap extends TerraElement {
                               .pixelValue=${this.pixelValue}
                               .pixelCoordinates=${this.pixelCoordinates}
                               show-date-range
+                              .colormaps=${this.colormaps}
+                              .colorMapName=${this.colorMapName}
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}

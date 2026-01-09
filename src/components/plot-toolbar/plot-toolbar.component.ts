@@ -59,7 +59,9 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean =
         true
     @property({ type: Boolean, attribute: 'show-date-range' }) showDateRange: boolean
-    @property({ type: String }) colormap = 'viridis' // default colormap
+    @property({ type: Array }) colormaps: string[] = []
+    @property({ type: String, attribute: 'color-map-name', reflect: true })
+    colorMapName: string = 'viridis'
     @property({ type: Number }) opacity = 1
     @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
         false
@@ -79,52 +81,6 @@ export default class TerraPlotToolbar extends TerraElement {
     locationMapValue: any = []
 
     #tooltipTimeout: number | null = null
-    @state() colormaps = [
-        'jet',
-        'hsv',
-        'hot',
-        'cool',
-        'spring',
-        'summer',
-        'autumn',
-        'winter',
-        'bone',
-        'copper',
-        'greys',
-        'YIGnBu',
-        'greens',
-        'YIOrRd',
-        'bluered',
-        'RdBu',
-        'picnic',
-        'rainbow',
-        'portland',
-        'blackbody',
-        'earth',
-        'electric',
-        'viridis',
-        'inferno',
-        'magma',
-        'plasma',
-        'warm',
-        'cool',
-        'bathymetry',
-        'cdom',
-        'chlorophyll',
-        'density',
-        'fressurface-blue',
-        'freesurface-red',
-        'oxygen',
-        'par',
-        'phase',
-        'salinity',
-        'temperature',
-        'turbidity',
-        'velocity-blue',
-        'velocity-green',
-        'cubhelix',
-    ]
-    @state() colorMapName = 'density'
 
     @query('#menu') menu: HTMLMenuElement
 
