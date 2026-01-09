@@ -367,6 +367,13 @@ export default class TerraBrowseVariables extends TerraElement {
         fields?: FacetField[],
         open?: boolean
     ) {
+        // Check if there are any fields with count > 0
+        const hasValidFields = (fields ?? []).some(field => field.count > 0)
+        
+        if (!hasValidFields) {
+            return nothing
+        }
+
         return html`<details ?open=${open}>
             <summary>${title}</summary>
 
