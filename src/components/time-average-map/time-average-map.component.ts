@@ -750,6 +750,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                               @show-check-box-toggle=${this.#handleCheckBoxToggle}
                               .pixelValue=${this.pixelValue}
                               .pixelCoordinates=${this.pixelCoordinates}
+                              show-date-range
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}

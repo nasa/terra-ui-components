@@ -58,6 +58,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() dataType: DataType
     @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean =
         true
+    @property({ type: Boolean, attribute: 'show-date-range' }) showDateRange: boolean
     @property({ type: String }) colormap = 'viridis' // default colormap
     @property({ type: Number }) opacity = 1
     @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
@@ -178,6 +179,18 @@ export default class TerraPlotToolbar extends TerraElement {
         ></terra-icon>`
     }
 
+    #getDateRangeIcon() {
+        if (!this.startDate || !this.endDate) return ''
+
+        return html`<terra-icon
+            name="outline-calendar-date-range"
+            library="heroicons"
+            font-size="1em"
+            class="date-range-icon"
+            label="Date range"
+        ></terra-icon>`
+    }
+
     render() {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
@@ -202,25 +215,32 @@ export default class TerraPlotToolbar extends TerraElement {
                                   <a
                                       target="_blank"
                                       href="${this.catalogVariable
-                        .dataProductDescriptionUrl}"
+                                          .dataProductDescriptionUrl}"
                                       >[${this.catalogVariable
-                        .dataProductShortName}_${this
-                            .catalogVariable.dataProductVersion}]</a
+                                          .dataProductShortName}_${this
+                                          .catalogVariable.dataProductVersion}]</a
                                   >
                                   ${this.showLocation
-                        ? html`• ${this.#getLocationIcon()}
+                                      ? html`• ${this.#getLocationIcon()}
                                             <span
                                                 class="location-text"
                                                 @mouseenter=${this
-                                .#handleLocationMouseEnter}
+                                                    .#handleLocationMouseEnter}
                                                 @mouseleave=${this
-                                .#handleLocationMouseLeave}
+                                                    .#handleLocationMouseLeave}
                                                 >${this.location.replace(
-                                    /,/g,
-                                    ', '
-                                )}</span
+                                                    /,/g,
+                                                    ', '
+                                                )}</span
                                             >`
-                        : ''}
+                                      : ''}
+                                  ${this.showDateRange
+                                      ? html`• ${this.#getDateRangeIcon()}
+                                            <span
+                                                >${formatDate(this.startDate)} to
+                                                ${formatDate(this.endDate)}</span
+                                            >`
+                                      : ''}
                               </h3>
                           </slot>
                       </div>
@@ -337,12 +357,12 @@ export default class TerraPlotToolbar extends TerraElement {
                           </terra-button>
 
                           ${this.dataType == 'geotiff'
-                        ? html`
+                              ? html`
                                     <terra-button
                                         circle
                                         outline
                                         aria-expanded=${this.activeMenuItem ===
-                            'GeoTIFF'}
+                                        'GeoTIFF'}
                                         aria-controls="menu"
                                         aria-haspopup="true"
                                         class="toggle"
@@ -356,7 +376,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                         ></terra-icon>
                                     </terra-button>
                                 `
-                        : nothing}
+                              : nothing}
                       </div>
 
                       <menu
@@ -410,7 +430,7 @@ export default class TerraPlotToolbar extends TerraElement {
                       </menu>
 
                       ${this.showLocationTooltip
-                        ? html`
+                          ? html`
                                 <div class="location-tooltip">
                                     <terra-map
                                         .value=${this.locationMapValue}
@@ -423,7 +443,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                     ></terra-map>
                                 </div>
                             `
-                        : ''}
+                          : ''}
                   </header>`
         )
     }
@@ -469,8 +489,8 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #showCheckBoxToggle = (e: Event) => {
-        const checkbox = e.target as HTMLInputElement;
-        const isChecked = checkbox.checked;
+        const checkbox = e.target as HTMLInputElement
+        const isChecked = checkbox.checked
 
         this.dispatchEvent(
             new CustomEvent('show-check-box-toggle', {
@@ -509,14 +529,14 @@ export default class TerraPlotToolbar extends TerraElement {
                               @change=${this.#onColorMapChange}
                           >
                               ${this.colormaps.map(
-                    cm =>
-                        html` <option
+                                  cm =>
+                                      html` <option
                                           value="${cm}"
                                           ?selected=${cm === this.colorMapName}
                                       >
                                           ${cm}
                                       </option>`
-                )}
+                              )}
                           </select>
                       </label>
         <label>
@@ -544,7 +564,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 <dt>Variable Shortname</dt>
                 <dd>
                     ${this.catalogVariable.dataFieldShortName ??
-            this.catalogVariable.dataFieldAccessName}
+                    this.catalogVariable.dataFieldAccessName}
                 </dd>
 
                 <dt>Units</dt>
@@ -722,9 +742,9 @@ export default class TerraPlotToolbar extends TerraElement {
             <a
                 href="#"
                 @click=${(e: Event) => {
-                e.preventDefault()
-                this.#handleJupyterNotebookClick()
-            }}
+                    e.preventDefault()
+                    this.#handleJupyterNotebookClick()
+                }}
             >
                 Open in Jupyter Notebook
                 <terra-icon

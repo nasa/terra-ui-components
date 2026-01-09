@@ -106,12 +106,14 @@ export default css`
         align-items: center;
     }
 
-    .location-icon {
+    .location-icon,
+    .date-range-icon {
         vertical-align: middle;
         color: var(--terra-color-nasa-blue);
     }
 
-    .location-text:hover {
+    .location-text:hover,
+    .date-range-text:hover {
         color: var(--terra-color-nasa-blue);
     }
 
