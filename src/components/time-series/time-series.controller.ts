@@ -25,6 +25,7 @@ import {
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
 import type { SubsetJobStatus, SubsetJobError } from '../../data-services/types.js'
+import { extractHarmonyError } from '../../utilities/harmony.js'
 import { Status } from '../../data-services/types.js'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
@@ -506,6 +507,12 @@ export class TimeSeriesController {
 
     #waitForHarmonyJob(job: SubsetJobStatus, signal: AbortSignal) {
         return new Promise<SubsetJobStatus>(async (resolve, reject) => {
+            // Check if already aborted before starting
+            if (signal.aborted) {
+                reject(new Error('Job polling was aborted'))
+                return
+            }
+
             let jobStatus: SubsetJobStatus | undefined
 
             try {
@@ -518,6 +525,13 @@ export class TimeSeriesController {
                 console.log('Job status', jobStatus)
             } catch (error) {
                 console.error('Error checking harmony job status', error)
+
+                // If aborted, reject the promise to stop polling (don't show error)
+                if (signal.aborted || (error as Error)?.name === 'AbortError') {
+                    reject(error)
+                    return
+                }
+
                 // Handle GraphQL errors from status check
                 this.#handleHarmonyError(error)
                 reject(error)
@@ -528,7 +542,28 @@ export class TimeSeriesController {
                 console.log('Job is done', jobStatus)
                 resolve(jobStatus)
             } else {
+                // Check if aborted before scheduling next poll
+                if (signal.aborted) {
+                    reject(new Error('Job polling was aborted'))
+                    return
+                }
+
+                // Set up abort listener to immediately reject if aborted during the wait
+                const abortHandler = () => {
+                    reject(new Error('Job polling was aborted'))
+                }
+                signal.addEventListener('abort', abortHandler, { once: true })
+
                 setTimeout(async () => {
+                    // Remove the abort listener since we're about to check again
+                    signal.removeEventListener('abort', abortHandler)
+
+                    // Check if aborted immediately when timeout fires
+                    if (signal.aborted) {
+                        reject(new Error('Job polling was aborted'))
+                        return
+                    }
+
                     try {
                         resolve(await this.#waitForHarmonyJob(job, signal))
                     } catch (error) {
@@ -763,52 +798,12 @@ export class TimeSeriesController {
      * Handles errors from Harmony GraphQL operations and dispatches them as events
      */
     #handleHarmonyError(error: unknown, jobErrors?: Array<SubsetJobError>): void {
-        let errorCode = '400' // Default to 400 for GraphQL errors (usually client errors)
-        let errorMessage = 'An error occurred'
-        let errorContext: string | undefined
-
-        // Extract error information from the error object
-        if (error instanceof Error) {
-            errorMessage = error.message
-
-            // Try to extract GraphQL error information
-            // GraphQL errors often have a format like "Failed to create subset job: <message>"
-            // or the error might be an Apollo error with more details
-            const graphQLErrorMatch = errorMessage.match(
-                /Failed to (?:create|fetch|cancel) subset job:\s*(.+)/i
-            )
-            if (graphQLErrorMatch) {
-                errorContext = graphQLErrorMatch[1]
-                errorMessage = graphQLErrorMatch[1] // Use the extracted message as the main message
-            } else {
-                errorContext = errorMessage
-            }
-
-            // Try to extract status code from error message
-            const statusMatch = errorMessage.match(/status[:\s]+(\d+)/i)
-            if (statusMatch) {
-                errorCode = statusMatch[1]
-            }
-        } else {
-            errorMessage = String(error)
-            errorContext = errorMessage
-        }
-
-        // If we have job errors, use the first one's message
-        if (jobErrors && jobErrors.length > 0) {
-            errorContext = jobErrors[0].message || errorContext
-            errorMessage = jobErrors[0].message || errorMessage
-        }
+        const errorDetails = extractHarmonyError(error, jobErrors)
 
         // Dispatch the error event
         this.host.dispatchEvent(
             new CustomEvent('terra-time-series-error', {
-                detail: {
-                    status: parseInt(errorCode, 10) || 500,
-                    code: errorCode,
-                    message: errorMessage,
-                    context: errorContext,
-                },
+                detail: errorDetails,
                 bubbles: true,
                 composed: true,
             })

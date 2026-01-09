@@ -21,6 +21,7 @@ import TerraButton from '../button/button.component.js'
 import TerraPlot from '../plot/plot.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
+import TerraAlert from '../alert/alert.component.js'
 import { TaskStatus } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
@@ -28,6 +29,10 @@ import { AuthController } from '../../auth/auth.controller.js'
 import { toLonLat, transformExtent } from 'ol/proj.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
+import {
+    extractHarmonyError,
+    formatHarmonyErrorMessage,
+} from '../../utilities/harmony.js'
 import { watch } from '../../internal/watch.js'
 import TerraLoader from '../loader/loader.component.js'
 
@@ -39,6 +44,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         'terra-plot-toolbar': TerraPlotToolbar,
         'terra-loader': TerraLoader,
         'terra-plot': TerraPlot,
+        'terra-alert': TerraAlert,
     }
 
     @property({ reflect: true }) collection?: string
@@ -56,6 +62,15 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() metadata: { [key: string]: string } = {}
     @state() toggleState = false
     @state() minimized = false
+
+    /**
+     * stores error information from time average map requests
+     */
+    @state() private timeAverageMapError: {
+        code: string
+        message?: string
+        context?: string
+    } | null = null
 
     #controller: TimeAvgMapController
     #map: Map | null = null
@@ -135,11 +150,70 @@ export default class TerraTimeAverageMap extends TerraElement {
         this.#controller.jobStatusTask.run()
     }
 
+    connectedCallback(): void {
+        super.connectedCallback()
+
+        this.addEventListener(
+            'terra-time-average-map-error',
+            this.#handleMapError as EventListener
+        )
+    }
+
     async firstUpdated() {
         this.#controller = new TimeAvgMapController(this)
         // Initialize the base layer open street map
         this.intializeMap()
         this._fetchVariableTask.run()
+    }
+
+    updated(changedProps: globalThis.Map<string, unknown>) {
+        super.updated(changedProps)
+
+        const taskStatus = this.#controller?.jobStatusTask?.status
+
+        // Clear error when a new request starts
+        if (taskStatus === TaskStatus.PENDING && this.timeAverageMapError) {
+            this.timeAverageMapError = null
+        }
+
+        // Check if task has an error and we haven't already captured it via event
+        if (taskStatus === TaskStatus.ERROR && !this.timeAverageMapError) {
+            const taskError = this.#controller?.jobStatusTask?.error
+            if (taskError) {
+                // Use the utility to extract error information
+                const errorDetails = extractHarmonyError(taskError)
+
+                // Don't show errors for user-initiated cancellations
+                if (errorDetails.isCancellation) {
+                    return
+                }
+
+                this.timeAverageMapError = {
+                    code: errorDetails.code,
+                    message: errorDetails.message,
+                    context: errorDetails.context,
+                }
+            }
+        }
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.removeEventListener(
+            'terra-time-average-map-error',
+            this.#handleMapError as EventListener
+        )
+    }
+
+    #handleMapError = (event: CustomEvent) => {
+        const { status, code, message, context } = event.detail
+
+        // Store error information
+        this.timeAverageMapError = {
+            code: code || String(status),
+            message,
+            context,
+        }
     }
 
     async updateGeoTIFFLayer(blob: Blob) {
@@ -600,8 +674,65 @@ export default class TerraTimeAverageMap extends TerraElement {
             this.#cleanUpMap()
         }
     }
+    #isVariableNotFound(): boolean {
+        const variableTaskStatus = this._fetchVariableTask.status
+        // Only show "variable not found" if the variable fetch task has completed
+        if (variableTaskStatus !== TaskStatus.COMPLETE) {
+            return false
+        }
+
+        // Check if user has provided variable information
+        const hasVariableRequest = Boolean(this.collection && this.variable)
+
+        // If user requested a variable but catalogVariable is not set, variable was not found
+        return hasVariableRequest && !this.catalogVariable
+    }
+
+    #getErrorMessage(error: {
+        code: string
+        message?: string
+        context?: string
+    }): any {
+        return formatHarmonyErrorMessage(error)
+    }
+
     render() {
         return html`
+            ${this.#isVariableNotFound()
+                ? html`
+                      <terra-alert
+                          class="no-data-alert"
+                          variant="danger"
+                          open
+                          closable
+                      >
+                          <terra-icon
+                              slot="icon"
+                              name="outline-exclamation-triangle"
+                              library="heroicons"
+                          ></terra-icon>
+                          The selected variable was not found in the catalog
+                      </terra-alert>
+                  `
+                : ''}
+            ${this.timeAverageMapError
+                ? html`
+                      <terra-alert
+                          class="error-alert"
+                          variant="danger"
+                          open
+                          closable
+                          @terra-after-hide=${() => (this.timeAverageMapError = null)}
+                      >
+                          <terra-icon
+                              slot="icon"
+                              name="outline-exclamation-triangle"
+                              library="heroicons"
+                          ></terra-icon>
+                          ${this.#getErrorMessage(this.timeAverageMapError)}
+                      </terra-alert>
+                  `
+                : ''}
             <div class="toolbar-container">
                 ${cache(
                     this.catalogVariable

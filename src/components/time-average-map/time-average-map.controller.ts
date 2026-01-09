@@ -2,7 +2,11 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import { format } from 'date-fns'
-import { type SubsetJobStatus, Status } from '../../data-services/types.js'
+import {
+    type SubsetJobStatus,
+    type SubsetJobError,
+    Status,
+} from '../../data-services/types.js'
 import {
     FINAL_STATUSES,
     HarmonyDataService,
@@ -14,6 +18,7 @@ import {
     storeDataByKey,
 } from '../../internal/indexeddb.js'
 import { formatDate } from '../../utilities/date.js'
+import { extractHarmonyError } from '../../utilities/harmony.js'
 
 const REFRESH_HARMONY_DATA_INTERVAL = 2000
 
@@ -83,28 +88,67 @@ export class TimeAvgMapController {
                     }
 
                     console.log('Calling create subset job..')
-                    job = await this.#dataService.createSubsetJob(subsetOptions, {
-                        signal,
-                        bearerToken: this.#host.bearerToken,
-                        environment: this.#host.environment,
-                    })
+                    try {
+                        job = await this.#dataService.createSubsetJob(subsetOptions, {
+                            signal,
+                            bearerToken: this.#host.bearerToken,
+                            environment: this.#host.environment,
+                        })
+                    } catch (error) {
+                        // Handle GraphQL errors from Harmony
+                        this.#handleHarmonyError(error)
+                        throw error
+                    }
 
                     if (!job) {
-                        throw new Error('Failed to create subset job')
+                        const error = new Error('Failed to create subset job')
+                        this.#handleHarmonyError(error)
+                        throw error
                     }
 
                     console.log('Waiting for harmony job..')
                     const jobStatus = await this.#waitForHarmonyJob(job, signal)
 
+                    // Check if job failed or has errors
+                    if (jobStatus.status === Status.FAILED) {
+                        const errorMessage =
+                            jobStatus.message ||
+                            jobStatus.errors?.[0]?.message ||
+                            'The subset job failed'
+                        const error = new Error(errorMessage)
+                        this.#handleHarmonyError(error, jobStatus.errors)
+                        throw error
+                    }
+
+                    if (
+                        jobStatus.status === Status.COMPLETE_WITH_ERRORS &&
+                        jobStatus.errors &&
+                        jobStatus.errors.length > 0
+                    ) {
+                        const errorMessage =
+                            jobStatus.errors[0].message ||
+                            'The subset job completed with errors'
+                        const error = new Error(errorMessage)
+                        this.#handleHarmonyError(error, jobStatus.errors)
+                        throw error
+                    }
+
                     // the job is completed, fetch the data for the job
-                    const { blob } = await this.#dataService.getSubsetJobData(
-                        jobStatus,
-                        {
-                            signal,
-                            bearerToken: this.#host.bearerToken,
-                            environment: this.#host.environment,
-                        }
-                    )
+                    let blob: Blob
+                    try {
+                        const result = await this.#dataService.getSubsetJobData(
+                            jobStatus,
+                            {
+                                signal,
+                                bearerToken: this.#host.bearerToken,
+                                environment: this.#host.environment,
+                            }
+                        )
+                        blob = result.blob
+                    } catch (error) {
+                        this.#handleHarmonyError(error)
+                        throw error
+                    }
 
                     // Store in cache
                     await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {
@@ -185,12 +229,14 @@ export class TimeAvgMapController {
             } catch (error) {
                 console.error('Error checking harmony job status', error)
 
-                // If aborted, reject the promise to stop polling
+                // If aborted, reject the promise to stop polling (don't show error)
                 if (signal.aborted || (error as Error)?.name === 'AbortError') {
                     reject(error)
                     return
                 }
 
+                // Handle GraphQL errors from status check
+                this.#handleHarmonyError(error)
                 reject(error)
                 return
             }
@@ -257,5 +303,21 @@ export class TimeAvgMapController {
         const start = this.#host.startDate ?? ''
         const end = this.#host.endDate ?? ''
         return `map_${collection}_${variable}_${start}_${end}_${location}_${environment}`
+    }
+
+    /**
+     * Handles errors from Harmony GraphQL operations and dispatches them as events
+     */
+    #handleHarmonyError(error: unknown, jobErrors?: Array<SubsetJobError>): void {
+        const errorDetails = extractHarmonyError(error, jobErrors)
+
+        // Dispatch the error event
+        this.#host.dispatchEvent(
+            new CustomEvent('terra-time-average-map-error', {
+                detail: errorDetails,
+                bubbles: true,
+                composed: true,
+            })
+        )
     }
 }

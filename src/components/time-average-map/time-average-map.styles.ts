@@ -48,4 +48,11 @@ export default css`
         position: absolute;
         top: calc(50% - 100px);
     }
+
+    .no-data-alert,
+    .error-alert {
+        display: block;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
 `

@@ -14,6 +14,10 @@ import type { CSSResultGroup } from 'lit'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
 import { formatDate } from '../../utilities/date.js'
+import {
+    extractHarmonyError,
+    formatHarmonyErrorMessage,
+} from '../../utilities/harmony.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
@@ -167,41 +171,18 @@ export default class TerraTimeSeries extends TerraElement {
         if (taskStatus === TaskStatus.ERROR && !this.timeSeriesError) {
             const taskError = this.#timeSeriesController.task.error
             if (taskError) {
-                // Try to extract error information from the error message
-                // Error messages from fetch might contain status codes
-                const errorMessage =
-                    (taskError instanceof Error ? taskError.message : undefined) ||
-                    String(taskError)
-                let errorCode = '500'
-                let errorContext: string | undefined
+                // Use the utility to extract error information
+                const errorDetails = extractHarmonyError(taskError)
 
-                // Try to extract status code from error message
-                const statusMatch = errorMessage.match(/status[:\s]+(\d+)/i)
-                if (statusMatch) {
-                    errorCode = statusMatch[1]
-                }
-
-                // Check if error message contains JSON-like structure
-                if (
-                    errorMessage.includes('code') ||
-                    errorMessage.includes('context')
-                ) {
-                    try {
-                        const parsed = JSON.parse(errorMessage)
-                        errorCode = parsed.code || errorCode
-                        errorContext = parsed.context
-                    } catch {
-                        // Not JSON, use the message as context
-                        errorContext = errorMessage
-                    }
-                } else {
-                    errorContext = errorMessage
+                // Don't show errors for user-initiated cancellations
+                if (errorDetails.isCancellation) {
+                    return
                 }
 
                 this.timeSeriesError = {
-                    code: errorCode,
-                    message: errorMessage,
-                    context: errorContext,
+                    code: errorDetails.code,
+                    message: errorDetails.message,
+                    context: errorDetails.context,
                 }
             }
         }
@@ -505,38 +486,7 @@ export default class TerraTimeSeries extends TerraElement {
         message?: string
         context?: string
     }): any {
-        const errorCode = error.code
-
-        // Handle 429 - Quota exceeded
-        if (errorCode === '429') {
-            return html`
-                You have reached your quota for the month. Please reach out using the
-                "Help" menu above for help
-            `
-        }
-
-        // Handle 400 - Bad request, show the error message from the API
-        if (errorCode === '400') {
-            const errorText = error.context || error.message || 'Bad or missing input'
-            return html`${errorText}`
-        }
-
-        // If we have a specific error message/context, show it instead of generic message
-        const errorText = error.context || error.message
-        if (errorText && errorText !== 'An error occurred') {
-            return html`${errorText}`
-        }
-
-        // Handle all other errors with generic message
-        return html`
-            There was a problem making this request. For help, please
-            <a
-                href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3"
-                target="_blank"
-                rel="noopener noreferrer"
-                >contact us using the Earthdata Forum</a
-            >
-        `
+        return formatHarmonyErrorMessage(error)
     }
 
     #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
