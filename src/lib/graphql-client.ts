@@ -3,7 +3,7 @@ import { CachePersistor } from 'apollo3-cache-persist'
 import { localforage } from './localforage.js'
 
 const CACHE_TIMESTAMP_KEY = 'terra-general-cache-timestamp'
-const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 1 days in milliseconds
 
 localforage.config({
     name: 'terra-general-cache',
