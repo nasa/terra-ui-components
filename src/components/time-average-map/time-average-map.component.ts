@@ -493,7 +493,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                 {
                     url: blobUrl,
                     bands: [1],
-                    nodata: NaN,
+                    nodata: -9999, // Assuming -9999 is the no-data value; adjust as necessary
                 },
             ],
             wrapX: true, // Enable wrapping so GeoTIFF is always visible when scrolling
@@ -670,6 +670,19 @@ export default class TerraTimeAverageMap extends TerraElement {
         })
     }
 
+    // Get the fill value from the GeoTIFF file
+    getNoDataValue(gtSource) {
+        let ndv = -9999
+        if (gtSource == null) {
+            return ndv
+        }
+        gtSource.getView().then(() => {
+            const gtImage = gtSource.sourceImagery_[0][0]
+            ndv = parseFloat(gtImage.fileDirectory.GDAL_NODATA)
+        })
+        return ndv
+    }
+
     async getMinMax(gtSource: any) {
         await gtSource.getView()
         const gtImage = gtSource.sourceImagery_[0][0]
@@ -684,7 +697,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         // Loop through pixels and get min and max values. This gives us a range to determine color mapping styling
         for (let i = 0; i < pixels.length; i++) {
             const val = pixels[i]
-            if (!isNaN(val)) {
+            if (!isNaN(val) && val != getNoDataValue(gtSource)) {
                 // skip no-data pixels or NaN
                 if (val < min) min = val
                 if (val > max) max = val
