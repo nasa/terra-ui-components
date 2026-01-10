@@ -22,6 +22,17 @@ layout: component
     ></terra-time-average-map>
 
     <p slot="logged-out">Please login to view this plot</p>
+</terra-login><br /><br />
+<terra-login style="width: 100%">
+    <span slot="loading">Loading...please wait</span>
+
+    <terra-time-average-map slot="logged-in"
+        collection="GLDAS_CLSM025_D_2_0"
+        variable="Qg_tavg"
+        start-date="01/01/2009"
+        end-date="02/01/2009"
+        location="-125.59,30.75,-112.14,43.46"
+    ></terra-time-average-map>
 </terra-login>
 
 <script>

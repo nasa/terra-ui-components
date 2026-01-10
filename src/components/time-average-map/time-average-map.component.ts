@@ -1,6 +1,6 @@
 import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { Map, MapBrowserEvent, View } from 'ol'
+import { ImageTile, Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import OSM from 'ol/source/OSM.js'
@@ -37,6 +37,8 @@ import { watch } from '../../internal/watch.js'
 import TerraLoader from '../loader/loader.component.js'
 import { formatDate } from '../../utilities/date.js'
 import { Environment } from '../../utilities/environment.js'
+import type DataTileSource from 'ol/source/DataTile.js'
+import type DataTile from 'ol/DataTile.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -66,6 +68,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() metadata: { [key: string]: string } = {}
     @state() toggleState = false
     @state() minimized = false
+    @state() noDataValue: number = -9999
 
     /**
      * stores error information from time average map requests
@@ -493,7 +496,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                 {
                     url: blobUrl,
                     bands: [1],
-                    nodata: -9999, // Assuming -9999 is the no-data value; adjust as necessary
+                    nodata: this.noDataValue,
                 },
             ],
             wrapX: true, // Enable wrapping so GeoTIFF is always visible when scrolling
@@ -671,21 +674,26 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     // Get the fill value from the GeoTIFF file
-    getNoDataValue(gtSource) {
-        let ndv = -9999
+    getNoDataValue(gtSource: DataTileSource<DataTile | ImageTile> | null) {
+        let ndv = this.noDataValue
+
         if (gtSource == null) {
             return ndv
         }
+
         gtSource.getView().then(() => {
-            const gtImage = gtSource.sourceImagery_[0][0]
-            ndv = parseFloat(gtImage.fileDirectory.GDAL_NODATA)
+            const gtImage = (gtSource as any).sourceImagery_[0][0] // TODO: fix type
+            ndv = parseFloat(
+                gtImage.fileDirectory?.GDAL_NODATA ?? this.noDataValue.toString()
+            )
         })
+
         return ndv
     }
 
-    async getMinMax(gtSource: any) {
+    async getMinMax(gtSource: DataTileSource<DataTile | ImageTile>) {
         await gtSource.getView()
-        const gtImage = gtSource.sourceImagery_[0][0]
+        const gtImage = (gtSource as any).sourceImagery_[0][0] // TODO: fix
 
         // read raster data from band 1
         const rasterData = await gtImage.readRasters({ samples: [0] })
@@ -697,7 +705,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         // Loop through pixels and get min and max values. This gives us a range to determine color mapping styling
         for (let i = 0; i < pixels.length; i++) {
             const val = pixels[i]
-            if (!isNaN(val) && val != getNoDataValue(gtSource)) {
+            if (!isNaN(val) && val != this.getNoDataValue(gtSource)) {
                 // skip no-data pixels or NaN
                 if (val < min) min = val
                 if (val > max) max = val
@@ -737,7 +745,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         // Reapply the style with the new colormap to the layer
         if (this.#gtLayer && this.#gtLayer.getSource()) {
             this.colorMapName = selectedColormap
-            this.applyColorToLayer(this.#gtLayer.getSource(), this.colorMapName)
+            this.applyColorToLayer(this.#gtLayer.getSource()!, this.colorMapName)
         }
     }
 
@@ -745,7 +753,10 @@ export default class TerraTimeAverageMap extends TerraElement {
         this.#controller.jobStatusTask?.abort('Cancelled time averaged map request')
     }
 
-    async applyColorToLayer(gtSource: any, color: String) {
+    async applyColorToLayer(
+        gtSource: DataTileSource<DataTile | ImageTile>,
+        color: String
+    ) {
         var { min, max } = await this.getMinMax(gtSource)
         let gtStyle = {
             color: [
