@@ -914,24 +914,10 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #downloadMapPNG() {
-        // Dispatch event to request PNG export from parent time-average-map component
-        this.dispatchEvent(
-            new CustomEvent('terra-plot-toolbar-export-image', {
-                bubbles: true,
-                composed: true,
-                detail: { format: 'png' },
-            })
-        )
+        this.emit('terra-plot-toolbar-export-image', { detail: { format: 'png' } })
     }
 
     #downloadMapJPG() {
-        // Dispatch event to request JPG export from parent time-average-map component
-        this.dispatchEvent(
-            new CustomEvent('terra-plot-toolbar-export-image', {
-                bubbles: true,
-                composed: true,
-                detail: { format: 'jpg' },
-            })
-        )
+        this.emit('terra-plot-toolbar-export-image', { detail: { format: 'jpg' } })
     }
 }
