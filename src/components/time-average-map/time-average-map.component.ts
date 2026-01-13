@@ -3,6 +3,7 @@ import { property, state } from 'lit/decorators.js'
 import { ImageTile, Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import VectorLayer from 'ol/layer/Vector.js'
+import Graticule from 'ol/layer/Graticule.js'
 import OSM from 'ol/source/OSM.js'
 import VectorSource from 'ol/source/Vector.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
@@ -86,6 +87,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     #vectorSource: VectorSource | null = null
     #vectorLayer: VectorLayer | null = null
     #draw: Draw | null = null
+    #graticuleLayer: Graticule | null = null
 
     _authController = new AuthController(this)
 
@@ -558,9 +560,19 @@ export default class TerraTimeAverageMap extends TerraElement {
             source: new OSM() as any,
         })
 
+        this.#graticuleLayer = new Graticule({
+            strokeStyle: new Stroke({
+                color: 'rgba(0,0,0,0.2)',
+                width: 2,
+                lineDash: [0.5, 4],
+            }),
+            showLabels: true,
+            wrapX: false,
+        })
+
         this.#map = new Map({
             target: this.shadowRoot?.getElementById('map') ?? undefined,
-            layers: [baseLayer],
+            layers: [baseLayer, this.#graticuleLayer],
             view: new View({
                 center: [0, 0],
                 zoom: 2,
@@ -1076,7 +1088,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                               target="_blank"
                               rel="noopener noreferrer"
                           >
-                              Harmony Job: ${this.harmonyJobId}
+                              Request Status: ${this.harmonyJobId}
                           </a>
                       </div>
                   `

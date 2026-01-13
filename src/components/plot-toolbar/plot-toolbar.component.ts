@@ -494,15 +494,13 @@ export default class TerraPlotToolbar extends TerraElement {
                               )}
                           </select>
                       </label>
-        <label>
-        <input
-          type="checkbox"
-          @change=${this.#showCheckBoxToggle}
-        />
-        <slot>Draw Profile</slot>
-        </label>
-      </label>
-                
+                      <label>
+                          <input
+                              type="checkbox"
+                              @change=${this.#showCheckBoxToggle}
+                          />
+                          <slot>Draw Profile</slot>
+                      </label>
                   `
                 : nothing}
         `
