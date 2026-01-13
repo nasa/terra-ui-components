@@ -369,7 +369,7 @@ export default class TerraBrowseVariables extends TerraElement {
     ) {
         // Check if there are any fields with count > 0
         const hasValidFields = (fields ?? []).some(field => field.count > 0)
-        
+
         if (!hasValidFields) {
             return nothing
         }

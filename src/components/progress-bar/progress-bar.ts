@@ -1,12 +1,12 @@
-import TerraProgressBar from './progress-bar.component.js';
+import TerraProgressBar from './progress-bar.component.js'
 
-export * from './progress-bar.component.js';
-export default TerraProgressBar;
+export * from './progress-bar.component.js'
+export default TerraProgressBar
 
-TerraProgressBar.define('terra-progress-bar');
+TerraProgressBar.define('terra-progress-bar')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-progress-bar': TerraProgressBar;
+        'terra-progress-bar': TerraProgressBar
     }
 }

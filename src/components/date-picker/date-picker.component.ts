@@ -68,6 +68,9 @@ export default class TerraDatePicker extends TerraElement {
     @property({ attribute: 'display-format' }) displayFormat?: string
     @property({ type: Boolean }) inline = false
     @property({ type: Boolean, attribute: 'split-inputs' }) splitInputs = false
+    @property() placeholder: string = 'Select Date'
+    @property() startPlaceholder: string = 'Start Date'
+    @property() endPlaceholder: string = 'End Date'
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()
@@ -1772,9 +1775,9 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
-                                      placeholder="Start date"
                                       @terra-blur=${this.handleStartInputBlur}
                                       @keydown=${this.handleKeydown}
+                                      placeholder=${this.startPlaceholder}
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1786,9 +1789,9 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
-                                      placeholder="End date"
                                       @terra-blur=${this.handleEndInputBlur}
                                       @keydown=${this.handleKeydown}
+                                      placeholder=${this.endPlaceholder}
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1800,9 +1803,7 @@ export default class TerraDatePicker extends TerraElement {
                                   .hideLabel=${this.hideLabel}
                                   .helpText=${this.helpText}
                                   .value=${this.getDisplayValue()}
-                                  placeholder=${this.range
-                                      ? 'Select date range'
-                                      : 'Select date'}
+                                  placeholder=${this.placeholder}
                                   @terra-blur=${this.handleInputBlur}
                                   @keydown=${this.handleKeydown}
                               >
@@ -1883,7 +1884,7 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
-                                      placeholder="Start date"
+                                      placeholder=${this.startPlaceholder}
                                       @terra-blur=${this.handleStartInputBlur}
                                       @keydown=${this.handleKeydown}
                                   >
@@ -1907,7 +1908,7 @@ export default class TerraDatePicker extends TerraElement {
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
-                                      placeholder="End date"
+                                      placeholder=${this.endPlaceholder}
                                       @terra-blur=${this.handleEndInputBlur}
                                       @keydown=${this.handleKeydown}
                                   >
@@ -1932,9 +1933,7 @@ export default class TerraDatePicker extends TerraElement {
                                   .hideLabel=${this.hideLabel}
                                   .helpText=${this.helpText}
                                   .value=${this.getDisplayValue()}
-                                  placeholder=${this.range
-                                      ? 'Select date range'
-                                      : 'Select date'}
+                                  placeholder=${this.placeholder}
                                   @terra-blur=${this.handleInputBlur}
                                   @keydown=${this.handleKeydown}
                               >

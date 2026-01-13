@@ -28,6 +28,9 @@ export default class TerraDivider extends TerraElement {
 
     @watch('vertical')
     handleVerticalChange() {
-        this.setAttribute('aria-orientation', this.vertical ? 'vertical' : 'horizontal')
+        this.setAttribute(
+            'aria-orientation',
+            this.vertical ? 'vertical' : 'horizontal'
+        )
     }
 }

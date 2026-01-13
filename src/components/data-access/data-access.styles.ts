@@ -268,7 +268,6 @@ export default css`
         }
     }
 
-
     .grid-container {
         position: relative;
         width: 100%;

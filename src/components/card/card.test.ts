@@ -3,23 +3,19 @@ import './card.js'
 
 describe('<terra-card>', () => {
     describe('Basic Rendering', () => {
-    it('should render a component', async () => {
+        it('should render a component', async () => {
             const el = await fixture(html` <terra-card></terra-card> `)
             expect(el).to.exist
         })
 
         it('should render with base part', async () => {
-            const el: any = await fixture(html`
-                <terra-card></terra-card>
-            `)
+            const el: any = await fixture(html` <terra-card></terra-card> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base).to.exist
         })
 
         it('should have card class', async () => {
-            const el: any = await fixture(html`
-                <terra-card></terra-card>
-            `)
+            const el: any = await fixture(html` <terra-card></terra-card> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.classList.contains('card')).to.be.true
         })
@@ -322,9 +318,7 @@ describe('<terra-card>', () => {
         })
 
         it('should handle card with only body content', async () => {
-            const el: any = await fixture(html`
-                <terra-card>Only body</terra-card>
-            `)
+            const el: any = await fixture(html` <terra-card>Only body</terra-card> `)
             await elementUpdated(el)
             expect(el.textContent?.trim()).to.equal('Only body')
         })

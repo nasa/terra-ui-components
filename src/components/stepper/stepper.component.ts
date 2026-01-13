@@ -37,10 +37,7 @@ export default class TerraStepper extends TerraElement {
 
             if (step) {
                 step.toggleAttribute('data-terra-stepper__step', true)
-                step.toggleAttribute(
-                    'data-terra-stepper__step--first',
-                    index === 0
-                )
+                step.toggleAttribute('data-terra-stepper__step--first', index === 0)
                 step.toggleAttribute(
                     'data-terra-stepper__step--last',
                     index === slottedElements.length - 1
