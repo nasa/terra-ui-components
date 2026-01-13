@@ -3,7 +3,6 @@ meta:
     title: Tabs
     description: Tabs organize content into a container that shows one section at a time.
 layout: component
-sidebarSection: Elements
 ---
 
 Tabs make use of [tab](/components/tab) and [tab panel](/components/tab-panel) components. Each tab must be slotted into the `nav` slot and its `panel` must refer to a tab panel of the same name.

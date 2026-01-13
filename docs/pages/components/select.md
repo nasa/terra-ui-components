@@ -3,7 +3,6 @@ meta:
     title: Select
     description: Select fields are a form field used to select one option from a list.
 layout: component
-sidebarSection: Elements
 ---
 
 # Select

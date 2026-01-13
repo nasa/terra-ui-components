@@ -3,7 +3,6 @@ meta:
     title: Pagination
     description: Pagination is a navigational element that allows users to navigate between content or pages.
 layout: component
-sidebarSection: Elements
 ---
 
 ## Usage

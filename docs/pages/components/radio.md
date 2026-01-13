@@ -3,7 +3,6 @@ meta:
     title: Radio
     description: Radio buttons are a form field used when only a single selection can be made from a list.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

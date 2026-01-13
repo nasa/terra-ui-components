@@ -3,7 +3,6 @@ meta:
     title: File Upload
     description: File upload fields allow visitors to attach one or multiple files to be submitted with a form.
 layout: component
-sidebarSection: Elements
 ---
 
 # File Upload

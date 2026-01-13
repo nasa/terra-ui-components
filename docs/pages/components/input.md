@@ -3,7 +3,6 @@ meta:
     title: Input
     description: A text input component with consistent styling across the design system.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

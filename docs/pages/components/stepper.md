@@ -3,7 +3,6 @@ meta:
     title: Stepper
     description: Steppers display a visitor's progress through linear workflows and experiences with multiple steps.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

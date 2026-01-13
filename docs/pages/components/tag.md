@@ -3,7 +3,6 @@ meta:
     title: Tag
     description: Tags are simple labels that help categorize items.
 layout: component
-sidebarSection: Elements
 ---
 
 ## Usage

@@ -37,7 +37,7 @@ import { formatDate } from '../../utilities/date.js'
  *
  * @csspart base - The component's base wrapper.
  *
- * @cssproperty --example - An example CSS custom property.
+ * @cssproperty --terra-plot-toolbar-help-menu-display - Controls the display of the help menu button. Set to `none` to hide it. Defaults to `flex`.
  */
 export default class TerraPlotToolbar extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -275,7 +275,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               aria-expanded=${this.activeMenuItem === 'help'}
                               aria-controls="menu"
                               aria-haspopup="true"
-                              class="toggle"
+                              class="toggle help-toggle"
                               @mouseenter=${this.#handleActiveMenuItem}
                               data-menu-name="help"
                           >
@@ -289,7 +289,6 @@ export default class TerraPlotToolbar extends TerraElement {
                                   font-size="1em"
                               ></terra-icon>
                           </terra-button>
-
                           <terra-button
                               outline
                               aria-expanded=${this.activeMenuItem === 'jupyter'}

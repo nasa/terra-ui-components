@@ -37,6 +37,10 @@ export default css`
         position: relative;
     }
 
+    .help-toggle {
+        display: var(--terra-plot-toolbar-help-menu-display, flex);
+    }
+
     .toggle[aria-expanded='true']::after {
         background-color: var(--terra-color-nasa-blue);
         block-size: 0.125em;

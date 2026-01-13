@@ -2,8 +2,7 @@
 meta:
     title: Status Indicator
     description: Status indicators are dynamic labels that indicate the current state of a mission or project.
-    layout: component
-sidebarSection: Elements
+layout: component
 ---
 
 # Status Indicator

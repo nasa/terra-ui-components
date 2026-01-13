@@ -3,7 +3,6 @@ meta:
     title: Badge
     description: Badges are used to draw attention and display statuses or counts.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

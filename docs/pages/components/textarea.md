@@ -3,7 +3,6 @@ meta:
     title: Textarea
     description: A textarea component with consistent styling across the design system.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

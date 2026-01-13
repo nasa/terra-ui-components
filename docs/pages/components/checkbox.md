@@ -3,7 +3,6 @@ meta:
     title: Checkbox
     description: Checkboxes are a form field used when there are multiple options to select from a list.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

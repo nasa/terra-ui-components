@@ -3,7 +3,6 @@ meta:
     title: Toggle
     description: Togglees allow the user to toggle an option on or off.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

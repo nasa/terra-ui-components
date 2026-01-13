@@ -3,7 +3,6 @@ meta:
     title: Date Picker
     description: A versatile date picker component that supports both single date selection and date range selection.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

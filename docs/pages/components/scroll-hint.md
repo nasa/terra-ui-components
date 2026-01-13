@@ -3,7 +3,6 @@ meta:
     title: Scroll Hint
     description: Scroll hint is an animated button that prompts visitors to scroll.
 layout: component
-sidebarSection: Elements
 ---
 
 ```html:preview

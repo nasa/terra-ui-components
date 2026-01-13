@@ -44,58 +44,44 @@
         </ul>
     </li>
 
-    <li>
-        <h2>Components</h2>
-        <ul>
-            {% for component in meta.components %}
-                <li>
-                    <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
-                        {{ component.name | classNameToComponentName }}
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </li>
     
-    <!-- uncomment to show components in sidebar section order
-        {% for sectionName in meta.sidebarSectionOrder %}
-            {% if meta.componentsBySection[sectionName] %}
-                <li>
-                    <h2>{{ sectionName }}</h2>
-                    <ul>
-                        {% for component in meta.componentsBySection[sectionName] %}
-                            <li>
-                                <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
-                                    {{ component.name | classNameToComponentName }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </li>
+    {% for sectionName in meta.sidebarSectionOrder %}
+        {% if meta.componentsBySection[sectionName] %}
+            <li>
+                <h2>{{ sectionName }}</h2>
+                <ul>
+                    {% for component in meta.componentsBySection[sectionName] %}
+                        <li>
+                            <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
+                                {{ component.name | classNameToComponentName }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    {% endfor %}
+    {# Include any sections not in the defined order (fallback) #}
+    {% for sectionName, components in meta.componentsBySection %}
+        {% set isInOrder = false %}
+        {% for orderedSection in meta.sidebarSectionOrder %}
+            {% if orderedSection == sectionName %}
+                {% set isInOrder = true %}
             {% endif %}
         {% endfor %}
-        {# Include any sections not in the defined order (fallback) #}
-        {% for sectionName, components in meta.componentsBySection %}
-            {% set isInOrder = false %}
-            {% for orderedSection in meta.sidebarSectionOrder %}
-                {% if orderedSection == sectionName %}
-                    {% set isInOrder = true %}
-                {% endif %}
-            {% endfor %}
-            {% if not isInOrder %}
-                <li>
-                    <h2>{{ sectionName }}</h2>
-                    <ul>
-                        {% for component in components %}
-                            <li>
-                                <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
-                                    {{ component.name | classNameToComponentName }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                </li>
-            {% endif %}
-        {% endfor %}
-    -->
+        {% if not isInOrder %}
+            <li>
+                <h2>{{ sectionName }}</h2>
+                <ul>
+                    {% for component in components %}
+                        <li>
+                            <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
+                                {{ component.name | classNameToComponentName }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    {% endfor %}
 </ul>
