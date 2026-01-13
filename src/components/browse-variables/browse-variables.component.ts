@@ -427,7 +427,7 @@ export default class TerraBrowseVariables extends TerraElement {
 
         return html`<div class="scrollable variables-container">
             <header>
-                ${browsingText ? html`<div>${browsingText}</div>` : nothing}
+                <div>${browsingText}</div>
 
                 <menu>
                     <li>
@@ -563,7 +563,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                                 >${variable.dataFieldLongName}</strong
                                             >
                                             <span
-                                                >${variable.dataProductShortName}
+                                                >${variable.dataProductShortName}_${variable.dataProductVersion}
                                                 &bull;
                                                 ${variable.dataProductTimeInterval}
                                                 &bull;
