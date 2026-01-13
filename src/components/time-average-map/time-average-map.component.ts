@@ -70,6 +70,9 @@ export default class TerraTimeAverageMap extends TerraElement {
     @state() toggleState = false
     @state() minimized = false
     @state() noDataValue: number = -9999
+    @state() min: string = '0'
+    @state() max: string = '1'
+    @state() legendValues: { value: string; rgb: string }[] = []
 
     /**
      * stores error information from time average map requests
@@ -369,6 +372,9 @@ export default class TerraTimeAverageMap extends TerraElement {
                 ctx.fillText(line, 20, textY + index * lineHeight)
             })
 
+            // Draw the legend on top of the map
+            await this.#drawLegend(ctx, textHeight)
+
             // Convert canvas to blob and download
             const mimeType = format === 'jpg' ? 'image/jpeg' : 'image/png'
             const fileExtension = format === 'jpg' ? 'jpg' : 'png'
@@ -406,6 +412,109 @@ export default class TerraTimeAverageMap extends TerraElement {
             )
         } catch (error) {
             console.error('Error exporting map as PNG:', error)
+        }
+    }
+
+    async #drawLegend(ctx: CanvasRenderingContext2D, textHeight: number) {
+        // Get the legend element from shadow root
+        const legendElement = this.shadowRoot?.getElementById('legend')
+        if (!legendElement) {
+            return
+        }
+
+        // Get the #map container for relative positioning
+        const mapContainer = this.shadowRoot?.getElementById('map')
+        if (!mapContainer) {
+            return
+        }
+
+        const legendRect = legendElement.getBoundingClientRect()
+        const mapRect = mapContainer.getBoundingClientRect()
+
+        // Calculate position relative to map (accounting for textHeight offset)
+        const legendX = legendRect.left - mapRect.left
+        const legendY = legendRect.top - mapRect.top + textHeight
+        const legendWidth = legendRect.width
+        const legendHeight = legendRect.height
+
+        // Draw legend background
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(legendX, legendY, legendWidth, legendHeight)
+
+        // Draw border (optional, matching the border-radius style)
+        ctx.strokeStyle = '#cccccc'
+        ctx.lineWidth = 1
+        ctx.strokeRect(legendX, legendY, legendWidth, legendHeight)
+
+        // Get computed styles
+        const computedStyle = window.getComputedStyle(legendElement)
+        const fontSize = parseFloat(computedStyle.fontSize) || 12
+        const fontFamily = computedStyle.fontFamily || 'monospace'
+        const padding = parseFloat(computedStyle.padding) || 8
+
+        // Draw max value
+        const statsMax = legendElement.querySelector('#statsMax')
+        if (statsMax) {
+            ctx.fillStyle = '#000000'
+            ctx.font = `${fontSize}px ${fontFamily}`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
+            ctx.fillText(
+                statsMax.textContent || '',
+                legendX + legendWidth / 2,
+                legendY + padding
+            )
+        }
+
+        // Draw color palette
+        const palette = legendElement.querySelector('.palette')
+        if (palette) {
+            const paletteRect = palette.getBoundingClientRect()
+            const paletteX = paletteRect.left - mapRect.left
+            const paletteY = paletteRect.top - mapRect.top + textHeight
+            const paletteWidth = paletteRect.width
+
+            // Get all color divs
+            const colorDivs = Array.from(
+                palette.querySelectorAll('div')
+            ) as HTMLDivElement[]
+
+            // Draw each color div
+            let currentY = paletteY
+            for (const div of colorDivs) {
+                const divRect = div.getBoundingClientRect()
+                const divHeight = divRect.height
+                const style = div.getAttribute('style') || ''
+                const bgColorMatch = style.match(
+                    /background-color:\s*rgba?\(([^)]+)\)/
+                )
+
+                if (bgColorMatch) {
+                    const colorStr = bgColorMatch[1]
+                    const [r, g, b, a = 1] = colorStr
+                        .split(',')
+                        .map(s => parseFloat(s.trim()))
+
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
+                    ctx.fillRect(paletteX, currentY, paletteWidth, divHeight)
+                }
+
+                currentY += divHeight
+            }
+        }
+
+        // Draw min value
+        const statsMin = legendElement.querySelector('#statsMin')
+        if (statsMin) {
+            ctx.fillStyle = '#000000'
+            ctx.font = `${fontSize}px ${fontFamily}`
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'bottom'
+            ctx.fillText(
+                statsMin.textContent || '',
+                legendX + legendWidth / 2,
+                legendY + legendHeight - padding
+            )
         }
     }
 
@@ -677,7 +786,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                 this.pixelCoordinates = 'N/A'
                 return
             }
-            const val = Number(data[0]).toExponential(4)
+            const val = Number(data[0]).toExponential(3)
             const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
 
             this.pixelValue = val
@@ -735,14 +844,37 @@ export default class TerraTimeAverageMap extends TerraElement {
         const { default: colormap } = await import('colormap')
 
         const colors = colormap({ colormap: name, nshades: steps, format: 'rgba' })
+
+        const dataVals = []
+
         if (reverse) {
             colors.reverse()
         }
+
         for (let i = 0; i < steps; i++) {
             stops[i * 2] = min + i * delta
             stops[i * 2 + 1] = colors[i]
+
+            dataVals.push((min + i * delta).toExponential(2))
         }
+
+        this.generatePalette(colors, dataVals, min, max)
+
         return stops
+    }
+
+    generatePalette(clrs: any, dv: any, min: any, max: any) {
+        this.legendValues = []
+
+        for (let i = clrs.length - 1; i > 0; i--) {
+            const curVal = parseFloat(dv[i])
+            if (curVal >= min && curVal <= max) {
+                this.legendValues.push({ value: dv[i], rgb: clrs[i] })
+            }
+        }
+
+        this.min = min.toExponential(3)
+        this.max = max.toExponential(3)
     }
 
     #handleOpacityChange(e: any) {
@@ -1076,6 +1208,22 @@ export default class TerraTimeAverageMap extends TerraElement {
                                 >${this.pixelCoordinates}</span
                             >
                         </div>
+                    </div>
+
+                    <div id="legend">
+                        <div class="stats" id="statsMax">${this.max}</div>
+                        <div class="palette">
+                            ${this.legendValues.map(
+                                value => html`
+                                    <div
+                                        class="color-box"
+                                        style="background-color: rgba(${value.rgb})"
+                                        title="${value.value}"
+                                    ></div>
+                                `
+                            )}
+                        </div>
+                        <div class="stats" id="statsMin">${this.min}</div>
                     </div>
                 </div>
             </div>
