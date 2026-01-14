@@ -9,6 +9,37 @@ function escapeHtml(str) {
 }
 
 /**
+ * Converts Jupyter code block content to a JupyterLite URL.
+ * If the content is already a URL (starts with http:// or https://), returns it as-is.
+ * Otherwise, treats it as code and converts it to a JupyterLite URL with code parameters.
+ */
+function buildJupyterUrl(codeContent) {
+    const trimmed = codeContent.trim()
+
+    // If it's already a URL, use it as-is
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed
+    }
+
+    // Otherwise, treat it as code and build a JupyterLite URL
+    const baseUrl = 'https://gesdisc.github.io/jupyterlite/repl/index.html'
+    const lines = trimmed.split('\n').filter(line => line.trim().length > 0)
+
+    // Build URL parameters
+    const params = new URLSearchParams()
+    params.set('kernel', 'python')
+    params.set('toolbar', '1')
+    params.set('hideCodeInput', '1')
+
+    // Add each line as a separate code parameter
+    lines.forEach(line => {
+        params.append('code', line.trim())
+    })
+
+    return `${baseUrl}?${params.toString()}`
+}
+
+/**
  * Turns code fields with the :preview suffix into interactive code previews.
  */
 module.exports = function (doc, options) {
@@ -59,13 +90,16 @@ module.exports = function (doc, options) {
             code.getAttribute('class').includes(':preview:jupyter')
 
         let jupyterUrl = null
+        let jupyterCodeContent = null // Store original code content for display
         if (isJupyterOnly) {
-            // Jupyter-only preview: use content as URL or default
-            jupyterUrl = code.textContent.trim()
+            // Jupyter-only preview: convert content to JupyterLite URL
+            jupyterCodeContent = code.textContent.trim()
+            jupyterUrl = buildJupyterUrl(jupyterCodeContent)
             jupyterCode = code
         } else if (jupyterCode) {
-            // Separate Jupyter code block: use its content as URL
-            jupyterUrl = jupyterCode.textContent.trim()
+            // Separate Jupyter code block: convert content to JupyterLite URL
+            jupyterCodeContent = jupyterCode.textContent.trim()
+            jupyterUrl = buildJupyterUrl(jupyterCodeContent)
         }
 
         const sourceGroupId = `code-preview-source-group-${count}`
@@ -114,7 +148,10 @@ module.exports = function (doc, options) {
 
         const htmlPreviewContent = !isJupyterOnly ? code.textContent : ''
         const jupyterPreviewContent = jupyterUrl
-            ? `<iframe src="${escapeHtml(jupyterUrl)}" style="width: 100%; height: 600px; border: none;"></iframe>`
+            ? `<div class="code-preview__jupyter-banner">
+                <p>This is an embedded JupyterLite notebook. Please give it a few seconds to render.</p>
+              </div>
+              <iframe src="${escapeHtml(jupyterUrl)}" style="width: 100%; height: 600px; border: none;"></iframe>`
             : ''
 
         const codePreview = `
@@ -166,7 +203,7 @@ module.exports = function (doc, options) {
               jupyterUrl
                   ? `
             <div class="code-preview__source code-preview__source--jupyter" data-flavor="jupyter">
-              <pre><code class="language-text">${escapeHtml(jupyterUrl)}</code></pre>
+              <pre><code class="language-python">${escapeHtml(jupyterCodeContent || jupyterUrl)}</code></pre>
             </div>
           `
                   : ''

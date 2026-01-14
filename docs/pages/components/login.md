@@ -12,4 +12,11 @@ layout: component
 </terra-login>
 ```
 
+```jupyter
+%pip install -q "terra_ui_components" "anywidget"
+from terra_ui_components import TerraLogin
+login = TerraLogin()
+login
+```
+
 [component-metadata:terra-login]

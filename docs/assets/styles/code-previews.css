@@ -188,6 +188,22 @@
     display: none;
 }
 
+/* Jupyter banner styling */
+.code-preview__jupyter-banner {
+    background-color: var(--terra-color-primary-50);
+    border: 1px solid var(--terra-color-primary-200);
+    border-radius: 3px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.code-preview__jupyter-banner p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--terra-color-primary-700);
+    line-height: 1.5;
+}
+
 /* Jupyter iframe styling - only in preview area */
 .code-preview__preview-content[data-flavor='jupyter'] iframe {
     width: 100%;
