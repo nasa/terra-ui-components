@@ -673,6 +673,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         @terra-blur=${this._blur}
                         @keydown=${this._keydown}
                         resettable
+                        name="spatial"
                     >
                         <svg
                             slot="suffix"
@@ -731,6 +732,7 @@ export default class TerraSpatialPicker extends TerraElement {
                             this._click(e)
                         }}
                         resettable
+                        name="spatial"
                     >
                         <svg
                             slot="suffix"

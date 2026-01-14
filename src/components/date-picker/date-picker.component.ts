@@ -1778,6 +1778,7 @@ export default class TerraDatePicker extends TerraElement {
                                       @terra-blur=${this.handleStartInputBlur}
                                       @keydown=${this.handleKeydown}
                                       placeholder=${this.startPlaceholder}
+                                      name="start-date"
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1792,6 +1793,7 @@ export default class TerraDatePicker extends TerraElement {
                                       @terra-blur=${this.handleEndInputBlur}
                                       @keydown=${this.handleKeydown}
                                       placeholder=${this.endPlaceholder}
+                                      name="end-date"
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1806,6 +1808,7 @@ export default class TerraDatePicker extends TerraElement {
                                   placeholder=${this.placeholder}
                                   @terra-blur=${this.handleInputBlur}
                                   @keydown=${this.handleKeydown}
+                                  name="date"
                               >
                                   ${this.renderCalendarIcon()}
                               </terra-input>
@@ -1887,6 +1890,7 @@ export default class TerraDatePicker extends TerraElement {
                                       placeholder=${this.startPlaceholder}
                                       @terra-blur=${this.handleStartInputBlur}
                                       @keydown=${this.handleKeydown}
+                                      name="start-date"
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1911,6 +1915,7 @@ export default class TerraDatePicker extends TerraElement {
                                       placeholder=${this.endPlaceholder}
                                       @terra-blur=${this.handleEndInputBlur}
                                       @keydown=${this.handleKeydown}
+                                      name="end-date"
                                   >
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
@@ -1936,6 +1941,7 @@ export default class TerraDatePicker extends TerraElement {
                                   placeholder=${this.placeholder}
                                   @terra-blur=${this.handleInputBlur}
                                   @keydown=${this.handleKeydown}
+                                  name="date"
                               >
                                   ${this.renderCalendarIcon()}
                               </terra-input>
