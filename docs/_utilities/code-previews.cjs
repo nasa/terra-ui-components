@@ -32,6 +32,42 @@ module.exports = function (doc, options) {
                 ? pre.nextElementSibling
                 : null
         const reactCode = adjacentPre?.querySelector('code[class$="react"]')
+
+        // Check for Jupyter preview
+        // Option 1: Separate code block with "jupyter" class containing the URL
+        // Check in adjacent pre block first, then check further adjacent blocks
+        let jupyterCode = adjacentPre?.querySelector('code[class*="jupyter"]')
+        let jupyterPre = null
+        if (!jupyterCode && adjacentPre) {
+            // Check next adjacent pre block if first one didn't have Jupyter
+            let nextPre = adjacentPre.nextElementSibling
+            while (nextPre && nextPre.tagName.toLowerCase() === 'pre') {
+                jupyterCode = nextPre.querySelector('code[class*="jupyter"]')
+                if (jupyterCode) {
+                    jupyterPre = nextPre
+                    break
+                }
+                nextPre = nextPre.nextElementSibling
+            }
+        } else if (jupyterCode) {
+            jupyterPre = adjacentPre
+        }
+
+        // Option 2: Check if the current code block is a Jupyter-only preview
+        const isJupyterOnly =
+            code.getAttribute('class').includes('jupyter:preview') ||
+            code.getAttribute('class').includes(':preview:jupyter')
+
+        let jupyterUrl = null
+        if (isJupyterOnly) {
+            // Jupyter-only preview: use content as URL or default
+            jupyterUrl = code.textContent.trim()
+            jupyterCode = code
+        } else if (jupyterCode) {
+            // Separate Jupyter code block: use its content as URL
+            jupyterUrl = jupyterCode.textContent.trim()
+        }
+
         const sourceGroupId = `code-preview-source-group-${count}`
         const isExpanded = code.getAttribute('class').includes(':expanded')
         const noCodePen = code.getAttribute('class').includes(':no-codepen')
@@ -53,6 +89,12 @@ module.exports = function (doc, options) {
       </button>
     `
 
+        const jupyterButton = `
+      <button type="button" title="Show Jupyter Notebook" class="code-preview__button code-preview__button--jupyter">
+        Jupyter
+      </button>
+    `
+
         const codePenButton = `
       <button type="button" class="code-preview__button code-preview__button--codepen" title="Edit on CodePen">
         <svg
@@ -70,23 +112,43 @@ module.exports = function (doc, options) {
       </button>
     `
 
+        const htmlPreviewContent = !isJupyterOnly ? code.textContent : ''
+        const jupyterPreviewContent = jupyterUrl
+            ? `<iframe src="${escapeHtml(jupyterUrl)}" style="width: 100%; height: 600px; border: none;"></iframe>`
+            : ''
+
         const codePreview = `
-      <div class="code-preview ${isExpanded ? 'code-preview--expanded' : ''}">
+      <div class="code-preview ${isExpanded ? 'code-preview--expanded' : ''}" ${jupyterUrl ? 'data-has-jupyter="true"' : ''}>
         <div class="code-preview__preview">
-          ${code.textContent}
+          ${
+              !isJupyterOnly
+                  ? `<div class="code-preview__preview-content" data-flavor="html">${htmlPreviewContent}</div>`
+                  : ''
+          }
+          ${
+              jupyterUrl
+                  ? `<div class="code-preview__preview-content" data-flavor="jupyter">${jupyterPreviewContent}</div>`
+                  : ''
+          }
           <div class="code-preview__resizer">
             <terra-icon name="solid-bars-4" library="heroicons"></terra-icon>
           </div>
         </div>
 
         <div class="code-preview__source-group" id="${sourceGroupId}">
-          <div class="code-preview__source code-preview__source--html" ${
-              reactCode ? 'data-flavor="html"' : ''
-          }>
-            <pre><code class="language-html">${escapeHtml(
-                code.textContent
-            )}</code></pre>
-          </div>
+          ${
+              !isJupyterOnly
+                  ? `
+            <div class="code-preview__source code-preview__source--html" ${
+                reactCode || jupyterUrl ? 'data-flavor="html"' : ''
+            }>
+              <pre><code class="language-html">${escapeHtml(
+                  code.textContent
+              )}</code></pre>
+            </div>
+          `
+                  : ''
+          }
 
           ${
               reactCode
@@ -95,6 +157,16 @@ module.exports = function (doc, options) {
               <pre><code class="language-jsx">${escapeHtml(
                   reactCode.textContent
               )}</code></pre>
+            </div>
+          `
+                  : ''
+          }
+
+          ${
+              jupyterUrl
+                  ? `
+            <div class="code-preview__source code-preview__source--jupyter" data-flavor="jupyter">
+              <pre><code class="language-text">${escapeHtml(jupyterUrl)}</code></pre>
             </div>
           `
                   : ''
@@ -121,7 +193,9 @@ module.exports = function (doc, options) {
             </svg>
           </button>
 
-          ${reactCode ? ` ${htmlButton} ${reactButton} ` : ''}
+          ${!isJupyterOnly && (reactCode || jupyterUrl) ? ` ${htmlButton} ` : ''}
+          ${reactCode ? reactButton : ''}
+          ${jupyterUrl ? jupyterButton : ''}
 
           ${noCodePen ? '' : codePenButton}
         </div>
@@ -131,8 +205,43 @@ module.exports = function (doc, options) {
         pre.insertAdjacentHTML('afterend', codePreview)
         pre.remove()
 
+        // Remove pre blocks that were used for React or Jupyter
+        // We remove them so the code (URL) is not visible on the page
         if (adjacentPre) {
-            adjacentPre.remove()
+            const wasUsedForReact = reactCode?.closest('pre')?.isSameNode(adjacentPre)
+            const wasUsedForJupyter =
+                jupyterCode &&
+                !isJupyterOnly &&
+                jupyterCode.closest('pre')?.isSameNode(adjacentPre)
+
+            // Remove adjacentPre if it was used (we've already extracted the code)
+            // Exception: if it has React code, we might need to keep it, but actually we've extracted it too
+            if (wasUsedForReact || wasUsedForJupyter) {
+                adjacentPre.remove()
+            }
+        }
+
+        // Remove Jupyter code block if it was in a separate pre block (not Jupyter-only and not in adjacentPre)
+        // This ensures the URL text is not visible on the page
+        if (jupyterCode && !isJupyterOnly && !code.isSameNode(jupyterCode)) {
+            const jupyterCodePre = jupyterCode.closest('pre')
+            const wasInAdjacentPre =
+                adjacentPre && jupyterCodePre?.isSameNode(adjacentPre)
+
+            // Only remove if it's in a different pre block than adjacentPre (which was already removed above)
+            if (!wasInAdjacentPre && jupyterPre) {
+                jupyterPre.remove()
+            } else if (!wasInAdjacentPre) {
+                // Fallback: remove the pre containing jupyterCode if it wasn't already removed
+                const fallbackPre = jupyterCodePre
+                if (
+                    fallbackPre &&
+                    fallbackPre !== adjacentPre &&
+                    fallbackPre.parentNode
+                ) {
+                    fallbackPre.remove()
+                }
+            }
         }
     })
 
