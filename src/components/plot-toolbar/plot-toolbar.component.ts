@@ -472,7 +472,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               max="1"
                               step="0.01"
                               .value=${String(this.opacity)}
-                              @change=${this.#onShowOpacityChange}
+                              @input=${this.#onShowOpacityChange}
                           />
                           <span id="opacity-output">${this.opacity.toFixed(2)}</span>
                       </label>
