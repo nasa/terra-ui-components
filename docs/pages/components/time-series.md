@@ -43,6 +43,27 @@ layout: component
 </terra-login>
 ```
 
+## Disable Auto-fetch on Plot Interactions
+
+By default, the time series component automatically fetches new data when users zoom, pan, or interact with the plot. You can disable this behavior using the `disable-auto-fetch` attribute:
+
+```html:preview
+<terra-login style="width: 100%">
+    <span slot="loading">Loading...please wait</span>
+
+    <terra-time-series slot="logged-in"
+        collection="GPM_3IMERGHH_07"
+        variable="precipitation"
+        start-date="01/01/2019"
+        end-date="03/01/2019"
+        location="33.9375,-86.9375"
+        disable-auto-fetch
+    ></terra-time-series>
+
+    <p slot="logged-out">Please login to view this plot</p>
+</terra-login>
+```
+
 ```jsx:react
 import TerraTimeSeries from '@nasa-terra/components/dist/react/time-series'
 

@@ -103,6 +103,13 @@ export default class TerraTimeSeries extends TerraElement {
     @property({ attribute: 'application-citation' }) applicationCitation?: string
 
     /**
+     * When true, disables automatic data fetching when the user zooms, pans, or otherwise interacts with the plot.
+     * When disabled, the plot will only show the data for the initial date range and won't fetch new data on plot interactions.
+     */
+    @property({ type: Boolean, attribute: 'disable-auto-fetch' })
+    disableAutoFetch = false
+
+    /**
      * The token to be used for authentication with remote servers.
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
@@ -490,6 +497,11 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #handlePlotRelayout(e: TerraPlotRelayoutEvent) {
+        // If auto-fetch is disabled, don't update dates or trigger new data fetches
+        if (this.disableAutoFetch) {
+            return
+        }
+
         let changed = false
         if (e.detail.xAxisMin) {
             this.startDate = formatDate(e.detail.xAxisMin)
