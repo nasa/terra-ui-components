@@ -12,8 +12,8 @@ layout: component
     <span slot="loading">Loading...please wait</span>
 
     <terra-time-series slot="logged-in"
-        collection="NLDAS_FORA0125_H_2_0"
-        variable="LWdown"
+        collection="GPM_3IMERGHH_07"
+        variable="precipitation"
         start-date="01/01/2019"
         end-date="03/01/2019"
         location="33.9375,-86.9375"
@@ -31,8 +31,8 @@ layout: component
 
     <template slot="logged-in">
         <terra-time-series
-            collection="M2T1NXAER_5.12.4"
-            variable="BCCMASS"
+            collection="GPM_3IMERGHH_07"
+            variable="precipitation"
             start-date="01/01/2009"
             end-date="01/05/2009"
             location="62,5,95,40"

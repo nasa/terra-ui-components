@@ -17,7 +17,7 @@ import type {
     VariableDbEntry,
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
-import type { TimeInterval } from '../../types.js'
+import { TimeInterval } from '../../types.js'
 import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import {
@@ -199,14 +199,18 @@ export class TimeSeriesController {
 
         // We have gaps, so we'll need to request new data
         // We'll do this in chunks in case the number of data points exceeds the API-imposed limit
+        const detectedInterval = existingTerraData?.data
+            ? this.#detectTimeInterval(existingTerraData.data)
+            : null
+        const timeInterval =
+            detectedInterval ||
+            (this.host.catalogVariable!.dataProductTimeInterval as TimeInterval) ||
+            TimeInterval.Daily
+
         const allChunks: Array<{ start: Date; end: Date }> = []
 
         for (const gap of dataGaps) {
-            const chunks = calculateDateChunks(
-                this.host.catalogVariable!.dataProductTimeInterval as TimeInterval,
-                gap.start,
-                gap.end
-            )
+            const chunks = calculateDateChunks(timeInterval, gap.start, gap.end)
             allChunks.push(...chunks)
         }
 
@@ -631,14 +635,22 @@ export class TimeSeriesController {
      * Normalizes timestamp format to be consistent between point-based and area-averaged data
      * Point-based data format: "2013-11-28 23:30"
      * Area-averaged data format: "2009-01-01T00:30:00.000000000"
-     * This function converts area-averaged format to match point-based format
+     * This function converts both formats to ISO 8601 format while preserving full time resolution
      */
     #normalizeTimestamp(timestamp: string): string {
         try {
-            // Parse the timestamp and format it consistently
+            // Parse the timestamp
             const date = new Date(timestamp)
 
-            return formatDate(date)
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid timestamp:', timestamp)
+                return timestamp
+            }
+
+            // Format as ISO 8601 to preserve full time resolution
+            // This ensures sub-hourly, hourly, and daily data all maintain their precision
+            return date.toISOString()
         } catch (error) {
             // If parsing fails, return the original timestamp
             console.warn('Failed to normalize timestamp:', timestamp, error)
@@ -788,6 +800,78 @@ export class TimeSeriesController {
         } catch (error) {
             console.warn('Error clearing expired cache:', error)
         }
+    }
+
+    /**
+     * Detects the actual time interval from the data by analyzing timestamp differences
+     * Returns the detected TimeInterval or null if unable to determine
+     */
+    #detectTimeInterval(data: TimeSeriesDataRow[]): TimeInterval | null {
+        if (data.length < 2) {
+            return null
+        }
+
+        // Sort data by timestamp to ensure we're analyzing in order
+        const sortedData = [...data].sort(
+            (a, b) =>
+                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        )
+
+        // Calculate time differences between consecutive points
+        const intervals: number[] = []
+        for (let i = 1; i < Math.min(sortedData.length, 100); i++) {
+            const prevTime = new Date(sortedData[i - 1].timestamp).getTime()
+            const currTime = new Date(sortedData[i].timestamp).getTime()
+            const diffMs = currTime - prevTime
+            if (diffMs > 0) {
+                intervals.push(diffMs)
+            }
+        }
+
+        if (intervals.length === 0) {
+            return null
+        }
+
+        // Find the most common interval (mode)
+        const intervalCounts = new Map<number, number>()
+        intervals.forEach(interval => {
+            // Round to nearest minute to handle small variations
+            const rounded = Math.round(interval / (1000 * 60)) * (1000 * 60)
+            intervalCounts.set(rounded, (intervalCounts.get(rounded) || 0) + 1)
+        })
+
+        let mostCommonInterval = 0
+        let maxCount = 0
+        intervalCounts.forEach((count, interval) => {
+            if (count > maxCount) {
+                maxCount = count
+                mostCommonInterval = interval
+            }
+        })
+
+        // Convert milliseconds to TimeInterval
+        const MILLIS_IN_HOUR = 1000 * 60 * 60
+        const MILLIS_IN_DAY = MILLIS_IN_HOUR * 24
+
+        if (mostCommonInterval <= MILLIS_IN_HOUR / 2 + 60000) {
+            // 30 minutes or less (with 1 minute tolerance)
+            return TimeInterval.HalfHourly
+        } else if (mostCommonInterval <= MILLIS_IN_HOUR + 60000) {
+            // ~1 hour
+            return TimeInterval.Hourly
+        } else if (mostCommonInterval <= MILLIS_IN_HOUR * 3 + 60000) {
+            // ~3 hours
+            return TimeInterval.ThreeHourly
+        } else if (mostCommonInterval <= MILLIS_IN_DAY + 60000) {
+            // ~1 day
+            return TimeInterval.Daily
+        } else if (mostCommonInterval <= MILLIS_IN_DAY * 7 + 60000) {
+            // ~1 week
+            return TimeInterval.Weekly
+        }
+
+        // Default to daily if we can't determine
+        return TimeInterval.Daily
     }
 
     #getDataService() {
