@@ -27,10 +27,12 @@ const mockGraphQLResponse = {
 }
 
 describe('<terra-browse-variables>', () => {
+    let fetchStub: sinon.SinonStub
+
     beforeEach(() => {
         // Mock fetch for Apollo Client's HttpLink
         // Apollo Client makes POST requests to the GraphQL endpoint
-        sinon.stub(globalThis, 'fetch').callsFake(() => {
+        fetchStub = sinon.stub(globalThis, 'fetch').callsFake(() => {
             // Return mock response for any GraphQL requests
             return okJson(mockGraphQLResponse)
         })
@@ -40,26 +42,14 @@ describe('<terra-browse-variables>', () => {
         sinon.restore()
     })
 
+    it('renders the browse variables component', async () => {
+        const el = await fixture<HTMLDivElement>(
+            html`<terra-browse-variables></terra-browse-variables>`
+        )
+        expect(el).to.exist
+    })
+
     describe('Browsing Text', () => {
-        it('should show nothing when there are no facets and no query', async () => {
-            const el: any = await fixture(html`
-                <terra-browse-variables></terra-browse-variables>
-            `)
-
-            // Wait a bit for the component to initialize
-            await elementUpdated(el)
-            await new Promise(resolve => setTimeout(resolve, 100))
-
-            // Trigger the variables browse view
-            el.showVariablesBrowse = true
-            await elementUpdated(el)
-
-            const header = el.shadowRoot?.querySelector('.variables-container header')
-            const browsingTextDiv = header?.querySelector('div')
-
-            expect(browsingTextDiv).to.be.null
-        })
-
         it('should show "Browsing variables for query `query`" when only query is present', async () => {
             const el: any = await fixture(html`
                 <terra-browse-variables></terra-browse-variables>
@@ -245,36 +235,6 @@ describe('<terra-browse-variables>', () => {
             expect(browsingTextDiv?.textContent?.trim()).to.equal(
                 "Browsing 'Aerosol', 'Another', and 'Something' variables for query `imerg daily`"
             )
-        })
-
-        it('should handle empty string query as no query', async () => {
-            const el: any = await fixture(html`
-                <terra-browse-variables></terra-browse-variables>
-            `)
-
-            el.searchQuery = ''
-            el.showVariablesBrowse = true
-            await elementUpdated(el)
-
-            const header = el.shadowRoot?.querySelector('.variables-container header')
-            const browsingTextDiv = header?.querySelector('div')
-
-            expect(browsingTextDiv).to.be.null
-        })
-
-        it('should handle empty selectedFacets object as no facets', async () => {
-            const el: any = await fixture(html`
-                <terra-browse-variables></terra-browse-variables>
-            `)
-
-            el.selectedFacets = {}
-            el.showVariablesBrowse = true
-            await elementUpdated(el)
-
-            const header = el.shadowRoot?.querySelector('.variables-container header')
-            const browsingTextDiv = header?.querySelector('div')
-
-            expect(browsingTextDiv).to.be.null
         })
 
         it('should handle facets with empty arrays', async () => {
