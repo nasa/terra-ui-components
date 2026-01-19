@@ -3,6 +3,7 @@ meta:
     title: Login
     description:
 layout: component
+sidebarSection: Hidden
 ---
 
 ```html:preview
