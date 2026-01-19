@@ -271,14 +271,4 @@ export default class TerraEarthdataLogin extends TerraElement {
             }
         }
     }
-
-    #applyUserToMessage(message?: string) {
-        return (message ?? '')
-            .replace('{username}', this.#authController.state.user?.uid ?? '')
-            .replace(
-                '{first_name}',
-                this.#authController.state.user?.first_name ?? ''
-            )
-            .replace('{last_name}', this.#authController.state.user?.last_name ?? '')
-    }
 }
