@@ -44,8 +44,22 @@ export default class TerraEarthdataLogin extends TerraElement {
     @property({ attribute: 'loading-message' })
     loadingMessage?: string
 
-    @state() username: string = ''
-    @state() password: string = ''
+    @property()
+    username?: string
+
+    @property()
+    password?: string
+
+    @property({ attribute: 'hide-password-toggle', type: Boolean })
+    hidePasswordToggle = false
+
+    /**
+     * if true and the user has passed in a username and password, we will automatically log them in
+     * this is useful for Jupyter Notebooks where we may want to automatically log the user in when the component is rendered
+     */
+    @property({ attribute: 'auto-login', type: Boolean })
+    autoLogin = false
+
     @state() usernameError: string = ''
     @state() passwordError: string = ''
 
@@ -54,22 +68,18 @@ export default class TerraEarthdataLogin extends TerraElement {
 
     #authController = new AuthController(this)
 
-    render() {
-        if (this.#authController.state.user?.uid) {
-            // by default we don't show anything in the logged in slot, but if the user wants to show something
-            // they can use the logged-in slot
-            const template = this.querySelector<HTMLTemplateElement>(
-                'template[slot="logged-in"]'
-            )
+    firstUpdated(): void {
+        if (this.username && this.password) {
+            // user passed in a password, we should hide the toggle for security
+            this.hidePasswordToggle = true
 
-            return html`${template
-                ? template.content.cloneNode(true)
-                : html`<slot name="logged-in" .user=${this.#authController.state.user}
-                      >${this.#applyUserToMessage(this.loggedInMessage)}</slot
-                  >`}`
+            if (this.autoLogin) {
+                this.#authController.loginTask.run([this.username, this.password])
+            }
         }
+    }
 
-        // show the login form
+    render() {
         return html`
             <div class="login-container">
                 <div class="login-header">
@@ -88,74 +98,93 @@ export default class TerraEarthdataLogin extends TerraElement {
                     </a>
                 </div>
 
-                <form class="login-form" @submit=${this.#handleFormSubmit}>
-                    <terra-input
-                        id="username-input"
-                        label="Username"
-                        name="username"
-                        type="text"
-                        .value=${this.username}
-                        autocomplete="username"
-                        .errorText=${this.usernameError || ''}
-                        required
-                        @input=${this.#handleUsernameInput}
-                        @blur=${this.#validateUsername}
-                    ></terra-input>
+                ${this.#authController.state.user?.uid
+                    ? html`<div class="login-form">
+                          <p>
+                              ${this.#authController.state.user.first_name},<br />
+                              You've successfully authenticated with Earthdata Login!
+                          </p>
+                          <terra-button
+                              @click=${() => this.#authController.logout()}
+                              size="small"
+                              outline
+                              >Logout</terra-button
+                          >
+                      </div>`
+                    : html`
+                          <form class="login-form" @submit=${this.#handleFormSubmit}>
+                              <terra-input
+                                  id="username-input"
+                                  label="Username"
+                                  name="username"
+                                  type="text"
+                                  .value=${this.username}
+                                  ?disabled=${this.#authController.loginTask
+                                      .status === TaskStatus.PENDING}
+                                  autocomplete="username"
+                                  .errorText=${this.usernameError || ''}
+                                  required
+                                  @input=${this.#handleUsernameInput}
+                                  @blur=${this.#validateUsername}
+                              ></terra-input>
 
-                    <terra-input
-                        id="password-input"
-                        label="Password"
-                        name="password"
-                        type="password"
-                        autocomplete="current-password"
-                        password-toggle
-                        .value=${this.password}
-                        .errorText=${this.passwordError || ''}
-                        required
-                        @input=${this.#handlePasswordInput}
-                        @blur=${this.#validatePassword}
-                    ></terra-input>
+                              <terra-input
+                                  id="password-input"
+                                  label="Password"
+                                  name="password"
+                                  type="password"
+                                  autocomplete="current-password"
+                                  ?password-toggle=${!this.hidePasswordToggle}
+                                  ?disabled=${this.#authController.loginTask
+                                      .status === TaskStatus.PENDING}
+                                  .value=${this.password}
+                                  .errorText=${this.passwordError || ''}
+                                  required
+                                  @input=${this.#handlePasswordInput}
+                                  @blur=${this.#validatePassword}
+                              ></terra-input>
 
-                    <terra-button
-                        type="submit"
-                        variant="primary"
-                        class="login-button"
-                        ?disabled=${this.#authController.loginTask.status ===
-                        TaskStatus.PENDING}
-                    >
-                        ${this.#authController.loginTask.render({
-                            initial: () => html`Log in`,
-                            pending: () => html`Logging In...`,
-                            complete: () => html`Log in`,
-                            error: () => html`Log in`,
-                        })}
-                    </terra-button>
+                              <terra-button
+                                  type="submit"
+                                  variant="primary"
+                                  class="login-button"
+                                  ?disabled=${this.#authController.loginTask
+                                      .status === TaskStatus.PENDING}
+                              >
+                                  ${this.#authController.loginTask.render({
+                                      initial: () => html`Log in`,
+                                      pending: () => html`Logging In...`,
+                                      complete: () => html`Log in`,
+                                      error: () => html`Log in`,
+                                  })}
+                              </terra-button>
 
-                    ${this.#authController.state.error
-                        ? html`<div class="form-feedback">
-                              ${this.#authController.state.error}
-                              ${this.#authController.state.error ===
-                              'Invalid user credentials'
-                                  ? html`<p>
-                                        <a
-                                            class="link"
-                                            href="https://urs.earthdata.nasa.gov/retrieve_info"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            >Forgot username?</a
-                                        >
-                                        <a
-                                            class="link"
-                                            href="https://urs.earthdata.nasa.gov/reset_passwords/new"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            >Forgot password?</a
-                                        >
-                                    </p>`
-                                  : nothing}
-                          </div>`
-                        : ''}
-                </form>
+                              ${this.#authController.state.error
+                                  ? html`<div class="form-feedback">
+                                        ${this.#authController.state.error}
+                                        ${this.#authController.state.error ===
+                                        'Invalid user credentials'
+                                            ? html`<p>
+                                                  <a
+                                                      class="link"
+                                                      href="https://urs.earthdata.nasa.gov/retrieve_info"
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      >Forgot username?</a
+                                                  >
+                                                  <a
+                                                      class="link"
+                                                      href="https://urs.earthdata.nasa.gov/reset_passwords/new"
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      >Forgot password?</a
+                                                  >
+                                              </p>`
+                                            : nothing}
+                                    </div>`
+                                  : ''}
+                          </form>
+                      `}
             </div>
         `
     }
