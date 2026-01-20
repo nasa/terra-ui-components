@@ -75,7 +75,7 @@ class TerraEarthdataLogin(TerraBaseWidget):
 
         // listen for terra-login event and update the bearer token in the model
         component.addEventListener('terra-login', (e) => {
-            model.set('bearerToken', e.detail.token)
+            model.set('bearerToken', e.detail.token || '')
             model.save_changes()
         })
     }

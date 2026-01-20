@@ -104,12 +104,6 @@ export default class TerraEarthdataLogin extends TerraElement {
                               ${this.#authController.state.user.first_name},<br />
                               You've successfully authenticated with Earthdata Login!
                           </p>
-                          <terra-button
-                              @click=${() => this.#authController.logout()}
-                              size="small"
-                              outline
-                              >Logout</terra-button
-                          >
                       </div>`
                     : html`
                           <form class="login-form" @submit=${this.#handleFormSubmit}>
