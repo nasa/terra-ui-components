@@ -145,9 +145,9 @@ class TerraEarthdataLogin(TerraBaseWidget):
         except FileNotFoundError as err:
             raise LoginStrategyUnavailable(
                 f"No .netrc found at {netrc_loc}") from err
-        except NetrcParseError as err:
+        except Exception as err:
             raise LoginStrategyUnavailable(
-                f"Unable to parse .netrc file {netrc_loc}"
+                f"Problem parsing the .netrc file {netrc_loc}: {err}"
             ) from err
 
         creds = my_netrc['urs.earthdata.nasa.gov']

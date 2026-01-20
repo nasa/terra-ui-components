@@ -177,6 +177,13 @@ export default class TerraEarthdataLogin extends TerraElement {
                                             : nothing}
                                     </div>`
                                   : ''}
+                              <a
+                                  class="link register-link"
+                                  href="https://urs.earthdata.nasa.gov/users/new"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  >Register for a profile</a
+                              >
                           </form>
                       `}
             </div>

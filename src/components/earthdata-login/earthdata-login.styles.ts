@@ -163,6 +163,11 @@ export default css`
         margin-right: var(--terra-spacing-small);
     }
 
+    .register-link {
+        display: inline-block;
+        margin-top: var(--terra-spacing-small);
+    }
+
     @keyframes fade-out {
         0% {
             opacity: 1;
