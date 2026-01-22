@@ -1,11 +1,27 @@
 import importlib.metadata
 import traitlets
 from ..base import TerraBaseWidget
-import earthaccess
-from earthaccess.auth import netrc_path
-from earthaccess.exceptions import LoginStrategyUnavailable
 import os
-from tinynetrc import Netrc
+
+# Optional imports - check availability before using
+try:
+    import earthaccess
+    from earthaccess.auth import netrc_path
+    from earthaccess.exceptions import LoginStrategyUnavailable
+    EARTHACCESS_AVAILABLE = True
+except ImportError:
+    EARTHACCESS_AVAILABLE = False
+    earthaccess = None
+    netrc_path = None
+    LoginStrategyUnavailable = Exception
+
+try:
+    from tinynetrc import Netrc, NetrcParseError
+    TINYNETRC_AVAILABLE = True
+except ImportError:
+    TINYNETRC_AVAILABLE = False
+    Netrc = None
+    NetrcParseError = Exception
 
 try:
     __version__ = importlib.metadata.version("terra_earthdata_login")
@@ -95,6 +111,23 @@ class TerraEarthdataLogin(TerraBaseWidget):
     credentialsError = traitlets.Unicode('').tag(sync=True)
     autoLogin = traitlets.Bool(True).tag(sync=True)
 
+    def _check_dependencies(self):
+        """
+        Check if required dependencies are available and raise an error if not.
+        """
+        missing_deps = []
+        if not EARTHACCESS_AVAILABLE:
+            missing_deps.append("earthaccess")
+        if not TINYNETRC_AVAILABLE:
+            missing_deps.append("tinynetrc")
+        
+        if missing_deps:
+            deps_str = " and ".join(missing_deps)
+            raise ImportError(
+                f"The following required dependencies are not installed: {deps_str}. "
+                f"Please install them using: pip install {' '.join(missing_deps)}"
+            )
+
     @traitlets.default('username')
     def _default_username(self):
         """
@@ -121,6 +154,10 @@ class TerraEarthdataLogin(TerraBaseWidget):
         Whenever the bearer token changes, we want to login to earthaccess with the new token
         """
         if change["new"]:
+            if not EARTHACCESS_AVAILABLE:
+                raise ImportError(
+                    "earthaccess is not installed. Please install it using: pip install earthaccess"
+                )
             os.environ["EARTHDATA_TOKEN"] = change["new"]
             earthaccess.login(strategy='environment')
 
@@ -138,6 +175,14 @@ class TerraEarthdataLogin(TerraBaseWidget):
         """
         Get the default credentials from the .netrc file
         """
+        if not EARTHACCESS_AVAILABLE:
+            raise ImportError(
+                "earthaccess is not installed. Please install it using: pip install earthaccess"
+            )
+        if not TINYNETRC_AVAILABLE:
+            raise ImportError(
+                "tinynetrc is not installed. Please install it using: pip install tinynetrc"
+            )
         netrc_loc = netrc_path()
 
         try:
