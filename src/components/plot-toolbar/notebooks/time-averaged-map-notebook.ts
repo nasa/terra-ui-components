@@ -21,7 +21,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
         {
             id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
             cell_type: 'code',
-            source: '%pip install -q "terra_ui_components==0.0.136" "anywidget==0.9.15" "pandas" "rasterio" "matplotlib"',
+            source: '%pip install -q "terra_ui_components==0.0.137" "anywidget==0.9.15" "pandas" "rasterio" "matplotlib"',
             metadata: {
                 trusted: true,
             },
