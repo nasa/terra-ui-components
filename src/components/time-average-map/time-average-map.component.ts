@@ -1200,6 +1200,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                               show-date-range
                               .colormaps=${this.colormaps}
                               .colorMapName=${this.colorMapName}
+                              .opacity=${this.opacity}
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}
