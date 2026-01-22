@@ -54,3 +54,4 @@ export type {
     TerraCellClickedEvent,
     TerraCellValueChangedEvent,
 } from './terra-data-grid.js'
+export type { TerraPlotOptionsChangeEvent } from './terra-plot-options-change.js'

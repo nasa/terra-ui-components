@@ -39,5 +39,9 @@ layout: component
     document.querySelector('terra-time-average-map').addEventListener('terra-time-average-map-data-change', (e) => {
         console.log('caught! ', e)
     })
+
+    document.querySelector('terra-time-average-map').addEventListener('terra-plot-options-change', (e) => {
+        console.log('caught! ', e)
+    })
 </script>
 ```
