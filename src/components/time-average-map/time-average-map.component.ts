@@ -40,6 +40,7 @@ import { formatDate } from '../../utilities/date.js'
 import { Environment } from '../../utilities/environment.js'
 import type DataTileSource from 'ol/source/DataTile.js'
 import type DataTile from 'ol/DataTile.js'
+import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 
 export default class TerraTimeAverageMap extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -62,6 +63,7 @@ export default class TerraTimeAverageMap extends TerraElement {
     @property({ type: String }) long_name = ''
     @property({ type: String, attribute: 'color-map-name', reflect: true })
     colorMapName: string = 'viridis'
+    @property({ type: Number }) opacity = 1
 
     @state() catalogVariable: Variable
     @state() pixelValue: string = 'N/A'
@@ -162,6 +164,15 @@ export default class TerraTimeAverageMap extends TerraElement {
         this.#controller.jobStatusTask.run()
     }
 
+    @watch(['colorMapName', 'opacity'])
+    handlePlotOptionsChange() {
+        this.emit('terra-plot-options-change', {
+            detail: {
+                colorMapName: this.colorMapName,
+                opacity: this.opacity,
+            } as TimeAverageMapOptions,
+        })
+    }
     connectedCallback(): void {
         super.connectedCallback()
 
@@ -878,9 +889,9 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     #handleOpacityChange(e: any) {
-        var opacity_val = e.detail
+        this.opacity = e.detail
         if (this.#gtLayer) {
-            this.#gtLayer.setOpacity(opacity_val)
+            this.#gtLayer.setOpacity(this.opacity)
         }
     }
 
