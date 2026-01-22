@@ -111,6 +111,8 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'url-state', type: Boolean })
     urlState: boolean = false
 
+    @property({ attribute: 'help-text' }) helpText = ''
+
     @state()
     mapValue: any
 
@@ -674,6 +676,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         @keydown=${this._keydown}
                         resettable
                         name="spatial"
+                        .helpText=${this.helpText}
                     >
                         <svg
                             slot="suffix"
@@ -733,6 +736,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         }}
                         resettable
                         name="spatial"
+                        .helpText=${this.helpText}
                     >
                         <svg
                             slot="suffix"
