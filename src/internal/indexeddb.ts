@@ -11,7 +11,7 @@ export enum IndexedDbStores {
  * Get the indexedDB database
  */
 export async function getDb() {
-    return await openDB(DB_NAME, 2, {
+    return await openDB(DB_NAME, 3, {
         upgrade(db, oldVersion) {
             if (oldVersion < 1) {
                 db.createObjectStore(IndexedDbStores.TIME_SERIES, {
@@ -21,6 +21,15 @@ export async function getDb() {
 
             if (oldVersion < 2) {
                 db.createObjectStore(IndexedDbStores.TIME_AVERAGE_MAP, {
+                    keyPath: 'key',
+                })
+            }
+
+            if (oldVersion < 3) {
+                // an older version of the code had a bug where "hourly" data was being treated as "daily" data
+                // this migration will clear out any cached time series data to ensure any bad data is not cached
+                db.deleteObjectStore(IndexedDbStores.TIME_SERIES)
+                db.createObjectStore(IndexedDbStores.TIME_SERIES, {
                     keyPath: 'key',
                 })
             }
