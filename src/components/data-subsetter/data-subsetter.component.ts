@@ -1121,6 +1121,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         hide-label
                         has-shape-selector
                         hide-point-selection
+                        no-world-wrap
                         .initialValue=${spatialString}
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>

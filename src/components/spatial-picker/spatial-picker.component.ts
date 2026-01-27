@@ -96,6 +96,12 @@ export default class TerraSpatialPicker extends TerraElement {
     isExpanded: boolean = false
 
     /**
+     * Disables infinite horizontal scrolling on the map (world wrapping)
+     */
+    @property({ attribute: 'no-world-wrap', type: Boolean })
+    noWorldWrap: boolean = false
+
+    /**
      * Whether the map should be shown inline, or as part of the normal content flow
      * the default is false, the map is positioned absolute under the input
      */
@@ -651,6 +657,7 @@ export default class TerraSpatialPicker extends TerraElement {
             ?has-shape-selector=${this.hasShapeSelector}
             ?hide-bounding-box-selection=${this.hideBoundingBoxSelection}
             ?hide-point-selection=${this.hidePointSelection}
+            ?no-world-wrap=${this.noWorldWrap}
             @terra-map-change=${this._handleMapChange}
         >
         </terra-map>`
