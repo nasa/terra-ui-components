@@ -30,4 +30,10 @@ export default css`
     terra-spatial-picker::part(leaflet-edit) {
         display: none;
     }
+
+    .warning {
+        color: #dc2626;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
 `
