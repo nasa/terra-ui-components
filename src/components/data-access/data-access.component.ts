@@ -37,6 +37,8 @@ import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
 import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
+import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
+import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -583,7 +585,15 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     #handleJupyterNotebookClick() {
-        console.log('opening jupyter notebook ', this, this.#gridApi)
+        const notebook = getDataAccessNotebook(this)
+
+        console.log('Sending data to JupyterLite')
+
+        sendDataToJupyterNotebook('load-notebook', {
+            filename: `data_${this.shortName}_${this.version}.ipynb`,
+            notebook,
+            bearerToken: this.bearerToken,
+        })
     }
 
     #handleCloudCoverChange(event: TerraSliderChangeEvent) {
@@ -846,6 +856,7 @@ export default class TerraDataAccess extends TerraElement {
                               </terra-menu>
                           </terra-dropdown>
 
+                          <!--
                           <terra-button
                               outline
                               @click=${() => this.#handleJupyterNotebookClick()}
@@ -858,6 +869,7 @@ export default class TerraDataAccess extends TerraElement {
                               ></terra-icon>
                               Open in Jupyter Notebook
                           </terra-button>
+                            -->
                       </div>
                   `
                 : html`
@@ -913,6 +925,7 @@ export default class TerraDataAccess extends TerraElement {
                               </terra-menu>
                           </terra-dropdown>
 
+                          <!--
                           <terra-button
                               outline
                               @click=${() => this.#handleJupyterNotebookClick()}
@@ -925,6 +938,7 @@ export default class TerraDataAccess extends TerraElement {
                               ></terra-icon>
                               Open in Jupyter Notebook
                           </terra-button>
+                        -->
                       </div>
                   `}
         `
