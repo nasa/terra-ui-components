@@ -200,6 +200,13 @@ export default class TerraDataSubsetter extends TerraElement {
 
         this.selectedDateRange = { startDate, endDate }
 
+        // Set selectedFormat to first available format from collection, or fall back to default
+        if (this.collectionWithServices?.outputFormats?.length) {
+            this.selectedFormat = this.collectionWithServices.outputFormats[0]
+        } else {
+            this.selectedFormat = defaultSubsetFileMimeType
+        }
+
         this.collectionLoading = false
         this.collectionAccordionOpen = false
     }
@@ -503,9 +510,21 @@ export default class TerraDataSubsetter extends TerraElement {
             return html`
                 <div slot="footer" class="footer">
                     <button class="btn btn-secondary">Reset All</button>
-                    <button class="btn btn-primary" @click=${this.#getData}>
-                        Get Data
-                    </button>
+                    <div>
+                        <button class="btn btn-primary" @click=${this.#getData}>
+                            Get Data
+                        </button>
+                        ${this.jobId
+                            ? html`
+                                  <terra-button
+                                      variant="default"
+                                      @click=${this.#viewRunningJob}
+                                  >
+                                      View Running Job
+                                  </terra-button>
+                              `
+                            : nothing}
+                    </div>
                 </div>
             `
         }
@@ -648,9 +667,22 @@ export default class TerraDataSubsetter extends TerraElement {
                 ? html`
                       <div class="footer">
                           <button class="btn btn-secondary">Reset All</button>
-                          <button class="btn btn-primary" @click=${this.#getData}>
-                              Get Data
-                          </button>
+
+                          <div>
+                              <button class="btn btn-primary" @click=${this.#getData}>
+                                  Get Data
+                              </button>
+                              ${this.jobId
+                                  ? html`
+                                        <terra-button
+                                            variant="default"
+                                            @click=${this.#viewRunningJob}
+                                        >
+                                            View Running Job
+                                        </terra-button>
+                                    `
+                                  : nothing}
+                          </div>
                       </div>
                   `
                 : nothing}
@@ -1006,7 +1038,12 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #resetFormatSelection = () => {
-        this.selectedFormat = defaultSubsetFileMimeType
+        // Reset to first available format from collection, or fall back to default
+        if (this.collectionWithServices?.outputFormats?.length) {
+            this.selectedFormat = this.collectionWithServices.outputFormats[0]
+        } else {
+            this.selectedFormat = defaultSubsetFileMimeType
+        }
     }
 
     #getCollectionDateRange() {
@@ -1121,6 +1158,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         hide-label
                         has-shape-selector
                         hide-point-selection
+                        no-world-wrap
                         .initialValue=${spatialString}
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
@@ -1456,7 +1494,18 @@ export default class TerraDataSubsetter extends TerraElement {
     #renderJobStatus() {
         if (!this.controller.currentJob?.jobID) {
             return html`<div class="results-section" id="job-status-section">
-                <h2 class="results-title">Results:</h2>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
+                >
+                    <h2 class="results-title" style="margin: 0;">Results:</h2>
+                    <terra-button
+                        variant="default"
+                        size="small"
+                        @click=${this.#backToSubsetOptions}
+                    >
+                        ← Back to Subset Options
+                    </terra-button>
+                </div>
 
                 <div class="progress-container">
                     <div class="progress-text">
@@ -1475,7 +1524,18 @@ export default class TerraDataSubsetter extends TerraElement {
 
         return html`
             <div class="results-section" id="job-status-section">
-                <h2 class="results-title">Results:</h2>
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
+                >
+                    <h2 class="results-title" style="margin: 0;">Results:</h2>
+                    <terra-button
+                        variant="default"
+                        size="small"
+                        @click=${this.#backToSubsetOptions}
+                    >
+                        ← Back to Subset Options
+                    </terra-button>
+                </div>
 
                 ${this.controller.currentJob!.status !== 'canceled' &&
                 this.controller.currentJob!.status !== 'failed'
@@ -1816,7 +1876,15 @@ export default class TerraDataSubsetter extends TerraElement {
         this.controller.cancelCurrentJob()
         this.controller.currentJob = null
 
-        this.controller.jobStatusTask.run() // go ahead and create the new job and start polling
+        // Clear the jobId so we can create a new job
+        this.jobId = undefined
+
+        this.controller.jobStatusTask.run().then(() => {
+            // After job is created, update jobId
+            if (this.controller.currentJob?.jobID) {
+                this.jobId = this.controller.currentJob.jobID
+            }
+        })
 
         // scroll the job-status-section into view
         setTimeout(() => {
@@ -1970,6 +2038,24 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #refineParameters() {
         this.refineParameters = true
+    }
+
+    #backToSubsetOptions() {
+        this.refineParameters = true
+        // Scroll to the top of the component
+        setTimeout(() => {
+            const container = this.renderRoot.querySelector('.container')
+            container?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }, 100)
+    }
+
+    #viewRunningJob() {
+        this.refineParameters = false
+        // Scroll to job status section
+        setTimeout(() => {
+            const el = this.renderRoot.querySelector('#job-status-section')
+            el?.scrollIntoView({ behavior: 'smooth' })
+        }, 100)
     }
 
     #handleDownloadSelect(event: TerraSelectEvent) {

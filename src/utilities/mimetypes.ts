@@ -12,6 +12,13 @@ export function getFriendlyNameForMimeType(mimeType: string) {
         case 'application/netcdf':
             return 'NetCDF Classic (NetCDF-3)'
 
+        case 'text/csv':
+            return 'CSV'
+
+        case 'image/tiff':
+        case 'image/tif':
+            return 'TIFF'
+
         default:
             // don't know this mime type yet, just return it as is
             return mimeType

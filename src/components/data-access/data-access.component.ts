@@ -13,6 +13,7 @@ import {
 } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
 import { debounce } from '../../internal/debounce.js'
+import { watch } from '../../internal/watch.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
@@ -36,6 +37,8 @@ import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
 import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
+import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
+import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -73,6 +76,19 @@ export default class TerraDataAccess extends TerraElement {
 
     @property({ reflect: true, attribute: 'version' })
     version?: string
+
+    @state()
+    private _gridInitialized = false
+
+    @watch('shortName')
+    @watch('version')
+    handleCollectionChange() {
+        // Reset grid when collection changes
+        if (this._gridInitialized && this.isVisible) {
+            this._gridInitialized = false
+            this.firstVisible()
+        }
+    }
 
     /**
      * When true, the footer will be rendered with slot="footer" for use in a dialog.
@@ -152,14 +168,23 @@ export default class TerraDataAccess extends TerraElement {
         }
     }
 
-    firstVisible(): void {
+    async firstVisible(): Promise<void> {
+        // Wait for cloud cover range and sampling tasks to complete before initializing grid
+        // This prevents the race condition where the grid initializes before metadata is ready
+        await Promise.all([
+            this.#controller.cloudCoverRangeTask.taskComplete,
+            this.#controller.samplingTask.taskComplete,
+        ])
+
         this.#initializeGrid()
     }
 
     #initializeGrid() {
-        if (!this.gridRef.value) {
+        if (!this.gridRef.value || this._gridInitialized) {
             return
         }
+
+        this._gridInitialized = true
 
         const datasource: IDatasource = {
             rowCount: undefined, // behave as infinite scroll
@@ -560,7 +585,15 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     #handleJupyterNotebookClick() {
-        console.log('opening jupyter notebook ', this, this.#gridApi)
+        const notebook = getDataAccessNotebook(this)
+
+        console.log('Sending data to JupyterLite')
+
+        sendDataToJupyterNotebook('load-notebook', {
+            filename: `data_${this.shortName}_${this.version}.ipynb`,
+            notebook,
+            bearerToken: this.bearerToken,
+        })
     }
 
     #handleCloudCoverChange(event: TerraSliderChangeEvent) {
@@ -823,6 +856,7 @@ export default class TerraDataAccess extends TerraElement {
                               </terra-menu>
                           </terra-dropdown>
 
+                          <!--
                           <terra-button
                               outline
                               @click=${() => this.#handleJupyterNotebookClick()}
@@ -835,6 +869,7 @@ export default class TerraDataAccess extends TerraElement {
                               ></terra-icon>
                               Open in Jupyter Notebook
                           </terra-button>
+                            -->
                       </div>
                   `
                 : html`
@@ -890,6 +925,7 @@ export default class TerraDataAccess extends TerraElement {
                               </terra-menu>
                           </terra-dropdown>
 
+                          <!--
                           <terra-button
                               outline
                               @click=${() => this.#handleJupyterNotebookClick()}
@@ -902,6 +938,7 @@ export default class TerraDataAccess extends TerraElement {
                               ></terra-icon>
                               Open in Jupyter Notebook
                           </terra-button>
+                        -->
                       </div>
                   `}
         `

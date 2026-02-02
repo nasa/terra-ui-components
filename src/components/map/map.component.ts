@@ -73,6 +73,12 @@ export default class TerraMap extends TerraElement {
     @property({ type: Boolean })
     staticMode?: boolean = false
 
+    /**
+     * Disables infinite horizontal scrolling on the map (world wrapping)
+     */
+    @property({ attribute: 'no-world-wrap', type: Boolean })
+    noWorldWrap: boolean = false
+
     @property({ type: Array })
     value: any = []
 
@@ -114,6 +120,7 @@ export default class TerraMap extends TerraElement {
             hideBoundingBoxDrawTool: this.hideBoundingBoxSelection,
             hidePointSelectionDrawTool: this.hidePointSelection,
             staticMode: this.staticMode,
+            noWorldWrap: this.noWorldWrap,
         })
 
         this.map.on('draw', (layer: any) => {

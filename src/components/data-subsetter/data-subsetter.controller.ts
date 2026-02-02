@@ -101,14 +101,36 @@ export class DataSubsetterController {
                         }
                     )
                 } else {
+                    const isGiovanniFormat =
+                        this.#host.selectedFormat === 'text/csv' ||
+                        this.#host.selectedFormat === 'image/tiff'
+
+                    // For CSV/TIFF, use collectionEntryId format like time-average-map
+                    // For other formats, use collectionConceptId
+                    const collectionId = isGiovanniFormat
+                        ? `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}`
+                        : this.#host.collectionWithServices?.conceptId ?? ''
+
                     let subsetOptions = {
-                        collectionConceptId:
-                            this.#host.collectionWithServices?.conceptId ?? '',
-                        ...(this.#host.collectionWithServices?.variableSubset && {
-                            variableConceptIds: this.#host.selectedVariables.map(
-                                v => v.conceptId
-                            ),
-                        }),
+                        ...(isGiovanniFormat
+                            ? { collectionEntryId: collectionId }
+                            : { collectionConceptId: collectionId }),
+                        ...(this.#host.collectionWithServices?.variableSubset &&
+                            (isGiovanniFormat
+                                ? {
+                                      variableConceptIds: ['parameter_vars'],
+                                      variableEntryIds:
+                                          this.#host.selectedVariables.map(
+                                              v =>
+                                                  `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`
+                                          ),
+                                  }
+                                : {
+                                      variableConceptIds:
+                                          this.#host.selectedVariables.map(
+                                              v => v.conceptId
+                                          ),
+                                  })),
                         ...('w' in (this.#host.spatialSelection ?? {}) &&
                             this.#host.collectionWithServices?.bboxSubset && {
                                 boundingBox: this.#host
@@ -130,6 +152,13 @@ export class DataSubsetterController {
                                 ?.length && {
                                 format: this.#host.selectedFormat,
                             }),
+                        // Add Cloud Giovanni specific average parameters
+                        ...(this.#host.selectedFormat === 'text/csv' && {
+                            average: 'area',
+                        }),
+                        ...(this.#host.selectedFormat === 'image/tiff' && {
+                            average: 'time',
+                        }),
                         labels: [] as string[],
                     }
                     subsetOptions.labels = this.#buildJobLabels(subsetOptions) // Overwrite the empty labels

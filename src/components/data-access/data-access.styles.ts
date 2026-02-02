@@ -70,7 +70,7 @@ export default css`
         --terra-input-suffix-display: none;
         --terra-input-display: none;
 
-        width: 600px;
+        width: 0;
         position: absolute;
         top: 0;
         left: 0;
