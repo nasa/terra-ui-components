@@ -13,6 +13,8 @@ import { classMap } from 'lit/directives/class-map.js'
  * @since 1.0
  *
  * @slot - The chip's label.
+ * 
+ * @event terra-remove - emitted when the chip's close button is clicked
  *
  * @cssproperty --terra-chip-background-color - The background color of the chip.
  * @cssproperty --terra-chip-color - The text color of the chip.
@@ -38,35 +40,35 @@ export default class TerraChip extends TerraElement {
         return html`
             <div
                 class="${classMap({
-                    'chip--small': this.size === 'small',
-                    'chip--medium': this.size === 'medium',
-                    'chip--large': this.size === 'large',
-                })}
+            'chip--small': this.size === 'small',
+            'chip--medium': this.size === 'medium',
+            'chip--large': this.size === 'large',
+        })}
                 chip"
             >
                 <div
                     class="${classMap({
-                        'chip-content--small': this.size === 'small',
-                        'chip-content--medium': this.size === 'medium',
-                        'chip-content--large': this.size === 'large',
-                    })}
+            'chip-content--small': this.size === 'small',
+            'chip-content--medium': this.size === 'medium',
+            'chip-content--large': this.size === 'large',
+        })}
                     chip-content"
                 >
                     <slot part="content" class="tag__content"></slot>
                 </div>
                 ${this.closeable
-                    ? html`
+                ? html`
                           <button
                               class="chip-close"
                               @click="${this.#handleRemoveClick}"
                           >
                               <svg
                                   class="${classMap({
-                                      // Sizes
-                                      'chip-svg--small': this.size === 'small',
-                                      'chip-svg--medium': this.size === 'medium',
-                                      'chip-svg--large': this.size === 'large',
-                                  })}
+                    // Sizes
+                    'chip-svg--small': this.size === 'small',
+                    'chip-svg--medium': this.size === 'medium',
+                    'chip-svg--large': this.size === 'large',
+                })}
                         chip-svg"
                                   focusable="false"
                                   viewBox="0 0 500 500"
@@ -80,7 +82,7 @@ export default class TerraChip extends TerraElement {
                               </svg>
                           </button>
                       `
-                    : nothing}
+                : nothing}
             </div>
         `
     }
