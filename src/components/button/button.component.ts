@@ -163,6 +163,9 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     @property({ attribute: 'for-dialog' })
     forDialog?: string
 
+    /** The ARIA role for the button. Defaults to 'button'. */
+    @property({ reflect: true }) role: string | null = 'button'
+
     /** if button is used to control another element on the page, such as an accordion or dialog, this state communicates whether the controlled element is expanded */
     @state()
     expanded: boolean = false
@@ -203,10 +206,6 @@ export default class TerraButton extends TerraElement implements TerraFormContro
                 'terra-dialog-hide',
                 this.#handleDialogStateChange.bind(this)
             )
-        }
-
-        if (!this.role && this.isButton()) {
-            this.role = 'button'
         }
     }
 
