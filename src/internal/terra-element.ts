@@ -86,6 +86,10 @@ export default class TerraElement extends LitElement {
     @property() lang: string
     @property() environment?: Environment = Environment.PROD
     @property() bearerToken?: string
+
+    /** The ARIA role for the element. */
+    @property({ reflect: true }) role: string | null = null
+
     @state() isVisible: boolean = false
 
     #io?: IntersectionObserver
@@ -114,7 +118,7 @@ export default class TerraElement extends LitElement {
             return
         }
 
-        if (!("IntersectionObserver" in window)) {
+        if (!('IntersectionObserver' in window)) {
             // IntersectionObserver not supported, just assume visible
             this.isVisible = true
             this.firstVisible()
