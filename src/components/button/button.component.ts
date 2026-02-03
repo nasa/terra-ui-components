@@ -376,7 +376,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     /** Sets a custom validation message. Pass an empty string to restore validity. */
     setCustomValidity(message: string) {
         if (this.isButton()) {
-            ; (this.button as HTMLButtonElement).setCustomValidity(message)
+            ;(this.button as HTMLButtonElement).setCustomValidity(message)
             this.formControlController.updateValidity()
         }
     }
@@ -444,9 +444,10 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         })}
         ?disabled=${ifDefined(isLink ? undefined : this.disabled)}
         type=${ifDefined(isLink ? undefined : this.type)}
-        title=${this
+        title=${
+            this
                 .title /* An empty title prevents browser validation tooltips from appearing on hover */
-            }
+        }
         name=${ifDefined(isLink ? undefined : this.name)}
         value=${ifDefined(isLink ? undefined : this.value)}
         href=${ifDefined(isLink ? this.href : undefined)}
@@ -467,8 +468,9 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         <slot name="prefix" part="prefix" class="button__prefix"></slot>
         <slot part="label" class="button__label"></slot>
         <slot name="suffix" part="suffix" class="button__suffix">
-            ${this.variant == 'pagelink'
-                ? html`
+            ${
+                this.variant == 'pagelink'
+                    ? html`
                           <span>
                               <terra-icon
                                   name=${this.setPageLinkIcon(this.href)}
@@ -477,10 +479,11 @@ export default class TerraButton extends TerraElement implements TerraFormContro
                               ></terra-icon>
                           </span>
                       `
-                : ``
+                    : ``
             }
         </slot>
-        ${this.caret
+        ${
+            this.caret
                 ? html`
                       <span part="caret" class="button__caret">
                           <terra-icon
@@ -491,7 +494,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
                       </span>
                   `
                 : ''
-            }
+        }
       </${tag}>
     `
     }
