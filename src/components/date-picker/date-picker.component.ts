@@ -71,6 +71,10 @@ export default class TerraDatePicker extends TerraElement {
     @property() placeholder: string = 'Select Date'
     @property() startPlaceholder: string = 'Start Date'
     @property() endPlaceholder: string = 'End Date'
+    /** The ARIA role for the button. Defaults to 'group'. */
+    @property({ reflect: true }) role: string | null = 'group'
+    /** The ARIA label for the date picker. Defaults to 'Date picker'.*/
+    @property({ reflect: true, attribute: 'aria-label' }) ariaLabel: string | null = 'Date picker'
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()

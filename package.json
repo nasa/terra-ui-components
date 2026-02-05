@@ -71,7 +71,7 @@
   "dependencies": {
     "@apollo/client": "^3.13.8",
     "@floating-ui/dom": "^1.7.4",
-    "@lit/react": "^1.0.0",
+    "@lit/react": "^1.0.8",
     "@lit/task": "^1.0.0",
     "ag-grid-community": "^34.2.0",
     "apollo3-cache-persist": "^0.15.0",
