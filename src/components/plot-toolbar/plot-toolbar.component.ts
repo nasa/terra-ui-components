@@ -641,13 +641,26 @@ export default class TerraPlotToolbar extends TerraElement {
         )
     }
 
+    #showCheckBoxToggle = (e: Event) => {
+        const checkbox = e.target as HTMLInputElement;
+        const isChecked = checkbox.checked;
+
+        this.dispatchEvent(
+            new CustomEvent('show-check-box-toggle', {
+                detail: isChecked,
+                bubbles: true,
+                composed: true,
+            })
+        )
+    }
+
     #renderGeotiffPanel() {
         return html`
             <h3 class="sr-only">GeoTIFF Settings</h3>
 
             ${this.dataType === 'geotiff'
                 ? html`
-                      <p>Select opacity and apply colormaps</p>
+                      <p>Select opacity,apply colormaps, and toggle draw profile</p>
 
                       <label>
                           Layer opacity
@@ -669,16 +682,25 @@ export default class TerraPlotToolbar extends TerraElement {
                               @change=${this.#onColorMapChange}
                           >
                               ${this.colormaps.map(
-                                  cm =>
-                                      html` <option
+                    cm =>
+                        html` <option
                                           value="${cm}"
                                           ?selected=${cm === this.colorMapName}
                                       >
                                           ${cm}
                                       </option>`
-                              )}
+                )}
                           </select>
                       </label>
+        <label>
+        <input
+          type="checkbox"
+          @change=${this.#showCheckBoxToggle}
+        />
+        <slot>Draw Profile</slot>
+        </label>
+      </label>
+                
                   `
                 : nothing}
         `
@@ -695,7 +717,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 <dt>Variable Shortname</dt>
                 <dd>
                     ${this.catalogVariable.dataFieldShortName ??
-                    this.catalogVariable.dataFieldAccessName}
+            this.catalogVariable.dataFieldAccessName}
                 </dd>
 
                 <dt>Units</dt>
@@ -914,6 +936,7 @@ export default class TerraPlotToolbar extends TerraElement {
         return html`
             <h3 class="sr-only">Help Links</h3>
             <ul>
+                <slot name="help-links"></slot>
                 <li>
                     <a href="https://forum.earthdata.nasa.gov/viewforum.php?f=7&DAAC=3" rel"noopener noreffer">Earthdata User Forum
                         <terra-icon
@@ -933,9 +956,9 @@ export default class TerraPlotToolbar extends TerraElement {
             <a
                 href="#"
                 @click=${(e: Event) => {
-                    e.preventDefault()
-                    this.#handleJupyterNotebookClick()
-                }}
+                e.preventDefault()
+                this.#handleJupyterNotebookClick()
+            }}
             >
                 Open in Jupyter Notebook
                 <terra-icon

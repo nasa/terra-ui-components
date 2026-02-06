@@ -174,6 +174,7 @@ export default css`
     .variables-container aside {
         grid-area: aside;
         padding: 15px;
+        overflow-y: auto;
     }
 
     .variables-container aside details {
@@ -255,11 +256,11 @@ export default css`
     }
 
     .variable-list-item {
-        border: 0.0625em var(--terra-color-nasa-blue-tint) solid;
+        /* border: 0.0625em var(--terra-color-nasa-blue-tint) solid; */
         border-radius: 0.25em;
         background-color: var(--terra-color-carbon-10);
         padding: 0.5em 1em;
-        margin-bottom: 0.5em;
+        margin-bottom: 0.15em;
     }
 
     .variable-list-item:hover {
@@ -296,7 +297,7 @@ export default css`
     }
 
     .left-column {
-        overflow-y: auto;
+        /* overflow-y: auto; */
     }
 
     /* Right column (details panel) */
@@ -304,12 +305,9 @@ export default css`
         display: flex;
         flex-direction: column;
         background-color: var(--terra-color-blue-light);
-        border: 0.0625em solid var(--terra-color-nasa-blue-tint);
+        /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
-        box-shadow: 0 0.125em 0.25em rgb(0 0 0 / 0.075);
-        padding: 1rem;
-        overflow-y: auto;
     }
 
     .right-column h4 {
@@ -325,5 +323,12 @@ export default css`
     .placeholder {
         color: var(--terra-color-carbon-50);
         font-style: italic;
+    }
+
+    .sticky-element {
+        position: sticky;
+        /* For older browsers, consider adding: */
+        position: -webkit-sticky;
+        top: 0; /* Sticks to the top of the viewport when scrolled to */
     }
 `
