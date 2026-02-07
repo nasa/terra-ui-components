@@ -850,8 +850,8 @@ export default class TerraSpatialPicker extends TerraElement {
                         </svg>
                     </terra-input>
                     ${this.error
-                    ? html`<div class="spatial-picker__error">${this.error}</div>`
-                    : nothing}
+                        ? html`<div class="spatial-picker__error">${this.error}</div>`
+                        : nothing}
                     <div
                         class="spatial-picker__map-container spatial-picker__map-container--inline"
                     >
@@ -886,9 +886,9 @@ export default class TerraSpatialPicker extends TerraElement {
                         @terra-focus=${this._focus}
                         @keydown=${this._keydown}
                         @click=${(e: Event) => {
-                e.stopPropagation()
-                this._click(e)
-            }}
+                            e.stopPropagation()
+                            this._click(e)
+                        }}
                         resettable
                         name="spatial"
                         .helpText=${this.helpText}
@@ -918,8 +918,8 @@ export default class TerraSpatialPicker extends TerraElement {
                     </div>
                 </terra-dropdown>
                 ${this.error
-                ? html`<div class="spatial-picker__error">${this.error}</div>`
-                : nothing}
+                    ? html`<div class="spatial-picker__error">${this.error}</div>`
+                    : nothing}
             </div>
         `
     }

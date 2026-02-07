@@ -269,14 +269,14 @@ export default class TerraTimeSeries extends TerraElement {
         return html`
             <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
                 ${this.quotaExceededOpen
-                ? html`
+                    ? html`
                           <terra-alert
                               variant="warning"
                               duration="10000"
                               open=${this.quotaExceededOpen}
                               closable
                               @terra-after-hide=${() =>
-                        (this.quotaExceededOpen = false)}
+                                  (this.quotaExceededOpen = false)}
                           >
                               <terra-icon
                                   slot="icon"
@@ -291,16 +291,16 @@ export default class TerraTimeSeries extends TerraElement {
                               for further assistance.
                           </terra-alert>
                       `
-                : ''}
+                    : ''}
                 ${!this.hideToolbar
-                ? cache(
-                    this.catalogVariable
-                        ? html`<terra-plot-toolbar
+                    ? cache(
+                          this.catalogVariable
+                              ? html`<terra-plot-toolbar
                                     .catalogVariable=${this.catalogVariable}
                                     .plot=${this.plot}
                                     .timeSeriesData=${this.#timeSeriesController
-                                .lastTaskValue ??
-                            this.#timeSeriesController.emptyPlotData}
+                                        .lastTaskValue ??
+                                    this.#timeSeriesController.emptyPlotData}
                                     .location=${this.location}
                                     .startDate=${this.startDate}
                                     .endDate=${this.endDate}
@@ -312,11 +312,11 @@ export default class TerraTimeSeries extends TerraElement {
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
                                 </terra-plot-toolbar>`
-                        : html`<div class="spacer"></div>`
-                )
-                : nothing}
+                              : html`<div class="spacer"></div>`
+                      )
+                    : nothing}
                 ${this.#hasNoData()
-                ? html`
+                    ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="warning"
@@ -333,9 +333,9 @@ export default class TerraTimeSeries extends TerraElement {
                               more results.
                           </terra-alert>
                       `
-                : ''}
+                    : ''}
                 ${this.#isVariableNotFound()
-                ? html`
+                    ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="danger"
@@ -350,9 +350,9 @@ export default class TerraTimeSeries extends TerraElement {
                               The selected variable was not found in the catalog
                           </terra-alert>
                       `
-                : ''}
+                    : ''}
                 ${this.timeSeriesError
-                ? html`
+                    ? html`
                           <terra-alert
                               class="error-alert"
                               variant="danger"
@@ -368,56 +368,56 @@ export default class TerraTimeSeries extends TerraElement {
                               ${this.#getErrorMessage(this.timeSeriesError)}
                           </terra-alert>
                       `
-                : ''}
+                    : ''}
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
                     .data=${this.#timeSeriesController.lastTaskValue ??
-            this.#timeSeriesController.emptyPlotData}
+                    this.#timeSeriesController.emptyPlotData}
                     .layout="${{
-                xaxis: {
-                    title: 'Time',
-                    showgrid: false,
-                    zeroline: false,
-                    range:
-                        // manually set the range as we may adjust it when we fetch new data as a user pans/zooms the plot
-                        this.startDate && this.endDate
-                            ? [this.startDate, this.endDate]
-                            : undefined,
-                },
-                yaxis: {
-                    title: this.#getYAxisLabel(),
-                    showline: false,
-                },
-                title: {
-                    text:
-                        this.catalogVariable && this.location
-                            ? `${this.catalogVariable.dataProductShortName} @ ${this.location}`
-                            : null,
-                },
-            }}"
+                        xaxis: {
+                            title: 'Time',
+                            showgrid: false,
+                            zeroline: false,
+                            range:
+                                // manually set the range as we may adjust it when we fetch new data as a user pans/zooms the plot
+                                this.startDate && this.endDate
+                                    ? [this.startDate, this.endDate]
+                                    : undefined,
+                        },
+                        yaxis: {
+                            title: this.#getYAxisLabel(),
+                            showline: false,
+                        },
+                        title: {
+                            text:
+                                this.catalogVariable && this.location
+                                    ? `${this.catalogVariable.dataProductShortName} @ ${this.location}`
+                                    : null,
+                        },
+                    }}"
                     .config=${{
-                displayModeBar: true,
-                displaylogo: false,
-                modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
-                responsive: true,
-            }}
+                        displayModeBar: true,
+                        displaylogo: false,
+                        modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
+                        responsive: true,
+                    }}
                     @terra-plot-relayout=${this.#handlePlotRelayout}
                 ></terra-plot>
             </div>
 
             <dialog
                 ?open=${this.#timeSeriesController.task.status ===
-            TaskStatus.PENDING ||
-            this._fetchVariableTask.status === TaskStatus.PENDING}
+                    TaskStatus.PENDING ||
+                this._fetchVariableTask.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
 
                 ${this.#timeSeriesController.task.status === TaskStatus.PENDING
-                ? html`<p>
+                    ? html`<p>
                           Plotting ${this.catalogVariable?.dataFieldId}&hellip;
                       </p>`
-                : html`<p>Preparing plot&hellip;</p>`}
+                    : html`<p>Preparing plot&hellip;</p>`}
 
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
