@@ -10,7 +10,13 @@ import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 import { MapEventType } from '../map/type.js'
 import { parseBoundingBox } from '../map/leaflet-utils.js'
-import { marker, icon, latLngBounds, type LatLngExpression, type LatLng } from 'leaflet'
+import {
+    marker,
+    icon,
+    latLngBounds,
+    type LatLngExpression,
+    type LatLng,
+} from 'leaflet'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -609,7 +615,10 @@ export default class TerraSpatialPicker extends TerraElement {
                     const bounds = event.detail.bounds
 
                     // Validate bounds are within spatial constraints
-                    if (constraints && !this._isBoundsInsideBounds(bounds, constraints)) {
+                    if (
+                        constraints &&
+                        !this._isBoundsInsideBounds(bounds, constraints)
+                    ) {
                         this._rejectDraw(
                             'Selected area extends outside the allowed spatial extent.'
                         )
@@ -635,7 +644,10 @@ export default class TerraSpatialPicker extends TerraElement {
                     const latLng = event.detail.latLng
 
                     // Validate point is within spatial constraints
-                    if (constraints && !this._isPointInsideBounds(latLng, constraints)) {
+                    if (
+                        constraints &&
+                        !this._isPointInsideBounds(latLng, constraints)
+                    ) {
                         this._rejectDraw(
                             'Selected point is outside the allowed spatial extent.'
                         )
@@ -750,8 +762,8 @@ export default class TerraSpatialPicker extends TerraElement {
                         </svg>
                     </terra-input>
                     ${this.error
-                    ? html`<div class="spatial-picker__error">${this.error}</div>`
-                    : nothing}
+                        ? html`<div class="spatial-picker__error">${this.error}</div>`
+                        : nothing}
                     <div
                         class="spatial-picker__map-container spatial-picker__map-container--inline"
                     >
@@ -786,9 +798,9 @@ export default class TerraSpatialPicker extends TerraElement {
                         @terra-focus=${this._focus}
                         @keydown=${this._keydown}
                         @click=${(e: Event) => {
-                e.stopPropagation()
-                this._click(e)
-            }}
+                            e.stopPropagation()
+                            this._click(e)
+                        }}
                         resettable
                         name="spatial"
                         .helpText=${this.helpText}
@@ -818,8 +830,8 @@ export default class TerraSpatialPicker extends TerraElement {
                     </div>
                 </terra-dropdown>
                 ${this.error
-                ? html`<div class="spatial-picker__error">${this.error}</div>`
-                : nothing}
+                    ? html`<div class="spatial-picker__error">${this.error}</div>`
+                    : nothing}
             </div>
         `
     }
