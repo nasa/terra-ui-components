@@ -10,7 +10,13 @@ import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 import { MapEventType } from '../map/type.js'
 import { parseBoundingBox } from '../map/leaflet-utils.js'
-import { marker, icon, latLngBounds, type LatLngExpression, type LatLng } from 'leaflet'
+import {
+    marker,
+    icon,
+    latLngBounds,
+    type LatLngExpression,
+    type LatLng,
+} from 'leaflet'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -296,6 +302,94 @@ export default class TerraSpatialPicker extends TerraElement {
             this._updateURLParam(null)
             return
         }
+        if (event.key === 'Enter') {
+            event.preventDefault()
+            this._validateAndSetValue()
+            // Blur the input after validation
+            if (this.terraInput) {
+                this.terraInput.blur()
+            }
+        }
+    }
+
+    private _blur() {
+        this._validateAndSetValue()
+    }
+
+    private _parseSpatialInput(input: string): any {
+        // Parse input in format: "west, south, east, north" for bounding boxes
+        // or "lat, lng" for points
+
+        const coords = input.split(',').map(c => c.trim())
+
+        if (coords.length === 2) {
+            // Point format: "lat, lng"
+            const lat = parseFloat(coords[0])
+            const lng = parseFloat(coords[1])
+
+            if (isNaN(lat) || isNaN(lng)) {
+                throw new Error(
+                    'All parts of the input string must be valid numbers.'
+                )
+            }
+
+            return { lat, lng }
+        }
+
+        if (coords.length !== 4) {
+            throw new Error('Input must contain exactly 2 or 4 numbers')
+        }
+
+        const [west, south, east, north] = coords.map(c => parseFloat(c))
+
+        // Check if values are valid numbers
+        if (coords.some(c => isNaN(parseFloat(c)))) {
+            throw new Error('All parts of the input string must be valid numbers.')
+        }
+
+        // Convert "west, south, east, north" to Leaflet format: [[south, west], [north, east]]
+        // Leaflet expects [[southwest], [northeast]] where each is [lat, lng]
+        return [
+            [south, west], // southwest corner [lat, lng]
+            [north, east], // northeast corner [lat, lng]
+        ]
+    }
+
+    private _validateCoordinateRange(parsed: any): boolean {
+        // Validate that coordinates are within valid ranges
+        // Latitude: -90 to 90
+        // Longitude: -180 to 180
+
+        if ('lat' in parsed && 'lng' in parsed) {
+            // It's a point
+            const lat = parsed.lat
+            const lng = parsed.lng
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                return false
+            }
+        } else if (Array.isArray(parsed) && parsed.length === 2) {
+            // It's a bounding box
+            // Format: [[south, west], [north, east]]
+            const [[south, west], [north, east]] = parsed
+            if (
+                south < -90 ||
+                south > 90 ||
+                west < -180 ||
+                west > 180 ||
+                north < -90 ||
+                north > 90 ||
+                east < -180 ||
+                east > 180
+            ) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private _validateAndSetValue() {
+        const inputValue = this.terraInput?.value || ''
 
         // If both hide flags are true, skip validation
         if (this.hidePointSelection && this.hideBoundingBoxSelection) {
@@ -609,7 +703,10 @@ export default class TerraSpatialPicker extends TerraElement {
                     const bounds = event.detail.bounds
 
                     // Validate bounds are within spatial constraints
-                    if (constraints && !this._isBoundsInsideBounds(bounds, constraints)) {
+                    if (
+                        constraints &&
+                        !this._isBoundsInsideBounds(bounds, constraints)
+                    ) {
                         this._rejectDraw(
                             'Selected area extends outside the allowed spatial extent.'
                         )
@@ -635,7 +732,10 @@ export default class TerraSpatialPicker extends TerraElement {
                     const latLng = event.detail.latLng
 
                     // Validate point is within spatial constraints
-                    if (constraints && !this._isPointInsideBounds(latLng, constraints)) {
+                    if (
+                        constraints &&
+                        !this._isPointInsideBounds(latLng, constraints)
+                    ) {
                         this._rejectDraw(
                             'Selected point is outside the allowed spatial extent.'
                         )

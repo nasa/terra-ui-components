@@ -594,10 +594,11 @@ export default class TerraDatePicker extends TerraElement {
             // Split by ' - ' (with spaces)
             const parts = value.split(' - ')
             if (parts.length !== 2) {
-                const message = 'Date range must be in format: YYYY-MM-DD - YYYY-MM-DD'
+                const message =
+                    'Date range must be in format: YYYY-MM-DD - YYYY-MM-DD'
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -609,7 +610,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = 'Invalid start date format'
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -617,7 +618,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = 'Invalid end date format'
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -640,7 +641,7 @@ export default class TerraDatePicker extends TerraElement {
                     const message = `Start date must be on or after ${this.minDate}`
                     input.setCustomValidity(message)
                     this.emit('terra-date-selection-invalid', {
-                        detail: { message }
+                        detail: { message },
                     })
                     return
                 }
@@ -651,7 +652,7 @@ export default class TerraDatePicker extends TerraElement {
                     const message = `End date must be on or before ${this.maxDate}`
                     input.setCustomValidity(message)
                     this.emit('terra-date-selection-invalid', {
-                        detail: { message }
+                        detail: { message },
                     })
                     return
                 }
@@ -668,7 +669,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = 'Invalid date format'
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -682,7 +683,7 @@ export default class TerraDatePicker extends TerraElement {
                     const message = `Date must be on or after ${this.minDate}`
                     input.setCustomValidity(message)
                     this.emit('terra-date-selection-invalid', {
-                        detail: { message }
+                        detail: { message },
                     })
                     return
                 }
@@ -693,7 +694,7 @@ export default class TerraDatePicker extends TerraElement {
                     const message = `Date must be on or before ${this.maxDate}`
                     input.setCustomValidity(message)
                     this.emit('terra-date-selection-invalid', {
-                        detail: { message }
+                        detail: { message },
                     })
                     return
                 }
@@ -723,7 +724,7 @@ export default class TerraDatePicker extends TerraElement {
             const message = 'Invalid date format'
             input.setCustomValidity(message)
             this.emit('terra-date-selection-invalid', {
-                detail: { message }
+                detail: { message },
             })
             return
         }
@@ -737,7 +738,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = `Date must be on or after ${this.minDate}`
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -748,7 +749,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = `Date must be on or before ${this.maxDate}`
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -759,7 +760,7 @@ export default class TerraDatePicker extends TerraElement {
             const message = 'Start date must be before end date'
             input.setCustomValidity(message)
             this.emit('terra-date-selection-invalid', {
-                detail: { message }
+                detail: { message },
             })
             return
         }
@@ -786,7 +787,7 @@ export default class TerraDatePicker extends TerraElement {
             const message = 'Invalid date format'
             input.setCustomValidity(message)
             this.emit('terra-date-selection-invalid', {
-                detail: { message }
+                detail: { message },
             })
             return
         }
@@ -800,7 +801,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = `Date must be on or after ${this.minDate}`
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -811,7 +812,7 @@ export default class TerraDatePicker extends TerraElement {
                 const message = `Date must be on or before ${this.maxDate}`
                 input.setCustomValidity(message)
                 this.emit('terra-date-selection-invalid', {
-                    detail: { message }
+                    detail: { message },
                 })
                 return
             }
@@ -822,7 +823,7 @@ export default class TerraDatePicker extends TerraElement {
             const message = 'End date must be after start date'
             input.setCustomValidity(message)
             this.emit('terra-date-selection-invalid', {
-                detail: { message }
+                detail: { message },
             })
             return
         }
@@ -1040,8 +1041,8 @@ export default class TerraDatePicker extends TerraElement {
         if (this.isDisabled(date)) {
             this.emit('terra-date-selection-invalid', {
                 detail: {
-                    message: `You are not allowed to select dates outside ${this.minDate} to ${this.maxDate}.`
-                }
+                    message: `You are not allowed to select dates outside ${this.minDate} to ${this.maxDate}.`,
+                },
             })
             return
         }
@@ -1088,8 +1089,8 @@ export default class TerraDatePicker extends TerraElement {
         if (!this.isPresetWithinBounds({ startDate, endDate })) {
             this.emit('terra-date-selection-invalid', {
                 detail: {
-                    message: `The preset "${preset.label}" is not available within the allowed date range ${this.minDate} to ${this.maxDate}.`
-                }
+                    message: `The preset "${preset.label}" is not available within the allowed date range ${this.minDate} to ${this.maxDate}.`,
+                },
             })
             return
         }
