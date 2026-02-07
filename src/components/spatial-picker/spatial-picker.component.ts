@@ -2,6 +2,7 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './spatial-picker.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import TerraMap from '../map/map.component.js'
+import TerraInput from '../input/input.component.js'
 import { html, nothing } from 'lit'
 import { parseBoundingBox, StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { property, query, state } from 'lit/decorators.js'
@@ -20,6 +21,7 @@ export default class TerraSpatialPicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-map': TerraMap,
+        'terra-input': TerraInput,
     }
 
     /**
@@ -113,8 +115,11 @@ export default class TerraSpatialPicker extends TerraElement {
     @state()
     private _popoverFlipped: boolean = false
 
-    @query('.spatial-picker__input')
-    spatialInput: HTMLInputElement
+    private ignoreClickOutside = false
+    private boundHandleClickOutside: ((event: MouseEvent) => void) | null = null
+
+    @query('terra-input')
+    terraInput: TerraInput
 
     @query('terra-map')
     map: TerraMap
@@ -126,7 +131,9 @@ export default class TerraSpatialPicker extends TerraElement {
         try {
             this.mapValue = parseBoundingBox(value)
             this.error = ''
-
+            if (this.terraInput) {
+                this.terraInput.value = value
+            }
             this._emitMapChange()
         } catch (error) {
             this.error =
@@ -136,10 +143,17 @@ export default class TerraSpatialPicker extends TerraElement {
         }
     }
 
-    private _blur(e: FocusEvent) {
+    private _input() {
+        // Handle input changes - update the value as user types
+        const value = this.terraInput?.value || ''
+        // Don't validate on every keystroke, just update the value
+        this.initialValue = value
+    }
+
+    private _blur() {
         try {
-            this.mapValue = this.spatialInput.value
-                ? parseBoundingBox(this.spatialInput.value)
+            this.mapValue = this.terraInput?.value
+                ? parseBoundingBox(this.terraInput.value)
                 : []
 
             this.error = ''
@@ -151,12 +165,31 @@ export default class TerraSpatialPicker extends TerraElement {
         }
 
         this._emitMapChange()
+    }
 
-        // Don't hide if clicking within the map component
-        const relatedTarget = e.relatedTarget as HTMLElement
-        if (!relatedTarget?.closest('terra-map')) {
-            this.close()
+    private handleClickOutside(event: MouseEvent) {
+        if (this.ignoreClickOutside) {
+            this.ignoreClickOutside = false
+            return
         }
+
+        // Don't close if the picker is not expanded
+        if (!this.isExpanded) {
+            return
+        }
+
+        const target = event.target as Node
+        // Don't close if clicking within the component or the map container
+        if (
+            this.contains(target) ||
+            this.spatialPicker
+                ?.querySelector('.spatial-picker__map-container')
+                ?.contains(target)
+        ) {
+            return
+        }
+
+        this.close()
     }
 
     private _focus() {
@@ -165,7 +198,8 @@ export default class TerraSpatialPicker extends TerraElement {
         }
     }
 
-    private _click() {
+    private _click(e: Event) {
+        e.stopPropagation()
         if (this.isExpanded) {
             this.close()
         } else {
@@ -310,12 +344,38 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     open() {
+        // Set flag immediately to prevent any click-outside handler from closing it
+        this.ignoreClickOutside = true
+
+        // Add listener before opening to catch the current click event
+        if (!this.boundHandleClickOutside) {
+            this.boundHandleClickOutside = this.handleClickOutside.bind(this)
+            document.addEventListener('click', this.boundHandleClickOutside)
+        }
+
         this.isExpanded = true
         this._checkPopoverPosition()
+
+        // Reset the flag after a short delay to allow the opening click to be ignored
+        setTimeout(() => {
+            this.ignoreClickOutside = false
+        }, 0)
     }
 
     close() {
         this.isExpanded = false
+        if (this.boundHandleClickOutside) {
+            document.removeEventListener('click', this.boundHandleClickOutside)
+            this.boundHandleClickOutside = null
+        }
+    }
+
+    setOpen(open: boolean) {
+        if (open) {
+            this.open()
+        } else {
+            this.close()
+        }
     }
 
     private _updateURLParam(value: string | null) {
@@ -333,7 +393,9 @@ export default class TerraSpatialPicker extends TerraElement {
     private _handleMapChange(event: CustomEvent) {
         switch (event.detail.cause) {
             case 'clear':
-                this.spatialInput.value = ''
+                if (this.terraInput) {
+                    this.terraInput.value = ''
+                }
                 this._updateURLParam(null)
                 break
 
@@ -341,10 +403,14 @@ export default class TerraSpatialPicker extends TerraElement {
                 let stringified = ''
                 if (event.detail.bounds) {
                     stringified = StringifyBoundingBox(event.detail.bounds)
-                    this.spatialInput.value = stringified
+                    if (this.terraInput) {
+                        this.terraInput.value = stringified
+                    }
                 } else if (event.detail.latLng) {
                     stringified = StringifyBoundingBox(event.detail.latLng)
-                    this.spatialInput.value = stringified
+                    if (this.terraInput) {
+                        this.terraInput.value = stringified
+                    }
                 }
                 this._updateURLParam(stringified)
                 break
@@ -363,7 +429,10 @@ export default class TerraSpatialPicker extends TerraElement {
         if (spatialParam) {
             valueToApply = spatialParam
             this.initialValue = spatialParam
-            this.spatialInput.value = spatialParam
+            this.mapValue = parseBoundingBox(spatialParam)
+            if (this.terraInput) {
+                this.terraInput.value = spatialParam
+            }
         } else if (this.initialValue) {
             valueToApply = this.initialValue
         }
@@ -404,6 +473,10 @@ export default class TerraSpatialPicker extends TerraElement {
     disconnectedCallback() {
         super.disconnectedCallback()
         window.removeEventListener('resize', this._handleResize.bind(this))
+        if (this.boundHandleClickOutside) {
+            document.removeEventListener('click', this.boundHandleClickOutside)
+            this.boundHandleClickOutside = null
+        }
     }
 
     renderMap() {
@@ -431,47 +504,38 @@ export default class TerraSpatialPicker extends TerraElement {
         const expanded = this.inline ? true : this.isExpanded
         return html`
             <div class="spatial-picker">
-                <label
-                    for="spatial-picker__input"
-                    class=${this.hideLabel
-                ? 'sr-only'
-                : 'spatial-picker__input_label'}
-                    >${this.label}</label
+                <terra-input
+                    .label=${this.label}
+                    .hideLabel=${this.hideLabel}
+                    .value=${this.initialValue}
+                    placeholder="${this.spatialConstraints}"
+                    aria-controls="map"
+                    aria-expanded=${expanded}
+                    @terra-input=${this._input}
+                    @terra-blur=${this._blur}
+                    @terra-focus=${this._focus}
+                    @click=${(e: Event) => {
+                e.stopPropagation()
+                this._click(e)
+            }}
                 >
-                <div class="spatial-picker__input_fields">
-                    <input
-                        id="spatial-picker__input"
-                        value=${this.initialValue}
-                        type="text"
-                        class="spatial-picker__input form-control"
-                        placeholder="${this.spatialConstraints}"
-                        aria-controls="map"
-                        aria-expanded=${expanded}
-                        @blur=${this._blur}
-                        @focus=${this._focus}
-                    />
-                    <terra-button
-                        shape="square-left"
-                        class="spatial-picker__input_icon_button"
+                    <svg
+                        slot="suffix"
+                        class="spatial-picker__input_icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
                         @click=${this._click}
-                        type="button"
                     >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke-width="1.5"
-                            stroke="currentColor"
-                            class="w-6 h-6"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
-                            />
-                        </svg>
-                    </terra-button>
-                </div>
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
+                        />
+                    </svg>
+                </terra-input>
                 ${this.error
                 ? html`<div class="spatial-picker__error">${this.error}</div>`
                 : nothing}
@@ -483,6 +547,7 @@ export default class TerraSpatialPicker extends TerraElement {
                           style="${this.inline
                         ? 'position: static; width: 100%;'
                         : ''}"
+                          @click=${(e: Event) => e.stopPropagation()}
                       >
                           ${this.renderMap()}
                       </div>`

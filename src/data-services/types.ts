@@ -37,6 +37,8 @@ export interface CollectionWithAvailableServices {
 }
 
 export interface Collection {
+    ShortName: string
+    Version: string
     granuleCount: number
     EntryTitle: string
     SpatialExtent: {

@@ -14,6 +14,7 @@ import {
 } from '../../data-services/types.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
+import TerraInput from '../input/input.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { getBasePath } from '../../utilities/base-path.js'
@@ -24,14 +25,15 @@ import {
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
-import type { LatLng } from 'leaflet'
+import { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
-import { TaskStatus } from '@lit/task'
 import TerraLoader from '../loader/loader.component.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import { getNotebook } from './notebooks/subsetter-notebook.js'
+import TerraDataAccess from '../data-access/data-access.component.js'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -52,13 +54,21 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-accordion': TerraAccordion,
         'terra-date-picker': TerraDatePicker,
         'terra-icon': TerraIcon,
+        'terra-input': TerraInput,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-login': TerraLogin,
         'terra-loader': TerraLoader,
+        'terra-data-access': TerraDataAccess,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
+
+    @property({ reflect: true, attribute: 'short-name' })
+    shortName?: string
+
+    @property({ reflect: true, attribute: 'version' })
+    version?: string
 
     @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
     showCollectionSearch?: boolean = true
@@ -80,6 +90,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     expandedVariableGroups: Set<string> = new Set()
+
+    @state()
+    variableFilterText: string = ''
 
     @state()
     touchedFields: Set<string> = new Set()
@@ -130,6 +143,9 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     collectionAccordionOpen: boolean = true
 
+    @state()
+    dataAccessMode: 'original' | 'subset' = 'original'
+
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
@@ -140,6 +156,13 @@ export default class TerraDataSubsetter extends TerraElement {
     jobIdChanged() {
         if (this.jobId) {
             this.controller.fetchJobByID(this.jobId)
+        }
+    }
+
+    @watch(['shortName', 'version'])
+    shortNameAndVersionChanged() {
+        if (this.shortName && this.version) {
+            this.collectionEntryId = `${this.shortName}_${this.version}`
         }
     }
 
@@ -208,9 +231,22 @@ export default class TerraDataSubsetter extends TerraElement {
                 : nothing}
                 </div>
 
-                ${showJobStatus
-                ? this.#renderJobStatus()
-                : this.#renderSubsetOptions()}
+                <div class="section">${this.#renderDataAccessModeSelection()}</div>
+
+                ${this.dataAccessMode === 'original'
+                ? html`
+                          <div class="section">
+                              <terra-data-access
+                                  short-name=${this.shortName ??
+                    this.collectionWithServices?.collection?.ShortName}
+                                  version=${this.version ??
+                    this.collectionWithServices?.collection?.Version}
+                              ></terra-data-access>
+                          </div>
+                      `
+                : showJobStatus
+                    ? this.#renderJobStatus()
+                    : this.#renderSubsetOptions()}
             </div>
         `
     }
@@ -269,54 +305,58 @@ export default class TerraDataSubsetter extends TerraElement {
             spatialExtent &&
             spatialExtent.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
-        if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
-            return html`<terra-loader indeterminate></terra-loader>`
-        }
-
         return html`
-            ${hasSubsetOption && estimates
-                ? this.#renderSizeInfo(estimates)
-                : nothing}
-            ${this.showCollectionSearch
-                ? html`
-                      <div class="section">
-                          <h2 class="section-title">
-                              Select Data Collection
-                              <span class="help-icon">?</span>
-                          </h2>
+            ${this.dataAccessMode === 'original'
+                ? nothing
+                : hasSubsetOption
+                    ? html`
+                        ${hasSubsetOption && estimates
+                            ? this.#renderSizeInfo(estimates)
+                            : nothing}
+                        ${this.showCollectionSearch
+                            ? html`
+                                  <div class="section">
+                                      <h2 class="section-title">
+                                          Select Data Collection
+                                          <span class="help-icon">?</span>
+                                      </h2>
 
-                          ${this.#renderSearchForCollection()}
-                      </div>
-                  `
-                : nothing}
-            ${hasSubsetOption
-                ? html`
-                      <div class="section">
-                          <h2 class="section-title">
-                              Method Options
-                              <span class="help-icon">?</span>
-                          </h2>
+                                      ${this.#renderSearchForCollection()}
+                                  </div>
+                              `
+                            : nothing}
+                        <div class="section">
+                            <h2 class="section-title">
+                                Subset Options
+                                <span class="help-icon">?</span>
+                            </h2>
+                            <p style="color: #666; margin-bottom: 16px;">
+                                Generate file links supporting geo-spatial search and
+                                crop, selection of variables and dimensions, selection
+                                of time of day, and data presentation, in netCDF or
+                                HDF-EOS5 formats.
+                            </p>
 
-                          ${this.collectionWithServices?.temporalSubset
-                        ? this.#renderDateRangeSelection()
-                        : nothing}
-                          ${this.#hasSpatialSubset()
-                        ? this.#renderSpatialSelection()
-                        : nothing}
-                          ${this.collectionWithServices?.variableSubset
-                        ? this.#renderVariableSelection()
-                        : nothing}
-                      </div>
-                  `
-                : html`
-                      ${showTemporalSection &&
-                        !this.collectionWithServices?.temporalSubset
-                        ? this.#renderAvailableTemporalRangeSection()
-                        : nothing}
-                      ${showSpatialSection && !this.#hasSpatialSubset()
-                        ? this.#renderAvailableSpatialRangeSection()
-                        : nothing}
-                  `}
+                            ${this.collectionWithServices?.temporalSubset
+                            ? this.#renderDateRangeSelection()
+                            : nothing}
+                            ${this.#hasSpatialSubset()
+                            ? this.#renderSpatialSelection()
+                            : nothing}
+                            ${this.collectionWithServices?.variableSubset
+                            ? this.#renderVariableSelection()
+                            : nothing}
+                        </div>
+                    `
+                    : html`
+                        ${showTemporalSection &&
+                            !this.collectionWithServices?.temporalSubset
+                            ? this.#renderAvailableTemporalRangeSection()
+                            : nothing}
+                        ${showSpatialSection && !this.#hasSpatialSubset()
+                            ? this.#renderAvailableSpatialRangeSection()
+                            : nothing}
+                    `}
             ${this.collectionWithServices?.outputFormats?.length && hasSubsetOption
                 ? html`
                       <div class="section">
@@ -342,13 +382,16 @@ export default class TerraDataSubsetter extends TerraElement {
                       </div>
                   `
                 : nothing}
-
-            <div class="footer">
-                <button class="btn btn-secondary">Reset All</button>
-                <button class="btn btn-primary" @click=${this.#getData}>
-                    Get Data
-                </button>
-            </div>
+            ${this.dataAccessMode === 'subset'
+                ? html`
+                      <div class="footer">
+                          <button class="btn btn-secondary">Reset All</button>
+                          <button class="btn btn-primary" @click=${this.#getData}>
+                              Get Data
+                          </button>
+                      </div>
+                  `
+                : nothing}
         `
     }
 
@@ -655,24 +698,20 @@ export default class TerraDataSubsetter extends TerraElement {
                     </button>
                 </div>
 
-                <div style="display: flex; gap: 16px;">
+                <div style="width: 300px">
                     <terra-date-picker
-                        label="Start Date"
                         allow-input
-                        class="w-full"
+                        inline
+                        range
+                        split-inputs
+                        show-presets
+                        start-label="Start Date"
+                        end-label="End Date"
                         .minDate=${defaultStartDate}
-                        .maxDate=${endDate}
-                        .defaultDate=${startDate}
-                        @terra-change=${this.#handleStartDateChange}
-                    ></terra-date-picker>
-                    <terra-date-picker
-                        label="End Date"
-                        allow-input
-                        class="w-full"
-                        .minDate=${startDate}
                         .maxDate=${defaultEndDate}
-                        .defaultDate=${endDate}
-                        @terra-change=${this.#handleEndDateChange}
+                        .startDate=${this.selectedDateRange.startDate}
+                        .endDate=${this.selectedDateRange.endDate}
+                        @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
                 </div>
 
@@ -691,23 +730,12 @@ export default class TerraDataSubsetter extends TerraElement {
         `
     }
 
-    #handleStartDateChange = (e: CustomEvent) => {
+    #handleDateChange = (e: TerraDateRangeChangeEvent) => {
         this.#markFieldTouched('date')
-        const datePicker = e.currentTarget as TerraDatePicker
-
         this.selectedDateRange = {
             ...this.selectedDateRange,
-            startDate: datePicker.selectedDates.startDate,
-        }
-    }
-
-    #handleEndDateChange = (e: CustomEvent) => {
-        this.#markFieldTouched('date')
-        const datePicker = e.currentTarget as TerraDatePicker
-
-        this.selectedDateRange = {
-            ...this.selectedDateRange,
-            endDate: datePicker.selectedDates.startDate,
+            startDate: e.detail.startDate,
+            endDate: e.detail.endDate,
         }
     }
 
@@ -767,6 +795,26 @@ export default class TerraDataSubsetter extends TerraElement {
         if (boundingRects && !Array.isArray(boundingRects)) {
             boundingRects = [boundingRects]
         }
+
+        let spatialString = ''
+
+        // convert spatial to string
+        if (this.spatialSelection instanceof LatLng) {
+            spatialString = `${this.spatialSelection.lat}, ${this.spatialSelection.lng}`
+        } else if (this.spatialSelection instanceof LatLngBounds) {
+            spatialString = `${this.spatialSelection.getSouthWest().lat}, ${this.spatialSelection.getSouthWest().lng}, ${this.spatialSelection.getNorthEast().lat}, ${this.spatialSelection.getNorthEast().lng}`
+        } else if (
+            this.spatialSelection &&
+            'w' in this.spatialSelection &&
+            's' in this.spatialSelection &&
+            'e' in this.spatialSelection &&
+            'n' in this.spatialSelection
+        ) {
+            spatialString = `${this.spatialSelection.w}, ${this.spatialSelection.s}, ${this.spatialSelection.e}, ${this.spatialSelection.n}`
+        } else if (this.spatialSelection) {
+            spatialString = this.spatialSelection
+        }
+
         return html`
             <terra-accordion
                 @terra-accordion-toggle=${this.#handleRegionAccordionToggle}
@@ -783,20 +831,11 @@ export default class TerraDataSubsetter extends TerraElement {
                 ? html`<span class="accordion-value error"
                               >Please select a region</span
                           >`
-                : this.spatialSelection && 'w' in this.spatialSelection
+                : spatialString
                     ? html`<span class="accordion-value"
-                                >${this.spatialSelection.w},${this.spatialSelection
-                            .s},${this.spatialSelection.e},${this
-                                .spatialSelection.n}</span
+                                >${spatialString}</span
                             >`
-                    : this.spatialSelection &&
-                        'lat' in this.spatialSelection &&
-                        'lng' in this.spatialSelection
-                        ? html`<span class="accordion-value"
-                                  >${this.spatialSelection.lat},${this
-                                .spatialSelection.lng}</span
-                              >`
-                        : nothing}
+                    : nothing}
                     <button class="reset-btn" @click=${this.#resetSpatialSelection}>
                         Reset
                     </button>
@@ -808,7 +847,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         hide-label
                         has-shape-selector
                         hide-point-selection
-                        .initialValue=${this.spatialSelection ?? ''}
+                        .initialValue=${spatialString}
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
                     ${boundingRects &&
@@ -891,6 +930,17 @@ export default class TerraDataSubsetter extends TerraElement {
                     </button>
                 </div>
                 <div class="accordion-content">
+                    <terra-input
+                        label="Filter variables"
+                        placeholder="Search by variable name..."
+                        .value=${this.variableFilterText}
+                        @input=${(e: Event) => {
+                const input = e.target as HTMLInputElement
+                this.variableFilterText = input.value
+                this.#handleVariableFilterChange()
+            }}
+                        style="margin-bottom: 10px;"
+                    ></terra-input>
                     <button
                         class="reset-btn"
                         style="margin-bottom: 10px;"
@@ -902,10 +952,98 @@ export default class TerraDataSubsetter extends TerraElement {
                 ? html`<p style="color: #666; font-style: italic;">
                               No variables available for this collection.
                           </p>`
-                : this.#renderVariableTree(tree, [])}
+                : this.#renderVariableTree(
+                    this.#filterVariableTree(tree),
+                    []
+                )}
                 </div>
             </terra-accordion>
         `
+    }
+
+    #filterVariableTree(tree: Record<string, any>): Record<string, any> {
+        if (!this.variableFilterText.trim()) {
+            return tree
+        }
+
+        const filterText = this.variableFilterText.toLowerCase().trim()
+
+        const filterNode = (node: Record<string, any>): Record<string, any> => {
+            const result: Record<string, any> = {}
+            for (const [key, value] of Object.entries(node)) {
+                if (value.__isLeaf) {
+                    // Check if variable name matches filter
+                    const variableName = value.__variable.name.toLowerCase()
+                    if (variableName.includes(filterText)) {
+                        result[key] = value
+                    }
+                } else {
+                    // Recursively filter children
+                    const filteredChildren = filterNode(value.__children)
+                    // Include group if it has matching children or if group name matches
+                    if (
+                        Object.keys(filteredChildren).length > 0 ||
+                        key.toLowerCase().includes(filterText)
+                    ) {
+                        result[key] = {
+                            ...value,
+                            __children: filteredChildren,
+                        }
+                    }
+                }
+            }
+            return result
+        }
+
+        return filterNode(tree)
+    }
+
+    #handleVariableFilterChange() {
+        if (!this.variableFilterText.trim()) {
+            return
+        }
+
+        const variables = this.collectionWithServices?.variables || []
+        const tree = this.#buildVariableTree(variables)
+        const filterText = this.variableFilterText.toLowerCase().trim()
+
+        // Find all groups that contain matching variables and auto-expand them
+        const groupsToExpand = new Set<string>()
+
+        const findMatchingGroups = (
+            node: Record<string, any>,
+            path: string[] = []
+        ) => {
+            for (const [key, value] of Object.entries(node)) {
+                if (value.__isLeaf) {
+                    const variableName = value.__variable.name.toLowerCase()
+                    if (variableName.includes(filterText)) {
+                        // Add all parent groups to the expand set
+                        for (let i = 0; i < path.length; i++) {
+                            const groupPath = path.slice(0, i + 1).join('/')
+                            groupsToExpand.add(groupPath)
+                        }
+                    }
+                } else {
+                    const groupPath = [...path, key].join('/')
+                    findMatchingGroups(value.__children, [...path, key])
+                    // Also check if group name matches
+                    if (key.toLowerCase().includes(filterText)) {
+                        groupsToExpand.add(groupPath)
+                    }
+                }
+            }
+        }
+
+        findMatchingGroups(tree)
+
+        // Update expanded groups
+        if (groupsToExpand.size > 0) {
+            this.expandedVariableGroups = new Set([
+                ...this.expandedVariableGroups,
+                ...groupsToExpand,
+            ])
+        }
     }
 
     #buildVariableTree(variables: Variable[]): Record<string, any> {
@@ -1621,9 +1759,14 @@ export default class TerraDataSubsetter extends TerraElement {
 
         const content = (await response.text())
             .replace(/{{jobId}}/gi, this.controller.currentJob!.jobID)
-            .replace(/{{HARMONY_ENV}}/gi, `Environment.${this.environment?.toUpperCase()}`)
-            .replace(/{{EARTHACCESS_ENV}}/gi, `earthaccess.${this.environment?.toUpperCase()}`)
-
+            .replace(
+                /{{HARMONY_ENV}}/gi,
+                `Environment.${this.environment?.toUpperCase()}`
+            )
+            .replace(
+                /{{EARTHACCESS_ENV}}/gi,
+                `earthaccess.${this.environment?.toUpperCase()}`
+            )
 
         const blob = new Blob([content], { type: 'text/plain' })
         const url = URL.createObjectURL(blob)
@@ -1740,6 +1883,54 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
                 <div style="font-size: 0.95em; color: #666;">
                     This collection does not support spatial subsetting.
+                </div>
+            </div>
+        `
+    }
+
+    #renderDataAccessModeSelection() {
+        return html`
+            <div class="mode-selection">
+                <div class="mode-options">
+                    <label
+                        class="mode-option ${this.dataAccessMode === 'original'
+                ? 'selected'
+                : ''}"
+                    >
+                        <input
+                            type="radio"
+                            name="data-access-mode"
+                            value="original"
+                            .checked=${this.dataAccessMode === 'original'}
+                            @change=${() => (this.dataAccessMode = 'original')}
+                        />
+                        <div class="mode-content">
+                            <div class="mode-title">Get Original Files</div>
+                            <div class="mode-description">
+                                Filter file links directly from the archive.
+                            </div>
+                        </div>
+                    </label>
+
+                    <label
+                        class="mode-option ${this.dataAccessMode === 'subset'
+                ? 'selected'
+                : ''}"
+                    >
+                        <input
+                            type="radio"
+                            name="data-access-mode"
+                            value="subset"
+                            .checked=${this.dataAccessMode === 'subset'}
+                            @change=${() => (this.dataAccessMode = 'subset')}
+                        />
+                        <div class="mode-content">
+                            <div class="mode-title">Subset Data</div>
+                            <div class="mode-description">
+                                Subset the data to your specific needs.
+                            </div>
+                        </div>
+                    </label>
                 </div>
             </div>
         `
