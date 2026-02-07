@@ -1,0 +1,177 @@
+import importlib.metadata
+import traitlets
+from ..base import TerraBaseWidget
+import earthaccess
+from earthaccess.auth import netrc_path
+from earthaccess.exceptions import LoginStrategyUnavailable
+import os
+from tinynetrc import Netrc
+
+try:
+    __version__ = importlib.metadata.version("terra_earthdata_login")
+except importlib.metadata.PackageNotFoundError:
+    __version__ = "unknown"
+
+
+class TerraEarthdataLogin(TerraBaseWidget):
+    _esm = TerraBaseWidget.get_autoloader() + """
+    function render({ model, el }) {
+        const cell = el.closest('.lm-Widget');
+        if (cell && cell.classList.contains('jp-mod-outputsScrolled')) {
+            cell.classList.remove('jp-mod-outputsScrolled');
+        }
+
+        // create an instance of the component
+        let component = document.createElement('terra-earthdata-login')
+        
+        /**
+         * Set initial property values
+         * NOTE: In reality, we won't need to have the ability to set EVERY property in a Jupyter Notebook, feel free to remove the ones that don't make sense
+         *
+         * model.get() pulls from the Jupyter notebooks state. We'll use the state to set the initial value for each property
+         */
+        component.loggedInMessage = model.get('loggedInMessage')
+        component.loggedOutMessage = model.get('loggedOutMessage')
+        component.loadingMessage = model.get('loadingMessage')
+        component.username = model.get('username')
+        component.password = model.get('password')
+        component.autoLogin = model.get('autoLogin')
+
+        /**
+         * add the component to the cell
+         * it should now be visible in the notebook!
+         */
+        el.appendChild(component)
+
+
+        /**
+         * Set up property change handlers
+         * This way if someone in the Jupyter Notebook changes the property externally, we reflect the change
+         * back to the component.
+         * 
+         * If this isn't here, the component can't be changed after it's initial render
+         */
+        model.on('change:loggedInMessage', () => {
+            component.loggedInMessage = model.get('loggedInMessage')
+        })
+        model.on('change:loggedOutMessage', () => {
+            component.loggedOutMessage = model.get('loggedOutMessage')
+        })
+        model.on('change:loadingMessage', () => {
+            component.loadingMessage = model.get('loadingMessage')
+        })
+        model.on('change:username', () => {
+            component.username = model.get('username')
+        })
+        model.on('change:password', () => {
+            component.password = model.get('password')
+        })
+        model.on('change:autoLogin', () => {
+            component.autoLogin = model.get('autoLogin')
+        })
+        model.on('change:credentialsError', () => {
+            console.log('credentialsError: ', model.get('credentialsError'))
+        })
+
+        // listen for terra-login event and update the bearer token in the model
+        component.addEventListener('terra-login', (e) => {
+            model.set('bearerToken', e.detail.token || '')
+            model.save_changes()
+        })
+    }
+
+    export default { render };
+    """
+
+    # Component properties
+    # While we have properties in the component, we also need to tell Python about them as well.
+    # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
+    loggedInMessage = traitlets.Unicode('').tag(sync=True)
+    loggedOutMessage = traitlets.Unicode('').tag(sync=True)
+    loadingMessage = traitlets.Unicode('').tag(sync=True)
+    bearerToken = traitlets.Unicode('').tag(sync=True)
+    username = traitlets.Unicode().tag(sync=True)
+    password = traitlets.Unicode().tag(sync=True)
+    credentialsError = traitlets.Unicode('').tag(sync=True)
+    autoLogin = traitlets.Bool(True).tag(sync=True)
+
+    @traitlets.default('username')
+    def _default_username(self):
+        """
+        Get the default username from the .netrc file or environment variable
+        """
+        username, password = self._get_default_credentials()
+        if username is not None:
+            return username
+        return ''
+
+    @traitlets.default('password')
+    def _default_password(self):
+        """
+        Get the default password from the .netrc file or environment variable
+        """
+        username, password = self._get_default_credentials()
+        if password is not None:
+            return password
+        return ''
+
+    @traitlets.observe("bearerToken")
+    def _observe_bearer_token(self, change):
+        """
+        Whenever the bearer token changes, we want to login to earthaccess with the new token
+        """
+        if change["new"]:
+            os.environ["EARTHDATA_TOKEN"] = change["new"]
+            earthaccess.login(strategy='environment')
+
+    def _get_default_credentials(self):
+        """
+        Get the default credentials from the .netrc file
+        """
+        try:
+            return self._get_default_credentials_from_netrc()
+        except Exception as e:
+            self.credentialsError = str(e)
+            return self._get_default_credentials_from_environment()
+
+    def _get_default_credentials_from_netrc(self):
+        """
+        Get the default credentials from the .netrc file
+        """
+        netrc_loc = netrc_path()
+
+        try:
+            my_netrc = Netrc(str(netrc_loc))
+        except FileNotFoundError as err:
+            raise LoginStrategyUnavailable(
+                f"No .netrc found at {netrc_loc}") from err
+        except Exception as err:
+            raise LoginStrategyUnavailable(
+                f"Problem parsing the .netrc file {netrc_loc}: {err}"
+            ) from err
+
+        creds = my_netrc['urs.earthdata.nasa.gov']
+        if creds is None:
+            raise LoginStrategyUnavailable(
+                f"Earthdata Login hostname urs.earthdata.nasa.gov not found in .netrc file {netrc_loc}"
+            )
+
+        username = creds["login"]
+        password = creds["password"]
+
+        if username is None:
+            raise LoginStrategyUnavailable(
+                f"Username not found in .netrc file {netrc_loc}"
+            )
+        if password is None:
+            raise LoginStrategyUnavailable(
+                f"Password not found in .netrc file {netrc_loc}"
+            )
+
+        return username, password
+
+    def _get_default_credentials_from_environment(self):
+        """
+        Get the default credentials from the environment variable
+        """
+        return os.environ.get('EARTHDATA_USERNAME', ''), os.environ.get('EARTHDATA_PASSWORD', '')

@@ -101,7 +101,8 @@
 }
 
 .code-preview__button--html,
-.code-preview__button--react {
+.code-preview__button--react,
+.code-preview__button--jupyter {
     width: 70px;
     display: flex;
     place-items: center;
@@ -163,11 +164,50 @@
     transform: rotate(180deg);
 }
 
-/* We can apply data-flavor="html|react" to any element on the page to toggle it when the flavor changes */
+/* We can apply data-flavor="html|react|jupyter" to any element on the page to toggle it when the flavor changes */
 .flavor-html [data-flavor]:not([data-flavor='html']) {
     display: none;
 }
 
 .flavor-react [data-flavor]:not([data-flavor='react']) {
     display: none;
+}
+
+.flavor-jupyter [data-flavor]:not([data-flavor='jupyter']) {
+    display: none;
+}
+
+/* Preview content switching */
+.code-preview__preview-content {
+    width: 100%;
+}
+
+.code-preview__preview-content:not([data-flavor='html']):not(
+        [data-flavor='jupyter']
+    ) {
+    display: none;
+}
+
+/* Jupyter banner styling */
+.code-preview__jupyter-banner {
+    background-color: var(--terra-color-primary-50);
+    border: 1px solid var(--terra-color-primary-200);
+    border-radius: 3px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.code-preview__jupyter-banner p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--terra-color-primary-700);
+    line-height: 1.5;
+}
+
+/* Jupyter iframe styling - only in preview area */
+.code-preview__preview-content[data-flavor='jupyter'] iframe {
+    width: 100%;
+    height: 600px;
+    border: none;
+    display: block;
 }
