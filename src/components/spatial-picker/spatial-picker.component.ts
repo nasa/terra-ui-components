@@ -8,6 +8,7 @@ import { parseBoundingBox, StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 import { MapEventType } from '../map/type.js'
+import { latLng } from 'leaflet'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -225,38 +226,121 @@ export default class TerraSpatialPicker extends TerraElement {
         }
     }
 
-    private _emitMapChange() {
-        const layer = this.map?.getDrawLayer()
+    private _normalizeBounds(bounds: any) {
+        // Expected format from parseBoundingBox:
+        // [west, south, east, north]
+        const [west, south, east, north] = bounds
 
-        if (!layer) {
-            return
+        return {
+            west,
+            south,
+            east,
+            north,
+        }
+    }
+
+    //Checks if selected points are inside spatial area
+    private _isPointInsideBounds(point: any, rawBounds: any): boolean {
+        if (!Array.isArray(rawBounds) || rawBounds.length !== 4) {
+            return true
         }
 
+        const { west, south, east, north } = this._normalizeBounds(rawBounds)
+
+        return (
+            point.lat >= south &&
+            point.lat <= north &&
+            point.lng >= west &&
+            point.lng <= east
+        )
+    }
+
+    //Checks if selected bounds are inside spatial area
+    private _isBoundsInsideBounds(inner: any, rawOuter: any): boolean {
+        if (!Array.isArray(rawOuter) || rawOuter.length !== 4) {
+            return true
+        }
+
+        const { west, south, east, north } = this._normalizeBounds(rawOuter)
+
+        return (
+            inner.getSouth() >= south &&
+            inner.getNorth() <= north &&
+            inner.getWest() >= west &&
+            inner.getEast() <= east
+        )
+    }
+
+    get parsedConstraints() {
+        try {
+            return this.spatialConstraints
+                ? parseBoundingBox(this.spatialConstraints)
+                : null
+        } catch {
+            return null
+        }
+    }
+
+    private _emitMapChange() {
+        const layer = this.map?.getDrawLayer()
+        const constraints = this.parsedConstraints
+
+        if (!layer || !constraints) return
+
+        // POINT
         if ('getLatLng' in layer) {
-            this.mapValue = layer.getLatLng()
+            const point = layer.getLatLng()
+
+            if (!this._isPointInsideBounds(point, constraints)) {
+                this._rejectDraw(
+                    'Selected point is outside the allowed spatial extent.'
+                )
+                return
+            }
+
+            this.mapValue = point
+            this.error = ''
 
             this.emit('terra-map-change', {
                 detail: {
                     type: MapEventType.POINT,
                     cause: 'draw',
-                    latLng: this.mapValue,
+                    latLng: point,
                     geoJson: layer.toGeoJSON(),
                 },
             })
-        } else if ('getBounds' in layer) {
-            this.mapValue = layer.getBounds()
+        }
+
+        // BOUNDING BOX
+        else if ('getBounds' in layer) {
+            const bounds = layer.getBounds()
+
+            if (!this._isBoundsInsideBounds(bounds, constraints)) {
+                this._rejectDraw(
+                    'Selected area extends outside the allowed spatial extent.'
+                )
+                return
+            }
+
+            this.mapValue = bounds
+            this.error = ''
 
             this.emit('terra-map-change', {
                 detail: {
                     type: MapEventType.BBOX,
                     cause: 'draw',
-                    bounds: this.mapValue,
+                    bounds,
                     geoJson: layer.toGeoJSON(),
                 },
             })
-        } else {
-            this.mapValue = []
         }
+    }
+
+    private _rejectDraw(message: string) {
+        this.error = message
+
+        // Clear drawn geometry using supported TerraMap API
+        this.mapValue = []
     }
 
     open() {
@@ -312,8 +396,6 @@ export default class TerraSpatialPicker extends TerraElement {
                 if (this.terraInput) {
                     this.terraInput.value = ''
                 }
-                // Reset spatial constraints to default value on map clear
-                this.spatialConstraints = '-180, -90, 180, 90'
                 this._updateURLParam(null)
                 break
 
@@ -331,7 +413,6 @@ export default class TerraSpatialPicker extends TerraElement {
                     }
                 }
                 this._updateURLParam(stringified)
-                this._emitMapChange()
                 break
 
             default:
@@ -343,18 +424,39 @@ export default class TerraSpatialPicker extends TerraElement {
         const urlParams = new URLSearchParams(window.location.search)
         const spatialParam = urlParams.get('spatial')
 
+        let valueToApply: string | null = null
+
         if (spatialParam) {
+            valueToApply = spatialParam
             this.initialValue = spatialParam
             this.mapValue = parseBoundingBox(spatialParam)
             if (this.terraInput) {
                 this.terraInput.value = spatialParam
             }
         } else if (this.initialValue) {
-            this.mapValue =
-                this.initialValue === '' ? [] : parseBoundingBox(this.initialValue)
+            valueToApply = this.initialValue
         }
 
-        // Add resize listener to handle viewport changes
+        if (valueToApply) {
+            try {
+                const parsed = parseBoundingBox(valueToApply)
+                this.mapValue = parsed
+
+                //Emit init ONLY for point
+                if (!Array.isArray(parsed)) {
+                    this.emit('terra-map-change', {
+                        detail: {
+                            type: MapEventType.POINT,
+                            cause: 'init',
+                            latLng: latLng(parsed.lat, parsed.lng),
+                        },
+                    })
+                }
+            } catch { }
+        } else {
+            this.mapValue = []
+        }
+
         window.addEventListener('resize', this._handleResize.bind(this))
 
         setTimeout(() => {
@@ -386,6 +488,9 @@ export default class TerraSpatialPicker extends TerraElement {
             zoom=${this.zoom}
             ?has-coord-tracker=${this.hasCoordTracker}
             .value=${this.mapValue}
+            .maxBounds=${this.parsedConstraints ?? undefined}
+            .fitBounds=${this.parsedConstraints ?? undefined}
+            .maxBoundsViscosity=${1.0}
             ?has-navigation=${this.hasNavigation}
             ?has-shape-selector=${this.hasShapeSelector}
             ?hide-bounding-box-selection=${this.hideBoundingBoxSelection}
@@ -410,9 +515,9 @@ export default class TerraSpatialPicker extends TerraElement {
                     @terra-blur=${this._blur}
                     @terra-focus=${this._focus}
                     @click=${(e: Event) => {
-                        e.stopPropagation()
-                        this._click(e)
-                    }}
+                e.stopPropagation()
+                this._click(e)
+            }}
                 >
                     <svg
                         slot="suffix"
@@ -432,21 +537,21 @@ export default class TerraSpatialPicker extends TerraElement {
                     </svg>
                 </terra-input>
                 ${this.error
-                    ? html`<div class="spatial-picker__error">${this.error}</div>`
-                    : nothing}
+                ? html`<div class="spatial-picker__error">${this.error}</div>`
+                : nothing}
                 ${expanded
-                    ? html`<div
+                ? html`<div
                           class="spatial-picker__map-container ${this._popoverFlipped
-                              ? 'flipped'
-                              : ''}"
+                        ? 'flipped'
+                        : ''}"
                           style="${this.inline
-                              ? 'position: static; width: 100%;'
-                              : ''}"
+                        ? 'position: static; width: 100%;'
+                        : ''}"
                           @click=${(e: Event) => e.stopPropagation()}
                       >
                           ${this.renderMap()}
                       </div>`
-                    : nothing}
+                : nothing}
             </div>
         `
     }

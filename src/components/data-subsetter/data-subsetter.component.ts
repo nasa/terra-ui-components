@@ -74,7 +74,7 @@ export default class TerraDataSubsetter extends TerraElement {
     showCollectionSearch?: boolean = true
 
     @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
-    showHistoryPanel?: boolean = false
+    showHistoryPanel?: boolean = true
 
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
@@ -218,35 +218,35 @@ export default class TerraDataSubsetter extends TerraElement {
                             <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
                         </svg>
                         ${this.collectionWithServices?.collection?.EntryTitle ??
-                        html`Download Data`}
+            html`Download Data`}
                     </h1>
 
                     ${showMinimizeButton
-                        ? html`<button
+                ? html`<button
                               class="minimize-btn"
                               @click=${() => this.minimizeDialog()}
                           >
                               -
                           </button>`
-                        : nothing}
+                : nothing}
                 </div>
 
                 <div class="section">${this.#renderDataAccessModeSelection()}</div>
 
                 ${this.dataAccessMode === 'original'
-                    ? html`
+                ? html`
                           <div class="section">
                               <terra-data-access
                                   short-name=${this.shortName ??
-                                  this.collectionWithServices?.collection?.ShortName}
+                    this.collectionWithServices?.collection?.ShortName}
                                   version=${this.version ??
-                                  this.collectionWithServices?.collection?.Version}
+                    this.collectionWithServices?.collection?.Version}
                               ></terra-data-access>
                           </div>
                       `
-                    : showJobStatus
-                      ? this.#renderJobStatus()
-                      : this.#renderSubsetOptions()}
+                : showJobStatus
+                    ? this.#renderJobStatus()
+                    : this.#renderSubsetOptions()}
             </div>
         `
     }
@@ -299,6 +299,7 @@ export default class TerraDataSubsetter extends TerraElement {
         const collection = this.collectionWithServices?.collection
         const temporalExtents = collection?.TemporalExtents
         const spatialExtent = collection?.SpatialExtent
+
         const showTemporalSection = temporalExtents && temporalExtents.length
         const showSpatialSection =
             spatialExtent &&
@@ -308,7 +309,7 @@ export default class TerraDataSubsetter extends TerraElement {
             ${this.dataAccessMode === 'original'
                 ? nothing
                 : hasSubsetOption
-                  ? html`
+                    ? html`
                         ${hasSubsetOption && estimates
                             ? this.#renderSizeInfo(estimates)
                             : nothing}
@@ -337,19 +338,19 @@ export default class TerraDataSubsetter extends TerraElement {
                             </p>
 
                             ${this.collectionWithServices?.temporalSubset
-                                ? this.#renderDateRangeSelection()
-                                : nothing}
+                            ? this.#renderDateRangeSelection()
+                            : nothing}
                             ${this.#hasSpatialSubset()
-                                ? this.#renderSpatialSelection()
-                                : nothing}
+                            ? this.#renderSpatialSelection()
+                            : nothing}
                             ${this.collectionWithServices?.variableSubset
-                                ? this.#renderVariableSelection()
-                                : nothing}
+                            ? this.#renderVariableSelection()
+                            : nothing}
                         </div>
                     `
-                  : html`
+                    : html`
                         ${showTemporalSection &&
-                        !this.collectionWithServices?.temporalSubset
+                            !this.collectionWithServices?.temporalSubset
                             ? this.#renderAvailableTemporalRangeSection()
                             : nothing}
                         ${showSpatialSection && !this.#hasSpatialSubset()
@@ -417,7 +418,7 @@ export default class TerraDataSubsetter extends TerraElement {
                     style="display: flex; align-items: center; gap: 10px"
                 >
                     ${this.collectionEntryId
-                        ? html` <span
+                ? html` <span
                                   class="accordion-value"
                                   id="selected-collection-display"
                                   >${this.collectionEntryId}</span
@@ -429,32 +430,32 @@ export default class TerraDataSubsetter extends TerraElement {
                               >
                                   Reset
                               </button>`
-                        : nothing}
+                : nothing}
                 </div>
 
                 <div class="search-tabs-mini">
                     <button
                         class="search-tab-mini ${this.collectionSearchType === 'all'
-                            ? 'active'
-                            : ''}"
+                ? 'active'
+                : ''}"
                         @click=${() => (this.collectionSearchType = 'all')}
                     >
                         All
                     </button>
                     <button
                         class="search-tab-mini ${this.collectionSearchType ===
-                        'collection'
-                            ? 'active'
-                            : ''}"
+                'collection'
+                ? 'active'
+                : ''}"
                         @click=${() => (this.collectionSearchType = 'collection')}
                     >
                         Collections
                     </button>
                     <button
                         class="search-tab-mini ${this.collectionSearchType ===
-                        'variable'
-                            ? 'active'
-                            : ''}"
+                'variable'
+                ? 'active'
+                : ''}"
                         @click=${() => (this.collectionSearchType = 'variable')}
                     >
                         Variables
@@ -468,9 +469,9 @@ export default class TerraDataSubsetter extends TerraElement {
                         id="search-input"
                         placeholder=${placeholder}
                         @input="${(e: InputEvent) =>
-                            this.handleCollectionSearch(
-                                (e.target as HTMLInputElement).value
-                            )}"
+                this.handleCollectionSearch(
+                    (e.target as HTMLInputElement).value
+                )}"
                     />
 
                     <button class="search-button-mini">
@@ -509,40 +510,40 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 <div id="search-results-section" class="search-results-section">
                     ${this.collectionSearchLoading
-                        ? html`
+                ? html`
                               <div id="loading-mini" class="loading-mini">
                                   <div class="spinner-mini"></div>
                                   <div>Searching NASA CMR...</div>
                               </div>
                           `
-                        : this.collectionSearchResults?.length
-                          ? html` <div
+                : this.collectionSearchResults?.length
+                    ? html` <div
                                 id="results-container-mini"
                                 class="results-container-mini"
                             >
                                 ${this.collectionSearchResults?.map(
-                                    item => html`
+                        item => html`
                                         <div
                                             class="result-item-mini"
                                             @click=${() => {
-                                                this.collectionEntryId =
-                                                    item.collectionEntryId
-                                                this.collectionAccordionOpen = false
-                                                this.collectionLoading = true
+                                this.collectionEntryId =
+                                    item.collectionEntryId
+                                this.collectionAccordionOpen = false
+                                this.collectionLoading = true
 
-                                                // if this item is a variable, we'll also go ahead and select the variable
-                                                if (item.type === 'variable') {
-                                                    this.selectedVariables = [
-                                                        {
-                                                            name: item.entryId,
-                                                            href: '',
-                                                            conceptId: item.conceptId,
-                                                        },
-                                                    ]
-                                                }
+                                // if this item is a variable, we'll also go ahead and select the variable
+                                if (item.type === 'variable') {
+                                    this.selectedVariables = [
+                                        {
+                                            name: item.entryId,
+                                            href: '',
+                                            conceptId: item.conceptId,
+                                        },
+                                    ]
+                                }
 
-                                                this.requestUpdate()
-                                            }}
+                                this.requestUpdate()
+                            }}
                                             style="cursor: pointer;"
                                         >
                                             <div class="result-title-mini">
@@ -559,29 +560,29 @@ export default class TerraDataSubsetter extends TerraElement {
                                                 <span>🌍 Global</span>
                                                 <span>🏢 ${item.provider}</span>
                                                 ${item.type === 'variable'
-                                                    ? html` <span
+                                ? html` <span
                                                           >📊
                                                           ${item.collectionEntryId}</span
                                                       >`
-                                                    : nothing}
+                                : nothing}
                                                 <span class="tag-mini"
                                                     >${item.type.toUpperCase()}</span
                                                 >
                                             </div>
                                         </div>
                                     `
-                                )}
+                    )}
                             </div>`
-                          : this.collectionSearchResults &&
-                              this.collectionSearchResults.length === 0
-                            ? html`<div id="no-results-mini" class="no-results-mini">
+                    : this.collectionSearchResults &&
+                        this.collectionSearchResults.length === 0
+                        ? html`<div id="no-results-mini" class="no-results-mini">
                                   <p>
                                       No results found for
                                       '${this.collectionSearchQuery}'. Try adjusting
                                       your search term.
                                   </p>
                               </div>`
-                            : nothing}
+                        : nothing}
                 </div>
             </terra-accordion>
 
@@ -637,12 +638,12 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 <div class="accordion-content" style="margin-top: 12px;">
                     ${(() => {
-                        const uniqueFormats = Array.from(
-                            new Set(this.collectionWithServices?.outputFormats || [])
-                        )
+                const uniqueFormats = Array.from(
+                    new Set(this.collectionWithServices?.outputFormats || [])
+                )
 
-                        return uniqueFormats.map(
-                            format => html`
+                return uniqueFormats.map(
+                    format => html`
                                 <label
                                     style="display: flex; align-items: center; gap: 8px; padding: 5px;"
                                 >
@@ -652,13 +653,13 @@ export default class TerraDataSubsetter extends TerraElement {
                                         value="${format}"
                                         .checked=${this.selectedFormat === format}
                                         @change=${() =>
-                                            (this.selectedFormat = format)}
+                            (this.selectedFormat = format)}
                                     />
                                     ${getFriendlyNameForMimeType(format)}
                                 </label>
                             `
-                        )
-                    })()}
+                )
+            })()}
                 </div>
             </terra-accordion>
         `
@@ -684,14 +685,14 @@ export default class TerraDataSubsetter extends TerraElement {
                     style="display: flex; align-items: center; gap: 10px;"
                 >
                     ${showError
-                        ? html`<span class="accordion-value error"
+                ? html`<span class="accordion-value error"
                               >Please select a date range</span
                           >`
-                        : this.touchedFields.has('date') && startDate && endDate
-                          ? html`<span class="accordion-value"
+                : this.touchedFields.has('date') && startDate && endDate
+                    ? html`<span class="accordion-value"
                                 >${startDate} to ${endDate}</span
                             >`
-                          : nothing}
+                    : nothing}
                     <button class="reset-btn" @click=${this.#resetDateRangeSelection}>
                         Reset
                     </button>
@@ -827,14 +828,14 @@ export default class TerraDataSubsetter extends TerraElement {
                     style="display: flex; align-items: center; gap: 10px;"
                 >
                     ${showError
-                        ? html`<span class="accordion-value error"
+                ? html`<span class="accordion-value error"
                               >Please select a region</span
                           >`
-                        : spatialString
-                          ? html`<span class="accordion-value"
+                : spatialString
+                    ? html`<span class="accordion-value"
                                 >${spatialString}</span
                             >`
-                          : nothing}
+                    : nothing}
                     <button class="reset-btn" @click=${this.#resetSpatialSelection}>
                         Reset
                     </button>
@@ -850,23 +851,23 @@ export default class TerraDataSubsetter extends TerraElement {
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
                     ${boundingRects &&
-                    Array.isArray(boundingRects) &&
-                    boundingRects.length
-                        ? html`<div
+                Array.isArray(boundingRects) &&
+                boundingRects.length
+                ? html`<div
                               style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
                           >
                               ${boundingRects.map(
-                                  (rect: any) =>
-                                      html`<div>
+                    (rect: any) =>
+                        html`<div>
                                           <strong>Available Range:</strong>
                                           ${rect.WestBoundingCoordinate},
                                           ${rect.SouthBoundingCoordinate},
                                           ${rect.EastBoundingCoordinate},
                                           ${rect.NorthBoundingCoordinate}
                                       </div>`
-                              )}
+                )}
                           </div>`
-                        : nothing}
+                : nothing}
                 </div>
             </terra-accordion>
         `
@@ -915,14 +916,14 @@ export default class TerraDataSubsetter extends TerraElement {
                     style="display: flex; align-items: center; gap: 10px;"
                 >
                     ${showError
-                        ? html`<span class="accordion-value error"
+                ? html`<span class="accordion-value error"
                               >Please select at least one variable</span
                           >`
-                        : this.selectedVariables.length
-                          ? html`<span class="accordion-value"
+                : this.selectedVariables.length
+                    ? html`<span class="accordion-value"
                                 >${this.selectedVariables.length} selected</span
                             >`
-                          : nothing}
+                    : nothing}
 
                     <button class="reset-btn" @click=${this.#resetVariableSelection}>
                         Reset
@@ -934,10 +935,10 @@ export default class TerraDataSubsetter extends TerraElement {
                         placeholder="Search by variable name..."
                         .value=${this.variableFilterText}
                         @input=${(e: Event) => {
-                            const input = e.target as HTMLInputElement
-                            this.variableFilterText = input.value
-                            this.#handleVariableFilterChange()
-                        }}
+                const input = e.target as HTMLInputElement
+                this.variableFilterText = input.value
+                this.#handleVariableFilterChange()
+            }}
                         style="margin-bottom: 10px;"
                     ></terra-input>
                     <button
@@ -948,13 +949,13 @@ export default class TerraDataSubsetter extends TerraElement {
                         ${allExpanded ? 'Collapse Tree' : 'Expand Tree'}
                     </button>
                     ${variables.length === 0
-                        ? html`<p style="color: #666; font-style: italic;">
+                ? html`<p style="color: #666; font-style: italic;">
                               No variables available for this collection.
                           </p>`
-                        : this.#renderVariableTree(
-                              this.#filterVariableTree(tree),
-                              []
-                          )}
+                : this.#renderVariableTree(
+                    this.#filterVariableTree(tree),
+                    []
+                )}
                 </div>
             </terra-accordion>
         `
@@ -1067,31 +1068,31 @@ export default class TerraDataSubsetter extends TerraElement {
         return html`
             <div style="margin-left: ${path.length * 20}px;">
                 ${Object.entries(node).map(([key, value]: [string, any]) => {
-                    const groupPath = [...path, key].join('/')
-                    if (value.__isLeaf) {
-                        // Leaf node (variable)
-                        return html`
+            const groupPath = [...path, key].join('/')
+            if (value.__isLeaf) {
+                // Leaf node (variable)
+                return html`
                             <div class="option-row">
                                 <label class="checkbox-option">
                                     <input
                                         type="checkbox"
                                         .checked=${this.selectedVariables.some(
-                                            v => v.name === value.__variable.name
-                                        )}
+                    v => v.name === value.__variable.name
+                )}
                                         @change=${(e: Event) =>
-                                            this.#toggleVariableSelection(
-                                                e,
-                                                value.__variable
-                                            )}
+                        this.#toggleVariableSelection(
+                            e,
+                            value.__variable
+                        )}
                                     />
                                     <span>${key}</span>
                                 </label>
                             </div>
                         `
-                    } else {
-                        // Group node
-                        const expanded = this.expandedVariableGroups.has(groupPath)
-                        return html`
+            } else {
+                // Group node
+                const expanded = this.expandedVariableGroups.has(groupPath)
+                return html`
                             <div class="option-row" style="align-items: flex-start;">
                                 <span
                                     style="cursor: pointer; display: flex; align-items: center;"
@@ -1100,22 +1101,22 @@ export default class TerraDataSubsetter extends TerraElement {
                                     <terra-icon
                                         library="heroicons"
                                         name="${expanded
-                                            ? 'outline-minus-circle'
-                                            : 'outline-plus-circle'}"
+                        ? 'outline-minus-circle'
+                        : 'outline-plus-circle'}"
                                         style="margin-right: 4px;"
                                     ></terra-icon>
                                     <span style="font-weight: 500;">${key}</span>
                                 </span>
                             </div>
                             ${expanded
-                                ? this.#renderVariableTree(value.__children, [
-                                      ...path,
-                                      key,
-                                  ])
-                                : ''}
+                        ? this.#renderVariableTree(value.__children, [
+                            ...path,
+                            key,
+                        ])
+                        : ''}
                         `
-                    }
-                })}
+            }
+        })}
             </div>
         `
     }
@@ -1204,20 +1205,20 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 ${this.controller.currentJob!.status !== 'canceled' &&
                 this.controller.currentJob!.status !== 'failed'
-                    ? html` <div class="progress-container">
+                ? html` <div class="progress-container">
                           <div class="progress-text">
                               ${this.controller.currentJob!.progress >= 100
-                                  ? html`
+                        ? html`
                                         <span class="status-complete"
                                             >✓ Search complete</span
                                         >
                                     `
-                                  : html`
+                        : html`
                                         <span class="spinner"></span>
                                         <span class="status-running"
                                             >Searching for data...
                                             (${this.controller.currentJob!
-                                                .progress}%)</span
+                                .progress}%)</span
                                         >
                                     `}
                           </div>
@@ -1226,11 +1227,11 @@ export default class TerraDataSubsetter extends TerraElement {
                               <div
                                   class="progress-fill"
                                   style="width: ${this.controller.currentJob!
-                                      .progress}%"
+                        .progress}%"
                               ></div>
                           </div>
                       </div>`
-                    : nothing}
+                : nothing}
 
                 <div class="search-status">
                     <span class="file-count"
@@ -1244,7 +1245,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 ${this.#renderJobMessage()}
                 ${this.controller.currentJob!.errors?.length
-                    ? html`
+                ? html`
                           <terra-accordion>
                               <div slot="summary">
                                   <span
@@ -1252,7 +1253,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       style="color: #dc3545;"
                                       >Errors
                                       (${this.controller.currentJob!.errors
-                                          .length})</span
+                        .length})</span
                                   >
                               </div>
                               <div class="accordion-content">
@@ -1260,10 +1261,10 @@ export default class TerraDataSubsetter extends TerraElement {
                                       style="color: #dc3545; font-size: 14px; padding-left: 20px;"
                                   >
                                       ${this.controller.currentJob!.errors.map(
-                                          (err: {
-                                              url: string
-                                              message: string
-                                          }) => html`
+                            (err: {
+                                url: string
+                                message: string
+                            }) => html`
                                               <li style="margin-bottom: 12px;">
                                                   <a
                                                       href="${err.url}"
@@ -1277,18 +1278,18 @@ export default class TerraDataSubsetter extends TerraElement {
                                                   </div>
                                               </li>
                                           `
-                                      )}
+                        )}
                                   </ul>
                               </div>
                           </terra-accordion>
                       `
-                    : nothing}
+                : nothing}
 
                 <div class="tabs">
                     <button
                         class="tab ${this.selectedTab === 'web-links'
-                            ? 'active'
-                            : ''}"
+                ? 'active'
+                : ''}"
                         @click=${() => (this.selectedTab = 'web-links')}
                     >
                         Web Links
@@ -1296,8 +1297,8 @@ export default class TerraDataSubsetter extends TerraElement {
 
                     <button
                         class="tab ${this.selectedTab === 'selected-params'
-                            ? 'active'
-                            : ''}"
+                ? 'active'
+                : ''}"
                         @click=${() => (this.selectedTab = 'selected-params')}
                     >
                         Selected Parameters
@@ -1306,26 +1307,26 @@ export default class TerraDataSubsetter extends TerraElement {
                 <div
                     id="web-links"
                     class="tab-content ${this.selectedTab === 'web-links'
-                        ? 'active'
-                        : ''}"
+                ? 'active'
+                : ''}"
                 >
                     ${this.#getDocumentationLinks().length
-                        ? html`
+                ? html`
                               <div class="documentation-links">
                                   ${this.#getDocumentationLinks().map(
-                                      link => html`
+                    link => html`
                                           <a href="${link.href}" class="doc-link"
                                               >${link.title}</a
                                           >
                                       `
-                                  )}
+                )}
                               </div>
                           `
-                        : nothing}
+                : nothing}
 
                     <ul class="file-list">
                         ${this.#getDataLinks().map(
-                            link => html`
+                    link => html`
                                 <li class="file-item">
                                     <a
                                         href="${link.href}"
@@ -1336,15 +1337,15 @@ export default class TerraDataSubsetter extends TerraElement {
                                     </a>
                                 </li>
                             `
-                        )}
+                )}
                     </ul>
                 </div>
 
                 <div
                     id="selected-params"
                     class="tab-content ${this.selectedTab === 'selected-params'
-                        ? 'active'
-                        : ''}"
+                ? 'active'
+                : ''}"
                 >
                     ${this.#renderSelectedParams()}
                 </div>
@@ -1353,16 +1354,16 @@ export default class TerraDataSubsetter extends TerraElement {
             <div class="footer">
                 ${this.controller.currentJob!.status === Status.SUCCESSFUL ||
                 this.controller.currentJob!.status === Status.COMPLETE_WITH_ERRORS
-                    ? html`
+                ? html`
                           <div>
                               <div
                                   class="download-dropdown ${this.showDownloadMenu
-                                      ? 'open'
-                                      : ''}"
+                        ? 'open'
+                        : ''}"
                               >
                                   <terra-button
                                       @click=${(e: Event) =>
-                                          this.#toggleDownloadMenu(e)}
+                        this.#toggleDownloadMenu(e)}
                                   >
                                       Download Options
                                       <svg
@@ -1376,13 +1377,13 @@ export default class TerraDataSubsetter extends TerraElement {
 
                                   <div
                                       class="download-menu ${this.showDownloadMenu
-                                          ? 'open'
-                                          : ''}"
+                        ? 'open'
+                        : ''}"
                                   >
                                       <button
                                           class="download-option"
                                           @click=${(e: Event) =>
-                                              this.#downloadLinksAsTxt(e)}
+                        this.#downloadLinksAsTxt(e)}
                                       >
                                           <svg
                                               class="file-icon"
@@ -1398,7 +1399,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       <button
                                           class="download-option"
                                           @click=${(e: Event) =>
-                                              this.#downloadPythonScript(e)}
+                        this.#downloadPythonScript(e)}
                                       >
                                           <svg
                                               class="file-icon"
@@ -1416,7 +1417,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       <button
                                           class="download-option"
                                           @click=${(e: Event) =>
-                                              this.#downloadEarthdataDownload(e)}
+                        this.#downloadEarthdataDownload(e)}
                                       >
                                           <svg
                                               class="file-icon"
@@ -1460,28 +1461,28 @@ export default class TerraDataSubsetter extends TerraElement {
                               </terra-button>
                           </div>
                       `
-                    : nothing}
+                : nothing}
                 ${this.controller.currentJob!.status === 'running'
-                    ? html`<button
+                ? html`<button
                           class="btn btn-success"
                           @click=${this.#cancelJob}
                           ?disabled=${this.cancelingGetData}
                       >
                           ${this.cancelingGetData ? 'Canceling...' : 'Cancel request'}
                       </button>`
-                    : nothing}
+                : nothing}
 
                 <div class="job-info">
                     Job ID:
                     <span class="job-id">
                         ${this.bearerToken
-                            ? html`<a
+                ? html`<a
                                   href="https://harmony.earthdata.nasa.gov/jobs/${this
-                                      .controller.currentJob!.jobID}"
+                        .controller.currentJob!.jobID}"
                                   target="_blank"
                                   >${this.controller.currentJob!.jobID}</a
                               >`
-                            : this.controller.currentJob!.jobID}
+                : this.controller.currentJob!.jobID}
                     </span>
                     <span class="info-icon">?</span>
                 </div>
@@ -1569,7 +1570,7 @@ export default class TerraDataSubsetter extends TerraElement {
         return Math.floor(
             (this.controller.currentJob!.numInputGranules *
                 this.controller.currentJob!.progress) /
-                100
+            100
         )
     }
 
@@ -1692,7 +1693,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 Math.floor(
                     (new Date(range.endDate).getTime() -
                         new Date(range.startDate).getTime()) /
-                        (1000 * 60 * 60 * 24)
+                    (1000 * 60 * 60 * 24)
                 ) + 1
             const granulesPerDay = links / availableDaysInCollection
 
@@ -1870,15 +1871,15 @@ export default class TerraDataSubsetter extends TerraElement {
                 <h2 class="section-title">Available Spatial Area</h2>
                 <div style="color: #31708f; margin-top: 8px;">
                     ${boundingRects.map(
-                        (rect: any) =>
-                            html`<div>
+            (rect: any) =>
+                html`<div>
                                 <strong>Bounding Box:</strong>
                                 ${rect.WestBoundingCoordinate},
                                 ${rect.SouthBoundingCoordinate},
                                 ${rect.EastBoundingCoordinate},
                                 ${rect.NorthBoundingCoordinate}
                             </div>`
-                    )}
+        )}
                 </div>
                 <div style="font-size: 0.95em; color: #666;">
                     This collection does not support spatial subsetting.
@@ -1893,8 +1894,8 @@ export default class TerraDataSubsetter extends TerraElement {
                 <div class="mode-options">
                     <label
                         class="mode-option ${this.dataAccessMode === 'original'
-                            ? 'selected'
-                            : ''}"
+                ? 'selected'
+                : ''}"
                     >
                         <input
                             type="radio"
@@ -1913,8 +1914,8 @@ export default class TerraDataSubsetter extends TerraElement {
 
                     <label
                         class="mode-option ${this.dataAccessMode === 'subset'
-                            ? 'selected'
-                            : ''}"
+                ? 'selected'
+                : ''}"
                     >
                         <input
                             type="radio"

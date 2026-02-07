@@ -1,0 +1,12 @@
+{
+    "name": "Terra Color Exporter",
+    "id": "terra-color-exporter",
+    "api": "1.0.0",
+    "editorType": [
+        "figma"
+    ],
+    "main": "code.js",
+    "ui": "ui.html",
+    "capabilities": [],
+    "enablePrivatePluginApi": false
+}
