@@ -100,9 +100,9 @@
     }
 
     function updateSelection() {
-        const menu = document.querySelector('#theme-selector sl-menu')
+        const menu = document.querySelector('#theme-selector terra-menu')
         if (!menu) return
-        ;[...menu.querySelectorAll('sl-menu-item')].map(
+        ;[...menu.querySelectorAll('terra-menu-item')].map(
             item => (item.checked = item.getAttribute('value') === theme)
         )
     }
@@ -110,15 +110,15 @@
     let theme = getTheme()
 
     // Selection is not preserved when changing page, so update when opening dropdown
-    document.addEventListener('sl-show', event => {
+    document.addEventListener('terra-show', event => {
         const themeSelector = event.target.closest('#theme-selector')
         if (!themeSelector) return
         updateSelection()
     })
 
     // Listen for selections
-    document.addEventListener('sl-select', event => {
-        const menu = event.target.closest('#theme-selector sl-menu')
+    document.addEventListener('terra-select', event => {
+        const menu = event.target.closest('#theme-selector terra-menu')
         if (!menu) return
         setTheme(event.detail.item.value)
     })
@@ -152,7 +152,7 @@
 //
 ;(() => {
     function getEnvironment() {
-        return localStorage.getItem('terra-environment') || 'uat'
+        return localStorage.getItem('terra-environment') || 'prod'
     }
 
     function setEnvironment(newEnvironment) {
@@ -172,9 +172,9 @@
     }
 
     function updateEnvironmentSelection() {
-        const menu = document.querySelector('#environment-selector sl-menu')
+        const menu = document.querySelector('#environment-selector terra-menu')
         if (!menu) return
-        ;[...menu.querySelectorAll('sl-menu-item')].map(
+        ;[...menu.querySelectorAll('terra-menu-item')].map(
             item => (item.checked = item.getAttribute('value') === environment)
         )
     }
@@ -189,15 +189,15 @@
     let environment = getEnvironment()
 
     // Selection is not preserved when changing page, so update when opening dropdown
-    document.addEventListener('sl-show', event => {
+    document.addEventListener('terra-show', event => {
         const environmentSelector = event.target.closest('#environment-selector')
         if (!environmentSelector) return
         updateEnvironmentSelection()
     })
 
     // Listen for selections
-    document.addEventListener('sl-select', event => {
-        const menu = event.target.closest('#environment-selector sl-menu')
+    document.addEventListener('terra-select', event => {
+        const menu = event.target.closest('#environment-selector terra-menu')
         if (!menu) return
         setEnvironment(event.detail.item.value)
 
@@ -209,6 +209,10 @@
     // Set the initial environment and sync the UI
     setEnvironment(environment)
 })()
+
+//
+// Top navigation dropdown menu item clicks (now handled by terra-dropdown component)
+//
 
 //
 // Open details when printing
@@ -342,7 +346,6 @@
         const el = document.querySelector('.sidebar-version')
         if (!el) return
 
-        if (location.hostname === 'next.shoelace.style') el.textContent = 'Next'
         if (location.hostname === 'localhost') el.textContent = 'Development'
     }
 

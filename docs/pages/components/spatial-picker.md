@@ -23,4 +23,14 @@ layout: component
 </div>
 ```
 
+### Spatial Picker with No World Wrap
+
+This example disables infinite horizontal scrolling on the map.
+
+```html:preview
+<div style="height: 300px;">
+<terra-spatial-picker has-navigation no-world-wrap></terra-spatial-picker>
+</div>
+```
+
 [component-metadata:terra-spatial-picker]

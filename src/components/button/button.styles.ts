@@ -442,6 +442,8 @@ export default css`
 
     .button--caret .button__caret {
         height: auto;
+        display: flex;
+        align-items: center;
     }
 
     /*
@@ -460,7 +462,7 @@ export default css`
         visibility: hidden;
     }
 
-    .button--loading sl-spinner {
+    .button--loading terra-spinner {
         --indicator-color: currentColor;
         position: absolute;
         font-size: 1em;
@@ -474,7 +476,7 @@ export default css`
    * Badges
    */
 
-    .button ::slotted(sl-badge) {
+    .button ::slotted(terra-badge) {
         position: absolute;
         top: 0;
         right: 0;
@@ -482,7 +484,7 @@ export default css`
         pointer-events: none;
     }
 
-    .button--rtl ::slotted(sl-badge) {
+    .button--rtl ::slotted(terra-badge) {
         right: auto;
         left: 0;
         translate: -50% -50%;

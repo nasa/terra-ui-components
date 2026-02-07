@@ -40,7 +40,7 @@ Import the Terra default theme (stylesheet) in `/resources/css/app.css`:
 
 ### Import Your Terra Components
 
-Import each Terra component you plan to use in `/resources/js/bootstrap.js`. Use the full path to each component (as outlined in the [Cherry Picking instructions](https://shoelace.style/getting-started/installation#cherry-picking)). You can find the full import statement for a component in the _Importing_ section of the component's documentation (use the _Bundler_ import). Your imports should look similar to:
+Import each Terra component you plan to use in `/resources/js/bootstrap.js`. Use the full path to each component (as outlined in the [Cherry Picking instructions](https://terra-ui.netlify.app/getting-started/installation#cherry-picking)). You can find the full import statement for a component in the _Importing_ section of the component's documentation (use the _Bundler_ import). Your imports should look similar to:
 
 ```js
 import '@nasa-terra/components/dist/components/button/button.js'

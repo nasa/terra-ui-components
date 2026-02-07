@@ -19,12 +19,14 @@ import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
- * @documentation https://disc.gsfc.nasa.gov/components/data-rods
- * @status mvp
+ * @documentation https://terra-ui.netlify.app/components/data-rods
+ * @status stable
  * @since 1.0
  *
  * @event terra-date-range-change - Emitted whenever the date range of the date slider is updated
  */
+
+type LastChanged = 'variable' | 'location' | undefined
 
 export default class TerraDataRods extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -91,7 +93,81 @@ export default class TerraDataRods extends TerraElement {
 
     @state() catalogVariable: Variable
 
+    /**
+     * anytime user selects invalid dates
+     */
+    @state() private dateErrorMessage?: string
+
+    @state() private lastChanged?: LastChanged
+
+    /**
+     * add a warning state
+     */
+    @state() private spatialWarningMessage?: string
+
     _fetchVariableTask = getFetchVariableTask(this)
+
+    get variableBoundingBox() {
+        const variable = this.catalogVariable
+        if (!variable) return undefined
+
+        const {
+            dataProductWest,
+            dataProductSouth,
+            dataProductEast,
+            dataProductNorth,
+        } = variable
+
+        if (
+            dataProductWest == null ||
+            dataProductSouth == null ||
+            dataProductEast == null ||
+            dataProductNorth == null
+        ) {
+            return undefined
+        }
+
+        return `${dataProductWest}, ${dataProductSouth}, ${dataProductEast}, ${dataProductNorth}`
+    }
+
+    private compatibilityWarning() {
+        this.spatialWarningMessage = undefined
+
+        if (!this.catalogVariable || !this.location) return
+
+        const {
+            dataProductWest,
+            dataProductSouth,
+            dataProductEast,
+            dataProductNorth,
+        } = this.catalogVariable
+
+        if (
+            dataProductWest == null ||
+            dataProductSouth == null ||
+            dataProductEast == null ||
+            dataProductNorth == null
+        ) {
+            return
+        }
+
+        const [latStr, lonStr] = this.location.split(',')
+        const lat = Number(latStr)
+        const lon = Number(lonStr)
+
+        const inside =
+            lon >= dataProductWest &&
+            lon <= dataProductEast &&
+            lat >= dataProductSouth &&
+            lat <= dataProductNorth
+
+        if (!inside) {
+            this.spatialWarningMessage =
+                this.lastChanged === 'variable'
+                    ? 'This variable has no data at the selected location.'
+                    : 'The selected location is outside the coverage of this variable.'
+        }
+    }
 
     render() {
         const minDate = this.catalogVariable
@@ -102,6 +178,9 @@ export default class TerraDataRods extends TerraElement {
             : undefined
 
         return html`
+            ${this.spatialWarningMessage && this.lastChanged === 'location'
+                ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
+                : null}
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 .value=${getVariableEntryId(this)}
@@ -110,8 +189,12 @@ export default class TerraDataRods extends TerraElement {
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
+            ${this.spatialWarningMessage && this.lastChanged === 'variable'
+                ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
+                : null}
             <terra-spatial-picker
                 initial-value=${this.location}
+                .spatialConstraints=${this.variableBoundingBox}
                 exportparts="map:spatial-picker__map, leaflet-bbox:spatial-picker__leaflet-bbox, leaflet-point:spatial-picker__leaflet-point"
                 label="Select Point"
                 @terra-map-change=${this.#handleMapChange}
@@ -121,7 +204,7 @@ export default class TerraDataRods extends TerraElement {
                 variable-entry-id=${getVariableEntryId(this)}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
-                location=${this.location}
+                .location=${this.location ?? undefined}
                 bearer-token=${this.bearerToken}
                 show-citation=${true}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
@@ -141,7 +224,13 @@ export default class TerraDataRods extends TerraElement {
                 start-date=${this.startDate}
                 end-date=${this.endDate}
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
+                @terra-date-selection-invalid="${this.#handleInvalidDateSelection}"
             ></terra-date-range-slider>
+            ${this.dateErrorMessage
+                ? html`<div class="date-error" style="color: red;">
+                      ${this.dateErrorMessage}
+                  </div>`
+                : null}
         `
     }
 
@@ -153,14 +242,35 @@ export default class TerraDataRods extends TerraElement {
         this.endDate = event.detail.endDate
     }
 
+    /**
+     * anytime user selects invalid dates outside variable date range
+     */
+    #handleInvalidDateSelection(event: CustomEvent) {
+        this.dateErrorMessage = event.detail.message
+    }
+
     #handleVariableChange(event: TerraComboboxChangeEvent) {
-        this.variableEntryId = event.detail.entryId
+        const newEntryId = event.detail.entryId
+
+        //Do nothing if this is just initial sync
+        if (newEntryId === this.variableEntryId) {
+            return
+        }
+
+        this.variableEntryId = newEntryId
+        this.location = undefined
+        this.lastChanged = 'variable'
+
+        this.compatibilityWarning()
     }
 
     #handleMapChange(event: TerraMapChangeEvent) {
         if (event.detail.type === MapEventType.POINT) {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
+            this.lastChanged = 'location'
+
+            this.compatibilityWarning()
         }
     }
 

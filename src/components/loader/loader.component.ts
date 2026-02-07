@@ -8,11 +8,9 @@ import { classMap } from 'lit/directives/class-map.js'
 
 /**
  * @summary Loaders are used to indicate there is content that is loading.
- * @documentation https://disc.gsfc.nasa.gov/components/loader
- * @status experimental
+ * @documentation https://terra-ui.netlify.app/components/loader
+ * @status stable
  * @since 1.0
- *
- *
  *
  * @csspart base - The component's base wrapper.
  *
@@ -31,6 +29,9 @@ export default class TerraLoader extends TerraElement {
     /** an indeterminate loader has an unknown progress and will show a spinner */
     @property({ type: Boolean })
     indeterminate: boolean = false
+
+    /** The ARIA role for the loader */
+    @property({ reflect: true }) role: string | null = 'progressbar'
 
     @state() _currentPercent = 0
 
@@ -58,7 +59,7 @@ export default class TerraLoader extends TerraElement {
                     'loader--orbit': this.variant === 'orbit',
                 })}
                 aria-valuenow=${this.formatPercent(this.percent)}
-                role="progressbar"
+                .role=${this.role}
                 tabindex="-1"
             >
                 ${this.variant === 'large' || this.variant === 'orbit'

@@ -37,6 +37,10 @@ export default css`
         position: relative;
     }
 
+    .help-toggle {
+        display: var(--terra-plot-toolbar-help-menu-display, flex);
+    }
+
     .toggle[aria-expanded='true']::after {
         background-color: var(--terra-color-nasa-blue);
         block-size: 0.125em;
@@ -106,12 +110,14 @@ export default css`
         align-items: center;
     }
 
-    .location-icon {
+    .location-icon,
+    .date-range-icon {
         vertical-align: middle;
         color: var(--terra-color-nasa-blue);
     }
 
-    .location-text:hover {
+    .location-text:hover,
+    .date-range-text:hover {
         color: var(--terra-color-nasa-blue);
     }
 

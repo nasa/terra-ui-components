@@ -26,8 +26,8 @@ import { formatDate } from '../../utilities/date.js'
 
 /**
  * @summary Short summary of the component's intended use.
- * @documentation https://disc.gsfc.nasa.gov/components/plot-toolbar
- * @status experimental
+ * @documentation https://terra-ui.netlify.app/components/plot-toolbar
+ * @status stable
  * @since 1.0
  *
  * @dependency terra-example
@@ -37,7 +37,7 @@ import { formatDate } from '../../utilities/date.js'
  *
  * @csspart base - The component's base wrapper.
  *
- * @cssproperty --example - An example CSS custom property.
+ * @cssproperty --terra-plot-toolbar-help-menu-display - Controls the display of the help menu button. Set to `none` to hide it. Defaults to `flex`.
  */
 export default class TerraPlotToolbar extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -58,7 +58,10 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() dataType: DataType
     @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean =
         true
-    @property({ type: String }) colormap = 'viridis' // default colormap
+    @property({ type: Boolean, attribute: 'show-date-range' }) showDateRange: boolean
+    @property({ type: Array }) colormaps: string[] = []
+    @property({ type: String, attribute: 'color-map-name', reflect: true })
+    colorMapName: string = 'viridis'
     @property({ type: Number }) opacity = 1
     @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
         false
@@ -78,52 +81,6 @@ export default class TerraPlotToolbar extends TerraElement {
     locationMapValue: any = []
 
     #tooltipTimeout: number | null = null
-    @state() colormaps = [
-        'jet',
-        'hsv',
-        'hot',
-        'cool',
-        'spring',
-        'summer',
-        'autumn',
-        'winter',
-        'bone',
-        'copper',
-        'greys',
-        'YIGnBu',
-        'greens',
-        'YIOrRd',
-        'bluered',
-        'RdBu',
-        'picnic',
-        'rainbow',
-        'portland',
-        'blackbody',
-        'earth',
-        'electric',
-        'viridis',
-        'inferno',
-        'magma',
-        'plasma',
-        'warm',
-        'cool',
-        'bathymetry',
-        'cdom',
-        'chlorophyll',
-        'density',
-        'fressurface-blue',
-        'freesurface-red',
-        'oxygen',
-        'par',
-        'phase',
-        'salinity',
-        'temperature',
-        'turbidity',
-        'velocity-blue',
-        'velocity-green',
-        'cubhelix',
-    ]
-    @state() colorMapName = 'density'
 
     @query('#menu') menu: HTMLMenuElement
 
@@ -178,6 +135,18 @@ export default class TerraPlotToolbar extends TerraElement {
         ></terra-icon>`
     }
 
+    #getDateRangeIcon() {
+        if (!this.startDate || !this.endDate) return ''
+
+        return html`<terra-icon
+            name="outline-calendar-date-range"
+            library="heroicons"
+            font-size="1em"
+            class="date-range-icon"
+            label="Date range"
+        ></terra-icon>`
+    }
+
     render() {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
@@ -219,6 +188,13 @@ export default class TerraPlotToolbar extends TerraElement {
                                                     /,/g,
                                                     ', '
                                                 )}</span
+                                            >`
+                                      : ''}
+                                  ${this.showDateRange
+                                      ? html`• ${this.#getDateRangeIcon()}
+                                            <span
+                                                >${formatDate(this.startDate)} to
+                                                ${formatDate(this.endDate)}</span
                                             >`
                                       : ''}
                               </h3>
@@ -299,7 +275,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               aria-expanded=${this.activeMenuItem === 'help'}
                               aria-controls="menu"
                               aria-haspopup="true"
-                              class="toggle"
+                              class="toggle help-toggle"
                               @mouseenter=${this.#handleActiveMenuItem}
                               data-menu-name="help"
                           >
@@ -313,7 +289,6 @@ export default class TerraPlotToolbar extends TerraElement {
                                   font-size="1em"
                               ></terra-icon>
                           </terra-button>
-
                           <terra-button
                               outline
                               aria-expanded=${this.activeMenuItem === 'jupyter'}
@@ -468,13 +443,26 @@ export default class TerraPlotToolbar extends TerraElement {
         )
     }
 
+    #showCheckBoxToggle = (e: Event) => {
+        const checkbox = e.target as HTMLInputElement
+        const isChecked = checkbox.checked
+
+        this.dispatchEvent(
+            new CustomEvent('show-check-box-toggle', {
+                detail: isChecked,
+                bubbles: true,
+                composed: true,
+            })
+        )
+    }
+
     #renderGeotiffPanel() {
         return html`
             <h3 class="sr-only">GeoTIFF Settings</h3>
 
             ${this.dataType === 'geotiff'
                 ? html`
-                      <p>Select opacity and apply colormaps</p>
+                      <p>Select opacity,apply colormaps, and toggle draw profile</p>
 
                       <label>
                           Layer opacity
@@ -484,7 +472,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               max="1"
                               step="0.01"
                               .value=${String(this.opacity)}
-                              @change=${this.#onShowOpacityChange}
+                              @input=${this.#onShowOpacityChange}
                           />
                           <span id="opacity-output">${this.opacity.toFixed(2)}</span>
                       </label>
@@ -505,6 +493,13 @@ export default class TerraPlotToolbar extends TerraElement {
                                       </option>`
                               )}
                           </select>
+                      </label>
+                      <label>
+                          <input
+                              type="checkbox"
+                              @change=${this.#showCheckBoxToggle}
+                          />
+                          <slot>Draw Profile</slot>
                       </label>
                   `
                 : nothing}
@@ -612,15 +607,18 @@ export default class TerraPlotToolbar extends TerraElement {
                 ? html`
                       <p>
                           This plot can be downloaded as a
-                          <abbr title="Geotiff">GeoTIFF</abbr>
-                          file
+                          <abbr title="Geotiff">GeoTIFF</abbr>, a
+                          <abbr title="Portable Network Graphic">PNG</abbr>, or a
+                          <abbr title="Joint Photographic Experts Group">JPG</abbr>
+                          image
                       </p>
                   `
                 : html`
                       <p>
-                          This plot can be downloaded as either a
-                          <abbr title="Portable Network Graphic">PNG</abbr>
-                          image or
+                          This plot can be downloaded as a
+                          <abbr title="Portable Network Graphic">PNG</abbr> or
+                          <abbr title="Joint Photographic Experts Group">JPG</abbr>
+                          image, or as
                           <abbr title="Comma-Separated Value">CSV</abbr>
                           data.
                       </p>
@@ -641,23 +639,10 @@ export default class TerraPlotToolbar extends TerraElement {
                               font-size="1.5em"
                           ></terra-icon>
                       </terra-button>
+                      ${this.#renderImageDownloadButtons(true)}
                   `
                 : html`
-                      <terra-button
-                          outline
-                          variant="default"
-                          @click=${this.#downloadPNG}
-                      >
-                          <span class="sr-only">Download Plot Data as </span>
-                          PNG
-                          <terra-icon
-                              slot="prefix"
-                              name="outline-photo"
-                              library="heroicons"
-                              font-size="1.5em"
-                          ></terra-icon>
-                      </terra-button>
-
+                      ${this.#renderImageDownloadButtons(false)}
                       <terra-button
                           outline
                           variant="default"
@@ -673,6 +658,40 @@ export default class TerraPlotToolbar extends TerraElement {
                           ></terra-icon>
                       </terra-button>
                   `}
+        `
+    }
+
+    #renderImageDownloadButtons(isMap: boolean) {
+        return html`
+            <terra-button
+                outline
+                variant="default"
+                @click=${isMap ? this.#downloadMapPNG : this.#downloadPNG}
+            >
+                <span class="sr-only">Download ${isMap ? 'Map' : 'Plot'} as </span>
+                PNG
+                <terra-icon
+                    slot="prefix"
+                    name="outline-photo"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
+
+            <terra-button
+                outline
+                variant="default"
+                @click=${isMap ? this.#downloadMapJPG : this.#downloadJPG}
+            >
+                <span class="sr-only">Download ${isMap ? 'Map' : 'Plot'} as </span>
+                JPG
+                <terra-icon
+                    slot="prefix"
+                    name="outline-photo"
+                    library="heroicons"
+                    font-size="1.5em"
+                ></terra-icon>
+            </terra-button>
         `
     }
 
@@ -806,6 +825,15 @@ export default class TerraPlotToolbar extends TerraElement {
         })
     }
 
+    #downloadJPG(_event: Event) {
+        Plotly.downloadImage(this.plot!.base, {
+            filename: this.catalogVariable!.dataFieldId,
+            format: 'jpeg',
+            width: 1920,
+            height: 1080,
+        })
+    }
+
     #downloadCSV(_event: Event) {
         let plotData: Array<Plot> = []
 
@@ -880,5 +908,13 @@ export default class TerraPlotToolbar extends TerraElement {
         a.click()
         document.body.removeChild(a)
         console.log('Successfully downloaded tiff file...')
+    }
+
+    #downloadMapPNG() {
+        this.emit('terra-plot-toolbar-export-image', { detail: { format: 'png' } })
+    }
+
+    #downloadMapJPG() {
+        this.emit('terra-plot-toolbar-export-image', { detail: { format: 'jpg' } })
     }
 }

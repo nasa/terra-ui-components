@@ -290,10 +290,6 @@ if (serve) {
                 '/dist': './cdn',
             },
         },
-        https: {
-            key: 'certs/server.key',
-            cert: 'certs/server.crt',
-        },
         middleware: function (req, res, next) {
             res.setHeader('Access-Control-Allow-Origin', '*')
             res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -327,7 +323,7 @@ if (serve) {
 
         try {
             const isTheme = /^src\/themes/.test(filename)
-            const isStylesheet = /(\.css|\.styles\.ts)$/.test(filename)
+            const isStylesheet = /(\.css|\.scss|\.styles\.ts)$/.test(filename)
 
             // Rebuild the source
             const rebuildResults = buildResults.map(result => result.rebuild())
@@ -342,6 +338,8 @@ if (serve) {
                         })
                     })
                 )
+                // Small delay to ensure SASS compilation writes are flushed before reloading
+                await new Promise(resolve => setTimeout(resolve, 1000))
             }
 
             // Rebuild metadata (but not when styles are changed)

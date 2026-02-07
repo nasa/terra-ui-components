@@ -1,40 +1,38 @@
 import { LitElement } from 'lit'
-import { property } from 'lit/decorators.js'
-import { Environment, getEnvironment } from '../utilities/environment.js'
-import { purgeGraphQLCache } from '../lib/graphql-client.js'
-import { authService } from '../auth/auth.service.js'
+import { property, state } from 'lit/decorators.js'
+import { Environment } from '../utilities/environment.js'
 
 // Match event type name strings that are registered on GlobalEventHandlersEventMap...
 type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
     ? // ...where the event detail is an object...
-      GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
-        ? // ...that is non-empty...
-          GlobalEventHandlersEventMap[T] extends CustomEvent<
-              Record<PropertyKey, never>
-          >
-            ? never
-            : // ...and has at least one non-optional property
-              Partial<
-                    GlobalEventHandlersEventMap[T]['detail']
-                > extends GlobalEventHandlersEventMap[T]['detail']
-              ? never
-              : T
-        : never
+    GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
+    ? // ...that is non-empty...
+    GlobalEventHandlersEventMap[T] extends CustomEvent<
+        Record<PropertyKey, never>
+    >
+    ? never
+    : // ...and has at least one non-optional property
+    Partial<
+        GlobalEventHandlersEventMap[T]['detail']
+    > extends GlobalEventHandlersEventMap[T]['detail']
+    ? never
+    : T
+    : never
     : never
 
 // The inverse of the above (match any type that doesn't match EventTypeRequiresDetail)
 type EventTypeDoesNotRequireDetail<T> = T extends keyof GlobalEventHandlersEventMap
     ? GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
-        ? GlobalEventHandlersEventMap[T] extends CustomEvent<
-              Record<PropertyKey, never>
-          >
-            ? T
-            : Partial<
-                    GlobalEventHandlersEventMap[T]['detail']
-                > extends GlobalEventHandlersEventMap[T]['detail']
-              ? T
-              : never
-        : T
+    ? GlobalEventHandlersEventMap[T] extends CustomEvent<
+        Record<PropertyKey, never>
+    >
+    ? T
+    : Partial<
+        GlobalEventHandlersEventMap[T]['detail']
+    > extends GlobalEventHandlersEventMap[T]['detail']
+    ? T
+    : never
+    : T
     : T
 
 // `keyof EventTypesWithRequiredDetail` lists all registered event types that require detail
@@ -53,28 +51,28 @@ type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 // Given an event name string, get a valid type for the options to initialize the event that is more restrictive than
 // just CustomEventInit when appropriate (validate the type of the event detail, and require it to be provided if the
 // event requires it)
-type SlEventInit<T> = T extends keyof GlobalEventHandlersEventMap
+type TerraEventInit<T> = T extends keyof GlobalEventHandlersEventMap
     ? GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
-        ? GlobalEventHandlersEventMap[T] extends CustomEvent<
-              Record<PropertyKey, never>
-          >
-            ? CustomEventInit<GlobalEventHandlersEventMap[T]['detail']>
-            : Partial<
-                    GlobalEventHandlersEventMap[T]['detail']
-                > extends GlobalEventHandlersEventMap[T]['detail']
-              ? CustomEventInit<GlobalEventHandlersEventMap[T]['detail']>
-              : WithRequired<
-                    CustomEventInit<GlobalEventHandlersEventMap[T]['detail']>,
-                    'detail'
-                >
-        : CustomEventInit
+    ? GlobalEventHandlersEventMap[T] extends CustomEvent<
+        Record<PropertyKey, never>
+    >
+    ? CustomEventInit<GlobalEventHandlersEventMap[T]['detail']>
+    : Partial<
+        GlobalEventHandlersEventMap[T]['detail']
+    > extends GlobalEventHandlersEventMap[T]['detail']
+    ? CustomEventInit<GlobalEventHandlersEventMap[T]['detail']>
+    : WithRequired<
+        CustomEventInit<GlobalEventHandlersEventMap[T]['detail']>,
+        'detail'
+    >
+    : CustomEventInit
     : CustomEventInit
 
 // Given an event name string, get the type of the event
 type GetCustomEventType<T> = T extends keyof GlobalEventHandlersEventMap
     ? GlobalEventHandlersEventMap[T] extends CustomEvent<unknown>
-        ? GlobalEventHandlersEventMap[T]
-        : CustomEvent<unknown>
+    ? GlobalEventHandlersEventMap[T]
+    : CustomEvent<unknown>
     : CustomEvent<unknown>
 
 // `keyof ValidEventTypeMap` is equivalent to `keyof GlobalEventHandlersEventMap` but gives a nicer error message
@@ -86,21 +84,105 @@ export default class TerraElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
-    @property() environment?: Environment = getEnvironment()
+    @property() environment?: Environment = Environment.PROD
     @property() bearerToken?: string
+    @state() isVisible: boolean = false
+
+    #io?: IntersectionObserver
+
+    connectedCallback(): void {
+        super.connectedCallback()
+
+        this.#observeVisibility()
+    }
+
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        this.#io?.disconnect()
+        this.#io = undefined
+    }
+
+    #observeVisibility() {
+        if (this.#io) {
+            return
+        }
+
+        this.isVisible = this.#isComponentVisible()
+
+        if (this.isVisible) {
+            this.firstVisible()
+            return
+        }
+
+        if (!('IntersectionObserver' in window)) {
+            // IntersectionObserver not supported, just assume visible
+            this.isVisible = true
+            this.firstVisible()
+            return
+        }
+
+        // Component isn't visible, probably in a modal/dialog
+        // instead we'll setup an IntersectionObserver to wait for visibility
+        this.#io = new IntersectionObserver(
+            entries => {
+                if (entries.some(e => e.isIntersecting)) {
+                    // Component is visible! Call "firstVisible"
+                    this.#io?.disconnect()
+                    this.#io = undefined
+                    this.isVisible = true
+
+                    // Give dialog animations time to finish
+                    setTimeout(() => this.firstVisible(), 500)
+                }
+            },
+            { root: null, threshold: 0 }
+        )
+
+        this.#io.observe(this)
+    }
+
+    /**
+     * Called when the component is visible on the page
+     * Example: if the component is in a dialog, this will be triggered the first time the dialog opens
+     */
+    firstVisible() {
+        // no-op, components can override this
+    }
+
+    /**
+     * Check if the component is visible on the page
+     * @returns true if the component is visible, false otherwise
+     */
+    #isComponentVisible(): boolean {
+        // Check if the element is connected to the DOM
+        if (!this.isConnected) {
+            return false
+        }
+
+        // Check if the element has dimensions and is not hidden
+        const rect = this.getBoundingClientRect()
+        const style = getComputedStyle(this)
+
+        return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden'
+        )
+    }
 
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
         name: EventTypeDoesNotRequireDetail<T>,
-        options?: SlEventInit<T> | undefined
+        options?: TerraEventInit<T> | undefined
     ): GetCustomEventType<T>
     emit<T extends string & keyof EventTypesWithRequiredDetail>(
         name: EventTypeRequiresDetail<T>,
-        options: SlEventInit<T>
+        options: TerraEventInit<T>
     ): GetCustomEventType<T>
     emit<T extends string & keyof ValidEventTypeMap>(
         name: T,
-        options?: SlEventInit<T> | undefined
+        options?: TerraEventInit<T> | undefined
     ): GetCustomEventType<T> {
         const event = new CustomEvent(name, {
             bubbles: true,
@@ -132,7 +214,7 @@ export default class TerraElement extends LitElement {
         if (!currentlyRegisteredConstructor) {
             customElements.define(
                 name,
-                class extends elementConstructor {} as unknown as CustomElementConstructor,
+                class extends elementConstructor { } as unknown as CustomElementConstructor,
                 options
             )
             return
@@ -170,28 +252,8 @@ export default class TerraElement extends LitElement {
         Object.entries(
             (this.constructor as typeof TerraElement).dependencies
         ).forEach(([name, component]) => {
-            ;(this.constructor as typeof TerraElement).define(name, component)
+            ; (this.constructor as typeof TerraElement).define(name, component)
         })
-
-        // Listen for environment changes
-        document.addEventListener(
-            'terra-environment-change',
-            (event: CustomEvent) => {
-                // Purge the GraphQL cache and authentication info when the environment changes
-                // This really shouldn't happen normally. Most websites/apps will be using the same environment.
-                // The docs site is an exception, as we allow for switching between UAT and PROD.
-                purgeGraphQLCache()
-
-                if (
-                    localStorage.getItem('terra-environment') !==
-                    event.detail.environment
-                ) {
-                    authService.logout()
-                }
-
-                this.environment = event.detail.environment
-            }
-        )
     }
 }
 

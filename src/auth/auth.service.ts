@@ -141,7 +141,15 @@ class AuthService {
         try {
             // if the environment is UAT, we need to add the environment to the URL
             const environment = getEnvironment()
-            const url = `${AUTH_URL}/user${environment === Environment.UAT ? '?environment=uat' : ''}`
+            const params = new URLSearchParams()
+
+            params.set('client_id', 'terra-earthdata-oauth-client')
+
+            if (environment === Environment.UAT) {
+                params.set('environment', 'uat')
+            }
+
+            const url = `${AUTH_URL}/user?${params.toString()}`
 
             // get user info from the auth service
             const response = await fetch(url, {
@@ -194,6 +202,53 @@ class AuthService {
 
     login(): void {
         window.location.href = `${AUTH_URL}/login?redirect_uri=${window.location.href}${getEnvironment() === Environment.UAT ? '&environment=uat' : ''}`
+    }
+
+    async loginWithCredentials(username: string, password: string) {
+        const url = `${AUTH_URL}/login`
+
+        // Clear any previous errors before attempting login
+        this.setState({ error: null, isLoading: true })
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Basic ${btoa(`${username}:${password}`)}`,
+            },
+        })
+
+        if (!response.ok) {
+            // Try to parse error response
+            let errorMessage = response.statusText ?? 'Failed to login'
+
+            try {
+                const errorData = await response.json()
+                // Prefer error_description if available, otherwise use error field
+                errorMessage =
+                    errorData.error_description || errorData.error || errorMessage
+            } catch {
+                // If JSON parsing fails, use the status text
+            }
+
+            // Set error in auth state
+            this.setState({
+                error: errorMessage,
+                isLoading: false,
+            })
+
+            throw new Error(errorMessage)
+        }
+
+        const data = await response.json()
+
+        this.setState({
+            ...this.authState,
+            token: data.access_token,
+            error: null,
+        })
+
+        return this.authenticate()
     }
 
     logout(): void {

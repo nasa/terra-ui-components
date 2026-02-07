@@ -6,6 +6,7 @@ export default css`
         gap: 1.5rem 0.75rem;
         grid-template-rows: auto;
         grid-template-columns: 1fr 1fr;
+        position: relative;
     }
 
     terra-variable-combobox {
@@ -32,12 +33,13 @@ export default css`
     dialog {
         opacity: 1;
         transition: opacity 0.3s ease-out 0.4s;
+        position: absolute;
+        top: calc(50% - 100px);
 
         @starting-style {
             opacity: 0;
         }
 
-        place-self: center;
         z-index: var(--terra-z-index-dialog);
     }
 
@@ -72,5 +74,11 @@ export default css`
         justify-content: flex-end;
         gap: 1rem;
         margin-top: 1.5rem;
+    }
+
+    .no-data-alert,
+    .error-alert {
+        display: block;
+        width: 100%;
     }
 `

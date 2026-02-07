@@ -1,4 +1,5 @@
 import importlib.metadata
+import base64
 import traitlets
 from ..base import TerraBaseWidget
 
@@ -25,6 +26,7 @@ class TerraTimeAverageMap(TerraBaseWidget):
         component.startDate = model.get('startDate')
         component.endDate = model.get('endDate')
         component.location = model.get('location')
+        component.bearerToken = model.get('bearerToken')
         component.long_name = model.get('long_name')
 
         /**
@@ -56,6 +58,9 @@ class TerraTimeAverageMap(TerraBaseWidget):
         model.on('change:location', () => {
             component.location = model.get('location')
         })
+        model.on('change:bearerToken', () => {
+            component.bearerToken = model.get('bearerToken')
+        })
         model.on('change:long_name', () => {
             component.long_name = model.get('long_name')
         })
@@ -64,7 +69,7 @@ class TerraTimeAverageMap(TerraBaseWidget):
          * Add event listeners.
          * These are used to communicate back to the Jupyter notebook
          */
-        component.addEventListener('terra-time-average-map-data-change', (e) => {
+        component.addEventListener('terra-time-average-map-data-change', async (e) => {
             // hide the loading overlay, if it exists
             const loadingOverlay = document.getElementById('jupyterlite-loading-overlay')
 
@@ -72,9 +77,34 @@ class TerraTimeAverageMap(TerraBaseWidget):
                 loadingOverlay.remove()
             }
 
-            console.log('caught the event!! ', e)
+            console.log('time-average-map: finished mapping GeoTIFF. Sending GeoTIFF to Python... ', e)
 
-            model.set('data', e.detail.data.data)
+            // We can't send a JS Blob to Python, so we'll instead need to convert it to bytes
+            const blob = e.detail.data
+
+            if (blob instanceof Blob) {
+                const arrayBuffer = await blob.arrayBuffer()
+                const uint8Array = new Uint8Array(arrayBuffer)
+                
+                // Convert to base64 string for transmission to Python
+                // Use chunked conversion to avoid "Maximum call stack size exceeded" for large files
+                const chunkSize = 8192
+                let binaryString = ''
+                
+                for (let i = 0; i < uint8Array.length; i += chunkSize) {
+                    const chunk = uint8Array.subarray(i, i + chunkSize)
+                    binaryString += String.fromCharCode(...chunk)
+                }
+
+                const base64String = btoa(binaryString)
+                model.set('_data_base64', base64String)
+
+                console.log('time-average-map: sent base64 encoded GeoTIFF to Python ', base64String)
+            } else {
+                console.error('time-average-map: failed to send GeoTIFF to Python. Unknown data type', blob)
+                model.set('_data_base64', '')
+            }
+            
             model.save_changes()
         })
     }
@@ -90,6 +120,16 @@ class TerraTimeAverageMap(TerraBaseWidget):
     startDate = traitlets.Unicode('').tag(sync=True)
     endDate = traitlets.Unicode('').tag(sync=True)
     location = traitlets.Unicode('').tag(sync=True)
+    bearerToken = traitlets.Unicode('').tag(sync=True)
     long_name = traitlets.Unicode('').tag(sync=True)
-    data = traitlets.List(trait=traitlets.Dict(),
-                          default_value=[]).tag(sync=True)
+    _data_base64 = traitlets.Unicode('').tag(sync=True)
+
+    @property
+    def data(self):
+        """Get the binary data as bytes, decoded from base64."""
+        if not self._data_base64:
+            return b''
+        try:
+            return base64.b64decode(self._data_base64)
+        except Exception:
+            return b''
