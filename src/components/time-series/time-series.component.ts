@@ -106,6 +106,26 @@ export default class TerraTimeSeries extends TerraElement {
     @property({ attribute: 'bearer-token', reflect: false })
     bearerToken?: string
 
+    @property({
+        attribute: 'mobile-view',
+        type: Boolean,
+        reflect: true,
+    })
+    mobileView = false
+
+    @property({
+        attribute: 'hide-toolbar',
+        type: Boolean,
+        reflect: true,
+    })
+    hideToolbar = false
+
+    @property({
+        attribute: 'product-label',
+        reflect: true,
+    })
+    productLabel?: string
+
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 
@@ -178,6 +198,7 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #handleComponentLeave(event: MouseEvent) {
+        if (this.mobileView) return
         // Check if we're actually leaving the component by checking if the related target is outside
         const relatedTarget = event.relatedTarget as HTMLElement
         if (!this.contains(relatedTarget)) {
@@ -212,25 +233,28 @@ export default class TerraTimeSeries extends TerraElement {
                           </terra-alert>
                       `
                     : ''}
-                ${cache(
-                    this.catalogVariable
-                        ? html`<terra-plot-toolbar
-                              .catalogVariable=${this.catalogVariable}
-                              .plot=${this.plot}
-                              .timeSeriesData=${this.#timeSeriesController
-                                  .lastTaskValue ??
-                              this.#timeSeriesController.emptyPlotData}
-                              .location=${this.location}
-                              .startDate=${this.startDate}
-                              .endDate=${this.endDate}
-                              .cacheKey=${this.#timeSeriesController.getCacheKey()}
-                              .variableEntryId=${this.variableEntryId}
-                              .showCitation=${this.showCitation}
-                          >
-                            <slot name="help-links" slot="help-links"></slot>
-                          </terra-plot-toolbar>`
-                        : html`<div class="spacer"></div>`
-                )}
+                ${!this.hideToolbar
+                    ? cache(
+                          this.catalogVariable
+                              ? html`<terra-plot-toolbar
+                                    .catalogVariable=${this.catalogVariable}
+                                    .plot=${this.plot}
+                                    .timeSeriesData=${this.#timeSeriesController
+                                        .lastTaskValue ??
+                                    this.#timeSeriesController.emptyPlotData}
+                                    .location=${this.location}
+                                    .startDate=${this.startDate}
+                                    .endDate=${this.endDate}
+                                    .cacheKey=${this.#timeSeriesController.getCacheKey()}
+                                    .variableEntryId=${this.variableEntryId}
+                                    .showCitation=${this.showCitation}
+                                    .mobileView=${this.mobileView}
+                                    .productLabel=${this.productLabel}
+                                    .metadata=${this.#timeSeriesController.metadata}
+                                ></terra-plot-toolbar>`
+                              : html`<div class="spacer"></div>`
+                      )
+                    : ''}
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"

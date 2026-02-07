@@ -11,7 +11,10 @@ import * as Plotly from 'plotly.js-dist-min'
 import type TerraPlot from '../plot/plot.component.js'
 import type { Plot } from '../plot/plot.types.js'
 import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
-import type { VariableDbEntry } from '../time-series/time-series.types.js'
+import type {
+    VariableDbEntry,
+    TimeSeriesMetadata,
+} from '../time-series/time-series.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
@@ -67,6 +70,19 @@ export default class TerraPlotToolbar extends TerraElement {
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
     @property({ attribute: 'application-citation' }) applicationCitation?: string
+
+    @property() mobileView = false
+
+    @property() productLabel?: string
+
+    metadata: TimeSeriesMetadata
+
+    @property({ type: Number }) bottomSheetDragY = 0
+    #isBottomSheetDragging = false
+    #bottomSheetStartY = 0
+
+    @state()
+    hideTitle: boolean = false
 
     @state()
     activeMenuItem: MenuNames = null
@@ -127,11 +143,14 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @query('#menu') menu: HTMLMenuElement
 
+    @query('.bottom-sheet') private bottomSheet: HTMLDivElement
+
     _authController = new AuthController(this)
     #controller = new PlotToolbarController(this)
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
+        if (this.mobileView) return
         if (newValue === null) {
             return
         }
@@ -178,6 +197,11 @@ export default class TerraPlotToolbar extends TerraElement {
         ></terra-icon>`
     }
 
+    #toggleMobileTitle() {
+        if (!this.mobileView || !this.productLabel) return
+        this.hideTitle = !this.hideTitle
+    }
+
     render() {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
@@ -189,243 +213,391 @@ export default class TerraPlotToolbar extends TerraElement {
         return cache(
             !this.catalogVariable
                 ? html`<div class="spacer"></div>`
-                : html` <header>
-                      <div class="title-container">
-                          <slot name="title">
-                              <h2 class="title">
-                                  ${this.catalogVariable.dataFieldLongName}
-                              </h2>
-                          </slot>
-                          <slot name="subtitle">
-                              <h3 class="subtitle">
-                                  ${metadata.join(' • ')} •
-                                  <a
-                                      target="_blank"
-                                      href="${this.catalogVariable
-                        .dataProductDescriptionUrl}"
-                                      >[${this.catalogVariable
-                        .dataProductShortName}_${this
-                            .catalogVariable.dataProductVersion}]</a
+                : html`
+                      <header>
+                          <div class="title-container">
+                              <slot name="title">
+                                  <h2 class="title" @click=${this.#toggleMobileTitle}>
+                                      ${this.productLabel || ''}
+                                      ${this.productLabel ? html`<br />` : ''}
+                                      ${!this.hideTitle
+                                          ? this.catalogVariable.dataFieldLongName
+                                          : ''}
+                                  </h2>
+                              </slot>
+                              <slot name="subtitle" ?hidden=${this.hideTitle}>
+                                  <h3 class="subtitle">
+                                      ${metadata.join(' • ')} •
+                                      <a
+                                          target="_blank"
+                                          href="${this.catalogVariable
+                                              .dataProductDescriptionUrl}"
+                                          >[${this.catalogVariable
+                                              .dataProductShortName}_${this
+                                              .catalogVariable.dataProductVersion}]</a
+                                      >
+                                      ${this.showLocation
+                                          ? html`• ${this.#getLocationIcon()}
+                                                <span
+                                                    class="location-text"
+                                                    @mouseenter=${this
+                                                        .#handleLocationMouseEnter}
+                                                    @mouseleave=${this
+                                                        .#handleLocationMouseLeave}
+                                                    >${this.location.replace(
+                                                        /,/g,
+                                                        ', '
+                                                    )}</span
+                                                >`
+                                          : ''}
+                                  </h3>
+                              </slot>
+                          </div>
+
+                          <div class="toggles" data-mobile-view=${this.mobileView}>
+                              <terra-button
+                                  circle
+                                  outline
+                                  aria-expanded=${this.activeMenuItem ===
+                                  'information'}
+                                  aria-controls="menu"
+                                  aria-haspopup="true"
+                                  class="toggle"
+                                  @mouseenter=${!this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  @click=${this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  data-menu-name="information"
+                              >
+                                  <span class="sr-only"
+                                      >Information for
+                                      ${this.catalogVariable.dataFieldLongName}</span
                                   >
-                                  ${this.showLocation
-                        ? html`• ${this.#getLocationIcon()}
+
+                                  <terra-icon
+                                      name="info"
+                                      font-size="1em"
+                                  ></terra-icon>
+                              </terra-button>
+
+                              ${this.showCitation
+                                  ? html`
+                                        <terra-button
+                                            circle
+                                            outline
+                                            aria-expanded=${this.activeMenuItem ===
+                                            'citation'}
+                                            aria-controls="menu"
+                                            aria-haspopup="true"
+                                            class="toggle"
+                                            @mouseenter=${!this.mobileView
+                                                ? this.#handleActiveMenuItem
+                                                : null}
+                                            @click=${this.mobileView
+                                                ? this.#handleActiveMenuItem
+                                                : null}
+                                            data-menu-name="citation"
+                                        >
+                                            <span class="sr-only"
+                                                >Citation for
+                                                ${this.catalogVariable
+                                                    .dataFieldLongName}</span
+                                            >
+
                                             <span
-                                                class="location-text"
-                                                @mouseenter=${this
-                                .#handleLocationMouseEnter}
-                                                @mouseleave=${this
-                                .#handleLocationMouseLeave}
-                                                >${this.location.replace(
-                                    /,/g,
-                                    ', '
-                                )}</span
-                                            >`
-                        : ''}
-                              </h3>
-                          </slot>
-                      </div>
+                                                style="font-weight: 500; font-size: 1.2em"
+                                                >C</span
+                                            >
+                                        </terra-button>
+                                    `
+                                  : nothing}
 
-                      <div class="toggles">
-                          <terra-button
-                              circle
-                              outline
-                              aria-expanded=${this.activeMenuItem === 'information'}
-                              aria-controls="menu"
-                              aria-haspopup="true"
-                              class="toggle"
-                              @mouseenter=${this.#handleActiveMenuItem}
-                              data-menu-name="information"
-                          >
-                              <span class="sr-only"
-                                  >Information for
-                                  ${this.catalogVariable.dataFieldLongName}</span
+                              <terra-button
+                                  circle
+                                  outline
+                                  aria-expanded=${this.activeMenuItem === 'download'}
+                                  aria-controls="menu"
+                                  aria-haspopup="true"
+                                  class="toggle"
+                                  @mouseenter=${!this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  @click=${this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  data-menu-name="download"
                               >
+                                  <span class="sr-only"
+                                      >Download options for
+                                      ${this.catalogVariable.dataFieldLongName}</span
+                                  >
 
-                              <terra-icon name="info" font-size="1em"></terra-icon>
-                          </terra-button>
+                                  <terra-icon
+                                      name="outline-arrow-down-tray"
+                                      library="heroicons"
+                                      font-size="1.5em"
+                                  ></terra-icon>
+                              </terra-button>
 
-                          ${this.showCitation
-                              ? html`
-                                    <terra-button
-                                        circle
-                                        outline
-                                        aria-expanded=${this.activeMenuItem ===
-                                        'citation'}
-                                        aria-controls="menu"
-                                        aria-haspopup="true"
-                                        class="toggle"
-                                        @mouseenter=${this.#handleActiveMenuItem}
-                                        data-menu-name="citation"
+                              <terra-button
+                                  circle
+                                  outline
+                                  aria-expanded=${this.activeMenuItem === 'help'}
+                                  aria-controls="menu"
+                                  aria-haspopup="true"
+                                  class="toggle"
+                                  @mouseenter=${!this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  @click=${this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  data-menu-name="help"
+                              >
+                                  <span class="sr-only"
+                                      >Help link for
+                                      ${this.catalogVariable.dataFieldLongName}</span
+                                  >
+
+                                  <terra-icon
+                                      name="question"
+                                      font-size="1em"
+                                  ></terra-icon>
+                              </terra-button>
+
+                              <terra-button
+                                  outline
+                                  aria-expanded=${this.activeMenuItem === 'jupyter'}
+                                  aria-controls="menu"
+                                  aria-haspopup="true"
+                                  class="toggle square-button"
+                                  variant="warning"
+                                  @mouseenter=${!this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  @click=${this.mobileView
+                                      ? this.#handleActiveMenuItem
+                                      : null}
+                                  data-menu-name="jupyter"
+                              >
+                                  <span class="sr-only"
+                                      >Open in Jupyter Notebook for
+                                      ${this.catalogVariable.dataFieldLongName}</span
+                                  >
+
+                                  <terra-icon
+                                      name="outline-code-bracket"
+                                      library="heroicons"
+                                      font-size="1.5em"
+                                  ></terra-icon>
+                              </terra-button>
+
+                              ${this.dataType == 'geotiff'
+                                  ? html`
+                                        <terra-button
+                                            circle
+                                            outline
+                                            aria-expanded=${this.activeMenuItem ===
+                                            'GeoTIFF'}
+                                            aria-controls="menu"
+                                            aria-haspopup="true"
+                                            class="toggle"
+                                            @mouseenter=${!this.mobileView
+                                                ? this.#handleActiveMenuItem
+                                                : null}
+                                            @click=${this.mobileView
+                                                ? this.#handleActiveMenuItem
+                                                : null}
+                                            data-menu-name="GeoTIFF"
+                                        >
+                                            <terra-icon
+                                                name="outline-cog-8-tooth"
+                                                library="heroicons"
+                                                font-size="1.5em"
+                                            ></terra-icon>
+                                        </terra-button>
+                                    `
+                                  : nothing}
+                          </div>
+
+                          ${!this.mobileView
+                              ? html`<menu
+                                    role="menu"
+                                    id="menu"
+                                    data-expanded=${this.activeMenuItem !== null}
+                                    tabindex="-1"
+                                    @mouseleave=${this.#handleMenuLeave}
+                                >
+                                    <li
+                                        role="menuitem"
+                                        ?hidden=${this.activeMenuItem !==
+                                        'information'}
                                     >
-                                        <span class="sr-only"
-                                            >Citation for
-                                            ${this.catalogVariable
-                                                .dataFieldLongName}</span
-                                        >
+                                        ${this.#renderInfoPanel()}
+                                    </li>
 
-                                        <span
-                                            style="font-weight: 500; font-size: 1.2em"
-                                            >C</span
-                                        >
-                                    </terra-button>
-                                `
+                                    <li
+                                        role="menuitem"
+                                        ?hidden=${this.activeMenuItem !== 'citation'}
+                                    >
+                                        ${this.#renderCitationPanel()}
+                                    </li>
+
+                                    <li
+                                        role="menuitem"
+                                        ?hidden=${this.activeMenuItem !== 'download'}
+                                    >
+                                        ${this.#renderDownloadPanel()}
+                                    </li>
+
+                                    <li
+                                        role="menuitem"
+                                        ?hidden=${this.activeMenuItem !== 'help'}
+                                    >
+                                        ${this.#renderHelpPanel()}
+                                    </li>
+
+                                    <li
+                                        role="menuitem"
+                                        ?hidden=${this.activeMenuItem !== 'jupyter'}
+                                    >
+                                        ${this.#renderJupyterNotebookPanel()}
+                                    </li>
+
+                                    <li
+                                        role="menuitem"
+                                        ?hidden=${this.activeMenuItem !== 'GeoTIFF'}
+                                    >
+                                        ${this.#renderGeotiffPanel()}
+                                    </li>
+                                </menu>`
                               : nothing}
-
-                          <terra-button
-                              circle
-                              outline
-                              aria-expanded=${this.activeMenuItem === 'download'}
-                              aria-controls="menu"
-                              aria-haspopup="true"
-                              class="toggle"
-                              @mouseenter=${this.#handleActiveMenuItem}
-                              data-menu-name="download"
-                          >
-                              <span class="sr-only"
-                                  >Download options for
-                                  ${this.catalogVariable.dataFieldLongName}</span
-                              >
-
-                              <terra-icon
-                                  name="outline-arrow-down-tray"
-                                  library="heroicons"
-                                  font-size="1.5em"
-                              ></terra-icon>
-                          </terra-button>
-
-                          <terra-button
-                              circle
-                              outline
-                              aria-expanded=${this.activeMenuItem === 'help'}
-                              aria-controls="menu"
-                              aria-haspopup="true"
-                              class="toggle"
-                              @mouseenter=${this.#handleActiveMenuItem}
-                              data-menu-name="help"
-                          >
-                              <span class="sr-only"
-                                  >Help link for
-                                  ${this.catalogVariable.dataFieldLongName}</span
-                              >
-
-                              <terra-icon
-                                  name="question"
-                                  font-size="1em"
-                              ></terra-icon>
-                          </terra-button>
-
-                          <terra-button
-                              outline
-                              aria-expanded=${this.activeMenuItem === 'jupyter'}
-                              aria-controls="menu"
-                              aria-haspopup="true"
-                              class="toggle square-button"
-                              variant="warning"
-                              @mouseenter=${this.#handleActiveMenuItem}
-                              data-menu-name="jupyter"
-                          >
-                              <span class="sr-only"
-                                  >Open in Jupyter Notebook for
-                                  ${this.catalogVariable.dataFieldLongName}</span
-                              >
-
-                              <terra-icon
-                                  name="outline-code-bracket"
-                                  library="heroicons"
-                                  font-size="1.5em"
-                              ></terra-icon>
-                          </terra-button>
-
-                          ${this.dataType == 'geotiff'
-                        ? html`
-                                    <terra-button
-                                        circle
-                                        outline
-                                        aria-expanded=${this.activeMenuItem ===
-                            'GeoTIFF'}
-                                        aria-controls="menu"
-                                        aria-haspopup="true"
-                                        class="toggle"
-                                        @mouseenter=${this.#handleActiveMenuItem}
-                                        data-menu-name="GeoTIFF"
-                                    >
-                                        <terra-icon
-                                            name="outline-cog-8-tooth"
-                                            library="heroicons"
-                                            font-size="1.5em"
-                                        ></terra-icon>
-                                    </terra-button>
+                          ${this.showLocationTooltip
+                              ? html`
+                                    <div class="location-tooltip">
+                                        <terra-map
+                                            .value=${this.locationMapValue}
+                                            zoom="4"
+                                            has-navigation="false"
+                                            hide-bounding-box-selection="true"
+                                            hide-point-selection="true"
+                                            .staticMode=${true}
+                                            style="width: 300px; height: 200px;"
+                                        ></terra-map>
+                                    </div>
                                 `
-                        : nothing}
-                      </div>
+                              : ''}
+                      </header>
 
-                      <menu
-                          role="menu"
-                          id="menu"
-                          data-expanded=${this.activeMenuItem !== null}
-                          tabindex="-1"
-                          @mouseleave=${this.#handleMenuLeave}
-                      >
-                          <li
-                              role="menuitem"
-                              ?hidden=${this.activeMenuItem !== 'information'}
-                          >
-                              ${this.#renderInfoPanel()}
-                          </li>
-
-                          <li
-                              role="menuitem"
-                              ?hidden=${this.activeMenuItem !== 'citation'}
-                          >
-                              ${this.#renderCitationPanel()}
-                          </li>
-
-                          <li
-                              role="menuitem"
-                              ?hidden=${this.activeMenuItem !== 'download'}
-                          >
-                              ${this.#renderDownloadPanel()}
-                          </li>
-
-                          <li
-                              role="menuitem"
-                              ?hidden=${this.activeMenuItem !== 'help'}
-                          >
-                              ${this.#renderHelpPanel()}
-                          </li>
-
-                          <li
-                              role="menuitem"
-                              ?hidden=${this.activeMenuItem !== 'jupyter'}
-                          >
-                              ${this.#renderJupyterNotebookPanel()}
-                          </li>
-
-                          <li
-                              role="menuitem"
-                              ?hidden=${this.activeMenuItem !== 'GeoTIFF'}
-                          >
-                              ${this.#renderGeotiffPanel()}
-                          </li>
-                      </menu>
-
-                      ${this.showLocationTooltip
-                        ? html`
-                                <div class="location-tooltip">
-                                    <terra-map
-                                        .value=${this.locationMapValue}
-                                        zoom="4"
-                                        has-navigation="false"
-                                        hide-bounding-box-selection="true"
-                                        hide-point-selection="true"
-                                        .staticMode=${true}
-                                        style="width: 300px; height: 200px;"
-                                    ></terra-map>
-                                </div>
-                            `
-                        : ''}
-                  </header>`
+                      ${this.mobileView
+                          ? html` <div
+                                    class="bottom-sheet-backdrop"
+                                    data-state=${this.activeMenuItem
+                                        ? 'open'
+                                        : 'close'}
+                                    @click=${this.#handleBottomSheetClose}
+                                ></div>
+                                <div
+                                    data-state=${this.activeMenuItem
+                                        ? 'open'
+                                        : 'close'}
+                                    class="bottom-sheet"
+                                    @touchstart=${this.#onBottomSheetTouchStart}
+                                    @touchmove=${this.#onBottomSheetTouchMove}
+                                    @touchend=${this.#handleBottomSheetEndDrag}
+                                    @mousedown=${this.#onBottomSheetMouseDown}
+                                >
+                                    <div class="bottom-sheet-handle"></div>
+                                    <div class="bottom-sheet-content">
+                                        ${this.activeMenuItem === 'information'
+                                            ? this.#renderMobileInfoPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'citation'
+                                            ? this.#renderCitationPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'download'
+                                            ? this.#renderDownloadPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'help'
+                                            ? this.#renderHelpPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'jupyter'
+                                            ? this.#renderJupyterNotebookPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'GeoTIFF'
+                                            ? this.#renderGeotiffPanel()
+                                            : ''}
+                                    </div>
+                                </div>`
+                          : nothing}
+                  `
         )
+    }
+
+    #onBottomSheetTouchStart(e: TouchEvent) {
+        this.#handleBottomSheetStartDrag(e.touches[0].clientY)
+    }
+
+    #onBottomSheetTouchMove(e: TouchEvent) {
+        if (!this.#isBottomSheetDragging) return
+        this.#handleBottomSheetMoveDrag(e.touches[0].clientY)
+        if (this.bottomSheetDragY > 0) e.preventDefault()
+    }
+
+    #onBottomSheetMouseDown(e: MouseEvent) {
+        this.#handleBottomSheetStartDrag(e.clientY)
+        const move = (ev: MouseEvent) => this.#handleBottomSheetMoveDrag(ev.clientY)
+        const up = () => {
+            this.#handleBottomSheetEndDrag()
+            window.removeEventListener('mousemove', move)
+            window.removeEventListener('mouseup', up)
+        }
+        window.addEventListener('mousemove', move)
+        window.addEventListener('mouseup', up)
+    }
+
+    #handleBottomSheetStartDrag(y: number) {
+        if (!this.activeMenuItem) return
+        this.#isBottomSheetDragging = true
+        this.#bottomSheetStartY = y
+        this.bottomSheetDragY = 0
+        this.bottomSheet.style.transition = 'none'
+    }
+
+    #handleBottomSheetMoveDrag(y: number) {
+        this.bottomSheetDragY = y - this.#bottomSheetStartY
+
+        if (!this.#isBottomSheetDragging) return
+        if (this.bottomSheetDragY > 0) {
+            this.bottomSheet.style.transform = `translate(-50%, ${this.bottomSheetDragY}px)`
+        }
+    }
+
+    #handleBottomSheetEndDrag() {
+        const SWIPE_TO_CLOSE_THRESHOLD = 20
+
+        if (!this.#isBottomSheetDragging) return
+
+        this.#isBottomSheetDragging = false
+        this.bottomSheet.style.transition =
+            'transform 0.35s cubic-bezier(0.25,1,0.5,1)'
+
+        if (this.bottomSheetDragY > SWIPE_TO_CLOSE_THRESHOLD) {
+            this.#handleBottomSheetClose()
+        } else {
+            this.bottomSheet.style.transform = 'translate(-50%, 0)'
+        }
+        this.bottomSheetDragY = 0
+    }
+
+    #handleBottomSheetClose() {
+        this.bottomSheet.style.transform = 'translate(-50%, 100%)'
+        setTimeout(() => {
+            this.closeMenu()
+            this.bottomSheet.style.transform = ''
+        }, 150)
     }
 
     #handleActiveMenuItem(event: Event) {
@@ -437,6 +609,7 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #handleMenuLeave(event: MouseEvent) {
+        if (this.mobileView) return
         // Only close if we're not moving to another element within the component
         // If the GeoTIFF menu is in use, it will only close if you hover outside of the time average map component
         const relatedTarget = event.relatedTarget as HTMLElement
@@ -582,6 +755,67 @@ export default class TerraPlotToolbar extends TerraElement {
                     </a>
                 </dd>
             </dl>
+        `
+    }
+
+    #renderMobileInfoPanel() {
+        // We need to render different html when this.dataType === 'geotiff'
+        return html`
+            <h3 class="bottom-sheet-list">Request</h3>
+            <ul class="bottom-sheet-list">
+                <li>
+                    <strong>Timestamp: </strong>${formatDate(
+                        this.metadata.Request_time,
+                        'yyyy-MM-dd HH:mm'
+                    )}
+                </li>
+                <li>
+                    <strong>Begin Datetime: </strong>${formatDate(
+                        this.metadata.begin_time
+                    )}
+                </li>
+                <li>
+                    <strong>End Datetime: </strong>${formatDate(
+                        this.metadata.end_time
+                    )}
+                </li>
+                <li><strong>Lat: </strong>${this.metadata.lat}</li>
+                <li><strong>Lon: </strong>${this.metadata.lon}</li>
+            </ul>
+
+            <h3>Data Variable</h3>
+            <ul class="bottom-sheet-list">
+                ${this.productLabel
+                    ? html`<li><strong>Label: </strong>${this.productLabel}</li>`
+                    : ''}
+                <li><strong>Longname: </strong>${this.metadata.param_name}</li>
+                <li><strong>Shortname: </strong>${this.metadata.param_short_name}</li>
+                <li><strong>Units: </strong>${this.metadata.unit}</li>
+                <li><strong>Fill Value: </strong>${this.metadata.undef}</li>
+                <li><strong>Mean Value: </strong>${this.metadata.mean}</li>
+                <li>
+                    <strong>Lat. Resolution: </strong>${this.metadata.lat_resolution}
+                </li>
+                <li>
+                    <strong>Lon. Resolution: </strong>${this.metadata.lon_resolution}
+                </li>
+                <li>
+                    <strong>Data Product Name: </strong>${this.metadata.prod_name}
+                </li>
+                <li><strong>DOI: </strong>${this.metadata.doi}</li>
+                <li>
+                    <a
+                        href=${this.catalogVariable.dataProductDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >Dataset Information
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </li>
+            </ul>
         `
     }
 
