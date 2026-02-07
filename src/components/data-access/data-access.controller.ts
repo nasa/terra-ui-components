@@ -202,8 +202,8 @@ export class DataAccessController {
 
         return firstAndLastGranules
             ? formatGranuleSize(
-                  calculateMeanGranuleSize(firstAndLastGranules) * this.#totalGranules
-              )
+                calculateMeanGranuleSize(firstAndLastGranules) * this.#totalGranules
+            )
             : null
     }
 

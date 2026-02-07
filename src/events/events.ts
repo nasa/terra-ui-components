@@ -55,3 +55,4 @@ export type {
     TerraCellValueChangedEvent,
 } from './terra-data-grid.js'
 export type { TerraPlotOptionsChangeEvent } from './terra-plot-options-change.js'
+export type { TerraDateSelectionInvalidEvent } from './terra-date-selection-invalid.js'

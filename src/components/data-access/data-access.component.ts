@@ -616,10 +616,10 @@ export default class TerraDataAccess extends TerraElement {
                         placeholder="Search file names"
                         .value=${this.search ?? ''}
                         @input=${(event: Event) => {
-                            this.handleSearch(
-                                (event.target as HTMLInputElement).value
-                            )
-                        }}
+                this.handleSearch(
+                    (event.target as HTMLInputElement).value
+                )
+            }}
                     />
                 </div>
 
@@ -627,8 +627,8 @@ export default class TerraDataAccess extends TerraElement {
                     <div class="filter">
                         <button
                             class="filter-btn ${this.startDate && this.endDate
-                                ? 'active'
-                                : ''}"
+                ? 'active'
+                : ''}"
                             @click=${this.#toggleDatePicker}
                         >
                             <terra-icon
@@ -638,19 +638,19 @@ export default class TerraDataAccess extends TerraElement {
                             ></terra-icon>
                             <span>${this.#getDateRangeButtonText()}</span>
                             ${this.startDate && this.endDate
-                                ? html`
+                ? html`
                                       <button
                                           class="clear-badge"
                                           @click=${(e: Event) => {
-                                              e.stopPropagation()
-                                              this.#clearDateRange()
-                                          }}
+                        e.stopPropagation()
+                        this.#clearDateRange()
+                    }}
                                           aria-label="Clear date range"
                                       >
                                           ×
                                       </button>
                                   `
-                                : nothing}
+                : nothing}
                         </button>
 
                         <!-- hidden date picker to show when clicking the filter -->
@@ -673,9 +673,9 @@ export default class TerraDataAccess extends TerraElement {
                         <button
                             class="filter-btn ${this.location ? 'active' : ''}"
                             @click=${(e: Event) => {
-                                e.stopPropagation()
-                                this.#toggleSpatialPicker()
-                            }}
+                e.stopPropagation()
+                this.#toggleSpatialPicker()
+            }}
                         >
                             <terra-icon
                                 name="outline-globe-alt"
@@ -684,19 +684,19 @@ export default class TerraDataAccess extends TerraElement {
                             ></terra-icon>
                             <span>${this.#getSpatialButtonText()}</span>
                             ${this.location
-                                ? html`
+                ? html`
                                       <button
                                           class="clear-badge"
                                           @click=${(e: Event) => {
-                                              e.stopPropagation()
-                                              this.#clearSpatialFilter()
-                                          }}
+                        e.stopPropagation()
+                        this.#clearSpatialFilter()
+                    }}
                                           aria-label="Clear spatial filter"
                                       >
                                           ×
                                       </button>
                                   `
-                                : nothing}
+                : nothing}
                         </button>
 
                         <!-- hidden spatial picker to show when clicking the filter -->
@@ -709,18 +709,18 @@ export default class TerraDataAccess extends TerraElement {
                     </div>
 
                     ${this.#controller.cloudCoverRange
-                        ? html`
+                ? html`
                               <div class="filter">
                                   <button
                                       class="filter-btn ${this.cloudCover.min !==
-                                          undefined &&
-                                      this.cloudCover.max !== undefined
-                                          ? 'active'
-                                          : ''}"
+                        undefined &&
+                        this.cloudCover.max !== undefined
+                        ? 'active'
+                        : ''}"
                                       @click=${(e: Event) => {
-                                          e.stopPropagation()
-                                          this.#toggleCloudCoverPicker()
-                                      }}
+                        e.stopPropagation()
+                        this.#toggleCloudCoverPicker()
+                    }}
                                   >
                                       <terra-icon
                                           name="outline-cloud"
@@ -729,28 +729,28 @@ export default class TerraDataAccess extends TerraElement {
                                       ></terra-icon>
                                       <span>${this.#getCloudCoverButtonText()}</span>
                                       ${this.cloudCover.min !== undefined &&
-                                      this.cloudCover.max !== undefined
-                                          ? html`
+                        this.cloudCover.max !== undefined
+                        ? html`
                                                 <button
                                                     class="clear-badge"
                                                     @click=${(e: Event) => {
-                                                        e.stopPropagation()
-                                                        this.#clearCloudCoverFilter()
-                                                    }}
+                                e.stopPropagation()
+                                this.#clearCloudCoverFilter()
+                            }}
                                                     aria-label="Clear cloud cover filter"
                                                 >
                                                     ×
                                                 </button>
                                             `
-                                          : nothing}
+                        : nothing}
                                   </button>
 
                                   <!-- hidden slider to show when clicking the filter -->
                                   <div
                                       class="cloud-cover-dropdown ${this
-                                          .cloudCoverPickerOpen
-                                          ? 'open'
-                                          : ''}"
+                        .cloudCoverPickerOpen
+                        ? 'open'
+                        : ''}"
                                       @click=${(e: Event) => e.stopPropagation()}
                                   >
                                       <terra-slider
@@ -759,20 +759,20 @@ export default class TerraDataAccess extends TerraElement {
                                           min=${this.#controller.cloudCoverRange?.min}
                                           max=${this.#controller.cloudCoverRange?.max}
                                           start-value=${this.cloudCover.min ??
-                                          this.#controller.cloudCoverRange?.min}
+                    this.#controller.cloudCoverRange?.min}
                                           end-value=${this.cloudCover.max ??
-                                          this.#controller.cloudCoverRange?.max}
+                    this.#controller.cloudCoverRange?.max}
                                           step="0.1"
                                           hide-label
                                           label="Cloud Cover"
                                           @terra-slider-change=${this
-                                              .#handleCloudCoverChange}
+                        .#handleCloudCoverChange}
                                           show-inputs
                                       ></terra-slider>
                                   </div>
                               </div>
                           `
-                        : nothing}
+                : nothing}
                 </div>
 
                 <div class="results-info">
@@ -781,8 +781,8 @@ export default class TerraDataAccess extends TerraElement {
                     >
                     files selected
                     ${this.#controller.estimatedSize
-                        ? html` (~${this.#controller.estimatedSize})`
-                        : nothing}
+                ? html` (~${this.#controller.estimatedSize})`
+                : nothing}
                 </div>
             </div>
 

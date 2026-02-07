@@ -208,10 +208,10 @@ export default class TerraSlider extends TerraElement {
             format: this._getFormatter(),
             pips: this.hasPips
                 ? {
-                      mode: PipsMode.Range,
-                      density: -1,
-                      format: this._getFormatter(),
-                  }
+                    mode: PipsMode.Range,
+                    density: -1,
+                    format: this._getFormatter(),
+                }
                 : undefined,
         }
 
@@ -412,18 +412,18 @@ export default class TerraSlider extends TerraElement {
         return html`
             <div class="slider">
                 ${!this.hasTooltips
-                    ? html`
+                ? html`
                           <div class="slider__header">
                               <label
                                   for="slider-control"
                                   class=${this.hideLabel
-                                      ? 'sr-only'
-                                      : 'slider__label'}
+                        ? 'sr-only'
+                        : 'slider__label'}
                                   >${this.label}</label
                               >
                               <div class="slider__header-right">
                                   ${this.hasBeenManipulated
-                                      ? html`
+                        ? html`
                                             <button
                                                 class="slider__clear"
                                                 @click="${this.handleClear}"
@@ -432,14 +432,14 @@ export default class TerraSlider extends TerraElement {
                                                 Clear
                                             </button>
                                         `
-                                      : ''}
+                        : ''}
                                   <span class="slider__current-range"
                                       >${currentRangeDisplay}</span
                                   >
                               </div>
                           </div>
                       `
-                    : html`
+                : html`
                           <label
                               for="slider-control"
                               class=${this.hideLabel ? 'sr-only' : 'slider__label'}
@@ -466,8 +466,8 @@ export default class TerraSlider extends TerraElement {
                         .max="${this.max}"
                         .step="${this.step}"
                         .value="${this._formatValue(
-                            this.startValue ?? this.min ?? 0
-                        )}"
+                this.startValue ?? this.min ?? 0
+            )}"
                         @change="${this._handleInputChange}"
                         @keydown="${this._handleInputKeydown}"
                     />
@@ -479,8 +479,8 @@ export default class TerraSlider extends TerraElement {
                         .max="${this.max}"
                         .step="${this.step}"
                         .value="${this._formatValue(
-                            this.endValue ?? this.max ?? 100
-                        )}"
+                this.endValue ?? this.max ?? 100
+            )}"
                         @change="${this._handleInputChange}"
                         @keydown="${this._handleInputKeydown}"
                     />
@@ -540,7 +540,7 @@ export default class TerraSlider extends TerraElement {
 
     private _handleInputKeydown(event: KeyboardEvent) {
         if (event.key === 'Enter') {
-            ;(event.target as HTMLInputElement).blur()
+            ; (event.target as HTMLInputElement).blur()
         }
     }
 }
