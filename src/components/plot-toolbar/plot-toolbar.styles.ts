@@ -48,6 +48,11 @@ export default css`
         position: absolute;
     }
 
+    .toggles[data-mobile-view='true'] .toggle::part(base) {
+        background-color: antiquewhite;
+        border: 0;
+    }
+
     .square-button {
         border-radius: 0 !important; /* square corners */
         width: 2.5em;
@@ -86,13 +91,36 @@ export default css`
         margin-block: 0.5em;
     }
 
-    menu dt {
+    menu dt,
+    .menu-dialog dt {
         font-weight: var(--terra-font-weight-semibold);
     }
 
-    menu dd {
+    menu dd,
+    .menu-dialog dd {
         font-style: italic;
         text-wrap: balance;
+    }
+
+    .menu-dialog {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        z-index: 1002;
+        background: var(--terra-color-spacesuit-white);
+        color: var(--terra-font-color-primary);
+    }
+
+    .menu-dialog[open] {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-dialog terra-button {
+        align-self: flex-end;
     }
 
     .spacer {
