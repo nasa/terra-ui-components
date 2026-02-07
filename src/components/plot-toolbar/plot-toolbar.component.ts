@@ -71,6 +71,14 @@ export default class TerraPlotToolbar extends TerraElement {
      */
     @property({ attribute: 'application-citation' }) applicationCitation?: string
 
+    @property({ type: Boolean, attribute: 'mobile-view', reflect: true }) mobileView =
+        false
+
+    @property({ attribute: 'product-label' }) productLabel?: string
+
+    @state()
+    hideTitle: boolean = false
+
     @state()
     activeMenuItem: MenuNames = null
 
@@ -89,6 +97,8 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
+        if (this.mobileView) return
+
         if (newValue === null) {
             return
         }
@@ -147,6 +157,16 @@ export default class TerraPlotToolbar extends TerraElement {
         ></terra-icon>`
     }
 
+    #toggleMobileTitle() {
+        if (!this.mobileView || !this.productLabel) return
+        this.hideTitle = !this.hideTitle
+    }
+
+    firstUpdated() {
+        // Title should be hidden by default if mobileView is true and product label has a value
+        this.hideTitle = !!(this.mobileView && this.productLabel)
+    }
+
     render() {
         const metadata = [
             this.catalogVariable.dataProductInstrumentShortName,
@@ -161,47 +181,51 @@ export default class TerraPlotToolbar extends TerraElement {
                 : html` <header>
                       <div class="title-container">
                           <slot name="title">
-                              <h2 class="title">
-                                  ${this.catalogVariable.dataFieldLongName}
+                              <h2 class="title" @click=${this.#toggleMobileTitle}>
+                                  ${this.productLabel || ''}
+                                      ${this.productLabel ? html`<br />` : ''}
+                                      ${!this.hideTitle
+                        ? this.catalogVariable.dataFieldLongName
+                        : ''}
                               </h2>
                           </slot>
-                          <slot name="subtitle">
+                          <slot name="subtitle" ?hidden=${this.hideTitle}>
                               <h3 class="subtitle">
                                   ${metadata.join(' • ')} •
                                   <a
                                       target="_blank"
                                       href="${this.catalogVariable
-                                          .dataProductDescriptionUrl}"
+                        .dataProductDescriptionUrl}"
                                       >[${this.catalogVariable
-                                          .dataProductShortName}_${this
-                                          .catalogVariable.dataProductVersion}]</a
+                        .dataProductShortName}_${this
+                            .catalogVariable.dataProductVersion}]</a
                                   >
                                   ${this.showLocation
-                                      ? html`• ${this.#getLocationIcon()}
+                        ? html`• ${this.#getLocationIcon()}
                                             <span
                                                 class="location-text"
                                                 @mouseenter=${this
-                                                    .#handleLocationMouseEnter}
+                                .#handleLocationMouseEnter}
                                                 @mouseleave=${this
-                                                    .#handleLocationMouseLeave}
+                                .#handleLocationMouseLeave}
                                                 >${this.location.replace(
-                                                    /,/g,
-                                                    ', '
-                                                )}</span
+                                    /,/g,
+                                    ', '
+                                )}</span
                                             >`
-                                      : ''}
+                        : ''}
                                   ${this.showDateRange
-                                      ? html`• ${this.#getDateRangeIcon()}
+                        ? html`• ${this.#getDateRangeIcon()}
                                             <span
                                                 >${formatDate(this.startDate)} to
                                                 ${formatDate(this.endDate)}</span
                                             >`
-                                      : ''}
+                        : ''}
                               </h3>
                           </slot>
                       </div>
 
-                      <div class="toggles">
+                      <div class="toggles" data-mobile-view=${this.mobileView}>
                           <terra-button
                               circle
                               outline
@@ -210,6 +234,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               aria-haspopup="true"
                               class="toggle"
                               @mouseenter=${this.#handleActiveMenuItem}
+                              @click=${this.#handleActiveMenuItem}
                               data-menu-name="information"
                           >
                               <span class="sr-only"
@@ -221,22 +246,23 @@ export default class TerraPlotToolbar extends TerraElement {
                           </terra-button>
 
                           ${this.showCitation
-                              ? html`
+                        ? html`
                                     <terra-button
                                         circle
                                         outline
                                         aria-expanded=${this.activeMenuItem ===
-                                        'citation'}
+                            'citation'}
                                         aria-controls="menu"
                                         aria-haspopup="true"
                                         class="toggle"
                                         @mouseenter=${this.#handleActiveMenuItem}
+                                        @click=${this.#handleActiveMenuItem}
                                         data-menu-name="citation"
                                     >
                                         <span class="sr-only"
                                             >Citation for
                                             ${this.catalogVariable
-                                                .dataFieldLongName}</span
+                                .dataFieldLongName}</span
                                         >
 
                                         <span
@@ -245,7 +271,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                         >
                                     </terra-button>
                                 `
-                              : nothing}
+                        : nothing}
 
                           <terra-button
                               circle
@@ -255,6 +281,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               aria-haspopup="true"
                               class="toggle"
                               @mouseenter=${this.#handleActiveMenuItem}
+                              @click=${this.#handleActiveMenuItem}
                               data-menu-name="download"
                           >
                               <span class="sr-only"
@@ -277,6 +304,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               aria-haspopup="true"
                               class="toggle help-toggle"
                               @mouseenter=${this.#handleActiveMenuItem}
+                                @click=${this.#handleActiveMenuItem}
                               data-menu-name="help"
                           >
                               <span class="sr-only"
@@ -297,6 +325,7 @@ export default class TerraPlotToolbar extends TerraElement {
                               class="toggle square-button"
                               variant="warning"
                               @mouseenter=${this.#handleActiveMenuItem}
+                                @click=${this.#handleActiveMenuItem}
                               data-menu-name="jupyter"
                           >
                               <span class="sr-only"
@@ -312,16 +341,17 @@ export default class TerraPlotToolbar extends TerraElement {
                           </terra-button>
 
                           ${this.dataType == 'geotiff'
-                              ? html`
+                        ? html`
                                     <terra-button
                                         circle
                                         outline
                                         aria-expanded=${this.activeMenuItem ===
-                                        'GeoTIFF'}
+                            'GeoTIFF'}
                                         aria-controls="menu"
                                         aria-haspopup="true"
                                         class="toggle"
                                         @mouseenter=${this.#handleActiveMenuItem}
+                                        @click=${this.#handleActiveMenuItem}
                                         data-menu-name="GeoTIFF"
                                     >
                                         <terra-icon
@@ -331,14 +361,16 @@ export default class TerraPlotToolbar extends TerraElement {
                                         ></terra-icon>
                                     </terra-button>
                                 `
-                              : nothing}
+                        : nothing}
                       </div>
 
-                      <menu
-                          role="menu"
-                          id="menu"
-                          data-expanded=${this.activeMenuItem !== null}
-                          tabindex="-1"
+                      ${!this.mobileView
+                        ? html`
+                          <menu
+                              role="menu"
+                              id="menu"
+                              data-expanded=${this.activeMenuItem !== null}
+                              tabindex="-1"
                           @mouseleave=${this.#handleMenuLeave}
                       >
                           <li
@@ -383,9 +415,10 @@ export default class TerraPlotToolbar extends TerraElement {
                               ${this.#renderGeotiffPanel()}
                           </li>
                       </menu>
+                        ` : nothing}
 
                       ${this.showLocationTooltip
-                          ? html`
+                        ? html`
                                 <div class="location-tooltip">
                                     <terra-map
                                         .value=${this.locationMapValue}
@@ -398,12 +431,48 @@ export default class TerraPlotToolbar extends TerraElement {
                                     ></terra-map>
                                 </div>
                             `
-                          : ''}
-                  </header>`
+                        : ''}
+                  </header>
+                  
+                  ${this.mobileView
+                        ? html`<dialog
+                                ?open=${!!this.activeMenuItem}
+                                class="menu-dialog"
+                            >
+                                <terra-button outline @click=${this.closeMenu}>
+                                    Close
+                                </terra-button>
+                                <div class="spacer"></div>
+                                <div>
+                                    ${this.activeMenuItem === 'information'
+                                ? this.#renderInfoPanel()
+                                : ''}
+                                    ${this.activeMenuItem === 'citation'
+                                ? this.#renderCitationPanel()
+                                : ''}
+                                    ${this.activeMenuItem === 'download'
+                                ? this.#renderDownloadPanel()
+                                : ''}
+                                    ${this.activeMenuItem === 'help'
+                                ? this.#renderHelpPanel()
+                                : ''}
+                                    ${this.activeMenuItem === 'jupyter'
+                                ? this.#renderJupyterNotebookPanel()
+                                : ''}
+                                    ${this.activeMenuItem === 'GeoTIFF'
+                                ? this.#renderGeotiffPanel()
+                                : ''}
+                                </div>
+                            </dialog>`
+                        : nothing}`
         )
     }
 
     #handleActiveMenuItem(event: Event) {
+        if (this.mobileView && event.type === 'mouseenter') {
+            return
+        }
+
         const button = event.currentTarget as HTMLButtonElement
         const menuName = button.dataset.menuName as MenuNames
 
@@ -412,6 +481,8 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #handleMenuLeave(event: MouseEvent) {
+        if (this.mobileView) return
+
         // Only close if we're not moving to another element within the component
         // If the GeoTIFF menu is in use, it will only close if you hover outside of the time average map component
         const relatedTarget = event.relatedTarget as HTMLElement
@@ -484,14 +555,14 @@ export default class TerraPlotToolbar extends TerraElement {
                               @change=${this.#onColorMapChange}
                           >
                               ${this.colormaps.map(
-                                  cm =>
-                                      html` <option
+                    cm =>
+                        html` <option
                                           value="${cm}"
                                           ?selected=${cm === this.colorMapName}
                                       >
                                           ${cm}
                                       </option>`
-                              )}
+                )}
                           </select>
                       </label>
                       <label>
@@ -517,7 +588,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 <dt>Variable Shortname</dt>
                 <dd>
                     ${this.catalogVariable.dataFieldShortName ??
-                    this.catalogVariable.dataFieldAccessName}
+            this.catalogVariable.dataFieldAccessName}
                 </dd>
 
                 <dt>Units</dt>
@@ -719,9 +790,9 @@ export default class TerraPlotToolbar extends TerraElement {
             <a
                 href="#"
                 @click=${(e: Event) => {
-                    e.preventDefault()
-                    this.#handleJupyterNotebookClick()
-                }}
+                e.preventDefault()
+                this.#handleJupyterNotebookClick()
+            }}
             >
                 Open in Jupyter Notebook
                 <terra-icon
