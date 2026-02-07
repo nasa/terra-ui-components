@@ -114,6 +114,13 @@ export default class TerraElement extends LitElement {
             return
         }
 
+        if (!('IntersectionObserver' in window)) {
+            // IntersectionObserver not supported, just assume visible
+            this.isVisible = true
+            this.firstVisible()
+            return
+        }
+
         // Component isn't visible, probably in a modal/dialog
         // instead we'll setup an IntersectionObserver to wait for visibility
         this.#io = new IntersectionObserver(

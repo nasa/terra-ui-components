@@ -52,11 +52,11 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     @property() id: string
-    @property({ type: Boolean }) range = false
-    @property({ attribute: 'min-date' }) minDate?: string
-    @property({ attribute: 'max-date' }) maxDate?: string
-    @property({ attribute: 'start-date' }) startDate?: string
-    @property({ attribute: 'end-date' }) endDate?: string
+    @property({ type: Boolean, reflect: true }) range = false
+    @property({ attribute: 'min-date', reflect: true }) minDate?: string
+    @property({ attribute: 'max-date', reflect: true }) maxDate?: string
+    @property({ attribute: 'start-date', reflect: true }) startDate?: string
+    @property({ attribute: 'end-date', reflect: true }) endDate?: string
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Date'
     @property({ attribute: 'help-text' }) helpText = ''
@@ -71,6 +71,11 @@ export default class TerraDatePicker extends TerraElement {
     @property() placeholder: string = 'Select Date'
     @property() startPlaceholder: string = 'Start Date'
     @property() endPlaceholder: string = 'End Date'
+    /** The ARIA role for the button. Defaults to 'group'. */
+    @property({ reflect: true }) role: string | null = 'group'
+    /** The ARIA label for the date picker. Defaults to 'Date picker'.*/
+    @property({ reflect: true, attribute: 'aria-label' }) ariaLabel: string | null =
+        'Date picker'
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()
@@ -977,7 +982,7 @@ export default class TerraDatePicker extends TerraElement {
         return false
     }
 
-    private selectDate(date: Date) {
+    selectDate(date: Date) {
         if (this.isDisabled(date)) return
 
         if (this.range) {

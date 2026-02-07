@@ -67,7 +67,7 @@ export async function create(nextTask, outputDir, boilerplatesDir, appName) {
             "import { setBasePath } from '@nasa-terra/components/dist/utilities/base-path.js'"
 
         // Create the setBasePath call with comments (with newline before it)
-        const setBasePathCall = `\n/**\n * Sets the base path to the Terra UI CDN\n *\n * If you'd rather host the assets locally, you should setup a build task to copy the assets locally and\n * set the base path to your local public folder\n * (see https://terra-ui.netlify.app/frameworks/react/#installation for more information)\n */\nsetBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.134/cdn/')`
+        const setBasePathCall = `\n/**\n * Sets the base path to the Terra UI CDN\n *\n * If you'd rather host the assets locally, you should setup a build task to copy the assets locally and\n * set the base path to your local public folder\n * (see https://terra-ui.netlify.app/frameworks/react/#installation for more information)\n */\nsetBasePath('https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.146/cdn/')`
 
         // Reconstruct the file: CSS import at top, then existing content with setBasePath import and call inserted
         const newLines = [...lines]

@@ -30,6 +30,9 @@ export default class TerraLoader extends TerraElement {
     @property({ type: Boolean })
     indeterminate: boolean = false
 
+    /** The ARIA role for the loader */
+    @property({ reflect: true }) role: string | null = 'progressbar'
+
     @state() _currentPercent = 0
 
     formatPercent(percent: string) {
@@ -56,7 +59,7 @@ export default class TerraLoader extends TerraElement {
                     'loader--orbit': this.variant === 'orbit',
                 })}
                 aria-valuenow=${this.formatPercent(this.percent)}
-                role="progressbar"
+                .role=${this.role}
                 tabindex="-1"
             >
                 ${this.variant === 'large' || this.variant === 'orbit'
