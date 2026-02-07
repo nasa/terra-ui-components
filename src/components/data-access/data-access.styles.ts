@@ -1,6 +1,4 @@
 import { css } from 'lit'
-import 'ag-grid-community/styles/ag-grid.css'
-import 'ag-grid-community/styles/ag-theme-alpine.css'
 
 export default css`
     :host {
@@ -56,6 +54,8 @@ export default css`
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
+        --terra-input-spacing-small: 0;
+        --terra-input-spacing-medium: 0;
 
         width: 0;
         height: 0;
@@ -64,19 +64,19 @@ export default css`
         left: 0;
     }
 
-    .filter terra-spatial-picker {
+    terra-spatial-picker {
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
         --terra-input-display: none;
 
-        width: 600px;
+        width: 0;
         position: absolute;
         top: 0;
         left: 0;
     }
 
-    .filter terra-spatial-picker .spatial-picker {
+    terra-spatial-picker .spatial-picker {
         width: 0 !important;
         min-height: 38px !important;
         height: 38px !important;
@@ -86,7 +86,7 @@ export default css`
         left: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__input_fields {
+    terra-spatial-picker .spatial-picker__input_fields {
         display: none !important;
         visibility: hidden !important;
         width: 0 !important;
@@ -97,8 +97,8 @@ export default css`
         opacity: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__input_label,
-    .filter terra-spatial-picker label {
+    terra-spatial-picker .spatial-picker__input_label,
+    terra-spatial-picker label {
         display: none !important;
         visibility: hidden !important;
         width: 0 !important;
@@ -109,12 +109,12 @@ export default css`
         line-height: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__error {
+    terra-spatial-picker .spatial-picker__error {
         display: none !important;
         visibility: hidden !important;
     }
 
-    .filter terra-spatial-picker terra-input {
+    terra-spatial-picker terra-input {
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
@@ -126,11 +126,11 @@ export default css`
         left: 0;
     }
 
-    .filter terra-spatial-picker .spatial-picker__input_icon {
+    terra-spatial-picker .spatial-picker__input_icon {
         display: none !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__map-container {
+    terra-spatial-picker .spatial-picker__map-container {
         position: absolute !important;
         top: 100% !important;
         left: 0 !important;
@@ -152,14 +152,14 @@ export default css`
         margin-bottom: 0 !important;
     }
 
-    .filter terra-spatial-picker .spatial-picker__map-container.flipped {
+    terra-spatial-picker .spatial-picker__map-container.flipped {
         top: auto !important;
         bottom: calc(100% + 0.5rem) !important;
         margin-top: 0 !important;
         margin-bottom: 0 !important;
     }
 
-    .filter terra-spatial-picker terra-map {
+    terra-spatial-picker terra-map {
         width: 100% !important;
         min-width: 100% !important;
     }
@@ -268,85 +268,21 @@ export default css`
         }
     }
 
-    .file-grid {
-        height: 350px;
-    }
-
-    .ag-cell-value {
-        line-height: 1.5;
-        padding: 5px 0;
-    }
-
     .grid-container {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        overflow: hidden;
+        position: relative;
+        width: 100%;
     }
 
-    .grid-header {
-        display: grid;
-        grid-template-columns: 3fr 1fr 1.5fr 1.5fr;
-        gap: 1px;
-        background: #1e3a5f;
-        color: white;
-        font-weight: 600;
-    }
-
-    .grid-header > div {
-        padding: 12px 16px;
-        cursor: pointer;
-        background: #1e3a5f;
-        display: flex;
-        align-items: center;
-    }
-
-    .grid-header > div terra-icon {
-        margin-left: 5px;
-    }
-
-    .grid-body {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
-    .grid-row {
-        display: grid;
-        grid-template-columns: 3fr 1fr 1.5fr 1.5fr;
-        gap: 1px;
-        background: #e0e0e0;
-    }
-
-    .grid-row > div {
-        min-height: 45px;
-        padding: 12px 16px;
-        background: white;
-        display: flex;
-        align-items: center;
-        word-break: break-word;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .grid-row:hover > div {
-        background: #f8f9fa;
-    }
-
-    .file-name {
-        color: #333;
-    }
-
-    .size {
-        text-align: right;
-    }
-
-    .time {
-        color: #555;
+    /* Remove border/background from terra-data-grid container since we handle it here if needed */
+    .grid-container terra-data-grid::part(base) {
+        border: none;
+        background: transparent;
     }
 
     .download-dropdown {
         position: relative;
         display: inline-block;
-        z-index: 10000;
+        z-index: 800;
     }
 
     .download-btn {
@@ -388,7 +324,7 @@ export default css`
         border: 1px solid #dee2e6;
         border-radius: 6px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 9999;
+        z-index: 801;
         opacity: 0;
         visibility: hidden;
         transform: translateY(-10px);

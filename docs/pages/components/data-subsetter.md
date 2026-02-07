@@ -11,9 +11,7 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 
 ```html:preview
 <div style="height: 200px;">
-    <terra-dialog id="my-dialog" width="80%">
-        <terra-data-subsetter collection-entry-id="OMAERO_003"></terra-data-subsetter>
-    </terra-dialog>
+    <terra-data-subsetter collection-entry-id="OMAERO_003" dialog="my-dialog"></terra-data-subsetter>
     <terra-button for-dialog="my-dialog">
         Open Subsetter
     </terra-button>
@@ -60,13 +58,13 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 
 ```html:preview
 <div style="height: 200px;">
-    <terra-dialog id="my-dialog">
-        <terra-data-subsetter collection-entry-id="OMAERO_003"></terra-data-subsetter>
-    </terra-dialog>
+    <terra-data-subsetter collection-entry-id="OMAERO_003" dialog="my-dialog"></terra-data-subsetter>
     <terra-button for-dialog="my-dialog">
         Open Subsetter
     </terra-button>
 </div>
+
+
 ```
 
 ## Best Practices

@@ -13,4 +13,6 @@ from .plot_toolbar import TerraPlotToolbar
 from .data_access import TerraDataAccess
 from .slider import TerraSlider
 from .input import TerraInput
-__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods", "TerraAccordion", "TerraDataSubsetter", "TerraDataSubsetterHistory", "TerraTimeAverageMap", "TerraPlotToolbar", "TerraDataAccess", "TerraSlider", "TerraInput"]
+from .earthdata_login import TerraEarthdataLogin
+__all__ = ["TerraBaseWidget", "TerraDateRangeSlider", "TerraTimeSeries", "TerraLogin", "TerraDialog", "TerraDatePicker", "TerraDataRods", "TerraAccordion",
+           "TerraDataSubsetter", "TerraDataSubsetterHistory", "TerraTimeAverageMap", "TerraPlotToolbar", "TerraDataAccess", "TerraSlider", "TerraInput", "TerraEarthdataLogin"]

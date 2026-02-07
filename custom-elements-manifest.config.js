@@ -176,12 +176,8 @@ export default {
 
                         if (classDoc?.events) {
                             classDoc.events.forEach(event => {
-                                event.reactName = `on${pascalCase(
-                                    event.name
-                                )}`.replace(/^Sl/, 'Terra')
-                                event.eventName = `${pascalCase(
-                                    event.name
-                                )}Event`.replace(/^Sl/, 'Terra')
+                                event.reactName = `on${pascalCase(event.name)}`
+                                event.eventName = `${pascalCase(event.name)}Event`
                             })
                         }
                     }
@@ -236,7 +232,7 @@ export default {
             referencesTemplate: (_, tag) => [
                 {
                     name: 'Documentation',
-                    url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
+                    url: `https://terra-ui.netlify.app/components/${tag.replace(
                         'terra-',
                         ''
                     )}`,
@@ -251,7 +247,7 @@ export default {
             referencesTemplate: (_, tag) => {
                 return {
                     name: 'Documentation',
-                    url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
+                    url: `https://terra-ui.netlify.app/components/${tag.replace(
                         'terra-',
                         ''
                     )}`,

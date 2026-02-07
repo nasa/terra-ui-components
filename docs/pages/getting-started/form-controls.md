@@ -62,18 +62,18 @@ The form will not be submitted if a required field is incomplete.
 
 ```html:preview
 <form class="input-validation-required">
-  <sl-input name="name" label="Name" required></sl-input>
+  <terra-input name="name" label="Name" required></terra-input>
   <br />
-  <sl-select label="Favorite Animal" clearable required>
-    <sl-option value="birds">Birds</sl-option>
-    <sl-option value="cats">Cats</sl-option>
-    <sl-option value="dogs">Dogs</sl-option>
-    <sl-option value="other">Other</sl-option>
-  </sl-select>
+  <terra-select label="Favorite Animal" clearable required>
+    <terra-option value="birds">Birds</terra-option>
+    <terra-option value="cats">Cats</terra-option>
+    <terra-option value="dogs">Dogs</terra-option>
+    <terra-option value="other">Other</terra-option>
+  </terra-select>
   <br />
-  <sl-textarea name="comment" label="Comment" required></sl-textarea>
+  <terra-textarea name="comment" label="Comment" required></terra-textarea>
   <br />
-  <sl-checkbox required>Check me before submitting</sl-checkbox>
+  <terra-checkbox required>Check me before submitting</terra-checkbox>
   <br /><br />
   <terra-button type="submit" variant="primary">Submit</terra-button>
 </form>
@@ -100,11 +100,11 @@ The form will not be submitted if a required field is incomplete.
 
 ```jsx:react
 import TerraButton from '@nasa-terra/components/dist/react/button';
-import SlCheckbox from '@nasa-terra/components/dist/react/checkbox';
-import SlInput from '@nasa-terra/components/dist/react/input';
-import SlMenuItem from '@nasa-terra/components/dist/react/menu-item';
-import SlSelect from '@nasa-terra/components/dist/react/select';
-import SlTextarea from '@nasa-terra/components/dist/react/textarea';
+import TerraCheckbox from '@nasa-terra/components/dist/react/checkbox';
+import TerraInput from '@nasa-terra/components/dist/react/input';
+import TerraMenuItem from '@nasa-terra/components/dist/react/menu-item';
+import TerraSelect from '@nasa-terra/components/dist/react/select';
+import TerraTextarea from '@nasa-terra/components/dist/react/textarea';
 
 const App = () => {
   function handleSubmit(event) {
@@ -114,18 +114,18 @@ const App = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <SlInput name="name" label="Name" required />
+      <TerraInput name="name" label="Name" required />
       <br />
-      <SlSelect label="Favorite Animal" clearable required>
-        <SlMenuItem value="birds">Birds</SlMenuItem>
-        <SlMenuItem value="cats">Cats</SlMenuItem>
-        <SlMenuItem value="dogs">Dogs</SlMenuItem>
-        <SlMenuItem value="other">Other</SlMenuItem>
-      </SlSelect>
+      <TerraSelect label="Favorite Animal" clearable required>
+        <TerraMenuItem value="birds">Birds</TerraMenuItem>
+        <TerraMenuItem value="cats">Cats</TerraMenuItem>
+        <TerraMenuItem value="dogs">Dogs</TerraMenuItem>
+        <TerraMenuItem value="other">Other</TerraMenuItem>
+      </TerraSelect>
       <br />
-      <SlTextarea name="comment" label="Comment" required></SlTextarea>
+      <TerraTextarea name="comment" label="Comment" required></TerraTextarea>
       <br />
-      <SlCheckbox required>Check me before submitting</SlCheckbox>
+      <TerraCheckbox required>Check me before submitting</TerraCheckbox>
       <br />
       <br />
       <TerraButton type="submit" variant="primary">
@@ -138,11 +138,11 @@ const App = () => {
 
 ### Input Patterns
 
-To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern), use the `pattern` attribute. This example only allows the letters A-Z, so the form will not submit if a number or symbol is entered. This only works with `<sl-input>` elements.
+To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/pattern), use the `pattern` attribute. This example only allows the letters A-Z, so the form will not submit if a number or symbol is entered. This only works with `<terra-input>` elements.
 
 ```html:preview
 <form class="input-validation-pattern">
-  <sl-input name="letters" required label="Letters" pattern="[A-Za-z]+"></sl-input>
+  <terra-input name="letters" required label="Letters" pattern="[A-Za-z]+"></terra-input>
   <br />
   <terra-button type="submit" variant="primary">Submit</terra-button>
   <terra-button type="reset" variant="default">Reset</terra-button>
@@ -166,7 +166,7 @@ To restrict a value to a specific [pattern](https://developer.mozilla.org/en-US/
 
 ```jsx:react
 import TerraButton from '@nasa-terra/components/dist/react/button';
-import SlInput from '@nasa-terra/components/dist/react/input';
+import TerraInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   function handleSubmit(event) {
@@ -176,7 +176,7 @@ const App = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <SlInput name="letters" required label="Letters" pattern="[A-Za-z]+" />
+      <TerraInput name="letters" required label="Letters" pattern="[A-Za-z]+" />
       <br />
       <TerraButton type="submit" variant="primary">
         Submit
@@ -192,9 +192,9 @@ Some input types will automatically trigger constraints, such as `email` and `ur
 
 ```html:preview
 <form class="input-validation-type">
-  <sl-input type="email" label="Email" placeholder="you@example.com" required></sl-input>
+  <terra-input type="email" label="Email" placeholder="you@example.com" required></terra-input>
   <br />
-  <sl-input type="url" label="URL" placeholder="https://example.com/" required></sl-input>
+  <terra-input type="url" label="URL" placeholder="https://example.com/" required></terra-input>
   <br />
   <terra-button type="submit" variant="primary">Submit</terra-button>
   <terra-button type="reset" variant="default">Reset</terra-button>
@@ -218,7 +218,7 @@ Some input types will automatically trigger constraints, such as `email` and `ur
 
 ```jsx:react
 import TerraButton from '@nasa-terra/components/dist/react/button';
-import SlInput from '@nasa-terra/components/dist/react/input';
+import TerraInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   function handleSubmit(event) {
@@ -228,9 +228,9 @@ const App = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <SlInput type="email" label="Email" placeholder="you@example.com" required />
+      <TerraInput type="email" label="Email" placeholder="you@example.com" required />
       <br />
-      <SlInput type="url" label="URL" placeholder="https://example.com/" required />
+      <TerraInput type="url" label="URL" placeholder="https://example.com/" required />
       <br />
       <TerraButton type="submit" variant="primary">
         Submit
@@ -246,7 +246,7 @@ To create a custom validation error, pass a non-empty string to the `setCustomVa
 
 ```html:preview
 <form class="input-validation-custom">
-  <sl-input label="Type “shoelace”" required></sl-input>
+  <terra-input label="Type “shoelace”" required></terra-input>
   <br />
   <terra-button type="submit" variant="primary">Submit</terra-button>
   <terra-button type="reset" variant="default">Reset</terra-button>
@@ -280,7 +280,7 @@ To create a custom validation error, pass a non-empty string to the `setCustomVa
 ```jsx:react
 import { useRef, useState } from 'react';
 import TerraButton from '@nasa-terra/components/dist/react/button';
-import SlInput from '@nasa-terra/components/dist/react/input';
+import TerraInput from '@nasa-terra/components/dist/react/input';
 
 const App = () => {
   const input = useRef(null);
@@ -303,7 +303,7 @@ const App = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <SlInput ref={input} label="Type 'shoelace'" required value={value} onSlInput={handleInput} />
+      <TerraInput ref={input} label="Type 'shoelace'" required value={value} onTerraInput={handleInput} />
       <br />
       <TerraButton type="submit" variant="primary">
         Submit
@@ -342,22 +342,22 @@ This example demonstrates custom validation styles using `data-user-invalid` and
 
 ```html:preview
 <form class="validity-styles">
-  <sl-input
+  <terra-input
     name="name"
     label="Name"
     help-text="What would you like people to call you?"
     autocomplete="off"
     required
-  ></sl-input>
+  ></terra-input>
 
-  <sl-select name="animal" label="Favorite Animal" help-text="Select the best option." clearable required>
-    <sl-option value="birds">Birds</sl-option>
-    <sl-option value="cats">Cats</sl-option>
-    <sl-option value="dogs">Dogs</sl-option>
-    <sl-option value="other">Other</sl-option>
-  </sl-select>
+  <terra-select name="animal" label="Favorite Animal" help-text="Select the best option." clearable required>
+    <terra-option value="birds">Birds</terra-option>
+    <terra-option value="cats">Cats</terra-option>
+    <terra-option value="dogs">Dogs</terra-option>
+    <terra-option value="other">Other</terra-option>
+  </terra-select>
 
-  <sl-checkbox value="accept" required>Accept terms and conditions</sl-checkbox>
+  <terra-checkbox value="accept" required>Accept terms and conditions</terra-checkbox>
 
   <terra-button type="submit" variant="primary">Submit</terra-button>
   <terra-button type="reset" variant="default">Reset</terra-button>
@@ -448,13 +448,13 @@ To disable the browser's error messages, you need to cancel the `terra-invalid` 
 
 ```html:preview
 <form class="inline-validation">
-  <sl-input
+  <terra-input
     name="name"
     label="Name"
     help-text="What would you like people to call you?"
     autocomplete="off"
     required
-  ></sl-input>
+  ></terra-input>
 
   <div id="name-error" aria-live="polite" hidden></div>
 

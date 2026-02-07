@@ -13,6 +13,7 @@ import {
 } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
 import { debounce } from '../../internal/debounce.js'
+import { watch } from '../../internal/watch.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
@@ -21,22 +22,27 @@ import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
 import { StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { createRef, ref } from 'lit/directives/ref.js'
-import {
-    createGrid,
-    AllCommunityModule,
-    ModuleRegistry,
-    type GridApi,
-    type GridOptions,
-    type IDatasource,
-    type IGetRowsParams,
-    type ICellRendererParams,
+import type {
+    IDatasource,
+    IGetRowsParams,
+    ICellRendererParams,
+    ColDef,
+    GridApi,
 } from 'ag-grid-community'
 import TerraSlider from '../slider/slider.component.js'
+import TerraDataGrid from '../data-grid/data-grid.component.js'
 import { getBasePath } from '../../utilities/base-path.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraMenu from '../menu/menu.component.js'
+import TerraMenuItem from '../menu-item/menu-item.component.js'
+import TerraButton from '../button/button.component.js'
+import type { TerraSelectEvent } from '../../events/terra-select.js'
+import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
+import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
- * @documentation https://disc.gsfc.nasa.gov/components/data-access
+ * @documentation https://terra-ui.netlify.app/components/data-access
  * @status stable
  * @since 1.0
  *
@@ -45,6 +51,7 @@ import { getBasePath } from '../../utilities/base-path.js'
  * @dependency terra-date-picker
  * @dependency terra-spatial-picker
  * @dependency terra-slider
+ * @dependency terra-data-grid
  *
  * @attr short-name - Collection short name used to build the Collection Entry ID.
  * @attr version - Collection version used to build the Collection Entry ID.
@@ -57,6 +64,11 @@ export default class TerraDataAccess extends TerraElement {
         'terra-date-picker': TerraDatePicker,
         'terra-spatial-picker': TerraSpatialPicker,
         'terra-slider': TerraSlider,
+        'terra-dropdown': TerraDropdown,
+        'terra-menu': TerraMenu,
+        'terra-menu-item': TerraMenuItem,
+        'terra-button': TerraButton,
+        'terra-data-grid': TerraDataGrid,
     }
 
     @property({ reflect: true, attribute: 'short-name' })
@@ -64,6 +76,25 @@ export default class TerraDataAccess extends TerraElement {
 
     @property({ reflect: true, attribute: 'version' })
     version?: string
+
+    @state()
+    private _gridInitialized = false
+
+    @watch('shortName')
+    @watch('version')
+    handleCollectionChange() {
+        // Reset grid when collection changes
+        if (this._gridInitialized && this.isVisible) {
+            this._gridInitialized = false
+            this.firstVisible()
+        }
+    }
+
+    /**
+     * When true, the footer will be rendered with slot="footer" for use in a dialog.
+     */
+    @property({ attribute: 'footer-slot', type: Boolean })
+    footerSlot?: boolean
 
     @state()
     limit = 50
@@ -87,9 +118,6 @@ export default class TerraDataAccess extends TerraElement {
     cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
 
     @state()
-    showDownloadMenu = false
-
-    @state()
     cloudCoverPickerOpen = false
 
     @state()
@@ -101,15 +129,13 @@ export default class TerraDataAccess extends TerraElement {
     datePickerRef = createRef<TerraDatePicker>()
     spatialPickerRef = createRef<TerraSpatialPicker>()
     cloudCoverSliderRef = createRef<TerraSlider>()
+    gridRef = createRef<TerraDataGrid<CmrGranule>>()
 
     #controller = new DataAccessController(this)
-    #gridApi: GridApi<CmrGranule>
-    #gridRef = createRef<HTMLElement>()
     #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
-    connectedCallback(): void {
-        super.connectedCallback()
-        ModuleRegistry.registerModules([AllCommunityModule])
+    get #gridApi(): GridApi<CmrGranule> | undefined {
+        return this.gridRef.value?.getGridApi()
     }
 
     disconnectedCallback(): void {
@@ -142,15 +168,23 @@ export default class TerraDataAccess extends TerraElement {
         }
     }
 
-    firstVisible(): void {
+    async firstVisible(): Promise<void> {
+        // Wait for cloud cover range and sampling tasks to complete before initializing grid
+        // This prevents the race condition where the grid initializes before metadata is ready
+        await Promise.all([
+            this.#controller.cloudCoverRangeTask.taskComplete,
+            this.#controller.samplingTask.taskComplete,
+        ])
+
         this.#initializeGrid()
     }
 
     #initializeGrid() {
-        if (this.#gridApi) {
-            // we already have a grid
+        if (!this.gridRef.value || this._gridInitialized) {
             return
         }
+
+        this._gridInitialized = true
 
         const datasource: IDatasource = {
             rowCount: undefined, // behave as infinite scroll
@@ -171,61 +205,69 @@ export default class TerraDataAccess extends TerraElement {
                         ? this.#controller.totalGranules
                         : -1
 
-                this.#gridApi.applyColumnState({
-                    state: [
-                        {
-                            colId: 'cloudCover',
-                            hide: !this.#controller.cloudCoverRange,
-                        },
-                    ],
-                })
+                // Update cloud cover column visibility when grid is ready
+                if (this.#gridApi) {
+                    this.#gridApi.applyColumnState({
+                        state: [
+                            {
+                                colId: 'cloudCover',
+                                hide: !this.#controller.cloudCoverRange,
+                            },
+                        ],
+                    })
+                }
 
                 params.successCallback(this.#controller.granules, lastRow)
             },
         }
 
-        const gridOptions: GridOptions<CmrGranule> = {
-            columnDefs: [
-                {
-                    field: 'title',
-                    flex: 3,
-                    cellRenderer: (params: ICellRendererParams<CmrGranule>) => {
-                        if (!params.data) {
-                            return ''
-                        }
+        const columnDefs: ColDef<CmrGranule>[] = [
+            {
+                field: 'title',
+                flex: 3,
+                cellRenderer: (params: ICellRendererParams<CmrGranule>) => {
+                    if (!params.data) {
+                        return ''
+                    }
 
-                        const url = getGranuleUrl(params.data)
+                    const url = getGranuleUrl(params.data)
 
-                        if (url) {
-                            const link = document.createElement('a')
-                            link.href = url
-                            link.target = '_blank'
-                            link.title = url
-                            link.textContent = params.data.title
+                    if (url) {
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.target = '_blank'
+                        link.title = url
+                        link.textContent = params.data.title
 
-                            return link
-                        }
+                        return link
+                    }
 
-                        const span = document.createElement('span')
-                        span.textContent = params.data.title
-                        return span
-                    },
+                    const span = document.createElement('span')
+                    span.textContent = params.data.title
+                    return span
                 },
-                {
-                    colId: 'size',
-                    headerName: 'Size (MB)',
-                    valueGetter: g => {
-                        if (!g.data) {
-                            return undefined
-                        }
+            },
+            {
+                colId: 'size',
+                headerName: 'Size (MB)',
+                valueGetter: g => {
+                    if (!g.data) {
+                        return undefined
+                    }
 
-                        return calculateGranuleSize(g.data, 'MB').toFixed(2)
-                    },
+                    return calculateGranuleSize(g.data, 'MB').toFixed(2)
                 },
-                { field: 'timeStart' },
-                { field: 'timeEnd' },
-                { field: 'cloudCover', hide: true },
-            ],
+            },
+            { field: 'timeStart' },
+            { field: 'timeEnd' },
+            { field: 'cloudCover', hide: true },
+        ]
+
+        // Configure terra-data-grid component
+        this.gridRef.value.rowModelType = 'infinite'
+        this.gridRef.value.columnDefs = columnDefs
+        this.gridRef.value.datasource = datasource
+        this.gridRef.value.gridOptions = {
             defaultColDef: {
                 flex: 1,
                 minWidth: 100,
@@ -236,11 +278,18 @@ export default class TerraDataAccess extends TerraElement {
             cacheBlockSize: 50,
             maxConcurrentDatasourceRequests: 2,
             infiniteInitialRowCount: 50,
-            rowModelType: 'infinite',
-            datasource,
+            onGridReady: params => {
+                // Update cloud cover column visibility when grid is ready
+                params.api.applyColumnState({
+                    state: [
+                        {
+                            colId: 'cloudCover',
+                            hide: !this.#controller.cloudCoverRange,
+                        },
+                    ],
+                })
+            },
         }
-
-        this.#gridApi = createGrid(this.#gridRef.value!, gridOptions)
     }
 
     @debounce(500)
@@ -405,9 +454,15 @@ export default class TerraDataAccess extends TerraElement {
         return 'Cloud Cover'
     }
 
-    #toggleDownloadMenu(event: Event) {
-        event.stopPropagation()
-        this.showDownloadMenu = !this.showDownloadMenu
+    #handleDownloadSelect(event: TerraSelectEvent) {
+        const item = event.detail.item
+        const value = item.value || item.getTextLabel()
+
+        if (value === 'python-script') {
+            this.#downloadPythonScript(event)
+        } else if (value === 'earthdata-download') {
+            this.#downloadEarthdataDownload(event)
+        }
     }
 
     async #downloadPythonScript(event: Event) {
@@ -519,8 +574,6 @@ export default class TerraDataAccess extends TerraElement {
 
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
-
-        this.showDownloadMenu = false
     }
 
     async #downloadEarthdataDownload(event: Event) {
@@ -529,12 +582,18 @@ export default class TerraDataAccess extends TerraElement {
         console.log('downloading earthdata download ', this, this.#gridApi)
 
         alert('Sorry, Earthdata Download is not currently supported')
-
-        this.showDownloadMenu = false
     }
 
     #handleJupyterNotebookClick() {
-        console.log('opening jupyter notebook ', this, this.#gridApi)
+        const notebook = getDataAccessNotebook(this)
+
+        console.log('Sending data to JupyterLite')
+
+        sendDataToJupyterNotebook('load-notebook', {
+            filename: `data_${this.shortName}_${this.version}.ipynb`,
+            notebook,
+            bearerToken: this.bearerToken,
+        })
     }
 
     #handleCloudCoverChange(event: TerraSliderChangeEvent) {
@@ -599,6 +658,7 @@ export default class TerraDataAccess extends TerraElement {
                             ${ref(this.datePickerRef)}
                             range
                             hide-label
+                            enable-time
                             hide-input
                             show-presets
                             .startDate=${this.startDate}
@@ -726,8 +786,12 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
             </div>
 
-            <div class="grid-container" style="position: relative;">
-                <div class="file-grid" ${ref(this.#gridRef)}></div>
+            <div class="grid-container">
+                <terra-data-grid
+                    ${ref(this.gridRef)}
+                    row-model-type="infinite"
+                    height="350px"
+                ></terra-data-grid>
 
                 ${this.#controller.render({
                     initial: () => this.#renderLoadingOverlay(),
@@ -737,77 +801,146 @@ export default class TerraDataAccess extends TerraElement {
                 })}
             </div>
 
-            <div style="margin-top: 15px;">
-                <div class="download-dropdown ${this.showDownloadMenu ? 'open' : ''}">
-                    <terra-button @click=${(e: Event) => this.#toggleDownloadMenu(e)}>
-                        Download Options
-                        <svg
-                            class="dropdown-arrow"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-                            <path d="M7 10l5 5 5-5z" />
-                        </svg>
-                    </terra-button>
+            ${this.footerSlot
+                ? html`
+                      <div
+                          slot="footer"
+                          style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
+                      >
+                          <terra-dropdown @terra-select=${this.#handleDownloadSelect}>
+                              <terra-button slot="trigger" caret>
+                                  Download Options
+                              </terra-button>
+                              <terra-menu>
+                                  <terra-menu-item value="python-script">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 128 128"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <path
+                                              fill="currentColor"
+                                              d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
+                                          ></path>
+                                      </svg>
+                                      Python Script
+                                  </terra-menu-item>
+                                  <terra-menu-item value="earthdata-download">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 64 64"
+                                          fill="none"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <circle
+                                              cx="32"
+                                              cy="32"
+                                              r="28"
+                                              fill="currentColor"
+                                          />
+                                          <path
+                                              d="M32 14v26M32 40l-9-9M32 40l9-9"
+                                              stroke="#fff"
+                                              stroke-width="4"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              fill="none"
+                                          />
+                                      </svg>
+                                      Earthdata Download
+                                  </terra-menu-item>
+                              </terra-menu>
+                          </terra-dropdown>
 
-                    <div class="download-menu ${this.showDownloadMenu ? 'open' : ''}">
-                        <button
-                            class="download-option"
-                            @click=${(e: Event) => this.#downloadPythonScript(e)}
-                        >
-                            <svg
-                                class="file-icon"
-                                viewBox="0 0 128 128"
-                                width="16"
-                                height="16"
-                            >
-                                <path
-                                    fill="currentColor"
-                                    d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
-                                ></path>
-                            </svg>
-                            Python Script
-                        </button>
-                        <button
-                            class="download-option"
-                            @click=${(e: Event) => this.#downloadEarthdataDownload(e)}
-                        >
-                            <svg
-                                class="file-icon"
-                                viewBox="0 0 64 64"
-                                fill="none"
-                                width="16"
-                                height="16"
-                            >
-                                <circle cx="32" cy="32" r="28" fill="currentColor" />
-                                <path
-                                    d="M32 14v26M32 40l-9-9M32 40l9-9"
-                                    stroke="#fff"
-                                    stroke-width="4"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    fill="none"
-                                />
-                            </svg>
-                            Earthdata Download
-                        </button>
-                    </div>
-                </div>
+                          <!--
+                          <terra-button
+                              outline
+                              @click=${() => this.#handleJupyterNotebookClick()}
+                          >
+                              <terra-icon
+                                  name="outline-code-bracket"
+                                  library="heroicons"
+                                  font-size="1.5em"
+                                  style="margin-right: 5px;"
+                              ></terra-icon>
+                              Open in Jupyter Notebook
+                          </terra-button>
+                            -->
+                      </div>
+                  `
+                : html`
+                      <div
+                          style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
+                      >
+                          <terra-dropdown @terra-select=${this.#handleDownloadSelect}>
+                              <terra-button slot="trigger" caret>
+                                  Download Options
+                              </terra-button>
+                              <terra-menu>
+                                  <terra-menu-item value="python-script">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 128 128"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <path
+                                              fill="currentColor"
+                                              d="M49.33 62h29.159C86.606 62 93 55.132 93 46.981V19.183c0-7.912-6.632-13.856-14.555-15.176-5.014-.835-10.195-1.215-15.187-1.191-4.99.023-9.612.448-13.805 1.191C37.098 6.188 35 10.758 35 19.183V30h29v4H23.776c-8.484 0-15.914 5.108-18.237 14.811-2.681 11.12-2.8 17.919 0 29.53C7.614 86.983 12.569 93 21.054 93H31V79.952C31 70.315 39.428 62 49.33 62zm-1.838-39.11c-3.026 0-5.478-2.479-5.478-5.545 0-3.079 2.451-5.581 5.478-5.581 3.015 0 5.479 2.502 5.479 5.581-.001 3.066-2.465 5.545-5.479 5.545zm74.789 25.921C120.183 40.363 116.178 34 107.682 34H97v12.981C97 57.031 88.206 65 78.489 65H49.33C41.342 65 35 72.326 35 80.326v27.8c0 7.91 6.745 12.564 14.462 14.834 9.242 2.717 17.994 3.208 29.051 0C85.862 120.831 93 116.549 93 108.126V97H64v-4h43.682c8.484 0 11.647-5.776 14.599-14.66 3.047-9.145 2.916-17.799 0-29.529zm-41.955 55.606c3.027 0 5.479 2.479 5.479 5.547 0 3.076-2.451 5.579-5.479 5.579-3.015 0-5.478-2.502-5.478-5.579 0-3.068 2.463-5.547 5.478-5.547z"
+                                          ></path>
+                                      </svg>
+                                      Python Script
+                                  </terra-menu-item>
+                                  <terra-menu-item value="earthdata-download">
+                                      <svg
+                                          slot="prefix"
+                                          viewBox="0 0 64 64"
+                                          fill="none"
+                                          width="16"
+                                          height="16"
+                                          style="width: 16px; height: 16px;"
+                                      >
+                                          <circle
+                                              cx="32"
+                                              cy="32"
+                                              r="28"
+                                              fill="currentColor"
+                                          />
+                                          <path
+                                              d="M32 14v26M32 40l-9-9M32 40l9-9"
+                                              stroke="#fff"
+                                              stroke-width="4"
+                                              stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              fill="none"
+                                          />
+                                      </svg>
+                                      Earthdata Download
+                                  </terra-menu-item>
+                              </terra-menu>
+                          </terra-dropdown>
 
-                <terra-button
-                    outline
-                    @click=${() => this.#handleJupyterNotebookClick()}
-                    style="margin-left: 8px;"
-                >
-                    <terra-icon
-                        name="outline-code-bracket"
-                        library="heroicons"
-                        font-size="1.5em"
-                        style="margin-right: 5px;"
-                    ></terra-icon>
-                    Open in Jupyter Notebook
-                </terra-button>
-            </div>
+                          <!--
+                          <terra-button
+                              outline
+                              @click=${() => this.#handleJupyterNotebookClick()}
+                          >
+                              <terra-icon
+                                  name="outline-code-bracket"
+                                  library="heroicons"
+                                  font-size="1.5em"
+                                  style="margin-right: 5px;"
+                              ></terra-icon>
+                              Open in Jupyter Notebook
+                          </terra-button>
+                        -->
+                      </div>
+                  `}
         `
     }
 

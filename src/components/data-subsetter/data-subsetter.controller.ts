@@ -15,7 +15,6 @@ import { getUTCDate } from '../../utilities/date.js'
 import Fuse from 'fuse.js'
 import type { MetadataCatalogInterface } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
-import { key } from 'localforage'
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
@@ -38,12 +37,12 @@ export class DataSubsetterController {
             task: async ([collectionEntryId], { signal }) => {
                 this.#host.collectionWithServices = collectionEntryId
                     ? await this.#dataService.getCollectionWithAvailableServices(
-                        collectionEntryId,
-                        {
-                            signal,
-                            environment: this.#host.environment,
-                        }
-                    )
+                          collectionEntryId,
+                          {
+                              signal,
+                              environment: this.#host.environment,
+                          }
+                      )
                     : undefined
 
                 return this.#host.collectionWithServices
@@ -102,40 +101,67 @@ export class DataSubsetterController {
                         }
                     )
                 } else {
+                    const isGiovanniFormat =
+                        this.#host.selectedFormat === 'text/csv' ||
+                        this.#host.selectedFormat === 'image/tiff'
+
+                    // For CSV/TIFF, use collectionEntryId format like time-average-map
+                    // For other formats, use collectionConceptId
+                    const collectionId = isGiovanniFormat
+                        ? `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}`
+                        : this.#host.collectionWithServices?.conceptId ?? ''
 
                     let subsetOptions = {
-                        collectionConceptId:
-                            this.#host.collectionWithServices?.conceptId ?? '',
-                        ...(this.#host.collectionWithServices?.variableSubset && {
-                            variableConceptIds: this.#host.selectedVariables.map(
-                                v => v.conceptId
-                            ),
-                        }),
+                        ...(isGiovanniFormat
+                            ? { collectionEntryId: collectionId }
+                            : { collectionConceptId: collectionId }),
+                        ...(this.#host.collectionWithServices?.variableSubset &&
+                            (isGiovanniFormat
+                                ? {
+                                      variableConceptIds: ['parameter_vars'],
+                                      variableEntryIds:
+                                          this.#host.selectedVariables.map(
+                                              v =>
+                                                  `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`
+                                          ),
+                                  }
+                                : {
+                                      variableConceptIds:
+                                          this.#host.selectedVariables.map(
+                                              v => v.conceptId
+                                          ),
+                                  })),
                         ...('w' in (this.#host.spatialSelection ?? {}) &&
                             this.#host.collectionWithServices?.bboxSubset && {
-                            boundingBox: this.#host
-                                .spatialSelection as BoundingBox,
-                        }),
+                                boundingBox: this.#host
+                                    .spatialSelection as BoundingBox,
+                            }),
                         ...(this.#host.selectedDateRange.startDate &&
                             this.#host.selectedDateRange.endDate &&
                             this.#host.collectionWithServices?.temporalSubset && {
-                            startDate: getUTCDate(
-                                this.#host.selectedDateRange.startDate
-                            ).toISOString(),
-                            endDate: getUTCDate(
-                                this.#host.selectedDateRange.endDate,
-                                true
-                            ).toISOString(),
-                        }),
+                                startDate: getUTCDate(
+                                    this.#host.selectedDateRange.startDate
+                                ).toISOString(),
+                                endDate: getUTCDate(
+                                    this.#host.selectedDateRange.endDate,
+                                    true
+                                ).toISOString(),
+                            }),
                         ...(this.#host.selectedFormat &&
                             this.#host.collectionWithServices?.outputFormats
                                 ?.length && {
-                            format: this.#host.selectedFormat,
+                                format: this.#host.selectedFormat,
+                            }),
+                        // Add Cloud Giovanni specific average parameters
+                        ...(this.#host.selectedFormat === 'text/csv' && {
+                            average: 'area',
                         }),
-                        labels: [] as string[]
+                        ...(this.#host.selectedFormat === 'image/tiff' && {
+                            average: 'time',
+                        }),
+                        labels: [] as string[],
                     }
                     subsetOptions.labels = this.#buildJobLabels(subsetOptions) // Overwrite the empty labels
-
 
                     console.log(
                         `Creating a job for collection, ${this.#host.collectionWithServices?.conceptId}, with subset options`,
@@ -238,24 +264,33 @@ export class DataSubsetterController {
         const labels: string[] = []
         // Using every subsetOptions key/value pair as a label to append
         for (const key of Object.keys(subsetOptions)) {
-            if (key !== 'labels') { // Prevents empty label from being
+            if (key !== 'labels') {
+                // Prevents empty label from being
                 const value = subsetOptions[key]
 
                 // Convert to string
-                const valueStr = (typeof value === 'object') ? JSON.stringify(value) : value
+                const valueStr =
+                    typeof value === 'object' ? JSON.stringify(value) : value
                 labels.push(encodeURIComponent(`${key}: ${valueStr}`))
             }
         }
 
         // Extra labels not from subsetOptions
         if (this.#host.collectionEntryId) {
-            labels.push(encodeURIComponent(`collection-entry-id: ${this.#host.collectionEntryId}`))
+            labels.push(
+                encodeURIComponent(
+                    `collection-entry-id: ${this.#host.collectionEntryId}`
+                )
+            )
         }
 
         if (this.#host.collectionWithServices?.collection?.EntryTitle) {
-            labels.push(encodeURIComponent(`collection-entry-title: ${this.#host.collectionWithServices.collection.EntryTitle}`))
+            labels.push(
+                encodeURIComponent(
+                    `collection-entry-title: ${this.#host.collectionWithServices.collection.EntryTitle}`
+                )
+            )
         }
         return labels
     }
-
 }

@@ -122,7 +122,6 @@ function runAllValidityTests(
             expect(emittedEvents.length).to.equal(0)
         })
 
-        // TODO: As soon as `SlRadioGroup` has a property `disabled` this
         // condition can be removed
         if (tagName !== 'terra-radio-group') {
             it('should not emit an `terra-invalid` event when `.checkValidity()` is called in custom error case while disabled', async () => {

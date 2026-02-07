@@ -1,8 +1,6 @@
 import { LitElement } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { Environment, getEnvironment } from '../utilities/environment.js'
-import { purgeGraphQLCache } from '../lib/graphql-client.js'
-import { authService } from '../auth/auth.service.js'
+import { Environment } from '../utilities/environment.js'
 
 // Match event type name strings that are registered on GlobalEventHandlersEventMap...
 type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
@@ -53,7 +51,7 @@ type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 // Given an event name string, get a valid type for the options to initialize the event that is more restrictive than
 // just CustomEventInit when appropriate (validate the type of the event detail, and require it to be provided if the
 // event requires it)
-type SlEventInit<T> = T extends keyof GlobalEventHandlersEventMap
+type TerraEventInit<T> = T extends keyof GlobalEventHandlersEventMap
     ? GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
         ? GlobalEventHandlersEventMap[T] extends CustomEvent<
               Record<PropertyKey, never>
@@ -86,7 +84,7 @@ export default class TerraElement extends LitElement {
     // Make localization attributes reactive
     @property() dir: string
     @property() lang: string
-    @property() environment?: Environment = getEnvironment()
+    @property() environment?: Environment = Environment.PROD
     @property() bearerToken?: string
     @state() isVisible: boolean = false
 
@@ -112,6 +110,13 @@ export default class TerraElement extends LitElement {
         this.isVisible = this.#isComponentVisible()
 
         if (this.isVisible) {
+            this.firstVisible()
+            return
+        }
+
+        if (!('IntersectionObserver' in window)) {
+            // IntersectionObserver not supported, just assume visible
+            this.isVisible = true
             this.firstVisible()
             return
         }
@@ -169,15 +174,15 @@ export default class TerraElement extends LitElement {
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
         name: EventTypeDoesNotRequireDetail<T>,
-        options?: SlEventInit<T> | undefined
+        options?: TerraEventInit<T> | undefined
     ): GetCustomEventType<T>
     emit<T extends string & keyof EventTypesWithRequiredDetail>(
         name: EventTypeRequiresDetail<T>,
-        options: SlEventInit<T>
+        options: TerraEventInit<T>
     ): GetCustomEventType<T>
     emit<T extends string & keyof ValidEventTypeMap>(
         name: T,
-        options?: SlEventInit<T> | undefined
+        options?: TerraEventInit<T> | undefined
     ): GetCustomEventType<T> {
         const event = new CustomEvent(name, {
             bubbles: true,
@@ -249,26 +254,6 @@ export default class TerraElement extends LitElement {
         ).forEach(([name, component]) => {
             ;(this.constructor as typeof TerraElement).define(name, component)
         })
-
-        // Listen for environment changes
-        document.addEventListener(
-            'terra-environment-change',
-            (event: CustomEvent) => {
-                // Purge the GraphQL cache and authentication info when the environment changes
-                // This really shouldn't happen normally. Most websites/apps will be using the same environment.
-                // The docs site is an exception, as we allow for switching between UAT and PROD.
-                purgeGraphQLCache()
-
-                if (
-                    localStorage.getItem('terra-environment') !==
-                    event.detail.environment
-                ) {
-                    authService.logout()
-                }
-
-                this.environment = event.detail.environment
-            }
-        )
     }
 }
 

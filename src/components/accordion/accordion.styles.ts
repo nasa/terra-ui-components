@@ -6,42 +6,43 @@ export default css`
     }
 
     .accordion {
-        background: #fff;
-        margin-bottom: 1rem;
-        border: 1px solid rgb(222, 226, 230);
-        border-radius: 6px;
-        background: white;
+        background: var(--terra-accordion-background-color);
+        margin-bottom: var(--terra-spacing-medium);
+        border: var(--terra-accordion-border-width) solid
+            var(--terra-accordion-border-color);
+        border-radius: var(--terra-accordion-border-radius);
         overflow: hidden;
     }
 
     .accordion-summary {
-        background: #f8f9fa;
-        padding: 12px 15px;
-        border-bottom: 1px solid #dee2e6;
-        font-size: 0.95rem;
-        font-weight: 500;
-        color: #374151;
+        background: var(--terra-accordion-summary-background-color);
+        padding: var(--terra-accordion-summary-padding);
+        border-bottom: var(--terra-accordion-border-width) solid
+            var(--terra-accordion-summary-border-color);
+        font-size: var(--terra-accordion-summary-font-size);
+        font-weight: var(--terra-accordion-summary-font-weight);
+        color: var(--terra-accordion-summary-color);
         cursor: pointer;
         outline: none;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
-        transition: background-color 0.2s;
+        gap: var(--terra-spacing-medium);
+        transition: var(--terra-accordion-transition);
     }
 
     .accordion-summary:hover {
-        background: #e9ecef;
+        background: var(--terra-accordion-summary-background-color-hover);
     }
 
     .accordion-summary-right {
         display: flex;
         align-items: flex-end;
-        gap: 10px;
+        gap: var(--terra-spacing-small);
     }
 
     .accordion-summary terra-icon {
-        transition: transform 0.2s ease;
+        transition: transform var(--terra-transition-fast) ease;
     }
 
     :host([open]) .accordion-summary terra-icon {
@@ -49,6 +50,11 @@ export default css`
     }
 
     .accordion-content {
-        padding: 1rem;
+        padding: var(--terra-accordion-content-padding);
+    }
+
+    /* Remove margin from last accordion when stacked */
+    :host:last-child .accordion {
+        margin-bottom: 0;
     }
 `

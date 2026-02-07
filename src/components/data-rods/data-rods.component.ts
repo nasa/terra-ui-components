@@ -19,8 +19,8 @@ import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
- * @documentation https://disc.gsfc.nasa.gov/components/data-rods
- * @status mvp
+ * @documentation https://terra-ui.netlify.app/components/data-rods
+ * @status stable
  * @since 1.0
  *
  * @event terra-date-range-change - Emitted whenever the date range of the date slider is updated

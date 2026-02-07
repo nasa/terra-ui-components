@@ -39,6 +39,14 @@ export class DataAccessController {
         ],
         CmrGranule[] | undefined
     >
+    cloudCoverRangeTask: Task<
+        [string | undefined, string | undefined],
+        CloudCoverRange | null | undefined
+    >
+    samplingTask: Task<
+        [string | undefined, string | undefined],
+        CmrSamplingOfGranules | undefined
+    >
     #host: ReactiveControllerHost & TerraDataAccess
     #catalog: MetadataCatalogInterface
     #totalGranules: number = 0
@@ -102,7 +110,7 @@ export class DataAccessController {
         })
 
         // fetch sampling of granules
-        new Task(host, {
+        this.samplingTask = new Task(host, {
             task: async ([shortName, version], { signal }) => {
                 const collectionEntryId = this.#getCollectionEntryId(
                     shortName,
@@ -128,7 +136,7 @@ export class DataAccessController {
         })
 
         // fetch cloud cover range
-        new Task(host, {
+        this.cloudCoverRangeTask = new Task(host, {
             task: async ([shortName, version], { signal }) => {
                 const collectionEntryId = this.#getCollectionEntryId(
                     shortName,

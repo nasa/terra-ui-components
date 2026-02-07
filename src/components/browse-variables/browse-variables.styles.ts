@@ -159,14 +159,14 @@ export default css`
         padding: 0;
         margin: 0;
         min-width: 24em;
-        justify-content: space-evenly;
+        justify-content: flex-end;
     }
 
     .variables-container header menu ::marker {
         font-size: 0;
     }
 
-    .list-menu-dropdown sl-button::part(base) {
+    .list-menu-dropdown terra-button::part(base) {
         border-color: transparent;
         font-weight: 700;
     }

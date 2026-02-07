@@ -8,11 +8,9 @@ import type { CSSResultGroup } from 'lit'
 
 /**
  * @summary Skeletons are loading indicators to represent where content will eventually be drawn.
- * @documentation https://disc.gsfc.nasa.gov/components/skeleton
- * @status experimental
+ * @documentation https://terra-ui.netlify.app/components/skeleton
+ * @status stable
  * @since 1.0
- *
- * @dependency sl-skeleton
  */
 export default class TerraSkeleton extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]

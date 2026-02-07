@@ -79,6 +79,7 @@ export interface MapViewOptions {
     hideBoundingBoxDrawTool?: boolean
     hidePointSelectionDrawTool?: boolean
     initialValue?: LatLngBoundsExpression
+    noWorldWrap?: boolean
 }
 
 export class Leaflet {
@@ -114,6 +115,15 @@ export class Leaflet {
             mapOptions.dragging = false
             mapOptions.touchZoom = false
             mapOptions.boxZoom = false
+        }
+
+        if (options.noWorldWrap) {
+            mapOptions.worldCopyJump = false
+            mapOptions.maxBounds = L.latLngBounds(
+                L.latLng(-90, -180),
+                L.latLng(90, 180)
+            )
+            mapOptions.maxBoundsViscosity = 1.0
         }
 
         this.map = new L.Map(container, mapOptions)
