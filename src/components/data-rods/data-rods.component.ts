@@ -130,7 +130,7 @@ export default class TerraDataRods extends TerraElement {
         return `${dataProductWest}, ${dataProductSouth}, ${dataProductEast}, ${dataProductNorth}`
     }
 
-    private CompatibilityWarning() {
+    private compatibilityWarning() {
         this.spatialWarningMessage = undefined
 
         if (!this.catalogVariable || !this.location) return
@@ -261,7 +261,7 @@ export default class TerraDataRods extends TerraElement {
         this.location = undefined
         this.lastChanged = 'variable'
 
-        this.CompatibilityWarning()
+        this.compatibilityWarning()
     }
 
     #handleMapChange(event: TerraMapChangeEvent) {
@@ -270,7 +270,7 @@ export default class TerraDataRods extends TerraElement {
             this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
             this.lastChanged = 'location'
 
-            this.CompatibilityWarning()
+            this.compatibilityWarning()
         }
     }
 

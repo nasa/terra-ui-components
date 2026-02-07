@@ -126,12 +126,12 @@ export default class TerraDatePicker extends TerraElement {
             this.flatpickrElement._instance.clear()
 
             this.emit(
-                'terra-date-selection-invalid' as any,
+                'terra-date-selection-invalid',
                 {
                     detail: {
                         message: `You are not allowed to select dates outside ${this.minDate} to ${this.maxDate}.`,
                     },
-                } as CustomEventInit
+                }
             )
 
             return
@@ -156,10 +156,10 @@ export default class TerraDatePicker extends TerraElement {
                         .minDate=${this.minDate}
                         .maxDate=${this.maxDate}
                         .defaultDate=${this.range
-                            ? ([this.startDate, this.endDate].filter(
-                                  Boolean
-                              ) as string[])
-                            : this.startDate}
+                ? ([this.startDate, this.endDate].filter(
+                    Boolean
+                ) as string[])
+                : this.startDate}
                         .allowInput=${this.allowInput}
                         .altFormat=${this.altFormat}
                         .altInput=${this.altInput}

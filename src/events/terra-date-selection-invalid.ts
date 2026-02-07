@@ -1,4 +1,6 @@
-export type TerraDateSelectionInvalidEvent = CustomEvent<Record<PropertyKey, never>>
+export type TerraDateSelectionInvalidEvent = CustomEvent<{
+    message: string
+}>
 
 declare global {
     interface GlobalEventHandlersEventMap {

@@ -334,8 +334,6 @@ export default class TerraSpatialPicker extends TerraElement {
         switch (event.detail.cause) {
             case 'clear':
                 this.spatialInput.value = ''
-                // Commenting out reseting to global bounds because of data-aware validations
-                //this.spatialInput.value = '-180, -90, 180, 90'
                 this._updateURLParam(null)
                 break
 
@@ -385,7 +383,7 @@ export default class TerraSpatialPicker extends TerraElement {
                         },
                     })
                 }
-            } catch {}
+            } catch { }
         } else {
             this.mapValue = []
         }
@@ -436,8 +434,8 @@ export default class TerraSpatialPicker extends TerraElement {
                 <label
                     for="spatial-picker__input"
                     class=${this.hideLabel
-                        ? 'sr-only'
-                        : 'spatial-picker__input_label'}
+                ? 'sr-only'
+                : 'spatial-picker__input_label'}
                     >${this.label}</label
                 >
                 <div class="spatial-picker__input_fields">
@@ -475,20 +473,20 @@ export default class TerraSpatialPicker extends TerraElement {
                     </terra-button>
                 </div>
                 ${this.error
-                    ? html`<div class="spatial-picker__error">${this.error}</div>`
-                    : nothing}
+                ? html`<div class="spatial-picker__error">${this.error}</div>`
+                : nothing}
                 ${expanded
-                    ? html`<div
+                ? html`<div
                           class="spatial-picker__map-container ${this._popoverFlipped
-                              ? 'flipped'
-                              : ''}"
+                        ? 'flipped'
+                        : ''}"
                           style="${this.inline
-                              ? 'position: static; width: 100%;'
-                              : ''}"
+                        ? 'position: static; width: 100%;'
+                        : ''}"
                       >
                           ${this.renderMap()}
                       </div>`
-                    : nothing}
+                : nothing}
             </div>
         `
     }

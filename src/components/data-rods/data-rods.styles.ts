@@ -34,6 +34,6 @@ export default css`
     .warning {
         color: #dc2626;
         font-weight: 500;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
     }
 `
