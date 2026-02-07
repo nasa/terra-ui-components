@@ -17,6 +17,7 @@ import TerraButton from '../button/button.component.js'
  *
  * @csspart base - The component's base wrapper.
  * @csspart input - The date input element.
+ * @event terra-date-selection-invalid - Fired when user selects date outside allowed range
  */
 export default class TerraDatePicker extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -112,7 +113,31 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private handleBlur() {
-        this.handleChange(this.flatpickrElement._instance.selectedDates)
+        const selectedDates = this.flatpickrElement._instance.selectedDates
+        const min = this.minDate ? new Date(this.minDate).getTime() : null
+        const max = this.maxDate ? new Date(this.maxDate).getTime() : null
+
+        const isValid = selectedDates.every((date: Date) => {
+            const time = date.getTime()
+            return (!min || time >= min) && (!max || time <= max)
+        })
+
+        if (!isValid) {
+            this.flatpickrElement._instance.clear()
+
+            this.emit(
+                'terra-date-selection-invalid',
+                {
+                    detail: {
+                        message: `You are not allowed to select dates outside ${this.minDate} to ${this.maxDate}.`,
+                    },
+                }
+            )
+
+            return
+        }
+
+        this.handleChange(selectedDates)
     }
 
     render() {
@@ -131,10 +156,10 @@ export default class TerraDatePicker extends TerraElement {
                         .minDate=${this.minDate}
                         .maxDate=${this.maxDate}
                         .defaultDate=${this.range
-                            ? ([this.startDate, this.endDate].filter(
-                                  Boolean
-                              ) as string[])
-                            : this.startDate}
+                ? ([this.startDate, this.endDate].filter(
+                    Boolean
+                ) as string[])
+                : this.startDate}
                         .allowInput=${this.allowInput}
                         .altFormat=${this.altFormat}
                         .altInput=${this.altInput}

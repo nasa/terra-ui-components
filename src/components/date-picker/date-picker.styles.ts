@@ -89,4 +89,9 @@ export default css`
         white-space: nowrap;
         border: 0;
     }
+    .flatpickr-day.disabled {
+        background: #f0f0f0;
+        color: #ccc;
+        cursor: not-allowed;
+    }
 `
