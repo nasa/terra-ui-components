@@ -67,17 +67,68 @@ export type CmrSamplingOfGranulesResponse = {
 
 export type CmrSamplingOfGranules = {
     conceptId: string
+    spatialExtent: {
+        granuleSpatialRepresentation: string
+        horizontalSpatialDomain: {
+            geometry: {
+                coordinateSystem: string
+                boundingRectangles: Array<{
+                    westBoundingCoordinate: number
+                    northBoundingCoordinate: number
+                    eastBoundingCoordinate: number
+                    southBoundingCoordinate: number
+                }>
+            }
+        }
+    }
     firstGranules: {
         count: number
         items: Array<{
             dataGranule: CmrGranuleDataGranule
+            temporalExtent: TemporalExtent
+            spatialExtent?: {
+                granuleSpatialRepresentation: string
+                horizontalSpatialDomain: {
+                    geometry: {
+                        coordinateSystem: string
+                        boundingRectangles: Array<{
+                            westBoundingCoordinate: number
+                            northBoundingCoordinate: number
+                            eastBoundingCoordinate: number
+                            southBoundingCoordinate: number
+                        }>
+                    }
+                }
+            }
         }>
     }
     lastGranules: {
         count: number
         items: Array<{
-            dataGranule: CmrGranuleDataGranule
+            dataGranule: CmrGranuleDataGranul
+            temporalExtent: TemporalExtent
+            spatialExtent?: {
+                granuleSpatialRepresentation: string
+                horizontalSpatialDomain: {
+                    geometry: {
+                        coordinateSystem: string
+                        boundingRectangles: Array<{
+                            westBoundingCoordinate: number
+                            northBoundingCoordinate: number
+                            eastBoundingCoordinate: number
+                            southBoundingCoordinate: number
+                        }>
+                    }
+                }
+            }
         }>
+    }
+}
+
+export type TemporalExtent = {
+    rangeDateTime: {
+        beginningDateTime: string
+        endingDateTime: string
     }
 }
 

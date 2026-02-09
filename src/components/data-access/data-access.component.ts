@@ -120,12 +120,6 @@ export default class TerraDataAccess extends TerraElement {
     @state()
     cloudCoverPickerOpen = false
 
-    @state()
-    datePickerOpen = false
-
-    @state()
-    spatialPickerOpen = false
-
     datePickerRef = createRef<TerraDatePicker>()
     spatialPickerRef = createRef<TerraSpatialPicker>()
     cloudCoverSliderRef = createRef<TerraSlider>()
@@ -304,6 +298,14 @@ export default class TerraDataAccess extends TerraElement {
         this.#gridApi?.purgeInfiniteCache()
     }
 
+    #handleSpatialDropdownShow() {
+        // Trigger invalidateSize on the map when dropdown opens
+        // This ensures the Leaflet map recalculates its size correctly
+        setTimeout(() => {
+            this.spatialPickerRef.value?.invalidateSize()
+        }, 0)
+    }
+
     #handleDateRangeChange(event: CustomEvent) {
         const detail = event.detail
         this.startDate = detail.startDate || ''
@@ -329,6 +331,24 @@ export default class TerraDataAccess extends TerraElement {
             return `${formatDate(this.startDate)} – ${formatDate(this.endDate)}`
         }
         return 'Date Range'
+    }
+
+    #formatAvailableRangeDate(dateStr: string): string {
+        if (!dateStr) return ''
+
+        const date = new Date(dateStr)
+        const year = date.getUTCFullYear()
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+        const day = String(date.getUTCDate()).padStart(2, '0')
+
+        if (this.#controller.isSubDaily) {
+            const hours = String(date.getUTCHours()).padStart(2, '0')
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        }
+
+        return `${year}-${month}-${day}`
     }
 
     #getSpatialButtonText(): string {
@@ -380,29 +400,16 @@ export default class TerraDataAccess extends TerraElement {
         return 'Spatial Area'
     }
 
-    #toggleDatePicker() {
-        this.datePickerOpen = !this.datePickerOpen
-        this.datePickerRef.value?.setOpen(this.datePickerOpen)
-    }
+    // Date picker is now handled by dropdown component
 
     #clearDateRange() {
         this.startDate = ''
         this.endDate = ''
-        this.datePickerOpen = false
         this.#gridApi?.purgeInfiniteCache()
-    }
-
-    #toggleSpatialPicker() {
-        // Use setTimeout to ensure the click event has been processed
-        setTimeout(() => {
-            this.spatialPickerOpen = !this.spatialPickerOpen
-            this.spatialPickerRef.value?.setOpen(this.spatialPickerOpen)
-        }, 0)
     }
 
     #clearSpatialFilter() {
         this.location = null
-        this.spatialPickerOpen = false
         this.#gridApi?.purgeInfiniteCache()
     }
 
@@ -624,12 +631,12 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
 
                 <div class="toggle-row">
-                    <div class="filter">
+                    <terra-dropdown>
                         <button
+                            slot="trigger"
                             class="filter-btn ${this.startDate && this.endDate
                                 ? 'active'
                                 : ''}"
-                            @click=${this.#toggleDatePicker}
                         >
                             <terra-icon
                                 name="outline-calendar"
@@ -653,60 +660,97 @@ export default class TerraDataAccess extends TerraElement {
                                 : nothing}
                         </button>
 
-                        <!-- hidden date picker to show when clicking the filter -->
-                        <terra-date-picker
-                            ${ref(this.datePickerRef)}
-                            range
-                            hide-label
-                            enable-time
-                            hide-input
-                            show-presets
-                            .startDate=${this.startDate}
-                            .endDate=${this.endDate}
-                            .minDate=${this.#controller.granuleMinDate}
-                            .maxDate=${this.#controller.granuleMaxDate}
-                            @terra-date-range-change=${this.#handleDateRangeChange}
-                        ></terra-date-picker>
-                    </div>
-
-                    <div class="filter">
-                        <button
-                            class="filter-btn ${this.location ? 'active' : ''}"
-                            @click=${(e: Event) => {
-                                e.stopPropagation()
-                                this.#toggleSpatialPicker()
-                            }}
-                        >
-                            <terra-icon
-                                name="outline-globe-alt"
-                                library="heroicons"
-                                font-size="18px"
-                            ></terra-icon>
-                            <span>${this.#getSpatialButtonText()}</span>
-                            ${this.location
-                                ? html`
-                                      <button
-                                          class="clear-badge"
-                                          @click=${(e: Event) => {
-                                              e.stopPropagation()
-                                              this.#clearSpatialFilter()
-                                          }}
-                                          aria-label="Clear spatial filter"
+                        <div class="datepicker-container">
+                            <terra-date-picker
+                                ${ref(this.datePickerRef)}
+                                range
+                                ?enable-time=${this.#controller.isSubDaily}
+                                show-presets
+                                split-inputs
+                                inline
+                                .startDate=${this.startDate}
+                                .endDate=${this.endDate}
+                                .startPlaceholder=${this.#controller.isSubDaily
+                                    ? 'YYYY-MM-DD HH:mm:ss'
+                                    : 'YYYY-MM-DD'}
+                                .endPlaceholder=${this.#controller.isSubDaily
+                                    ? 'YYYY-MM-DD HH:mm:ss'
+                                    : 'YYYY-MM-DD'}
+                                .minDate=${this.#controller.granuleMinDate}
+                                .maxDate=${this.#controller.granuleMaxDate}
+                                @terra-date-range-change=${this
+                                    .#handleDateRangeChange}
+                            >
+                                ${this.#controller.granuleMinDate &&
+                                this.#controller.granuleMaxDate
+                                    ? html` <p
+                                          slot="additional-text"
+                                          class="available-range"
                                       >
-                                          ×
-                                      </button>
-                                  `
-                                : nothing}
-                        </button>
+                                          <strong>Available Range:</strong>
+                                          ${this.#formatAvailableRangeDate(
+                                              this.#controller.granuleMinDate
+                                          )}
+                                          -
+                                          ${this.#formatAvailableRangeDate(
+                                              this.#controller.granuleMaxDate
+                                          )}
+                                      </p>`
+                                    : nothing}
+                            </terra-date-picker>
+                        </div>
+                    </terra-dropdown>
 
-                        <!-- hidden spatial picker to show when clicking the filter -->
-                        <terra-spatial-picker
-                            ${ref(this.spatialPickerRef)}
-                            has-shape-selector
-                            hide-label
-                            @terra-map-change=${this.#handleMapChange}
-                        ></terra-spatial-picker>
-                    </div>
+                    <terra-dropdown
+                        placement="bottom-start"
+                        distance="4"
+                        hoist
+                        @terra-show=${this.#handleSpatialDropdownShow}
+                    >
+                        <div slot="trigger" class="filter">
+                            <button
+                                class="filter-btn ${this.location ? 'active' : ''}"
+                            >
+                                <terra-icon
+                                    name="outline-globe-alt"
+                                    library="heroicons"
+                                    font-size="18px"
+                                ></terra-icon>
+                                <span>${this.#getSpatialButtonText()}</span>
+                                ${this.location
+                                    ? html`
+                                          <button
+                                              class="clear-badge"
+                                              @click=${(e: Event) => {
+                                                  e.stopPropagation()
+                                                  this.#clearSpatialFilter()
+                                              }}
+                                              aria-label="Clear spatial filter"
+                                          >
+                                              ×
+                                          </button>
+                                      `
+                                    : nothing}
+                            </button>
+                        </div>
+
+                        <div class="spatialpicker-container">
+                            <terra-spatial-picker
+                                ${ref(this.spatialPickerRef)}
+                                hide-label
+                                inline
+                                no-world-wrap
+                                .spatialConstraints=${this.#controller
+                                    .spatialConstraints || '-180, -90, 180, 90'}
+                                @terra-map-change=${this.#handleMapChange}
+                            >
+                                <p class="available-range" slot="additional-text">
+                                    <strong>Available range:</strong> ${this
+                                        .#controller.spatialConstraints}
+                                </p>
+                            </terra-spatial-picker>
+                        </div>
+                    </terra-dropdown>
 
                     ${this.#controller.cloudCoverRange
                         ? html`

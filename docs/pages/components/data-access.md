@@ -40,7 +40,9 @@ This component does not emit custom events.
 ### Basic Usage
 
 ```html:preview
+<terra-data-access short-name="FLDAS_NOAHMP001_G_CA_D" version="001"></terra-data-access>
 <terra-data-access short-name="MODISA_L2_OC" version="2022.0"></terra-data-access>
+<terra-data-access short-name="NLDAS_FORA0125_H" version="2.0"></terra-data-access>
 ```
 
 ### With Filters (Temporal, Spatial, Cloud Cover)
@@ -57,6 +59,14 @@ Use the top filter bar to:
 -   Adjust cloud cover (when available)
 
 The results grid updates as filters change. The selection summary displays file count and estimated total size.
+
+### Sub-daily Data
+
+```html:preview
+<terra-data-access short-name="GPM_3IMERGHHL" version="07"></terra-data-access>
+```
+
+Datepicker supports sub-daily granules. Select a date and then choose specific times from the dropdown.
 
 ### Export Download Options
 

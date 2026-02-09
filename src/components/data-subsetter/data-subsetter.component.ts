@@ -40,6 +40,8 @@ import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
 import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
+import { TaskStatus } from '@lit/task'
+import { extractHarmonyError } from '../../utilities/harmony.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -98,6 +100,9 @@ export default class TerraDataSubsetter extends TerraElement {
      */
     @property({ reflect: true }) dialog?: string
 
+    @property({ reflect: true, type: Boolean, attribute: 'is-history-view' })
+    isHistoryView: boolean = false
+
     @state()
     collectionWithServices?: CollectionWithAvailableServices
 
@@ -155,6 +160,9 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     dataAccessMode: 'original' | 'subset' = 'original'
 
+    @state()
+    validationError?: string
+
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
@@ -179,6 +187,15 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
+    @watch('collectionEntryId', { waitUntilFirstUpdate: true })
+    collectionEntryIdChanged() {
+        if (this.collectionEntryId) {
+            this.showCollectionSearch = false
+        } else {
+            this.showCollectionSearch = true
+        }
+    }
+
     firstUpdated() {
         if (this.collectionEntryId) {
             this.showCollectionSearch = false
@@ -189,8 +206,36 @@ export default class TerraDataSubsetter extends TerraElement {
             this.dataAccessMode = 'subset'
         }
 
-        if (this.showHistoryPanel) {
-            this.renderHistoryPanel()
+        this.renderHistoryPanel()
+    }
+
+    updated(changedProps: Map<string, unknown>) {
+        super.updated(changedProps)
+
+        const taskStatus = this.controller?.jobStatusTask?.status
+
+        // Check if task has an error and handle it
+        if (taskStatus === TaskStatus.ERROR) {
+            const taskError = this.controller?.jobStatusTask?.error
+            if (taskError) {
+                // Extract error information using the utility
+                const errorDetails = extractHarmonyError(taskError)
+
+                // Don't show errors for user-initiated cancellations
+                if (errorDetails.isCancellation) {
+                    return
+                }
+
+                // Set the job to failed state with the error message
+                if (this.controller.currentJob) {
+                    this.controller.currentJob = {
+                        ...this.controller.currentJob,
+                        status: Status.FAILED,
+                        message:
+                            errorDetails.message || 'Failed to create subset job',
+                    }
+                }
+            }
         }
     }
 
@@ -200,15 +245,33 @@ export default class TerraDataSubsetter extends TerraElement {
 
         this.selectedDateRange = { startDate, endDate }
 
-        // Set selectedFormat to first available format from collection, or fall back to default
+        // Set selectedFormat to NetCDF if available, otherwise first available format from collection, or fall back to default
         if (this.collectionWithServices?.outputFormats?.length) {
-            this.selectedFormat = this.collectionWithServices.outputFormats[0]
+            const netcdfFormat = this.collectionWithServices.outputFormats.find(
+                format =>
+                    format === 'application/x-netcdf4' ||
+                    format === 'application/netcdf'
+            )
+            this.selectedFormat =
+                netcdfFormat || this.collectionWithServices.outputFormats[0]
         } else {
             this.selectedFormat = defaultSubsetFileMimeType
         }
 
         this.collectionLoading = false
         this.collectionAccordionOpen = false
+    }
+
+    @watch('selectedFormat')
+    selectedFormatChanged() {
+        // When switching to Giovanni format, keep only the first selected variable
+        if (this.#isGiovanniFormat() && this.selectedVariables.length > 1) {
+            this.selectedVariables = [this.selectedVariables[0]]
+        }
+    }
+
+    showDialog() {
+        this.dialogElement?.show()
     }
 
     render() {
@@ -246,7 +309,7 @@ export default class TerraDataSubsetter extends TerraElement {
                           </div>
                       `
                     : nothing}
-                ${!this.jobId && this.collectionWithServices?.services?.length
+                ${!this.isHistoryView && this.collectionWithServices?.services?.length
                     ? html`
                           <div class="section">
                               ${this.#renderDataAccessModeSelection()}
@@ -343,7 +406,7 @@ export default class TerraDataSubsetter extends TerraElement {
                           </button>`
                         : nothing}
                 </div>
-                ${!this.jobId && this.collectionWithServices?.services?.length
+                ${!this.isHistoryView && this.collectionWithServices?.services?.length
                     ? html`
                           <div class="section">
                               ${this.#renderDataAccessModeSelection()}
@@ -510,20 +573,22 @@ export default class TerraDataSubsetter extends TerraElement {
             return html`
                 <div slot="footer" class="footer">
                     <button class="btn btn-secondary">Reset All</button>
-                    <div>
-                        <button class="btn btn-primary" @click=${this.#getData}>
-                            Get Data
-                        </button>
-                        ${this.jobId
-                            ? html`
-                                  <terra-button
-                                      variant="default"
-                                      @click=${this.#viewRunningJob}
-                                  >
-                                      View Running Job
-                                  </terra-button>
-                              `
-                            : nothing}
+                    <button class="btn btn-primary" @click=${this.#getData}>
+                        Get Data
+                    </button>
+                            ${
+                                this.jobId
+                                    ? html`
+                                          <terra-button
+                                              variant="default"
+                                              @click=${this.#viewRunningJob}
+                                          >
+                                              View Running Job
+                                          </terra-button>
+                                      `
+                                    : nothing
+                            }
+                        </div>
                     </div>
                 </div>
             `
@@ -606,6 +671,19 @@ export default class TerraDataSubsetter extends TerraElement {
                                   </div>
                               `
                             : nothing}
+                        ${this.collectionWithServices?.outputFormats?.length &&
+                        hasSubsetOption
+                            ? html`
+                                  <div class="section">
+                                      <h2 class="section-title">
+                                          Output Format
+                                          <span class="help-icon">?</span>
+                                      </h2>
+
+                                      ${this.#renderOutputFormatSelection()}
+                                  </div>
+                              `
+                            : nothing}
                         <div class="section">
                             <h2 class="section-title">
                                 Subset Options
@@ -638,18 +716,6 @@ export default class TerraDataSubsetter extends TerraElement {
                             ? this.#renderAvailableSpatialRangeSection()
                             : nothing}
                     `}
-            ${this.collectionWithServices?.outputFormats?.length && hasSubsetOption
-                ? html`
-                      <div class="section">
-                          <h2 class="section-title">
-                              Output Format
-                              <span class="help-icon">?</span>
-                          </h2>
-
-                          ${this.#renderOutputFormatSelection()}
-                      </div>
-                  `
-                : nothing}
             ${!hasSubsetOption && estimates
                 ? html`
                       <div
@@ -667,21 +733,25 @@ export default class TerraDataSubsetter extends TerraElement {
                 ? html`
                       <div class="footer">
                           <button class="btn btn-secondary">Reset All</button>
-
-                          <div>
-                              <button class="btn btn-primary" @click=${this.#getData}>
-                                  Get Data
-                              </button>
-                              ${this.jobId
-                                  ? html`
-                                        <terra-button
-                                            variant="default"
-                                            @click=${this.#viewRunningJob}
-                                        >
-                                            View Running Job
-                                        </terra-button>
-                                    `
-                                  : nothing}
+                          <button
+                              class="btn btn-primary"
+                              @click=${this.#getData}
+                          >
+                              Get Data
+                          </button>
+                                  ${
+                                      this.jobId
+                                          ? html`
+                                                <terra-button
+                                                    variant="default"
+                                                    @click=${this.#viewRunningJob}
+                                                >
+                                                    View Running Job
+                                                </terra-button>
+                                            `
+                                          : nothing
+                                  }
+                              </div>
                           </div>
                       </div>
                   `
@@ -932,11 +1002,26 @@ export default class TerraDataSubsetter extends TerraElement {
 
                 <div class="accordion-content" style="margin-top: 12px;">
                     ${(() => {
-                        const uniqueFormats = Array.from(
-                            new Set(this.collectionWithServices?.outputFormats || [])
-                        )
+                        const allFormats =
+                            this.collectionWithServices?.outputFormats || []
+                        const uniqueFormats = Array.from(new Set(allFormats))
 
-                        return uniqueFormats.map(
+                        // Consolidate NetCDF formats - if both exist, only show netcdf4
+                        const hasNetcdf4 = uniqueFormats.includes(
+                            'application/x-netcdf4'
+                        )
+                        const hasNetcdfClassic =
+                            uniqueFormats.includes('application/netcdf')
+
+                        let displayFormats = uniqueFormats
+                        if (hasNetcdf4 && hasNetcdfClassic) {
+                            // Both exist - remove netcdf classic, keep netcdf4
+                            displayFormats = uniqueFormats.filter(
+                                f => f !== 'application/netcdf'
+                            )
+                        }
+
+                        return displayFormats.map(
                             format => html`
                                 <label
                                     style="display: flex; align-items: center; gap: 8px; padding: 5px;"
@@ -999,6 +1084,7 @@ export default class TerraDataSubsetter extends TerraElement {
                         range
                         split-inputs
                         show-presets
+                        ?enable-time=${this.controller.isSubDaily}
                         start-label="Start Date"
                         end-label="End Date"
                         .minDate=${defaultStartDate}
@@ -1016,9 +1102,12 @@ export default class TerraDataSubsetter extends TerraElement {
                         ><strong>Available Range:</strong> ${defaultStartDate} to
                         ${defaultEndDate}</span
                     >
-                    <span
-                        ><strong>Note:</strong> All dates and times are in UTC.</span
-                    >
+                    ${this.controller.isSubDaily
+                        ? html`<span
+                              ><strong>Note:</strong> All dates and times are in
+                              UTC.</span
+                          >`
+                        : nothing}
                 </div>
             </terra-accordion>
         `
@@ -1038,9 +1127,15 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #resetFormatSelection = () => {
-        // Reset to first available format from collection, or fall back to default
+        // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
         if (this.collectionWithServices?.outputFormats?.length) {
-            this.selectedFormat = this.collectionWithServices.outputFormats[0]
+            const netcdfFormat = this.collectionWithServices.outputFormats.find(
+                format =>
+                    format === 'application/x-netcdf4' ||
+                    format === 'application/netcdf'
+            )
+            this.selectedFormat =
+                netcdfFormat || this.collectionWithServices.outputFormats[0]
         } else {
             this.selectedFormat = defaultSubsetFileMimeType
         }
@@ -1156,30 +1251,21 @@ export default class TerraDataSubsetter extends TerraElement {
                         part="spatial-picker"
                         inline
                         hide-label
-                        has-shape-selector
                         hide-point-selection
                         no-world-wrap
+                        .spatialConstraints=${this.controller.spatialConstraints ||
+                        '-180, -90, 180, 90'}
                         .initialValue=${spatialString}
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
-                    ${boundingRects &&
-                    Array.isArray(boundingRects) &&
-                    boundingRects.length
-                        ? html`<div
-                              style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
-                          >
-                              ${boundingRects.map(
-                                  (rect: any) =>
-                                      html`<div>
-                                          <strong>Available Range:</strong>
-                                          ${rect.WestBoundingCoordinate},
-                                          ${rect.SouthBoundingCoordinate},
-                                          ${rect.EastBoundingCoordinate},
-                                          ${rect.NorthBoundingCoordinate}
-                                      </div>`
-                              )}
-                          </div>`
-                        : nothing}
+                    <div
+                        style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
+                    >
+                        <span
+                            ><strong>Available Range:</strong> ${this.controller
+                                .spatialConstraints}</span
+                        >
+                    </div>
                 </div>
             </terra-accordion>
         `
@@ -1209,8 +1295,13 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #renderVariableSelection() {
         const variables = this.collectionWithServices?.variables || []
-        const showError =
+        const giovanniError =
+            this.touchedFields.has('variables') && this.#getGiovanniValidationError()
+        const basicError =
             this.touchedFields.has('variables') && this.selectedVariables.length === 0
+        const showError = giovanniError || basicError
+        const errorMessage =
+            giovanniError || (basicError ? 'Please select at least one variable' : '')
 
         const tree = this.#buildVariableTree(variables)
         const allGroups = this.#getAllGroupPaths(tree)
@@ -1229,7 +1320,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 >
                     ${showError
                         ? html`<span class="accordion-value error"
-                              >Please select at least one variable</span
+                              >${errorMessage}</span
                           >`
                         : this.selectedVariables.length
                           ? html`<span class="accordion-value"
@@ -1377,6 +1468,7 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderVariableTree(node: Record<string, any>, path: string[]): unknown {
+        const isGiovanni = this.#isGiovanniFormat()
         return html`
             <div style="margin-left: ${path.length * 20}px;">
                 ${Object.entries(node).map(([key, value]: [string, any]) => {
@@ -1387,7 +1479,10 @@ export default class TerraDataSubsetter extends TerraElement {
                             <div class="option-row">
                                 <label class="checkbox-option">
                                     <input
-                                        type="checkbox"
+                                        type="${isGiovanni ? 'radio' : 'checkbox'}"
+                                        name="${isGiovanni
+                                            ? 'variable-selection'
+                                            : ''}"
                                         .checked=${this.selectedVariables.some(
                                             v => v.name === value.__variable.name
                                         )}
@@ -1472,14 +1567,23 @@ export default class TerraDataSubsetter extends TerraElement {
     #toggleVariableSelection(e: Event, variable: Variable) {
         this.#markFieldTouched('variables')
         const checked = (e.target as HTMLInputElement).checked
-        if (checked) {
-            if (!this.selectedVariables.some(v => v.name === variable.name)) {
-                this.selectedVariables = [...this.selectedVariables, variable]
+
+        if (this.#isGiovanniFormat()) {
+            // Radio button behavior for Giovanni - replace selection with only this variable
+            if (checked) {
+                this.selectedVariables = [variable]
             }
         } else {
-            this.selectedVariables = this.selectedVariables.filter(
-                v => v.name !== variable.name
-            )
+            // Checkbox behavior for non-Giovanni - allow multiple selections
+            if (checked) {
+                if (!this.selectedVariables.some(v => v.name === variable.name)) {
+                    this.selectedVariables = [...this.selectedVariables, variable]
+                }
+            } else {
+                this.selectedVariables = this.selectedVariables.filter(
+                    v => v.name !== variable.name
+                )
+            }
         }
     }
 
@@ -1498,13 +1602,17 @@ export default class TerraDataSubsetter extends TerraElement {
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
                 >
                     <h2 class="results-title" style="margin: 0;">Results:</h2>
-                    <terra-button
-                        variant="default"
-                        size="small"
-                        @click=${this.#backToSubsetOptions}
-                    >
-                        ← Back to Subset Options
-                    </terra-button>
+                    ${!this.isHistoryView
+                        ? html`
+                              <terra-button
+                                  variant="default"
+                                  size="small"
+                                  @click=${this.#backToSubsetOptions}
+                              >
+                                  ← Back to Subset Options
+                              </terra-button>
+                          `
+                        : nothing}
                 </div>
 
                 <div class="progress-container">
@@ -1528,13 +1636,17 @@ export default class TerraDataSubsetter extends TerraElement {
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
                 >
                     <h2 class="results-title" style="margin: 0;">Results:</h2>
-                    <terra-button
-                        variant="default"
-                        size="small"
-                        @click=${this.#backToSubsetOptions}
-                    >
-                        ← Back to Subset Options
-                    </terra-button>
+                    ${!this.isHistoryView
+                        ? html`
+                              <terra-button
+                                  variant="default"
+                                  size="small"
+                                  @click=${this.#backToSubsetOptions}
+                              >
+                                  ← Back to Subset Options
+                              </terra-button>
+                          `
+                        : nothing}
                 </div>
 
                 ${this.controller.currentJob!.status !== 'canceled' &&
@@ -1629,14 +1741,19 @@ export default class TerraDataSubsetter extends TerraElement {
                         Web Links
                     </button>
 
-                    <button
-                        class="tab ${this.selectedTab === 'selected-params'
-                            ? 'active'
-                            : ''}"
-                        @click=${() => (this.selectedTab = 'selected-params')}
-                    >
-                        Selected Parameters
-                    </button>
+                    ${!this.isHistoryView
+                        ? html`
+                              <button
+                                  class="tab ${this.selectedTab === 'selected-params'
+                                      ? 'active'
+                                      : ''}"
+                                  @click=${() =>
+                                      (this.selectedTab = 'selected-params')}
+                              >
+                                  Selected Parameters
+                              </button>
+                          `
+                        : nothing}
                 </div>
                 <div
                     id="web-links"
@@ -1869,6 +1986,17 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #getData() {
+        // Validate before proceeding
+        const validationError = this.#getGiovanniValidationError()
+        if (validationError) {
+            this.validationError = validationError
+            this.#markFieldTouched('variables')
+            return
+        }
+
+        // Clear any previous validation errors
+        this.validationError = undefined
+
         this.cancelingGetData = false
         this.#touchAllFields() // touch all fields, so errors will show if fields are invalid
 
@@ -1893,6 +2021,7 @@ export default class TerraDataSubsetter extends TerraElement {
         }, 100)
 
         this.refineParameters = false // reset refine parameters, if the user had previously clicked that button
+        this.isHistoryView = false // this is a new job being created, not viewing from history
     }
 
     #touchAllFields() {
@@ -2165,7 +2294,7 @@ export default class TerraDataSubsetter extends TerraElement {
             'terra-data-subsetter-history'
         )
 
-        if (!existingHistoryPanel) {
+        if (!existingHistoryPanel && this.bearerToken) {
             // let's add a history panel to the page
             const historyPanel = document.createElement(
                 'terra-data-subsetter-history'
@@ -2273,5 +2402,27 @@ export default class TerraDataSubsetter extends TerraElement {
                 </div>
             </div>
         `
+    }
+
+    #isGiovanniFormat(): boolean {
+        return (
+            this.selectedFormat === 'text/csv' || this.selectedFormat === 'image/tiff'
+        )
+    }
+
+    #getGiovanniValidationError(): string | null {
+        if (!this.#isGiovanniFormat()) {
+            return null
+        }
+
+        if (this.selectedVariables.length === 0) {
+            return 'Please select a variable to subset.'
+        }
+
+        if (this.selectedVariables.length > 1) {
+            return 'The selected format only supports subsetting one variable at a time.'
+        }
+
+        return null
     }
 }

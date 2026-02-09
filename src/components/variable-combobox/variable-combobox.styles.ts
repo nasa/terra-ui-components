@@ -53,7 +53,7 @@ export default css`
     .tag-container {
         block-size: var(--terra-block-size, 2.25rem);
         position: absolute;
-        top: 2.25rem;
+        top: 3rem;
         display: flex;
         flex-wrap: wrap;
         align-content: center;
@@ -106,29 +106,36 @@ export default css`
     .combobox {
         block-size: var(--terra-block-size, 2.25rem);
         flex: 1 1 auto;
-        padding-inline: 0.5rem;
+        max-inline-size: 100%;
+        margin-top: 0.5rem;
+        height: var(--terra-block-size, 3rem);
+    }
+
+    .combobox::part(input) {
+        padding-inline: var(--input-padding-inline-start, 0.5rem) 0.5rem;
         transition:
             background-color 0.2s ease,
             border-color 0.2s ease;
-        max-inline-size: 100%;
     }
 
-    .combobox::placeholder {
+    .combobox::part(base) {
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    .combobox::part(input)::placeholder {
         color: var(--terra-color-carbon-60);
     }
 
-    .combobox:focus {
-        border-color: var(--terra-color-carbon-40);
-        outline: 0;
-    }
-
-    .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
+    .search-input-group:has(.combobox:not(:focus-within)) + .search-results[open] {
         border-color: var(--terra-color-carbon-30);
     }
 
     .combobox-button {
         position: absolute;
         right: 0;
+        bottom: 5px;
         z-index: 2;
         margin-block: 0;
         margin-inline: 0;
@@ -169,7 +176,7 @@ export default css`
         line-height: var(--terra-line-height-normal);
         margin-block: 0;
         position: absolute;
-        bottom: -10px;
+        bottom: -25px;
     }
 
     .external-link {

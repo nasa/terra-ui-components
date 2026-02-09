@@ -53,10 +53,16 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     selectedJob?: string
 
     @state()
+    selectedCollectionEntryId?: string
+
+    @state()
     hideCancelled: boolean = true
 
     @query('[part~="dialog"]')
     dialog: TerraDialog
+
+    @query('[part~="subsetter"]')
+    subsetter: TerraDataSubsetter
 
     #controller = new DataSubsetterHistoryController(this)
     _authController = new AuthController(this)
@@ -132,6 +138,8 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                                           @click=${(e: Event) => {
                                               e.preventDefault()
                                               this.selectedJob = undefined
+                                              this.selectedCollectionEntryId =
+                                                  undefined
                                               this.dialog?.show()
                                           }}
                                       >
@@ -145,12 +153,14 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                 </div>
             </div>
 
-            <terra-dialog part="dialog" width="1500px">
-                <terra-data-subsetter
-                    .jobId=${this.selectedJob}
-                    .bearerToken=${this.bearerToken}
-                ></terra-data-subsetter>
-            </terra-dialog>
+            <terra-data-subsetter
+                .jobId=${this.selectedJob}
+                .collectionEntryId=${this.selectedCollectionEntryId}
+                .bearerToken=${this.bearerToken}
+                is-history-view
+                dialog="history-dialog"
+                part="subsetter"
+            ></terra-data-subsetter>
         `
     }
 
@@ -180,6 +190,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                         @click=${(e: Event) => {
                             e.preventDefault()
                             this.selectedJob = undefined
+                            this.selectedCollectionEntryId = undefined
                             this.dialog?.show()
                         }}
                     >
@@ -212,17 +223,17 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                     ? 100
                     : job.progress
 
+            const parsedLabels = this.#parseLabelsAsJson(job.labels || [])
+
             return html`
                 <div
                     class="history-item"
                     @click=${this.#handleHistoryItemClick.bind(this, job)}
                 >
                     <div class="item-header">
-                        <span class="item-title">
-                            ${job.labels?.length
-                                ? job.labels.join(' ')
-                                : job.request.split('.nasa.gov').pop()}
-                        </span>
+                        <div class="item-title">
+                            ${this.#renderSubsetterHistoryItem(job, parsedLabels)}
+                        </div>
                     </div>
 
                     <div class="progress-bar">
@@ -238,8 +249,52 @@ export default class TerraDataSubsetterHistory extends TerraElement {
         })
     }
 
+    #renderSubsetterHistoryItem(
+        job: SubsetJobStatus,
+        labels: Record<string, unknown>
+    ) {
+        return html`
+            <div class="subsetter-history-item">
+                <div class="history-item-title">
+                    ${labels['collection-entry-id'] ?? job.jobID}
+                </div>
+                <div>${new Date(job.createdAt).toLocaleString()}</div>
+            </div>
+        `
+    }
+
     #handleHistoryItemClick(job: SubsetJobStatus) {
+        const parsedLabels = this.#parseLabelsAsJson(job.labels || [])
         this.selectedJob = job.jobID
-        this.dialog?.show()
+        this.selectedCollectionEntryId = parsedLabels['collection-entry-id'] as
+            | string
+            | undefined
+        this.subsetter?.showDialog()
+    }
+
+    #parseLabelsAsJson(labels: string[]): { [k: string]: unknown } {
+        try {
+            return Object.fromEntries(
+                labels.map(line => {
+                    const [key, ...rest] = line.split(':')
+                    const valueRaw = rest.join(':').trim()
+
+                    let value: unknown = valueRaw
+
+                    // try to parse JSON values
+                    if (valueRaw.startsWith('{') || valueRaw.startsWith('[')) {
+                        try {
+                            value = JSON.parse(valueRaw)
+                        } catch {
+                            value = valueRaw
+                        }
+                    }
+
+                    return [key.trim(), value]
+                })
+            )
+        } catch (e) {
+            return {}
+        }
     }
 }

@@ -897,4 +897,352 @@ describe('<terra-date-picker>', () => {
             expect(el.hoverDate).to.not.be.null
         })
     })
+
+    describe('Date Validation', () => {
+        describe('Without min/max dates', () => {
+            it('should accept any date when no min/max is set', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker inline split-inputs range></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+                expect(startInput).to.exist
+
+                // Type a date
+                startInput!.value = '2020-01-01'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should not have validation error
+                expect(startInput!.validationMessage).to.equal('')
+            })
+
+            it('should accept any date clicked from calendar when no min/max is set', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker inline></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const listener = oneEvent(el, 'terra-date-range-change')
+
+                // Click any date
+                const date = new Date(2020, 0, 15)
+                await selectDate(el, date, true)
+
+                const { detail } = await listener
+                expect(detail.startDate).to.contain('2020-01-15')
+            })
+        })
+
+        describe('With min/max dates (date only)', () => {
+            it('should reject manually entered date before minDate', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        min-date="2024-01-10"
+                        max-date="2024-12-31"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type a date before minDate
+                startInput!.value = '2024-01-05'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should have validation error
+                expect(startInput!.validationMessage).to.contain('on or after')
+            })
+
+            it('should reject manually entered date after maxDate', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        min-date="2024-01-01"
+                        max-date="2024-12-31"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const endInput = el.shadowRoot?.querySelectorAll('terra-input')[1]
+
+                // Type a date after maxDate
+                endInput!.value = '2025-01-15'
+                endInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should have validation error
+                expect(endInput!.validationMessage).to.contain('on or before')
+            })
+
+            it('should accept manually entered date within min/max range', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        min-date="2024-01-01"
+                        max-date="2024-12-31"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type a date within range
+                startInput!.value = '2024-06-15'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should not have validation error
+                expect(startInput!.validationMessage).to.equal('')
+            })
+
+            it('should emit invalid event when clicking disabled date before minDate', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        min-date="2024-03-10"
+                        max-date="2024-12-31"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                let invalidEventFired = false
+                el.addEventListener('terra-date-selection-invalid', () => {
+                    invalidEventFired = true
+                })
+
+                // Directly call selectDate with a date before minDate
+                const disabledDate = new Date(2024, 2, 5) // March 5
+                el.selectDate(disabledDate)
+                await elementUpdated(el)
+
+                expect(invalidEventFired).to.be.true
+            })
+
+            it('should not select date when clicking disabled date after maxDate', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        min-date="2024-01-01"
+                        max-date="2024-03-15"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                let invalidEventFired = false
+                el.addEventListener('terra-date-selection-invalid', () => {
+                    invalidEventFired = true
+                })
+
+                // Directly call selectDate with a date after maxDate
+                const disabledDate = new Date(2024, 2, 20) // March 20
+                el.selectDate(disabledDate)
+                await elementUpdated(el)
+
+                expect(invalidEventFired).to.be.true
+                expect(el.selectedStart).to.be.null
+            })
+
+            it('should accept clicking valid date within min/max range', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        min-date="2024-01-01"
+                        max-date="2024-12-31"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const listener = oneEvent(el, 'terra-date-range-change')
+
+                // Click a valid date
+                const validDate = new Date(2024, 5, 15) // June 15
+                await selectDate(el, validDate, true)
+
+                const { detail } = await listener
+                expect(detail.startDate).to.contain('2024-06-15')
+            })
+        })
+
+        describe('With time enabled (no min/max)', () => {
+            it('should accept manually entered datetime', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        enable-time
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type a datetime
+                startInput!.value = '2024-06-15 14:30:00'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should not have validation error
+                expect(startInput!.validationMessage).to.equal('')
+            })
+        })
+
+        describe('With time enabled and min/max dates', () => {
+            it('should reject manually entered time before minDate with time', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        enable-time
+                        min-date="2024-06-15T00:00:00.000Z"
+                        max-date="2024-06-16T23:59:59.000Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type a date before minDate
+                startInput!.value = '2024-06-14 10:00:00'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should have validation error
+                expect(startInput!.validationMessage).to.contain('on or after')
+            })
+
+            it('should reject manually entered time after maxDate with time', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        enable-time
+                        min-date="2024-06-15T00:00:00.000Z"
+                        max-date="2024-06-16T23:59:59.000Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const endInput = el.shadowRoot?.querySelectorAll('terra-input')[1]
+
+                // Type a date after maxDate
+                endInput!.value = '2024-06-17 10:00:00'
+                endInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should have validation error
+                expect(endInput!.validationMessage).to.contain('on or before')
+            })
+
+            it('should accept manually entered time within min/max datetime range', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        enable-time
+                        min-date="2024-06-15T00:00:00.000Z"
+                        max-date="2024-06-16T23:59:59.000Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type a datetime within range
+                startInput!.value = '2024-06-15 12:00:00'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should not have validation error
+                expect(startInput!.validationMessage).to.equal('')
+            })
+
+            it('should clear validation errors when clicking valid date from calendar', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        enable-time
+                        min-date="2024-06-15T00:00:00.000Z"
+                        max-date="2024-06-20T23:59:59.000Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // First, create an error by typing invalid date
+                startInput!.value = '2024-06-10 10:00:00'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                expect(startInput!.validationMessage).to.not.equal('')
+
+                // Now click a valid date
+                const validDate = new Date(2024, 5, 16) // June 16
+                await selectDate(el, validDate, true)
+                await elementUpdated(el)
+
+                // Validation error should be cleared
+                expect(startInput!.validationMessage).to.equal('')
+            })
+        })
+
+        describe('Edge cases', () => {
+            it('should handle empty input gracefully', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        min-date="2024-01-01"
+                        max-date="2024-12-31"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type empty and blur
+                startInput!.value = ''
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should not have validation error
+                expect(startInput!.validationMessage).to.equal('')
+                expect(el.selectedStart).to.be.null
+            })
+
+            it('should handle invalid date format', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker inline split-inputs range></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+
+                // Type invalid format
+                startInput!.value = 'not-a-date'
+                startInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                // Should have validation error
+                expect(startInput!.validationMessage).to.contain('Invalid')
+            })
+        })
+    })
 })

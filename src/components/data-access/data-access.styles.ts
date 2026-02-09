@@ -50,120 +50,6 @@ export default css`
         position: relative;
     }
 
-    terra-date-picker {
-        --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
-        --terra-input-suffix-display: none;
-        --terra-input-spacing-small: 0;
-        --terra-input-spacing-medium: 0;
-
-        width: 0;
-        height: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    terra-spatial-picker {
-        --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
-        --terra-input-suffix-display: none;
-        --terra-input-display: none;
-
-        width: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    terra-spatial-picker .spatial-picker {
-        width: 0 !important;
-        min-height: 38px !important;
-        height: 38px !important;
-        overflow: visible;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__input_fields {
-        display: none !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        opacity: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__input_label,
-    terra-spatial-picker label {
-        display: none !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        font-size: 0 !important;
-        line-height: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__error {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    terra-spatial-picker terra-input {
-        --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
-        --terra-input-suffix-display: none;
-
-        width: 0;
-        height: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    terra-spatial-picker .spatial-picker__input_icon {
-        display: none !important;
-    }
-
-    terra-spatial-picker .spatial-picker__map-container {
-        position: absolute !important;
-        top: 100% !important;
-        left: 0 !important;
-        z-index: 1000 !important;
-        width: 600px !important;
-        max-width: 90vw !important;
-        min-width: 400px !important;
-        min-height: 400px !important;
-        background: white !important;
-        border-radius: 0.5rem !important;
-        box-shadow:
-            0 10px 15px -3px rgba(0, 0, 0, 0.1),
-            0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-        padding: 0.5rem !important;
-        pointer-events: auto !important;
-        margin-top: 0.5rem !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        margin-bottom: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__map-container.flipped {
-        top: auto !important;
-        bottom: calc(100% + 0.5rem) !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-    }
-
-    terra-spatial-picker terra-map {
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
     .filter-btn {
         display: inline-flex;
         align-items: center;
@@ -271,6 +157,15 @@ export default css`
     .grid-container {
         position: relative;
         width: 100%;
+    }
+
+    .datepicker-container,
+    .spatialpicker-container {
+        padding: 1rem;
+    }
+
+    .available-range {
+        font-size: 0.8rem;
     }
 
     /* Remove border/background from terra-data-grid container since we handle it here if needed */

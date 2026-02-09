@@ -89,6 +89,10 @@ export default css`
         align-items: flex-start;
     }
 
+    .date-picker--inline .date-picker__inputs {
+        margin-bottom: var(--terra-spacing-medium);
+    }
+
     .date-picker--split-inputs .date-picker__inputs {
         width: 100%;
     }

@@ -127,12 +127,14 @@ export class CmrCatalog implements MetadataCatalogInterface {
                     collections(params: { entryId: [$collectionEntryId] }) {
                         items {
                             conceptId
+                            spatialExtent
                             firstGranules: granules(
                                 params: { limit: 2, sortKey: "startDate" }
                             ) {
                                 count
                                 items {
                                     dataGranule
+                                    temporalExtent
                                 }
                             }
                             lastGranules: granules(
@@ -141,6 +143,7 @@ export class CmrCatalog implements MetadataCatalogInterface {
                                 count
                                 items {
                                     dataGranule
+                                    temporalExtent
                                 }
                             }
                         }

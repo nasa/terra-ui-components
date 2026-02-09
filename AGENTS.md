@@ -168,9 +168,12 @@ Then open `notebooks/playground.ipynb` to test components in Jupyter.
 -   **JS tests**
 
 ```bash
-npm test            # web-test-runner, default group
-npm run test:watch  # watch mode
+npm test                        # web-test-runner, default group
+npm run test:watch              # watch mode
+npm run test:component <name>   # test specific component in watch mode (e.g., npm run test:component data-access)
 ```
+
+**REQUIRED:** **MUST use `npm run test:component <name>` when testing a specific component** (e.g., `npm run test:component data-access`). This runs tests in watch mode for faster iteration.
 
 **MUST run tests when making ANY changes** to component behavior, properties, events, or data services.
 

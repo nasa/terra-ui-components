@@ -79,6 +79,13 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'no-world-wrap', type: Boolean })
     noWorldWrap: boolean = false
 
+    /**
+     * Spatial constraints for the map (default: '-180, -90, 180, 90')
+     * Format: 'west, south, east, north'
+     */
+    @property({ attribute: 'spatial-constraints' })
+    spatialConstraints: string = '-180, -90, 180, 90'
+
     @property({ type: Array })
     value: any = []
 
@@ -124,6 +131,27 @@ export default class TerraMap extends TerraElement {
         })
 
         this.map.on('draw', (layer: any) => {
+            // Validate against spatial constraints before emitting
+            const constraints = this.#parseConstraints()
+            if (constraints) {
+                if (
+                    'latLng' in layer &&
+                    !this.#isPointInsideBounds(layer.latLng, constraints)
+                ) {
+                    // Point is outside constraints, clear it and don't emit
+                    this.map.clearLayers()
+                    return
+                }
+                if (
+                    'bounds' in layer &&
+                    !this.#isBoundsInsideBounds(layer.bounds, constraints)
+                ) {
+                    // Bounds outside constraints, clear it and don't emit
+                    this.map.clearLayers()
+                    return
+                }
+            }
+
             this.emit('terra-map-change', {
                 detail: {
                     cause: 'draw',
@@ -151,6 +179,53 @@ export default class TerraMap extends TerraElement {
 
     getDrawLayer() {
         return this.map.editableLayers.getLayers()[0]
+    }
+
+    #parseConstraints() {
+        try {
+            const coords = this.spatialConstraints
+                ?.split(',')
+                .map(c => parseFloat(c.trim()))
+            if (!coords || coords.length !== 4) return null
+            return coords
+        } catch {
+            return null
+        }
+    }
+
+    #normalizeBounds(bounds: number[]) {
+        const [west, south, east, north] = bounds
+        return { west, south, east, north }
+    }
+
+    #isPointInsideBounds(point: any, rawBounds: number[]): boolean {
+        if (!Array.isArray(rawBounds) || rawBounds.length !== 4) {
+            return true
+        }
+
+        const { west, south, east, north } = this.#normalizeBounds(rawBounds)
+
+        return (
+            point.lat >= south &&
+            point.lat <= north &&
+            point.lng >= west &&
+            point.lng <= east
+        )
+    }
+
+    #isBoundsInsideBounds(inner: any, rawOuter: number[]): boolean {
+        if (!Array.isArray(rawOuter) || rawOuter.length !== 4) {
+            return true
+        }
+
+        const { west, south, east, north } = this.#normalizeBounds(rawOuter)
+
+        return (
+            inner.getSouth() >= south &&
+            inner.getNorth() <= north &&
+            inner.getWest() >= west &&
+            inner.getEast() <= east
+        )
     }
 
     #markDynamicLeafletContent() {

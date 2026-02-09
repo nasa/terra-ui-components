@@ -10,12 +10,15 @@ import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
 import { MapEventType } from '../map/type.js'
 import { parseBoundingBox } from '../map/leaflet-utils.js'
+import { watch } from '../../internal/watch.js'
 import {
     marker,
     icon,
     latLngBounds,
+    rectangle,
     type LatLngExpression,
     type LatLng,
+    type Rectangle,
 } from 'leaflet'
 
 /**
@@ -99,6 +102,13 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'spatial-constraints' })
     spatialConstraints: string = '-180, -90, 180, 90'
 
+    @watch('spatialConstraints')
+    handleSpatialConstraintsChange() {
+        if (this.map?.map?.isMapReady) {
+            this._updateConstraintOverlay()
+        }
+    }
+
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
 
@@ -139,6 +149,8 @@ export default class TerraSpatialPicker extends TerraElement {
 
     @query('terra-map')
     map: TerraMap
+
+    private constraintOverlay: Rectangle | null = null
 
     setValue(value: string) {
         try {
@@ -415,6 +427,9 @@ export default class TerraSpatialPicker extends TerraElement {
         // Clear existing layers
         this.map.map.clearLayers()
 
+        // Update constraint overlay
+        this._updateConstraintOverlay()
+
         // Draw based on the parsed value
         if (this.mapValue && typeof this.mapValue === 'object') {
             if ('lat' in this.mapValue && 'lng' in this.mapValue) {
@@ -437,6 +452,46 @@ export default class TerraSpatialPicker extends TerraElement {
         }
     }
 
+    private _updateConstraintOverlay() {
+        // Remove existing overlay
+        if (this.constraintOverlay && this.map?.map?.map) {
+            this.map.map.map.removeLayer(this.constraintOverlay)
+            this.constraintOverlay = null
+        }
+
+        // Parse constraints
+        const coords = this.spatialConstraints
+            .split(',')
+            .map(c => parseFloat(c.trim()))
+        if (coords.length !== 4) return
+
+        const [west, south, east, north] = coords
+
+        // Don't show overlay for global coverage
+        if (west === -180 && south === -90 && east === 180 && north === 90) {
+            return
+        }
+
+        if (!this.map?.map?.map) return
+
+        // Create rectangle with worldCopyJump support
+        const bounds: [LatLngExpression, LatLngExpression] = [
+            [south, west],
+            [north, east],
+        ]
+
+        this.constraintOverlay = rectangle(bounds as any, {
+            color: '#20B2AA',
+            weight: 2,
+            fillColor: '#20B2AA',
+            fillOpacity: 0.15,
+            interactive: false,
+        })
+
+        // Add to map (not editableLayers) so it appears at all world copies
+        this.constraintOverlay.addTo(this.map.map.map)
+    }
+
     private _focus() {
         if (this.showMapOnFocus && !this.inline && this.dropdownRef.value) {
             this.dropdownRef.value.show()
@@ -456,7 +511,10 @@ export default class TerraSpatialPicker extends TerraElement {
 
     private handleDropdownShow() {
         this.isExpanded = true
-        setTimeout(() => this.invalidateSize(), 250)
+        setTimeout(() => {
+            this.invalidateSize()
+            this._updateConstraintOverlay()
+        }, 250)
     }
 
     private handleDropdownHide() {
@@ -718,6 +776,7 @@ export default class TerraSpatialPicker extends TerraElement {
             ?hide-bounding-box-selection=${this.hideBoundingBoxSelection}
             ?hide-point-selection=${this.hidePointSelection}
             ?no-world-wrap=${this.noWorldWrap}
+            spatial-constraints=${this.spatialConstraints}
             @terra-map-change=${this._handleMapChange}
         >
         </terra-map>`
@@ -761,9 +820,7 @@ export default class TerraSpatialPicker extends TerraElement {
                             />
                         </svg>
                     </terra-input>
-                    ${this.error
-                        ? html`<div class="spatial-picker__error">${this.error}</div>`
-                        : nothing}
+                    <slot name="additional-text"></slot>
                     <div
                         class="spatial-picker__map-container spatial-picker__map-container--inline"
                     >
@@ -822,6 +879,9 @@ export default class TerraSpatialPicker extends TerraElement {
                             />
                         </svg>
                     </terra-input>
+
+                    <slot name="additional-text"></slot>
+
                     <div
                         class="spatial-picker__map-container"
                         @click=${(e: Event) => e.stopPropagation()}
@@ -838,5 +898,6 @@ export default class TerraSpatialPicker extends TerraElement {
 
     invalidateSize() {
         this.map?.invalidateSize()
+        this._updateConstraintOverlay()
     }
 }

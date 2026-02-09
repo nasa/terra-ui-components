@@ -201,7 +201,7 @@ export default class TerraVariableCombobox extends TerraElement {
         this.emit('terra-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
 
-    #handleButtonClick = () => {
+    #handleButtonClick = (e: Event) => {
         this.isExpanded = !this.isExpanded
         this.#combobox?.focus()
     }
@@ -431,6 +431,7 @@ export default class TerraVariableCombobox extends TerraElement {
                         : this.query}
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
+                    @click=${this.#handleButtonClick}
                 />
                 <terra-button
                     shape="square-left"
@@ -439,6 +440,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     aria-label="List of Searchable Variables"
                     class="combobox-button"
                     id="combobox-button"
+                    variant="text"
                     part="button"
                     tabindex="-1"
                     type="button"

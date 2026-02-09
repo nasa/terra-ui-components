@@ -154,6 +154,15 @@ export default css`
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
     }
 
+    .subsetter-history-item {
+        position: relative;
+    }
+
+    .history-item-title {
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
     @media (max-width: 600px) {
         :host {
             right: 0;
