@@ -488,7 +488,7 @@ export default class TerraDatePicker extends TerraElement {
         this.isOpen = false
     }
 
-    private formatDisplayDate(date: Date | null, isStart: boolean = true): string {
+    private formatDisplayDate(date: Date | null, _isStart: boolean = true): string {
         if (!date) return ''
 
         // Get the format to use

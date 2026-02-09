@@ -548,7 +548,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         if (
             this.catalogVariable.dataProductTimeInterval &&
             this.catalogVariable.dataProductTimeInterval.toLowerCase() !==
-            'not applicable'
+                'not applicable'
         ) {
             parts.push(this.catalogVariable.dataProductTimeInterval)
         }
@@ -557,7 +557,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         if (
             this.catalogVariable.dataProductSpatialResolution &&
             this.catalogVariable.dataProductSpatialResolution.toLowerCase() !==
-            'not applicable'
+                'not applicable'
         ) {
             parts.push(this.catalogVariable.dataProductSpatialResolution)
         }
@@ -1225,14 +1225,14 @@ export default class TerraTimeAverageMap extends TerraElement {
                         <div class="stats" id="statsMax">${this.max}</div>
                         <div class="palette">
                             ${this.legendValues.map(
-                    value => html`
+                                value => html`
                                     <div
                                         class="color-box"
                                         style="background-color: rgba(${value.rgb})"
                                         title="${value.value}"
                                     ></div>
                                 `
-                )}
+                            )}
                         </div>
                         <div class="stats" id="statsMin">${this.min}</div>
                     </div>
@@ -1255,10 +1255,10 @@ export default class TerraTimeAverageMap extends TerraElement {
 
             <!-- Floating Popover for Plot -->
             ${this.toggleState &&
-                this.plotData &&
-                Object.keys(this.plotData).length &&
-                this.layout &&
-                Object.keys(this.layout).length
+            this.plotData &&
+            Object.keys(this.plotData).length &&
+            this.layout &&
+            Object.keys(this.layout).length
                 ? html`
                       <div class="plot-popover ${this.minimized ? 'minimized' : ''}">
                           <terra-plot
@@ -1281,7 +1281,7 @@ export default class TerraTimeAverageMap extends TerraElement {
 
             <dialog
                 ?open=${this.#controller?.jobStatusTask?.status ===
-            TaskStatus.PENDING}
+                TaskStatus.PENDING}
             >
                 <terra-loader indeterminate variant="orbit"></terra-loader>
                 <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>

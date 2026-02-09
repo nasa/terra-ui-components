@@ -105,7 +105,7 @@ export type CmrSamplingOfGranules = {
     lastGranules: {
         count: number
         items: Array<{
-            dataGranule: CmrGranuleDataGranul
+            dataGranule: CmrGranuleDataGranule
             temporalExtent: TemporalExtent
             spatialExtent?: {
                 granuleSpatialRepresentation: string

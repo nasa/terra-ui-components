@@ -201,7 +201,7 @@ export default class TerraVariableCombobox extends TerraElement {
         this.emit('terra-combobox-change', { detail: JSON.parse(stringifiedData) })
     }
 
-    #handleButtonClick = (e: Event) => {
+    #handleButtonClick = () => {
         this.isExpanded = !this.isExpanded
         this.#combobox?.focus()
     }
