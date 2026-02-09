@@ -174,14 +174,17 @@ export class Leaflet {
                 ((options.initialValue as LatLngBoundsLiteral)?.length > 0 ||
                     'getNorthEast' in options.initialValue)
             ) {
-                const rectangle = L.rectangle(options.initialValue as LatLngBoundsExpression, {
-                    stroke: true,
-                    color: '#3388ff',
-                    weight: 4,
-                    opacity: 0.5,
-                    fill: true,
-                    fillOpacity: 0.2,
-                }).addTo(this.editableLayers)
+                const rectangle = L.rectangle(
+                    options.initialValue as LatLngBoundsExpression,
+                    {
+                        stroke: true,
+                        color: '#3388ff',
+                        weight: 4,
+                        opacity: 0.5,
+                        fill: true,
+                        fillOpacity: 0.2,
+                    }
+                ).addTo(this.editableLayers)
 
                 this.map.fitBounds(options.initialValue)
 
@@ -249,14 +252,14 @@ export class Leaflet {
                 marker: options?.hidePointSelectionDrawTool
                     ? false
                     : {
-                        icon: L.icon({
-                            iconUrl:
-                                'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                            iconAnchor: [15, 40],
-                            shadowUrl:
-                                'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                        }),
-                    },
+                          icon: L.icon({
+                              iconUrl:
+                                  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                              iconAnchor: [15, 40],
+                              shadowUrl:
+                                  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                          }),
+                      },
             },
             edit: {
                 featureGroup: this.editableLayers, //REQUIRED!!

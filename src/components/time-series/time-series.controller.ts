@@ -738,9 +738,7 @@ export class TimeSeriesController {
      */
     getCacheKey(): string {
         if (!this.host.location || !this.host.catalogVariable) {
-            throw new Error(
-                'Location and catalog variable are required to get cache key'
-            )
+            return ''
         }
 
         const normalizedCoordinates = this.#normalizeCoordinates(
