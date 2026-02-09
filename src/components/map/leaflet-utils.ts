@@ -148,7 +148,7 @@ export class Leaflet {
                 'lat' in options.initialValue &&
                 'lng' in options.initialValue
             ) {
-                L.marker(options.initialValue as any, {
+                const marker = L.marker(options.initialValue as any, {
                     icon: L.icon({
                         iconUrl:
                             'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
@@ -160,6 +160,12 @@ export class Leaflet {
 
                 this.map.setView(options.initialValue, 5)
 
+                // Dispatch draw event for initial point so components can react
+                this.dispatch('draw', {
+                    geoJson: marker.toGeoJSON(),
+                    latLng: options.initialValue,
+                })
+
                 return
             }
 
@@ -168,7 +174,7 @@ export class Leaflet {
                 ((options.initialValue as LatLngBoundsLiteral)?.length > 0 ||
                     'getNorthEast' in options.initialValue)
             ) {
-                L.rectangle(options.initialValue as LatLngBoundsExpression, {
+                const rectangle = L.rectangle(options.initialValue as LatLngBoundsExpression, {
                     stroke: true,
                     color: '#3388ff',
                     weight: 4,
@@ -178,6 +184,12 @@ export class Leaflet {
                 }).addTo(this.editableLayers)
 
                 this.map.fitBounds(options.initialValue)
+
+                // Dispatch draw event for initial bounds so components can react
+                this.dispatch('draw', {
+                    geoJson: rectangle.toGeoJSON(),
+                    bounds: rectangle.getBounds(),
+                })
             }
         })
     }
@@ -237,14 +249,14 @@ export class Leaflet {
                 marker: options?.hidePointSelectionDrawTool
                     ? false
                     : {
-                          icon: L.icon({
-                              iconUrl:
-                                  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-                              iconAnchor: [15, 40],
-                              shadowUrl:
-                                  'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-                          }),
-                      },
+                        icon: L.icon({
+                            iconUrl:
+                                'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                            iconAnchor: [15, 40],
+                            shadowUrl:
+                                'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                        }),
+                    },
             },
             edit: {
                 featureGroup: this.editableLayers, //REQUIRED!!

@@ -33,6 +33,14 @@ export async function getDb() {
                     keyPath: 'key',
                 })
             }
+
+            if (oldVersion < 4) {
+                // an older version of the code had a bug where time average maps were being cached without the variable entry ID in the key
+                db.deleteObjectStore(IndexedDbStores.TIME_SERIES)
+                db.createObjectStore(IndexedDbStores.TIME_SERIES, {
+                    keyPath: 'key',
+                })
+            }
         },
     })
 }
