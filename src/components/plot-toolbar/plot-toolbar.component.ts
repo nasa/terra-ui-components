@@ -208,7 +208,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                                         .#handleLocationMouseEnter}
                                                     @mouseleave=${this
                                                         .#handleLocationMouseLeave}
-                                                    >${this.location.replace(
+                                                    >${(this.location ?? '').replace(
                                                         /,/g,
                                                         ', '
                                                     )}</span
