@@ -1158,7 +1158,7 @@ export default class TerraDatePicker extends TerraElement {
                 let hours = this.startHour
                 if (this.timePeriod === 'PM' && hours !== 12) hours += 12
                 if (this.timePeriod === 'AM' && hours === 12) hours = 0
-                startDate.setHours(hours, this.startMinute, 0, 0)
+                startDate.setUTCHours(hours, this.startMinute, 0, 0)
                 startDateTime = startDate.toISOString()
             } else {
                 startDateTime = this.selectedStart.toISOString().split('T')[0]
@@ -1171,7 +1171,7 @@ export default class TerraDatePicker extends TerraElement {
                 let hours = this.endHour
                 if (this.endTimePeriod === 'PM' && hours !== 12) hours += 12
                 if (this.endTimePeriod === 'AM' && hours === 12) hours = 0
-                endDate.setHours(hours, this.endMinute, 0, 0)
+                endDate.setUTCHours(hours, this.endMinute, 0, 0)
                 endDateTime = endDate.toISOString()
             } else {
                 endDateTime = this.selectedEnd.toISOString().split('T')[0]
@@ -1187,8 +1187,8 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private initializeTimeFromDate(date: Date, isStart: boolean) {
-        let hours = date.getHours()
-        const minutes = date.getMinutes()
+        let hours = date.getUTCHours()
+        const minutes = date.getUTCMinutes()
         const period = hours >= 12 ? 'PM' : 'AM'
 
         // Convert to 12-hour format
@@ -1232,6 +1232,8 @@ export default class TerraDatePicker extends TerraElement {
                 this.endMinute = newMinute
             }
         }
+        this.emitChange()
+        this.requestUpdate()
     }
 
     private handleTimeInput(event: Event, type: 'hour' | 'minute', isStart: boolean) {
@@ -1257,6 +1259,8 @@ export default class TerraDatePicker extends TerraElement {
             if (isStart) this.startMinute = value
             else this.endMinute = value
         }
+        this.emitChange()
+        this.requestUpdate()
     }
 
     private togglePeriod(isStart: boolean) {
@@ -1265,6 +1269,8 @@ export default class TerraDatePicker extends TerraElement {
         } else {
             this.endTimePeriod = this.endTimePeriod === 'AM' ? 'PM' : 'AM'
         }
+        this.emitChange()
+        this.requestUpdate()
     }
 
     private renderCalendar(month: Date, isLeft: boolean = true) {

@@ -7,10 +7,8 @@ export function getFriendlyNameForMimeType(mimeType: string) {
             return 'HDF-EOS5'
 
         case 'application/x-netcdf4':
-            return 'NetCDF-4'
-
         case 'application/netcdf':
-            return 'NetCDF Classic (NetCDF-3)'
+            return 'NetCDF'
 
         case 'text/csv':
             return 'CSV'

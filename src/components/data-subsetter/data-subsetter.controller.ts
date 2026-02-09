@@ -13,7 +13,10 @@ import {
 } from '../../data-services/harmony-data-service.js'
 import { getUTCDate } from '../../utilities/date.js'
 import Fuse from 'fuse.js'
-import type { MetadataCatalogInterface } from '../../metadata-catalog/types.js'
+import type {
+    CmrSamplingOfGranules,
+    MetadataCatalogInterface,
+} from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 
 const JOB_STATUS_POLL_MILLIS = 3000
@@ -22,11 +25,13 @@ export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
     fetchCollectionTask: Task<[string], any | undefined>
     searchCmrTask: Task<[string | undefined, string], any | undefined>
+    samplingTask: Task<[string | undefined], CmrSamplingOfGranules | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
     #dataService: HarmonyDataService
     #metadataCatalog: MetadataCatalogInterface
+    #sampling?: CmrSamplingOfGranules
 
     constructor(host: ReactiveControllerHost & TerraDataSubsetter) {
         this.#host = host
@@ -86,6 +91,26 @@ export class DataSubsetterController {
             ],
         })
 
+        this.samplingTask = new Task(host, {
+            task: async ([collectionEntryId], { signal }) => {
+                if (!collectionEntryId) {
+                    return
+                }
+
+                const sampling = await this.#metadataCatalog.getSamplingOfGranules(
+                    collectionEntryId,
+                    {
+                        signal,
+                    }
+                )
+
+                this.#sampling = sampling?.collections?.items?.[0]
+
+                return this.#sampling
+            },
+            args: (): [string | undefined] => [this.#host.collectionEntryId],
+        })
+
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
                 let job
@@ -120,9 +145,11 @@ export class DataSubsetterController {
                                 ? {
                                       variableConceptIds: ['parameter_vars'],
                                       variableEntryIds:
-                                          this.#host.selectedVariables.map(
-                                              v =>
-                                                  `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`
+                                          this.#host.selectedVariables.map(v =>
+                                              `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`.replace(
+                                                  /\./g,
+                                                  '_'
+                                              )
                                           ),
                                   }
                                 : {
@@ -139,18 +166,25 @@ export class DataSubsetterController {
                         ...(this.#host.selectedDateRange.startDate &&
                             this.#host.selectedDateRange.endDate &&
                             this.#host.collectionWithServices?.temporalSubset && {
-                                startDate: getUTCDate(
-                                    this.#host.selectedDateRange.startDate
-                                ).toISOString(),
-                                endDate: getUTCDate(
-                                    this.#host.selectedDateRange.endDate,
-                                    true
-                                ).toISOString(),
+                                startDate: this.isSubDaily
+                                    ? this.#host.selectedDateRange.startDate
+                                    : getUTCDate(
+                                          this.#host.selectedDateRange.startDate
+                                      ).toISOString(),
+                                endDate: this.isSubDaily
+                                    ? this.#host.selectedDateRange.endDate
+                                    : getUTCDate(
+                                          this.#host.selectedDateRange.endDate,
+                                          true
+                                      ).toISOString(),
                             }),
                         ...(this.#host.selectedFormat &&
                             this.#host.collectionWithServices?.outputFormats
                                 ?.length && {
-                                format: this.#host.selectedFormat,
+                                // For Giovanni services, always use text/csv format (not image/tiff)
+                                format: isGiovanniFormat
+                                    ? 'text/csv'
+                                    : this.#host.selectedFormat,
                             }),
                         // Add Cloud Giovanni specific average parameters
                         ...(this.#host.selectedFormat === 'text/csv' && {
@@ -172,11 +206,26 @@ export class DataSubsetterController {
                     this.currentJob = this.#getEmptyJob()
 
                     // create the new job
-                    job = await this.#dataService.createSubsetJob(subsetOptions, {
-                        signal,
-                        bearerToken: this.#host.bearerToken,
-                        environment: this.#host.environment,
-                    })
+                    try {
+                        job = await this.#dataService.createSubsetJob(subsetOptions, {
+                            signal,
+                            bearerToken: this.#host.bearerToken,
+                            environment: this.#host.environment,
+                        })
+                    } catch (error) {
+                        console.error('createSubsetJob ERROR: ', error)
+                        // Set the job to failed state so UI can show the error
+                        this.currentJob = {
+                            ...this.currentJob,
+                            status: Status.FAILED,
+                            message:
+                                error instanceof Error
+                                    ? error.message
+                                    : 'Failed to create subset job',
+                        }
+                        // Re-throw so the task goes into ERROR state
+                        throw error
+                    }
                 }
 
                 console.log('Job status: ', job)
@@ -292,5 +341,50 @@ export class DataSubsetterController {
             )
         }
         return labels
+    }
+
+    get isSubDaily() {
+        if (!this.#sampling?.firstGranules?.items?.[0]) {
+            return false
+        }
+
+        const firstGranule = this.#sampling.firstGranules.items[0]
+
+        const timeStart =
+            firstGranule.temporalExtent?.rangeDateTime?.beginningDateTime
+        const timeEnd = firstGranule.temporalExtent?.rangeDateTime?.endingDateTime
+
+        if (!timeStart || !timeEnd) {
+            return false
+        }
+
+        // Parse the dates and calculate the difference in hours
+        const start = new Date(timeStart)
+        const end = new Date(timeEnd)
+        const diffMs = end.getTime() - start.getTime()
+        const diffHours = diffMs / (1000 * 60 * 60)
+
+        // If the temporal extent is less than 24 hours, it's sub-daily
+        return diffHours < 24
+    }
+
+    get spatialConstraints() {
+        const boundingRects =
+            this.#sampling?.spatialExtent?.horizontalSpatialDomain?.geometry
+                ?.boundingRectangles
+
+        if (!boundingRects || boundingRects.length === 0) {
+            return '-180, -90, 180, 90'
+        }
+
+        const boundingRect = boundingRects[0]
+        const {
+            westBoundingCoordinate,
+            southBoundingCoordinate,
+            eastBoundingCoordinate,
+            northBoundingCoordinate,
+        } = boundingRect
+
+        return `${westBoundingCoordinate}, ${southBoundingCoordinate}, ${eastBoundingCoordinate}, ${northBoundingCoordinate}`
     }
 }

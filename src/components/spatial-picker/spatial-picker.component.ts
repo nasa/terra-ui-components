@@ -897,5 +897,6 @@ export default class TerraSpatialPicker extends TerraElement {
 
     invalidateSize() {
         this.map?.invalidateSize()
+        this._updateConstraintOverlay()
     }
 }
