@@ -236,6 +236,56 @@ export class DataAccessController {
         return diffHours < 24
     }
 
+    get spatialConstraints() {
+        const boundingRects =
+            this.#sampling?.spatialExtent?.horizontalSpatialDomain?.geometry
+                ?.boundingRectangles
+
+        if (!boundingRects || boundingRects.length === 0) {
+            return '-180, -90, 180, 90'
+        }
+
+        const boundingRect = boundingRects[0]
+        const {
+            westBoundingCoordinate,
+            southBoundingCoordinate,
+            eastBoundingCoordinate,
+            northBoundingCoordinate,
+        } = boundingRect
+
+        return `${westBoundingCoordinate}, ${southBoundingCoordinate}, ${eastBoundingCoordinate}, ${northBoundingCoordinate}`
+    }
+
+    get spatialExtentDisplay() {
+        const boundingRects =
+            this.#sampling?.spatialExtent?.horizontalSpatialDomain?.geometry
+                ?.boundingRectangles
+
+        if (!boundingRects || boundingRects.length === 0) {
+            return 'Global'
+        }
+
+        const boundingRect = boundingRects[0]
+        const {
+            westBoundingCoordinate,
+            southBoundingCoordinate,
+            eastBoundingCoordinate,
+            northBoundingCoordinate,
+        } = boundingRect
+
+        // Check if it's global coverage
+        if (
+            westBoundingCoordinate === -180 &&
+            southBoundingCoordinate === -90 &&
+            eastBoundingCoordinate === 180 &&
+            northBoundingCoordinate === 90
+        ) {
+            return 'Global'
+        }
+
+        return `${westBoundingCoordinate}, ${southBoundingCoordinate}, ${eastBoundingCoordinate}, ${northBoundingCoordinate}`
+    }
+
     async fetchGranules({
         collectionEntryId,
         startRow,

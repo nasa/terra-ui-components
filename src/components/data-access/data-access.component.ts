@@ -120,9 +120,6 @@ export default class TerraDataAccess extends TerraElement {
     @state()
     cloudCoverPickerOpen = false
 
-    @state()
-    spatialPickerOpen = false
-
     datePickerRef = createRef<TerraDatePicker>()
     spatialPickerRef = createRef<TerraSpatialPicker>()
     cloudCoverSliderRef = createRef<TerraSlider>()
@@ -301,6 +298,14 @@ export default class TerraDataAccess extends TerraElement {
         this.#gridApi?.purgeInfiniteCache()
     }
 
+    #handleSpatialDropdownShow() {
+        // Trigger invalidateSize on the map when dropdown opens
+        // This ensures the Leaflet map recalculates its size correctly
+        setTimeout(() => {
+            this.spatialPickerRef.value?.invalidateSize()
+        }, 0)
+    }
+
     #handleDateRangeChange(event: CustomEvent) {
         const detail = event.detail
         this.startDate = detail.startDate || ''
@@ -403,17 +408,8 @@ export default class TerraDataAccess extends TerraElement {
         this.#gridApi?.purgeInfiniteCache()
     }
 
-    #toggleSpatialPicker() {
-        // Use setTimeout to ensure the click event has been processed
-        setTimeout(() => {
-            this.spatialPickerOpen = !this.spatialPickerOpen
-            this.spatialPickerRef.value?.setOpen(this.spatialPickerOpen)
-        }, 0)
-    }
-
     #clearSpatialFilter() {
         this.location = null
-        this.spatialPickerOpen = false
         this.#gridApi?.purgeInfiniteCache()
     }
 
@@ -705,44 +701,56 @@ export default class TerraDataAccess extends TerraElement {
                         </div>
                     </terra-dropdown>
 
-                    <div class="filter">
-                        <button
-                            class="filter-btn ${this.location ? 'active' : ''}"
-                            @click=${(e: Event) => {
-                                e.stopPropagation()
-                                this.#toggleSpatialPicker()
-                            }}
-                        >
-                            <terra-icon
-                                name="outline-globe-alt"
-                                library="heroicons"
-                                font-size="18px"
-                            ></terra-icon>
-                            <span>${this.#getSpatialButtonText()}</span>
-                            ${this.location
-                                ? html`
-                                      <button
-                                          class="clear-badge"
-                                          @click=${(e: Event) => {
-                                              e.stopPropagation()
-                                              this.#clearSpatialFilter()
-                                          }}
-                                          aria-label="Clear spatial filter"
-                                      >
-                                          ×
-                                      </button>
-                                  `
-                                : nothing}
-                        </button>
+                    <terra-dropdown
+                        placement="bottom-start"
+                        distance="4"
+                        hoist
+                        @terra-show=${this.#handleSpatialDropdownShow}
+                    >
+                        <div slot="trigger" class="filter">
+                            <button
+                                class="filter-btn ${this.location ? 'active' : ''}"
+                            >
+                                <terra-icon
+                                    name="outline-globe-alt"
+                                    library="heroicons"
+                                    font-size="18px"
+                                ></terra-icon>
+                                <span>${this.#getSpatialButtonText()}</span>
+                                ${this.location
+                                    ? html`
+                                          <button
+                                              class="clear-badge"
+                                              @click=${(e: Event) => {
+                                                  e.stopPropagation()
+                                                  this.#clearSpatialFilter()
+                                              }}
+                                              aria-label="Clear spatial filter"
+                                          >
+                                              ×
+                                          </button>
+                                      `
+                                    : nothing}
+                            </button>
+                        </div>
 
-                        <!-- hidden spatial picker to show when clicking the filter -->
-                        <terra-spatial-picker
-                            ${ref(this.spatialPickerRef)}
-                            has-shape-selector
-                            hide-label
-                            @terra-map-change=${this.#handleMapChange}
-                        ></terra-spatial-picker>
-                    </div>
+                        <div class="spatialpicker-container">
+                            <terra-spatial-picker
+                                ${ref(this.spatialPickerRef)}
+                                hide-label
+                                inline
+                                no-world-wrap
+                                .spatialConstraints=${this.#controller
+                                    .spatialConstraints || '-180, -90, 180, 90'}
+                                @terra-map-change=${this.#handleMapChange}
+                            >
+                                <p class="available-range" slot="additional-text">
+                                    <strong>Available range:</strong> ${this
+                                        .#controller.spatialConstraints}
+                                </p>
+                            </terra-spatial-picker>
+                        </div>
+                    </terra-dropdown>
 
                     ${this.#controller.cloudCoverRange
                         ? html`

@@ -41,8 +41,8 @@ This component does not emit custom events.
 
 ```html:preview
 <terra-data-access short-name="FLDAS_NOAHMP001_G_CA_D" version="001"></terra-data-access>
-```
 <terra-data-access short-name="MODISA_L2_OC" version="2022.0"></terra-data-access>
+<terra-data-access short-name="NLDAS_FORA0125_H" version="2.0"></terra-data-access>
 ```
 
 ### With Filters (Temporal, Spatial, Cloud Cover)
