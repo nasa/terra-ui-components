@@ -53,7 +53,7 @@ export default css`
     .tag-container {
         block-size: var(--terra-block-size, 2.25rem);
         position: absolute;
-        top: 2.25rem;
+        top: 3rem;
         display: flex;
         flex-wrap: wrap;
         align-content: center;
@@ -107,6 +107,8 @@ export default css`
         block-size: var(--terra-block-size, 2.25rem);
         flex: 1 1 auto;
         max-inline-size: 100%;
+        margin-top: 0.5rem;
+        height: var(--terra-block-size, 3rem);
     }
 
     .combobox::part(input) {
@@ -133,6 +135,7 @@ export default css`
     .combobox-button {
         position: absolute;
         right: 0;
+        bottom: 5px;
         z-index: 2;
         margin-block: 0;
         margin-inline: 0;
@@ -173,7 +176,7 @@ export default css`
         line-height: var(--terra-line-height-normal);
         margin-block: 0;
         position: absolute;
-        bottom: -10px;
+        bottom: -25px;
     }
 
     .external-link {

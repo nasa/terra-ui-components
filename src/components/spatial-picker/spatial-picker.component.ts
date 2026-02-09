@@ -776,6 +776,7 @@ export default class TerraSpatialPicker extends TerraElement {
             ?hide-bounding-box-selection=${this.hideBoundingBoxSelection}
             ?hide-point-selection=${this.hidePointSelection}
             ?no-world-wrap=${this.noWorldWrap}
+            spatial-constraints=${this.spatialConstraints}
             @terra-map-change=${this._handleMapChange}
         >
         </terra-map>`

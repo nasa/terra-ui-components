@@ -258,11 +258,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                 <div class="history-item-title">
                     ${labels['collection-entry-id'] ?? job.jobID}
                 </div>
-                <div>
-                    <strong>Created:</strong> ${new Date(
-                        job.createdAt
-                    ).toLocaleString()}
-                </div>
+                <div>${new Date(job.createdAt).toLocaleString()}</div>
             </div>
         `
     }
