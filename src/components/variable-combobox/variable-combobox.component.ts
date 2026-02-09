@@ -9,6 +9,7 @@ import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
 import TerraIcon from '../icon/icon.js'
+import TerraInput from '../input/input.js'
 import {
     adaptValueToVariableMetadata,
     clearSelection,
@@ -43,6 +44,7 @@ export default class TerraVariableCombobox extends TerraElement {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
+        'terra-input': TerraInput,
     }
     static styles: CSSResultGroup = [componentStyles, styles]
     static shadowRootOptions = {
@@ -161,9 +163,7 @@ export default class TerraVariableCombobox extends TerraElement {
             if (this.useTags) {
                 // Sets one tag, but obviously could be refactored for multiple tags.
                 this.tags = [`${selectedVariable.longName}`]
-                // Clear out the value of the text input, which is decoupled from the query since we're using tags.
-                this.#combobox!.value = TerraVariableCombobox.initialQuery
-                // Clear out the stored query so that there is no filtering of listbox options.
+                // Clear out the query so that there is no filtering of listbox options.
                 this.query = TerraVariableCombobox.initialQuery
             }
         }
@@ -207,7 +207,7 @@ export default class TerraVariableCombobox extends TerraElement {
     }
 
     #handleComboboxChange = (event: Event) => {
-        const target = event.target as HTMLInputElement
+        const target = event.target as TerraInput
         this.query = target.value
 
         if (target.value) {
@@ -340,9 +340,7 @@ export default class TerraVariableCombobox extends TerraElement {
         if (this.useTags) {
             // Sets one tag, but obviously could be refactored for multiple tags.
             this.tags = [`${longName}`]
-            // Clear out the value of the text input, which is decoupled from the query since we're using tags.
-            this.#combobox!.value = TerraVariableCombobox.initialQuery
-            // Clear out the stored query so that there is no filtering of listbox options.
+            // Clear out the query so that there is no filtering of listbox options.
             this.query = TerraVariableCombobox.initialQuery
         }
     }
@@ -357,16 +355,16 @@ export default class TerraVariableCombobox extends TerraElement {
                 title=${tag}
                 aria-label=${`Clear tag ${tag}`}
                 @click=${() => {
-                    this.tags = []
-                    this.clear()
+                this.tags = []
+                this.clear()
 
-                    // I dont' love this, but requestUpdate() didn't work...I needed to wait until the tag container has collapsed.
-                    setTimeout(() => {
-                        this.tagContainerWidth =
-                            this.#tagContainer?.getBoundingClientRect()
-                                .width as number
-                    }, 100)
-                }}
+                // I dont' love this, but requestUpdate() didn't work...I needed to wait until the tag container has collapsed.
+                setTimeout(() => {
+                    this.tagContainerWidth =
+                        this.#tagContainer?.getBoundingClientRect()
+                            .width as number
+                }, 100)
+            }}
                 title=${tag}
             >
                 ${tag}
@@ -387,51 +385,56 @@ export default class TerraVariableCombobox extends TerraElement {
             >
             <div class="search-input-group">
                 ${this.useTags
-                    ? html`<div
+                ? html`<div
                           ${ref(el => {
-                              if (el) {
-                                  this.#tagContainer ??= el as HTMLDivElement
-                                  this.tagContainerWidth =
-                                      el.getBoundingClientRect().width
-                              }
-                          })}
+                    if (el) {
+                        this.#tagContainer ??= el as HTMLDivElement
+                        this.tagContainerWidth =
+                            el.getBoundingClientRect().width
+                    }
+                })}
                           class="tag-container"
                           id="tag-container"
                       >
                           ${map(this.tags, (value, index) =>
-                              this.#renderTags(value, index)
-                          )}
+                    this.#renderTags(value, index)
+                )}
                       </div>`
-                    : nothing}
-                <input
+                : nothing}
+                <terra-input
                     ${ref(el => {
-                        if (el) {
-                            this.#combobox ??= el as HTMLInputElement
-                        }
-                    })}
+                    if (el) {
+                        const inputEl = el as TerraInput
+                        this.#combobox = inputEl.input
+                    }
+                })}
                     autocomplete="off"
-                    aria-autocomplete="list"
-                    aria-controls="listbox"
-                    aria-haspopup="list"
-                    aria-expanded=${this.isExpanded}
                     class="combobox"
                     id="combobox"
                     part="combobox"
-                    role="combobox"
                     type="text"
                     style=${this.useTags
-                        ? `padding-inline-start: calc(${this.tagContainerWidth}px + 0.25rem);`
-                        : nothing}
+                ? `--input-padding-inline-start: calc(${this.tagContainerWidth}px + 0.25rem);`
+                : nothing}
                     aria-describedby=${this.useTags ? 'tag-container' : nothing}
                     placeholder=${this.useTags
-                        ? nothing
-                        : this.placeholder ?? `${this.label}…`}
+                ? nothing
+                : this.placeholder ?? `${this.label}…`}
                     .value=${this.useTags
-                        ? TerraVariableCombobox.initialQuery
-                        : this.query}
-                    @input=${this.#handleComboboxChange}
+                ? TerraVariableCombobox.initialQuery
+                : this.query}
+                    @terra-input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
-                />
+                >
+                    <div
+                        slot="suffix"
+                        aria-autocomplete="list"
+                        aria-controls="listbox"
+                        aria-haspopup="list"
+                        aria-expanded=${this.isExpanded}
+                        role="combobox"
+                    ></div>
+                </terra-input>
                 <terra-button
                     shape="square-left"
                     aria-controls="listbox"
@@ -445,11 +448,11 @@ export default class TerraVariableCombobox extends TerraElement {
                     @click=${this.#handleButtonClick}
                 >
                     ${['COMPLETE', 'ERROR'].includes(this.#fetchController.taskStatus)
-                        ? html`<terra-icon
+                ? html`<terra-icon
                               class="chevron"
                               name="chevron-down"
                           ></terra-icon>`
-                        : html`<svg
+                : html`<svg
                               class="button-icon spinner"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -466,8 +469,8 @@ export default class TerraVariableCombobox extends TerraElement {
                 </terra-button>
 
                 ${this.hideHelp
-                    ? nothing
-                    : html`<p class="search-help">
+                ? nothing
+                : html`<p class="search-help">
                           See
                           <a
                               href="https://www.fusejs.io/examples.html#extended-search"
@@ -505,8 +508,8 @@ export default class TerraVariableCombobox extends TerraElement {
                 ?open=${this.isExpanded}
                 @click=${this.#handleOptionClick}
                 aria-label=${this.query
-                    ? `Variables Matching ${this.query}`
-                    : 'Variables'}
+                ? `Variables Matching ${this.query}`
+                : 'Variables'}
                 id="listbox"
                 part="listbox"
                 role="listbox"
@@ -546,17 +549,17 @@ export default class TerraVariableCombobox extends TerraElement {
                         return cache(
                             this.query === TerraVariableCombobox.initialQuery
                                 ? map(
-                                      removeEmptyCollections(
-                                          groupDocsByCollection(this.#searchableList)
-                                      ),
-                                      renderSearchResult
-                                  )
+                                    removeEmptyCollections(
+                                        groupDocsByCollection(this.#searchableList)
+                                    ),
+                                    renderSearchResult
+                                )
                                 : map(
-                                      removeEmptyCollections(
-                                          groupDocsByCollection(this.searchResults)
-                                      ),
-                                      renderSearchResult
-                                  )
+                                    removeEmptyCollections(
+                                        groupDocsByCollection(this.searchResults)
+                                    ),
+                                    renderSearchResult
+                                )
                         )
                     },
                     // TODO: Consider a more robust error strategy...like retry w/ backoff?

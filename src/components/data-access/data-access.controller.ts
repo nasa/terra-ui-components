@@ -211,6 +211,31 @@ export class DataAccessController {
         return this.#cloudCoverRange
     }
 
+    get isSubDaily() {
+        if (!this.#sampling?.firstGranules?.items?.[0]) {
+            return false
+        }
+
+        const firstGranule = this.#sampling.firstGranules.items[0]
+
+        const timeStart =
+            firstGranule.temporalExtent?.rangeDateTime?.beginningDateTime
+        const timeEnd = firstGranule.temporalExtent?.rangeDateTime?.endingDateTime
+
+        if (!timeStart || !timeEnd) {
+            return false
+        }
+
+        // Parse the dates and calculate the difference in hours
+        const start = new Date(timeStart)
+        const end = new Date(timeEnd)
+        const diffMs = end.getTime() - start.getTime()
+        const diffHours = diffMs / (1000 * 60 * 60)
+
+        // If the temporal extent is less than 24 hours, it's sub-daily
+        return diffHours < 24
+    }
+
     async fetchGranules({
         collectionEntryId,
         startRow,

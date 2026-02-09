@@ -50,20 +50,6 @@ export default css`
         position: relative;
     }
 
-    terra-date-picker {
-        --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
-        --terra-input-suffix-display: none;
-        --terra-input-spacing-small: 0;
-        --terra-input-spacing-medium: 0;
-
-        width: 0;
-        height: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
     terra-spatial-picker {
         --terra-input-border-width: 0;
         --terra-input-border-color: transparent;
@@ -271,6 +257,14 @@ export default css`
     .grid-container {
         position: relative;
         width: 100%;
+    }
+
+    .datepicker-container {
+        padding: 1rem;
+    }
+
+    .available-range {
+        font-size: 0.8rem;
     }
 
     /* Remove border/background from terra-data-grid container since we handle it here if needed */

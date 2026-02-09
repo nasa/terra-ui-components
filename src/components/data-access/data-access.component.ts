@@ -121,9 +121,6 @@ export default class TerraDataAccess extends TerraElement {
     cloudCoverPickerOpen = false
 
     @state()
-    datePickerOpen = false
-
-    @state()
     spatialPickerOpen = false
 
     datePickerRef = createRef<TerraDatePicker>()
@@ -331,6 +328,24 @@ export default class TerraDataAccess extends TerraElement {
         return 'Date Range'
     }
 
+    #formatAvailableRangeDate(dateStr: string): string {
+        if (!dateStr) return ''
+
+        const date = new Date(dateStr)
+        const year = date.getUTCFullYear()
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+        const day = String(date.getUTCDate()).padStart(2, '0')
+
+        if (this.#controller.isSubDaily) {
+            const hours = String(date.getUTCHours()).padStart(2, '0')
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        }
+
+        return `${year}-${month}-${day}`
+    }
+
     #getSpatialButtonText(): string {
         if (!this.location) {
             return 'Spatial Area'
@@ -380,15 +395,11 @@ export default class TerraDataAccess extends TerraElement {
         return 'Spatial Area'
     }
 
-    #toggleDatePicker() {
-        this.datePickerOpen = !this.datePickerOpen
-        this.datePickerRef.value?.setOpen(this.datePickerOpen)
-    }
+    // Date picker is now handled by dropdown component
 
     #clearDateRange() {
         this.startDate = ''
         this.endDate = ''
-        this.datePickerOpen = false
         this.#gridApi?.purgeInfiniteCache()
     }
 
@@ -624,12 +635,12 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
 
                 <div class="toggle-row">
-                    <div class="filter">
+                    <terra-dropdown>
                         <button
+                            slot="trigger"
                             class="filter-btn ${this.startDate && this.endDate
                                 ? 'active'
                                 : ''}"
-                            @click=${this.#toggleDatePicker}
                         >
                             <terra-icon
                                 name="outline-calendar"
@@ -653,21 +664,46 @@ export default class TerraDataAccess extends TerraElement {
                                 : nothing}
                         </button>
 
-                        <!-- hidden date picker to show when clicking the filter -->
-                        <terra-date-picker
-                            ${ref(this.datePickerRef)}
-                            range
-                            hide-label
-                            enable-time
-                            hide-input
-                            show-presets
-                            .startDate=${this.startDate}
-                            .endDate=${this.endDate}
-                            .minDate=${this.#controller.granuleMinDate}
-                            .maxDate=${this.#controller.granuleMaxDate}
-                            @terra-date-range-change=${this.#handleDateRangeChange}
-                        ></terra-date-picker>
-                    </div>
+                        <div class="datepicker-container">
+                            <terra-date-picker
+                                ${ref(this.datePickerRef)}
+                                range
+                                ?enable-time=${this.#controller.isSubDaily}
+                                show-presets
+                                split-inputs
+                                inline
+                                .startDate=${this.startDate}
+                                .endDate=${this.endDate}
+                                .startPlaceholder=${this.#controller.isSubDaily
+                                    ? 'YYYY-MM-DD HH:mm:ss'
+                                    : 'YYYY-MM-DD'}
+                                .endPlaceholder=${this.#controller.isSubDaily
+                                    ? 'YYYY-MM-DD HH:mm:ss'
+                                    : 'YYYY-MM-DD'}
+                                .minDate=${this.#controller.granuleMinDate}
+                                .maxDate=${this.#controller.granuleMaxDate}
+                                @terra-date-range-change=${this
+                                    .#handleDateRangeChange}
+                            >
+                                ${this.#controller.granuleMinDate &&
+                                this.#controller.granuleMaxDate
+                                    ? html` <p
+                                          slot="additional-text"
+                                          class="available-range"
+                                      >
+                                          <strong>Available Range:</strong>
+                                          ${this.#formatAvailableRangeDate(
+                                              this.#controller.granuleMinDate
+                                          )}
+                                          -
+                                          ${this.#formatAvailableRangeDate(
+                                              this.#controller.granuleMaxDate
+                                          )}
+                                      </p>`
+                                    : nothing}
+                            </terra-date-picker>
+                        </div>
+                    </terra-dropdown>
 
                     <div class="filter">
                         <button

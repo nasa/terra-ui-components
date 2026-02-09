@@ -133,6 +133,7 @@ export class CmrCatalog implements MetadataCatalogInterface {
                                 count
                                 items {
                                     dataGranule
+                                    temporalExtent
                                 }
                             }
                             lastGranules: granules(
@@ -141,6 +142,7 @@ export class CmrCatalog implements MetadataCatalogInterface {
                                 count
                                 items {
                                     dataGranule
+                                    temporalExtent
                                 }
                             }
                         }

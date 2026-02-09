@@ -60,6 +60,8 @@ export default class TerraDatePicker extends TerraElement {
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Date'
     @property({ attribute: 'help-text' }) helpText = ''
+    @property({ attribute: 'start-help-text' }) startHelpText = ''
+    @property({ attribute: 'end-help-text' }) endHelpText = ''
     @property({ attribute: 'start-label' }) startLabel?: string
     @property({ attribute: 'end-label' }) endLabel?: string
     @property({ type: Boolean, attribute: 'show-presets' }) showPresets = false
@@ -123,10 +125,12 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     /**
-     * Parse a date string (YYYY-MM-DD) as a local date, avoiding timezone issues.
+     * Parse a date string (YYYY-MM-DD or ISO datetime) as a local date, avoiding timezone issues.
      * When you do `new Date("2024-03-20")`, JavaScript interprets it as UTC midnight,
      * which can cause off-by-one day errors when using getDate() in local timezone.
      * This function parses the date as a local date instead.
+     *
+     * When enableTime is true, datetime strings are parsed as UTC to match API min/max dates.
      */
     private parseLocalDate(dateString: string): Date {
         // Check if it's a date-only string (YYYY-MM-DD format)
@@ -135,7 +139,18 @@ export default class TerraDatePicker extends TerraElement {
             const [year, month, day] = dateString.split('-').map(Number)
             return new Date(year, month - 1, day) // month is 0-indexed in Date constructor
         }
-        // For ISO strings with time, use standard Date parsing
+
+        // Check if it's a datetime string in format (YYYY-MM-DDTHH:mm:ss)
+        const dateTimePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/
+        if (dateTimePattern.test(dateString)) {
+            const [datePart, timePart] = dateString.split('T')
+            const [year, month, day] = datePart.split('-').map(Number)
+            const [hours, minutes, seconds] = timePart.split(':').map(Number)
+            // When time is enabled, parse as UTC to match API's UTC min/max dates
+            return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
+        }
+
+        // For ISO strings with time (including UTC 'Z' suffix), use standard Date parsing
         return new Date(dateString)
     }
 
@@ -481,46 +496,33 @@ export default class TerraDatePicker extends TerraElement {
             this.displayFormat ||
             (this.enableTime ? 'YYYY-MM-DD HH:mm:ss' : 'YYYY-MM-DD')
 
-        // Get date components
+        // When time is enabled, use UTC components to match how we parse/format dates
+        if (this.enableTime) {
+            const year = date.getUTCFullYear()
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+            const day = String(date.getUTCDate()).padStart(2, '0')
+            const hours = String(date.getUTCHours()).padStart(2, '0')
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+
+            return format
+                .replace('YYYY', year.toString())
+                .replace('MM', month)
+                .replace('DD', day)
+                .replace('HH', hours)
+                .replace('mm', minutes)
+                .replace('ss', seconds)
+        }
+
+        // When time is not enabled, use local date components
         const year = date.getFullYear()
         const month = String(date.getMonth() + 1).padStart(2, '0')
         const day = String(date.getDate()).padStart(2, '0')
 
-        // Get time components - use state variables if time is enabled, otherwise use Date object
-        let hours: string
-        let minutes: string
-        let seconds: string
-
-        if (this.enableTime) {
-            // Convert 12-hour time to 24-hour for display
-            const hour12 = isStart ? this.startHour : this.endHour
-            const period = isStart ? this.timePeriod : this.endTimePeriod
-            let hour24 = hour12
-            if (period === 'PM' && hour12 !== 12) {
-                hour24 = hour12 + 12
-            } else if (period === 'AM' && hour12 === 12) {
-                hour24 = 0
-            }
-            hours = String(hour24).padStart(2, '0')
-            minutes = String(isStart ? this.startMinute : this.endMinute).padStart(
-                2,
-                '0'
-            )
-            seconds = '00'
-        } else {
-            hours = String(date.getHours()).padStart(2, '0')
-            minutes = String(date.getMinutes()).padStart(2, '0')
-            seconds = String(date.getSeconds()).padStart(2, '0')
-        }
-
-        // Replace format tokens
         return format
             .replace('YYYY', year.toString())
             .replace('MM', month)
             .replace('DD', day)
-            .replace('HH', hours)
-            .replace('mm', minutes)
-            .replace('ss', seconds)
     }
 
     private getDisplayValue(): string {
@@ -554,28 +556,90 @@ export default class TerraDatePicker extends TerraElement {
 
         // Check if it's already in YYYY-MM-DD format - use parseLocalDate to avoid timezone issues
         const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
+        // Match YYYY-MM-DD HH:mm or YYYY-MM-DD HH:mm:ss (with space or 'T' separator)
+        const dateTimePattern = /^\d{4}-\d{2}-\d{2}[T\s]\d{1,2}:\d{2}(:\d{2})?$/
         let date: Date
 
         if (dateOnlyPattern.test(trimmed)) {
             // Use parseLocalDate for YYYY-MM-DD to avoid timezone issues
             date = this.parseLocalDate(trimmed)
+        } else if (this.enableTime && dateTimePattern.test(trimmed)) {
+            // For date-time format when time is enabled, parse as UTC to match min/max dates from API
+            const [datePart, timePart] = trimmed.split(/[T\s]+/)
+            const [year, month, day] = datePart.split('-').map(Number)
+            const timeComponents = timePart.split(':').map(Number)
+            const hours = timeComponents[0] || 0
+            const minutes = timeComponents[1] || 0
+            const seconds = timeComponents[2] || 0
+            date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
         } else {
             // For other formats, try new Date() and validate
             date = new Date(trimmed)
             if (!isValid(date)) {
                 return null
             }
+            // Note: When enableTime is true and we parse via new Date(),
+            // the time components will be preserved in the Date object
         }
 
         if (!isValid(date)) {
             return null
         }
 
-        // Format to YYYY-MM-DD using the date's local components to avoid timezone issues
+        // Format based on whether time is enabled
         const year = date.getFullYear()
         const month = date.getMonth() + 1
         const day = date.getDate()
-        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+
+        if (this.enableTime) {
+            // When time is enabled, format as UTC to match API's UTC min/max dates
+            const utcYear = date.getUTCFullYear()
+            const utcMonth = date.getUTCMonth() + 1
+            const utcDay = date.getUTCDate()
+            const utcHours = date.getUTCHours()
+            const utcMinutes = date.getUTCMinutes()
+            const utcSeconds = date.getUTCSeconds()
+            return `${utcYear}-${String(utcMonth).padStart(2, '0')}-${String(utcDay).padStart(2, '0')}T${String(utcHours).padStart(2, '0')}:${String(utcMinutes).padStart(2, '0')}:${String(utcSeconds).padStart(2, '0')}`
+        } else {
+            // Format to YYYY-MM-DD using the date's local components to avoid timezone issues
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        }
+    }
+
+    private clearInputValidation() {
+        const inputs = this.renderRoot.querySelectorAll<TerraInput>('terra-input')
+        inputs.forEach(input => {
+            input.setCustomValidity('')
+        })
+    }
+
+    /**
+     * Format a date string for display in error messages
+     * When time is disabled, only show the date portion (YYYY-MM-DD)
+     */
+    private formatDateForError(dateString: string): string {
+        if (!this.enableTime) {
+            // Extract just the date portion (YYYY-MM-DD) from ISO string
+            return dateString.split('T')[0]
+        }
+        return dateString
+    }
+
+    /**
+     * Set validation error on input and emit invalid event
+     */
+    private setInputValidationError(input: TerraInput, message: string) {
+        input.setCustomValidity(message)
+        // Force validation message to display immediately by directly updating the internal state
+        // The terra-input's blur handler already ran, so we need to manually trigger the message update
+        requestAnimationFrame(() => {
+            // Access the internal validation message property to force display
+            ;(input as any).validationErrorMessage = message
+            input.requestUpdate()
+        })
+        this.emit('terra-date-selection-invalid', {
+            detail: { message },
+        })
     }
 
     private handleInputBlur(event: Event) {
@@ -596,10 +660,7 @@ export default class TerraDatePicker extends TerraElement {
             if (parts.length !== 2) {
                 const message =
                     'Date range must be in format: YYYY-MM-DD - YYYY-MM-DD'
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                this.setInputValidationError(input, message)
                 return
             }
 
@@ -608,18 +669,12 @@ export default class TerraDatePicker extends TerraElement {
 
             if (!startFormatted) {
                 const message = 'Invalid start date format'
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                this.setInputValidationError(input, message)
                 return
             }
             if (!endFormatted) {
                 const message = 'Invalid end date format'
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                this.setInputValidationError(input, message)
                 return
             }
 
@@ -638,22 +693,16 @@ export default class TerraDatePicker extends TerraElement {
             if (this.minDate) {
                 const min = this.parseLocalDate(this.minDate)
                 if (finalStart < min) {
-                    const message = `Start date must be on or after ${this.minDate}`
-                    input.setCustomValidity(message)
-                    this.emit('terra-date-selection-invalid', {
-                        detail: { message },
-                    })
+                    const message = `Start date must be on or after ${this.formatDateForError(this.minDate)}`
+                    this.setInputValidationError(input, message)
                     return
                 }
             }
             if (this.maxDate) {
                 const max = this.parseLocalDate(this.maxDate)
                 if (finalEnd > max) {
-                    const message = `End date must be on or before ${this.maxDate}`
-                    input.setCustomValidity(message)
-                    this.emit('terra-date-selection-invalid', {
-                        detail: { message },
-                    })
+                    const message = `End date must be on or before ${this.formatDateForError(this.maxDate)}`
+                    this.setInputValidationError(input, message)
                     return
                 }
             }
@@ -661,16 +710,14 @@ export default class TerraDatePicker extends TerraElement {
             this.selectedStart = finalStart
             this.selectedEnd = finalEnd
             this.updateMonthViews()
+            input.value = `${startFormatted} - ${endFormatted}`
             input.setCustomValidity('')
             this.emitChange()
         } else {
             const formatted = this.parseAndFormatDate(value)
             if (!formatted) {
                 const message = 'Invalid date format'
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                this.setInputValidationError(input, message)
                 return
             }
 
@@ -680,22 +727,16 @@ export default class TerraDatePicker extends TerraElement {
             if (this.minDate) {
                 const min = this.parseLocalDate(this.minDate)
                 if (date < min) {
-                    const message = `Date must be on or after ${this.minDate}`
-                    input.setCustomValidity(message)
-                    this.emit('terra-date-selection-invalid', {
-                        detail: { message },
-                    })
+                    const message = `Date must be on or after ${this.formatDateForError(this.minDate)}`
+                    this.setInputValidationError(input, message)
                     return
                 }
             }
             if (this.maxDate) {
                 const max = this.parseLocalDate(this.maxDate)
                 if (date > max) {
-                    const message = `Date must be on or before ${this.maxDate}`
-                    input.setCustomValidity(message)
-                    this.emit('terra-date-selection-invalid', {
-                        detail: { message },
-                    })
+                    const message = `Date must be on or before ${this.formatDateForError(this.maxDate)}`
+                    this.setInputValidationError(input, message)
                     return
                 }
             }
@@ -703,6 +744,7 @@ export default class TerraDatePicker extends TerraElement {
             this.selectedStart = date
             this.selectedEnd = null
             this.updateMonthViews()
+            input.value = formatted
             input.setCustomValidity('')
             this.emitChange()
         }
@@ -722,10 +764,7 @@ export default class TerraDatePicker extends TerraElement {
         const formatted = this.parseAndFormatDate(value)
         if (!formatted) {
             const message = 'Invalid date format'
-            input.setCustomValidity(message)
-            this.emit('terra-date-selection-invalid', {
-                detail: { message },
-            })
+            this.setInputValidationError(input, message)
             return
         }
 
@@ -735,22 +774,16 @@ export default class TerraDatePicker extends TerraElement {
         if (this.minDate) {
             const min = this.parseLocalDate(this.minDate)
             if (date < min) {
-                const message = `Date must be on or after ${this.minDate}`
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                const message = `Date must be on or after ${this.formatDateForError(this.minDate)}`
+                this.setInputValidationError(input, message)
                 return
             }
         }
         if (this.maxDate) {
             const max = this.parseLocalDate(this.maxDate)
             if (date > max) {
-                const message = `Date must be on or before ${this.maxDate}`
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                const message = `Date must be on or before ${this.formatDateForError(this.maxDate)}`
+                this.setInputValidationError(input, message)
                 return
             }
         }
@@ -758,15 +791,13 @@ export default class TerraDatePicker extends TerraElement {
         // Validate start is before end if end exists
         if (this.selectedEnd && date > this.selectedEnd) {
             const message = 'Start date must be before end date'
-            input.setCustomValidity(message)
-            this.emit('terra-date-selection-invalid', {
-                detail: { message },
-            })
+            this.setInputValidationError(input, message)
             return
         }
 
         this.selectedStart = date
         this.leftMonth = new Date(date)
+        input.value = formatted
         input.setCustomValidity('')
         this.emitChange()
     }
@@ -785,10 +816,7 @@ export default class TerraDatePicker extends TerraElement {
         const formatted = this.parseAndFormatDate(value)
         if (!formatted) {
             const message = 'Invalid date format'
-            input.setCustomValidity(message)
-            this.emit('terra-date-selection-invalid', {
-                detail: { message },
-            })
+            this.setInputValidationError(input, message)
             return
         }
 
@@ -798,22 +826,16 @@ export default class TerraDatePicker extends TerraElement {
         if (this.minDate) {
             const min = this.parseLocalDate(this.minDate)
             if (date < min) {
-                const message = `Date must be on or after ${this.minDate}`
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                const message = `Date must be on or after ${this.formatDateForError(this.minDate)}`
+                this.setInputValidationError(input, message)
                 return
             }
         }
         if (this.maxDate) {
             const max = this.parseLocalDate(this.maxDate)
             if (date > max) {
-                const message = `Date must be on or before ${this.maxDate}`
-                input.setCustomValidity(message)
-                this.emit('terra-date-selection-invalid', {
-                    detail: { message },
-                })
+                const message = `Date must be on or before ${this.formatDateForError(this.maxDate)}`
+                this.setInputValidationError(input, message)
                 return
             }
         }
@@ -821,10 +843,7 @@ export default class TerraDatePicker extends TerraElement {
         // Validate end is after start if start exists
         if (this.selectedStart && date < this.selectedStart) {
             const message = 'End date must be after start date'
-            input.setCustomValidity(message)
-            this.emit('terra-date-selection-invalid', {
-                detail: { message },
-            })
+            this.setInputValidationError(input, message)
             return
         }
 
@@ -1006,31 +1025,23 @@ export default class TerraDatePicker extends TerraElement {
     private isDisabled(date: Date): boolean {
         if (this.minDate) {
             const min = this.parseLocalDate(this.minDate)
-            // Normalize to midnight for date-only comparison
+            // Use UTC for comparison to avoid timezone issues with API dates
             const minMidnight = new Date(
-                min.getFullYear(),
-                min.getMonth(),
-                min.getDate()
+                Date.UTC(min.getUTCFullYear(), min.getUTCMonth(), min.getUTCDate())
             )
             const dateMidnight = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
+                Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
             )
             if (dateMidnight < minMidnight) return true
         }
         if (this.maxDate) {
             const max = this.parseLocalDate(this.maxDate)
-            // Normalize to midnight for date-only comparison
+            // Use UTC for comparison to avoid timezone issues with API dates
             const maxMidnight = new Date(
-                max.getFullYear(),
-                max.getMonth(),
-                max.getDate()
+                Date.UTC(max.getUTCFullYear(), max.getUTCMonth(), max.getUTCDate())
             )
             const dateMidnight = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
+                Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
             )
             if (dateMidnight > maxMidnight) return true
         }
@@ -1046,6 +1057,8 @@ export default class TerraDatePicker extends TerraElement {
             })
             return
         }
+
+        this.clearInputValidation()
 
         if (this.range) {
             if (!this.selectedStart || this.selectedEnd) {
@@ -1094,6 +1107,9 @@ export default class TerraDatePicker extends TerraElement {
             })
             return
         }
+
+        // Clear any validation errors when selecting a preset
+        this.clearInputValidation()
 
         const { min, max } = this.getBounds()
 
@@ -1845,7 +1861,7 @@ export default class TerraDatePicker extends TerraElement {
                                           ? `${this.label} (Start)`
                                           : 'Start Date')}
                                       .hideLabel=${this.hideLabel}
-                                      .helpText=${this.helpText}
+                                      .helpText=${this.startHelpText || this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
                                       @terra-blur=${this.handleStartInputBlur}
                                       @keydown=${this.handleKeydown}
@@ -1860,7 +1876,7 @@ export default class TerraDatePicker extends TerraElement {
                                           ? `${this.label} (End)`
                                           : 'End Date')}
                                       .hideLabel=${this.hideLabel}
-                                      .helpText=${this.helpText}
+                                      .helpText=${this.endHelpText || this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
                                       @terra-blur=${this.handleEndInputBlur}
                                       @keydown=${this.handleKeydown}
@@ -1885,6 +1901,8 @@ export default class TerraDatePicker extends TerraElement {
                                   ${this.renderCalendarIcon()}
                               </terra-input>
                           `}
+
+                    <slot name="additional-text"></slot>
 
                     <div class="date-picker__dropdown-wrapper">
                         <div
@@ -1957,7 +1975,7 @@ export default class TerraDatePicker extends TerraElement {
                                           ? `${this.label} (Start)`
                                           : 'Start Date')}
                                       .hideLabel=${this.hideLabel}
-                                      .helpText=${this.helpText}
+                                      .helpText=${this.startHelpText || this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
                                       placeholder=${this.startPlaceholder}
                                       @terra-blur=${this.handleStartInputBlur}
@@ -1982,7 +2000,7 @@ export default class TerraDatePicker extends TerraElement {
                                           ? `${this.label} (End)`
                                           : 'End Date')}
                                       .hideLabel=${this.hideLabel}
-                                      .helpText=${this.helpText}
+                                      .helpText=${this.endHelpText || this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
                                       placeholder=${this.endPlaceholder}
                                       @terra-blur=${this.handleEndInputBlur}

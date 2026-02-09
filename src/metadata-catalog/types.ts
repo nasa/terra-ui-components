@@ -71,13 +71,22 @@ export type CmrSamplingOfGranules = {
         count: number
         items: Array<{
             dataGranule: CmrGranuleDataGranule
+            temporalExtent: TemporalExtent
         }>
     }
     lastGranules: {
         count: number
         items: Array<{
             dataGranule: CmrGranuleDataGranule
+            temporalExtent: TemporalExtent
         }>
+    }
+}
+
+export type TemporalExtent = {
+    rangeDateTime: {
+        beginningDateTime: string
+        endingDateTime: string
     }
 }
 

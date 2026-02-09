@@ -106,23 +106,27 @@ export default css`
     .combobox {
         block-size: var(--terra-block-size, 2.25rem);
         flex: 1 1 auto;
-        padding-inline: 0.5rem;
-        transition:
-            background-color 0.2s ease,
-            border-color 0.2s ease;
         max-inline-size: 100%;
     }
 
-    .combobox::placeholder {
+    .combobox::part(input) {
+        padding-inline: var(--input-padding-inline-start, 0.5rem) 0.5rem;
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    .combobox::part(base) {
+        transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease;
+    }
+
+    .combobox::part(input)::placeholder {
         color: var(--terra-color-carbon-60);
     }
 
-    .combobox:focus {
-        border-color: var(--terra-color-carbon-40);
-        outline: 0;
-    }
-
-    .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
+    .search-input-group:has(.combobox:not(:focus-within)) + .search-results[open] {
         border-color: var(--terra-color-carbon-30);
     }
 
