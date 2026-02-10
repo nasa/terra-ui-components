@@ -18,6 +18,7 @@ import type {
     MetadataCatalogInterface,
 } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
+import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
@@ -198,9 +199,12 @@ export class DataSubsetterController {
                                       variableConceptIds: ['parameter_vars'],
                                       variableEntryIds:
                                           this.#host.selectedVariables.map(v =>
-                                              `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`.replace(
-                                                  /\./g,
-                                                  '_'
+                                              convertVariableEntryIdToGiovanniFormat(
+                                                  this.#host.collectionWithServices
+                                                      ?.shortName ?? '',
+                                                  this.#host.collectionWithServices
+                                                      ?.collection?.Version ?? '',
+                                                  v.name
                                               )
                                           ),
                                   }

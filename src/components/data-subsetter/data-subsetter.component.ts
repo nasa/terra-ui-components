@@ -43,6 +43,7 @@ import type { TerraSelectEvent } from '../../events/terra-select.js'
 import { TaskStatus } from '@lit/task'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import TerraAlert from '../alert/alert.component.js'
+import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -1529,9 +1530,11 @@ export default class TerraDataSubsetter extends TerraElement {
                     return false
                 }
 
-                // Build the Giovanni-formatted variable name
-                const versionWithUnderscores = version.replace(/\./g, '_')
-                const giovanniVariableName = `${shortName}_${versionWithUnderscores}_${v.name}`
+                const giovanniVariableName = convertVariableEntryIdToGiovanniFormat(
+                    shortName,
+                    version,
+                    v.name
+                )
 
                 return this.giovanniConfiguredVariables!.has(giovanniVariableName)
             })
