@@ -16,6 +16,7 @@ import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { MapEventType } from '../map/type.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
+import { watch } from '../../internal/watch.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
@@ -106,6 +107,11 @@ export default class TerraDataRods extends TerraElement {
     @state() private spatialWarningMessage?: string
 
     _fetchVariableTask = getFetchVariableTask(this)
+
+    @watch('location')
+    locationChanged() {
+        console.log('location changed ', this.location)
+    }
 
     get variableBoundingBox() {
         const variable = this.catalogVariable
@@ -252,10 +258,19 @@ export default class TerraDataRods extends TerraElement {
     #handleVariableChange(event: TerraComboboxChangeEvent) {
         const newEntryId = event.detail.entryId
 
+        console.log(
+            'variable changed ',
+            newEntryId,
+            ' old entry id ',
+            this.variableEntryId
+        )
+
         //Do nothing if this is just initial sync
         if (newEntryId === this.variableEntryId) {
             return
         }
+
+        console.log('variable changed ', newEntryId, ' wiping location')
 
         this.variableEntryId = newEntryId
         this.location = undefined
