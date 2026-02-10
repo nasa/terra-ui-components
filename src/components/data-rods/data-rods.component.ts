@@ -16,7 +16,6 @@ import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { MapEventType } from '../map/type.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
-import { watch } from '../../internal/watch.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
