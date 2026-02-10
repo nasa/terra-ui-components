@@ -106,6 +106,21 @@ export class DataSubsetterController {
 
                 this.#sampling = sampling?.collections?.items?.[0]
 
+                this.#host.granuleMinDate =
+                    this.#sampling?.firstGranules?.items[0]?.temporalExtent?.rangeDateTime?.beginningDateTime
+                this.#host.granuleMaxDate =
+                    this.#sampling?.lastGranules?.items.slice(
+                        -1
+                    )[0]?.temporalExtent?.rangeDateTime?.endingDateTime
+
+                console.log(
+                    'Updated sampling: ',
+                    collectionEntryId,
+                    this.#sampling,
+                    this.#host.granuleMinDate,
+                    this.#host.granuleMaxDate
+                )
+
                 return this.#sampling
             },
             args: (): [string | undefined] => [this.#host.collectionEntryId],
@@ -341,6 +356,29 @@ export class DataSubsetterController {
             )
         }
         return labels
+    }
+
+    get granuleMinDate() {
+        if (!this.#sampling?.firstGranules) {
+            return null
+        }
+
+        return (
+            this.#sampling.firstGranules.items[0]?.temporalExtent?.rangeDateTime
+                ?.beginningDateTime ?? null
+        )
+    }
+
+    get granuleMaxDate() {
+        if (!this.#sampling?.lastGranules) {
+            return null
+        }
+
+        const granules = this.#sampling.lastGranules.items
+        return (
+            granules[granules.length - 1].temporalExtent?.rangeDateTime
+                ?.endingDateTime ?? null
+        )
     }
 
     get isSubDaily() {

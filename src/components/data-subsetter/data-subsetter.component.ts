@@ -163,6 +163,12 @@ export default class TerraDataSubsetter extends TerraElement {
     @state()
     validationError?: string
 
+    @state()
+    granuleMinDate?: string
+
+    @state()
+    granuleMaxDate?: string
+
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
@@ -260,6 +266,21 @@ export default class TerraDataSubsetter extends TerraElement {
 
         this.collectionLoading = false
         this.collectionAccordionOpen = false
+    }
+
+    @watch(['granuleMinDate', 'granuleMaxDate'])
+    granuleDatesChanged() {
+        const newRange = {
+            ...(this.granuleMinDate && { startDate: this.granuleMinDate }),
+            ...(this.granuleMaxDate && { endDate: this.granuleMaxDate }),
+        }
+
+        if (Object.keys(newRange).length > 0) {
+            this.selectedDateRange = {
+                ...this.selectedDateRange,
+                ...newRange,
+            }
+        }
     }
 
     @watch('selectedFormat')
@@ -573,9 +594,10 @@ export default class TerraDataSubsetter extends TerraElement {
             return html`
                 <div slot="footer" class="footer">
                     <button class="btn btn-secondary">Reset All</button>
-                    <button class="btn btn-primary" @click=${this.#getData}>
-                        Get Data
-                    </button>
+                    <div>
+                        <button class="btn btn-primary" @click=${this.#getData}>
+                            Get Data
+                        </button>
                             ${
                                 this.jobId
                                     ? html`
@@ -588,6 +610,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       `
                                     : nothing
                             }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -733,6 +756,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 ? html`
                       <div class="footer">
                           <button class="btn btn-secondary">Reset All</button>
+                          <div>
                           <button
                               class="btn btn-primary"
                               @click=${this.#getData}
@@ -752,6 +776,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                           : nothing
                                   }
                               </div>
+                                </div>
                           </div>
                       </div>
                   `
@@ -1047,8 +1072,12 @@ export default class TerraDataSubsetter extends TerraElement {
     #renderDateRangeSelection() {
         const { startDate: defaultStartDate, endDate: defaultEndDate } =
             this.#getCollectionDateRange()
-        const startDate = this.selectedDateRange.startDate ?? defaultStartDate
-        const endDate = this.selectedDateRange.endDate ?? defaultEndDate
+        const startDate =
+            this.selectedDateRange.startDate ??
+            this.granuleMinDate ??
+            defaultStartDate
+        const endDate =
+            this.selectedDateRange.endDate ?? this.granuleMaxDate ?? defaultEndDate
         const showError =
             this.touchedFields.has('date') &&
             (!this.selectedDateRange.startDate || !this.selectedDateRange.endDate)
@@ -1087,8 +1116,8 @@ export default class TerraDataSubsetter extends TerraElement {
                         ?enable-time=${this.controller.isSubDaily}
                         start-label="Start Date"
                         end-label="End Date"
-                        .minDate=${defaultStartDate}
-                        .maxDate=${defaultEndDate}
+                        .minDate=${this.granuleMinDate ?? defaultStartDate}
+                        .maxDate=${this.granuleMaxDate ?? defaultEndDate}
                         .startDate=${this.selectedDateRange.startDate}
                         .endDate=${this.selectedDateRange.endDate}
                         @terra-date-range-change=${this.#handleDateChange}
@@ -1142,6 +1171,18 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #getCollectionDateRange() {
+        // Prefer sampling data for accurate date ranges
+        const samplingMinDate = this.controller.granuleMinDate
+        const samplingMaxDate = this.controller.granuleMaxDate
+
+        if (samplingMinDate && samplingMaxDate) {
+            return {
+                startDate: samplingMinDate.slice(0, 10),
+                endDate: samplingMaxDate.slice(0, 10),
+            }
+        }
+
+        // Fallback to collection metadata if sampling is not available
         const temporalExtents =
             this.collectionWithServices?.collection?.TemporalExtents
         if (!temporalExtents || !temporalExtents.length)
@@ -2139,8 +2180,8 @@ export default class TerraDataSubsetter extends TerraElement {
             endDate = this.selectedDateRange.endDate
         } else {
             // fallback to the collection's full date range
-            startDate = range.startDate
-            endDate = range.endDate
+            startDate = this.granuleMinDate ?? range.startDate
+            endDate = this.granuleMaxDate ?? range.endDate
         }
 
         if (!startDate || !endDate) return
