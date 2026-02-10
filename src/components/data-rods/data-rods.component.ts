@@ -108,11 +108,6 @@ export default class TerraDataRods extends TerraElement {
 
     _fetchVariableTask = getFetchVariableTask(this)
 
-    @watch('location')
-    locationChanged() {
-        console.log('location changed ', this.location)
-    }
-
     get variableBoundingBox() {
         const variable = this.catalogVariable
         if (!variable) return undefined
@@ -258,18 +253,9 @@ export default class TerraDataRods extends TerraElement {
     #handleVariableChange(event: TerraComboboxChangeEvent) {
         const newEntryId = event.detail.entryId
 
-        console.log(
-            'variable changed ',
-            newEntryId,
-            ' old entry id ',
-            this.variableEntryId
-        )
-
         if (!this.variableEntryId || newEntryId === this.variableEntryId) {
             return
         }
-
-        console.log('variable changed ', newEntryId, ' wiping location')
 
         this.variableEntryId = newEntryId
         this.location = undefined

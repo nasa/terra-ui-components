@@ -265,6 +265,25 @@ export default class TerraDatePicker extends TerraElement {
         }
     }
 
+    @watch(['minDate', 'maxDate'])
+    handleMinMaxDateChange() {
+        // When minDate or maxDate changes (e.g., from async API call),
+        // update calendar view to show the maxDate if no selection exists yet
+        if (this.maxDate && !this.selectedStart && !this.selectedEnd) {
+            const max = this.parseLocalDate(this.maxDate)
+            if (!isNaN(max.getTime())) {
+                if (this.range) {
+                    this.rightMonth = new Date(max)
+                    const left = new Date(max)
+                    left.setMonth(left.getMonth() - 1)
+                    this.leftMonth = left
+                } else {
+                    this.leftMonth = new Date(max)
+                }
+            }
+        }
+    }
+
     @watch(['startDate', 'endDate'])
     handleStartEndDateChange() {
         // Sync internal state with props when they change

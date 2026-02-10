@@ -179,7 +179,10 @@ export class DataAccessController {
             return null
         }
 
-        return this.#sampling.firstGranules.items[0].dataGranule.productionDateTime
+        return (
+            this.#sampling.firstGranules.items[0]?.temporalExtent?.rangeDateTime
+                ?.beginningDateTime ?? null
+        )
     }
 
     get granuleMaxDate() {
@@ -188,7 +191,10 @@ export class DataAccessController {
         }
 
         const granules = this.#sampling.lastGranules.items
-        return granules[granules.length - 1].dataGranule.productionDateTime
+        return (
+            granules[granules.length - 1].temporalExtent?.rangeDateTime
+                ?.endingDateTime ?? null
+        )
     }
 
     get estimatedSize() {
