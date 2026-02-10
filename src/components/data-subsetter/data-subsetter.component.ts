@@ -693,7 +693,6 @@ export default class TerraDataSubsetter extends TerraElement {
                                   <div class="section">
                                       <h2 class="section-title">
                                           Select Data Collection
-                                          <span class="help-icon">?</span>
                                       </h2>
 
                                       ${this.#renderSearchForCollection()}
@@ -704,25 +703,17 @@ export default class TerraDataSubsetter extends TerraElement {
                         hasSubsetOption
                             ? html`
                                   <div class="section">
-                                      <h2 class="section-title">
-                                          Output Format
-                                          <span class="help-icon">?</span>
-                                      </h2>
+                                      <h2 class="section-title">Output Format</h2>
 
                                       ${this.#renderOutputFormatSelection()}
                                   </div>
                               `
                             : nothing}
                         <div class="section">
-                            <h2 class="section-title">
-                                Subset Options
-                                <span class="help-icon">?</span>
-                            </h2>
+                            <h2 class="section-title">Subset Options</h2>
                             <p style="color: #666; margin-bottom: 16px;">
-                                Generate file links supporting geo-spatial search and
-                                crop, selection of variables and dimensions, selection
-                                of time of day, and data presentation, in netCDF or
-                                HDF-EOS5 formats.
+                                Generate file links that support spatial subsetting,
+                                date/time range selection, and variable selection.
                             </p>
 
                             ${this.collectionWithServices?.temporalSubset
