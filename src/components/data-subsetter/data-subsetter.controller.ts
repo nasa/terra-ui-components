@@ -26,6 +26,7 @@ export class DataSubsetterController {
     fetchCollectionTask: Task<[string], any | undefined>
     searchCmrTask: Task<[string | undefined, string], any | undefined>
     samplingTask: Task<[string | undefined], CmrSamplingOfGranules | undefined>
+    giovanniConfiguredVariablesTask: Task<[], Set<string> | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
@@ -124,6 +125,42 @@ export class DataSubsetterController {
                 return this.#sampling
             },
             args: (): [string | undefined] => [this.#host.collectionEntryId],
+        })
+
+        this.giovanniConfiguredVariablesTask = new Task(host, {
+            task: async ([], { signal }) => {
+                try {
+                    const response = await fetch(
+                        'https://api.giovanni.earthdata.nasa.gov/configured-variables/',
+                        { signal }
+                    )
+
+                    if (!response.ok) {
+                        console.warn(
+                            'Failed to fetch Giovanni configured variables:',
+                            response.status
+                        )
+                        return undefined
+                    }
+
+                    const data = await response.json()
+
+                    const variableNames = new Set(
+                        data['configured_variables'] as string[]
+                    )
+
+                    this.#host.giovanniConfiguredVariables = variableNames
+                    return variableNames
+                } catch (error) {
+                    console.warn(
+                        'Error fetching Giovanni configured variables:',
+                        error
+                    )
+                    // Return undefined to indicate failure - will show all variables
+                    return undefined
+                }
+            },
+            args: (): [] => [],
         })
 
         this.jobStatusTask = new Task(host, {

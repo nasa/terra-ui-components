@@ -42,6 +42,7 @@ import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import { TaskStatus } from '@lit/task'
 import { extractHarmonyError } from '../../utilities/harmony.js'
+import TerraAlert from '../alert/alert.component.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -72,6 +73,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-menu': TerraMenu,
         'terra-menu-item': TerraMenuItem,
         'terra-button': TerraButton,
+        'terra-alert': TerraAlert,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -168,6 +170,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     granuleMaxDate?: string
+
+    @state()
+    giovanniConfiguredVariables?: Set<string>
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -1392,6 +1397,24 @@ export default class TerraDataSubsetter extends TerraElement {
                     >
                         ${allExpanded ? 'Collapse Tree' : 'Expand Tree'}
                     </button>
+
+                    ${this.#isGiovanniFormat() && this.giovanniConfiguredVariables
+                        ? html`
+                              <terra-alert
+                                  open
+                                  appearance="white"
+                                  style="margin: 10px 0"
+                              >
+                                  <terra-icon
+                                      slot="icon"
+                                      name="outline-information-circle"
+                                      library="heroicons"
+                                  ></terra-icon>
+                                  Only certain variables are supported for the
+                                  selected output format. (Giovanni service)
+                              </terra-alert>
+                          `
+                        : nothing}
                     ${variables.length === 0
                         ? html`<p style="color: #666; font-style: italic;">
                               No variables available for this collection.
@@ -1491,8 +1514,35 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #buildVariableTree(variables: Variable[]): Record<string, any> {
+        let filteredVariables = variables
+
+        if (this.#isGiovanniFormat() && this.giovanniConfiguredVariables) {
+            const originalCount = variables.length
+
+            filteredVariables = variables.filter(v => {
+                // Convert internal format (dots) to Giovanni format (underscores)
+                // Example: M2T1NXSLV_5.12.4_CLDPRS -> M2T1NXSLV_5_12_4_CLDPRS
+                const shortName = this.collectionWithServices?.shortName
+                const version = this.collectionWithServices?.collection?.Version
+
+                if (!shortName || !version) {
+                    return false
+                }
+
+                // Build the Giovanni-formatted variable name
+                const versionWithUnderscores = version.replace(/\./g, '_')
+                const giovanniVariableName = `${shortName}_${versionWithUnderscores}_${v.name}`
+
+                return this.giovanniConfiguredVariables!.has(giovanniVariableName)
+            })
+
+            console.log(
+                `Filtered ${originalCount - filteredVariables.length} variables for Giovanni format. Showing ${filteredVariables.length} of ${originalCount}.`
+            )
+        }
+
         const root: Record<string, any> = {}
-        for (const v of variables) {
+        for (const v of filteredVariables) {
             const parts = v.name.split('/')
             let node = root
             for (let i = 0; i < parts.length; i++) {
