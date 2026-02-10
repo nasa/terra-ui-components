@@ -93,6 +93,9 @@ export default class TerraMap extends TerraElement {
     @query('#map')
     mapElement!: HTMLDivElement
 
+    // Track if initial draw event has fired to distinguish user draws from initial/programmatic values
+    private hasProcessedInitialDraw: boolean = false
+
     @watch('value')
     valueChanged(_oldValue: any, newValue: any) {
         if (newValue.length > 0) {
@@ -131,25 +134,31 @@ export default class TerraMap extends TerraElement {
         })
 
         this.map.on('draw', (layer: any) => {
-            // Validate against spatial constraints before emitting
-            const constraints = this.#parseConstraints()
-            if (constraints) {
-                if (
-                    'latLng' in layer &&
-                    !this.#isPointInsideBounds(layer.latLng, constraints)
-                ) {
-                    // Point is outside constraints, clear it and don't emit
-                    this.map.clearLayers()
-                    return
+            // Skip validation for the first draw (initial value) - only validate user-initiated draws
+            if (this.hasProcessedInitialDraw) {
+                // Validate against spatial constraints before emitting
+                const constraints = this.#parseConstraints()
+                if (constraints) {
+                    if (
+                        'latLng' in layer &&
+                        !this.#isPointInsideBounds(layer.latLng, constraints)
+                    ) {
+                        // Point is outside constraints, clear it and don't emit
+                        this.map.clearLayers()
+                        return
+                    }
+                    if (
+                        'bounds' in layer &&
+                        !this.#isBoundsInsideBounds(layer.bounds, constraints)
+                    ) {
+                        // Bounds outside constraints, clear it and don't emit
+                        this.map.clearLayers()
+                        return
+                    }
                 }
-                if (
-                    'bounds' in layer &&
-                    !this.#isBoundsInsideBounds(layer.bounds, constraints)
-                ) {
-                    // Bounds outside constraints, clear it and don't emit
-                    this.map.clearLayers()
-                    return
-                }
+            } else {
+                // Mark that we've processed the initial draw
+                this.hasProcessedInitialDraw = true
             }
 
             this.emit('terra-map-change', {
