@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "terra_ui_components"
 dependencies = ["anywidget>=0.9"]
-version = "0.0.155"
+version = "0.0.156"
 readme = "README.md"
 description = "NASA Terra UI Components Library"
 requires-python = ">=3.8"
