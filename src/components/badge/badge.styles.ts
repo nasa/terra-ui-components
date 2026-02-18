@@ -40,6 +40,13 @@ export default css`
         background-color: var(--terra-color-international-orange);
     }
 
+    .badge--info {
+        background-color: var(
+            --terra-background-color-badge-info,
+            rgba(13, 202, 240, 1)
+        );
+    }
+
     .badge--danger {
         background-color: var(--terra-color-nasa-red);
     }
