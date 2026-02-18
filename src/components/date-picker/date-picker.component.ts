@@ -1836,18 +1836,24 @@ export default class TerraDatePicker extends TerraElement {
                     ${this.showPresets && this.filteredPresets.length > 0
                         ? html`
                               <div class="date-picker__sidebar" part="sidebar">
-                                  ${this.filteredPresets.map(
-                                      preset => html`
-                                          <button
-                                              type="button"
-                                              class="date-picker__preset"
-                                              @click=${() =>
-                                                  this.selectPreset(preset)}
-                                          >
-                                              ${preset.label}
-                                          </button>
-                                      `
-                                  )}
+                                  <slot name="sidebar-header"></slot>
+
+                                  <div class="presets">
+                                      ${this.filteredPresets.map(
+                                          preset => html`
+                                              <button
+                                                  type="button"
+                                                  class="date-picker__preset"
+                                                  @click=${() =>
+                                                      this.selectPreset(preset)}
+                                              >
+                                                  ${preset.label}
+                                              </button>
+                                          `
+                                      )}
+                                  </div>
+
+                                  <slot name="sidebar-footer"></slot>
                               </div>
                           `
                         : ''}
