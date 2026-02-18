@@ -18,6 +18,7 @@ import type {
     MetadataCatalogInterface,
 } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
+import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 
 const JOB_STATUS_POLL_MILLIS = 3000
 
@@ -26,6 +27,7 @@ export class DataSubsetterController {
     fetchCollectionTask: Task<[string], any | undefined>
     searchCmrTask: Task<[string | undefined, string], any | undefined>
     samplingTask: Task<[string | undefined], CmrSamplingOfGranules | undefined>
+    giovanniConfiguredVariablesTask: Task<[], Set<string> | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
@@ -106,9 +108,60 @@ export class DataSubsetterController {
 
                 this.#sampling = sampling?.collections?.items?.[0]
 
+                this.#host.granuleMinDate =
+                    this.#sampling?.firstGranules?.items[0]?.temporalExtent?.rangeDateTime?.beginningDateTime
+                this.#host.granuleMaxDate =
+                    this.#sampling?.lastGranules?.items.slice(
+                        -1
+                    )[0]?.temporalExtent?.rangeDateTime?.endingDateTime
+
+                console.log(
+                    'Updated sampling: ',
+                    collectionEntryId,
+                    this.#sampling,
+                    this.#host.granuleMinDate,
+                    this.#host.granuleMaxDate
+                )
+
                 return this.#sampling
             },
             args: (): [string | undefined] => [this.#host.collectionEntryId],
+        })
+
+        this.giovanniConfiguredVariablesTask = new Task(host, {
+            task: async ([], { signal }) => {
+                try {
+                    const response = await fetch(
+                        'https://api.giovanni.earthdata.nasa.gov/configured-variables/',
+                        { signal }
+                    )
+
+                    if (!response.ok) {
+                        console.warn(
+                            'Failed to fetch Giovanni configured variables:',
+                            response.status
+                        )
+                        return undefined
+                    }
+
+                    const data = await response.json()
+
+                    const variableNames = new Set(
+                        data['configured_variables'] as string[]
+                    )
+
+                    this.#host.giovanniConfiguredVariables = variableNames
+                    return variableNames
+                } catch (error) {
+                    console.warn(
+                        'Error fetching Giovanni configured variables:',
+                        error
+                    )
+                    // Return undefined to indicate failure - will show all variables
+                    return undefined
+                }
+            },
+            args: (): [] => [],
         })
 
         this.jobStatusTask = new Task(host, {
@@ -146,9 +199,12 @@ export class DataSubsetterController {
                                       variableConceptIds: ['parameter_vars'],
                                       variableEntryIds:
                                           this.#host.selectedVariables.map(v =>
-                                              `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`.replace(
-                                                  /\./g,
-                                                  '_'
+                                              convertVariableEntryIdToGiovanniFormat(
+                                                  this.#host.collectionWithServices
+                                                      ?.shortName ?? '',
+                                                  this.#host.collectionWithServices
+                                                      ?.collection?.Version ?? '',
+                                                  v.name
                                               )
                                           ),
                                   }
@@ -341,6 +397,29 @@ export class DataSubsetterController {
             )
         }
         return labels
+    }
+
+    get granuleMinDate() {
+        if (!this.#sampling?.firstGranules) {
+            return null
+        }
+
+        return (
+            this.#sampling.firstGranules.items[0]?.temporalExtent?.rangeDateTime
+                ?.beginningDateTime ?? null
+        )
+    }
+
+    get granuleMaxDate() {
+        if (!this.#sampling?.lastGranules) {
+            return null
+        }
+
+        const granules = this.#sampling.lastGranules.items
+        return (
+            granules[granules.length - 1].temporalExtent?.rangeDateTime
+                ?.endingDateTime ?? null
+        )
     }
 
     get isSubDaily() {

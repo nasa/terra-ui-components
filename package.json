@@ -1,7 +1,7 @@
 {
   "name": "@nasa-terra/components",
   "description": "A collection of NASA Earthdata components",
-  "version": "0.0.151",
+  "version": "0.0.162",
   "homepage": "https://github.com/nasa/terra-ui-components",
   "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
   "license": "MIT",
@@ -76,6 +76,7 @@
     "ag-grid-community": "^34.2.0",
     "apollo3-cache-persist": "^0.15.0",
     "colormap": "^2.3.2",
+    "composed-offset-position": "^0.0.6",
     "date-fns": "^3.6.0",
     "esbuild-plugin-polyfill-node": "^0.3.0",
     "fuse.js": "^7.0.0",

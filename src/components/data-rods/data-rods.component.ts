@@ -252,8 +252,7 @@ export default class TerraDataRods extends TerraElement {
     #handleVariableChange(event: TerraComboboxChangeEvent) {
         const newEntryId = event.detail.entryId
 
-        //Do nothing if this is just initial sync
-        if (newEntryId === this.variableEntryId) {
+        if (!this.variableEntryId || newEntryId === this.variableEntryId) {
             return
         }
 

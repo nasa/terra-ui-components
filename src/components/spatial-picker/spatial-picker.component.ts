@@ -100,7 +100,7 @@ export default class TerraSpatialPicker extends TerraElement {
      * Spatial constraints for the map (default: '-180, -90, 180, 90')
      */
     @property({ attribute: 'spatial-constraints' })
-    spatialConstraints: string = '-180, -90, 180, 90'
+    spatialConstraints?: string = '-180, -90, 180, 90'
 
     @watch('spatialConstraints')
     handleSpatialConstraintsChange() {
@@ -401,6 +401,7 @@ export default class TerraSpatialPicker extends TerraElement {
             this._emitMapChangeAfterDraw()
             this._updateURLParam(inputValue)
         } catch (error) {
+            console.error('Error parsing spatial input:', error)
             // Build contextual error message
             let errorMsg = 'Invalid format'
             if (this.hidePointSelection && !this.hideBoundingBoxSelection) {
@@ -460,7 +461,7 @@ export default class TerraSpatialPicker extends TerraElement {
         }
 
         // Parse constraints
-        const coords = this.spatialConstraints
+        const coords = (this.spatialConstraints ?? '')
             .split(',')
             .map(c => parseFloat(c.trim()))
         if (coords.length !== 4) return

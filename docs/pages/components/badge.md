@@ -26,6 +26,7 @@ Set the `variant` attribute to change the badge's variant.
 <terra-badge variant="success">Success</terra-badge>
 <terra-badge variant="neutral">Neutral</terra-badge>
 <terra-badge variant="warning">Warning</terra-badge>
+<terra-badge variant="info">Info</terra-badge>
 <terra-badge variant="danger">Danger</terra-badge>
 ```
 
@@ -38,6 +39,7 @@ const App = () => (
     <TerraBadge variant="success">Success</TerraBadge>
     <TerraBadge variant="neutral">Neutral</TerraBadge>
     <TerraBadge variant="warning">Warning</TerraBadge>
+    <TerraBadge variant="info">Info</TerraBadge>
     <TerraBadge variant="danger">Danger</TerraBadge>
   </>
 );
@@ -52,6 +54,7 @@ Use the `pill` attribute to give badges rounded edges.
 <terra-badge variant="success" pill>Success</terra-badge>
 <terra-badge variant="neutral" pill>Neutral</terra-badge>
 <terra-badge variant="warning" pill>Warning</terra-badge>
+<terra-badge variant="info" pill>Info</terra-badge>
 <terra-badge variant="danger" pill>Danger</terra-badge>
 ```
 
@@ -72,6 +75,9 @@ const App = () => (
     <TerraBadge variant="warning" pill>
       Warning
     </TerraBadge>
+    <TerraBadge variant="info" pill>
+      Info
+    </TerraBadge>
     <TerraBadge variant="danger" pill>
       Danger
     </TerraBadge>
@@ -89,6 +95,7 @@ Use the `pulse` attribute to draw attention to the badge with a subtle animation
   <terra-badge variant="success" pill pulse>1</terra-badge>
   <terra-badge variant="neutral" pill pulse>1</terra-badge>
   <terra-badge variant="warning" pill pulse>1</terra-badge>
+  <terra-badge variant="info" pill pulse>1</terra-badge>
   <terra-badge variant="danger" pill pulse>1</terra-badge>
 </div>
 
@@ -121,6 +128,9 @@ const App = () => (
         1
       </TerraBadge>
       <TerraBadge variant="warning" pill pulse>
+        1
+      </TerraBadge>
+      <TerraBadge variant="info" pill pulse>
         1
       </TerraBadge>
       <TerraBadge variant="danger" pill pulse>
