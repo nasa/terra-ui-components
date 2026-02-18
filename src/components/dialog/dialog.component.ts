@@ -359,8 +359,9 @@ export default class TerraDialog extends TerraElement {
                                           aria-label="Close"
                                       >
                                           <terra-icon
-                                              name="x-lg"
-                                              library="system"
+                                              name="solid-x-mark"
+                                              library="heroicons"
+                                              font-size="1.25rem"
                                           ></terra-icon>
                                       </terra-button>
                                   </div>
