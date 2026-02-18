@@ -1,8 +1,0 @@
-{
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.codeActionsOnSave": {},
-    "[nunjucks]": {
-        "editor.defaultFormatter": "okitavera.vscode-nunjucks-formatter"
-    }
-}

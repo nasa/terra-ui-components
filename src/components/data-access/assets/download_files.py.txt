@@ -5,7 +5,7 @@ Python script for downloading data from the NASA CMR API
 Requirements:
     > pip install tqdm
 
-To run the script: `python download_data_{{short_name}}_{{version}}_{{date}}.py`
+To run the script: `python download_files_{{short_name}}_{{version}}.py`
 """
 
 import os

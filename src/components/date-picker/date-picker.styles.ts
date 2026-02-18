@@ -149,6 +149,7 @@ export default css`
         border-right: var(--terra-panel-border-width) solid
             var(--terra-panel-border-color);
         flex-shrink: 0;
+        justify-content: space-between;
     }
 
     .date-picker__preset {

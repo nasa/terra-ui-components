@@ -42,6 +42,8 @@ import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import { TaskStatus } from '@lit/task'
 import { extractHarmonyError } from '../../utilities/harmony.js'
+import TerraAlert from '../alert/alert.component.js'
+import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -72,6 +74,7 @@ export default class TerraDataSubsetter extends TerraElement {
         'terra-menu': TerraMenu,
         'terra-menu-item': TerraMenuItem,
         'terra-button': TerraButton,
+        'terra-alert': TerraAlert,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -162,6 +165,15 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     validationError?: string
+
+    @state()
+    granuleMinDate?: string
+
+    @state()
+    granuleMaxDate?: string
+
+    @state()
+    giovanniConfiguredVariables?: Set<string>
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -260,6 +272,21 @@ export default class TerraDataSubsetter extends TerraElement {
 
         this.collectionLoading = false
         this.collectionAccordionOpen = false
+    }
+
+    @watch(['granuleMinDate', 'granuleMaxDate'])
+    granuleDatesChanged() {
+        const newRange = {
+            ...(this.granuleMinDate && { startDate: this.granuleMinDate }),
+            ...(this.granuleMaxDate && { endDate: this.granuleMaxDate }),
+        }
+
+        if (Object.keys(newRange).length > 0) {
+            this.selectedDateRange = {
+                ...this.selectedDateRange,
+                ...newRange,
+            }
+        }
     }
 
     @watch('selectedFormat')
@@ -573,9 +600,10 @@ export default class TerraDataSubsetter extends TerraElement {
             return html`
                 <div slot="footer" class="footer">
                     <button class="btn btn-secondary">Reset All</button>
-                    <button class="btn btn-primary" @click=${this.#getData}>
-                        Get Data
-                    </button>
+                    <div>
+                        <button class="btn btn-primary" @click=${this.#getData}>
+                            Get Data
+                        </button>
                             ${
                                 this.jobId
                                     ? html`
@@ -588,6 +616,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       `
                                     : nothing
                             }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -664,7 +693,6 @@ export default class TerraDataSubsetter extends TerraElement {
                                   <div class="section">
                                       <h2 class="section-title">
                                           Select Data Collection
-                                          <span class="help-icon">?</span>
                                       </h2>
 
                                       ${this.#renderSearchForCollection()}
@@ -675,25 +703,17 @@ export default class TerraDataSubsetter extends TerraElement {
                         hasSubsetOption
                             ? html`
                                   <div class="section">
-                                      <h2 class="section-title">
-                                          Output Format
-                                          <span class="help-icon">?</span>
-                                      </h2>
+                                      <h2 class="section-title">Output Format</h2>
 
                                       ${this.#renderOutputFormatSelection()}
                                   </div>
                               `
                             : nothing}
                         <div class="section">
-                            <h2 class="section-title">
-                                Subset Options
-                                <span class="help-icon">?</span>
-                            </h2>
+                            <h2 class="section-title">Subset Options</h2>
                             <p style="color: #666; margin-bottom: 16px;">
-                                Generate file links supporting geo-spatial search and
-                                crop, selection of variables and dimensions, selection
-                                of time of day, and data presentation, in netCDF or
-                                HDF-EOS5 formats.
+                                Generate file links that support spatial subsetting,
+                                date/time range selection, and variable selection.
                             </p>
 
                             ${this.collectionWithServices?.temporalSubset
@@ -733,6 +753,7 @@ export default class TerraDataSubsetter extends TerraElement {
                 ? html`
                       <div class="footer">
                           <button class="btn btn-secondary">Reset All</button>
+                          <div>
                           <button
                               class="btn btn-primary"
                               @click=${this.#getData}
@@ -752,6 +773,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                           : nothing
                                   }
                               </div>
+                                </div>
                           </div>
                       </div>
                   `
@@ -1047,8 +1069,12 @@ export default class TerraDataSubsetter extends TerraElement {
     #renderDateRangeSelection() {
         const { startDate: defaultStartDate, endDate: defaultEndDate } =
             this.#getCollectionDateRange()
-        const startDate = this.selectedDateRange.startDate ?? defaultStartDate
-        const endDate = this.selectedDateRange.endDate ?? defaultEndDate
+        const startDate =
+            this.selectedDateRange.startDate ??
+            this.granuleMinDate ??
+            defaultStartDate
+        const endDate =
+            this.selectedDateRange.endDate ?? this.granuleMaxDate ?? defaultEndDate
         const showError =
             this.touchedFields.has('date') &&
             (!this.selectedDateRange.startDate || !this.selectedDateRange.endDate)
@@ -1087,8 +1113,8 @@ export default class TerraDataSubsetter extends TerraElement {
                         ?enable-time=${this.controller.isSubDaily}
                         start-label="Start Date"
                         end-label="End Date"
-                        .minDate=${defaultStartDate}
-                        .maxDate=${defaultEndDate}
+                        .minDate=${this.granuleMinDate ?? defaultStartDate}
+                        .maxDate=${this.granuleMaxDate ?? defaultEndDate}
                         .startDate=${this.selectedDateRange.startDate}
                         .endDate=${this.selectedDateRange.endDate}
                         @terra-date-range-change=${this.#handleDateChange}
@@ -1142,6 +1168,18 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #getCollectionDateRange() {
+        // Prefer sampling data for accurate date ranges
+        const samplingMinDate = this.controller.granuleMinDate
+        const samplingMaxDate = this.controller.granuleMaxDate
+
+        if (samplingMinDate && samplingMaxDate) {
+            return {
+                startDate: samplingMinDate.slice(0, 10),
+                endDate: samplingMaxDate.slice(0, 10),
+            }
+        }
+
+        // Fallback to collection metadata if sampling is not available
         const temporalExtents =
             this.collectionWithServices?.collection?.TemporalExtents
         if (!temporalExtents || !temporalExtents.length)
@@ -1351,6 +1389,24 @@ export default class TerraDataSubsetter extends TerraElement {
                     >
                         ${allExpanded ? 'Collapse Tree' : 'Expand Tree'}
                     </button>
+
+                    ${this.#isGiovanniFormat() && this.giovanniConfiguredVariables
+                        ? html`
+                              <terra-alert
+                                  open
+                                  appearance="white"
+                                  style="margin: 10px 0"
+                              >
+                                  <terra-icon
+                                      slot="icon"
+                                      name="outline-information-circle"
+                                      library="heroicons"
+                                  ></terra-icon>
+                                  Only certain variables are supported for the
+                                  selected output format. (Giovanni service)
+                              </terra-alert>
+                          `
+                        : nothing}
                     ${variables.length === 0
                         ? html`<p style="color: #666; font-style: italic;">
                               No variables available for this collection.
@@ -1450,8 +1506,37 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #buildVariableTree(variables: Variable[]): Record<string, any> {
+        let filteredVariables = variables
+
+        if (this.#isGiovanniFormat() && this.giovanniConfiguredVariables) {
+            const originalCount = variables.length
+
+            filteredVariables = variables.filter(v => {
+                // Convert internal format (dots) to Giovanni format (underscores)
+                // Example: M2T1NXSLV_5.12.4_CLDPRS -> M2T1NXSLV_5_12_4_CLDPRS
+                const shortName = this.collectionWithServices?.shortName
+                const version = this.collectionWithServices?.collection?.Version
+
+                if (!shortName || !version) {
+                    return false
+                }
+
+                const giovanniVariableName = convertVariableEntryIdToGiovanniFormat(
+                    shortName,
+                    version,
+                    v.name
+                )
+
+                return this.giovanniConfiguredVariables!.has(giovanniVariableName)
+            })
+
+            console.log(
+                `Filtered ${originalCount - filteredVariables.length} variables for Giovanni format. Showing ${filteredVariables.length} of ${originalCount}.`
+            )
+        }
+
         const root: Record<string, any> = {}
-        for (const v of variables) {
+        for (const v of filteredVariables) {
             const parts = v.name.split('/')
             let node = root
             for (let i = 0; i < parts.length; i++) {
@@ -2139,8 +2224,8 @@ export default class TerraDataSubsetter extends TerraElement {
             endDate = this.selectedDateRange.endDate
         } else {
             // fallback to the collection's full date range
-            startDate = range.startDate
-            endDate = range.endDate
+            startDate = this.granuleMinDate ?? range.startDate
+            endDate = this.granuleMaxDate ?? range.endDate
         }
 
         if (!startDate || !endDate) return

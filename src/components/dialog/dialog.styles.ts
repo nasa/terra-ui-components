@@ -52,6 +52,9 @@ export default css`
     }
 
     .dialog__header {
+        border-color: var(--terra-dialog-header-border-color, #dee2e6);
+        border-style: var(--terra-dialog-header-border-style, solid none);
+        border-width: var(--terra-dialog-header-border-width, 0 0 1px 0);
         flex: 0 0 auto;
         display: flex;
     }
@@ -82,6 +85,10 @@ export default css`
         font-size: var(--terra-font-size-medium);
     }
 
+    .dialog__close {
+        --terra-button-text-text-color: black;
+    }
+
     .dialog__body {
         flex: 1 1 auto;
         display: block;
@@ -91,6 +98,9 @@ export default css`
     }
 
     .dialog__footer {
+        border-color: var(--terra-dialog-footer-border-color, #dee2e6);
+        border-style: var(--terra-dialog-footer-border-style, solid none);
+        border-width: var(--terra-dialog-footer-border-width, 1px 0 0 0);
         flex: 0 0 auto;
         text-align: right;
         padding: var(--footer-spacing);
