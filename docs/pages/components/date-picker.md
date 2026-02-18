@@ -61,7 +61,7 @@ Use help text to display the desired date formatting, in case visitors choose to
 | `startLabel`    | `start-label`    | `string`        | -                                     | Custom label for the start date input (only used when `split-inputs` and `range` are true)    |
 | `endLabel`      | `end-label`      | `string`        | -                                     | Custom label for the end date input (only used when `split-inputs` and `range` are true)      |
 | `hideLabel`     | `hide-label`     | `boolean`       | `false`                               | Visually hide the label while keeping it accessible                                           |
-| `enableTime`    | `enable-time`    | `boolean`       | `false`                               | Enables time selection UI (12-hour with AM/PM)                                                |
+| `enableTime`    | `enable-time`    | `boolean`       | `false`                               | Enables time selection UI with 24-hour UTC format including hours, minutes, and seconds       |
 | `displayFormat` | `display-format` | `string`        | `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss` | Display format for the input value                                                            |
 | `showPresets`   | `show-presets`   | `boolean`       | `false`                               | Shows a sidebar with preset ranges; shown if preset overlaps `min/max`. Hidden if none remain |
 | `presets`       | `presets`        | `PresetRange[]` | `[]` (auto-fill)                      | Custom preset ranges; when empty, a default set is provided                                   |
@@ -76,6 +76,7 @@ The component emits:
     -   Event `detail`: `{ startDate: string, endDate: string }`
         -   If `enable-time` is off, values are `YYYY-MM-DD`
         -   If `enable-time` is on, values are ISO strings (e.g., `2024-03-20T10:00:00.000Z`)
+        -   When using time with ranges, the end time defaults to 23:59:59 (end of day) while start time defaults to 00:00:00
 
 ## Examples
 
@@ -108,6 +109,13 @@ The component emits:
   enable-time
   start-date="2024-03-20T10:00:00Z"
   end-date="2024-03-25T15:30:00Z"
+></terra-date-picker>
+
+<terra-date-picker
+  id="range-time-picker"
+  range
+  enable-time
+  split-inputs
 ></terra-date-picker>
 ```
 
