@@ -8,7 +8,6 @@ import type { CSSResultGroup } from 'lit'
 import TerraButton from '../button/button.component.js'
 import TerraInput from '../input/input.component.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
-import { watch } from '../../internal/watch.js'
 import { isValid } from 'date-fns'
 
 interface DateRange {
@@ -254,116 +253,127 @@ export default class TerraDatePicker extends TerraElement {
         }
     }
 
-    @watch('inline')
-    handleInlineChange() {
-        if (this.inline) {
-            this.isOpen = true
-            // Close dropdown when switching to inline mode
-            if (this.dropdownRef.value) {
-                this.dropdownRef.value.hide()
-            }
-        }
-    }
+    willUpdate(changedProperties: Map<PropertyKey, unknown>) {
+        super.willUpdate(changedProperties)
 
-    @watch(['minDate', 'maxDate'])
-    handleMinMaxDateChange() {
-        // When minDate or maxDate changes (e.g., from async API call),
-        // update calendar view to show the maxDate if no selection exists yet
-        if (this.maxDate && !this.selectedStart && !this.selectedEnd) {
-            const max = this.parseLocalDate(this.maxDate)
-            if (!isNaN(max.getTime())) {
-                if (this.range) {
-                    this.rightMonth = new Date(max)
-                    const left = new Date(max)
-                    left.setMonth(left.getMonth() - 1)
-                    this.leftMonth = left
-                } else {
-                    this.leftMonth = new Date(max)
+        // Handle inline property changes
+        if (changedProperties.has('inline')) {
+            if (this.inline) {
+                this.isOpen = true
+                // Close dropdown when switching to inline mode
+                if (this.dropdownRef.value) {
+                    this.dropdownRef.value.hide()
                 }
             }
         }
-    }
 
-    @watch(['startDate', 'endDate'])
-    handleStartEndDateChange() {
-        // Sync internal state with props when they change
-        if (this.startDate) {
-            const start = this.parseLocalDate(this.startDate)
-            if (!isNaN(start.getTime())) {
-                this.selectedStart = start
-                if (this.enableTime) {
-                    this.initializeTimeFromDate(start, true)
+        // Handle minDate/maxDate changes
+        if (changedProperties.has('minDate') || changedProperties.has('maxDate')) {
+            // When minDate or maxDate changes (e.g., from async API call),
+            // update calendar view to show the maxDate if no selection exists yet
+            if (this.maxDate && !this.selectedStart && !this.selectedEnd) {
+                const max = this.parseLocalDate(this.maxDate)
+                if (!isNaN(max.getTime())) {
+                    if (this.range) {
+                        this.rightMonth = new Date(max)
+                        const left = new Date(max)
+                        left.setMonth(left.getMonth() - 1)
+                        this.leftMonth = left
+                    } else {
+                        this.leftMonth = new Date(max)
+                    }
                 }
             }
-        } else {
-            this.selectedStart = null
         }
 
-        if (this.range) {
-            if (this.endDate) {
-                const end = this.parseLocalDate(this.endDate)
-                if (!isNaN(end.getTime())) {
-                    this.selectedEnd = end
+        // Handle startDate/endDate changes
+        if (changedProperties.has('startDate') || changedProperties.has('endDate')) {
+            // Sync internal state with props when they change
+            if (this.startDate) {
+                const start = this.parseLocalDate(this.startDate)
+                if (!isNaN(start.getTime())) {
+                    this.selectedStart = start
                     if (this.enableTime) {
-                        this.initializeTimeFromDate(end, false)
+                        this.initializeTimeFromDate(start, true)
                     }
                 }
             } else {
-                this.selectedEnd = null
+                this.selectedStart = null
             }
 
-            // Handle month synchronization for range mode
-            if (this.selectedStart && this.selectedEnd) {
-                // Check if the range is entirely within one month
-                const isSingleMonthRange = this.isSameMonth(
-                    this.selectedStart,
-                    this.selectedEnd
-                )
-
-                if (isSingleMonthRange) {
-                    // Case 1: Left calendar already shows the selection month
-                    if (this.isDateInMonth(this.selectedStart, this.leftMonth)) {
-                        this.leftMonth = new Date(this.selectedStart)
-                        // If right calendar also shows the same month (initial load scenario),
-                        // set it to the next month. Otherwise, preserve user's navigation.
-                        if (this.isDateInMonth(this.selectedStart, this.rightMonth)) {
-                            // Both calendars show the same month - set right to next month
-                            this.rightMonth = new Date(this.selectedStart)
-                            this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+            if (this.range) {
+                if (this.endDate) {
+                    const end = this.parseLocalDate(this.endDate)
+                    if (!isNaN(end.getTime())) {
+                        this.selectedEnd = end
+                        if (this.enableTime) {
+                            this.initializeTimeFromDate(end, false)
                         }
-                        // Otherwise, don't change rightMonth - user has navigated it elsewhere
-                    }
-                    // Case 2: Right calendar already shows the selection month
-                    // Skip changing the left calendar
-                    else if (
-                        this.isDateInMonth(this.selectedStart, this.rightMonth)
-                    ) {
-                        // Don't change leftMonth - user is already looking at the month on the right
-                        this.rightMonth = new Date(this.selectedStart)
-                    }
-                    // Case 3: Neither calendar shows the selection month
-                    // Only update the left calendar
-                    else {
-                        this.leftMonth = new Date(this.selectedStart)
-                        // Keep rightMonth as-is
                     }
                 } else {
-                    // Range spans multiple months - update both calendars normally
-                    this.leftMonth = new Date(this.selectedStart)
-                    this.rightMonth = new Date(this.selectedEnd)
+                    this.selectedEnd = null
                 }
-            } else if (this.selectedStart) {
-                // Only start date is set - update left month, set right to +1 month
-                this.leftMonth = new Date(this.selectedStart)
-                this.rightMonth = new Date(this.leftMonth)
-                this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+
+                // Handle month synchronization for range mode
+                if (this.selectedStart && this.selectedEnd) {
+                    // Check if the range is entirely within one month
+                    const isSingleMonthRange = this.isSameMonth(
+                        this.selectedStart,
+                        this.selectedEnd
+                    )
+
+                    if (isSingleMonthRange) {
+                        // Case 1: Left calendar already shows the selection month
+                        if (this.isDateInMonth(this.selectedStart, this.leftMonth)) {
+                            this.leftMonth = new Date(this.selectedStart)
+                            // If right calendar also shows the same month (initial load scenario),
+                            // set it to the next month. Otherwise, preserve user's navigation.
+                            if (
+                                this.isDateInMonth(
+                                    this.selectedStart,
+                                    this.rightMonth
+                                )
+                            ) {
+                                // Both calendars show the same month - set right to next month
+                                this.rightMonth = new Date(this.selectedStart)
+                                this.rightMonth.setMonth(
+                                    this.rightMonth.getMonth() + 1
+                                )
+                            }
+                            // Otherwise, don't change rightMonth - user has navigated it elsewhere
+                        }
+                        // Case 2: Right calendar already shows the selection month
+                        // Skip changing the left calendar
+                        else if (
+                            this.isDateInMonth(this.selectedStart, this.rightMonth)
+                        ) {
+                            // Don't change leftMonth - user is already looking at the month on the right
+                            this.rightMonth = new Date(this.selectedStart)
+                        }
+                        // Case 3: Neither calendar shows the selection month
+                        // Only update the left calendar
+                        else {
+                            this.leftMonth = new Date(this.selectedStart)
+                            // Keep rightMonth as-is
+                        }
+                    } else {
+                        // Range spans multiple months - update both calendars normally
+                        this.leftMonth = new Date(this.selectedStart)
+                        this.rightMonth = new Date(this.selectedEnd)
+                    }
+                } else if (this.selectedStart) {
+                    // Only start date is set - update left month, set right to +1 month
+                    this.leftMonth = new Date(this.selectedStart)
+                    this.rightMonth = new Date(this.leftMonth)
+                    this.rightMonth.setMonth(this.rightMonth.getMonth() + 1)
+                }
+            } else {
+                // Single date mode - always update left month
+                if (this.selectedStart) {
+                    this.leftMonth = new Date(this.selectedStart)
+                }
+                this.selectedEnd = null
             }
-        } else {
-            // Single date mode - always update left month
-            if (this.selectedStart) {
-                this.leftMonth = new Date(this.selectedStart)
-            }
-            this.selectedEnd = null
         }
     }
 
