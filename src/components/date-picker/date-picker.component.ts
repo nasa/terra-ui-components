@@ -614,21 +614,27 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Format based on whether time is enabled
-        const year = date.getFullYear()
-        const month = date.getMonth() + 1
-        const day = date.getDate()
-
         if (this.enableTime) {
-            // When time is enabled, format as UTC to match API's UTC min/max dates
-            const utcYear = date.getUTCFullYear()
-            const utcMonth = date.getUTCMonth() + 1
-            const utcDay = date.getUTCDate()
-            const utcHours = date.getUTCHours()
-            const utcMinutes = date.getUTCMinutes()
-            const utcSeconds = date.getUTCSeconds()
-            return `${utcYear}-${String(utcMonth).padStart(2, '0')}-${String(utcDay).padStart(2, '0')}T${String(utcHours).padStart(2, '0')}:${String(utcMinutes).padStart(2, '0')}:${String(utcSeconds).padStart(2, '0')}`
+            // When time is enabled, check if input was date-only or included time
+            if (dateOnlyPattern.test(trimmed)) {
+                // User entered date-only (YYYY-MM-DD) - return as-is without adding time
+                // The blur handlers will add time from the time picker
+                return trimmed
+            } else {
+                // User entered datetime - format as UTC
+                const utcYear = date.getUTCFullYear()
+                const utcMonth = date.getUTCMonth() + 1
+                const utcDay = date.getUTCDate()
+                const utcHours = date.getUTCHours()
+                const utcMinutes = date.getUTCMinutes()
+                const utcSeconds = date.getUTCSeconds()
+                return `${utcYear}-${String(utcMonth).padStart(2, '0')}-${String(utcDay).padStart(2, '0')}T${String(utcHours).padStart(2, '0')}:${String(utcMinutes).padStart(2, '0')}:${String(utcSeconds).padStart(2, '0')}`
+            }
         } else {
             // Format to YYYY-MM-DD using the date's local components to avoid timezone issues
+            const year = date.getFullYear()
+            const month = date.getMonth() + 1
+            const day = date.getDate()
             return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
         }
     }
@@ -705,8 +711,51 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            const start = this.parseLocalDate(startFormatted)
-            const end = this.parseLocalDate(endFormatted)
+            // When time is enabled, parse as full UTC date; otherwise just date portion
+            let start: Date
+            let end: Date
+
+            if (this.enableTime && startFormatted.includes('T')) {
+                // Full datetime entered for start - parse it and extract time
+                start = new Date(startFormatted)
+                this.initializeTimeFromDate(start, true)
+            } else if (this.enableTime) {
+                // Date-only entered for start when time is enabled - parse date as UTC and apply current time picker values
+                const [year, month, day] = startFormatted.split('-').map(Number)
+                start = new Date(
+                    Date.UTC(
+                        year,
+                        month - 1,
+                        day,
+                        this.startHour,
+                        this.startMinute,
+                        this.startSecond
+                    )
+                )
+            } else {
+                start = this.parseLocalDate(startFormatted)
+            }
+
+            if (this.enableTime && endFormatted.includes('T')) {
+                // Full datetime entered for end - parse it and extract time
+                end = new Date(endFormatted)
+                this.initializeTimeFromDate(end, false)
+            } else if (this.enableTime) {
+                // Date-only entered for end when time is enabled - parse date as UTC and apply current time picker values
+                const [year, month, day] = endFormatted.split('-').map(Number)
+                end = new Date(
+                    Date.UTC(
+                        year,
+                        month - 1,
+                        day,
+                        this.endHour,
+                        this.endMinute,
+                        this.endSecond
+                    )
+                )
+            } else {
+                end = this.parseLocalDate(endFormatted)
+            }
 
             // Auto-swap if dates are in wrong order
             let finalStart = start
@@ -748,7 +797,29 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            const date = this.parseLocalDate(formatted)
+            // When time is enabled, parse as full UTC date; otherwise just date portion
+            let date: Date
+            if (this.enableTime && formatted.includes('T')) {
+                // Full datetime entered - parse it and extract time
+                date = new Date(formatted)
+                this.initializeTimeFromDate(date, true)
+            } else if (this.enableTime) {
+                // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
+                const [year, month, day] = formatted.split('-').map(Number)
+                date = new Date(
+                    Date.UTC(
+                        year,
+                        month - 1,
+                        day,
+                        this.startHour,
+                        this.startMinute,
+                        this.startSecond
+                    )
+                )
+            } else {
+                // Time not enabled - just parse the date
+                date = this.parseLocalDate(formatted)
+            }
 
             // Validate against min/max dates
             if (this.minDate) {
@@ -795,7 +866,29 @@ export default class TerraDatePicker extends TerraElement {
             return
         }
 
-        const date = this.parseLocalDate(formatted)
+        // When time is enabled, parse as full UTC date; otherwise just date portion
+        let date: Date
+        if (this.enableTime && formatted.includes('T')) {
+            // Full datetime entered - parse it and extract time
+            date = new Date(formatted)
+            this.initializeTimeFromDate(date, true)
+        } else if (this.enableTime) {
+            // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
+            const [year, month, day] = formatted.split('-').map(Number)
+            date = new Date(
+                Date.UTC(
+                    year,
+                    month - 1,
+                    day,
+                    this.startHour,
+                    this.startMinute,
+                    this.startSecond
+                )
+            )
+        } else {
+            // Time not enabled - just parse the date
+            date = this.parseLocalDate(formatted)
+        }
 
         // Validate against min/max
         if (this.minDate) {
@@ -847,7 +940,29 @@ export default class TerraDatePicker extends TerraElement {
             return
         }
 
-        const date = this.parseLocalDate(formatted)
+        // When time is enabled, parse as full UTC date; otherwise just date portion
+        let date: Date
+        if (this.enableTime && formatted.includes('T')) {
+            // Full datetime entered - parse it and extract time
+            date = new Date(formatted)
+            this.initializeTimeFromDate(date, false)
+        } else if (this.enableTime) {
+            // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
+            const [year, month, day] = formatted.split('-').map(Number)
+            date = new Date(
+                Date.UTC(
+                    year,
+                    month - 1,
+                    day,
+                    this.endHour,
+                    this.endMinute,
+                    this.endSecond
+                )
+            )
+        } else {
+            // Time not enabled - just parse the date
+            date = this.parseLocalDate(formatted)
+        }
 
         // Validate against min/max
         if (this.minDate) {
@@ -868,25 +983,22 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Validate end is after start if start exists
-        if (this.selectedStart && date < this.selectedStart) {
-            const message = 'End date must be after start date'
-            this.setInputValidationError(input, message)
-            return
-        }
-
-        // When time is enabled and dates are the same, validate that end time >= start time
-        if (
-            this.enableTime &&
-            this.selectedStart &&
-            this.isSameDay(date, this.selectedStart)
-        ) {
-            const startTimeSeconds =
-                this.startHour * 3600 + this.startMinute * 60 + this.startSecond
-            const endTimeSeconds =
-                this.endHour * 3600 + this.endMinute * 60 + this.endSecond
-            if (endTimeSeconds < startTimeSeconds) {
-                const message =
-                    'End time must be after start time when dates are the same'
+        if (this.selectedStart) {
+            if (this.enableTime && this.isSameDay(date, this.selectedStart)) {
+                // When time is enabled and dates are the same, validate time instead of full datetime
+                const startTimeSeconds =
+                    this.startHour * 3600 + this.startMinute * 60 + this.startSecond
+                const endTimeSeconds =
+                    this.endHour * 3600 + this.endMinute * 60 + this.endSecond
+                if (endTimeSeconds < startTimeSeconds) {
+                    const message =
+                        'End time must be after start time when dates are the same'
+                    this.setInputValidationError(input, message)
+                    return
+                }
+            } else if (date < this.selectedStart) {
+                // Different dates or time not enabled - compare full datetime
+                const message = 'End date must be after start date'
                 this.setInputValidationError(input, message)
                 return
             }

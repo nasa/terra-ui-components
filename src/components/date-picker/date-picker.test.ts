@@ -1183,8 +1183,10 @@ describe('<terra-date-picker>', () => {
             // Set times where end < start
             el.startHour = 16
             el.startMinute = 6
+            el.startSecond = 0
             el.endHour = 16
             el.endMinute = 0
+            el.endSecond = 0
             await elementUpdated(el)
 
             const inputs = el.shadowRoot?.querySelectorAll('terra-input')
@@ -1193,12 +1195,16 @@ describe('<terra-date-picker>', () => {
 
             // Type same date for start
             startInput!.value = '2024-03-15'
-            startInput!.dispatchEvent(new Event('terra-blur'))
+            startInput!.dispatchEvent(
+                new Event('terra-blur', { bubbles: true, composed: true })
+            )
             await elementUpdated(el)
 
             // Type same date for end (should trigger validation)
             endInput!.value = '2024-03-15'
-            endInput!.dispatchEvent(new Event('terra-blur'))
+            endInput!.dispatchEvent(
+                new Event('terra-blur', { bubbles: true, composed: true })
+            )
             await elementUpdated(el)
 
             expect(endInput!.validationMessage).to.include(
