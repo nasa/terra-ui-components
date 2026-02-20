@@ -136,7 +136,13 @@ export default class TerraDatePicker extends TerraElement {
         const dateOnlyPattern = /^\d{4}-\d{2}-\d{2}$/
         if (dateOnlyPattern.test(dateString)) {
             const [year, month, day] = dateString.split('-').map(Number)
-            return new Date(year, month - 1, day) // month is 0-indexed in Date constructor
+            // When time is enabled, parse date-only strings as UTC midnight
+            // to match how datetime strings and min/max dates from APIs are handled
+            if (this.enableTime) {
+                return new Date(Date.UTC(year, month - 1, day, 0, 0, 0))
+            }
+            // When time is not enabled, parse as local midnight
+            return new Date(year, month - 1, day)
         }
 
         // Check if it's a datetime string in format (YYYY-MM-DDTHH:mm:ss)
@@ -157,6 +163,12 @@ export default class TerraDatePicker extends TerraElement {
      * Check if two dates are in the same calendar month and year
      */
     private isSameMonth(date1: Date, date2: Date): boolean {
+        if (this.enableTime) {
+            return (
+                date1.getUTCFullYear() === date2.getUTCFullYear() &&
+                date1.getUTCMonth() === date2.getUTCMonth()
+            )
+        }
         return (
             date1.getFullYear() === date2.getFullYear() &&
             date1.getMonth() === date2.getMonth()
@@ -167,6 +179,12 @@ export default class TerraDatePicker extends TerraElement {
      * Check if a date's month/year matches a given month Date
      */
     private isDateInMonth(date: Date, monthDate: Date): boolean {
+        if (this.enableTime) {
+            return (
+                date.getUTCFullYear() === monthDate.getUTCFullYear() &&
+                date.getUTCMonth() === monthDate.getUTCMonth()
+            )
+        }
         return (
             date.getFullYear() === monthDate.getFullYear() &&
             date.getMonth() === monthDate.getMonth()
@@ -1137,28 +1155,38 @@ export default class TerraDatePicker extends TerraElement {
     private getDaysInMonth(date: Date): Date[] {
         const year = date.getFullYear()
         const month = date.getMonth()
-        const firstDay = new Date(year, month, 1)
+        
+        // When time is enabled, create dates in UTC to match how selectedStart/selectedEnd are stored
+        // When time is disabled, use local dates
+        const createDate = (y: number, m: number, d: number) => {
+            if (this.enableTime) {
+                return new Date(Date.UTC(y, m, d, 0, 0, 0))
+            }
+            return new Date(y, m, d)
+        }
+
+        const firstDay = createDate(year, month, 1)
         const lastDay = new Date(year, month + 1, 0)
 
         const days: Date[] = []
 
         // Add previous month's trailing days
-        const firstDayOfWeek = firstDay.getDay()
+        const firstDayOfWeek = this.enableTime ? firstDay.getUTCDay() : firstDay.getDay()
         for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-            const day = new Date(year, month, -i)
+            const day = createDate(year, month, -i)
             days.push(day)
         }
 
         // Add current month's days
         for (let i = 1; i <= lastDay.getDate(); i++) {
-            days.push(new Date(year, month, i))
+            days.push(createDate(year, month, i))
         }
 
         // Add next month's leading days to complete the week
         const remainingDays = 7 - (days.length % 7)
         if (remainingDays < 7) {
             for (let i = 1; i <= remainingDays; i++) {
-                days.push(new Date(year, month + 1, i))
+                days.push(createDate(year, month + 1, i))
             }
         }
 
@@ -1167,6 +1195,17 @@ export default class TerraDatePicker extends TerraElement {
 
     private isSameDay(date1: Date | null, date2: Date | null): boolean {
         if (!date1 || !date2) return false
+        
+        // When time is enabled, compare UTC date components
+        // When time is disabled, compare local date components
+        if (this.enableTime) {
+            return (
+                date1.getUTCFullYear() === date2.getUTCFullYear() &&
+                date1.getUTCMonth() === date2.getUTCMonth() &&
+                date1.getUTCDate() === date2.getUTCDate()
+            )
+        }
+        
         return (
             date1.getFullYear() === date2.getFullYear() &&
             date1.getMonth() === date2.getMonth() &&
@@ -1358,7 +1397,14 @@ export default class TerraDatePicker extends TerraElement {
                 )
                 startDateTime = startDate.toISOString()
             } else {
-                startDateTime = this.selectedStart.toISOString().split('T')[0]
+                // Format using local date components to avoid timezone conversion issues
+                const year = this.selectedStart.getFullYear()
+                const month = String(this.selectedStart.getMonth() + 1).padStart(
+                    2,
+                    '0'
+                )
+                const day = String(this.selectedStart.getDate()).padStart(2, '0')
+                startDateTime = `${year}-${month}-${day}`
             }
         }
 
@@ -1368,7 +1414,11 @@ export default class TerraDatePicker extends TerraElement {
                 endDate.setUTCHours(this.endHour, this.endMinute, this.endSecond, 0)
                 endDateTime = endDate.toISOString()
             } else {
-                endDateTime = this.selectedEnd.toISOString().split('T')[0]
+                // Format using local date components to avoid timezone conversion issues
+                const year = this.selectedEnd.getFullYear()
+                const month = String(this.selectedEnd.getMonth() + 1).padStart(2, '0')
+                const day = String(this.selectedEnd.getDate()).padStart(2, '0')
+                endDateTime = `${year}-${month}-${day}`
             }
         }
 
@@ -1661,7 +1711,11 @@ export default class TerraDatePicker extends TerraElement {
                 </div>
                 <div class="calendar__days">
                     ${days.map(date => {
-                        const isCurrentMonth = date.getMonth() === currentMonth
+                        // When time is enabled, use UTC components; otherwise use local
+                        const dateMonth = this.enableTime ? date.getUTCMonth() : date.getMonth()
+                        const dateDay = this.enableTime ? date.getUTCDate() : date.getDate()
+                        
+                        const isCurrentMonth = dateMonth === currentMonth
                         const isSelected =
                             this.isSameDay(date, this.selectedStart) ||
                             this.isSameDay(date, this.selectedEnd)
@@ -1689,7 +1743,7 @@ export default class TerraDatePicker extends TerraElement {
                                 @mouseenter=${() => this.handleDateHover(date)}
                                 ?disabled=${isDisabled}
                             >
-                                ${date.getDate()}
+                                ${dateDay}
                             </button>
                         `
                     })}

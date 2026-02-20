@@ -389,6 +389,53 @@ describe('<terra-date-picker>', () => {
             expect(input?.value).to.include('2024-03-20')
             expect(input?.value).to.include('2024-03-25')
         })
+
+        it('should emit correct dates without timezone conversion when dates are set programmatically', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    range
+                    inline
+                    start-date="2026-02-06"
+                    end-date="2026-02-07"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Verify dates are emitted correctly (not shifted due to timezone conversion)
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            
+            // Trigger a change by clicking the same dates (should emit the same dates)
+            const feb6 = new Date(2026, 1, 6) // February 6
+            const feb7 = new Date(2026, 1, 7) // February 7
+            
+            await selectDate(el, feb6, true)
+            await selectDate(el, feb7, true)
+
+            const event = await eventPromise
+
+            // These should be the actual dates selected, not shifted by timezone
+            expect(event.detail.startDate).to.equal('2026-02-06')
+            expect(event.detail.endDate).to.equal('2026-02-07')
+        })
+
+        it('should display correct dates in split inputs without timezone shift', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    range
+                    split-inputs
+                    start-date="2026-02-06"
+                    end-date="2026-02-07"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const inputs = el.shadowRoot?.querySelectorAll('terra-input')
+            const startInput = inputs?.[0]
+            const endInput = inputs?.[1]
+
+            expect(startInput?.value).to.include('2026-02-06')
+            expect(endInput?.value).to.include('2026-02-07')
+        })
     })
 
     describe('Month Synchronization (Current Behavior)', () => {
