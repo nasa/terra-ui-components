@@ -403,11 +403,11 @@ describe('<terra-date-picker>', () => {
 
             // Verify dates are emitted correctly (not shifted due to timezone conversion)
             const eventPromise = oneEvent(el, 'terra-date-range-change')
-            
+
             // Trigger a change by clicking the same dates (should emit the same dates)
             const feb6 = new Date(2026, 1, 6) // February 6
             const feb7 = new Date(2026, 1, 7) // February 7
-            
+
             await selectDate(el, feb6, true)
             await selectDate(el, feb7, true)
 

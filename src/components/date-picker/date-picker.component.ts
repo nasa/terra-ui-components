@@ -1155,7 +1155,7 @@ export default class TerraDatePicker extends TerraElement {
     private getDaysInMonth(date: Date): Date[] {
         const year = date.getFullYear()
         const month = date.getMonth()
-        
+
         // When time is enabled, create dates in UTC to match how selectedStart/selectedEnd are stored
         // When time is disabled, use local dates
         const createDate = (y: number, m: number, d: number) => {
@@ -1171,7 +1171,9 @@ export default class TerraDatePicker extends TerraElement {
         const days: Date[] = []
 
         // Add previous month's trailing days
-        const firstDayOfWeek = this.enableTime ? firstDay.getUTCDay() : firstDay.getDay()
+        const firstDayOfWeek = this.enableTime
+            ? firstDay.getUTCDay()
+            : firstDay.getDay()
         for (let i = firstDayOfWeek - 1; i >= 0; i--) {
             const day = createDate(year, month, -i)
             days.push(day)
@@ -1195,7 +1197,7 @@ export default class TerraDatePicker extends TerraElement {
 
     private isSameDay(date1: Date | null, date2: Date | null): boolean {
         if (!date1 || !date2) return false
-        
+
         // When time is enabled, compare UTC date components
         // When time is disabled, compare local date components
         if (this.enableTime) {
@@ -1205,7 +1207,7 @@ export default class TerraDatePicker extends TerraElement {
                 date1.getUTCDate() === date2.getUTCDate()
             )
         }
-        
+
         return (
             date1.getFullYear() === date2.getFullYear() &&
             date1.getMonth() === date2.getMonth() &&
@@ -1712,9 +1714,13 @@ export default class TerraDatePicker extends TerraElement {
                 <div class="calendar__days">
                     ${days.map(date => {
                         // When time is enabled, use UTC components; otherwise use local
-                        const dateMonth = this.enableTime ? date.getUTCMonth() : date.getMonth()
-                        const dateDay = this.enableTime ? date.getUTCDate() : date.getDate()
-                        
+                        const dateMonth = this.enableTime
+                            ? date.getUTCMonth()
+                            : date.getMonth()
+                        const dateDay = this.enableTime
+                            ? date.getUTCDate()
+                            : date.getDate()
+
                         const isCurrentMonth = dateMonth === currentMonth
                         const isSelected =
                             this.isSameDay(date, this.selectedStart) ||
