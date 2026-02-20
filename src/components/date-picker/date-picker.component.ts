@@ -77,6 +77,8 @@ export default class TerraDatePicker extends TerraElement {
     /** The ARIA label for the date picker. Defaults to 'Date picker'.*/
     @property({ reflect: true, attribute: 'aria-label' }) ariaLabel: string | null =
         'Date picker'
+    @property({ type: Boolean }) hideClearAll = false
+    @property() clearAllLabel: string = 'Clear Dates'
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()
@@ -261,6 +263,30 @@ export default class TerraDatePicker extends TerraElement {
             this.dropdownRef.value.hide()
         }
         this.requestUpdate()
+    }
+
+    /**
+     * Clears the selected date(s) and resets the date picker to its initial state.
+     */
+    clear() {
+        this.selectedStart = null
+        this.selectedEnd = null
+        this.hoverDate = null
+        this.isSelectingRange = false
+
+        // Reset time to defaults
+        this.startHour = 0
+        this.startMinute = 0
+        this.startSecond = 0
+        this.endHour = 23
+        this.endMinute = 59
+        this.endSecond = 59
+
+        this.clearInputValidation()
+
+        this.requestUpdate()
+
+        this.emitChange()
     }
 
     setOpen(open: boolean) {
@@ -2225,7 +2251,16 @@ export default class TerraDatePicker extends TerraElement {
                                       )}
                                   </div>
 
-                                  <slot name="sidebar-footer"></slot>
+                                  <slot name="sidebar-footer">
+                                      <terra-button
+                                          outline
+                                          variant="default"
+                                          size="small"
+                                          @click=${() => this.clear()}
+                                      >
+                                          ${this.clearAllLabel}
+                                      </terra-button>
+                                  </slot>
                               </div>
                           `
                         : ''}
@@ -2319,20 +2354,35 @@ export default class TerraDatePicker extends TerraElement {
                                               class="date-picker__sidebar"
                                               part="sidebar"
                                           >
-                                              ${this.filteredPresets.map(
-                                                  preset => html`
-                                                      <button
-                                                          type="button"
-                                                          class="date-picker__preset"
-                                                          @click=${() =>
-                                                              this.selectPreset(
-                                                                  preset
-                                                              )}
-                                                      >
-                                                          ${preset.label}
-                                                      </button>
-                                                  `
-                                              )}
+                                              <slot name="sidebar-header"></slot>
+
+                                              <div class="presets">
+                                                  ${this.filteredPresets.map(
+                                                      preset => html`
+                                                          <button
+                                                              type="button"
+                                                              class="date-picker__preset"
+                                                              @click=${() =>
+                                                                  this.selectPreset(
+                                                                      preset
+                                                                  )}
+                                                          >
+                                                              ${preset.label}
+                                                          </button>
+                                                      `
+                                                  )}
+                                              </div>
+
+                                              <slot name="sidebar-footer">
+                                                  <terra-button
+                                                      outline
+                                                      variant="default"
+                                                      size="small"
+                                                      @click=${() => this.clear()}
+                                                  >
+                                                      ${this.clearAllLabel}
+                                                  </terra-button>
+                                              </slot>
                                           </div>
                                       `
                                     : ''}

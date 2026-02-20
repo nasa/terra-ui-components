@@ -276,6 +276,85 @@ describe('<terra-date-picker>', () => {
         })
     })
 
+    describe('Clear Functionality', () => {
+        it('should clear single date selection', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker inline start-date="2024-03-20"></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.not.be.null
+
+            el.clear()
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+        })
+
+        it('should clear date range selection', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    range
+                    inline
+                    start-date="2024-03-20"
+                    end-date="2024-03-25"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.not.be.null
+            expect(el.selectedEnd).to.not.be.null
+
+            el.clear()
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+        })
+
+        it('should emit change event with empty dates when cleared', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker inline start-date="2024-03-20"></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            el.clear()
+
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('')
+            expect(event.detail.endDate).to.equal('')
+        })
+
+        it('should reset time values to defaults when cleared', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    inline
+                    enable-time
+                    start-date="2024-03-20T10:30:45"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(10)
+            expect(el.startMinute).to.equal(30)
+            expect(el.startSecond).to.equal(45)
+
+            el.clear()
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(0)
+            expect(el.startMinute).to.equal(0)
+            expect(el.startSecond).to.equal(0)
+            expect(el.endHour).to.equal(23)
+            expect(el.endMinute).to.equal(59)
+            expect(el.endSecond).to.equal(59)
+        })
+    })
+
     describe('Single Date Selection', () => {
         it('should initialize with start-date', async () => {
             const el: any = await fixture(html`
