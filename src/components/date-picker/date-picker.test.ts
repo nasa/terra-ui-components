@@ -82,6 +82,7 @@ async function selectDate(el: TerraDatePicker, date: Date, isLeft: boolean = tru
     }
 
     monthOption[0]?.click()
+    await elementUpdated(el)
 
     // select the year
     const yearInput = calendar.querySelector<HTMLInputElement>(
@@ -95,6 +96,17 @@ async function selectDate(el: TerraDatePicker, date: Date, isLeft: boolean = tru
     yearInput.value = date.getFullYear().toString()
     yearInput.dispatchEvent(new Event('input'))
     await elementUpdated(el)
+
+    // Verify the calendar is showing the correct month/year
+    const displayedMonth = isLeft ? el.leftMonth : el.rightMonth
+    if (
+        displayedMonth.getFullYear() !== date.getFullYear() ||
+        displayedMonth.getMonth() !== date.getMonth()
+    ) {
+        throw new Error(
+            `Calendar not showing correct month. Expected ${date.getFullYear()}-${date.getMonth() + 1}, got ${displayedMonth.getFullYear()}-${displayedMonth.getMonth() + 1}`
+        )
+    }
 
     // select the day
     const dayButton = findDateButton(el, date, isLeft)
@@ -264,6 +276,85 @@ describe('<terra-date-picker>', () => {
         })
     })
 
+    describe('Clear Functionality', () => {
+        it('should clear single date selection', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker inline start-date="2024-03-20"></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.not.be.null
+
+            el.clear()
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+        })
+
+        it('should clear date range selection', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    range
+                    inline
+                    start-date="2024-03-20"
+                    end-date="2024-03-25"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.not.be.null
+            expect(el.selectedEnd).to.not.be.null
+
+            el.clear()
+            await elementUpdated(el)
+
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+        })
+
+        it('should emit change event with empty dates when cleared', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker inline start-date="2024-03-20"></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            el.clear()
+
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('')
+            expect(event.detail.endDate).to.equal('')
+        })
+
+        it('should reset time values to defaults when cleared', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    inline
+                    enable-time
+                    start-date="2024-03-20T10:30:45"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(10)
+            expect(el.startMinute).to.equal(30)
+            expect(el.startSecond).to.equal(45)
+
+            el.clear()
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(0)
+            expect(el.startMinute).to.equal(0)
+            expect(el.startSecond).to.equal(0)
+            expect(el.endHour).to.equal(23)
+            expect(el.endMinute).to.equal(59)
+            expect(el.endSecond).to.equal(59)
+        })
+    })
+
     describe('Single Date Selection', () => {
         it('should initialize with start-date', async () => {
             const el: any = await fixture(html`
@@ -376,6 +467,53 @@ describe('<terra-date-picker>', () => {
             const input = el.shadowRoot?.querySelector('terra-input')
             expect(input?.value).to.include('2024-03-20')
             expect(input?.value).to.include('2024-03-25')
+        })
+
+        it('should emit correct dates without timezone conversion when dates are set programmatically', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    range
+                    inline
+                    start-date="2026-02-06"
+                    end-date="2026-02-07"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Verify dates are emitted correctly (not shifted due to timezone conversion)
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            // Trigger a change by clicking the same dates (should emit the same dates)
+            const feb6 = new Date(2026, 1, 6) // February 6
+            const feb7 = new Date(2026, 1, 7) // February 7
+
+            await selectDate(el, feb6, true)
+            await selectDate(el, feb7, true)
+
+            const event = await eventPromise
+
+            // These should be the actual dates selected, not shifted by timezone
+            expect(event.detail.startDate).to.equal('2026-02-06')
+            expect(event.detail.endDate).to.equal('2026-02-07')
+        })
+
+        it('should display correct dates in split inputs without timezone shift', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    range
+                    split-inputs
+                    start-date="2026-02-06"
+                    end-date="2026-02-07"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const inputs = el.shadowRoot?.querySelectorAll('terra-input')
+            const startInput = inputs?.[0]
+            const endInput = inputs?.[1]
+
+            expect(startInput?.value).to.include('2026-02-06')
+            expect(endInput?.value).to.include('2026-02-07')
         })
     })
 
@@ -768,11 +906,9 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                // With PDT (UTC-7), 14:30 UTC = 7:30 AM PDT
-                // In 12-hour format: hour 7, minute 30, AM
-                expect(el.startHour).to.equal(7)
+                // 14:30 UTC in 24-hour format
+                expect(el.startHour).to.equal(14)
                 expect(el.startMinute).to.equal(30)
-                expect(el.timePeriod).to.equal('AM')
             } finally {
                 restoreTimezone()
             }
@@ -794,6 +930,452 @@ describe('<terra-date-picker>', () => {
             // Should be ISO format with time
             expect(event.detail.startDate).to.include('T')
             expect(event.detail.startDate).to.include('Z')
+        })
+
+        it('should accept 24-hour time input (0-23)', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const hourInput = el.shadowRoot?.querySelector(
+                '.date-picker__time-input'
+            ) as HTMLInputElement
+
+            // Test setting hour to 0 (midnight)
+            hourInput.value = '0'
+            hourInput.dispatchEvent(new Event('input'))
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(0)
+
+            // Test setting hour to 23 (11 PM)
+            hourInput.value = '23'
+            hourInput.dispatchEvent(new Event('input'))
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(23)
+
+            // Test mid-range hour
+            hourInput.value = '14'
+            hourInput.dispatchEvent(new Event('input'))
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(14)
+        })
+
+        it('should reject invalid hour values outside 0-23 range', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const hourInput = el.shadowRoot?.querySelector(
+                '.date-picker__time-input'
+            ) as HTMLInputElement
+
+            const initialHour = el.startHour
+
+            // Try to set hour to 24 (invalid)
+            hourInput.value = '24'
+            hourInput.dispatchEvent(new Event('input'))
+            await elementUpdated(el)
+
+            // Should revert to previous value
+            expect(el.startHour).to.equal(initialHour)
+
+            // Try to set hour to -1 (invalid)
+            hourInput.value = '-1'
+            hourInput.dispatchEvent(new Event('input'))
+            await elementUpdated(el)
+
+            // Should still be at initial value
+            expect(el.startHour).to.equal(initialHour)
+        })
+
+        it('should increment hour with up spinner and wrap at 23', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set hour to 22
+            el.startHour = 22
+            await elementUpdated(el)
+
+            const spinners = el.shadowRoot?.querySelectorAll(
+                '.date-picker__time-spinner'
+            )
+            const upButton = spinners?.[0] as HTMLElement
+
+            // Click up to go to 23
+            upButton.click()
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(23)
+
+            // Click up again to wrap to 0
+            upButton.click()
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(0)
+        })
+
+        it('should decrement hour with down spinner and wrap at 0', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set hour to 1
+            el.startHour = 1
+            await elementUpdated(el)
+
+            const spinners = el.shadowRoot?.querySelectorAll(
+                '.date-picker__time-spinner'
+            )
+            const downButton = spinners?.[1] as HTMLElement
+
+            // Click down to go to 0
+            downButton.click()
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(0)
+
+            // Click down again to wrap to 23
+            downButton.click()
+            await elementUpdated(el)
+            expect(el.startHour).to.equal(23)
+        })
+
+        it('should update minutes independently from hours', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            el.startHour = 10
+            el.startMinute = 30
+            await elementUpdated(el)
+
+            const inputs = el.shadowRoot?.querySelectorAll(
+                '.date-picker__time-input'
+            ) as NodeListOf<HTMLInputElement>
+            const minuteInput = inputs[1]
+
+            // Change minutes
+            minuteInput.value = '45'
+            minuteInput.dispatchEvent(new Event('input'))
+            await elementUpdated(el)
+
+            // Hour should remain unchanged, minute should update
+            expect(el.startHour).to.equal(10)
+            expect(el.startMinute).to.equal(45)
+        })
+
+        it('should display selected time in input field', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set specific time
+            el.startHour = 14
+            el.startMinute = 30
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.include('14:30')
+        })
+
+        it('should preserve time when changing date', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20T14:30:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(14)
+            expect(el.startMinute).to.equal(30)
+
+            // Select a different date
+            const newDate = new Date(2024, 2, 25)
+            await selectDate(el, newDate, true)
+
+            // Time should remain unchanged
+            expect(el.startHour).to.equal(14)
+            expect(el.startMinute).to.equal(30)
+        })
+
+        it('should handle range mode with different times for start and end', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    range
+                    start-date="2024-03-20T10:00:00Z"
+                    end-date="2024-03-22T15:30:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(10)
+            expect(el.startMinute).to.equal(0)
+            expect(el.endHour).to.equal(15)
+            expect(el.endMinute).to.equal(30)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.include('10:00:00')
+            expect(input?.value).to.include('15:30:00')
+        })
+
+        it('should emit correct UTC time when time is changed', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set time to 14:30
+            el.startHour = 14
+            el.startMinute = 30
+            await elementUpdated(el)
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            // Trigger change by selecting the same date again
+            const date = new Date(2024, 2, 20)
+            await selectDate(el, date, true)
+
+            const event = await eventPromise
+
+            // Should emit time in UTC
+            expect(event.detail.startDate).to.include('T14:30:00')
+            expect(event.detail.startDate).to.include('Z')
+        })
+
+        it('should handle midnight (00:00) correctly', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20T00:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(0)
+            expect(el.startMinute).to.equal(0)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.include('00:00:00')
+        })
+
+        it('should handle end of day (23:59) correctly', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    start-date="2024-03-20T23:59:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(el.startHour).to.equal(23)
+            expect(el.startMinute).to.equal(59)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.include('23:59:00')
+        })
+
+        it('should validate end time >= start time when selecting same day in range mode', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker enable-time inline range></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set times where end < start
+            el.startHour = 16
+            el.startMinute = 6
+            el.endHour = 16
+            el.endMinute = 0
+            await elementUpdated(el)
+
+            let invalidEventFired = false
+            let invalidMessage = ''
+            el.addEventListener('terra-date-selection-invalid', (e: any) => {
+                invalidEventFired = true
+                invalidMessage = e.detail.message
+            })
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            // Select same day for start
+            const date1 = new Date(2024, 2, 15)
+            await selectDate(el, date1, true)
+
+            // Select same day for end (should allow selection but emit warning)
+            const date2 = new Date(2024, 2, 15)
+            await selectDate(el, date2, true)
+
+            // Should still emit the change event
+            const event = await eventPromise
+            expect(event.detail.startDate).to.include('2024-03-15')
+            expect(event.detail.endDate).to.include('2024-03-15')
+
+            // But should also emit invalid event
+            expect(invalidEventFired).to.be.true
+            expect(invalidMessage).to.include('End time is before start time')
+
+            // Range should still be set
+            expect(el.selectedStart).to.not.be.null
+            expect(el.selectedEnd).to.not.be.null
+        })
+
+        it('should allow same day selection when end time >= start time', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker enable-time inline range></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set times where end >= start
+            el.startHour = 10
+            el.startMinute = 0
+            el.startSecond = 0
+            el.endHour = 16
+            el.endMinute = 30
+            el.endSecond = 59
+            await elementUpdated(el)
+
+            let invalidEventFired = false
+            el.addEventListener('terra-date-selection-invalid', () => {
+                invalidEventFired = true
+            })
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            // Select same day for start
+            const date1 = new Date(2024, 2, 15)
+            await selectDate(el, date1, true)
+
+            // Select same day for end (should work fine)
+            const date2 = new Date(2024, 2, 15)
+            await selectDate(el, date2, true)
+
+            expect(invalidEventFired).to.be.false
+
+            const event = await eventPromise
+            expect(event.detail.startDate).to.include('2024-03-15')
+            expect(event.detail.startDate).to.include('T10:00:00')
+            expect(event.detail.endDate).to.include('2024-03-15')
+            expect(event.detail.endDate).to.include('T16:30:59')
+        })
+
+        it('should validate end time when manually entering same date in split inputs', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    inline
+                    range
+                    split-inputs
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Set times where end < start
+            el.startHour = 16
+            el.startMinute = 6
+            el.startSecond = 0
+            el.endHour = 16
+            el.endMinute = 0
+            el.endSecond = 0
+            await elementUpdated(el)
+
+            const inputs = el.shadowRoot?.querySelectorAll('terra-input')
+            const startInput = inputs?.[0]
+            const endInput = inputs?.[1]
+
+            // Type same date for start
+            startInput!.value = '2024-03-15'
+            startInput!.dispatchEvent(
+                new Event('terra-blur', { bubbles: true, composed: true })
+            )
+            await elementUpdated(el)
+
+            // Type same date for end (should trigger validation)
+            endInput!.value = '2024-03-15'
+            endInput!.dispatchEvent(
+                new Event('terra-blur', { bubbles: true, composed: true })
+            )
+            await elementUpdated(el)
+
+            expect(endInput!.validationMessage).to.include(
+                'End time must be after start time'
+            )
+        })
+
+        it('should support seconds in time picker', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker enable-time inline></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Select a date first to initialize
+            const testDate = new Date(2024, 5, 10)
+            await selectDate(el, testDate)
+            await elementUpdated(el)
+
+            // Set specific seconds value
+            el.startSecond = 42
+            await elementUpdated(el)
+
+            // Verify seconds state is set correctly
+            expect(el.startSecond).to.equal(42)
+
+            // Get the display value through the input
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.include(':00:42')
+        })
+
+        it('should default end time seconds to 59', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker enable-time inline range></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // Verify default end seconds is 59
+            expect(el.endSecond).to.equal(59)
+            expect(el.endMinute).to.equal(59)
+            expect(el.endHour).to.equal(23)
+
+            // Verify default start seconds is 0
+            expect(el.startSecond).to.equal(0)
+            expect(el.startMinute).to.equal(0)
+            expect(el.startHour).to.equal(0)
         })
     })
 
