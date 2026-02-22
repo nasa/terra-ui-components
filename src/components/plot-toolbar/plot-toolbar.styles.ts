@@ -72,14 +72,14 @@ export default css`
         top: calc(100%);
         right: 0;
         z-index: 1000;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 0.5em;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        background: var(--terra-menu-background-color);
+        border: 1px solid var(--terra-menu-border-color);
+        border-radius: var(--terra-panel-border-radius);
+        box-shadow: var(--terra-shadow-large);
         width: max-content;
         min-width: 20ch;
         max-width: 100%;
-        padding: 1em;
+        padding: var(--terra-spacing-medium);
         display: none;
     }
 
@@ -250,12 +250,12 @@ export default css`
         position: absolute;
         bottom: 150px;
         left: 10px;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--terra-color-spacesuite-white);
         padding: 8px 10px;
         border-radius: 4px;
         font-size: 12px;
         font-family: monospace;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--terra-shadow-large);
         z-index: 10;
         pointer-events: auto;
     }

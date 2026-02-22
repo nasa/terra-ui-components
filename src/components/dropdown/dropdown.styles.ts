@@ -34,10 +34,10 @@ export default css`
         font-size: var(--terra-font-size-medium);
         font-weight: var(--terra-font-weight-normal);
         box-shadow: var(--terra-shadow-large);
-        border-radius: var(--terra-border-radius-medium);
+        border-radius: var(--terra-panel-border-radius);
         pointer-events: none;
-        background: var(--terra-panel-background-color);
-        border: solid var(--terra-panel-border-width) var(--terra-panel-border-color);
+        background: var(--terra-panel-background);
+        border: solid var(--terra-panel-border-width) var(--terra-panel-border);
     }
 
     .dropdown--open .dropdown__panel {

@@ -53,8 +53,8 @@ export default css`
     .date-picker__dropdown {
         display: flex;
         flex-direction: column;
-        background: var(--terra-panel-background-color);
-        border-radius: var(--terra-border-radius-large);
+        background: var(--terra-panel-background);
+        border-radius: var(--terra-panel-border-radius);
         box-shadow: var(--terra-shadow-large);
         overflow: hidden;
     }
@@ -63,7 +63,7 @@ export default css`
     .date-picker--inline .date-picker__dropdown {
         position: static;
         box-shadow: none;
-        border: var(--terra-panel-border-width) solid var(--terra-panel-border-color);
+        border: var(--terra-panel-border-width) solid var(--terra-panel-border);
     }
 
     .date-picker--inline {
@@ -123,7 +123,7 @@ export default css`
         left: auto;
         z-index: auto;
         box-shadow: none;
-        border: var(--terra-panel-border-width) solid var(--terra-panel-border-color);
+        border: var(--terra-panel-border-width) solid var(--terra-panel-border);
         margin-top: 0;
         overflow: visible;
         width: fit-content;
@@ -145,9 +145,8 @@ export default css`
         flex-direction: column;
         width: 10rem;
         padding: var(--terra-spacing-x-small);
-        background: var(--terra-color-carbon-5);
-        border-right: var(--terra-panel-border-width) solid
-            var(--terra-panel-border-color);
+        background: var(--terra-date-picker-sidebar-background-color);
+        border-right: var(--terra-panel-border-width) solid var(--terra-panel-border);
         flex-shrink: 0;
         justify-content: space-between;
     }
@@ -162,19 +161,23 @@ export default css`
         border-radius: var(--terra-border-radius-medium);
         font-size: var(--terra-font-size-small);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-70);
+        color: var(--terra-date-picker-preset-color);
         cursor: pointer;
         transition: background-color var(--terra-transition-fast);
     }
 
     .date-picker__preset:hover {
-        background: var(--terra-color-carbon-10);
+        background: var(--terra-data-picker-preset-background-hover);
+    }
+
+    .date-picker__preset:active {
+        background: var(--terra-data-picker-preset-background-active);
     }
 
     .date-picker__preset:focus {
         outline: none;
-        background: var(--terra-menu-item-background-color-focus);
-        color: var(--terra-color-spacesuit-white);
+        background: var(--terra-date-picker-preset-background-selected);
+        color: var(--terra-date-picker-preset-color-selected);
     }
 
     .date-picker__calendars {
@@ -218,7 +221,7 @@ export default css`
         font-size: var(--terra-font-size-small);
         font-weight: var(--terra-font-weight-semibold);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-90);
+        color: var(--terra-menu-item-text);
         cursor: pointer;
         transition: all var(--terra-transition-fast);
     }
@@ -226,10 +229,15 @@ export default css`
     .calendar__month-button:hover {
         background: var(--terra-input-background-color-hover);
         border-color: var(--terra-input-border-color-hover);
+        color: var(--terra-menu-item-text-hover);
     }
 
     .calendar__month-icon {
-        color: var(--terra-input-icon-color);
+        color: var(--terra-menu-item-text);
+    }
+
+    .calendar__month-button:hover .calendar__month-icon {
+        color: var(--terra-menu-item-text-hover);
     }
 
     .calendar__month-dropdown {
@@ -240,9 +248,9 @@ export default css`
         min-width: 140px;
         max-height: 280px;
         overflow-y: auto;
-        background: var(--terra-panel-background-color);
-        border: var(--terra-panel-border-width) solid var(--terra-panel-border-color);
-        border-radius: var(--terra-border-radius-medium);
+        background: var(--terra-menu-background-color);
+        border: var(--terra-panel-border-width) solid var(--terra-panel-border);
+        border-radius: var(--terra-panel-border-radius);
         box-shadow: var(--terra-shadow-large);
         padding: var(--terra-spacing-2x-small);
     }
@@ -258,25 +266,25 @@ export default css`
         border-radius: var(--terra-border-radius-small);
         font-size: var(--terra-font-size-small);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-70);
+        color: var(--terra-menu-item-text);
         text-align: left;
         cursor: pointer;
         transition: background-color var(--terra-transition-fast);
     }
 
     .calendar__month-option:hover {
-        background: var(--terra-color-carbon-10);
+        background: var(--terra-menu-item-background-hover);
     }
 
     .calendar__month-option--selected {
-        background: var(--terra-menu-item-background-color-focus);
-        color: var(--terra-color-spacesuit-white);
+        background: var(--terra-menu-item-background-selected);
+        color: var(--terra-menu-item-text-selected);
         font-weight: var(--terra-font-weight-semibold);
     }
 
     .calendar__month-check {
         flex-shrink: 0;
-        color: var(--terra-color-spacesuit-white);
+        color: var(--terra-menu-item-text-selected);
     }
 
     .calendar__year-input-wrapper {
@@ -334,21 +342,21 @@ export default css`
         width: 1.25rem;
         height: 0.875rem;
         padding: 0;
-        background: transparent;
+        background: var(--terra-date-picker-spinner-background-color);
         border: none;
         border-radius: var(--terra-border-radius-small);
-        color: var(--terra-input-icon-color);
+        color: var(--terra-date-picker-spinner-color);
         cursor: pointer;
         transition: all var(--terra-transition-fast);
     }
 
     .calendar__year-spinner:hover {
-        background: var(--terra-color-carbon-10);
-        color: var(--terra-color-carbon-90);
+        background: var(--terra-date-picker-spinner-background-color-hover);
+        color: var(--terra-date-picker-spinner-color-hover);
     }
 
     .calendar__year-spinner:active {
-        background: var(--terra-color-carbon-20);
+        background: var(--terra-date-picker-spinner-background-color-active);
     }
 
     .calendar__nav {
@@ -361,19 +369,24 @@ export default css`
         background: transparent;
         border: none;
         border-radius: var(--terra-border-radius-medium);
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-menu-item-text);
         cursor: pointer;
         transition: all var(--terra-transition-fast);
     }
 
     .calendar__nav:hover {
-        background: var(--terra-color-carbon-10);
-        color: var(--terra-color-carbon-90);
+        background: var(--terra-menu-item-background-hover);
+        color: var(--terra-menu-item-text-hover);
     }
 
     .calendar__nav:focus {
         outline: none;
-        background: var(--terra-color-carbon-10);
+        background: var(--terra-menu-item-background-hover);
+    }
+
+    .calendar__nav:active {
+        outline: none;
+        background: var(--terra-menu-item-background-active);
     }
 
     .calendar__weekdays {
@@ -391,7 +404,7 @@ export default css`
         font-size: var(--terra-font-size-x-small);
         font-weight: var(--terra-font-weight-semibold);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-50);
+        color: var(--terra-date-picker-weekday-color);
         text-transform: uppercase;
     }
 
@@ -412,28 +425,34 @@ export default css`
         border-radius: var(--terra-border-radius-medium);
         font-size: var(--terra-font-size-small);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-90);
+        color: var(--terra-date-picker-day-color);
         cursor: pointer;
         transition: all var(--terra-transition-fast);
         position: relative;
     }
 
     .calendar__day:hover:not(.calendar__day--disabled) {
-        background: var(--terra-color-carbon-10);
+        background: var(--terra-date-picker-day-background-color-hover);
+        color: var(--terra-date-picker-day-color-hover);
+    }
+
+    .calendar__day:active:not(.calendar__day--disabled) {
+        background: var(--terra-date-picker-day-background-color-active);
+        color: var(--terra-date-picker-day-color-active);
     }
 
     .calendar__day--outside {
-        color: var(--terra-color-carbon-40);
+        color: var(--terra-menu-item-color-disabled);
     }
 
     .calendar__day--disabled {
-        color: var(--terra-color-carbon-30);
+        color: var(--terra-date-picker-day-color-disabled);
         cursor: not-allowed;
     }
 
     .calendar__day--selected {
-        background: var(--terra-color-nasa-blue) !important;
-        color: var(--terra-color-spacesuit-white) !important;
+        background: var(--terra-date-picker-day-background-color-selected) !important;
+        color: var(--terra-date-picker-day-color-selected) !important;
         font-weight: var(--terra-font-weight-bold);
     }
 
@@ -448,13 +467,15 @@ export default css`
     }
 
     .calendar__day--in-range {
-        background: var(--terra-color-nasa-blue-tint);
-        color: var(--terra-color-carbon-90);
+        background: var(--terra-date-picker-day-in-range-background-color);
+        color: var(--terra-date-picker-day-in-range-color);
         border-radius: 0;
+        font-weight: var(--terra-font-weight-semibold);
     }
 
     .calendar__day--hover-range {
-        background: var(--terra-color-carbon-5);
+        background: var(--terra-date-picker-day-in-range-background-color-hover);
+        color: var(--terra-date-picker-day-in-range-color-hover);
         border-radius: 0;
     }
 
@@ -469,7 +490,7 @@ export default css`
     }
 
     .date-picker__separator {
-        color: var(--terra-color-carbon-40);
+        color: var(--terra-text-secondary);
     }
 
     /* Time Picker Styles */
@@ -479,9 +500,8 @@ export default css`
         justify-content: center;
         gap: var(--terra-spacing-medium);
         padding: var(--terra-spacing-medium);
-        border-top: var(--terra-panel-border-width) solid
-            var(--terra-panel-border-color);
-        background: var(--terra-color-carbon-5);
+        border-top: var(--terra-panel-border-width) solid var(--terra-panel-border);
+        background: var(--terra-date-picker-time-panel-background-color);
         width: 100%;
     }
 
@@ -549,28 +569,28 @@ export default css`
         width: 1.25rem;
         height: 0.875rem;
         padding: 0;
-        background: transparent;
+        background: var(--terra-date-picker-spinner-background-color);
         border: none;
         border-radius: var(--terra-border-radius-small);
-        color: var(--terra-input-icon-color);
+        color: var(--terra-date-picker-spinner-color);
         cursor: pointer;
         transition: all var(--terra-transition-fast);
     }
 
     .date-picker__time-spinner:hover {
-        background: var(--terra-color-carbon-20);
-        color: var(--terra-input-icon-color-hover);
+        background: var(--terra-date-picker-spinner-background-color-hover);
+        color: var(--terra-date-picker-spinner-color-hover);
     }
 
     .date-picker__time-spinner:active {
-        background: var(--terra-color-carbon-30);
+        background: var(--terra-date-picker-spinner-background-color-active);
     }
 
     .date-picker__time-separator {
         font-size: var(--terra-font-size-large);
         font-weight: var(--terra-font-weight-bold);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-text-secondary);
     }
 
     .date-picker__time-period {
@@ -581,19 +601,19 @@ export default css`
         font-size: var(--terra-font-size-x-small);
         font-weight: var(--terra-font-weight-bold);
         font-family: var(--terra-font-family--inter);
-        color: var(--terra-color-carbon-70);
+        color: var(--terra-input-color);
         cursor: pointer;
         transition: all var(--terra-transition-fast);
         text-transform: uppercase;
     }
 
     .date-picker__time-period:hover {
-        background: var(--terra-color-carbon-5);
+        background: var(--terra-menu-item-background-hover);
         border-color: var(--terra-input-border-color-hover);
     }
 
     .date-picker__time-period:active {
-        background: var(--terra-color-carbon-10);
+        background: var(--terra-menu-item-background-active);
     }
 
     /* Responsive adjustments */
@@ -606,7 +626,7 @@ export default css`
             width: 100%;
             border-right: none;
             border-bottom: var(--terra-panel-border-width) solid
-                var(--terra-panel-border-color);
+                var(--terra-panel-border);
         }
 
         .date-picker__calendars {

@@ -44,11 +44,11 @@ export default class TerraToast extends TerraElement {
 
     /** The toast's theme variant. */
     @property({ reflect: true }) variant:
-        | 'primary'
+        | 'information'
         | 'success'
         | 'neutral'
         | 'warning'
-        | 'danger' = 'primary'
+        | 'danger' = 'information'
 
     /**
      * The length of time, in milliseconds, the toast will show before closing itself. If the user interacts with
@@ -183,14 +183,19 @@ export default class TerraToast extends TerraElement {
      * body, and displays it as a notification.
      *
      * @param message - The message to display in the toast.
-     * @param variant - The toast variant. Defaults to 'primary'.
+     * @param variant - The toast variant. Defaults to 'information'.
      * @param icon - Optional icon name to display. Defaults to undefined.
      * @param duration - The duration in milliseconds. Defaults to 3000.
      * @returns A promise that resolves after the toast is hidden.
      */
     static async notify(
         message: string,
-        variant: 'primary' | 'success' | 'neutral' | 'warning' | 'danger' = 'primary',
+        variant:
+            | 'information'
+            | 'success'
+            | 'neutral'
+            | 'warning'
+            | 'danger' = 'information',
         icon?: string,
         duration = 3000
     ): Promise<void> {

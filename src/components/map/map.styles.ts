@@ -6,6 +6,7 @@ export default css`
         padding: 16px;
         background: var(--terra-map-background-color);
         border: 1px solid var(--terra-map-border-color);
+        border-radius: var(--terra-border-radius-medium);
     }
 
     .map {
@@ -33,7 +34,9 @@ export default css`
         width: 100%;
         height: 36px;
         padding: 6px 12px;
-        background-image: none;
+        background-color: var(--terra-input-background-color);
+        border: 1px solid var(--terra-input-border-color);
+        border-radius: var(--terra-border-radius-small);
         -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
         -webkit-transition:

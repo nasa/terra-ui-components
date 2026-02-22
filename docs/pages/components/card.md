@@ -15,7 +15,7 @@ layout: component
 
   <strong>Artemis Mission</strong><br />
   NASA's Artemis program will land the first woman and first person of color on the Moon, using innovative technologies to explore more of the lunar surface than ever before.<br />
-  <small style="color: var(--terra-color-carbon-60);">Published 2 hours ago</small>
+  <small style="color: var(--terra-color-carbon-30);">Published 2 hours ago</small>
 
   <div slot="footer" style="display: flex; justify-content: space-between; align-items: center;">
     <terra-button variant="primary" pill>Learn More</terra-button>
@@ -96,7 +96,7 @@ Cards can include all slots together: image, header, body, and footer.
   </div>
 
   The International Space Station serves as a microgravity laboratory where crew members conduct experiments across multiple fields of research.<br />
-  <small style="color: var(--terra-color-carbon-60);">Published 5 hours ago</small>
+  <small style="color: var(--terra-color-carbon-30);">Published 5 hours ago</small>
 
   <div slot="footer" style="display: flex; justify-content: space-between; align-items: center;">
     <terra-button variant="primary" pill>Read More</terra-button>

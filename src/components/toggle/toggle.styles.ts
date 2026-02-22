@@ -73,6 +73,10 @@ export default css`
             var(--terra-transition-fast) box-shadow;
     }
 
+    .toggle__control .toggle__thumb:hover {
+        background-color: var(--terra-toggle-thumb-background-color-hover);
+    }
+
     .toggle__input {
         position: absolute;
         opacity: 0;

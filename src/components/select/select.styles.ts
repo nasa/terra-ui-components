@@ -132,7 +132,7 @@ export default css`
     .select--standard:not(.select--disabled).select--open .select__combobox,
     .select--standard:not(.select--disabled).select--focused .select__combobox {
         background-color: var(--terra-input-background-color-focus);
-        border-color: var(--terra-color-nasa-blue);
+        border-color: var(--terra-input-border-color-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width)
             var(--terra-input-focus-ring-color);
     }
@@ -141,7 +141,7 @@ export default css`
     .select--filled .select__combobox {
         border: none;
         background-color: var(--terra-input-filled-background-color);
-        color: var(--terra-input-color);
+        color: var(--terra-input-filled-color);
     }
 
     .select--filled:hover:not(.select--disabled) .select__combobox {
@@ -325,9 +325,9 @@ export default css`
         font-size: var(--terra-font-size-medium);
         font-weight: var(--terra-font-weight-normal);
         box-shadow: var(--terra-shadow-large);
-        background: var(--terra-panel-background-color);
-        border: solid var(--terra-panel-border-width) var(--terra-panel-border-color);
-        border-radius: var(--terra-border-radius-medium);
+        background: var(--terra-panel-background);
+        border: solid var(--terra-panel-border-width) var(--terra-panel-border);
+        border-radius: var(--terra-panel-border-radius);
         padding-block: var(--terra-spacing-x-small);
         padding-inline: 0;
         overflow: auto;

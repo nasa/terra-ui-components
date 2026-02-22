@@ -64,11 +64,11 @@ export default class TerraAlert extends TerraElement {
 
     /** The alert's theme variant. */
     @property({ reflect: true }) variant:
-        | 'primary'
+        | 'information'
         | 'success'
         | 'neutral'
         | 'warning'
-        | 'danger' = 'primary'
+        | 'danger' = 'information'
 
     /**
      * The alert's appearance style. "filled" uses a colored background with white text (HDS default).
@@ -242,7 +242,7 @@ export default class TerraAlert extends TerraElement {
                     'alert--closable': this.closable,
                     'alert--has-countdown': !!this.countdown,
                     'alert--has-icon': this.hasSlotController.test('icon'),
-                    'alert--primary': this.variant === 'primary',
+                    'alert--information': this.variant === 'information',
                     'alert--success': this.variant === 'success',
                     'alert--neutral': this.variant === 'neutral',
                     'alert--warning': this.variant === 'warning',

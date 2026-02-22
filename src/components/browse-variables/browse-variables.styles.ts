@@ -2,7 +2,7 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        background-color: var(--terra-color-carbon-5);
+        background-color: var(--terra-color-bg-surface-neutral-primary);
         display: block;
         padding-bottom: 55% !important;
         position: relative;
@@ -42,7 +42,7 @@ export default css`
     }
 
     header.search {
-        border-bottom: 1px solid var(--terra-color-carbon-30);
+        border-bottom: 1px solid var(--terra-color-bg-surface-neutral-primary);
         grid-column: span 2;
         padding: 15px;
         padding-bottom: 25px;
@@ -111,7 +111,7 @@ export default css`
         margin-right: 10px;
         width: 1em;
         height: 1em;
-        border: 0.125em solid var(--terra-color-carbon-40);
+        border: 0.125em solid var(--terra-border-neutral-default);
         border-radius: 50%;
         background-color: var(--terra-color-spacesuit-white);
         cursor: pointer;
@@ -211,7 +211,7 @@ export default css`
         -moz-appearance: none; /* for Firefox */
         width: 1em;
         height: 1em;
-        border: 0.125em solid var(--terra-color-carbon-40);
+        border: 0.125em solid var(--terra-border-neutral-default);
         border-radius: 0.25em;
         background-color: var(--terra-color-spacesuit-white);
         cursor: pointer;
@@ -258,13 +258,13 @@ export default css`
     .variable-list-item {
         /* border: 0.0625em var(--terra-color-nasa-blue-tint) solid; */
         border-radius: 0.25em;
-        background-color: var(--terra-color-carbon-10);
+        background-color: var(--terra-color-bg-surface-neutral-tertiary);
         padding: 0.5em 1em;
         margin-bottom: 0.15em;
     }
 
     .variable-list-item:hover {
-        background-color: var(--terra-color-blue-light);
+        background-color: var(--terra-color-bg-surface-brand-tertiary);
     }
 
     .variable-list-item::marker {
@@ -304,7 +304,7 @@ export default css`
     .right-column {
         display: flex;
         flex-direction: column;
-        background-color: var(--terra-color-blue-light);
+        background-color: var(--terra-color-bg-surface-brand-tertiary);
         /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
@@ -321,7 +321,7 @@ export default css`
     }
 
     .placeholder {
-        color: var(--terra-color-carbon-50);
+        color: var(--terra-color-neutral-500);
         font-style: italic;
     }
 

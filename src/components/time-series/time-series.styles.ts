@@ -47,17 +47,15 @@ export default css`
         width: 450px;
         max-width: 90vw;
         padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid var(--terra-color-neutral-200, #e5e7eb);
-        box-shadow:
-            0 4px 6px -1px rgba(0, 0, 0, 0.1),
-            0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        background-color: var(--terra-color-neutral-0, #ffffff);
+        border-radius: var(--terra-panel-border-radius, 8px);
+        border: 1px solid var(--terra-panel-border, #b9b9bb);
+        box-shadow: var(--terra-shadow-large);
+        background-color: var(--terra-panel-background, #ffffff);
     }
 
     dialog h2 {
         margin-top: 0;
-        color: var(--terra-color-danger-600, #dc2626);
+        color: var(--terra-color-red-500, #f64137);
         font-size: 1.2rem;
     }
 
