@@ -44,11 +44,6 @@ export default css`
         outline-offset: var(--terra-focus-ring-offset);
     }
 
-    .button--disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
     /* When disabled, prevent mouse events from bubbling up from children */
     .button--disabled * {
         pointer-events: none;
@@ -79,102 +74,163 @@ export default css`
 
     /* Default */
     .button--standard.button--default {
-        background-color: var(--terra-color-default-gray);
-        border-color: var(--terra-color-default-gray);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-secondary-default);
+        border-color: var(--terra-border-action-secondary-default);
+        color: var(--terra-text-on-action-secondary);
     }
 
     .button--standard.button--default:hover:not(.button--disabled) {
-        background-color: var(--terra-color-default-gray-shade);
-        border-color: var(--terra-color-default-gray-shade);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-secondary-hover);
+        border-color: var(--terra-border-action-secondary-hover);
+        color: var(--terra-text-on-action-secondary);
     }
 
     .button--standard.button--default:active:not(.button--disabled) {
-        background-color: var(--terra-color-default-gray-tint);
-        border-color: var(--terra-color-default-gray-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-secondary-active);
+        border-color: var(--terra-border-action-secondary-active);
+        color: var(--terra-text-on-action-secondary);
+    }
+
+    .button--standard.button--default.button--disabled {
+        background-color: var(--terra-color-secondary-disabled);
+        border-color: var(--terra-border-action-secondary-disabled);
+        color: var(--terra-text-on-action-disabled);
+        cursor: not-allowed;
     }
 
     /* Primary */
     .button--standard.button--primary {
-        background-color: var(--terra-color-nasa-blue);
-        border-color: var(--terra-color-nasa-blue);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-primary-default);
+        border-color: var(--terra-border-action-primary-default);
+        color: var(--terra-text-on-action-primary);
     }
 
     .button--standard.button--primary:hover:not(.button--disabled) {
-        background-color: var(--terra-color-nasa-blue-shade);
-        border-color: var(--terra-color-nasa-blue-shade);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-primary-hover);
+        border-color: var(--terra-border-action-primary-hover);
+        color: var(--terra-text-on-action-primary);
     }
 
     .button--standard.button--primary:active:not(.button--disabled) {
-        background-color: var(--terra-color-nasa-blue-tint);
-        border-color: var(--terra-color-nasa-blue-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-primary-active);
+        border-color: var(--terra-border-action-primary-active);
+        color: var(--terra-text-on-action-primary);
+    }
+
+    .button--standard.button--primary.button--disabled {
+        background-color: var(--terra-color-action-primary-disabled);
+        border-color: var(--terra-border-action-primary-disabled);
+        color: var(--terra-text-on-action-disabled);
+        cursor: not-allowed;
+    }
+
+    /* Call to Action (CTA) */
+    .button--standard.button--cta {
+        background-color: var(--terra-color-action-cta-default);
+        border-color: var(--terra-border-action-cta-default);
+        color: var(--terra-text-on-action-cta);
+    }
+
+    .button--standard.button--cta:hover:not(.button--disabled) {
+        background-color: var(--terra-color-action-cta-hover);
+        border-color: var(--terra-border-action-cta-hover);
+        color: var(--terra-text-on-action-cta);
+    }
+
+    .button--standard.button--cta:active:not(.button--disabled) {
+        background-color: var(--terra-color-action-cta-active);
+        border-color: var(--terra-border-action-cta-active);
+        color: var(--terra-text-on-action-cta);
+    }
+
+    .button--standard.button--cta.button--disabled {
+        background-color: var(--terra-color-cta-disabled);
+        border-color: var(--terra-border-action-cta-disabled);
+        color: var(--terra-text-on-action-disabled);
+        cursor: not-allowed;
     }
 
     /* Success */
     .button--standard.button--success {
-        background-color: var(--terra-color-success-green);
-        border-color: var(--terra-color-success-green);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-success-default);
+        border-color: var(--terra-border-action-success-default);
+        color: var(--terra-text-on-action-success);
     }
 
     .button--standard.button--success:hover:not(.button--disabled) {
-        background-color: var(--terra-color-success-green-hover);
-        border-color: var(--terra-color-success-green-hover);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-success-hover);
+        border-color: var(--terra-border-action-success-hover);
+        color: var(--terra-text-on-action-success);
     }
 
     .button--standard.button--success:active:not(.button--disabled) {
-        background-color: var(--terra-color-success-green-focus);
-        border-color: var(--terra-color-success-green-focus);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-success-active);
+        border-color: var(--terra-border-action-success-active);
+        color: var(--terra-text-on-action-success);
+    }
+
+    .button--standard.button--success.button--disabled {
+        background-color: var(--terra-color-action-success-disabled);
+        border-color: var(--terra-border-action-success-disabled);
+        color: var(--terra-text-on-action-disabled);
+        cursor: not-allowed;
     }
 
     /* Warning */
     .button--standard.button--warning {
-        background-color: var(--terra-color-international-orange);
-        border-color: var(--terra-color-international-orange);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-warning-default);
+        border-color: var(--terra-border-action-warning-default);
+        color: var(--terra-text-on-action-warning);
     }
 
     .button--standard.button--warning:hover:not(.button--disabled) {
-        background-color: var(--terra-color-international-orange-shade);
-        border-color: var(--terra-color-international-orange-shade);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-warning-hover);
+        border-color: var(--terra-border-action-warning-hover);
+        color: var(--terra-text-on-action-warning);
     }
 
     .button--standard.button--warning:active:not(.button--disabled) {
-        background-color: var(--terra-color-international-orange-tint);
-        border-color: var(--terra-color-international-orange-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-warning-active);
+        border-color: var(--terra-border-action-warning-active);
+        color: var(--terra-text-on-action-warning);
+    }
+
+    .button--standard.button--warning.button--disabled {
+        background-color: var(--terra-color-warning-disabled);
+        border-color: var(--terra-border-action-warning-disabled);
+        color: var(--terra-text-on-action-disabled);
+        cursor: not-allowed;
     }
 
     /* Danger */
     .button--standard.button--danger {
-        background-color: var(--terra-color-nasa-red);
-        border-color: var(--terra-color-nasa-red);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-error-default);
+        border-color: var(--terra-border-action-error-default);
+        color: var(--terra-text-on-action-error);
     }
 
     .button--standard.button--danger:hover:not(.button--disabled) {
-        background-color: var(--terra-color-nasa-red-shade);
-        border-color: var(--terra-color-nasa-red-shade);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-error-hover);
+        border-color: var(--terra-border-action-error-hover);
+        color: var(--terra-text-on-action-error);
     }
 
     .button--standard.button--danger:active:not(.button--disabled) {
-        background-color: var(--terra-color-nasa-red-tint);
-        border-color: var(--terra-color-nasa-red-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-error-active);
+        border-color: var(--terra-border-action-error-active);
+        color: var(--terra-text-on-action-error);
+    }
+
+    .button--standard.button--error.button--disabled {
+        background-color: var(--terra-color-error-disabled);
+        border-color: var(--terra-border-action-error-disabled);
+        color: var(--terra-text-on-action-disabled);
+        cursor: not-allowed;
     }
 
     /*
-   * Outline buttons
-   */
+    * Outline buttons
+    */
 
     .button--outline {
         background: none;
@@ -182,94 +238,116 @@ export default css`
 
     /* Primary */
     .button--outline.button--primary {
-        border-color: var(--terra-color-nasa-blue);
-        color: var(--terra-button-outline-text-color);
+        border-color: var(--terra-border-action-primary-default);
+        color: var(--terra-text-primary);
     }
 
     .button--outline.button--primary:hover:not(.button--disabled),
     .button--outline.button--default.button--checked:not(.button--disabled) {
-        border-color: var(--terra-color-nasa-blue);
-        background-color: var(--terra-color-nasa-blue);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-primary-default);
+        border-color: var(--terra-border-action-primary-default);
+        color: var(--terra-text-on-action-primary);
     }
 
     .button--outline.button--primary:active:not(.button--disabled) {
-        border-color: var(--terra-color-nasa-blue-tint);
-        background-color: var(--terra-color-nasa-blue-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-primary-active);
+        border-color: var(--terra-border-action-primary-active);
+        color: var(--terra-text-on-action-primary);
     }
 
     /* Default */
     .button--outline.button--default {
-        border-color: var(--terra-color-default-gray);
-        color: var(--terra-button-outline-text-color);
+        border-color: var(--terra-border-action-secondary-default);
+        color: var(--terra-text-primary);
     }
 
     .button--outline.button--default:hover:not(.button--disabled),
     .button--outline.button--default.button--checked:not(.button--disabled) {
-        border-color: var(--terra-color-default-gray);
-        background-color: var(--terra-color-default-gray);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-secondary-default);
+        border-color: var(--terra-border-action-secondary-default);
+        color: var(--terra-text-on-action-secondary);
     }
 
     .button--outline.button--default:active:not(.button--disabled) {
-        border-color: var(--terra-color-default-gray-tint);
-        background-color: var(--terra-color-default-gray-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-secondary-active);
+        border-color: var(--terra-border-action-secondary-active);
+        color: var(--terra-text-on-action-secondary);
+    }
+
+    /* CTA */
+    .button--outline.button--cta {
+        border-color: var(--terra-border-action-cta-default);
+        color: var(--terra-text-primary);
+    }
+
+    .button--outline.button--cta:hover:not(.button--disabled),
+    .button--outline.button--cta.button--checked:not(.button--disabled) {
+        background-color: var(--terra-color-action-cta-hover);
+        border-color: var(--terra-border-action-cta-hover);
+        color: var(--terra-text-on-action-cta);
+    }
+
+    .button--outline.button--cta:active:not(.button--disabled) {
+        background-color: var(--terra-color-action-cta-active);
+        border-color: var(--terra-border-action-cta-active);
+        color: var(--terra-text-on-action-cta);
     }
 
     /* Success */
     .button--outline.button--success {
-        border-color: var(--terra-color-success-green);
-        color: var(--terra-button-outline-text-color);
+        border-color: var(--terra-border-action-success-default);
+        color: var(--terra-text-primary);
     }
 
     .button--outline.button--success:hover:not(.button--disabled),
     .button--outline.button--success.button--checked:not(.button--disabled) {
-        background-color: var(--terra-color-success-green);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-success-hover);
+        border-color: var(--terra-border-action-success-hover);
+        color: var(--terra-text-on-action-success);
     }
 
     .button--outline.button--success:active:not(.button--disabled) {
-        border-color: var(--terra-color-success-green-focus);
-        background-color: var(--terra-color-success-green-focus);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-success-active);
+        border-color: var(--terra-border-action-success-active);
+        color: var(--terra-text-on-action-success);
     }
 
     /* Warning */
     .button--outline.button--warning {
-        border-color: var(--terra-color-international-orange);
-        color: var(--terra-button-outline-text-color);
+        border-color: var(--terra-border-action-warning-default);
+        color: var(--terra-text-primary);
     }
 
     .button--outline.button--warning:hover:not(.button--disabled),
     .button--outline.button--warning.button--checked:not(.button--disabled) {
-        background-color: var(--terra-color-international-orange);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-warning-hover);
+        border-color: var(--terra-border-action-warning-hover);
+        color: var(--terra-text-on-action-warning);
     }
 
     .button--outline.button--warning:active:not(.button--disabled) {
-        border-color: var(--terra-color-international-orange-tint);
-        background-color: var(--terra-color-international-orange-tint);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-warning-active);
+        border-color: var(--terra-border-action-warning-active);
+        color: var(--terra-text-on-action-warning);
     }
 
     /* Danger */
     .button--outline.button--danger {
-        border-color: var(--terra-color-nasa-red);
-        color: var(--terra-button-outline-text-color);
+        border-color: var(--terra-border-action-error-default);
+        color: var(--terra-text-primary);
     }
 
     .button--outline.button--danger:hover:not(.button--disabled),
     .button--outline.button--danger.button--checked:not(.button--disabled) {
-        background-color: var(--terra-color-nasa-red);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-color-action-error-hover);
+        border-color: var(--terra-border-action-error-hover);
+        color: var(--terra-text-on-action-error);
     }
 
     .button--outline.button--danger:active:not(.button--disabled) {
-        border-color: var(--terra-color-nasa-red-tint);
-        background-color: var(--terra-color-nasa-red-tint);
-        color: var(--terra-color-spacesuit-white);
+        border-color: var(--terra-border-action-error-active);
+        background-color: var(--terra-color-action-error-active);
+        color: var(--terra-text-on-action-error);
     }
 
     @media (forced-colors: active) {
@@ -297,13 +375,13 @@ export default css`
     .button--text:focus-visible:not(.button--disabled) {
         background-color: transparent;
         border-color: transparent;
-        color: var(--terra-color-nasa-blue);
+        color: var(--terra-button-text-text-color-active);
     }
 
     .button--text:active:not(.button--disabled) {
         background-color: transparent;
         border-color: transparent;
-        color: var(--terra-color-nasa-blue-tint);
+        color: var(--terra-button-text-text-color-disabled);
     }
 
     /*
@@ -313,7 +391,7 @@ export default css`
     .button--pagelink {
         background-color: transparent;
         border-color: transparent;
-        color: var(--terra-button-page-link-text);
+        color: var(--terra-button-page-link-text-color);
         & slot[name='suffix'] span {
             display: flex;
             justify-content: center;

@@ -1,0 +1,102 @@
+<!doctype html>
+<html style="height: 100%">
+    <head>
+        <style>
+            * {
+                font-family: sans-serif;
+                font-size: 12px;
+                margin: 0;
+                box-sizing: border-box;
+            }
+            body {
+                height: 100%;
+                padding: 10px;
+                position: relative;
+            } /* Added position: relative for absolute positioning */
+            button {
+                margin: 10px 0;
+                padding: 5px 10px;
+            }
+            textarea {
+                width: 100%;
+                height: calc(100% - 80px);
+                font-family: monospace;
+                resize: none;
+            } /* Adjusted height for full fit */
+            #corner {
+                position: absolute;
+                right: 1px;
+                bottom: 2px;
+                cursor: nwse-resize;
+            }
+        </style>
+    </head>
+    <body>
+        <button id="generate">Generate CSS</button>
+        <textarea id="output" placeholder="CSS will appear here..."></textarea>
+        <button id="copy">Copy to Clipboard</button>
+
+        <!-- Resize handle SVG -->
+        <svg
+            id="corner"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M16 0V16H0L16 0Z" fill="white" />
+            <path d="M6.22577 16H3L16 3V6.22576L6.22577 16Z" fill="#8C8C8C" />
+            <path
+                d="M11.8602 16H8.63441L16 8.63441V11.8602L11.8602 16Z"
+                fill="#8C8C8C"
+            />
+        </svg>
+
+        <script>
+            const generateBtn = document.getElementById('generate')
+            const output = document.getElementById('output')
+            const copyBtn = document.getElementById('copy')
+            const corner = document.getElementById('corner')
+
+            // Trigger generation
+            generateBtn.onclick = () => {
+                parent.postMessage({ pluginMessage: { type: 'generate' } }, '*')
+            }
+
+            // Copy functionality
+            copyBtn.onclick = () => {
+                output.select()
+                document.execCommand('copy')
+                alert('Copied to clipboard!')
+            }
+
+            // Receive CSS from code.js
+            window.onmessage = event => {
+                const msg = event.data.pluginMessage
+                if (msg && msg.type === 'css') {
+                    output.value = msg.data
+                }
+            }
+
+            // Resize logic
+            function resizeWindow(e) {
+                const size = {
+                    w: Math.max(100, Math.floor(e.clientX + 5)), // Min width 100
+                    h: Math.max(100, Math.floor(e.clientY + 5)), // Min height 100
+                }
+                parent.postMessage({ pluginMessage: { type: 'resize', size } }, '*')
+            }
+
+            corner.onpointerdown = e => {
+                corner.onpointermove = resizeWindow
+                corner.setPointerCapture(e.pointerId)
+            }
+
+            corner.onpointerup = e => {
+                corner.onpointermove = null
+                corner.releasePointerCapture(e.pointerId)
+            }
+        </script>
+    </body>
+</html>

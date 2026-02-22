@@ -21,11 +21,11 @@ export default class TerraBadge extends TerraElement {
 
     /** The badge's theme variant. */
     @property({ reflect: true }) variant:
-        | 'primary'
+        | 'information'
         | 'success'
         | 'neutral'
         | 'warning'
-        | 'danger' = 'primary'
+        | 'danger' = 'information'
 
     /** Draws a pill-style badge with rounded edges. */
     @property({ type: Boolean, reflect: true }) pill = false
@@ -39,7 +39,7 @@ export default class TerraBadge extends TerraElement {
                 part="base"
                 class=${classMap({
                     badge: true,
-                    'badge--primary': this.variant === 'primary',
+                    'badge--information': this.variant === 'information',
                     'badge--success': this.variant === 'success',
                     'badge--neutral': this.variant === 'neutral',
                     'badge--warning': this.variant === 'warning',

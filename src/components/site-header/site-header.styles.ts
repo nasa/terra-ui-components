@@ -10,8 +10,8 @@ export default css`
         /* These will be available to buttons and menus inside site-navigation */
         --terra-button-text-text-color: var(--terra-color-nasa-blue);
         --terra-button-text-text-color-hover: var(--terra-color-nasa-blue-tint);
-        --terra-panel-background-color: var(--terra-color-carbon-black);
-        --terra-panel-border-color: var(--terra-color-carbon-20);
+        --terra-panel-background: var(--terra-color-carbon-black);
+        --terra-panel-border: var(--terra-color-carbon-20);
         --terra-menu-item-color: var(--terra-color-spacesuit-white);
         --terra-menu-item-color-hover: var(--terra-color-spacesuit-white);
         --terra-menu-item-background-color-hover: var(--terra-color-carbon-80);

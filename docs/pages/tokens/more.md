@@ -113,6 +113,15 @@ Form label tokens control the appearance of labels in form controls.
 | `--terra-input-label-line-weight` | `var(--terra-font-weight-semibold)` |
 | `--terra-input-label-line-height` | `var(--terra-line-height-looser)`   |
 
+## Spatial Picker Icon
+
+Controls the color of the map icon in the spatial picker component
+
+| Token                                     | Value                           |
+| ----------------------------------------- | ------------------------------- |
+| `--terra-spatial-picker-icon-color`       | `var(--terra-field-text)`.      |
+| `--terra-spatial-picker-icon-color-hover` | `var(--terra-field-text-hover)` |
+
 ## Help Text
 
 Help text tokens control the appearance of help text in form controls.
@@ -155,11 +164,12 @@ Overlay tokens control the appearance of overlays as used in [dialog](/component
 
 Panel tokens control the appearance of panels such as those used in [dialog](/components/dialog), [menu](/components/menu), etc.
 
-| Token                            | Value                                |
-| -------------------------------- | ------------------------------------ |
-| `--terra-panel-background-color` | `var(--terra-color-spacesuit-white)` |
-| `--terra-panel-border-color`     | `var(--terra-color-carbon-20)`       |
-| `--terra-panel-border-width`     | `1px`                                |
+| Token                         | Value                                |
+| ----------------------------- | ------------------------------------ |
+| `--terra-panel-background`    | `var(--terra-color-spacesuit-white)` |
+| `--terra-panel-border`        | `var(--terra-color-carbon-20)`       |
+| `--terra-panel-border-width`  | `1px`                                |
+| `--terra-panel-border-radius` | `--terra-border-radius-medium`.      |
 
 ## Tooltips
 

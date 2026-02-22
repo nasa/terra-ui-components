@@ -60,6 +60,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     @property({ reflect: true }) variant:
         | 'default'
         | 'primary'
+        | 'cta'
         | 'success'
         | 'warning'
         | 'danger'
@@ -409,6 +410,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
             button: true,
             'button--default': this.variant === 'default',
             'button--primary': this.variant === 'primary',
+            'button--cta': this.variant === 'cta',
             'button--success': this.variant === 'success',
             'button--warning': this.variant === 'warning',
             'button--danger': this.variant === 'danger',

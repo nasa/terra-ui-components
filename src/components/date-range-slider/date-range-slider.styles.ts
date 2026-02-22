@@ -99,14 +99,14 @@ export default css`
     /* Slider size and handle placement;
  */
     .noUi-horizontal {
-        height: 18px;
+        height: 10px;
     }
 
     .noUi-horizontal .noUi-handle {
         width: 30px;
         height: 30px;
         right: -15px;
-        top: -7px;
+        top: -9px;
     }
     .noUi-vertical {
         width: 18px;
@@ -125,18 +125,15 @@ export default css`
  * Giving the connect element a border radius causes issues with using transform: scale
  */
     .noUi-target {
-        background: #fafafa;
-        border-radius: 4px;
-        border: 1px solid var(--terra-input-border-color);
-        box-shadow:
-            inset 0 1px 1px #f0f0f0,
-            0 3px 6px -5px #bbb;
+        background: var(--terra-slider-track-background-color);
+        border-radius: 2px;
+        border: 1px solid var(--terra-slider-track-border-color);
     }
     .noUi-connects {
         border-radius: 3px;
     }
     .noUi-connect {
-        background: rgb(119, 164, 238);
+        background: var(--terra-slider-connect-color);
     }
     /* Handles and cursors;
  */
@@ -147,17 +144,14 @@ export default css`
         cursor: ns-resize;
     }
     .noUi-handle {
-        background: #1c67e3;
-        border: 1px solid rgb(119, 164, 238);
+        background: var(--terra-slider-handle-background-color);
+        border: 1px solid var(--terra-slider-handle-border-color);
         border-radius: 99px;
         cursor: default;
         box-shadow:;
     }
     .noUi-active {
-        box-shadow:
-            inset 0 0 1px #fff,
-            inset 0 1px 7px #ddd,
-            0 3px 6px -3px #bbb;
+        background: var(--terra-control-icon-active);
     }
     /* Handle stripes;
  */

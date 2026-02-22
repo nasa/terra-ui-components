@@ -19,16 +19,18 @@ export default css`
     .search-icon {
         position: absolute;
         left: 12px;
-        color: #666;
+        color: var(--terra-input-icon-color);
         pointer-events: none;
     }
 
     .search-input {
         width: 100%;
         padding: 12px 14px 12px 36px;
-        border: 1px solid #d0d5dd;
-        border-radius: 24px;
-        font-size: 16px;
+        border: 1px solid var(--terra-input-border-color);
+        border-radius: var(--terra-input-border-radius-medium);
+        font-size: var(--terra-input-font-size-medium);
+        color: var(--terra-input-text-color);
+        background: var(--terra-input-background-color);
         outline: none;
         transition:
             box-shadow 0.2s,
@@ -36,14 +38,14 @@ export default css`
     }
 
     .search-input:focus {
-        border-color: #98c3ff;
-        box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+        border-color: var(--terra-input-focus-ring-color);
+        box-shadow: var(--terra-shadow-small);
     }
 
     .toggle-row {
         display: flex;
         gap: 14px;
-        margin-bottom: 8px;
+        margin-bottom: var(--terra-spacing-x-large);
     }
 
     .filter {
@@ -51,8 +53,6 @@ export default css`
     }
 
     terra-date-picker {
-        --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
         --terra-input-spacing-small: 0;
         --terra-input-spacing-medium: 0;
@@ -65,8 +65,6 @@ export default css`
     }
 
     terra-spatial-picker {
-        --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
         --terra-input-suffix-display: none;
         --terra-input-display: none;
 
@@ -169,10 +167,10 @@ export default css`
         align-items: center;
         gap: 8px;
         padding: 10px 16px;
-        border: 2px solid #d0d5dd;
-        border-radius: 24px;
-        background: #f6f7f9;
-        color: #333;
+        border: 2px solid var(--terra-border-action-secondary-default);
+        border-radius: var(--terra-border-radius-medium);
+        background: var(--terra-color-action-secondary-default);
+        color: var(--terra-text-on-action-secondary);
         cursor: pointer;
         font-size: 16px;
         transition:
@@ -181,10 +179,14 @@ export default css`
             color 0.15s;
     }
 
-    .filter-btn.active {
-        border-color: #2f6bb8;
-        background: #e9f1ff;
-        color: #1f4f8a;
+    .filter-btn:hover {
+        border-color: var(--terra-border-action-secondary-hover);
+        background: var(--terra-color-action-secondary-hover);
+    }
+
+    .filter-btn:active {
+        border-color: var(--terra-border-action-secondary-active);
+        background: var(--terra-color-action-secondary-active);
     }
 
     .clear-badge {
@@ -195,12 +197,13 @@ export default css`
         height: 20px;
         margin-left: 4px;
         padding: 0;
-        background: rgba(255, 255, 255, 0.8);
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: transparent;
+        border: 1px solid rgba(0, 0, 0, 1);
         border-radius: 50%;
-        font-size: 16px;
+        font-size: 18px;
+        color: var(--terra-text-on-action-secondary)
         line-height: 1;
-        color: #666;
+
         cursor: pointer;
         transition: all 0.15s;
     }
@@ -208,7 +211,6 @@ export default css`
     .clear-badge:hover {
         background: white;
         color: #333;
-        border-color: rgba(0, 0, 0, 0.2);
     }
 
     .filter-row {
@@ -235,30 +237,11 @@ export default css`
         flex: 1 1 auto;
     }
 
-    .clear-btn {
-        background: none;
-        border: none;
-        color: #888;
-        font-size: 20px;
-        cursor: pointer;
-        padding: 4px 8px;
-    }
-
-    .clear-btn:hover {
-        color: #444;
-    }
-
-    .divider {
-        height: 1px;
-        background: #e5e7eb;
-        margin: 10px 0;
-    }
-
     .results-info {
         margin-top: 8px;
         padding-top: 10px;
-        border-top: 1px solid #e5e7eb;
-        color: #333;
+        border-top: 1px solid var(--terra-border-neutral-default, #b9b9bb);
+        color: var(--terra-text-secondary);
         font-size: 16px;
     }
 
@@ -279,31 +262,6 @@ export default css`
         background: transparent;
     }
 
-    .download-dropdown {
-        position: relative;
-        display: inline-block;
-        z-index: 800;
-    }
-
-    .download-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 10px 16px;
-        background: #0066cc;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .download-btn:hover {
-        background: #0056b3;
-    }
-
     .download-icon-small {
         width: 16px;
         height: 16px;
@@ -313,34 +271,6 @@ export default css`
         width: 16px;
         height: 16px;
         transition: transform 0.2s;
-    }
-
-    .download-menu {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 801;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.2s;
-        margin-top: 4px;
-        min-width: 200px;
-    }
-
-    .download-menu.open {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    .download-dropdown.open .dropdown-arrow {
-        transform: rotate(180deg);
     }
 
     .jupyter-btn {
@@ -401,8 +331,9 @@ export default css`
         z-index: 1000;
         width: 400px;
         max-width: 90vw;
-        background: white;
-        border-radius: 0.5rem;
+        background: var(--terra-panel-background, #ffffff);
+        border-radius: var(--terra-panel-border-radius, 8px);
+        border: 1px solid var(--terra-panel-border, #b9b9bb);
         box-shadow:
             0 10px 15px -3px rgba(0, 0, 0, 0.1),
             0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -428,9 +359,10 @@ export default css`
     }
 
     .loading-modal {
-        background: white;
+        background: var(--terra-panel-background, #ffffff);
+        border: 1px solid var(--terra-panel-border, #b9b9bb);
         padding: 24px;
-        border-radius: 8px;
+        border-radius: var(--terra-panel-border-radius, 8px);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;

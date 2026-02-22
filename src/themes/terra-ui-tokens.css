@@ -1,0 +1,616 @@
+/***************/
+/* Light Theme */
+/***************/
+
+:root[data-mode='Light'] {
+    /* Primitive Tokens 
+    */
+
+    /* Red color palette
+    */
+    --terra-color-red-50: hsla(3, 100%, 96%, 1);
+    --terra-color-red-100: hsla(3, 100%, 90%, 1);
+    --terra-color-red-200: hsla(3, 83%, 77%, 1);
+    --terra-color-red-300: hsla(2, 94%, 73%, 1);
+    --terra-color-red-400: hsla(2, 93%, 65%, 1);
+    --terra-color-red-500: hsla(3, 91%, 59%, 1);
+    --terra-color-red-600: hsla(3, 89%, 48%, 1);
+    --terra-color-red-700: hsla(3, 87%, 39%, 1);
+    --terra-color-red-800: hsla(3, 85%, 31%, 1);
+    --terra-color-red-900: hsla(3, 85%, 24%, 1);
+    --terra-color-red-950: hsla(3, 81%, 14%, 1);
+
+    /* Orange color palette
+    */
+    --terra-color-orange-50: hsla(23, 100%, 94%, 1);
+    --terra-color-orange-100: hsla(23, 97%, 87%, 1);
+    --terra-color-orange-200: hsla(24, 93%, 78%, 1);
+    --terra-color-orange-300: hsla(23, 90%, 70%, 1);
+    --terra-color-orange-400: hsla(23, 86%, 61%, 1);
+    --terra-color-orange-500: hsla(23, 83%, 53%, 1);
+    --terra-color-orange-600: hsla(23, 80%, 45%, 1);
+    --terra-color-orange-700: hsla(23, 78%, 36%, 1);
+    --terra-color-orange-800: hsla(23, 76%, 27%, 1);
+    --terra-color-orange-900: hsla(23, 73%, 19%, 1);
+    --terra-color-orange-950: hsla(23, 69%, 10%, 1);
+
+    /* Green color palette
+    */
+    --terra-color-green-50: hsla(147, 84%, 94%, 1);
+    --terra-color-green-100: hsla(149, 66%, 90%, 1);
+    --terra-color-green-200: hsla(149, 66%, 81%, 1);
+    --terra-color-green-300: hsla(147, 66%, 73%, 1);
+    --terra-color-green-400: hsla(146, 66%, 65%, 1);
+    --terra-color-green-500: hsla(145, 67%, 57%, 1);
+    --terra-color-green-600: hsla(145, 65%, 46%, 1);
+    --terra-color-green-700: hsla(145, 63%, 37%, 1);
+    --terra-color-green-800: hsla(145, 61%, 31%, 1);
+    --terra-color-green-900: hsla(144, 58%, 22%, 1);
+    --terra-color-green-950: hsla(144, 57%, 13%, 1);
+
+    /* Chartreuse color palette
+    */
+    --terra-color-chartreuse-50: hsla(127, 100%, 93%, 1);
+    --terra-color-chartreuse-100: hsla(127, 100%, 88%, 1);
+    --terra-color-chartreuse-200: hsla(127, 100%, 81%, 1);
+    --terra-color-chartreuse-300: hsla(127, 100%, 75%, 1);
+    --terra-color-chartreuse-400: hsla(127, 100%, 68%, 1);
+    --terra-color-chartreuse-500: hsla(127, 100%, 61%, 1);
+    --terra-color-chartreuse-600: hsla(127, 67%, 51%, 1);
+    --terra-color-chartreuse-700: hsla(127, 64%, 41%, 1);
+    --terra-color-chartreuse-800: hsla(127, 64%, 32%, 1);
+    --terra-color-chartreuse-900: hsla(127, 64%, 22%, 1);
+    --terra-color-chartreuse-950: hsla(128, 65%, 12%, 1);
+
+    /* Blue color palette
+    */
+    --terra-color-blue-50: hsla(218, 86%, 94%, 1);
+    --terra-color-blue-100: hsla(217, 84%, 88%, 1);
+    --terra-color-blue-200: hsla(217, 84%, 78%, 1);
+    --terra-color-blue-300: hsla(217, 81%, 69%, 1);
+    --terra-color-blue-400: hsla(219, 94%, 62%, 1);
+    --terra-color-blue-500: hsla(217, 78%, 50%, 1);
+    --terra-color-blue-600: hsla(217, 76%, 42%, 1);
+    --terra-color-blue-700: hsla(217, 74%, 35%, 1);
+    --terra-color-blue-800: hsla(218, 72%, 27%, 1);
+    --terra-color-blue-900: hsla(218, 71%, 19%, 1);
+    --terra-color-blue-950: hsla(218, 68%, 11%, 1);
+    --terra-color-blue-hds-extended-350: hsla(212, 100%, 58%, 1);
+    --terra-color-blue-hds-extended-750: hsla(218, 86%, 31%, 1);
+
+    /* Neutral color palette
+    */
+    --terra-color-neutral-0: hsla(0, 0%, 100%, 1);
+    --terra-color-neutral-50: hsla(0, 0%, 96%, 1);
+    --terra-color-neutral-100: hsla(0, 0%, 89%, 1);
+    --terra-color-neutral-200: hsla(0, 0%, 82%, 1);
+    --terra-color-neutral-300: hsla(240, 1%, 73%, 1);
+    --terra-color-neutral-400: hsla(240, 2%, 59%, 1);
+    --terra-color-neutral-500: hsla(240, 1%, 47%, 1);
+    --terra-color-neutral-600: hsla(240, 2%, 35%, 1);
+    --terra-color-neutral-700: hsla(240, 2%, 27%, 1);
+    --terra-color-neutral-800: hsla(240, 4%, 19%, 1);
+    --terra-color-neutral-900: hsla(240, 8%, 10%, 1);
+    --terra-color-neutral-950: hsla(0, 0%, 0%, 1);
+    --terra-color-neutral-white: hsla(0, 0%, 100%, 1);
+    --terra-color-neutral-black: hsla(0, 0%, 0%, 1);
+
+    /* Functional primitives used for text link colors
+    */
+    --terra-color-blue-functional-link-default: hsla(217, 78%, 50%, 1);
+    --terra-color-blue-functional-link-hover: hsla(217, 78%, 46%, 1);
+    --terra-color-blue-functional-link-on-secondary-default: hsla(217, 78%, 46%, 1);
+    --terra-color-blue-functional-link-on-secondary-hover: hsla(217, 78%, 41%, 1);
+    --terra-color-blue-functional-link-on-tertiary-default: hsla(217, 78%, 41%, 1);
+    --terra-color-blue-functional-link-inverse-on-secondary-default: hsla(
+        219,
+        100%,
+        68%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-on-secondary-hover: hsla(
+        213,
+        100%,
+        75%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-on-tertiary-default: hsla(
+        213,
+        100%,
+        75%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-on-tertiary-hover: hsla(
+        213,
+        100%,
+        83%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-default: hsla(219, 94%, 62%, 1);
+    --terra-color-blue-functional-link-on-tertiary-hover: hsla(218, 79%, 34%, 1);
+    --terra-color-blue-functional-link-inverse-hover: hsla(219, 100%, 68%, 1);
+
+    /* Semantic Tokens
+    */
+
+    /* Surface colors
+    */
+    --terra-color-bg-surface-neutral-primary: var(--terra-color-neutral-50);
+    --terra-color-bg-surface-neutral-secondary: var(--terra-color-neutral-100);
+    --terra-color-bg-surface-neutral-tertiary: var(--terra-color-neutral-200);
+    --terra-color-bg-surface-neutral-disabled: var(--terra-color-neutral-300);
+    --terra-color-bg-surface-neutral-inverse-primary: var(--terra-color-neutral-900);
+    --terra-color-bg-surface-neutral-inverse-secondary: var(
+        --terra-color-neutral-800
+    );
+    --terra-color-bg-surface-neutral-inverse-tertiary: var(--terra-color-neutral-700);
+    --terra-color-bg-surface-brand-primary: var(--terra-color-blue-600);
+    --terra-color-bg-surface-brand-secondary: var(--terra-color-blue-300);
+    --terra-color-bg-surface-brand-tertiary: var(--terra-color-blue-950);
+
+    /* Semantic background colors
+    */
+    --terra-color-bg-success-subtle: var(--terra-color-green-100);
+    --terra-color-bg-success-bold: var(--terra-color-green-600);
+    --terra-color-bg-warning-subtle: var(--terra-color-orange-100);
+    --terra-color-bg-warning-bold: var(--terra-color-orange-500);
+    --terra-color-bg-error-subtle: var(--terra-color-red-100);
+    --terra-color-bg-error-bold: var(--terra-color-red-600);
+    --terra-color-bg-info-subtle: var(--terra-color-blue-200);
+    --terra-color-bg-info-bold: var(--terra-color-blue-500);
+
+    /* Action background colors (buttons, etc)
+    */
+    --terra-color-action-primary-default: var(--terra-color-blue-500);
+    --terra-color-action-primary-hover: var(--terra-color-blue-700);
+    --terra-color-action-primary-disabled: var(--terra-color-blue-100);
+    --terra-color-action-secondary-default: var(--terra-color-neutral-200);
+    --terra-color-action-secondary-hover: var(--terra-color-neutral-400);
+    --terra-color-action-secondary-disabled: var(--terra-color-neutral-100);
+    --terra-color-action-cta-default: var(--terra-color-chartreuse-500);
+    --terra-color-action-cta-hover: var(--terra-color-chartreuse-600);
+    --terra-color-action-cta-disabled: var(--terra-color-chartreuse-100);
+    --terra-color-action-success-default: var(--terra-color-green-500);
+    --terra-color-action-success-hover: var(--terra-color-green-600);
+    --terra-color-action-success-disabed: var(--terra-color-green-100);
+    --terra-color-action-warning-default: var(--terra-color-orange-500);
+    --terra-color-action-warning-hover: var(--terra-color-orange-600);
+    --terra-color-action-warning-disabled: var(--terra-color-orange-100);
+    --terra-color-action-error-default: var(--terra-color-red-600);
+    --terra-color-action-error-hover: var(--terra-color-red-700);
+    --terra-color-action-error-disabled: var(--terra-color-red-100);
+    --terra-color-action-info-default: var(--terra-color-blue-500);
+    --terra-color-action-info-hover: var(--terra-color-blue-700);
+    --terra-color-action-info-disabled: var(--terra-color-blue-100);
+
+    /* Text Color Tokens 
+    */
+
+    /* Text colors on surfaces
+    */
+    --terra-text-primary: var(--terra-color-neutral-900);
+    --terra-text-secondary: var(--terra-color-neutral-700);
+    --terra-text-tertiary: var(--terra-color-neutral-400);
+    --terra-text-primary-inverse: var(--terra-color-neutral-0);
+    --terra-text-secondary-inverse: var(--terra-color-neutral-100);
+    --terra-text-tertiary-inverse: var(--terra-color-neutral-300);
+
+    /* Text link colors on surfaces
+    */
+    --terra-text-link-default: var(--terra-color-blue-functional-link-default);
+    --terra-text-link-hover: var(--terra-color-blue-functional-link-hover);
+    --terra-text-link-on-secondary-default: var(
+        --terra-color-blue-functional-link-on-secondary-default
+    );
+    --terra-text-link-on-secondary-hover: var(
+        --terra-color-blue-functional-link-on-secondary-hover
+    );
+    --terra-text-link-on-tertiary-default: var(
+        --terra-color-blue-functional-link-on-tertiary-default
+    );
+    --terra-text-link-on-tertiary-hover: var(
+        --terra-color-blue-functional-link-on-tertiary-hover
+    );
+    --terra-text-link-inverse-default: var(
+        --terra-color-blue-functional-link-inverse-default
+    );
+    --terra-text-link-inverse-hover: var(
+        --terra-color-blue-functional-link-inverse-hover
+    );
+    --terra-text-link-inverse-on-secondary-default: var(
+        --terra-color-blue-functional-link-inverse-on-secondary-default
+    );
+    --terra-text-link-inverse-on-secondary-hover: var(
+        --terra-color-blue-functional-link-inverse-on-secondary-hover
+    );
+    --terra-text-link-inverse-on-tertiary-default: var(
+        --terra-color-blue-functional-link-inverse-on-tertiary-default
+    );
+    --terra-text-link-inverse-on-tertiary-hover: var(
+        --terra-color-blue-functional-link-inverse-on-tertiary-hover
+    );
+
+    /* Text colors on brand surfaces
+    */
+    --terra-text-brand-primary: var(--terra-color-white);
+    --terra-text-brand-inverse: var(--terra-color-blue-600);
+
+    /* Text colors on semantic surfaces
+    */
+    --terra-text-on-success: var(--terra-color-green-900);
+    --terra-text-on-warning: var(--terra-color-orange-900);
+    --terra-text-on-error: var(--terra-color-red-900);
+    --terra-text-on-info: var(--terra-color-blue-800);
+    --terra-text-on-semantic: var(--terra-color-neutral-white);
+    --terra-text-on-semantic-inverse: var(--terra-color-neutral-950);
+
+    /* Text colors on action surfaces (buttons etc)
+    */
+    --terra-text-on-action-primary: var(--terra-color-neutral-white);
+    --terra-text-on-action-secondary: var(--terra-color-neutral-950);
+    --terra-text-on-action-semantic: var(--terra-color-neutral-white);
+    --terra-text-on-action-semantic-inverse: var(--terra-color-neutral-950);
+    --terra-text-on-action-disabled: var(--terra-color-neutral-400);
+
+    /* Border Color Tokens
+    */
+    /* Border colors for surfaces
+    */
+    --terra-border-neutral-light: var(--terra-color-neutral-100);
+    --terra-border-neutral-default: var(--terra-color-neutral-300);
+    --terra-border-neutral-strong: var(--terra-color-neutral-400);
+    --terra-border-neutral-inverse-light: var(--terra-color-neutral-700);
+    --terra-border-neutral-inverse-default: var(--terra-color-neutral-400);
+    --terra-border-neutral-inverse-strong: var(--terra-color-neutral-300);
+
+    /* Border colors for brand surfaces
+    */
+    --terra-border-brand-primary: var(--terra-color-blue-300);
+    --terra-border-brand-tertiary: var(--terra-color-blue-500);
+
+    /* Border colors for semantic surfaces
+    */
+    --terra-border-success: var(--terra-color-green-800);
+    --terra-border-warning-primary: var(--terra-color-red-100);
+    --terra-border-warning-default: var(--terra-color-orange-800);
+    --terra-border-error-primary: var(--terra-color-red-100);
+    --terra-border-error-default: var(--terra-color-red-800);
+    --terra-border-info-primary: var(--terra-color-blue-100);
+    --terra-border-info-default: var(--terra-color-blue-800);
+
+    /* Border colors for action surfaces
+    */
+    --terra-border-action-default: var(--terra-color-neutral-500);
+    --terra-border-action-disabled: var(--terra-color-neutral-200);
+}
+
+/**************/
+/* Dark Theme */
+/**************/
+
+:root[data-mode='Dark'] {
+    /* Primitive Tokens */
+
+    /* Red color palette
+    */
+    --terra-color-red-50: hsla(2, 44%, 12%, 1);
+    --terra-color-red-100: hsla(3, 67%, 20%, 1);
+    --terra-color-red-200: hsla(3, 56%, 29%, 1);
+    --terra-color-red-300: hsla(3, 63%, 38%, 1);
+    --terra-color-red-400: hsla(3, 68%, 47%, 1);
+    --terra-color-red-500: hsla(3, 75%, 56%, 1);
+    --terra-color-red-600: hsla(3, 79%, 64%, 1);
+    --terra-color-red-700: hsla(3, 84%, 73%, 1);
+    --terra-color-red-800: hsla(3, 90%, 81%, 1);
+    --terra-color-red-900: hsla(3, 100%, 91%, 1);
+    --terra-color-red-950: hsla(3, 100%, 95%, 1);
+
+    /* Orange color palette
+    */
+    --terra-color-orange-50: hsla(24, 45%, 11%, 1);
+    --terra-color-orange-100: hsla(22, 50%, 19%, 1);
+    --terra-color-orange-200: hsla(24, 56%, 27%, 1);
+    --terra-color-orange-300: hsla(23, 60%, 35%, 1);
+    --terra-color-orange-400: hsla(23, 65%, 43%, 1);
+    --terra-color-orange-500: hsla(23, 70%, 50%, 1);
+    --terra-color-orange-600: hsla(23, 67%, 58%, 1);
+    --terra-color-orange-700: hsla(23, 63%, 66%, 1);
+    --terra-color-orange-800: hsla(23, 60%, 74%, 1);
+    --terra-color-orange-900: hsla(22, 56%, 82%, 1);
+    --terra-color-orange-950: hsla(23, 53%, 88%, 1);
+
+    /* Green color palette
+    */
+    --terra-color-green-50: hsla(148, 49%, 11%, 1);
+    --terra-color-green-100: hsla(147, 51%, 15%, 1);
+    --terra-color-green-200: hsla(147, 53%, 24%, 1);
+    --terra-color-green-300: hsla(146, 60%, 33%, 1);
+    --terra-color-green-400: hsla(146, 58%, 40%, 1);
+    --terra-color-green-500: hsla(145, 61%, 48%, 1);
+    --terra-color-green-600: hsla(145, 65%, 57%, 1);
+    --terra-color-green-700: hsla(146, 68%, 65%, 1);
+    --terra-color-green-800: hsla(146, 72%, 73%, 1);
+    --terra-color-green-900: hsla(146, 74%, 82%, 1);
+    --terra-color-green-950: hsla(146, 77%, 88%, 1);
+
+    /* Chartreuse color palette
+    */
+    --terra-color-chartreuse-50: hsla(128, 49%, 10%, 1);
+    --terra-color-chartreuse-100: hsla(127, 51%, 15%, 1);
+    --terra-color-chartreuse-200: hsla(127, 53%, 24%, 1);
+    --terra-color-chartreuse-300: hsla(127, 56%, 32%, 1);
+    --terra-color-chartreuse-400: hsla(127, 58%, 40%, 1);
+    --terra-color-chartreuse-500: hsla(127, 61%, 51%, 1);
+    --terra-color-chartreuse-600: hsla(127, 65%, 57%, 1);
+    --terra-color-chartreuse-700: hsla(127, 68%, 65%, 1);
+    --terra-color-chartreuse-800: hsla(127, 72%, 73%, 1);
+    --terra-color-chartreuse-900: hsla(127, 74%, 82%, 1);
+    --terra-color-chartreuse-950: hsla(127, 77%, 88%, 1);
+
+    /* Blue color palette
+    */
+    --terra-color-blue-50: hsla(215, 60%, 11%, 1);
+    --terra-color-blue-100: hsla(216, 62%, 19%, 1);
+    --terra-color-blue-200: hsla(215, 65%, 27%, 1);
+    --terra-color-blue-300: hsla(216, 67%, 36%, 1);
+    --terra-color-blue-400: hsla(217, 63%, 44%, 1);
+    --terra-color-blue-500: hsla(217, 70%, 53%, 1);
+    --terra-color-blue-600: hsla(217, 74%, 61%, 1);
+    --terra-color-blue-700: hsla(217, 75%, 68%, 1);
+    --terra-color-blue-800: hsla(217, 77%, 76%, 1);
+    --terra-color-blue-900: hsla(217, 81%, 84%, 1);
+    --terra-color-blue-950: hsla(217, 82%, 91%, 1);
+    --terra-color-blue-hds-extended-350: hsla(217, 86%, 31%, 1);
+    --terra-color-blue-hds-extended-750: hsla(218, 75%, 62%, 1);
+
+    /* Neutral color palette
+    */
+    --terra-color-neutral-0: hsla(0, 0%, 0%, 1);
+    --terra-color-neutral-50: hsla(240, 8%, 10%, 1);
+    --terra-color-neutral-100: hsla(240, 4%, 19%, 1);
+    --terra-color-neutral-200: hsla(240, 2%, 27%, 1);
+    --terra-color-neutral-300: hsla(240, 2%, 35%, 1);
+    --terra-color-neutral-400: hsla(240, 1%, 47%, 1);
+    --terra-color-neutral-500: hsla(240, 2%, 59%, 1);
+    --terra-color-neutral-600: hsla(240, 1%, 73%, 1);
+    --terra-color-neutral-700: hsla(0, 0%, 82%, 1);
+    --terra-color-neutral-800: hsla(0, 0%, 89%, 1);
+    --terra-color-neutral-900: hsla(0, 0%, 96%, 1);
+    --terra-color-neutral-950: hsla(0, 0%, 100%, 1);
+    --terra-color-neutral-white: hsla(0, 0%, 100%, 1);
+    --terra-color-neutral-black: hsla(0, 0%, 0%, 1);
+
+    /* Functional primitives used for text link colors
+    */
+    --terra-color-blue-functional-link-default: hsla(219, 94%, 62%, 1);
+    --terra-color-blue-functional-link-hover: hsla(219, 100%, 68%, 1);
+    --terra-color-blue-functional-link-on-secondary-default: hsla(219, 100%, 68%, 1);
+    --terra-color-blue-functional-link-on-secondary-hover: hsla(213, 100%, 75%, 1);
+    --terra-color-blue-functional-link-on-tertiary-default: hsla(213, 100%, 75%, 1);
+    --terra-color-blue-functional-link-inverse-on-secondary-default: hsla(
+        217,
+        78%,
+        46%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-on-secondary-hover: hsla(
+        217,
+        78%,
+        41%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-on-tertiary-default: hsla(
+        217,
+        78%,
+        41%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-on-tertiary-hover: hsla(
+        218,
+        79%,
+        34%,
+        1
+    );
+    --terra-color-blue-functional-link-inverse-default: hsla(217, 78%, 50%, 1);
+    --terra-color-blue-functional-link-on-tertiary-hover: hsla(213, 100%, 83%, 1);
+    --terra-color-blue-functional-link-inverse-hover: hsla(217, 78%, 46%, 1);
+
+    /* Semantic Tokens
+    */
+
+    /* Surface colors
+    */
+    --terra-color-bg-surface-neutral-primary: var(--terra-color-neutral-50);
+    --terra-color-bg-surface-neutral-secondary: var(--terra-color-neutral-100);
+    --terra-color-bg-surface-neutral-tertiary: var(--terra-color-neutral-200);
+    --terra-color-bg-surface-neutral-disabled: var(--terra-color-neutral-300);
+    --terra-color-bg-surface-neutral-inverse-primary: var(--terra-color-neutral-900);
+    --terra-color-bg-surface-neutral-inverse-secondary: var(
+        --terra-color-neutral-800
+    );
+    --terra-color-bg-surface-neutral-inverse-tertiary: var(--terra-color-neutral-700);
+    --terra-color-bg-surface-brand-primary: var(--terra-color-blue-500);
+    --terra-color-bg-surface-brand-secondary: var(--terra-color-blue-300);
+    --terra-color-bg-surface-brand-tertiary: var(--terra-color-blue-100);
+
+    /* Semantic background colors
+    */
+    --terra-color-bg-success-subtle: var(--terra-color-green-200);
+    --terra-color-bg-success-bold: var(--terra-color-green-300);
+    --terra-color-bg-warning-subtle: var(--terra-color-orange-200);
+    --terra-color-bg-warning-bold: var(--terra-color-orange-600);
+    --terra-color-bg-error-subtle: var(--terra-color-red-200);
+    --terra-color-bg-error-bold: var(--terra-color-red-400);
+    --terra-color-bg-info-subtle: var(--terra-color-blue-200);
+    --terra-color-bg-info-bold: var(--terra-color-blue-400);
+
+    /* Action background colors (buttons, etc)
+    */
+    --terra-color-action-primary-default: var(--terra-color-blue-400);
+    --terra-color-action-primary-hover: var(--terra-color-blue-500);
+    --terra-color-action-primary-disabled: var(--terra-color-blue-200);
+    --terra-color-action-secondary-default: var(--terra-color-neutral-500);
+    --terra-color-action-secondary-hover: var(--terra-color-neutral-600);
+    --terra-color-action-secondary-disabled: var(--terra-color-neutral-200);
+    --terra-color-action-cta-default: var(--terra-color-chartreuse-500);
+    --terra-color-action-cta-hover: var(--terra-color-chartreuse-600);
+    --terra-color-action-cta-disabled: var(--terra-color-chartreuse-200);
+    --terra-color-action-success-default: var(--terra-color-green-500);
+    --terra-color-action-success-hover: var(--terra-color-green-600);
+    --terra-color-action-success-disabed: var(--terra-color-green-200);
+    --terra-color-action-warning-default: var(--terra-color-orange-500);
+    --terra-color-action-warning-hover: var(--terra-color-orange-600);
+    --terra-color-action-warning-disabled: var(--terra-color-orange-200);
+    --terra-color-action-error-default: var(--terra-color-red-500);
+    --terra-color-action-error-hover: var(--terra-color-red-600);
+    --terra-color-action-error-disabled: var(--terra-color-red-200);
+    --terra-color-action-info-default: var(--terra-color-blue-400);
+    --terra-color-action-info-hover: var(--terra-color-blue-500);
+    --terra-color-action-info-disabled: var(--terra-color-blue-200);
+
+    /* Text Color Tokens 
+    */
+
+    /* Text colors on surfaces
+    */
+    --terra-text-primary: var(--terra-color-neutral-900);
+    --terra-text-secondary: var(--terra-color-neutral-700);
+    --terra-text-tertiary: var(--terra-color-neutral-500);
+    --terra-text-primary-inverse: var(--terra-color-neutral-0);
+    --terra-text-secondary-inverse: var(--terra-color-neutral-100);
+    --terra-text-tertiary-inverse: var(--terra-color-neutral-300);
+
+    /* Text link colors on surfaces
+    */
+    --terra-text-link-default: var(--terra-color-blue-functional-link-default);
+    --terra-text-link-hover: var(--terra-color-blue-functional-link-hover);
+    --terra-text-link-on-secondary-default: var(
+        --terra-color-blue-functional-link-on-secondary-default
+    );
+    --terra-text-link-on-secondary-hover: var(
+        --terra-color-blue-functional-link-on-secondary-hover
+    );
+    --terra-text-link-on-tertiary-default: var(
+        --terra-color-blue-functional-link-on-tertiary-default
+    );
+    --terra-text-link-on-tertiary-hover: var(
+        --terra-color-blue-functional-link-on-tertiary-hover
+    );
+    --terra-text-link-inverse-default: var(
+        --terra-color-blue-functional-link-inverse-default
+    );
+    --terra-text-link-inverse-hover: var(
+        --terra-color-blue-functional-link-inverse-hover
+    );
+    --terra-text-link-inverse-on-secondary-default: var(
+        --terra-color-blue-functional-link-inverse-on-secondary-default
+    );
+    --terra-text-link-inverse-on-secondary-hover: var(
+        --terra-color-blue-functional-link-inverse-on-secondary-hover
+    );
+    --terra-text-link-inverse-on-tertiary-default: var(
+        --terra-color-blue-functional-link-inverse-on-tertiary-default
+    );
+    --terra-text-link-inverse-on-tertiary-hover: var(
+        --terra-color-blue-functional-link-inverse-on-tertiary-hover
+    );
+
+    /* Text colors on brand surfaces
+    */
+    --terra-text-brand-primary: var(--terra-color-white);
+    --terra-text-brand-inverse: var(--terra-color-blue-700);
+
+    /* Text colors on semantic surfaces
+    */
+    --terra-text-on-success: var(--terra-color-green-800);
+    --terra-text-on-warning: var(--terra-color-orange-900);
+    --terra-text-on-error: var(--terra-color-red-800);
+    --terra-text-on-info: var(--terra-color-blue-800);
+    --terra-text-on-semantic: var(--terra-color-neutral-white);
+    --terra-text-on-semantic-inverse: var(--terra-color-neutral-black);
+
+    /* Text colors on action surfaces (buttons etc)
+    */
+    --terra-text-on-action-primary: var(--terra-color-neutral-white);
+    --terra-text-on-action-secondary: var(--terra-color-neutral-0);
+    --terra-text-on-action-semantic: var(--terra-color-neutral-white);
+    --terra-text-on-action-semantic-inverse: var(--terra-color-neutral-0);
+    --terra-text-on-action-disabled: var(--terra-color-neutral-400);
+
+    /* Border Color Tokens
+    */
+    /* Border colors for surfaces
+    */
+    --terra-border-neutral-light: var(--terra-color-neutral-100);
+    --terra-border-neutral-default: var(--terra-color-neutral-300);
+    --terra-border-neutral-strong: var(--terra-color-neutral-400);
+    --terra-border-neutral-inverse-light: var(--terra-color-neutral-700);
+    --terra-border-neutral-inverse-default: var(--terra-color-neutral-400);
+    --terra-border-neutral-inverse-strong: var(--terra-color-neutral-300);
+
+    /* Border colors for brand surfaces
+    */
+    --terra-border-brand-primary: var(--terra-color-blue-100);
+    --terra-border-brand-secondary: var(--terra-color-blue-700);
+
+    /* Border colors for semantic surfaces
+    */
+    --terra-border-success: var(--terra-color-green-800);
+    --terra-border-warning-primary: var(--terra-color-red-100);
+    --terra-border-warning-default: var(--terra-color-orange-800);
+    --terra-border-error-primary: var(--terra-color-red-100);
+    --terra-border-info-primary: var(--terra-color-blue-100);
+    --terra-border-info-default: var(--terra-color-blue-800);
+    --terra-border-error-defaut: var(--terra-color-red-800);
+
+    /* Border colors for action surfaces
+    */
+    --terra-border-action-default: var(--terra-color-neutral-500);
+    --terra-border-action-disabled: var(--terra-color-neutral-200);
+}
+
+:root[data-mode='Value'] {
+    /* Horizon Design System Colors
+
+    /* Primary Palette
+     * Our primary palette consists of black, white, red, and blue. These colors are used in 
+     * logical ways throughout the site to highlight actions when they are important. We use 
+     * a restricted palette to give attention and hierarchy to our content without distraction.
+     */
+    --terra-color-nasa-red: var(--terra-color-red-500);
+    --terra-color-nasa-blue: var(--terra-color-blue-500);
+    --terra-color-carbon-black: var(--terra-color-neutral-950);
+    --terra-color-spacesuit-white: var(--terra-color-neutral-0);
+
+    /* Extended Palette 
+     * The extended palette consists of a tint and shade for the brand colors in the primary palette. 
+     * Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible. 
+     */
+    --terra-color-nasa-red-shade: var(--terra-color-red-700);
+    --terra-color-nasa-red-tint: var(--terra-color-red-400);
+    --terra-color-nasa-blue-shade: var(--terra-color-blue-hds-extended-750);
+    --terra-color-nasa-blue-tint: var(--terra-color-blue-hds-extended-350);
+
+    /* Additional Colors 
+     * International Orange and Active Green are colors that are used sparingly and intentionally.
+     */
+    --terra-color-international-orange: var(--terra-color-orange-500);
+    --terra-color-active-green: var(--terra-color-green-500);
+
+    /* Neutrals
+     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+     */
+    --terra-color-carbon-90: var(--terra-color-neutral-900);
+    --terra-color-carbon-80: var(--terra-color-neutral-800);
+    --terra-color-carbon-70: var(--terra-color-neutral-700);
+    --terra-color-carbon-60: var(--terra-color-neutral-600);
+    --terra-color-carbon-50: var(--terra-color-neutral-500);
+    --terra-color-carbon-40: var(--terra-color-neutral-400);
+    --terra-color-carbon-30: var(--terra-color-neutral-300);
+    --terra-color-carbon-20: var(--terra-color-neutral-200);
+    --terra-color-carbon-10: var(--terra-color-neutral-100);
+    --terra-color-carbon-5: var(--terra-color-neutral-50);
+    --terra-color-white: hsla(0, 0%, 100%, 1);
+    --terra-color-black: hsla(0, 0%, 0%, 1);
+}

@@ -8,7 +8,7 @@ export default css`
 
         block-size: var(--terra-block-size, 2.1875rem);
         box-sizing: border-box;
-        color: #1b1b1b; /* HDS uses this color for body text but does not have a defined color in the HDS palette */
+        color: var(--terra-field-text);
         contain: layout size style;
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh + var(--terra-block-size, 2.1875rem));
@@ -42,12 +42,6 @@ export default css`
 
     * {
         box-sizing: inherit;
-    }
-
-    .search-input-group {
-        block-size: 100%;
-        display: flex;
-        flex-wrap: wrap;
     }
 
     .tag-container {
@@ -114,16 +108,22 @@ export default css`
     }
 
     .combobox::placeholder {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-field-text-placeholder);
     }
 
     .combobox:focus {
-        border-color: var(--terra-color-carbon-40);
+        border-color: var(--terra-field-border-focus);
         outline: 0;
     }
 
+    .search-input-group {
+        block-size: 100%;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
-        border-color: var(--terra-color-carbon-30);
+        border-color: var(--terra-input-border-color);
     }
 
     .combobox-button {
@@ -163,9 +163,9 @@ export default css`
     }
 
     .search-help {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-input-help-text-color);
         flex: 1 1 100%;
-        font-size: var(--terra-font-size-small);
+        font-size: var(--terra-input-help-text-font-size-medium);
         line-height: var(--terra-line-height-normal);
         margin-block: 0;
         position: absolute;
@@ -178,7 +178,7 @@ export default css`
     }
 
     .search-results {
-        background-color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-input-background-color);
         block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
@@ -204,7 +204,8 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--terra-color-carbon-40);
+        border-color: var(--terra-panel-border);
+        border-radius: var(--terra-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;
@@ -218,7 +219,8 @@ export default css`
     }
 
     .search-results .error {
-        color: var(--terra-color-nasa-red);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
         font-family: var(--terra-font-family--dm-mono);
         padding-block: 2rem;
     }

@@ -23,43 +23,65 @@ export default css`
 
     /* Filled appearance (HDS default) - colored background with white text */
     .alert--filled {
-        background-color: var(--terra-alert-filled-background-color-primary);
+        background-color: var(--terra-alert-filled-background-color-information);
         border: none;
         color: var(--terra-alert-filled-color);
     }
 
-    .alert--filled.alert--primary {
-        background-color: var(--terra-alert-filled-background-color-primary);
+    .alert--filled.alert--information {
+        background-color: var(--terra-alert-filled-background-color-information);
+        color: var(--terra-alert-filled-color-information);
     }
 
     .alert--filled.alert--success {
         background-color: var(--terra-alert-filled-background-color-success);
+        color: var(--terra-alert-filled-color-success);
     }
 
     .alert--filled.alert--neutral {
         background-color: var(--terra-alert-filled-background-color-neutral);
+        color: var(--terra-alert-filled-color-neutral);
     }
 
     .alert--filled.alert--warning {
         background-color: var(--terra-alert-filled-background-color-warning);
+        color: var(--terra-alert-filled-color-warning);
     }
 
     .alert--filled.alert--danger {
         background-color: var(--terra-alert-filled-background-color-danger);
+        color: var(--terra-alert-filled-color-danger);
     }
 
-    .alert--filled .alert__icon {
-        color: var(--terra-alert-filled-icon-color);
+    .alert--filled.alert--information .alert__icon,
+    .alert--filled.alert--information .alert__close-button {
+        color: var(--terra-alert-filled-icon-color-information);
     }
 
-    .alert--filled .alert__close-button {
-        color: var(--terra-alert-filled-icon-color);
+    .alert--filled.alert--success .alert__icon,
+    .alert--filled.alert--success .alert__close-button {
+        color: var(--terra-alert-filled-icon-color-success);
+    }
+
+    .alert--filled.alert--neutral .alert__icon,
+    .alert--filled.alert--neutral .alert__close-button {
+        color: var(--terra-alert-filled-icon-color-neutral);
+    }
+
+    .alert--filled.alert--warning .alert__icon,
+    .alert--filled.alert--warning .alert__close-button {
+        color: var(--terra-alert-filled-icon-color-warning);
+    }
+
+    .alert--filled.alert--danger .alert__icon,
+    .alert--filled.alert--danger .alert__close-button {
+        color: var(--terra-alert-filled-icon-color-danger);
     }
 
     /* White appearance - white background with colored top border */
     .alert--white {
         background-color: var(--terra-alert-white-background-color);
-        border: solid var(--terra-panel-border-width) var(--terra-panel-border-color);
+        border: solid var(--terra-panel-border-width) var(--terra-panel-border);
         border-top-width: calc(var(--terra-panel-border-width) * 3);
         color: var(--terra-alert-white-color);
     }
@@ -73,7 +95,7 @@ export default css`
         flex: 0 0 auto;
         display: flex;
         align-items: center;
-        font-size: var(--terra-font-size-large);
+        font-size: var(--terra-font-size-x-large);
         padding-inline-start: var(--terra-spacing-large);
     }
 
@@ -82,44 +104,44 @@ export default css`
     }
 
     /* White appearance variant colors */
-    .alert--white.alert--primary {
-        border-top-color: var(--terra-color-nasa-blue-shade);
+    .alert--white.alert--information {
+        border-top-color: var(--terra-color-bg-info-bold);
     }
 
-    .alert--white.alert--primary .alert__icon {
-        color: var(--terra-color-nasa-blue-shade);
+    .alert--white.alert--information .alert__icon {
+        color: var(--terra-color-bg-info-bold);
     }
 
     .alert--white.alert--success {
-        border-top-color: var(--terra-color-success-green);
+        border-top-color: var(--terra-color-bg-success-bold);
     }
 
     .alert--white.alert--success .alert__icon {
-        color: var(--terra-color-success-green);
+        color: var(--terra-color-bg-success-bold);
     }
 
     .alert--white.alert--neutral {
-        border-top-color: var(--terra-color-carbon-60);
+        border-top-color: var(--terra-color-bg-default-bold);
     }
 
     .alert--white.alert--neutral .alert__icon {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-color-bg-default-bold);
     }
 
     .alert--white.alert--warning {
-        border-top-color: var(--terra-color-international-orange);
+        border-top-color: var(--terra-color-bg-warning-bold);
     }
 
     .alert--white.alert--warning .alert__icon {
-        color: var(--terra-color-international-orange);
+        color: var(--terra-color-bg-warning-bold);
     }
 
     .alert--white.alert--danger {
-        border-top-color: var(--terra-color-nasa-red);
+        border-top-color: var(--terra-color-bg-error-bold);
     }
 
     .alert--white.alert--danger .alert__icon {
-        color: var(--terra-color-nasa-red);
+        color: var(--terra-color-bg-error-bold);
     }
 
     .alert__message {
@@ -157,7 +179,7 @@ export default css`
     }
 
     .alert--white .alert__countdown {
-        background-color: var(--terra-panel-border-color);
+        background-color: var(--terra-panel-border);
     }
 
     .alert--filled .alert__countdown {
@@ -173,24 +195,24 @@ export default css`
         width: 0;
     }
 
-    .alert--primary .alert__countdown-elapsed {
-        background-color: var(--terra-color-nasa-blue-shade);
+    .alert--information .alert__countdown-elapsed {
+        background-color: var(--terra-color-bg-info-bold);
     }
 
     .alert--success .alert__countdown-elapsed {
-        background-color: var(--terra-color-success-green);
+        background-color: var(--terra-color-bg-success-bold);
     }
 
     .alert--neutral .alert__countdown-elapsed {
-        background-color: var(--terra-color-carbon-60);
+        background-color: var(--terra-color-bg-default-bold);
     }
 
     .alert--warning .alert__countdown-elapsed {
-        background-color: var(--terra-color-international-orange);
+        background-color: var(--terra-color-bg-warning-bold);
     }
 
     .alert--danger .alert__countdown-elapsed {
-        background-color: var(--terra-color-nasa-red);
+        background-color: var(--terra-color-bg-error-bold);
     }
 
     .alert__timer {

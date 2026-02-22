@@ -5,7 +5,7 @@ export default css`
         display: block;
     }
 
-    .slider__header {
+    . header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -25,6 +25,7 @@ export default css`
         display: flex;
         align-items: center;
         gap: var(--terra-spacing-small, 0.75rem);
+        margin-bottom: var(--terra-spacing-small, 0.75rem);
     }
 
     .slider__clear {
@@ -202,10 +203,7 @@ export default css`
         box-shadow:;
     }
     .noUi-active {
-        box-shadow:
-            inset 0 0 1px #fff,
-            inset 0 1px 7px #ddd,
-            0 3px 6px -3px #bbb;
+        background: var(--terra-control-icon-active);
     }
     /* Handle stripes */
     .noUi-handle:before,

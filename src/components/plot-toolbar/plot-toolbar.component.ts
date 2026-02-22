@@ -217,7 +217,11 @@ export default class TerraPlotToolbar extends TerraElement {
                                   ${this.catalogVariable.dataFieldLongName}</span
                               >
 
-                              <terra-icon name="info" font-size="1em"></terra-icon>
+                              <terra-icon
+                                  name="outline-information-circle"
+                                  library="heroicons"
+                                  font-size="1.7em"
+                              ></terra-icon>
                           </terra-button>
 
                           ${this.showCitation
@@ -285,11 +289,13 @@ export default class TerraPlotToolbar extends TerraElement {
                               >
 
                               <terra-icon
-                                  name="question"
-                                  font-size="1em"
+                                  name="outline-question-mark-circle"
+                                  library="heroicons"
+                                  font-size="1.7em"
                               ></terra-icon>
                           </terra-button>
                           <terra-button
+                              circle
                               outline
                               aria-expanded=${this.activeMenuItem === 'jupyter'}
                               aria-controls="menu"

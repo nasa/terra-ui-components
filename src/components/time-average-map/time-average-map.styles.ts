@@ -47,6 +47,10 @@ export default css`
     dialog {
         position: absolute;
         top: calc(50% - 100px);
+        border: 1px solid var(--terra-panel-border, #b9b9bb);
+        border-radius: var(--terra-panel-border-radius, 8px);
+        box-shadow: var(--terra-shadow-large);
+        background-color: var(--terra-panel-background, #ffffff);
     }
 
     .no-data-alert,
@@ -62,7 +66,7 @@ export default css`
     }
 
     .harmony-job-link a {
-        color: var(--terra-color-text-secondary, #666);
+        color: var(--terra-caption-color, #959595);
         text-decoration: none;
     }
 

@@ -124,15 +124,21 @@ export default css`
 
     /* Error State - using data attributes from FormControlController */
     :host([data-user-invalid]) .textarea {
-        border-color: var(--terra-color-nasa-red);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
+        border-color: var(--terra-border-error-primary);
     }
 
     :host([data-user-invalid]) .textarea:hover:not(.textarea--disabled) {
-        border-color: var(--terra-color-nasa-red-shade);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
+        border-color: var(--terra-border-error-primary);
     }
 
     :host([data-user-invalid]) .textarea.textarea--focused:not(.textarea--disabled) {
-        border-color: var(--terra-color-nasa-red);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
+        border-color: var(--terra-border-error-primary);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
             var(--terra-color-nasa-red-tint);
     }

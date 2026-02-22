@@ -30,8 +30,9 @@ export default css`
         min-width: 20rem;
         max-width: calc(100% - var(--terra-spacing-2x-large));
         max-height: calc(100% - var(--terra-spacing-2x-large));
-        background-color: var(--terra-panel-background-color);
-        border-radius: var(--terra-border-radius-medium);
+        background-color: var(--terra-panel-background);
+        border-radius: var(--terra-panel-border-radius);
+        border: var(--terra-panel-border-width) solid var(--terra-panel-border);
         box-shadow: var(--terra-shadow-x-large);
     }
 
