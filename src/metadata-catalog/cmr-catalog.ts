@@ -214,17 +214,20 @@ export class CmrCatalog implements MetadataCatalogInterface {
             throw new Error(`Failed to fetch granules: ${response.errors[0].message}`)
         }
 
+        const lowestCloudCover =
+            response.data.collections?.items?.[0]?.lowestCloudCover?.items?.[0]
+                ?.cloudCover
+        const highestCloudCover =
+            response.data.collections?.items?.[0]?.highestCloudCover?.items?.[0]
+                ?.cloudCover
+
         if (
-            typeof response.data.collections.items[0].lowestCloudCover.items[0]
-                .cloudCover === 'number' &&
-            typeof response.data.collections.items[0].highestCloudCover.items[0]
-                .cloudCover === 'number'
+            typeof lowestCloudCover === 'number' &&
+            typeof highestCloudCover === 'number'
         ) {
             return {
-                min: response.data.collections.items[0].lowestCloudCover.items[0]
-                    .cloudCover,
-                max: response.data.collections.items[0].highestCloudCover.items[0]
-                    .cloudCover,
+                min: lowestCloudCover,
+                max: highestCloudCover,
             }
         }
 

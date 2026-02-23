@@ -1011,6 +1011,11 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderOutputFormatSelection() {
+        // TODO: refactor component to use output formats from individual services, then each service can have a map of output format friendly names
+        const hasGiovanniService = this.collectionWithServices?.services?.some(
+            s => s.name.indexOf('giovanni') !== -1
+        )
+
         return html`
             <terra-accordion>
                 <div slot="summary">
@@ -1021,7 +1026,12 @@ export default class TerraDataSubsetter extends TerraElement {
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px;"
                 >
-                    <span>${getFriendlyNameForMimeType(this.selectedFormat)}</span>
+                    <span
+                        >${getFriendlyNameForMimeType(
+                            this.selectedFormat,
+                            hasGiovanniService
+                        )}</span
+                    >
 
                     <button class="reset-btn" @click=${this.#resetFormatSelection}>
                         Reset
@@ -1062,7 +1072,10 @@ export default class TerraDataSubsetter extends TerraElement {
                                         @change=${() =>
                                             (this.selectedFormat = format)}
                                     />
-                                    ${getFriendlyNameForMimeType(format)}
+                                    ${getFriendlyNameForMimeType(
+                                        format,
+                                        hasGiovanniService
+                                    )}
                                 </label>
                             `
                         )
@@ -2457,6 +2470,10 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderDataAccessModeSelection() {
+        if (!this.controller.hasGranules) {
+            return nothing
+        }
+
         return html`
             <div class="mode-selection">
                 <div class="mode-options">

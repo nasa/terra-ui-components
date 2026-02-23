@@ -39,6 +39,7 @@ import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
+import TerraAlert from '../alert/alert.component.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -69,6 +70,7 @@ export default class TerraDataAccess extends TerraElement {
         'terra-menu-item': TerraMenuItem,
         'terra-button': TerraButton,
         'terra-data-grid': TerraDataGrid,
+        'terra-alert': TerraAlert,
     }
 
     @property({ reflect: true, attribute: 'short-name' })
@@ -611,6 +613,18 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     render() {
+        if (this.#controller.sampling?.firstGranules.count === 0) {
+            return html`
+                <terra-alert variant="warning" open appearance="white">
+                    <strong>No granules found.</strong>
+                    <p>
+                        This collection does not have any granules available to access
+                        or subset.
+                    </p>
+                </terra-alert>
+            `
+        }
+
         return html`
             <div class="filters-compact">
                 <div class="search-row">

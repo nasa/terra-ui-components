@@ -7,6 +7,14 @@ export default css`
 
     terra-dialog {
         --terra-font-size-large: 16px;
+        --width: 80%;
+        --max-width: 1200px;
+    }
+
+    @media screen and (max-width: 1200px) {
+        terra-dialog {
+            --width: calc(100vw - 40px);
+        }
     }
 
     :host * {
