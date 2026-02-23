@@ -24,7 +24,10 @@ import {
 } from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
-import type { CmrSearchResult } from '../../metadata-catalog/types.js'
+import type {
+    CmrSearchResult,
+    VariableDetails,
+} from '../../metadata-catalog/types.js'
 import type { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
@@ -108,6 +111,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     collectionWithServices?: CollectionWithAvailableServices
+
+    @state()
+    variableDetails?: Array<VariableDetails>
 
     @state()
     selectedVariables: Variable[] = []
@@ -1560,6 +1566,15 @@ export default class TerraDataSubsetter extends TerraElement {
                     const groupPath = [...path, key].join('/')
                     if (value.__isLeaf) {
                         // Leaf node (variable)
+                        // Look up the long name from variableDetails
+                        const variableDetail = this.variableDetails?.find(
+                            d =>
+                                d.name === value.__variable.name &&
+                                d.longName !== value.__variable.name // if the long name is the same as the variable name, we'll just use the variable name
+                        )
+                        const variableName = variableDetail?.longName
+                            ? `${key} = ${variableDetail.longName}${variableDetail.units ? ` (${variableDetail.units})` : ''}`
+                            : key
                         return html`
                             <div class="option-row">
                                 <label class="checkbox-option">
@@ -1577,7 +1592,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                                 value.__variable
                                             )}
                                     />
-                                    <span>${key}</span>
+                                    <span>${variableName}</span>
                                 </label>
                             </div>
                         `

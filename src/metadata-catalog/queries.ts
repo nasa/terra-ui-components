@@ -11,6 +11,20 @@ export const GET_CMR_COLLECTION_CITATIONS_BY_ENTRY_ID = gql`
     }
 `
 
+export const GET_CMR_VARIABLE_DETAILS_BY_COLLECTION_CONCEPT_ID = gql`
+    query GetVariableDetails($collectionConceptId: String!) {
+        collection(params: { conceptId: $collectionConceptId }) {
+            variables {
+                items {
+                    name
+                    units
+                    longName
+                }
+            }
+        }
+    }
+`
+
 export const GET_CMR_SEARCH_RESULTS_ALL = gql`
     query GetCMRSearchResultsAll($keyword: String!) {
         collections(params: { keyword: $keyword }) {

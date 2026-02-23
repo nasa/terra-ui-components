@@ -6,6 +6,7 @@ import {
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
     GET_CMR_SEARCH_RESULTS_VARIABLES,
+    GET_CMR_VARIABLE_DETAILS_BY_COLLECTION_CONCEPT_ID,
 } from './queries.js'
 import {
     type CmrSearchResultsResponse,
@@ -17,6 +18,7 @@ import {
     type CloudCoverRange,
     type CmrCollectionCitationsResponse,
     type CmrCollectionCitationItem,
+    type CmrVariableDetailsResponse,
 } from './types.js'
 
 export class CmrCatalog implements MetadataCatalogInterface {
@@ -259,6 +261,31 @@ export class CmrCatalog implements MetadataCatalogInterface {
         }
 
         return response.data.collections.items[0]
+    }
+
+    async getVariablesDetails(collectionConceptId: string, options?: SearchOptions) {
+        const client = await getGraphQLClient('cmr')
+
+        const response = await client.query<CmrVariableDetailsResponse>({
+            query: GET_CMR_VARIABLE_DETAILS_BY_COLLECTION_CONCEPT_ID,
+            variables: {
+                collectionConceptId,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+            fetchPolicy: 'network-only',
+        })
+
+        if (response.errors) {
+            throw new Error(
+                `Failed to fetch variable details: ${response.errors[0].message}`
+            )
+        }
+
+        return response.data
     }
 
     /**
