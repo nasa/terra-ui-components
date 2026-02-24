@@ -10,7 +10,7 @@ export default css`
     }
 
     h3 {
-        color: var(--terra-color-nasa-blue-shade);
+        color: var(--terra-text-brand-on-primary);
         margin-bottom: 1rem;
     }
 
@@ -42,7 +42,7 @@ export default css`
     }
 
     header.search {
-        border-bottom: 1px solid var(--terra-color-bg-surface-neutral-primary);
+        border-bottom: 1px solid var(--terra-border-neutral-default, #e9ecef);
         grid-column: span 2;
         padding: 15px;
         padding-bottom: 25px;
@@ -111,17 +111,17 @@ export default css`
         margin-right: 10px;
         width: 1em;
         height: 1em;
-        border: 0.125em solid var(--terra-border-neutral-default);
+        border: 0.125em solid var(--terra-radio-border-color);
         border-radius: 50%;
-        background-color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-radio-background-color);
         cursor: pointer;
         position: relative; /* for the dot */
     }
 
     /* Selected state */
     input[type='radio']:checked {
-        border-color: var(--terra-color-nasa-blue);
-        background-color: var(--terra-color-spacesuit-white); /* keep white bg */
+        border-color: var(--terra-radio-border-color-checked);
+        background-color: var(--terra-radio-background-color); /* keep white bg */
     }
 
     /* Inner dot */
@@ -132,7 +132,7 @@ export default css`
         left: 50%;
         width: 0.5em; /* size of the dot */
         height: 0.5em;
-        background-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-radio-background-color-checked);
         border-radius: 50%; /* makes it circular */
         transform: translate(-50%, -50%); /* center it */
     }
@@ -182,7 +182,7 @@ export default css`
     }
 
     summary::marker {
-        color: var(--terra-color-nasa-blue); /* changes the arrow color */
+        color: var(--terra-text-brand-on-primary); /* changes the arrow color */
         cursor: pointer;
     }
 
@@ -211,16 +211,16 @@ export default css`
         -moz-appearance: none; /* for Firefox */
         width: 1em;
         height: 1em;
-        border: 0.125em solid var(--terra-border-neutral-default);
+        border: 0.125em solid var(--terra-checkbox-border-color);
         border-radius: 0.25em;
-        background-color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-checkbox-background-color);
         cursor: pointer;
         position: relative;
     }
 
     .facet label input[type='checkbox']:checked {
-        background-color: var(--terra-color-nasa-blue);
-        accent-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-checkbox-background-color-checked);
+        accent-color: var(--terra-checkbox-background-color-checked);
     }
 
     /* Draw the checkmark */
@@ -229,7 +229,7 @@ export default css`
         content: '';
         position: absolute;
         height: 2px; /* thickness of the line */
-        background-color: white; /* checkmark color */
+        background-color: var(--terra-checkbox-icon-color); /* checkmark color */
         transform-origin: left center;
     }
 
@@ -258,13 +258,21 @@ export default css`
     .variable-list-item {
         /* border: 0.0625em var(--terra-color-nasa-blue-tint) solid; */
         border-radius: 0.25em;
-        background-color: var(--terra-color-bg-surface-neutral-tertiary);
+        background-color: var(--terra-color-bg-surface-neutral-secondary);
         padding: 0.5em 1em;
-        margin-bottom: 0.15em;
+        margin-bottom: var(--terra-spacing-2x-small);
+    }
+
+    .variable-list-item label {
+        color: var(--terra-text-secondary);
     }
 
     .variable-list-item:hover {
-        background-color: var(--terra-color-bg-surface-brand-tertiary);
+        background-color: var(--terra-color-bg-info-subtle);
+    }
+
+    .variable-list-item:hover label {
+        color: var(--terra-text-secondary);
     }
 
     .variable-list-item::marker {
@@ -304,7 +312,8 @@ export default css`
     .right-column {
         display: flex;
         flex-direction: column;
-        background-color: var(--terra-color-bg-surface-brand-tertiary);
+        background-color: var(--terra-color-bg-info-subtle);
+        color: var(--terra-text-secondary);
         /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
@@ -315,13 +324,17 @@ export default css`
         margin-bottom: 1rem;
     }
 
+    .right-column label {
+        color: var(--terra-text-primary);
+    }
+
     .right-column p {
         margin: 0.5rem 0;
         line-height: 1.4;
     }
 
     .placeholder {
-        color: var(--terra-color-neutral-500);
+        color: var(--terra-text-secondary);
         font-style: italic;
     }
 

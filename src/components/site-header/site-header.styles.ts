@@ -10,13 +10,13 @@ export default css`
         /* These will be available to buttons and menus inside site-navigation */
         --terra-button-text-text-color: var(--terra-color-nasa-blue);
         --terra-button-text-text-color-hover: var(--terra-color-nasa-blue-tint);
-        --terra-panel-background: var(--terra-color-carbon-black);
-        --terra-panel-border: var(--terra-color-carbon-20);
-        --terra-menu-item-color: var(--terra-color-spacesuit-white);
-        --terra-menu-item-color-hover: var(--terra-color-spacesuit-white);
-        --terra-menu-item-background-color-hover: var(--terra-color-carbon-80);
-        --terra-menu-item-background-color-focus: var(--terra-color-nasa-blue);
-        --terra-menu-item-color-focus: var(--terra-color-spacesuit-white);
+        --terra-container-menu-bg: var(--terra-color-carbon-black);
+        --terra-container-menu-border: var(--terra-color-carbon-20);
+        --terra-menu-item-text-default: var(--terra-color-spacesuit-white);
+        --terra-menu-item-text-hover: var(--terra-color-spacesuit-white);
+        --terra-menu-item-background-hover: var(--terra-color-carbon-80);
+        --terra-menu-item-background-active: var(--terra-color-nasa-blue);
+        --terra-menu-item-text-focus: var(--terra-color-spacesuit-white);
     }
 
     .site-header {

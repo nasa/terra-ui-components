@@ -19,18 +19,18 @@ export default css`
     .search-icon {
         position: absolute;
         left: 12px;
-        color: var(--terra-input-icon-color);
+        color: var(--terra-input-icon-default);
         pointer-events: none;
     }
 
     .search-input {
         width: 100%;
         padding: 12px 14px 12px 36px;
-        border: 1px solid var(--terra-input-border-color);
+        border: 1px solid var(--terra-input-border-default);
         border-radius: var(--terra-input-border-radius-medium);
         font-size: var(--terra-input-font-size-medium);
         color: var(--terra-input-text-color);
-        background: var(--terra-input-background-color);
+        background: var(--terra-input-background-default);
         outline: none;
         transition:
             box-shadow 0.2s,
@@ -38,7 +38,7 @@ export default css`
     }
 
     .search-input:focus {
-        border-color: var(--terra-input-focus-ring-color);
+        border-color: var(--terra-input-border-focus);
         box-shadow: var(--terra-shadow-small);
     }
 
@@ -114,7 +114,7 @@ export default css`
 
     terra-spatial-picker terra-input {
         --terra-input-border-width: 0;
-        --terra-input-border-color: transparent;
+        --terra-input-border-default: transparent;
         --terra-input-suffix-display: none;
 
         width: 0;
@@ -331,9 +331,9 @@ export default css`
         z-index: 1000;
         width: 400px;
         max-width: 90vw;
-        background: var(--terra-panel-background, #ffffff);
-        border-radius: var(--terra-panel-border-radius, 8px);
-        border: 1px solid var(--terra-panel-border, #b9b9bb);
+        background: var(--terra-container-menu-bg, #ffffff);
+        border-radius: var(--terra-container-menu-border-radius, 8px);
+        border: 1px solid var(--terra-container-menu-border, #b9b9bb);
         box-shadow:
             0 10px 15px -3px rgba(0, 0, 0, 0.1),
             0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -359,10 +359,10 @@ export default css`
     }
 
     .loading-modal {
-        background: var(--terra-panel-background, #ffffff);
-        border: 1px solid var(--terra-panel-border, #b9b9bb);
+        background: var(--terra-container-dialog-bg, #ffffff);
+        border: 1px solid var(--terra-container-dialog-border, #b9b9bb);
         padding: 24px;
-        border-radius: var(--terra-panel-border-radius, 8px);
+        border-radius: var(--terra-container-dialog-border-radius, 8px);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;

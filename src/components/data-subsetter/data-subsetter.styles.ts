@@ -939,8 +939,8 @@ export default css`
     }
 
     .mode-option.selected {
-        border-color: var(--terra-border-brand-tertiary, #0066cc);
-        background: var(--terra-color-bg-surface-brand-tertiary, #f0f8ff);
+        border-color: var(--terra-border-info, #0066cc);
+        background: var(--terra-color-bg-info-subtle, #b4cee5);
         box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
     }
 
@@ -957,23 +957,23 @@ export default css`
     .mode-title {
         font-size: 16px;
         font-weight: 600;
-        color: var(--terra-text-primary, #666);
+        color: var(--terra-text-primary, #f6f6f6);
         margin-bottom: 6px;
     }
 
     .mode-description {
         font-size: 14px;
-        color: var(--terra-text-secondary, #666);
+        color: var(--terra-text-secondary, #e3e3e3);
         line-height: 1.4;
     }
 
     .mode-option.selected .mode-title {
-        color: var(--terra-text-brand-on-brand-inverse, #1c67e3);
+        color: var(--terra-text-primary, #f6f6f6);
     }
 
     .mode-option.selected .mode-description {
         font-size: 14px;
-        color: var(--terra-text-brand-on-brand-inverse, #1c67e3);
+        color: var(--terra-text-secondary, #e3e3e3);
         line-height: 1.4;
     }
 

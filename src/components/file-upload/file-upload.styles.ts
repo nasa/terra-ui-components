@@ -57,7 +57,7 @@ export default css`
         outline: none;
         border-color: var(--terra-file-upload-dropzone-border-color-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width)
-            var(--terra-input-focus-ring-color);
+            var(--terra-input-border-focus);
     }
 
     .file-upload__dropzone--disabled {
@@ -71,7 +71,7 @@ export default css`
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-input-color);
+        color: var(--terra-input-text-default);
         text-align: center;
     }
 
@@ -185,14 +185,14 @@ export default css`
         align-items: center;
         justify-content: center;
         background-color: var(--terra-color-neutral-10);
-        color: var(--terra-field-text-placeholder);
+        color: var(--terra-input-text-placeholder);
     }
 
     .file-upload__file-name {
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-field-text);
+        color: var(--terra-input-background-defaul);
         flex: 1;
     }
 

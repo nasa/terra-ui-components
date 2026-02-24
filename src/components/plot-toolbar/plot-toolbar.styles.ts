@@ -64,8 +64,8 @@ export default css`
         top: calc(100%);
         right: 0;
         z-index: 1000;
-        background: var(--terra-menu-background-color);
-        border: 1px solid var(--terra-menu-border-color);
+        background: var(--terra-container-menu-bg);
+        border: 1px solid var(--terra-container-menu-border);
         border-radius: var(--terra-panel-border-radius);
         box-shadow: var(--terra-shadow-large);
         width: max-content;

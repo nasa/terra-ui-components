@@ -47,10 +47,10 @@ export default css`
         width: 450px;
         max-width: 90vw;
         padding: 1.5rem;
-        border-radius: var(--terra-panel-border-radius, 8px);
-        border: 1px solid var(--terra-panel-border, #b9b9bb);
+        border-radius: var(--terra-container-dialog-border-radius, 8px);
+        border: 1px solid var(--terra-container-dialog-border, #b9b9bb);
         box-shadow: var(--terra-shadow-large);
-        background-color: var(--terra-panel-background, #ffffff);
+        background-color: var(--terra-container-dialog-bg, #ffffff);
     }
 
     dialog h2 {

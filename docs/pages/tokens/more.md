@@ -42,49 +42,49 @@ Button tokens control the appearance of buttons.
 
 Form input tokens control the appearance of form controls such as [input](/components/input).
 
-| Token                                      | Value                                       |
-| ------------------------------------------ | ------------------------------------------- |
-| `--terra-input-height-small`               | `1.875rem` (30px)                           |
-| `--terra-input-height-medium`              | `2.5rem` (40px)                             |
-| `--terra-input-height-large`               | `3.125rem` (50px)                           |
-| `--terra-input-background-color`           | `var(--terra-color-spacesuit-white)`        |
-| `--terra-input-background-color-hover`     | `var(--terra-input-background-color)`       |
-| `--terra-input-background-color-focus`     | `var(--terra-input-background-color)`       |
-| `--terra-input-background-color-disabled`  | `var(--terra-color-carbon-10)`              |
-| `--terra-input-border-color`               | `var(--terra-color-carbon-20)`              |
-| `--terra-input-border-color-hover`         | `var(--terra-color-carbon-40)`              |
-| `--terra-input-border-color-focus`         | `var(--terra-color-primary-50)` (NASA Blue) |
-| `--terra-input-border-color-disabled`      | `var(--terra-color-carbon-30)`              |
-| `--terra-input-border-width`               | `1px`                                       |
-| `--terra-input-border-radius`              | `var(--terra-border-radius-medium)`         |
-| `--terra-input-required-content`           | `*`                                         |
-| `--terra-input-required-content-offset`    | `-2px`                                      |
-| `--terra-input-required-content-color`     | `var(--terra-input-label-color)`            |
-| `--terra-input-border-radius-small`        | `var(--terra-border-radius-medium)`         |
-| `--terra-input-border-radius-medium`       | `var(--terra-border-radius-medium)`         |
-| `--terra-input-border-radius-large`        | `var(--terra-border-radius-medium)`         |
-| `--terra-input-font-family`                | `var(--terra-font-family--public-sans)`     |
-| `--terra-input-font-weight`                | `var(--terra-font-weight-normal)`           |
-| `--terra-input-font-size`                  | `var(--terra-font-size-small)`              |
-| `--terra-input-font-size-small`            | `var(--terra-font-size-small)`              |
-| `--terra-input-font-size-medium`           | `var(--terra-font-size-medium)`             |
-| `--terra-input-font-size-large`            | `var(--terra-font-size-large)`              |
-| `--terra-input-letter-spacing`             | `var(--terra-letter-spacing-normal)`        |
-| `--terra-input-line-height`                | `var(--terra-line-height-denser)`           |
-| `--terra-input-color`                      | `hsla(240, 4%, 19%, 1)`                     |
-| `--terra-input-color-hover`                | `var(--terra-color-carbon-70)`              |
-| `--terra-input-color-focus`                | `var(--terra-color-carbon-70)`              |
-| `--terra-input-color-disabled`             | `var(--terra-color-carbon-90)`              |
-| `--terra-input-icon-color`                 | `var(--terra-color-carbon-50)`              |
-| `--terra-input-icon-color-hover`           | `var(--terra-color-carbon-60)`              |
-| `--terra-input-icon-color-focus`           | `var(--terra-color-carbon-60)`              |
-| `--terra-input-placeholder-color`          | `var(--terra-color-carbon-50)`              |
-| `--terra-input-placeholder-color-disabled` | `var(--terra-color-carbon-60)`              |
-| `--terra-input-spacing-small`              | `var(--terra-spacing-small)`                |
-| `--terra-input-spacing-medium`             | `var(--terra-spacing-medium)`               |
-| `--terra-input-spacing-large`              | `var(--terra-spacing-large)`                |
-| `--terra-input-focus-ring-color`           | `hsl(198.6 88.7% 48.4% / 40%)`              |
-| `--terra-input-focus-ring-offset`          | `0`                                         |
+| Token                                   | Value                                             |
+| --------------------------------------- | ------------------------------------------------- |
+| `--terra-input-height-small`            | `1.875rem` (30px)                                 |
+| `--terra-input-height-medium`           | `2.5rem` (40px)                                   |
+| `--terra-input-height-large`            | `3.125rem` (50px)                                 |
+| `--terra-input-background-default`      | `var(--terra-color-bg-surface-neutral-base)`      |
+| `--terra-input-background-hover`        | `var(--terra-color-bg-surface-interactive-hover)` |
+| `--terra-input-background-focus`        | `var(--terra-input-background-color)`             |
+| `--terra-input-background-disabled`     | `var(--terra-color-carbon-10)`                    |
+| `--terra-input-border-default`          | `var(--terra-color-carbon-20)`                    |
+| `--terra-input-border-hover`            | `var(--terra-color-carbon-40)`                    |
+| `--terra-input-border-focus`            | `var(--terra-color-primary-50)` (NASA Blue)       |
+| `--terra-input-border-disabled`         | `var(--terra-color-carbon-30)`                    |
+| `--terra-input-border-width`            | `1px`                                             |
+| `--terra-input-border-radius`           | `var(--terra-border-radius-medium)`               |
+| `--terra-input-required-content`        | `*`                                               |
+| `--terra-input-required-content-offset` | `-2px`                                            |
+| `--terra-input-required-content-color`  | `var(--terra-input-label-color)`                  |
+| `--terra-input-border-radius-small`     | `var(--terra-border-radius-medium)`               |
+| `--terra-input-border-radius-medium`    | `var(--terra-border-radius-medium)`               |
+| `--terra-input-border-radius-large`     | `var(--terra-border-radius-medium)`               |
+| `--terra-input-font-family`             | `var(--terra-font-family--public-sans)`           |
+| `--terra-input-font-weight`             | `var(--terra-font-weight-normal)`                 |
+| `--terra-input-font-size`               | `var(--terra-font-size-small)`                    |
+| `--terra-input-font-size-small`         | `var(--terra-font-size-small)`                    |
+| `--terra-input-font-size-medium`        | `var(--terra-font-size-medium)`                   |
+| `--terra-input-font-size-large`         | `var(--terra-font-size-large)`                    |
+| `--terra-input-letter-spacing`          | `var(--terra-letter-spacing-normal)`              |
+| `--terra-input-line-height`             | `var(--terra-line-height-denser)`                 |
+| `--terra-input-text-default`            | `hsla(240, 4%, 19%, 1)`                           |
+| `--terra-input-text-hover`              | `var(--terra-color-carbon-70)`                    |
+| `--terra-input-text-focus`              | `var(--terra-color-carbon-70)`                    |
+| `--terra-input-text-disabled`           | `var(--terra-color-carbon-90)`                    |
+| `--terra-input-icon-default`            | `var(--terra-color-carbon-50)`                    |
+| `--terra-input-icon-hover`              | `var(--terra-color-carbon-60)`                    |
+| `--terra-input-icon-focus`              | `var(--terra-color-carbon-60)`                    |
+| `--terra-input-placeholder-default`     | `var(--terra-color-carbon-50)`                    |
+| `--terra-input-placeholder-disabled`    | `var(--terra-color-carbon-60)`                    |
+| `--terra-input-spacing-small`           | `var(--terra-spacing-small)`                      |
+| `--terra-input-spacing-medium`          | `var(--terra-spacing-medium)`                     |
+| `--terra-input-spacing-large`           | `var(--terra-spacing-large)`                      |
+| `--terra-input-border-focus`            | `hsl(198.6 88.7% 48.4% / 40%)`                    |
+| `--terra-input-focus-ring-offset`       | `0`                                               |
 
 ## Filled Form Inputs
 
@@ -119,8 +119,8 @@ Controls the color of the map icon in the spatial picker component
 
 | Token                                     | Value                           |
 | ----------------------------------------- | ------------------------------- |
-| `--terra-spatial-picker-icon-color`       | `var(--terra-field-text)`.      |
-| `--terra-spatial-picker-icon-color-hover` | `var(--terra-field-text-hover)` |
+| `--terra-spatial-picker-icon-color`       | `var(--terra-icon-default)`.    |
+| `--terra-spatial-picker-icon-color-hover` | `var(--terra-input-icon-hover)` |
 
 ## Help Text
 
@@ -164,12 +164,12 @@ Overlay tokens control the appearance of overlays as used in [dialog](/component
 
 Panel tokens control the appearance of panels such as those used in [dialog](/components/dialog), [menu](/components/menu), etc.
 
-| Token                         | Value                                |
-| ----------------------------- | ------------------------------------ |
-| `--terra-panel-background`    | `var(--terra-color-spacesuit-white)` |
-| `--terra-panel-border`        | `var(--terra-color-carbon-20)`       |
-| `--terra-panel-border-width`  | `1px`                                |
-| `--terra-panel-border-radius` | `--terra-border-radius-medium`.      |
+| Token                         | Value                                        |
+| ----------------------------- | -------------------------------------------- |
+| `--terra-container-panel-bg`  | `var(--terra-color-bg-surface-neutral-base)` |
+| `--terra-panel-border`        | `var(--terra-color-carbon-20)`               |
+| `--terra-panel-border-width`  | `1px`                                        |
+| `--terra-panel-border-radius` | `--terra-border-radius-medium`.              |
 
 ## Tooltips
 

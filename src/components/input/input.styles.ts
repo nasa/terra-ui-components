@@ -41,9 +41,9 @@ export default css`
         display: var(--terra-input-display, flex);
         align-items: center;
         width: 100%;
-        background: var(--terra-input-background-color);
+        background: var(--terra-input-background-default);
         border-width: var(--terra-input-border-width);
-        border-color: var(--terra-input-border-color);
+        border-color: var(--terra-input-border-default);
         border-style: solid;
         border-radius: var(--terra-input-border-radius);
         transition:
@@ -52,19 +52,19 @@ export default css`
     }
 
     .input:hover:not(.input--disabled) {
-        border-color: var(--terra-input-border-color-hover);
+        border-color: var(--terra-input-border-hover);
     }
 
     .input--focused:not(.input--disabled) {
         outline: none;
-        border-color: var(--terra-input-border-color-focus);
+        border-color: var(--terra-input-border-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
-            var(--terra-input-focus-ring-color);
+            var(--terra-input-border-focus);
     }
 
     .input--disabled {
-        background-color: var(--terra-input-background-color-disabled);
-        border-color: var(--terra-input-border-color-disabled);
+        background-color: var(--terra-input-background-disabled);
+        border-color: var(--terra-input-border-disabled);
         cursor: not-allowed;
     }
 
@@ -81,28 +81,28 @@ export default css`
         font-weight: var(--terra-input-font-weight);
         line-height: var(--terra-input-line-height);
         letter-spacing: var(--terra-input-letter-spacing);
-        color: var(--terra-input-color);
+        color: var(--terra-input-text-default);
     }
 
     .input__control::placeholder {
-        color: var(--terra-input-placeholder-color);
+        color: var(--terra-input-placeholder-default);
     }
 
     .input__control:disabled {
-        color: var(--terra-input-color-disabled);
+        color: var(--terra-input-text-disabled);
         cursor: not-allowed;
     }
 
     .input__control:disabled::placeholder {
-        color: var(--terra-input-placeholder-color-disabled);
+        color: var(--terra-input-placeholder-disabled);
     }
 
     .input__control:hover:not(:disabled) {
-        color: var(--terra-input-color-hover);
+        color: var(--terra-input-text-hover);
     }
 
     .input__control:focus:not(:disabled) {
-        color: var(--terra-input-color-focus);
+        color: var(--terra-input-text-focus);
     }
 
     .input__control:read-only {
@@ -124,7 +124,7 @@ export default css`
     .input__prefix,
     .input__suffix {
         align-items: center;
-        color: var(--terra-input-icon-color);
+        color: var(--terra-input-icon-default);
         flex-shrink: 0;
     }
 
@@ -150,12 +150,12 @@ export default css`
 
     .input:hover:not(.input--disabled) .input__prefix,
     .input:hover:not(.input--disabled) .input__suffix {
-        color: var(--terra-input-icon-color-hover);
+        color: var(--terra-input-icon-hover);
     }
 
     .input--focused:not(.input--disabled) .input__prefix,
     .input--focused:not(.input--disabled) .input__suffix {
-        color: var(--terra-input-icon-color-focus);
+        color: var(--terra-input-icon-focus);
     }
 
     .input__reset {
@@ -176,11 +176,11 @@ export default css`
     }
 
     .input__reset:hover {
-        color: var(--terra-input-icon-color-hover);
+        color: var(--terra-input-icon-hover);
     }
 
     .input__reset:focus-visible {
-        outline: 2px solid var(--terra-input-border-color-focus);
+        outline: 2px solid var(--terra-input-border-focus);
         outline-offset: 2px;
         border-radius: var(--terra-border-radius-small);
     }
