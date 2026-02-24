@@ -251,34 +251,37 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
-   @watch(['collectionWithServices'])
-collectionChanged() {
-    const { startDate, endDate } = this.#getCollectionDateRange()
-    this.selectedDateRange = { startDate, endDate }
+    @watch(['collectionWithServices'])
+    collectionChanged() {
+        const { startDate, endDate } = this.#getCollectionDateRange()
+        this.selectedDateRange = { startDate, endDate }
 
-    const formats = Array.from(new Set(this.collectionWithServices?.outputFormats || []))
+        const formats = Array.from(
+            new Set(this.collectionWithServices?.outputFormats || [])
+        )
 
-    // Consolidate NetCDF formats - if both exist, only keep netcdf4
-    const hasNetcdf4 = formats.includes('application/x-netcdf4')
-    const hasNetcdfClassic = formats.includes('application/netcdf')
+        // Consolidate NetCDF formats - if both exist, only keep netcdf4
+        const hasNetcdf4 = formats.includes('application/x-netcdf4')
+        const hasNetcdfClassic = formats.includes('application/netcdf')
 
-    let displayFormats = formats
-    if (hasNetcdf4 && hasNetcdfClassic) {
-        displayFormats = formats.filter(f => f !== 'application/netcdf')
+        let displayFormats = formats
+        if (hasNetcdf4 && hasNetcdfClassic) {
+            displayFormats = formats.filter(f => f !== 'application/netcdf')
+        }
+
+        // auto-select default format
+        if (displayFormats.length === 1) {
+            this.selectedFormat = displayFormats[0] // only one option
+        } else {
+            // Prefer NetCDF if available, otherwise first option
+            this.selectedFormat =
+                displayFormats.find(f => f === 'application/x-netcdf4') ||
+                displayFormats[0]
+        }
+
+        this.collectionLoading = false
+        this.collectionAccordionOpen = false
     }
-
-    // auto-select default format
-    if (displayFormats.length === 1) {
-        this.selectedFormat = displayFormats[0] // only one option
-    } else {
-        // Prefer NetCDF if available, otherwise first option
-        this.selectedFormat =
-            displayFormats.find(f => f === 'application/x-netcdf4') || displayFormats[0]
-    }
-
-    this.collectionLoading = false
-    this.collectionAccordionOpen = false
-}
 
     @watch(['granuleMinDate', 'granuleMaxDate'])
     granuleDatesChanged() {
