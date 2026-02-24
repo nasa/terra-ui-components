@@ -60,11 +60,11 @@ export default css`
     }
 
     .combobox::placeholder {
-        color: var(--terra-field-text-placeholder);
+        color: var(--terra-input-text-placeholder);
     }
 
     .combobox:focus {
-        border-color: var(--terra-field-border-focus);
+        border-color: var(--terra-input-border-focus);
         outline: 0;
     }
 
@@ -125,7 +125,7 @@ export default css`
     }
 
     .search-results {
-        background-color: var(--terra-input-background-color);
+        background-color: var(--terra-input-background-default);
         border-radius: var(--terra-panel-border-radius);
         block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
@@ -152,7 +152,7 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--terra-input-border-color);
+        border-color: var(--terra-input-border-default);
         border-radius: var(--terra-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));

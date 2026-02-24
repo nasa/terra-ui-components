@@ -69,10 +69,10 @@ export default css`
     dialog {
         position: absolute;
         top: calc(50% - 100px);
-        border: 1px solid var(--terra-panel-border, #b9b9bb);
-        border-radius: var(--terra-panel-border-radius, 8px);
+        border: 1px solid var(--terra-container-dialog-border, #b9b9bb);
+        border-radius: var(--terra-container-dialog-border-radius, 8px);
         box-shadow: var(--terra-shadow-large);
-        background-color: var(--terra-panel-background, #ffffff);
+        background-color: var(--terra-container-dialog-bg, #ffffff);
     }
 
     .no-data-alert,

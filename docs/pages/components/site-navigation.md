@@ -73,7 +73,7 @@ Use the `full-width` attribute to enable full-width dropdown panels that span th
         <terra-button slot="trigger" size="medium" variant="text" caret>
             Data
         </terra-button>
-        <div style="padding: var(--terra-spacing-large); background: var(--terra-panel-background); color: var(--terra-color-carbon-90);">
+        <div style="padding: var(--terra-spacing-large); background: var(--terra-container-panel-bg); color: var(--terra-color-carbon-90);">
             <h3 style="margin-top: 0;">Data</h3>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--terra-spacing-large);">
                 <div>

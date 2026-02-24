@@ -4,8 +4,9 @@ export default css`
     :host {
         display: block;
         position: relative;
-        background: var(--terra-menu-background-color);
-        border: solid var(--terra-menu-border-width) var(--terra-menu-border-color);
+        background: var(--terra-container-menu-bg);
+        border: solid var(--terra-container-menu-border-width)
+            var(--terra-container-menu-border);
         border-radius: var(--terra-panel-border-radius);
         padding: var(--terra-spacing-x-small) 0;
         overflow: auto;
