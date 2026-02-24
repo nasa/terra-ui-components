@@ -13,13 +13,18 @@ import util from 'util'
 import * as path from 'path'
 import { readFileSync } from 'fs'
 import { replace } from 'esbuild-plugin-replace'
+import { visualizer } from 'esbuild-visualizer'
 
 import { polyfillNode } from 'esbuild-plugin-polyfill-node' // Import used to bypass issues with using open layers in the browser;
 
-const { serve } = commandLineArgs([{ name: 'serve', type: Boolean }])
+const { serve, analyze } = commandLineArgs([
+    { name: 'serve', type: Boolean },
+    { name: 'analyze', type: Boolean },
+])
 const outdir = 'dist'
 const cdndir = 'cdn'
 const sitedir = '_site'
+const analyzeDir = 'bundle-analysis'
 const spinner = ora({ hideCursor: false }).start()
 const execPromise = util.promisify(exec)
 let childProcess
@@ -130,6 +135,7 @@ async function buildTheSource() {
         //
         external: alwaysExternal,
         splitting: true,
+        metafile: true,
         plugins: [
             polyfillNode(),
             replace({
@@ -141,7 +147,7 @@ async function buildTheSource() {
     const npmConfig = {
         ...cdnConfig,
         external: undefined,
-        minify: false,
+        minify: true,
         packages: 'external',
         outdir,
     }
@@ -249,6 +255,37 @@ await nextTask(`Themes, Icons, and TS Types to "${cdndir}"`, async () => {
 
 await nextTask('Building source files', async () => {
     buildResults = await buildTheSource()
+
+    // Generate bundle analysis if --analyze flag is set
+    if (analyze && buildResults.length > 0 && buildResults[0].metafile) {
+        try {
+            await fs.mkdir(analyzeDir, { recursive: true })
+
+            // Visualize CDN build (index 0)
+            const cdnHtml = await visualizer(buildResults[0].metafile, {
+                title: 'Terra UI Components - CDN Build Analysis',
+            })
+            await fs.writeFile(path.join(analyzeDir, 'cdn-bundle.html'), cdnHtml)
+
+            // Visualize NPM build (index 1)
+            const npmHtml = await visualizer(buildResults[1].metafile, {
+                title: 'Terra UI Components - NPM Build Analysis',
+            })
+            await fs.writeFile(path.join(analyzeDir, 'npm-bundle.html'), npmHtml)
+
+            console.log(`\n${chalk.cyan('📊 Bundle analysis generated:')}`)
+            console.log(`   ${chalk.green('✔')} ${analyzeDir}/cdn-bundle.html`)
+            console.log(`   ${chalk.green('✔')} ${analyzeDir}/npm-bundle.html`)
+        } catch (err) {
+            console.error('Failed to analyze bundles:', err.message)
+        }
+    } else if (analyze) {
+        console.warn(
+            chalk.yellow(
+                '⚠️  Bundle analysis requested but metafile not available (only available in production builds)'
+            )
+        )
+    }
 })
 
 // Copy the CDN build to the docs (prod only; we use a virtual directory in dev)

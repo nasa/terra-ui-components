@@ -1,6 +1,7 @@
 _site
 .cache
 .DS_Store
+bundle-analysis
 cdn
 dist
 node_modules

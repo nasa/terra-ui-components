@@ -47,6 +47,10 @@ import { TaskStatus } from '@lit/task'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import TerraAlert from '../alert/alert.component.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
+import { QueryController } from '../../queries/query.controller.js'
+import { getCmrCollection } from '../../queries/cmr.queries.js'
+import '../../queries/queryclient.provider.js'
+import { cmrApi } from '../../apis/cmr.api.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -190,6 +194,16 @@ export default class TerraDataSubsetter extends TerraElement {
     controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
 
+    collectionQuery = new QueryController(this, () => ({
+        queryKey: ['collection', this.collectionEntryId],
+        queryFn: async () => {
+            if (!this.collectionEntryId) {
+                return null
+            }
+            return cmrApi.getCollectionByEntryId(this.collectionEntryId)
+        },
+    }))
+
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
@@ -313,71 +327,78 @@ export default class TerraDataSubsetter extends TerraElement {
         const title =
             this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
 
-        const content = html`
-            <div class="container">
-                ${!this.dialog
-                    ? html`
-                          <div class="header">
-                              <h1>
-                                  <svg
-                                      class="download-icon"
-                                      viewBox="0 0 24 24"
-                                      fill="currentColor"
-                                  >
-                                      <path
-                                          d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
-                                      />
-                                  </svg>
-                                  ${title}
-                              </h1>
+        console.log(this.collectionQuery)
 
-                              ${showMinimizeButton
-                                  ? html`<button
-                                        class="minimize-btn"
-                                        @click=${() => this.minimizeDialog()}
-                                    >
-                                        -
-                                    </button>`
-                                  : nothing}
-                          </div>
-                      `
-                    : nothing}
-                ${!this.isHistoryView && this.collectionWithServices?.services?.length
-                    ? html`
-                          <div class="section">
-                              ${this.#renderDataAccessModeSelection()}
-                          </div>
-                      `
-                    : nothing}
-                ${this.dataAccessMode === 'original'
-                    ? html`
-                          <div class="section">
-                              <terra-data-access
-                                  short-name=${this.shortName ??
-                                  this.collectionWithServices?.collection?.ShortName}
-                                  version=${this.version ??
-                                  this.collectionWithServices?.collection?.Version}
-                                  ?footer-slot=${!!this.dialog}
-                              >
-                                  ${this.dialog
-                                      ? html`
-                                            <div
-                                                slot="footer"
-                                                style="margin-top: 15px;"
-                                            >
-                                                <slot
-                                                    name="data-access-footer"
-                                                ></slot>
-                                            </div>
-                                        `
+        const content = html`
+            <query-client-provider>
+                <div class="container">
+                    ${!this.dialog
+                        ? html`
+                              <div class="header">
+                                  <h1>
+                                      <svg
+                                          class="download-icon"
+                                          viewBox="0 0 24 24"
+                                          fill="currentColor"
+                                      >
+                                          <path
+                                              d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                          />
+                                      </svg>
+                                      ${title}
+                                  </h1>
+
+                                  ${showMinimizeButton
+                                      ? html`<button
+                                            class="minimize-btn"
+                                            @click=${() => this.minimizeDialog()}
+                                        >
+                                            -
+                                        </button>`
                                       : nothing}
-                              </terra-data-access>
-                          </div>
-                      `
-                    : showJobStatus
-                      ? this.#renderJobStatus()
-                      : this.#renderSubsetOptions()}
-            </div>
+                              </div>
+                          `
+                        : nothing}
+                    ${!this.isHistoryView &&
+                    this.collectionWithServices?.services?.length
+                        ? html`
+                              <div class="section">
+                                  ${this.#renderDataAccessModeSelection()}
+                              </div>
+                          `
+                        : nothing}
+                    ${this.dataAccessMode === 'original'
+                        ? html`
+                              <div class="section">
+                                  <terra-data-access
+                                      short-name=${this.shortName ??
+                                      this.collectionWithServices?.collection
+                                          ?.ShortName}
+                                      version=${this.version ??
+                                      this.collectionWithServices?.collection
+                                          ?.Version}
+                                      ?footer-slot=${!!this.dialog}
+                                  >
+                                      ${this.dialog
+                                          ? html`
+                                                <div
+                                                    slot="footer"
+                                                    style="margin-top: 15px;"
+                                                >
+                                                    <slot
+                                                        name="data-access-footer"
+                                                    ></slot>
+                                                </div>
+                                            `
+                                          : nothing}
+                                  </terra-data-access>
+                              </div>
+                          `
+                        : showJobStatus
+                          ? this.#renderJobStatus()
+                          : this.#renderSubsetOptions()}
+                </div>
+            </query-client-provider>
         `
 
         // If dialog is set, wrap content in dialog with slots for header/footer
