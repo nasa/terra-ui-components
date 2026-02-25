@@ -75,6 +75,7 @@
     "@lit/react": "^1.0.8",
     "@lit/task": "^1.0.0",
     "@tanstack/query-core": "^5.90.20",
+    "@tanstack/query-persist-client-core": "^5.91.19",
     "ag-grid-community": "^34.2.0",
     "apollo3-cache-persist": "^0.15.0",
     "colormap": "^2.3.2",
