@@ -10,11 +10,11 @@ export function queryHarmonyCapabilities(
 > | null> {
     return {
         queryKey: ['harmony', 'capabilities', collectionConceptId],
-        queryFn: async () => {
-            return nasaHarmonyApi.getCollectionCapabilities(
-                collectionConceptId,
-                options
-            )
+        queryFn: async ({ signal }) => {
+            return nasaHarmonyApi.getCollectionCapabilities(collectionConceptId, {
+                ...options,
+                signal,
+            })
         },
         enabled: !!collectionConceptId, // prevent firing when collectionConceptId is undefined
     }

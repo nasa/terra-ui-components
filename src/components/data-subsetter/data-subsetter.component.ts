@@ -113,6 +113,22 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @property({ reflect: true, type: Boolean, attribute: 'is-history-view' })
     isHistoryView: boolean = false
 
+    controller = new DataSubsetterController(this)
+    #authController = new AuthController(this)
+
+    collectionQuery = new QueryController(this, () =>
+        queryCmrCollection(this.collectionEntryId)
+    )
+
+    capabilitiesQuery = new QueryController(this, () =>
+        queryHarmonyCapabilities(
+            this.collectionQuery.result?.data?.meta['concept-id'],
+            {
+                bearerToken: this.bearerToken,
+            }
+        )
+    )
+
     @state()
     collectionWithServices?: CollectionWithAvailableServices
 
@@ -190,22 +206,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @query('terra-dialog')
     dialogElement?: TerraDialog
-
-    controller = new DataSubsetterController(this)
-    #authController = new AuthController(this)
-
-    collectionQuery = new QueryController(this, () =>
-        queryCmrCollection(this.collectionEntryId)
-    )
-
-    capabilitiesQuery = new QueryController(this, () =>
-        queryHarmonyCapabilities(
-            this.collectionQuery.result?.data?.meta['concept-id'],
-            {
-                bearerToken: this.bearerToken,
-            }
-        )
-    )
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {

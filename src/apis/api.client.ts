@@ -1,18 +1,10 @@
 import { HttpException } from '../exceptions/http.exception.js'
+import type { RequestOptions } from './types.js'
 
 /**
  * A simple API client for interacting with REST APIs
  * Handles authentication via Bearer tokens
  */
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-
-type RequestOptions = {
-    method?: HttpMethod
-    body?: unknown
-    headers?: HeadersInit
-    signal?: AbortSignal
-}
-
 async function request<T>(
     url: string,
     { method = 'GET', body, headers = {}, signal }: RequestOptions = {}

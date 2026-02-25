@@ -28,6 +28,7 @@ class NasaHarmonyApi {
 
     #request<T>(path: string, requestOptions?: RequestOptions) {
         return apiClient.get<T>(`${baseUrl}${path}`, {
+            ...requestOptions,
             headers: {
                 ...requestOptions?.headers,
                 ...(requestOptions?.bearerToken && {
