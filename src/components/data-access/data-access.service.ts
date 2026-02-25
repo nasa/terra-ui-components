@@ -24,6 +24,44 @@ export default class DataAccessService {
         )
     }
 
+    granuleMinDate(granule?: UmmG) {
+        if (!granule) {
+            return null
+        }
+
+        return granule.TemporalExtent?.RangeDateTime?.BeginningDateTime ?? null
+    }
+
+    granuleMaxDate(granule?: UmmG) {
+        if (!granule) {
+            return null
+        }
+
+        return granule.TemporalExtent?.RangeDateTime?.EndingDateTime ?? null
+    }
+
+    isSubDaily(granule?: UmmG) {
+        if (!granule) {
+            return false
+        }
+
+        const timeStart = this.granuleMinDate(granule)
+        const timeEnd = this.granuleMaxDate(granule)
+
+        if (!timeStart || !timeEnd) {
+            return false
+        }
+
+        // Parse the dates and calculate the difference in hours
+        const start = new Date(timeStart)
+        const end = new Date(timeEnd)
+        const diffMs = end.getTime() - start.getTime()
+        const diffHours = diffMs / (1000 * 60 * 60)
+
+        // If the temporal extent is less than 24 hours, it's sub-daily
+        return diffHours < 24
+    }
+
     calculateGranuleSize(granule: UmmG, unit: 'MB' | 'GB' | 'TB' | 'PB') {
         const archiveInfo = granule.DataGranule?.ArchiveAndDistributionInformation
 

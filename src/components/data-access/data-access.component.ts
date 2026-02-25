@@ -4,7 +4,6 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-access.styles.js'
 import type { CSSResultGroup } from 'lit'
-import { DataAccessController } from './data-access.controller.js'
 import TerraLoader from '../loader/loader.component.js'
 import { getGranuleUrl } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
@@ -105,6 +104,11 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     @state() loading = false
     @state() totalGranules = 0
     @state() estimatedSize: string | null = null
+    @state() isSubDaily = false
+    @state() granuleMinDate: Date | null = null
+    @state() granuleMaxDate: Date | null = null
+    @state() spatialConstraints: string = '-180, -90, 180, 90'
+    @state() cloudCoverRange: { min: number; max: number } | null = null
     @state() private _gridInitialized = false
     @state() cloudCoverPickerOpen = false
 
@@ -113,7 +117,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     cloudCoverSliderRef = createRef<TerraSlider>()
     gridRef = createRef<TerraDataGrid<UmmResult<UmmG>>>()
 
-    #controller = new DataAccessController(this)
     #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
     firstGranuleQuery = new QueryController(this, () =>
@@ -245,12 +248,22 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     this.lastGranuleQuery.result?.data?.items?.[0]?.umm,
                     this.totalGranules
                 )
+                this.granuleMinDate = this.service.granuleMinDate(
+                    this.firstGranuleQuery.result?.data?.items?.[0]?.umm
+                )
+                this.granuleMaxDate = this.service.granuleMaxDate(
+                    this.lastGranuleQuery.result?.data?.items?.[0]?.umm
+                )
+                this.isSubDaily = this.service.isSubDaily(
+                    this.firstGranuleQuery.result?.data?.items?.[0]?.umm
+                )
 
                 const lastRow = data.hits <= params.endRow ? data.hits : -1
 
                 // Update cloud cover column visibility when grid is ready
                 if (this.#gridApi) {
                     // TODO: replace
+                    /*
                     this.#gridApi.applyColumnState({
                         state: [
                             {
@@ -258,7 +271,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 hide: !this.#controller.cloudCoverRange,
                             },
                         ],
-                    })
+                    })*/
                 }
 
                 params.successCallback(data.items, lastRow)
@@ -331,17 +344,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             cacheBlockSize: 50,
             maxConcurrentDatasourceRequests: 2,
             infiniteInitialRowCount: 50,
-            onGridReady: params => {
-                // Update cloud cover column visibility when grid is ready
-                params.api.applyColumnState({
-                    state: [
-                        {
-                            colId: 'cloudCover',
-                            hide: !this.#controller.cloudCoverRange,
-                        },
-                    ],
-                })
-            },
         }
     }
 
@@ -396,7 +398,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         return 'Date Range'
     }
 
-    #formatAvailableRangeDate(dateStr: string): string {
+    #formatAvailableRangeDate(dateStr?: Date | string): string {
         if (!dateStr) return ''
 
         const date = new Date(dateStr)
@@ -404,7 +406,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         const month = String(date.getUTCMonth() + 1).padStart(2, '0')
         const day = String(date.getUTCDate()).padStart(2, '0')
 
-        if (this.#controller.isSubDaily) {
+        if (this.isSubDaily) {
             const hours = String(date.getUTCHours()).padStart(2, '0')
             const minutes = String(date.getUTCMinutes()).padStart(2, '0')
             const seconds = String(date.getUTCSeconds()).padStart(2, '0')
@@ -553,10 +555,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     async #downloadPythonScript(event: Event) {
         event.stopPropagation()
 
-        if (!this.#controller.granules) {
-            return
-        }
-
         const response = await fetch(
             getBasePath('assets/data-access/download_files.py.txt')
         )
@@ -704,7 +702,9 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     }
 
     render() {
-        if (this.#controller.sampling?.firstGranules.count === 0) {
+        /*
+        TODO: fix this check for no granules, it currently doesn't work because the firstGranuleQuery is not guaranteed to have completed yet when this render function is called. We need to wait for the query to complete before checking the result.
+        if (this.firstGranuleQuery.result?.data?.items?.length === 0) {
             return html`
                 <terra-alert variant="warning" open appearance="white">
                     <strong>No granules found.</strong>
@@ -714,7 +714,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     </p>
                 </terra-alert>
             `
-        }
+        }*/
 
         return html`
             <div class="filters-compact">
@@ -768,36 +768,35 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                             <terra-date-picker
                                 ${ref(this.datePickerRef)}
                                 range
-                                ?enable-time=${this.#controller.isSubDaily}
+                                ?enable-time=${this.isSubDaily}
                                 show-presets
                                 split-inputs
                                 inline
                                 .startDate=${this.searchParams.startDate}
                                 .endDate=${this.searchParams.endDate}
-                                .startPlaceholder=${this.#controller.isSubDaily
+                                .startPlaceholder=${this.isSubDaily
                                     ? 'YYYY-MM-DD HH:mm:ss'
                                     : 'YYYY-MM-DD'}
-                                .endPlaceholder=${this.#controller.isSubDaily
+                                .endPlaceholder=${this.isSubDaily
                                     ? 'YYYY-MM-DD HH:mm:ss'
                                     : 'YYYY-MM-DD'}
-                                .minDate=${this.#controller.granuleMinDate}
-                                .maxDate=${this.#controller.granuleMaxDate}
+                                .minDate=${this.granuleMinDate}
+                                .maxDate=${this.granuleMaxDate}
                                 @terra-date-range-change=${this
                                     .#handleDateRangeChange}
                             >
-                                ${this.#controller.granuleMinDate &&
-                                this.#controller.granuleMaxDate
+                                ${this.granuleMinDate && this.granuleMaxDate
                                     ? html` <p
                                           slot="additional-text"
                                           class="available-range"
                                       >
                                           <strong>Available Range:</strong>
                                           ${this.#formatAvailableRangeDate(
-                                              this.#controller.granuleMinDate
+                                              this.granuleMinDate
                                           )}
                                           -
                                           ${this.#formatAvailableRangeDate(
-                                              this.#controller.granuleMaxDate
+                                              this.granuleMaxDate
                                           )}
                                       </p>`
                                     : nothing}
@@ -846,19 +845,18 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 hide-label
                                 inline
                                 no-world-wrap
-                                .spatialConstraints=${this.#controller
-                                    .spatialConstraints || '-180, -90, 180, 90'}
+                                .spatialConstraints=${this.spatialConstraints}
                                 @terra-map-change=${this.#handleMapChange}
                             >
                                 <p class="available-range" slot="additional-text">
                                     <strong>Available range:</strong> ${this
-                                        .#controller.spatialConstraints}
+                                        .spatialConstraints}
                                 </p>
                             </terra-spatial-picker>
                         </div>
                     </terra-dropdown>
 
-                    ${this.#controller.cloudCoverRange
+                    ${this.cloudCoverRange
                         ? html`
                               <div class="filter">
                                   <button
@@ -907,14 +905,12 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                       <terra-slider
                                           ${ref(this.cloudCoverSliderRef)}
                                           mode="range"
-                                          min=${this.#controller.cloudCoverRange?.min}
-                                          max=${this.#controller.cloudCoverRange?.max}
+                                          min=${this.cloudCoverRange?.min}
+                                          max=${this.cloudCoverRange?.max}
                                           start-value=${this.searchParams.cloudCover
-                                              ?.min ??
-                                          this.#controller.cloudCoverRange?.min}
+                                              ?.min ?? this.cloudCoverRange?.min}
                                           end-value=${this.searchParams.cloudCover
-                                              ?.max ??
-                                          this.#controller.cloudCoverRange?.max}
+                                              ?.max ?? this.cloudCoverRange?.max}
                                           step="0.1"
                                           hide-label
                                           label="Cloud Cover"
