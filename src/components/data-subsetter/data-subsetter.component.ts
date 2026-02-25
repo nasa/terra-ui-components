@@ -316,6 +316,25 @@ export default class TerraDataSubsetter extends TerraElement {
         const title =
             this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
 
+        if (!this.collectionWithServices) {
+            if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
+                return html`
+                    <div class="loading-collection">
+                        <terra-loader indeterminate variant="small"></terra-loader>
+                        <span>Loading</span>
+                    </div>
+                `
+            }
+
+            if (this.controller.fetchCollectionTask.status === TaskStatus.ERROR) {
+                return html`
+                    <terra-alert open variant="danger" appearance="white">
+                        Failed to find the requested collection.
+                    </terra-alert>
+                `
+            }
+        }
+
         const content = html`
             <div class="container">
                 ${!this.dialog
