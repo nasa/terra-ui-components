@@ -9,14 +9,6 @@ layout: component
 
 The `<terra-data-subsetter>` component provides a complete UI for subsetting and downloading NASA Earth science data collections. It supports collection search, spatial/temporal/variable filtering, and download options. It can be embedded standalone or inside dialogs and supports advanced integration via properties and events.
 
-```html:preview
-<div style="height: 200px;">
-    <terra-data-subsetter collection-entry-id="OMAERO_003" dialog="my-dialog"></terra-data-subsetter>
-    <terra-button for-dialog="my-dialog">
-        Open Subsetter
-    </terra-button>
-</div>
-```
 
 ## Properties
 
@@ -48,36 +40,6 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 <terra-data-subsetter short-name="M2I3NPASM" version="5.12.4"></terra-data-subsetter>
 ```
 
-### Giovanni services for CSV and TIFF outputs
-
-```html:preview
-<terra-data-subsetter short-name="FLDAS_NOAHMP001_G_CA_D" version="001"></terra-data-subsetter>
-```
-
-### Error handling for collections with no granules
-
-```html:preview
-<terra-data-subsetter short-name="XAERDT_L2_MODIS_Aqua" version="1"></terra-data-subsetter>
-```
-
-### No collection (enables Collection search)
-
-```html:preview
-<terra-data-subsetter></terra-data-subsetter>
-```
-
-### Subsetter in a Dialog
-
-```html:preview
-<div style="height: 200px;">
-    <terra-data-subsetter collection-entry-id="OMAERO_003" dialog="my-dialog"></terra-data-subsetter>
-    <terra-button for-dialog="my-dialog">
-        Open Subsetter
-    </terra-button>
-</div>
-
-
-```
 
 ## Best Practices
 

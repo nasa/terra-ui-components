@@ -48,9 +48,9 @@ import { extractHarmonyError } from '../../utilities/harmony.js'
 import TerraAlert from '../alert/alert.component.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 import { QueryController } from '../../queries/query.controller.js'
-import { getCmrCollection } from '../../queries/cmr.queries.js'
-import '../../queries/queryclient.provider.js'
-import { cmrApi } from '../../apis/cmr.api.js'
+import { QueryClientMixin } from '../../queries/query-client.mixin.js'
+import { queryCmrCollection } from '../../queries/nasa-cmr.queries.js'
+import { queryHarmonyCapabilities } from '../../queries/nasa-harmony.queries.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -65,7 +65,7 @@ import { cmrApi } from '../../apis/cmr.api.js'
  *
  * @event terra-subset-job-complete - called when a subset job enters a final state (e.g. successful, failed, completed_with_errors)
  */
-export default class TerraDataSubsetter extends TerraElement {
+export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-accordion': TerraAccordion,
@@ -194,15 +194,18 @@ export default class TerraDataSubsetter extends TerraElement {
     controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
 
-    collectionQuery = new QueryController(this, () => ({
-        queryKey: ['collection', this.collectionEntryId],
-        queryFn: async () => {
-            if (!this.collectionEntryId) {
-                return null
+    collectionQuery = new QueryController(this, () =>
+        queryCmrCollection(this.collectionEntryId)
+    )
+
+    capabilitiesQuery = new QueryController(this, () =>
+        queryHarmonyCapabilities(
+            this.collectionQuery.result?.data?.meta['concept-id'],
+            {
+                bearerToken: this.bearerToken,
             }
-            return cmrApi.getCollectionByEntryId(this.collectionEntryId)
-        },
-    }))
+        )
+    )
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
@@ -322,83 +325,87 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     render() {
+        const collection = this.collectionQuery.result?.data?.umm
+        const capabilities = this.capabilitiesQuery.result?.data
+
+        console.log(collection)
+        console.log(capabilities)
+
+        return html``
+    }
+
+    /*
+    render() {
         const showJobStatus = this.controller.currentJob && !this.refineParameters
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title =
             this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
 
-        console.log(this.collectionQuery)
-
         const content = html`
-            <query-client-provider>
-                <div class="container">
-                    ${!this.dialog
-                        ? html`
-                              <div class="header">
-                                  <h1>
-                                      <svg
-                                          class="download-icon"
-                                          viewBox="0 0 24 24"
-                                          fill="currentColor"
-                                      >
-                                          <path
-                                              d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
-                                          />
-                                      </svg>
-                                      ${title}
-                                  </h1>
-
-                                  ${showMinimizeButton
-                                      ? html`<button
-                                            class="minimize-btn"
-                                            @click=${() => this.minimizeDialog()}
-                                        >
-                                            -
-                                        </button>`
-                                      : nothing}
-                              </div>
-                          `
-                        : nothing}
-                    ${!this.isHistoryView &&
-                    this.collectionWithServices?.services?.length
-                        ? html`
-                              <div class="section">
-                                  ${this.#renderDataAccessModeSelection()}
-                              </div>
-                          `
-                        : nothing}
-                    ${this.dataAccessMode === 'original'
-                        ? html`
-                              <div class="section">
-                                  <terra-data-access
-                                      short-name=${this.shortName ??
-                                      this.collectionWithServices?.collection
-                                          ?.ShortName}
-                                      version=${this.version ??
-                                      this.collectionWithServices?.collection
-                                          ?.Version}
-                                      ?footer-slot=${!!this.dialog}
+            <div class="container">
+                ${!this.dialog
+                    ? html`
+                          <div class="header">
+                              <h1>
+                                  <svg
+                                      class="download-icon"
+                                      viewBox="0 0 24 24"
+                                      fill="currentColor"
                                   >
-                                      ${this.dialog
-                                          ? html`
-                                                <div
-                                                    slot="footer"
-                                                    style="margin-top: 15px;"
-                                                >
-                                                    <slot
-                                                        name="data-access-footer"
-                                                    ></slot>
-                                                </div>
-                                            `
-                                          : nothing}
-                                  </terra-data-access>
-                              </div>
-                          `
-                        : showJobStatus
-                          ? this.#renderJobStatus()
-                          : this.#renderSubsetOptions()}
-                </div>
-            </query-client-provider>
+                                      <path
+                                          d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                      />
+                                  </svg>
+                                  ${title}
+                              </h1>
+
+                              ${showMinimizeButton
+                                  ? html`<button
+                                        class="minimize-btn"
+                                        @click=${() => this.minimizeDialog()}
+                                    >
+                                        -
+                                    </button>`
+                                  : nothing}
+                          </div>
+                      `
+                    : nothing}
+                ${!this.isHistoryView && this.collectionWithServices?.services?.length
+                    ? html`
+                          <div class="section">
+                              ${this.#renderDataAccessModeSelection()}
+                          </div>
+                      `
+                    : nothing}
+                ${this.dataAccessMode === 'original'
+                    ? html`
+                          <div class="section">
+                              <terra-data-access
+                                  short-name=${this.shortName ??
+                                  this.collectionWithServices?.collection?.ShortName}
+                                  version=${this.version ??
+                                  this.collectionWithServices?.collection?.Version}
+                                  ?footer-slot=${!!this.dialog}
+                              >
+                                  ${this.dialog
+                                      ? html`
+                                            <div
+                                                slot="footer"
+                                                style="margin-top: 15px;"
+                                            >
+                                                <slot
+                                                    name="data-access-footer"
+                                                ></slot>
+                                            </div>
+                                        `
+                                      : nothing}
+                              </terra-data-access>
+                          </div>
+                      `
+                    : showJobStatus
+                      ? this.#renderJobStatus()
+                      : this.#renderSubsetOptions()}
+            </div>
         `
 
         // If dialog is set, wrap content in dialog with slots for header/footer
@@ -498,6 +505,7 @@ export default class TerraDataSubsetter extends TerraElement {
             </div>
         `
     }
+    */
 
     #renderFooterForDialog() {
         const showJobStatus = this.controller.currentJob && !this.refineParameters
