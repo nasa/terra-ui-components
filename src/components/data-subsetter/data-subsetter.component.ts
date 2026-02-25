@@ -325,17 +325,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     render() {
-        const collection = this.collectionQuery.result?.data?.umm
+        const collection = this.collectionQuery.result?.data
         const capabilities = this.capabilitiesQuery.result?.data
 
-        console.log(collection)
-        console.log(capabilities)
-
-        return html``
-    }
-
-    /*
-    render() {
         const showJobStatus = this.controller.currentJob && !this.refineParameters
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title =
@@ -505,7 +497,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             </div>
         `
     }
-    */
 
     #renderFooterForDialog() {
         const showJobStatus = this.controller.currentJob && !this.refineParameters

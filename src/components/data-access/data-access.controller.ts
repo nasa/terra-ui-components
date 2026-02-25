@@ -8,10 +8,6 @@ import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 import { Task, type StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type TerraDataAccess from './data-access.component.js'
-import {
-    calculateMeanGranuleSize,
-    formatGranuleSize,
-} from '../../metadata-catalog/utilities.js'
 
 export type FetchGranulesOptions = {
     collectionEntryId: string
@@ -57,46 +53,6 @@ export class DataAccessController {
     constructor(host: ReactiveControllerHost & TerraDataAccess) {
         this.#host = host
         this.#catalog = this.#getCatalogRepository()
-
-        this.fetchGranulesTask = new Task(host, {
-            task: async (
-                [
-                    collectionEntryId,
-                    startRow,
-                    endRow,
-                    sortBy,
-                    sortDirection,
-                    search,
-                    cloudCover,
-                ],
-                { signal }
-            ) => {
-                if (!collectionEntryId) {
-                    return undefined
-                }
-
-                const granules = await this.#catalog.getGranules(collectionEntryId, {
-                    signal,
-                    offset: startRow,
-                    limit: endRow - startRow,
-                    sortBy,
-                    sortDirection,
-                    search,
-                    cloudCover,
-                    startDate: this.#host.startDate,
-                    endDate: this.#host.endDate,
-                    location: this.#host.location,
-                })
-
-                this.#granules =
-                    granules?.collections?.items?.[0]?.granules?.items ?? []
-                this.#totalGranules =
-                    granules?.collections?.items?.[0]?.granules?.count ?? 0
-
-                return this.#granules
-            },
-            autoRun: false,
-        })
 
         // fetch sampling of granules
         this.samplingTask = new Task(host, {
@@ -187,22 +143,6 @@ export class DataAccessController {
         )
     }
 
-    get estimatedSize() {
-        if (!this.#sampling?.firstGranules) {
-            return null
-        }
-
-        const firstAndLastGranules = this.#sampling?.firstGranules.items.concat(
-            this.#sampling?.lastGranules.items
-        )
-
-        return firstAndLastGranules
-            ? formatGranuleSize(
-                  calculateMeanGranuleSize(firstAndLastGranules) * this.#totalGranules
-              )
-            : null
-    }
-
     get cloudCoverRange() {
         return this.#cloudCoverRange
     }
@@ -280,26 +220,6 @@ export class DataAccessController {
         }
 
         return `${westBoundingCoordinate}, ${southBoundingCoordinate}, ${eastBoundingCoordinate}, ${northBoundingCoordinate}`
-    }
-
-    async fetchGranules({
-        collectionEntryId,
-        startRow,
-        endRow,
-        sortBy,
-        sortDirection,
-        search,
-        cloudCover,
-    }: FetchGranulesOptions) {
-        return this.fetchGranulesTask.run([
-            collectionEntryId,
-            startRow,
-            endRow,
-            sortBy ?? 'title',
-            sortDirection ?? 'asc',
-            search ?? '',
-            cloudCover ?? { min: undefined, max: undefined },
-        ])
     }
 
     render(renderFunctions: StatusRenderer<Partial<CmrGranule[] | undefined>>) {

@@ -5,12 +5,8 @@ import TerraElement from '../../internal/terra-element.js'
 import styles from './data-access.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { DataAccessController } from './data-access.controller.js'
-import type { CmrGranule } from '../../metadata-catalog/types.js'
 import TerraLoader from '../loader/loader.component.js'
-import {
-    calculateGranuleSize,
-    getGranuleUrl,
-} from '../../metadata-catalog/utilities.js'
+import { getGranuleUrl } from '../../metadata-catalog/utilities.js'
 import TerraIcon from '../icon/icon.component.js'
 import { debounce } from '../../internal/debounce.js'
 import { watch } from '../../internal/watch.js'
@@ -40,6 +36,12 @@ import type { TerraSelectEvent } from '../../events/terra-select.js'
 import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import TerraAlert from '../alert/alert.component.js'
+import { QueryClientMixin } from '../../queries/query-client.mixin.js'
+import { queryCmrGranules } from '../../queries/nasa-cmr.queries.js'
+import type { SearchGranulesParams } from '../../apis/nasa-cmr.api.js'
+import type { UmmG, UmmResult } from '../../types/cmr.js'
+import DataAccessService from './data-access.service.js'
+import { QueryController } from '../../queries/query.controller.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -57,7 +59,7 @@ import TerraAlert from '../alert/alert.component.js'
  * @attr short-name - Collection short name used to build the Collection Entry ID.
  * @attr version - Collection version used to build the Collection Entry ID.
  */
-export default class TerraDataAccess extends TerraElement {
+export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-loader': TerraLoader,
@@ -73,24 +75,16 @@ export default class TerraDataAccess extends TerraElement {
         'terra-alert': TerraAlert,
     }
 
+    service = new DataAccessService(this)
+
+    @property({ reflect: true, attribute: 'collection-entry-id' })
+    collectionEntryId?: string
+
     @property({ reflect: true, attribute: 'short-name' })
     shortName?: string
 
     @property({ reflect: true, attribute: 'version' })
     version?: string
-
-    @state()
-    private _gridInitialized = false
-
-    @watch('shortName')
-    @watch('version')
-    handleCollectionChange() {
-        // Reset grid when collection changes
-        if (this._gridInitialized && this.isVisible) {
-            this._gridInitialized = false
-            this.firstVisible()
-        }
-    }
 
     /**
      * When true, the footer will be rendered with slot="footer" for use in a dialog.
@@ -99,38 +93,83 @@ export default class TerraDataAccess extends TerraElement {
     footerSlot?: boolean
 
     @state()
-    limit = 50
+    searchParams: SearchGranulesParams = {
+        pageSize: 50,
+        offset: 0,
+        search: '',
+        sortBy: 'title',
+        sortDirection: 'asc',
+        cloudCover: { min: undefined, max: undefined },
+    }
 
-    @state()
-    page = 1
-
-    @state()
-    search = ''
-
-    @state()
-    startDate = ''
-
-    @state()
-    endDate = ''
-
-    @state()
-    location: MapEventDetail | null = null
-
-    @state()
-    cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
-
-    @state()
-    cloudCoverPickerOpen = false
+    @state() loading = false
+    @state() totalGranules = 0
+    @state() estimatedSize: string | null = null
+    @state() private _gridInitialized = false
+    @state() cloudCoverPickerOpen = false
 
     datePickerRef = createRef<TerraDatePicker>()
     spatialPickerRef = createRef<TerraSpatialPicker>()
     cloudCoverSliderRef = createRef<TerraSlider>()
-    gridRef = createRef<TerraDataGrid<CmrGranule>>()
+    gridRef = createRef<TerraDataGrid<UmmResult<UmmG>>>()
 
     #controller = new DataAccessController(this)
     #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
-    get #gridApi(): GridApi<CmrGranule> | undefined {
+    firstGranuleQuery = new QueryController(this, () =>
+        queryCmrGranules({
+            collectionEntryId: this.collectionEntryId,
+            pageSize: 1,
+            sortBy: 'start_date',
+            sortDirection: 'asc',
+        })
+    )
+
+    lastGranuleQuery = new QueryController(this, () =>
+        queryCmrGranules({
+            collectionEntryId: this.collectionEntryId,
+            pageSize: 1,
+            sortBy: 'start_date',
+            sortDirection: 'desc',
+        })
+    )
+
+    /*
+    lowestCloudCover = new QueryController(this, () =>
+        queryCmrGranules({
+            collectionEntryId: this.collectionEntryId,
+            pageSize: 1,
+            sortBy: 'cloud_cover',
+            sortDirection: 'asc',
+        })
+    )
+
+    highestCloudCover = new QueryController(this, () =>
+        queryCmrGranules({
+            collectionEntryId: this.collectionEntryId,
+            pageSize: 1,
+            sortBy: 'cloud_cover',
+            sortDirection: 'desc',
+        })
+    )*/
+
+    @watch(['shortName', 'version'])
+    handleShortNameOrVersionChange() {
+        if (this.shortName && this.version && !this.collectionEntryId) {
+            this.collectionEntryId = `${this.shortName}_${this.version}`
+        }
+    }
+
+    @watch('collectionEntryId')
+    handleCollectionChange() {
+        // Reset grid when collection changes
+        if (this._gridInitialized && this.isVisible) {
+            this._gridInitialized = false
+            this.firstVisible()
+        }
+    }
+
+    get #gridApi(): GridApi<UmmResult<UmmG>> | undefined {
         return this.gridRef.value?.getGridApi()
     }
 
@@ -165,13 +204,6 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     async firstVisible(): Promise<void> {
-        // Wait for cloud cover range and sampling tasks to complete before initializing grid
-        // This prevents the race condition where the grid initializes before metadata is ready
-        await Promise.all([
-            this.#controller.cloudCoverRangeTask.taskComplete,
-            this.#controller.samplingTask.taskComplete,
-        ])
-
         this.#initializeGrid()
     }
 
@@ -186,23 +218,39 @@ export default class TerraDataAccess extends TerraElement {
             rowCount: undefined, // behave as infinite scroll
 
             getRows: async (params: IGetRowsParams) => {
-                await this.#controller.fetchGranules({
-                    collectionEntryId: `${this.shortName}_${this.version}`,
-                    startRow: params.startRow,
-                    endRow: params.endRow,
+                this.loading = true
+
+                const queryOptions = queryCmrGranules({
+                    collectionEntryId: this.collectionEntryId,
+                    ...this.searchParams,
+                    pageSize: params.endRow - params.startRow,
+                    offset: params.startRow,
                     sortBy: params.sortModel?.[0]?.colId ?? 'title',
                     sortDirection: params.sortModel?.[0]?.sort ?? 'asc',
-                    search: this.search,
-                    cloudCover: this.cloudCover,
                 })
 
-                const lastRow =
-                    this.#controller.totalGranules <= params.endRow
-                        ? this.#controller.totalGranules
-                        : -1
+                const data = await this.queryClient.ensureQueryData(queryOptions)
+
+                this.loading = false
+
+                if (!data || !data?.hits || !data?.items) {
+                    // TODO: handle this case, show an error? likely means the request failed because CMR is down
+                    params.failCallback()
+                    return
+                }
+
+                this.totalGranules = data.hits
+                this.estimatedSize = this.service.getEstimatedGranuleSize(
+                    this.firstGranuleQuery.result?.data?.items?.[0]?.umm,
+                    this.lastGranuleQuery.result?.data?.items?.[0]?.umm,
+                    this.totalGranules
+                )
+
+                const lastRow = data.hits <= params.endRow ? data.hits : -1
 
                 // Update cloud cover column visibility when grid is ready
                 if (this.#gridApi) {
+                    // TODO: replace
                     this.#gridApi.applyColumnState({
                         state: [
                             {
@@ -213,50 +261,59 @@ export default class TerraDataAccess extends TerraElement {
                     })
                 }
 
-                params.successCallback(this.#controller.granules, lastRow)
+                params.successCallback(data.items, lastRow)
             },
         }
 
-        const columnDefs: ColDef<CmrGranule>[] = [
+        const columnDefs: ColDef<UmmResult<UmmG>>[] = [
             {
-                field: 'title',
+                field: 'umm.GranuleUR',
+                headerName: 'Title',
                 flex: 3,
-                cellRenderer: (params: ICellRendererParams<CmrGranule>) => {
+                cellRenderer: (params: ICellRendererParams<UmmResult<UmmG>>) => {
                     if (!params.data) {
                         return ''
                     }
 
-                    const url = getGranuleUrl(params.data)
+                    const url = getGranuleUrl(params.data.umm)
 
                     if (url) {
                         const link = document.createElement('a')
                         link.href = url
                         link.target = '_blank'
                         link.title = url
-                        link.textContent = params.data.title
+                        link.textContent = params.data.umm.GranuleUR
 
                         return link
                     }
 
                     const span = document.createElement('span')
-                    span.textContent = params.data.title
+                    span.textContent = params.data.umm.GranuleUR
                     return span
                 },
             },
             {
-                colId: 'size',
+                colId: 'umm.DataGranule.Size',
                 headerName: 'Size (MB)',
                 valueGetter: g => {
                     if (!g.data) {
                         return undefined
                     }
 
-                    return calculateGranuleSize(g.data, 'MB').toFixed(2)
+                    return this.service
+                        .calculateGranuleSize(g.data.umm, 'MB')
+                        .toFixed(2)
                 },
             },
-            { field: 'timeStart' },
-            { field: 'timeEnd' },
-            { field: 'cloudCover', hide: true },
+            {
+                field: 'umm.TemporalExtent.RangeDateTime.BeginningDateTime',
+                headerName: 'Start Date',
+            },
+            {
+                field: 'umm.TemporalExtent.RangeDateTime.EndingDateTime',
+                headerName: 'End Date',
+            },
+            { field: 'umm.CloudCover', hide: true, headerName: 'Cloud Cover (%)' },
         ]
 
         // Configure terra-data-grid component
@@ -290,14 +347,16 @@ export default class TerraDataAccess extends TerraElement {
 
     @debounce(500)
     handleSearch(search: string) {
-        this.search = search
+        this.searchParams = {
+            ...this.searchParams,
+            search,
+        }
 
         this.#gridApi?.purgeInfiniteCache()
     }
 
     #handleMapChange(event: TerraMapChangeEvent) {
-        this.location = event.detail
-        this.#gridApi?.purgeInfiniteCache()
+        this.#updateLocation(event.detail)
     }
 
     #handleSpatialDropdownShow() {
@@ -310,14 +369,18 @@ export default class TerraDataAccess extends TerraElement {
 
     #handleDateRangeChange(event: CustomEvent) {
         const detail = event.detail
-        this.startDate = detail.startDate || ''
-        this.endDate = detail.endDate || ''
+
+        this.searchParams = {
+            ...this.searchParams,
+            startDate: detail.startDate || '',
+            endDate: detail.endDate || '',
+        }
 
         this.#gridApi?.purgeInfiniteCache()
     }
 
     #getDateRangeButtonText(): string {
-        if (this.startDate && this.endDate) {
+        if (this.searchParams.startDate && this.searchParams.endDate) {
             // Format dates to be more readable
             const formatDate = (dateStr: string) => {
                 const date = new Date(dateStr)
@@ -328,7 +391,7 @@ export default class TerraDataAccess extends TerraElement {
                     timeZone: 'UTC',
                 })
             }
-            return `${formatDate(this.startDate)} – ${formatDate(this.endDate)}`
+            return `${formatDate(this.searchParams.startDate)} – ${formatDate(this.searchParams.endDate)}`
         }
         return 'Date Range'
     }
@@ -352,18 +415,26 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     #getSpatialButtonText(): string {
-        if (!this.location) {
+        if (!this.searchParams.location) {
             return 'Spatial Area'
         }
 
         try {
-            if (this.location.type === MapEventType.POINT && this.location.latLng) {
-                const { lat, lng } = this.location.latLng
+            if (
+                this.searchParams.location.type === MapEventType.POINT &&
+                this.searchParams.location.latLng
+            ) {
+                const { lat, lng } = this.searchParams.location.latLng
                 return `${lat.toFixed(2)}, ${lng.toFixed(2)}`
             }
 
-            if (this.location.type === MapEventType.BBOX && this.location.bounds) {
-                const boundsStr = StringifyBoundingBox(this.location.bounds)
+            if (
+                this.searchParams.location.type === MapEventType.BBOX &&
+                this.searchParams.location.bounds
+            ) {
+                const boundsStr = StringifyBoundingBox(
+                    this.searchParams.location.bounds
+                )
                 const coords = boundsStr.split(', ').map(c => parseFloat(c.trim()))
 
                 if (coords.length === 4) {
@@ -374,8 +445,9 @@ export default class TerraDataAccess extends TerraElement {
             }
 
             // Check if it's a shape from geoJson
-            if (this.location.geoJson?.features?.[0]?.properties) {
-                const props = this.location.geoJson.features[0].properties
+            if (this.searchParams.location.geoJson?.features?.[0]?.properties) {
+                const props =
+                    this.searchParams.location.geoJson.features[0].properties
                 // Try to find a name property
                 const name =
                     props.LAKE_NAME ||
@@ -389,8 +461,11 @@ export default class TerraDataAccess extends TerraElement {
             }
 
             // Fallback: show bounds if available
-            if (this.location.type === MapEventType.BBOX && this.location.bounds) {
-                return StringifyBoundingBox(this.location.bounds)
+            if (
+                this.searchParams.location.type === MapEventType.BBOX &&
+                this.searchParams.location.bounds
+            ) {
+                return StringifyBoundingBox(this.searchParams.location.bounds)
             }
         } catch (error) {
             // If formatting fails, return default
@@ -403,13 +478,13 @@ export default class TerraDataAccess extends TerraElement {
     // Date picker is now handled by dropdown component
 
     #clearDateRange() {
-        this.startDate = ''
-        this.endDate = ''
+        this.searchParams.startDate = ''
+        this.searchParams.endDate = ''
         this.#gridApi?.purgeInfiniteCache()
     }
 
-    #clearSpatialFilter() {
-        this.location = null
+    #updateLocation(location: MapEventDetail | null) {
+        this.searchParams.location = location
         this.#gridApi?.purgeInfiniteCache()
     }
 
@@ -442,7 +517,8 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     #clearCloudCoverFilter() {
-        this.cloudCover = { min: undefined, max: undefined }
+        this.#updateCloudCover({ min: undefined, max: undefined })
+
         this.cloudCoverPickerOpen = false
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
@@ -451,12 +527,14 @@ export default class TerraDataAccess extends TerraElement {
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
-        this.#gridApi?.purgeInfiniteCache()
     }
 
     #getCloudCoverButtonText(): string {
-        if (this.cloudCover.min !== undefined && this.cloudCover.max !== undefined) {
-            return `${this.cloudCover.min.toFixed(1)}% – ${this.cloudCover.max.toFixed(1)}%`
+        if (
+            this.searchParams.cloudCover?.min !== undefined &&
+            this.searchParams.cloudCover?.max !== undefined
+        ) {
+            return `${this.searchParams.cloudCover?.min.toFixed(1)}% – ${this.searchParams.cloudCover?.max.toFixed(1)}%`
         }
         return 'Cloud Cover'
     }
@@ -491,19 +569,21 @@ export default class TerraDataAccess extends TerraElement {
 
         // Helper function to get bbox string from location
         const getBboxString = (): string => {
-            if (!this.location) {
+            if (!this.searchParams.location) {
                 return ''
             }
 
             try {
                 // For bbox type, use the bounds directly
                 if (
-                    this.location.type === MapEventType.BBOX &&
-                    this.location.bounds
+                    this.searchParams.location.type === MapEventType.BBOX &&
+                    this.searchParams.location.bounds
                 ) {
                     // StringifyBoundingBox returns format: "lng1, lat1, lng2, lat2" (with spaces)
                     // We need to remove spaces and ensure it's west,south,east,north
-                    const boundsStr = StringifyBoundingBox(this.location.bounds)
+                    const boundsStr = StringifyBoundingBox(
+                        this.searchParams.location.bounds
+                    )
                     // Remove spaces and split to verify format
                     const coords = boundsStr.split(',').map(c => parseFloat(c.trim()))
                     if (coords.length === 4) {
@@ -515,10 +595,10 @@ export default class TerraDataAccess extends TerraElement {
 
                 // For point type, create a small bbox around the point (0.01 degree buffer)
                 if (
-                    this.location.type === MapEventType.POINT &&
-                    this.location.latLng
+                    this.searchParams.location.type === MapEventType.POINT &&
+                    this.searchParams.location.latLng
                 ) {
-                    const { lat, lng } = this.location.latLng
+                    const { lat, lng } = this.searchParams.location.latLng
                     const buffer = 0.01
                     // Format: west,south,east,north
                     return `${(lng - buffer).toFixed(2)},${(lat - buffer).toFixed(2)},${(lng + buffer).toFixed(2)},${(lat + buffer).toFixed(2)}`
@@ -526,16 +606,17 @@ export default class TerraDataAccess extends TerraElement {
 
                 // For shapes (geoJson), try to extract bbox from geoJson
                 if (
-                    this.location.geoJson?.bbox &&
-                    Array.isArray(this.location.geoJson.bbox)
+                    this.searchParams.location.geoJson?.bbox &&
+                    Array.isArray(this.searchParams.location.geoJson.bbox)
                 ) {
                     // GeoJSON bbox format is [west, south, east, north] which matches CMR format
-                    return this.location.geoJson.bbox.join(',')
+                    return this.searchParams.location.geoJson.bbox.join(',')
                 }
 
                 // Fallback: try to get bbox from geoJson features if available
-                if (this.location.geoJson?.features?.[0]?.geometry) {
-                    const geometry = this.location.geoJson.features[0].geometry
+                if (this.searchParams.location.geoJson?.features?.[0]?.geometry) {
+                    const geometry =
+                        this.searchParams.location.geoJson.features[0].geometry
                     if (geometry.type === 'Point' && geometry.coordinates) {
                         const [lng, lat] = geometry.coordinates
                         const buffer = 0.01
@@ -554,19 +635,19 @@ export default class TerraDataAccess extends TerraElement {
             .replace(/{{version}}/gi, this.version ?? '')
             .replace(
                 /{{filter_temporal}}/gi,
-                this.startDate && this.endDate
-                    ? this.startDate + ',' + this.endDate
+                this.searchParams.startDate && this.searchParams.endDate
+                    ? this.searchParams.startDate + ',' + this.searchParams.endDate
                     : ''
             )
             .replace(/{{filter_bbox}}/gi, getBboxString())
-            .replace(/{{filter_search}}/gi, this.search ?? '')
+            .replace(/{{filter_search}}/gi, this.searchParams.search ?? '')
             .replace(
                 /{{filter_cloud_cover_min}}/gi,
-                this.cloudCover.min?.toString() ?? ''
+                this.searchParams.cloudCover?.min?.toString() ?? ''
             )
             .replace(
                 /{{filter_cloud_cover_max}}/gi,
-                this.cloudCover.max?.toString() ?? ''
+                this.searchParams.cloudCover?.max?.toString() ?? ''
             )
 
         const blob = new Blob([content], { type: 'text/plain' })
@@ -605,9 +686,19 @@ export default class TerraDataAccess extends TerraElement {
 
     #handleCloudCoverChange(event: TerraSliderChangeEvent) {
         const cloudCover = event.detail as any
-        this.cloudCover = {
+        this.#updateCloudCover({
             min: cloudCover.startValue ?? undefined,
             max: cloudCover.endValue ?? undefined,
+        })
+    }
+
+    #updateCloudCover(cloudCover: { min?: number; max?: number }) {
+        this.searchParams = {
+            ...this.searchParams,
+            cloudCover: {
+                min: cloudCover.min,
+                max: cloudCover.max,
+            },
         }
         this.#gridApi?.purgeInfiniteCache()
     }
@@ -633,7 +724,7 @@ export default class TerraDataAccess extends TerraElement {
                         type="text"
                         class="search-input"
                         placeholder="Search file names"
-                        .value=${this.search ?? ''}
+                        .value=${this.searchParams.search ?? ''}
                         @input=${(event: Event) => {
                             this.handleSearch(
                                 (event.target as HTMLInputElement).value
@@ -646,7 +737,8 @@ export default class TerraDataAccess extends TerraElement {
                     <terra-dropdown>
                         <button
                             slot="trigger"
-                            class="filter-btn ${this.startDate && this.endDate
+                            class="filter-btn ${this.searchParams.startDate &&
+                            this.searchParams.endDate
                                 ? 'active'
                                 : ''}"
                         >
@@ -656,7 +748,7 @@ export default class TerraDataAccess extends TerraElement {
                                 font-size="18px"
                             ></terra-icon>
                             <span>${this.#getDateRangeButtonText()}</span>
-                            ${this.startDate && this.endDate
+                            ${this.searchParams.startDate && this.searchParams.endDate
                                 ? html`
                                       <button
                                           class="clear-badge"
@@ -680,8 +772,8 @@ export default class TerraDataAccess extends TerraElement {
                                 show-presets
                                 split-inputs
                                 inline
-                                .startDate=${this.startDate}
-                                .endDate=${this.endDate}
+                                .startDate=${this.searchParams.startDate}
+                                .endDate=${this.searchParams.endDate}
                                 .startPlaceholder=${this.#controller.isSubDaily
                                     ? 'YYYY-MM-DD HH:mm:ss'
                                     : 'YYYY-MM-DD'}
@@ -721,7 +813,9 @@ export default class TerraDataAccess extends TerraElement {
                     >
                         <div slot="trigger" class="filter">
                             <button
-                                class="filter-btn ${this.location ? 'active' : ''}"
+                                class="filter-btn ${this.searchParams.location
+                                    ? 'active'
+                                    : ''}"
                             >
                                 <terra-icon
                                     name="outline-globe-alt"
@@ -729,13 +823,13 @@ export default class TerraDataAccess extends TerraElement {
                                     font-size="18px"
                                 ></terra-icon>
                                 <span>${this.#getSpatialButtonText()}</span>
-                                ${this.location
+                                ${this.searchParams.location
                                     ? html`
                                           <button
                                               class="clear-badge"
                                               @click=${(e: Event) => {
                                                   e.stopPropagation()
-                                                  this.#clearSpatialFilter()
+                                                  this.#updateLocation(null)
                                               }}
                                               aria-label="Clear spatial filter"
                                           >
@@ -768,9 +862,9 @@ export default class TerraDataAccess extends TerraElement {
                         ? html`
                               <div class="filter">
                                   <button
-                                      class="filter-btn ${this.cloudCover.min !==
-                                          undefined &&
-                                      this.cloudCover.max !== undefined
+                                      class="filter-btn ${this.searchParams.cloudCover
+                                          ?.min !== undefined &&
+                                      this.searchParams.cloudCover?.max !== undefined
                                           ? 'active'
                                           : ''}"
                                       @click=${(e: Event) => {
@@ -784,8 +878,9 @@ export default class TerraDataAccess extends TerraElement {
                                           font-size="18px"
                                       ></terra-icon>
                                       <span>${this.#getCloudCoverButtonText()}</span>
-                                      ${this.cloudCover.min !== undefined &&
-                                      this.cloudCover.max !== undefined
+                                      ${this.searchParams.cloudCover?.min !==
+                                          undefined &&
+                                      this.searchParams.cloudCover?.max !== undefined
                                           ? html`
                                                 <button
                                                     class="clear-badge"
@@ -814,9 +909,11 @@ export default class TerraDataAccess extends TerraElement {
                                           mode="range"
                                           min=${this.#controller.cloudCoverRange?.min}
                                           max=${this.#controller.cloudCoverRange?.max}
-                                          start-value=${this.cloudCover.min ??
+                                          start-value=${this.searchParams.cloudCover
+                                              ?.min ??
                                           this.#controller.cloudCoverRange?.min}
-                                          end-value=${this.cloudCover.max ??
+                                          end-value=${this.searchParams.cloudCover
+                                              ?.max ??
                                           this.#controller.cloudCoverRange?.max}
                                           step="0.1"
                                           hide-label
@@ -832,13 +929,9 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
 
                 <div class="results-info">
-                    <strong
-                        >${this.#controller.totalGranules.toLocaleString()}</strong
-                    >
+                    <strong>${this.totalGranules.toLocaleString()}</strong>
                     files selected
-                    ${this.#controller.estimatedSize
-                        ? html` (~${this.#controller.estimatedSize})`
-                        : nothing}
+                    ${this.estimatedSize ? html` (~${this.estimatedSize})` : nothing}
                 </div>
             </div>
 
@@ -849,12 +942,7 @@ export default class TerraDataAccess extends TerraElement {
                     height="350px"
                 ></terra-data-grid>
 
-                ${this.#controller.render({
-                    initial: () => this.#renderLoadingOverlay(),
-                    pending: () => this.#renderLoadingOverlay(),
-                    complete: () => nothing,
-                    error: () => nothing,
-                })}
+                ${this.loading ? this.#renderLoadingOverlay() : nothing}
             </div>
 
             ${this.footerSlot
