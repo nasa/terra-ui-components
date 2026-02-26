@@ -260,20 +260,29 @@ export default class TerraDataSubsetter extends TerraElement {
     @watch(['collectionWithServices'])
     collectionChanged() {
         const { startDate, endDate } = this.#getCollectionDateRange()
-
         this.selectedDateRange = { startDate, endDate }
 
-        // Set selectedFormat to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.outputFormats?.length) {
-            const netcdfFormat = this.collectionWithServices.outputFormats.find(
-                format =>
-                    format === 'application/x-netcdf4' ||
-                    format === 'application/netcdf'
-            )
-            this.selectedFormat =
-                netcdfFormat || this.collectionWithServices.outputFormats[0]
+        const formats = Array.from(
+            new Set(this.collectionWithServices?.outputFormats || [])
+        )
+
+        // Consolidate NetCDF formats - if both exist, only keep netcdf4
+        const hasNetcdf4 = formats.includes('application/x-netcdf4')
+        const hasNetcdfClassic = formats.includes('application/netcdf')
+
+        let displayFormats = formats
+        if (hasNetcdf4 && hasNetcdfClassic) {
+            displayFormats = formats.filter(f => f !== 'application/netcdf')
+        }
+
+        // auto-select default format
+        if (displayFormats.length === 1) {
+            this.selectedFormat = displayFormats[0] // only one option
         } else {
-            this.selectedFormat = defaultSubsetFileMimeType
+            // Prefer NetCDF if available, otherwise first option
+            this.selectedFormat =
+                displayFormats.find(f => f === 'application/x-netcdf4') ||
+                displayFormats[0]
         }
 
         this.collectionLoading = false
@@ -312,6 +321,25 @@ export default class TerraDataSubsetter extends TerraElement {
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title =
             this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
+
+        if (!this.collectionWithServices) {
+            if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
+                return html`
+                    <div class="loading-collection">
+                        <terra-loader indeterminate variant="small"></terra-loader>
+                        <span>Loading</span>
+                    </div>
+                `
+            }
+
+            if (this.controller.fetchCollectionTask.status === TaskStatus.ERROR) {
+                return html`
+                    <terra-alert open variant="danger" appearance="white">
+                        Failed to find the requested collection.
+                    </terra-alert>
+                `
+            }
+        }
 
         const content = html`
             <div class="container">
