@@ -323,15 +323,6 @@ export default class TerraDataSubsetter extends TerraElement {
             this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
 
         if (!this.collectionWithServices) {
-            if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
-                return html`
-                    <div class="loading-collection">
-                        <terra-loader indeterminate variant="small"></terra-loader>
-                        <span>Loading</span>
-                    </div>
-                `
-            }
-
             if (this.controller.fetchCollectionTask.status === TaskStatus.ERROR) {
                 return html`
                     <terra-alert open variant="danger" appearance="white">
@@ -585,10 +576,11 @@ export default class TerraDataSubsetter extends TerraElement {
                                       </terra-menu>
                                   </terra-dropdown>
 
+                                  <!--
                                   <terra-button
                                       outline
                                       @click=${() =>
-                                          this.#handleJupyterNotebookClick()}
+                                      this.#handleJupyterNotebookClick()}
                                   >
                                       <terra-icon
                                           name="outline-code-bracket"
@@ -598,6 +590,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       ></terra-icon>
                                       Open in Jupyter Notebook
                                   </terra-button>
+                                    -->
                               </div>
                           `
                         : nothing}
@@ -1162,8 +1155,11 @@ export default class TerraDataSubsetter extends TerraElement {
                         end-label="End Date"
                         .minDate=${this.granuleMinDate ?? defaultStartDate}
                         .maxDate=${this.granuleMaxDate ?? defaultEndDate}
-                        .startDate=${this.selectedDateRange.startDate}
-                        .endDate=${this.selectedDateRange.endDate}
+                        .startDate=${this.selectedDateRange.startDate ??
+                        this.granuleMinDate}
+                        .endDate=${this.selectedDateRange.endDate ??
+                        this.granuleMaxDate}
+                        .useEndOfDay=${this.#isGiovanniFormat() ? false : true}
                         @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
                 </div>
@@ -2025,10 +2021,11 @@ export default class TerraDataSubsetter extends TerraElement {
                                             </terra-menu>
                                         </terra-dropdown>
 
+                                        <!--
                                         <terra-button
                                             outline
                                             @click=${() =>
-                                                this.#handleJupyterNotebookClick()}
+                                            this.#handleJupyterNotebookClick()}
                                         >
                                             <terra-icon
                                                 name="outline-code-bracket"
@@ -2038,7 +2035,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                             ></terra-icon>
                                             Open in Jupyter Notebook
                                         </terra-button>
-                                    </div>
+--></div>
                                 `
                               : nothing}
                           ${this.controller.currentJob!.status === 'running'
