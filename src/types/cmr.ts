@@ -1,5 +1,6 @@
 export type { UmmC } from './cmr/umm-c.js'
 export type { UmmG } from './cmr/umm-g.js'
+export type { UmmVar } from './cmr/umm-var.js'
 
 export interface UmmResponse<T> {
     hits: number
@@ -19,4 +20,5 @@ export interface UmmMeta {
     'concept-id': string
     'native-id': string
     'provider-id': string
+    'granule-count'?: number
 }

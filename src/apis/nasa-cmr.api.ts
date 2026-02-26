@@ -4,10 +4,11 @@ import {
 } from '../exceptions/http.exception.js'
 import { apiClient } from './api.client.js'
 import type { RequestOptions } from './types.js'
-import type { UmmResponse, UmmC, UmmG } from '../types/cmr.js'
+import type { UmmResponse, UmmC, UmmG, UmmVar, UmmResult } from '../types/cmr.js'
 import type { MapEventDetail } from '../components/map/type.js'
 
 const baseUrl = 'https://cmr.earthdata.nasa.gov/search/'
+const graphQLUrl = 'https://graphql.earthdata.nasa.gov/api'
 
 export type SearchGranulesParams = {
     collectionEntryId?: string
@@ -26,6 +27,10 @@ export type SearchGranulesParams = {
         min?: number
         max?: number
     }
+}
+
+export type SearchVariablesParams = {
+    collectionConceptId?: string
 }
 
 class NasaCmrApi {
@@ -62,6 +67,73 @@ class NasaCmrApi {
 
         // return the actual collection record
         return ummResponse.items[0]
+    }
+
+    async searchVariables(
+        searchParams: SearchVariablesParams,
+        options?: RequestOptions
+    ) {
+        if (!searchParams.collectionConceptId) {
+            throw new BadRequestException({
+                message: '`collectionConceptId` is required',
+            })
+        }
+
+        const graphQlResponse = await this.#graphQLRequest<any>(
+            {
+                query: `
+                    query Collection($params: CollectionInput, $variablesParams2: VariablesInput) {
+                        collection(params: $params) {
+                            variables(params: $variablesParams2) {
+                                count
+                                items {
+                                    longName
+                                    name
+                                    standardName
+                                    units
+                                    conceptId
+                                    nativeId
+                                    providerId
+                                }
+                            }
+                        }
+                    }
+                `,
+                variables: {
+                    params: {
+                        conceptId: searchParams.collectionConceptId,
+                    },
+                    variablesParams: {
+                        limit: 100,
+                    },
+                },
+            },
+            options
+        )
+
+        // convert graphQL response to match the shape of the UMM response
+        // TODO: should we type the graphql response?
+        const ummResponse: UmmResponse<UmmVar> = {
+            hits: graphQlResponse.data.collection.variables.count,
+            items: graphQlResponse.data.collection.variables.items.map(
+                (v: any): UmmResult<UmmVar> => {
+                    return {
+                        meta: {
+                            'concept-id': v.conceptId,
+                            'native-id': v.nativeId,
+                            'provider-id': v.providerId,
+                        },
+                        umm: {
+                            LongName: v.longName,
+                            Name: v.name,
+                            Units: v.units,
+                        },
+                    }
+                }
+            ),
+        }
+
+        return ummResponse
     }
 
     async searchGranules(params: SearchGranulesParams, options?: RequestOptions) {
@@ -116,6 +188,20 @@ class NasaCmrApi {
 
     #request<T>(path: string, requestOptions?: RequestOptions) {
         return apiClient.get<T>(`${baseUrl}${path}`, {
+            headers: {
+                ...requestOptions?.headers,
+                ...(requestOptions?.bearerToken && {
+                    Authorization: `Bearer ${requestOptions.bearerToken}`,
+                }),
+            },
+        })
+    }
+
+    #graphQLRequest<T>(
+        body: { query: string; variables?: Record<string, any> },
+        requestOptions?: RequestOptions
+    ) {
+        return apiClient.post<T>(graphQLUrl, body, {
             headers: {
                 ...requestOptions?.headers,
                 ...(requestOptions?.bearerToken && {

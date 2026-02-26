@@ -302,6 +302,6 @@ export default class TerraMap extends TerraElement {
     }
 
     invalidateSize() {
-        this.map.map.invalidateSize()
+        this.map.map?.invalidateSize()
     }
 }

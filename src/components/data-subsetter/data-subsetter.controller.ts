@@ -12,7 +12,6 @@ import {
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
 import { getUTCDate } from '../../utilities/date.js'
-import Fuse from 'fuse.js'
 import type {
     CmrSamplingOfGranules,
     MetadataCatalogInterface,
@@ -26,7 +25,6 @@ const JOB_STATUS_POLL_MILLIS = 3000
 export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
     fetchCollectionTask: Task<[string], any | undefined>
-    searchCmrTask: Task<[string | undefined, string], any | undefined>
     samplingTask: Task<[string | undefined], CmrSamplingOfGranules | undefined>
     giovanniConfiguredVariablesTask: Task<[], Set<string> | undefined>
     variableDetailsTask: Task<[string | undefined], VariableDetails[] | undefined>
@@ -41,127 +39,6 @@ export class DataSubsetterController {
         this.#host = host
         this.#dataService = this.#getDataService()
         this.#metadataCatalog = this.#getMetadataCatalog()
-
-        this.fetchCollectionTask = new Task(host, {
-            task: async ([collectionEntryId], { signal }) => {
-                this.#host.collectionWithServices = collectionEntryId
-                    ? await this.#dataService.getCollectionWithAvailableServices(
-                          collectionEntryId,
-                          {
-                              signal,
-                              environment: this.#host.environment,
-                          }
-                      )
-                    : undefined
-
-                // Trigger variable details fetch when collection is fetched
-                if (this.#host.collectionWithServices?.conceptId) {
-                    this.variableDetailsTask.run()
-                }
-
-                return this.#host.collectionWithServices
-            },
-            args: (): [string | undefined] => [this.#host.collectionEntryId],
-        })
-
-        this.variableDetailsTask = new Task(host, {
-            task: async ([conceptId], { signal }) => {
-                if (!conceptId) {
-                    this.#host.variableDetails = undefined
-                    return undefined
-                }
-
-                try {
-                    const details = await this.#metadataCatalog.getVariablesDetails(
-                        conceptId,
-                        {
-                            signal,
-                        }
-                    )
-
-                    this.#host.variableDetails = details?.collection?.variables?.items
-                    return this.#host.variableDetails
-                } catch (error) {
-                    console.warn('Failed to fetch variable details:', error)
-                    return undefined
-                }
-            },
-            args: (): [string | undefined] => [
-                this.#host.collectionWithServices?.conceptId,
-            ],
-            autoRun: false,
-        })
-
-        this.searchCmrTask = new Task(host, {
-            task: async ([searchQuery, searchType], { signal }) => {
-                if (!searchQuery) {
-                    this.#host.collectionSearchResults = undefined
-                    return this.#host.collectionSearchResults
-                }
-
-                // reset the results
-                this.#host.collectionSearchLoading = true
-
-                const results = await this.#metadataCatalog.searchCmr(
-                    searchQuery,
-                    searchType as 'collection' | 'variable' | 'all',
-                    {
-                        signal,
-                    }
-                )
-
-                const fuse = new Fuse(results, {
-                    keys: ['title', 'entryId', 'provider'],
-                })
-
-                this.#host.collectionSearchResults = fuse
-                    .search(searchQuery)
-                    .map(result => result.item)
-
-                this.#host.collectionSearchLoading = false
-
-                return this.#host.collectionSearchResults
-            },
-            args: (): [string | undefined, string] => [
-                this.#host.collectionSearchQuery,
-                this.#host.collectionSearchType,
-            ],
-        })
-
-        this.samplingTask = new Task(host, {
-            task: async ([collectionEntryId], { signal }) => {
-                if (!collectionEntryId) {
-                    return
-                }
-
-                const sampling = await this.#metadataCatalog.getSamplingOfGranules(
-                    collectionEntryId,
-                    {
-                        signal,
-                    }
-                )
-
-                this.#sampling = sampling?.collections?.items?.[0]
-
-                this.#host.granuleMinDate =
-                    this.#sampling?.firstGranules?.items[0]?.temporalExtent?.rangeDateTime?.beginningDateTime
-                this.#host.granuleMaxDate =
-                    this.#sampling?.lastGranules?.items.slice(
-                        -1
-                    )[0]?.temporalExtent?.rangeDateTime?.endingDateTime
-
-                console.log(
-                    'Updated sampling: ',
-                    collectionEntryId,
-                    this.#sampling,
-                    this.#host.granuleMinDate,
-                    this.#host.granuleMaxDate
-                )
-
-                return this.#sampling
-            },
-            args: (): [string | undefined] => [this.#host.collectionEntryId],
-        })
 
         this.giovanniConfiguredVariablesTask = new Task(host, {
             task: async ([], { signal }) => {

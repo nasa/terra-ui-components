@@ -38,3 +38,21 @@ export function queryCmrGranules(
             !!searchParams.collectionEntryId || !!searchParams.collectionConceptId, // prevent firing when collectionEntryId and collectionConceptId are undefined
     }
 }
+
+export function queryCmrVariables(
+    searchParams: Parameters<typeof nasaCmrApi.searchVariables>[0],
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof nasaCmrApi.searchVariables>
+> | null> {
+    return {
+        queryKey: ['cmr', 'variables', searchParams],
+        queryFn: async ({ signal }) => {
+            return nasaCmrApi.searchVariables(searchParams, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: !!searchParams.collectionConceptId, // prevent firing when collectionConceptId is undefined
+    }
+}

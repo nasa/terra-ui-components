@@ -6,12 +6,7 @@ import type { CSSResultGroup } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
 import TerraAccordion from '../accordion/accordion.component.js'
-import {
-    Status,
-    type BoundingBox,
-    type CollectionWithAvailableServices,
-    type Variable,
-} from '../../data-services/types.js'
+import { Status, type BoundingBox } from '../../data-services/types.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraInput from '../input/input.component.js'
@@ -23,11 +18,6 @@ import {
     getFriendlyNameForMimeType,
 } from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
-import { debounce } from '../../internal/debounce.js'
-import type {
-    CmrSearchResult,
-    VariableDetails,
-} from '../../metadata-catalog/types.js'
 import type { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
@@ -49,8 +39,14 @@ import TerraAlert from '../alert/alert.component.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 import { QueryController } from '../../queries/query.controller.js'
 import { QueryClientMixin } from '../../queries/query-client.mixin.js'
-import { queryCmrCollection } from '../../queries/nasa-cmr.queries.js'
+import {
+    queryCmrCollection,
+    queryCmrGranules,
+    queryCmrVariables,
+} from '../../queries/nasa-cmr.queries.js'
 import { queryHarmonyCapabilities } from '../../queries/nasa-harmony.queries.js'
+import type { Variable } from '../../types/harmony.js'
+import DataSubsetterService from './data-subsetter.service.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -93,9 +89,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @property({ reflect: true, attribute: 'version' })
     version?: string
 
-    @property({ reflect: true, type: Boolean, attribute: 'show-collection-search' })
-    showCollectionSearch?: boolean = true
-
     @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
     showHistoryPanel?: boolean = true
 
@@ -113,6 +106,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @property({ reflect: true, type: Boolean, attribute: 'is-history-view' })
     isHistoryView: boolean = false
 
+    service = new DataSubsetterService(this)
     controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
 
@@ -129,11 +123,30 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         )
     )
 
-    @state()
-    collectionWithServices?: CollectionWithAvailableServices
+    collectionVariablesQuery = new QueryController(this, () =>
+        queryCmrVariables({
+            collectionConceptId:
+                this.collectionQuery.result?.data?.meta['concept-id'],
+        })
+    )
 
-    @state()
-    variableDetails?: Array<VariableDetails>
+    firstGranuleQuery = new QueryController(this, () =>
+        queryCmrGranules({
+            collectionEntryId: this.collectionEntryId,
+            pageSize: 1,
+            sortBy: 'start_date',
+            sortDirection: 'asc',
+        })
+    )
+
+    lastGranuleQuery = new QueryController(this, () =>
+        queryCmrGranules({
+            collectionEntryId: this.collectionEntryId,
+            pageSize: 1,
+            sortBy: 'start_date',
+            sortDirection: 'desc',
+        })
+    )
 
     @state()
     selectedVariables: Variable[] = []
@@ -167,18 +180,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @state()
     refineParameters: boolean = false
-
-    @state()
-    collectionSearchType: 'collection' | 'variable' | 'all' = 'all'
-
-    @state()
-    collectionSearchQuery?: string
-
-    @state()
-    collectionSearchLoading: boolean = false
-
-    @state()
-    collectionSearchResults?: Array<CmrSearchResult>
 
     @state()
     collectionLoading: boolean = false
@@ -215,6 +216,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
     }
 
+    @watch('firstGranuleQuery')
+    firstGranuleQueryResultChanged() {
+        console.log('got it ', this.firstGranuleQuery.result?.data?.items[0])
+    }
+
     @watch(['shortName', 'version'])
     shortNameAndVersionChanged() {
         if (this.shortName && this.version) {
@@ -222,26 +228,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
     }
 
-    @watch('collectionEntryId', { waitUntilFirstUpdate: true })
-    collectionEntryIdChanged() {
-        if (this.collectionEntryId) {
-            this.showCollectionSearch = false
-        } else {
-            this.showCollectionSearch = true
-        }
-    }
-
     firstUpdated() {
-        if (this.collectionEntryId) {
-            this.showCollectionSearch = false
-        }
-
         if (this.jobId) {
             this.controller.fetchJobByID(this.jobId)
             this.dataAccessMode = 'subset'
         }
 
         this.renderHistoryPanel()
+
+        this.collectionQuery.result?.data
     }
 
     updated(changedProps: Map<string, unknown>) {
@@ -280,7 +275,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.selectedDateRange = { startDate, endDate }
 
         const formats = Array.from(
-            new Set(this.collectionWithServices?.outputFormats || [])
+            new Set(this.capabilitiesQuery.result?.data?.outputFormats || [])
         )
 
         // Consolidate NetCDF formats - if both exist, only keep netcdf4
@@ -334,16 +329,22 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     render() {
-        //const collection = this.collectionQuery.result?.data
-        //const capabilities = this.capabilitiesQuery.result?.data
+        const collection = this.collectionQuery.result?.data
+        const capabilities = this.capabilitiesQuery.result?.data
 
         const showJobStatus = this.controller.currentJob && !this.refineParameters
         const showMinimizeButton = showJobStatus && !!this.dialog
-        const title =
-            this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
+        const title = collection?.umm.EntryTitle ?? 'Download Data'
 
-        if (!this.collectionWithServices) {
-            if (this.controller.fetchCollectionTask.status === TaskStatus.PENDING) {
+        const isLoading =
+            this.capabilitiesQuery.result?.isLoading ||
+            this.collectionQuery.result?.isLoading
+        const isError =
+            this.capabilitiesQuery.result?.isError ||
+            this.collectionQuery.result?.isError
+
+        if (!capabilities) {
+            if (isLoading) {
                 return html`
                     <div class="loading-collection">
                         <terra-loader indeterminate variant="small"></terra-loader>
@@ -352,10 +353,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 `
             }
 
-            if (this.controller.fetchCollectionTask.status === TaskStatus.ERROR) {
+            if (isError) {
                 return html`
                     <terra-alert open variant="danger" appearance="white">
-                        Failed to find the requested collection.
+                        ${this.collectionQuery.result?.error?.message ||
+                        this.capabilitiesQuery.result?.error?.message ||
+                        'An unknown error occurred while loading the collection, please try again later.'}
                     </terra-alert>
                 `
             }
@@ -390,7 +393,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           </div>
                       `
                     : nothing}
-                ${!this.isHistoryView && this.collectionWithServices?.services?.length
+                ${!this.isHistoryView && capabilities?.services?.length
                     ? html`
                           <div class="section">
                               ${this.#renderDataAccessModeSelection()}
@@ -402,9 +405,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           <div class="section">
                               <terra-data-access
                                   short-name=${this.shortName ??
-                                  this.collectionWithServices?.collection?.ShortName}
-                                  version=${this.version ??
-                                  this.collectionWithServices?.collection?.Version}
+                                  collection?.umm.ShortName}
+                                  version=${this.version ?? collection?.umm.Version}
                                   ?footer-slot=${!!this.dialog}
                               >
                                   ${this.dialog
@@ -487,7 +489,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           </button>`
                         : nothing}
                 </div>
-                ${!this.isHistoryView && this.collectionWithServices?.services?.length
+                ${!this.isHistoryView && capabilities?.services?.length
                     ? html`
                           <div class="section">
                               ${this.#renderDataAccessModeSelection()}
@@ -499,9 +501,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           <div class="section">
                               <terra-data-access
                                   short-name=${this.shortName ??
-                                  this.collectionWithServices?.collection?.ShortName}
-                                  version=${this.version ??
-                                  this.collectionWithServices?.collection?.Version}
+                                  collection?.umm.ShortName}
+                                  version=${this.version ?? collection?.umm.Version}
                                   ?footer-slot=${!!this.dialog}
                               >
                                   ${this.dialog
@@ -725,9 +726,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #renderSubsetOptions() {
         const estimates = this.#estimateJobSize()
         const hasSubsetOption = this.#hasAtLeastOneSubsetOption()
-        const collection = this.collectionWithServices?.collection
-        const temporalExtents = collection?.TemporalExtents
-        const spatialExtent = collection?.SpatialExtent
+        const collection = this.collectionQuery.result?.data
+        const capabilities = this.capabilitiesQuery.result?.data
+        const temporalExtents = collection?.umm.TemporalExtents
+        const spatialExtent = collection?.umm.SpatialExtent
 
         const showTemporalSection = temporalExtents && temporalExtents.length
         const showSpatialSection =
@@ -742,19 +744,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ${hasSubsetOption && estimates
                             ? this.#renderSizeInfo(estimates)
                             : nothing}
-                        ${this.showCollectionSearch
-                            ? html`
-                                  <div class="section">
-                                      <h2 class="section-title">
-                                          Select Data Collection
-                                      </h2>
-
-                                      ${this.#renderSearchForCollection()}
-                                  </div>
-                              `
-                            : nothing}
-                        ${this.collectionWithServices?.outputFormats?.length &&
-                        hasSubsetOption
+                        ${capabilities?.outputFormats?.length && hasSubsetOption
                             ? html`
                                   <div class="section">
                                       <h2 class="section-title">Output Format</h2>
@@ -770,20 +760,19 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 date/time range selection, and variable selection.
                             </p>
 
-                            ${this.collectionWithServices?.temporalSubset
+                            ${capabilities?.temporalSubset
                                 ? this.#renderDateRangeSelection()
                                 : nothing}
                             ${this.#hasSpatialSubset()
                                 ? this.#renderSpatialSelection()
                                 : nothing}
-                            ${this.collectionWithServices?.variableSubset
+                            ${capabilities?.variableSubset
                                 ? this.#renderVariableSelection()
                                 : nothing}
                         </div>
                     `
                   : html`
-                        ${showTemporalSection &&
-                        !this.collectionWithServices?.temporalSubset
+                        ${showTemporalSection && !capabilities?.temporalSubset
                             ? this.#renderAvailableTemporalRangeSection()
                             : nothing}
                         ${showSpatialSection && !this.#hasSpatialSubset()
@@ -835,232 +824,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         `
     }
 
-    #renderSearchForCollection() {
-        let placeholder =
-            'Search all types of resources (e.g. rainfall, GPM, hurricanes, etc.)'
-
-        if (this.collectionSearchType === 'collection') {
-            placeholder = 'Search collections (e.g. AQUA, GPM_3IMERGH, etc.)'
-        }
-
-        if (this.collectionSearchType === 'variable') {
-            placeholder = 'Search variables (e.g. rainfall, hurricanes, etc.)'
-        }
-
-        return html`
-            <terra-accordion .open=${this.collectionAccordionOpen}>
-                <div slot="summary">
-                    <span class="accordion-title">Collection:</span>
-                </div>
-
-                <div
-                    slot="summary-right"
-                    style="display: flex; align-items: center; gap: 10px"
-                >
-                    ${this.collectionEntryId
-                        ? html` <span
-                                  class="accordion-value"
-                                  id="selected-collection-display"
-                                  >${this.collectionEntryId}</span
-                              >
-
-                              <button
-                                  class="reset-btn"
-                                  @click=${() => (this.collectionEntryId = undefined)}
-                              >
-                                  Reset
-                              </button>`
-                        : nothing}
-                </div>
-
-                <div class="search-tabs-mini">
-                    <button
-                        class="search-tab-mini ${this.collectionSearchType === 'all'
-                            ? 'active'
-                            : ''}"
-                        @click=${() => (this.collectionSearchType = 'all')}
-                    >
-                        All
-                    </button>
-                    <button
-                        class="search-tab-mini ${this.collectionSearchType ===
-                        'collection'
-                            ? 'active'
-                            : ''}"
-                        @click=${() => (this.collectionSearchType = 'collection')}
-                    >
-                        Collections
-                    </button>
-                    <button
-                        class="search-tab-mini ${this.collectionSearchType ===
-                        'variable'
-                            ? 'active'
-                            : ''}"
-                        @click=${() => (this.collectionSearchType = 'variable')}
-                    >
-                        Variables
-                    </button>
-                </div>
-
-                <div class="search-container-mini">
-                    <input
-                        type="text"
-                        class="search-input-mini"
-                        id="search-input"
-                        placeholder=${placeholder}
-                        @input="${(e: InputEvent) =>
-                            this.handleCollectionSearch(
-                                (e.target as HTMLInputElement).value
-                            )}"
-                    />
-
-                    <button class="search-button-mini">
-                        <svg
-                            class="search-icon-mini"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                            />
-                        </svg>
-                        Search
-                    </button>
-                </div>
-
-                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends? 
-                <div class="quick-links-mini">
-                    <a href="#" class="quick-link-mini" onclick="quickSearch('GPM')"
-                        >GPM Precipitation</a
-                    >
-                    <a href="#" class="quick-link-mini" onclick="quickSearch('MODIS')"
-                        >MODIS Data</a
-                    >
-                    <a
-                        href="#"
-                        class="quick-link-mini"
-                        onclick="quickSearch('Landsat')"
-                        >Landsat Imagery</a
-                    >
-                    <a href="#" class="quick-link-mini" onclick="quickSearch('AIRS')"
-                        >Atmospheric Data</a
-                    >
-                </div>
-                -->
-
-                <div id="search-results-section" class="search-results-section">
-                    ${this.collectionSearchLoading
-                        ? html`
-                              <div id="loading-mini" class="loading-mini">
-                                  <div class="spinner-mini"></div>
-                                  <div>Searching NASA CMR...</div>
-                              </div>
-                          `
-                        : this.collectionSearchResults?.length
-                          ? html` <div
-                                id="results-container-mini"
-                                class="results-container-mini"
-                            >
-                                ${this.collectionSearchResults?.map(
-                                    item => html`
-                                        <div
-                                            class="result-item-mini"
-                                            @click=${() => {
-                                                this.collectionEntryId =
-                                                    item.collectionEntryId
-                                                this.collectionAccordionOpen = false
-                                                this.collectionLoading = true
-
-                                                // if this item is a variable, we'll also go ahead and select the variable
-                                                if (item.type === 'variable') {
-                                                    this.selectedVariables = [
-                                                        {
-                                                            name: item.entryId,
-                                                            href: '',
-                                                            conceptId: item.conceptId,
-                                                        },
-                                                    ]
-                                                }
-
-                                                this.requestUpdate()
-                                            }}
-                                            style="cursor: pointer;"
-                                        >
-                                            <div class="result-title-mini">
-                                                ${item.title}
-                                            </div>
-                                            <div class="result-id-mini">
-                                                ${item.entryId}
-                                            </div>
-                                            <div class="result-description-mini">
-                                                ${item.summary || item.title}
-                                            </div>
-                                            <div class="result-meta-mini">
-                                                <span>📅 2000-02-24 - ongoing</span>
-                                                <span>🌍 Global</span>
-                                                <span>🏢 ${item.provider}</span>
-                                                ${item.type === 'variable'
-                                                    ? html` <span
-                                                          >📊
-                                                          ${item.collectionEntryId}</span
-                                                      >`
-                                                    : nothing}
-                                                <span class="tag-mini"
-                                                    >${item.type.toUpperCase()}</span
-                                                >
-                                            </div>
-                                        </div>
-                                    `
-                                )}
-                            </div>`
-                          : this.collectionSearchResults &&
-                              this.collectionSearchResults.length === 0
-                            ? html`<div id="no-results-mini" class="no-results-mini">
-                                  <p>
-                                      No results found for
-                                      '${this.collectionSearchQuery}'. Try adjusting
-                                      your search term.
-                                  </p>
-                              </div>`
-                            : nothing}
-                </div>
-            </terra-accordion>
-
-            ${this.collectionLoading
-                ? html`
-                      <div
-                          class="collection-loading-bar"
-                          style="display: flex; align-items: center; gap: 10px; margin: 16px 0;"
-                      >
-                          <span
-                              class="loading-spinner"
-                              style="width: 20px; height: 20px; border: 3px solid #ccc; border-top: 3px solid #31708f; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"
-                          ></span>
-                          Retrieving collection, please wait...
-                      </div>
-                      <style>
-                          @keyframes spin {
-                              0% {
-                                  transform: rotate(0deg);
-                              }
-                              100% {
-                                  transform: rotate(360deg);
-                              }
-                          }
-                      </style>
-                  `
-                : nothing}
-        `
-    }
-
-    @debounce(500)
-    handleCollectionSearch(searchTerm: string) {
-        this.collectionSearchQuery = searchTerm
-    }
-
     #renderOutputFormatSelection() {
         // TODO: refactor component to use output formats from individual services, then each service can have a map of output format friendly names
-        const hasGiovanniService = this.collectionWithServices?.services?.some(
+        const hasGiovanniService = this.capabilitiesQuery.result?.data?.services.some(
             s => s.name.indexOf('giovanni') !== -1
         )
 
@@ -1089,7 +855,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 <div class="accordion-content" style="margin-top: 12px;">
                     ${(() => {
                         const allFormats =
-                            this.collectionWithServices?.outputFormats || []
+                            this.capabilitiesQuery.result?.data?.outputFormats || []
                         const uniqueFormats = Array.from(new Set(allFormats))
 
                         // Consolidate NetCDF formats - if both exist, only show netcdf4
@@ -1221,14 +987,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #resetFormatSelection = () => {
         // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.outputFormats?.length) {
-            const netcdfFormat = this.collectionWithServices.outputFormats.find(
-                format =>
-                    format === 'application/x-netcdf4' ||
-                    format === 'application/netcdf'
-            )
+        if (this.capabilitiesQuery.result?.data?.outputFormats?.length) {
+            const netcdfFormat =
+                this.capabilitiesQuery.result.data.outputFormats.find(
+                    format =>
+                        format === 'application/x-netcdf4' ||
+                        format === 'application/netcdf'
+                )
             this.selectedFormat =
-                netcdfFormat || this.collectionWithServices.outputFormats[0]
+                netcdfFormat || this.capabilitiesQuery.result.data.outputFormats[0]
         } else {
             this.selectedFormat = defaultSubsetFileMimeType
         }
@@ -1247,8 +1014,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         // Fallback to collection metadata if sampling is not available
-        const temporalExtents =
-            this.collectionWithServices?.collection?.TemporalExtents
+        const temporalExtents = this.collectionQuery.result?.data?.umm.TemporalExtents
         if (!temporalExtents || !temporalExtents.length)
             return {
                 startDate: null,
@@ -1260,7 +1026,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const today = new Date()
 
         for (const temporal of temporalExtents) {
-            for (const range of temporal.RangeDateTimes) {
+            for (const range of temporal.RangeDateTimes || []) {
                 const start = new Date(range.BeginningDateTime)
                 let end
                 if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
@@ -1300,7 +1066,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #renderSpatialSelection() {
         const showError = this.touchedFields.has('spatial') && !this.spatialSelection
         let boundingRects: any =
-            this.collectionWithServices?.collection?.SpatialExtent
+            this.collectionQuery.result?.data?.umm.SpatialExtent
                 ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
         if (boundingRects && !Array.isArray(boundingRects)) {
@@ -1399,7 +1165,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderVariableSelection() {
-        const variables = this.collectionWithServices?.variables || []
+        const variables = this.capabilitiesQuery.result?.data?.variables || []
         const giovanniError =
             this.touchedFields.has('variables') && this.#getGiovanniValidationError()
         const basicError =
@@ -1529,7 +1295,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             return
         }
 
-        const variables = this.collectionWithServices?.variables || []
+        const variables = this.capabilitiesQuery.result?.data?.variables || []
         const tree = this.#buildVariableTree(variables)
         const filterText = this.variableFilterText.toLowerCase().trim()
 
@@ -1573,6 +1339,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #buildVariableTree(variables: Variable[]): Record<string, any> {
+        const collection = this.collectionQuery.result?.data
         let filteredVariables = variables
 
         if (this.#isGiovanniFormat() && this.giovanniConfiguredVariables) {
@@ -1581,8 +1348,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             filteredVariables = variables.filter(v => {
                 // Convert internal format (dots) to Giovanni format (underscores)
                 // Example: M2T1NXSLV_5.12.4_CLDPRS -> M2T1NXSLV_5_12_4_CLDPRS
-                const shortName = this.collectionWithServices?.shortName
-                const version = this.collectionWithServices?.collection?.Version
+                const shortName = collection?.umm.ShortName
+                const version = collection?.umm.Version
 
                 if (!shortName || !version) {
                     return false
@@ -1621,6 +1388,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderVariableTree(node: Record<string, any>, path: string[]): unknown {
         const isGiovanni = this.#isGiovanniFormat()
+        const variableDetails = this.collectionVariablesQuery.result?.data?.items
+
         return html`
             <div style="margin-left: ${path.length * 20}px;">
                 ${Object.entries(node).map(([key, value]: [string, any]) => {
@@ -1628,13 +1397,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     if (value.__isLeaf) {
                         // Leaf node (variable)
                         // Look up the long name from variableDetails
-                        const variableDetail = this.variableDetails?.find(
-                            d =>
-                                d.name === value.__variable.name &&
-                                d.longName !== value.__variable.name // if the long name is the same as the variable name, we'll just use the variable name
+                        const variableDetail = variableDetails?.find(
+                            v =>
+                                v.umm.Name === value.__variable.name &&
+                                v.umm.LongName !== value.__variable.name // if the long name is the same as the variable name, we'll just use the variable name
                         )
-                        const variableName = variableDetail?.longName
-                            ? `${key} = ${variableDetail.longName}${variableDetail.units ? ` (${variableDetail.units})` : ''}`
+                        const variableName = variableDetail?.umm.LongName
+                            ? `${key} = ${variableDetail.umm.LongName}${variableDetail.umm.Units && variableDetail.umm.Units !== 'NoUnits' ? ` (${variableDetail.umm.Units})` : ''}`
                             : key
                         return html`
                             <div class="option-row">
@@ -2094,7 +1863,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderSelectedParams() {
-        const collection = this.collectionWithServices?.collection
+        const collection = this.collectionQuery.result?.data
         const variables = this.selectedVariables.length
             ? this.selectedVariables.map(v => v.name)
             : ['All']
@@ -2119,7 +1888,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             <dl class="params-summary">
                 <div>
                     <dt><strong>Dataset</strong></dt>
-                    <dd>${collection?.EntryTitle ?? '—'}</dd>
+                    <dd>${collection?.umm.EntryTitle ?? '—'}</dd>
                 </div>
                 <div>
                     <dt><strong>Variables</strong></dt>
@@ -2208,19 +1977,20 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #hasAtLeastOneSubsetOption() {
+        const capabilities = this.capabilitiesQuery.result?.data
+
         return (
-            this.collectionWithServices?.bboxSubset ||
-            this.collectionWithServices?.shapeSubset ||
-            this.collectionWithServices?.variableSubset ||
-            this.collectionWithServices?.temporalSubset
+            capabilities?.bboxSubset ||
+            capabilities?.shapeSubset ||
+            capabilities?.variableSubset ||
+            capabilities?.temporalSubset
         )
     }
 
     #hasSpatialSubset() {
-        return (
-            this.collectionWithServices?.bboxSubset ||
-            this.collectionWithServices?.shapeSubset
-        )
+        const capabilities = this.capabilitiesQuery.result?.data
+
+        return capabilities?.bboxSubset || capabilities?.shapeSubset
     }
 
     #renderJobMessage() {
@@ -2286,13 +2056,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #estimateJobSize() {
-        const collection = this.collectionWithServices?.collection
+        const collection = this.collectionQuery.result?.data
         if (!collection) return
 
         const range = this.#getCollectionDateRange()
         let startDate: string | null
         let endDate: string | null
-        let links = collection.granuleCount ?? 0
+        let links = collection?.meta['granule-count'] ?? 0
 
         if (this.selectedDateRange.startDate && this.selectedDateRange.endDate) {
             // Use the user selected date range if available
@@ -2490,9 +2260,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderAvailableSpatialRangeSection() {
+        const collection = this.collectionQuery.result?.data
+
         const boundingRects =
-            this.collectionWithServices?.collection?.SpatialExtent
-                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+            collection?.umm.SpatialExtent?.HorizontalSpatialDomain?.Geometry
+                ?.BoundingRectangles
         if (!boundingRects || !Array.isArray(boundingRects) || !boundingRects.length)
             return nothing
         return html`
