@@ -29,6 +29,15 @@ export default css`
         background: white;
     }
 
+    .loading-collection {
+        display: flex;
+        align-items: center;
+    }
+
+    .loading-collection terra-loader {
+        margin-right: 8px;
+    }
+
     .header {
         display: flex;
         align-items: center;
