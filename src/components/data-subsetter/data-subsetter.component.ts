@@ -325,8 +325,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     render() {
-        const collection = this.collectionQuery.result?.data
-        const capabilities = this.capabilitiesQuery.result?.data
+        //const collection = this.collectionQuery.result?.data
+        //const capabilities = this.capabilitiesQuery.result?.data
 
         const showJobStatus = this.controller.currentJob && !this.refineParameters
         const showMinimizeButton = showJobStatus && !!this.dialog

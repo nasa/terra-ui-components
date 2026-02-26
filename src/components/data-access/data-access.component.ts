@@ -32,8 +32,6 @@ import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
 import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
-import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
-import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import TerraAlert from '../alert/alert.component.js'
 import { QueryClientMixin } from '../../queries/query-client.mixin.js'
 import { queryCmrGranules } from '../../queries/nasa-cmr.queries.js'
@@ -74,7 +72,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         'terra-alert': TerraAlert,
     }
 
-    service = new DataAccessService(this)
+    service = new DataAccessService()
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
@@ -136,25 +134,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             sortDirection: 'desc',
         })
     )
-
-    /*
-    lowestCloudCover = new QueryController(this, () =>
-        queryCmrGranules({
-            collectionEntryId: this.collectionEntryId,
-            pageSize: 1,
-            sortBy: 'cloud_cover',
-            sortDirection: 'asc',
-        })
-    )
-
-    highestCloudCover = new QueryController(this, () =>
-        queryCmrGranules({
-            collectionEntryId: this.collectionEntryId,
-            pageSize: 1,
-            sortBy: 'cloud_cover',
-            sortDirection: 'desc',
-        })
-    )*/
 
     @watch(['shortName', 'version'])
     handleShortNameOrVersionChange() {
@@ -259,20 +238,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 )
 
                 const lastRow = data.hits <= params.endRow ? data.hits : -1
-
-                // Update cloud cover column visibility when grid is ready
-                if (this.#gridApi) {
-                    // TODO: replace
-                    /*
-                    this.#gridApi.applyColumnState({
-                        state: [
-                            {
-                                colId: 'cloudCover',
-                                hide: !this.#controller.cloudCoverRange,
-                            },
-                        ],
-                    })*/
-                }
 
                 params.successCallback(data.items, lastRow)
             },
@@ -396,24 +361,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             return `${formatDate(this.searchParams.startDate)} – ${formatDate(this.searchParams.endDate)}`
         }
         return 'Date Range'
-    }
-
-    #formatAvailableRangeDate(dateStr?: Date | string): string {
-        if (!dateStr) return ''
-
-        const date = new Date(dateStr)
-        const year = date.getUTCFullYear()
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
-        const day = String(date.getUTCDate()).padStart(2, '0')
-
-        if (this.isSubDaily) {
-            const hours = String(date.getUTCHours()).padStart(2, '0')
-            const minutes = String(date.getUTCMinutes()).padStart(2, '0')
-            const seconds = String(date.getUTCSeconds()).padStart(2, '0')
-            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-        }
-
-        return `${year}-${month}-${day}`
     }
 
     #getSpatialButtonText(): string {
@@ -664,22 +611,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
 
     async #downloadEarthdataDownload(event: Event) {
         event.stopPropagation()
-
-        console.log('downloading earthdata download ', this, this.#gridApi)
-
         alert('Sorry, Earthdata Download is not currently supported')
-    }
-
-    #handleJupyterNotebookClick() {
-        const notebook = getDataAccessNotebook(this)
-
-        console.log('Sending data to JupyterLite')
-
-        sendDataToJupyterNotebook('load-notebook', {
-            filename: `data_${this.shortName}_${this.version}.ipynb`,
-            notebook,
-            bearerToken: this.bearerToken,
-        })
     }
 
     #handleCloudCoverChange(event: TerraSliderChangeEvent) {
@@ -791,12 +723,14 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                           class="available-range"
                                       >
                                           <strong>Available Range:</strong>
-                                          ${this.#formatAvailableRangeDate(
-                                              this.granuleMinDate
+                                          ${this.service.formatAvailableRangeDate(
+                                              this.granuleMinDate,
+                                              this.isSubDaily
                                           )}
                                           -
-                                          ${this.#formatAvailableRangeDate(
-                                              this.granuleMaxDate
+                                          ${this.service.formatAvailableRangeDate(
+                                              this.granuleMaxDate,
+                                              this.isSubDaily
                                           )}
                                       </p>`
                                     : nothing}
@@ -995,21 +929,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                   </terra-menu-item>
                               </terra-menu>
                           </terra-dropdown>
-
-                          <!--
-                          <terra-button
-                              outline
-                              @click=${() => this.#handleJupyterNotebookClick()}
-                          >
-                              <terra-icon
-                                  name="outline-code-bracket"
-                                  library="heroicons"
-                                  font-size="1.5em"
-                                  style="margin-right: 5px;"
-                              ></terra-icon>
-                              Open in Jupyter Notebook
-                          </terra-button>
-                            -->
                       </div>
                   `
                 : html`
@@ -1064,21 +983,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                   </terra-menu-item>
                               </terra-menu>
                           </terra-dropdown>
-
-                          <!--
-                          <terra-button
-                              outline
-                              @click=${() => this.#handleJupyterNotebookClick()}
-                          >
-                              <terra-icon
-                                  name="outline-code-bracket"
-                                  library="heroicons"
-                                  font-size="1.5em"
-                                  style="margin-right: 5px;"
-                              ></terra-icon>
-                              Open in Jupyter Notebook
-                          </terra-button>
-                        -->
                       </div>
                   `}
         `

@@ -1,14 +1,8 @@
-import type { ReactiveControllerHost } from 'lit'
-import type TerraDataAccess from './data-access.component.js'
 import type { UmmG } from '../../types/cmr.js'
 import type { ArchiveAndDistributionInformationType } from '../../types/cmr/umm-g.js'
 
 export default class DataAccessService {
-    #host: ReactiveControllerHost & TerraDataAccess
-
-    constructor(host: ReactiveControllerHost & TerraDataAccess) {
-        this.#host = host
-    }
+    constructor() {}
 
     getEstimatedGranuleSize(
         firstGranule?: UmmG,
@@ -142,5 +136,26 @@ export default class DataAccessService {
             this.calculateGranuleSize(granule, 'MB')
         )
         return sizes.reduce((a, b) => a + b, 0) / sizes.length
+    }
+
+    formatAvailableRangeDate(
+        dateStr: Date | string | null,
+        isSubDaily: boolean
+    ): string {
+        if (!dateStr) return ''
+
+        const date = new Date(dateStr)
+        const year = date.getUTCFullYear()
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+        const day = String(date.getUTCDate()).padStart(2, '0')
+
+        if (isSubDaily) {
+            const hours = String(date.getUTCHours()).padStart(2, '0')
+            const minutes = String(date.getUTCMinutes()).padStart(2, '0')
+            const seconds = String(date.getUTCSeconds()).padStart(2, '0')
+            return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+        }
+
+        return `${year}-${month}-${day}`
     }
 }
