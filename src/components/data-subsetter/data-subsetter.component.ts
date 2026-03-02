@@ -336,23 +336,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title = collection?.umm.EntryTitle ?? 'Download Data'
 
-        const isLoading =
-            this.capabilitiesQuery.result?.isLoading ||
-            this.collectionQuery.result?.isLoading
         const isError =
             this.capabilitiesQuery.result?.isError ||
             this.collectionQuery.result?.isError
 
         if (!capabilities) {
-            if (isLoading) {
-                return html`
-                    <div class="loading-collection">
-                        <terra-loader indeterminate variant="small"></terra-loader>
-                        <span>Loading</span>
-                    </div>
-                `
-            }
-
             if (isError) {
                 return html`
                     <terra-alert open variant="danger" appearance="white">
@@ -606,10 +594,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                       </terra-menu>
                                   </terra-dropdown>
 
+                                  <!--
                                   <terra-button
                                       outline
                                       @click=${() =>
-                                          this.#handleJupyterNotebookClick()}
+                                      this.#handleJupyterNotebookClick()}
                                   >
                                       <terra-icon
                                           name="outline-code-bracket"
@@ -619,6 +608,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                       ></terra-icon>
                                       Open in Jupyter Notebook
                                   </terra-button>
+                                    -->
                               </div>
                           `
                         : nothing}
@@ -948,8 +938,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         end-label="End Date"
                         .minDate=${this.granuleMinDate ?? defaultStartDate}
                         .maxDate=${this.granuleMaxDate ?? defaultEndDate}
-                        .startDate=${this.selectedDateRange.startDate}
-                        .endDate=${this.selectedDateRange.endDate}
+                        .startDate=${this.selectedDateRange.startDate ??
+                        this.granuleMinDate}
+                        .endDate=${this.selectedDateRange.endDate ??
+                        this.granuleMaxDate}
+                        .useEndOfDay=${this.#isGiovanniFormat() ? false : true}
                         @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
                 </div>
@@ -1814,10 +1807,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                             </terra-menu>
                                         </terra-dropdown>
 
+                                        <!--
                                         <terra-button
                                             outline
                                             @click=${() =>
-                                                this.#handleJupyterNotebookClick()}
+                                            this.#handleJupyterNotebookClick()}
                                         >
                                             <terra-icon
                                                 name="outline-code-bracket"
@@ -1827,7 +1821,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                             ></terra-icon>
                                             Open in Jupyter Notebook
                                         </terra-button>
-                                    </div>
+--></div>
                                 `
                               : nothing}
                           ${this.controller.currentJob!.status === 'running'
