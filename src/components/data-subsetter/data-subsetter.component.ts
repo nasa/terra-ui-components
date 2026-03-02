@@ -608,7 +608,7 @@ export default class TerraDataSubsetter extends TerraElement {
             // Get Data footer
             return html`
                 <div slot="footer" class="footer">
-                    <button class="btn btn-secondary">Reset All</button>
+                    <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
                     <div>
                         <button class="btn btn-primary" @click=${this.#getData}>
                             Get Data
@@ -761,7 +761,7 @@ export default class TerraDataSubsetter extends TerraElement {
             ${this.dataAccessMode === 'subset' && !this.dialog
                 ? html`
                       <div class="footer">
-                          <button class="btn btn-secondary">Reset All</button>
+                          <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
                           <div>
                           <button
                               class="btn btn-primary"
@@ -788,6 +788,31 @@ export default class TerraDataSubsetter extends TerraElement {
                   `
                 : nothing}
         `
+    }
+
+    #resetAllParameters = () => {
+        // Reset variables
+         this.selectedVariables = []
+
+        // Reset spatial to collection bounds (not null)
+        if (this.#hasSpatialSubset()) {
+            this.#resetSpatialSelection()
+        }
+
+        // Reset date range
+        this.selectedDateRange = {
+            startDate: null,
+            endDate: null,
+        }
+
+        // Clear validation state
+        this.touchedFields = new Set()
+        this.validationError = undefined
+
+        // Collapse variable tree
+        this.expandedVariableGroups = new Set()
+
+        this.requestUpdate()
     }
 
     #renderSearchForCollection() {
