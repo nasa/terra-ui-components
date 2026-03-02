@@ -1336,8 +1336,37 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
-    #resetSpatialSelection = () => {
-        this.spatialSelection = null
+   #resetSpatialSelection = () => {
+        const spatial_constraints =
+             this.collectionWithServices?.collection?.SpatialExtent
+                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+
+        if (!spatial_constraints) {
+            this.spatialSelection = null
+             return
+        }
+
+        type BoundingRect = {
+            WestBoundingCoordinate: number
+            SouthBoundingCoordinate: number
+            EastBoundingCoordinate: number
+            NorthBoundingCoordinate: number
+        }
+
+        const normalized: BoundingRect[] = Array.isArray(spatial_constraints)
+            ? spatial_constraints
+            : [spatial_constraints]
+
+        const rect = normalized[0]
+
+        this.spatialSelection = {
+            w: Number(rect.WestBoundingCoordinate),
+            s: Number(rect.SouthBoundingCoordinate),
+            e: Number(rect.EastBoundingCoordinate),
+            n: Number(rect.NorthBoundingCoordinate),
+        }
+
+        this.#markFieldTouched('spatial')
     }
 
     #renderVariableSelection() {
