@@ -14,10 +14,8 @@ import {
 import { getUTCDate } from '../../utilities/date.js'
 import type {
     CmrSamplingOfGranules,
-    MetadataCatalogInterface,
     VariableDetails,
 } from '../../metadata-catalog/types.js'
-import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 
 const JOB_STATUS_POLL_MILLIS = 3000
@@ -32,13 +30,11 @@ export class DataSubsetterController {
 
     #host: ReactiveControllerHost & TerraDataSubsetter
     #dataService: HarmonyDataService
-    #metadataCatalog: MetadataCatalogInterface
     #sampling?: CmrSamplingOfGranules
 
     constructor(host: ReactiveControllerHost & TerraDataSubsetter) {
         this.#host = host
         this.#dataService = this.#getDataService()
-        this.#metadataCatalog = this.#getMetadataCatalog()
 
         this.giovanniConfiguredVariablesTask = new Task(host, {
             task: async ([], { signal }) => {
@@ -252,10 +248,6 @@ export class DataSubsetterController {
             bearerToken: this.#host.bearerToken,
             environment: this.#host.environment,
         })
-    }
-
-    #getMetadataCatalog() {
-        return new CmrCatalog()
     }
 
     #getDataService() {

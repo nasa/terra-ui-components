@@ -5,5 +5,7 @@ export default class DataSubsetterService {
 
     constructor(host: TerraDataSubsetter) {
         this.#host = host
+
+        console.log('this.#host', this.#host)
     }
 }

@@ -38,6 +38,7 @@ export interface Subsetting {
 }
 
 export interface Variable {
+    conceptId: string
     name: string
     href: string
 }

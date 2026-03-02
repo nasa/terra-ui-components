@@ -148,6 +148,20 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         })
     )
 
+    // TODO: REMOVE THIS, IT'SA A HACK FOR THE CONTROLLER
+    collectionWithServices = {
+        conceptId: 'foo',
+        shortName: 'foo',
+        collection: {
+            EntryTitle: 'foo',
+            Version: 'foo',
+        },
+        variableSubset: true,
+        temporalSubset: true,
+        bboxSubset: true,
+        outputFormats: ['application/x-netcdf4', 'application/netcdf'],
+    }
+
     @state()
     selectedVariables: Variable[] = []
 
