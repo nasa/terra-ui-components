@@ -30,6 +30,8 @@ export class QueryController<
 
     protected unsubscribe?: () => void
 
+    protected hostPropertyName?: string
+
     constructor(
         protected host: ReactiveControllerHost & QueryClientHost,
         protected optionsFn?: () => QueryObserverOptions<
@@ -38,9 +40,11 @@ export class QueryController<
             TData,
             TQueryData,
             TQueryKey
-        >
+        >,
+        hostPropertyName?: string
     ) {
         this.host.addController(this)
+        this.hostPropertyName = hostPropertyName
 
         // If you want to start observing immediately (safe; subscribe happens on connect)
         if (this.optionsFn) {
@@ -104,6 +108,10 @@ export class QueryController<
         this.unsubscribe = this.queryObserver.subscribe(
             (result: typeof this.result) => {
                 this.result = result
+                // If a host property was specified, update it to trigger watchers and updated()
+                if (this.hostPropertyName) {
+                    ;(this.host as any)[this.hostPropertyName] = result
+                }
                 this.host.requestUpdate()
             }
         )

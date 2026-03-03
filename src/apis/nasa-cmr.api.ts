@@ -55,7 +55,7 @@ class NasaCmrApi {
         // CMR has a search-based API, so you always get back an items[] array
         // we'll grab the first item to represent the collection
         const ummResponse = await this.#request<UmmResponse<UmmC>>(
-            `collections.umm_json?entry_id=${collectionEntryId}`,
+            `collections.umm_json?entry_id=${collectionEntryId}&include_granule_counts=true`,
             options
         )
 
@@ -188,6 +188,7 @@ class NasaCmrApi {
 
     #request<T>(path: string, requestOptions?: RequestOptions) {
         return apiClient.get<T>(`${baseUrl}${path}`, {
+            ...requestOptions,
             headers: {
                 ...requestOptions?.headers,
                 ...(requestOptions?.bearerToken && {
@@ -202,6 +203,7 @@ class NasaCmrApi {
         requestOptions?: RequestOptions
     ) {
         return apiClient.post<T>(graphQLUrl, body, {
+            ...requestOptions,
             headers: {
                 ...requestOptions?.headers,
                 ...(requestOptions?.bearerToken && {

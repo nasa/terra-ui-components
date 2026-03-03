@@ -24,53 +24,15 @@ export class DataSubsetterController {
     jobStatusTask: Task<[], SubsetJobStatus | undefined>
     fetchCollectionTask: Task<[string], any | undefined>
     samplingTask: Task<[string | undefined], CmrSamplingOfGranules | undefined>
-    giovanniConfiguredVariablesTask: Task<[], Set<string> | undefined>
     variableDetailsTask: Task<[string | undefined], VariableDetails[] | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
     #dataService: HarmonyDataService
-    #sampling?: CmrSamplingOfGranules
 
     constructor(host: ReactiveControllerHost & TerraDataSubsetter) {
         this.#host = host
         this.#dataService = this.#getDataService()
-
-        this.giovanniConfiguredVariablesTask = new Task(host, {
-            task: async ([], { signal }) => {
-                try {
-                    const response = await fetch(
-                        'https://api.giovanni.earthdata.nasa.gov/configured-variables/',
-                        { signal }
-                    )
-
-                    if (!response.ok) {
-                        console.warn(
-                            'Failed to fetch Giovanni configured variables:',
-                            response.status
-                        )
-                        return undefined
-                    }
-
-                    const data = await response.json()
-
-                    const variableNames = new Set(
-                        data['configured_variables'] as string[]
-                    )
-
-                    this.#host.giovanniConfiguredVariables = variableNames
-                    return variableNames
-                } catch (error) {
-                    console.warn(
-                        'Error fetching Giovanni configured variables:',
-                        error
-                    )
-                    // Return undefined to indicate failure - will show all variables
-                    return undefined
-                }
-            },
-            args: (): [] => [],
-        })
 
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
@@ -301,81 +263,5 @@ export class DataSubsetterController {
             )
         }
         return labels
-    }
-
-    get hasGranules() {
-        return (
-            this.#sampling?.firstGranules?.count &&
-            this.#sampling.firstGranules.count > 0
-        )
-    }
-
-    get granuleMinDate() {
-        if (!this.#sampling?.firstGranules) {
-            return null
-        }
-
-        return (
-            this.#sampling.firstGranules.items[0]?.temporalExtent?.rangeDateTime
-                ?.beginningDateTime ?? null
-        )
-    }
-
-    get granuleMaxDate() {
-        const granules = this.#sampling?.lastGranules?.items
-
-        if (!granules?.length) {
-            return null
-        }
-
-        return (
-            granules[granules.length - 1].temporalExtent?.rangeDateTime
-                ?.endingDateTime ?? null
-        )
-    }
-
-    get isSubDaily() {
-        if (!this.#sampling?.firstGranules?.items?.[0]) {
-            return false
-        }
-
-        const firstGranule = this.#sampling.firstGranules.items[0]
-
-        const timeStart =
-            firstGranule.temporalExtent?.rangeDateTime?.beginningDateTime
-        const timeEnd = firstGranule.temporalExtent?.rangeDateTime?.endingDateTime
-
-        if (!timeStart || !timeEnd) {
-            return false
-        }
-
-        // Parse the dates and calculate the difference in hours
-        const start = new Date(timeStart)
-        const end = new Date(timeEnd)
-        const diffMs = end.getTime() - start.getTime()
-        const diffHours = diffMs / (1000 * 60 * 60)
-
-        // If the temporal extent is less than 24 hours, it's sub-daily
-        return diffHours < 24
-    }
-
-    get spatialConstraints() {
-        const boundingRects =
-            this.#sampling?.spatialExtent?.horizontalSpatialDomain?.geometry
-                ?.boundingRectangles
-
-        if (!boundingRects || boundingRects.length === 0) {
-            return '-180, -90, 180, 90'
-        }
-
-        const boundingRect = boundingRects[0]
-        const {
-            westBoundingCoordinate,
-            southBoundingCoordinate,
-            eastBoundingCoordinate,
-            northBoundingCoordinate,
-        } = boundingRect
-
-        return `${westBoundingCoordinate}, ${southBoundingCoordinate}, ${eastBoundingCoordinate}, ${northBoundingCoordinate}`
     }
 }

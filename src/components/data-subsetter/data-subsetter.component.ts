@@ -2,11 +2,11 @@ import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter.styles.js'
-import type { CSSResultGroup } from 'lit'
+import type { CSSResultGroup, TemplateResult } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { DataSubsetterController } from './data-subsetter.controller.js'
 import TerraAccordion from '../accordion/accordion.component.js'
-import { Status, type BoundingBox } from '../../data-services/types.js'
+import { Status } from '../../data-services/types.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraInput from '../input/input.component.js'
@@ -47,6 +47,9 @@ import {
 import { queryHarmonyCapabilities } from '../../queries/nasa-harmony.queries.js'
 import type { Variable } from '../../types/harmony.js'
 import DataSubsetterService from './data-subsetter.service.js'
+import { queryGiovanniConfiguredVariables } from '../../queries/giovanni.queries.js'
+import { accessModeTabs } from './components/access-mode-tabs.js'
+import type { SelectedSubsetOptions, ConfiguredSubsetOptions } from './types.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -106,14 +109,27 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @property({ reflect: true, type: Boolean, attribute: 'is-history-view' })
     isHistoryView: boolean = false
 
-    service = new DataSubsetterService(this)
+    service = new DataSubsetterService()
     controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
 
-    collectionQuery = new QueryController(this, () =>
-        queryCmrCollection(this.collectionEntryId)
+    // store the results of collectionQuery in state so that we can watch for changes and update the component accordingly
+    @state()
+    collectionQueryResult?: TerraDataSubsetter['collectionQuery']['result']
+
+    /**
+     * a query to get the collection (UMM-C) record from CMR
+     */
+    collectionQuery = new QueryController(
+        this,
+        () => queryCmrCollection(this.collectionEntryId),
+        'collectionQueryResult'
     )
 
+    /**
+     * a query to get the capabilities for the collection from Harmony.
+     * This includes information about available output formats, subsetting options, and more.
+     */
     capabilitiesQuery = new QueryController(this, () =>
         queryHarmonyCapabilities(
             this.collectionQuery.result?.data?.meta['concept-id'],
@@ -123,6 +139,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         )
     )
 
+    /**
+     * a query to get all variables for the collection
+     * we use this to get more detailed variable information than what Harmony gives us in the capabilities query,
+     * such as the variable's long name and units
+     */
     collectionVariablesQuery = new QueryController(this, () =>
         queryCmrVariables({
             collectionConceptId:
@@ -130,6 +151,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         })
     )
 
+    /**
+     * a query to get the first granule in this collection
+     * we get the first granule for a few things:
+     *   - it gives us the true start date of the collection (we can't always trust the temporal extent in the collection metadata)
+     *   - it gives us the granule count for the collection
+     */
     firstGranuleQuery = new QueryController(this, () =>
         queryCmrGranules({
             collectionEntryId: this.collectionEntryId,
@@ -139,6 +166,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         })
     )
 
+    /**
+     * a query to get the last granule in this collection
+     * we get the last granule to get the true end date of the collection (we can't always trust the temporal extent in the collection metadata)
+     */
     lastGranuleQuery = new QueryController(this, () =>
         queryCmrGranules({
             collectionEntryId: this.collectionEntryId,
@@ -148,22 +179,21 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         })
     )
 
-    // TODO: REMOVE THIS, IT'SA A HACK FOR THE CONTROLLER
-    collectionWithServices = {
-        conceptId: 'foo',
-        shortName: 'foo',
-        collection: {
-            EntryTitle: 'foo',
-            Version: 'foo',
-        },
-        variableSubset: true,
-        temporalSubset: true,
-        bboxSubset: true,
-        outputFormats: ['application/x-netcdf4', 'application/netcdf'],
-    }
+    /**
+     * For Giovanni-enabled collections, this query will return the list of variables that are configured for Giovanni subsetting.
+     * This is used to filter the list of variables shown in the variable selection section.
+     * TODO: review and remove this one day when Giovanni uses UMM-Var
+     */
+    giovanniConfiguredVariablesQuery = new QueryController(this, () =>
+        queryGiovanniConfiguredVariables()
+    )
 
     @state()
-    selectedVariables: Variable[] = []
+    selectedSubsetOptions: SelectedSubsetOptions = {
+        variables: [],
+        spatial: null,
+        dateRange: { startDate: null, endDate: null },
+    }
 
     @state()
     expandedVariableGroups: Set<string> = new Set()
@@ -173,18 +203,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @state()
     touchedFields: Set<string> = new Set()
-
-    @state()
-    spatialSelection: BoundingBox | LatLng | null = null
-
-    @state()
-    selectedDateRange: { startDate: string | null; endDate: string | null } = {
-        startDate: null,
-        endDate: null,
-    }
-
-    @state()
-    selectedFormat: string = defaultSubsetFileMimeType
 
     @state()
     cancelingGetData: boolean = false
@@ -208,13 +226,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     validationError?: string
 
     @state()
-    granuleMinDate?: string
-
-    @state()
-    granuleMaxDate?: string
-
-    @state()
-    giovanniConfiguredVariables?: Set<string>
+    configuredSubsetOptions?: ConfiguredSubsetOptions
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -222,17 +234,66 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @query('terra-dialog')
     dialogElement?: TerraDialog
 
+    // TODO: review and remove if needed
+    @watch('collectionQueryResult')
+    collectionQueryResultChanged() {
+        console.log(this.collectionQueryResult?.data)
+
+        /*
+        const { startDate, endDate } = this.#getCollectionDateRange()
+        this.selectedDateRange = { startDate, endDate }
+
+        const formats = Array.from(
+            new Set(this.capabilitiesQuery.result?.data?.outputFormats || [])
+        )
+
+        // Consolidate NetCDF formats - if both exist, only keep netcdf4
+        const hasNetcdf4 = formats.includes('application/x-netcdf4')
+        const hasNetcdfClassic = formats.includes('application/netcdf')
+
+        let displayFormats = formats
+        if (hasNetcdf4 && hasNetcdfClassic) {
+            displayFormats = formats.filter(f => f !== 'application/netcdf')
+        }
+
+        // auto-select default format
+        if (displayFormats.length === 1) {
+            this.selectedFormat = displayFormats[0] // only one option
+        } else {
+            // Prefer NetCDF if available, otherwise first option
+            this.selectedFormat =
+                displayFormats.find(f => f === 'application/x-netcdf4') ||
+                displayFormats[0]
+        }
+
+        this.collectionLoading = false
+        this.collectionAccordionOpen = false
+        */
+    }
+
+    // TODO: review and remove if needed
+    @watch(['granuleMinDate', 'granuleMaxDate'])
+    granuleDatesChanged() {
+        /*
+        const newRange = {
+            ...(this.granuleMinDate && { startDate: this.granuleMinDate }),
+            ...(this.granuleMaxDate && { endDate: this.granuleMaxDate }),
+        }
+
+        if (Object.keys(newRange).length > 0) {
+            this.selectedDateRange = {
+                ...this.selectedDateRange,
+                ...newRange,
+            }
+        }*/
+    }
+
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
             this.controller.fetchJobByID(this.jobId)
             this.dataAccessMode = 'subset'
         }
-    }
-
-    @watch('firstGranuleQuery')
-    firstGranuleQueryResultChanged() {
-        console.log('got it ', this.firstGranuleQuery.result?.data?.items[0])
     }
 
     @watch(['shortName', 'version'])
@@ -283,59 +344,14 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
     }
 
-    @watch(['collectionWithServices'])
-    collectionChanged() {
-        const { startDate, endDate } = this.#getCollectionDateRange()
-        this.selectedDateRange = { startDate, endDate }
-
-        const formats = Array.from(
-            new Set(this.capabilitiesQuery.result?.data?.outputFormats || [])
-        )
-
-        // Consolidate NetCDF formats - if both exist, only keep netcdf4
-        const hasNetcdf4 = formats.includes('application/x-netcdf4')
-        const hasNetcdfClassic = formats.includes('application/netcdf')
-
-        let displayFormats = formats
-        if (hasNetcdf4 && hasNetcdfClassic) {
-            displayFormats = formats.filter(f => f !== 'application/netcdf')
-        }
-
-        // auto-select default format
-        if (displayFormats.length === 1) {
-            this.selectedFormat = displayFormats[0] // only one option
-        } else {
-            // Prefer NetCDF if available, otherwise first option
-            this.selectedFormat =
-                displayFormats.find(f => f === 'application/x-netcdf4') ||
-                displayFormats[0]
-        }
-
-        this.collectionLoading = false
-        this.collectionAccordionOpen = false
-    }
-
-    @watch(['granuleMinDate', 'granuleMaxDate'])
-    granuleDatesChanged() {
-        const newRange = {
-            ...(this.granuleMinDate && { startDate: this.granuleMinDate }),
-            ...(this.granuleMaxDate && { endDate: this.granuleMaxDate }),
-        }
-
-        if (Object.keys(newRange).length > 0) {
-            this.selectedDateRange = {
-                ...this.selectedDateRange,
-                ...newRange,
-            }
-        }
-    }
-
+    // TODO: review and replace
     @watch('selectedFormat')
     selectedFormatChanged() {
+        /*
         // When switching to Giovanni format, keep only the first selected variable
         if (this.#isGiovanniFormat() && this.selectedVariables.length > 1) {
             this.selectedVariables = [this.selectedVariables[0]]
-        }
+        }*/
     }
 
     showDialog() {
@@ -347,24 +363,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const capabilities = this.capabilitiesQuery.result?.data
 
         const showJobStatus = this.controller.currentJob && !this.refineParameters
-        const showMinimizeButton = showJobStatus && !!this.dialog
+        const showTabs = !this.isHistoryView && capabilities?.services?.length
         const title = collection?.umm.EntryTitle ?? 'Download Data'
 
         const isError =
             this.capabilitiesQuery.result?.isError ||
             this.collectionQuery.result?.isError
-
-        if (!capabilities) {
-            if (isError) {
-                return html`
-                    <terra-alert open variant="danger" appearance="white">
-                        ${this.collectionQuery.result?.error?.message ||
-                        this.capabilitiesQuery.result?.error?.message ||
-                        'An unknown error occurred while loading the collection, please try again later.'}
-                    </terra-alert>
-                `
-            }
-        }
 
         const content = html`
             <div class="container">
@@ -383,148 +387,91 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                   </svg>
                                   ${title}
                               </h1>
-
-                              ${showMinimizeButton
-                                  ? html`<button
-                                        class="minimize-btn"
-                                        @click=${() => this.minimizeDialog()}
-                                    >
-                                        -
-                                    </button>`
-                                  : nothing}
                           </div>
                       `
                     : nothing}
-                ${!this.isHistoryView && capabilities?.services?.length
+                ${showTabs
                     ? html`
                           <div class="section">
-                              ${this.#renderDataAccessModeSelection()}
+                              ${accessModeTabs({
+                                  mode: this.dataAccessMode,
+                                  onModeChange: (mode: 'original' | 'subset') =>
+                                      (this.dataAccessMode = mode),
+                              })}
                           </div>
                       `
                     : nothing}
                 ${this.dataAccessMode === 'original'
-                    ? html`
-                          <div class="section">
-                              <terra-data-access
-                                  short-name=${this.shortName ??
-                                  collection?.umm.ShortName}
-                                  version=${this.version ?? collection?.umm.Version}
-                                  ?footer-slot=${!!this.dialog}
-                              >
-                                  ${this.dialog
-                                      ? html`
-                                            <div
-                                                slot="footer"
-                                                style="margin-top: 15px;"
-                                            >
-                                                <slot
-                                                    name="data-access-footer"
-                                                ></slot>
-                                            </div>
-                                        `
-                                      : nothing}
-                              </terra-data-access>
-                          </div>
-                      `
+                    ? this.#renderDataAccessMode()
                     : showJobStatus
                       ? this.#renderJobStatus()
                       : this.#renderSubsetOptions()}
             </div>
         `
 
-        // If dialog is set, wrap content in dialog with slots for header/footer
-        if (this.dialog) {
-            return html`
-                <terra-dialog id=${this.dialog} style="--title-font-size: 16px;">
-                    <span
-                        slot="label"
-                        style="display: flex; align-items: center; gap: 8px; color: #0066cc; font-weight: 600;"
-                    >
-                        <svg
-                            class="download-icon"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; flex-shrink: 0;"
-                        >
-                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-                        </svg>
-                        ${title}
-                    </span>
-                    ${showMinimizeButton
-                        ? html`
-                              <button
-                                  slot="header-actions"
-                                  class="minimize-btn"
-                                  @click=${() => this.dialogElement?.hide()}
-                                  aria-label="Minimize"
-                              >
-                                  -
-                              </button>
-                          `
-                        : nothing}
-                    ${content} ${this.#renderFooterForDialog()}
-                </terra-dialog>
-            `
+        if (!capabilities) {
+            if (isError) {
+                return html`
+                    <terra-alert open variant="danger" appearance="white">
+                        ${this.collectionQuery.result?.error?.message ||
+                        this.capabilitiesQuery.result?.error?.message ||
+                        'An unknown error occurred while loading the collection, please try again later.'}
+                    </terra-alert>
+                `
+            }
         }
 
-        // Otherwise render normally with internal header
-        return html`
-            <div class="container">
-                <div class="header">
-                    <h1>
-                        <svg
-                            class="download-icon"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
-                        </svg>
-                        ${title}
-                    </h1>
+        if (this.dialog) {
+            // rendering subsetter in a dialog
+            return this.#renderSubsetterInDialog(title, content)
+        } else {
+            // rendering subsetter inline
+            return content
+        }
+    }
 
-                    ${showMinimizeButton
-                        ? html`<button
-                              class="minimize-btn"
-                              @click=${() => this.minimizeDialog()}
-                          >
-                              -
-                          </button>`
+    #renderSubsetterInDialog(title: string, content: TemplateResult) {
+        return html`
+            <terra-dialog id=${this.dialog} style="--title-font-size: 16px;">
+                <span
+                    slot="label"
+                    style="display: flex; align-items: center; gap: 8px; color: #0066cc; font-weight: 600;"
+                >
+                    <svg
+                        class="download-icon"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        style="width: 16px; height: 16px; display: inline-block; vertical-align: middle; flex-shrink: 0;"
+                    >
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                    </svg>
+                    ${title}
+                </span>
+
+                ${content} ${this.#renderFooterForDialog()}
+            </terra-dialog>
+        `
+    }
+
+    #renderDataAccessMode() {
+        const collection = this.collectionQuery.result?.data
+
+        return html`
+            <!-- Data Access Mode -->
+            <div class="section">
+                <terra-data-access
+                    short-name=${this.shortName ?? collection?.umm.ShortName}
+                    version=${this.version ?? collection?.umm.Version}
+                    ?footer-slot=${!!this.dialog}
+                >
+                    ${this.dialog
+                        ? html`
+                              <div slot="footer" style="margin-top: 15px;">
+                                  <slot name="data-access-footer"></slot>
+                              </div>
+                          `
                         : nothing}
-                </div>
-                ${!this.isHistoryView && capabilities?.services?.length
-                    ? html`
-                          <div class="section">
-                              ${this.#renderDataAccessModeSelection()}
-                          </div>
-                      `
-                    : nothing}
-                ${this.dataAccessMode === 'original'
-                    ? html`
-                          <div class="section">
-                              <terra-data-access
-                                  short-name=${this.shortName ??
-                                  collection?.umm.ShortName}
-                                  version=${this.version ?? collection?.umm.Version}
-                                  ?footer-slot=${!!this.dialog}
-                              >
-                                  ${this.dialog
-                                      ? html`
-                                            <div
-                                                slot="footer"
-                                                style="margin-top: 15px;"
-                                            >
-                                                <slot
-                                                    name="data-access-footer"
-                                                ></slot>
-                                            </div>
-                                        `
-                                      : nothing}
-                              </terra-data-access>
-                          </div>
-                      `
-                    : showJobStatus
-                      ? this.#renderJobStatus()
-                      : this.#renderSubsetOptions()}
+                </terra-data-access>
             </div>
         `
     }
@@ -728,8 +675,24 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderSubsetOptions() {
-        const estimates = this.#estimateJobSize()
-        const hasSubsetOption = this.#hasAtLeastOneSubsetOption()
+        const configuredSubsetOptions = this.service.getConfiguredSubsetOptions(
+            this.selectedSubsetOptions,
+            this.firstGranuleQuery.result?.data,
+            this.lastGranuleQuery.result?.data,
+            this.capabilitiesQuery.result?.data,
+            this.collectionQuery.result?.data
+        )
+
+        // Store in state so other render methods can access it
+        this.configuredSubsetOptions = configuredSubsetOptions
+
+        console.log(configuredSubsetOptions)
+
+        const estimates = configuredSubsetOptions.estimatedJobSize
+        const hasSubsetOption =
+            configuredSubsetOptions.spatialSubsetting.enabled ||
+            configuredSubsetOptions.temporalSubsetting.enabled ||
+            configuredSubsetOptions.variableSubsetting.enabled
         const collection = this.collectionQuery.result?.data
         const capabilities = this.capabilitiesQuery.result?.data
         const temporalExtents = collection?.umm.TemporalExtents
@@ -846,7 +809,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 >
                     <span
                         >${getFriendlyNameForMimeType(
-                            this.selectedFormat,
+                            this.selectedSubsetOptions.format ?? '',
                             hasGiovanniService
                         )}</span
                     >
@@ -886,9 +849,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                         type="radio"
                                         name="output-format"
                                         value="${format}"
-                                        .checked=${this.selectedFormat === format}
+                                        .checked=${this.selectedSubsetOptions
+                                            .format === format}
                                         @change=${() =>
-                                            (this.selectedFormat = format)}
+                                            (this.selectedSubsetOptions.format =
+                                                format)}
                                     />
                                     ${getFriendlyNameForMimeType(
                                         format,
@@ -906,15 +871,19 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #renderDateRangeSelection() {
         const { startDate: defaultStartDate, endDate: defaultEndDate } =
             this.#getCollectionDateRange()
+
         const startDate =
-            this.selectedDateRange.startDate ??
-            this.granuleMinDate ??
+            this.selectedSubsetOptions.dateRange?.startDate ??
+            this.configuredSubsetOptions?.temporalSubsetting?.granuleMinDate ??
             defaultStartDate
         const endDate =
-            this.selectedDateRange.endDate ?? this.granuleMaxDate ?? defaultEndDate
+            this.selectedSubsetOptions.dateRange?.endDate ??
+            this.configuredSubsetOptions?.temporalSubsetting?.granuleMaxDate ??
+            defaultEndDate
         const showError =
             this.touchedFields.has('date') &&
-            (!this.selectedDateRange.startDate || !this.selectedDateRange.endDate)
+            (!this.selectedSubsetOptions.dateRange?.startDate ||
+                !this.selectedSubsetOptions.dateRange?.endDate)
 
         return html`
             <terra-accordion>
@@ -947,15 +916,21 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         range
                         split-inputs
                         show-presets
-                        ?enable-time=${this.controller.isSubDaily}
+                        ?enable-time=${this.configuredSubsetOptions
+                            ?.temporalSubsetting?.timePickerEnabled}
                         start-label="Start Date"
                         end-label="End Date"
-                        .minDate=${this.granuleMinDate ?? defaultStartDate}
-                        .maxDate=${this.granuleMaxDate ?? defaultEndDate}
-                        .startDate=${this.selectedDateRange.startDate ??
-                        this.granuleMinDate}
-                        .endDate=${this.selectedDateRange.endDate ??
-                        this.granuleMaxDate}
+                        .minDate=${this.configuredSubsetOptions?.temporalSubsetting
+                            ?.granuleMinDate ?? defaultStartDate}
+                        .maxDate=${this.configuredSubsetOptions?.temporalSubsetting
+                            ?.granuleMaxDate ?? defaultEndDate}
+                        .startDate=${this.selectedSubsetOptions.dateRange
+                            ?.startDate ??
+                        this.configuredSubsetOptions?.temporalSubsetting
+                            ?.granuleMinDate}
+                        .endDate=${this.selectedSubsetOptions.dateRange?.endDate ??
+                        this.configuredSubsetOptions?.temporalSubsetting
+                            ?.granuleMaxDate}
                         .useEndOfDay=${this.#isGiovanniFormat() ? false : true}
                         @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
@@ -968,7 +943,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ><strong>Available Range:</strong> ${defaultStartDate} to
                         ${defaultEndDate}</span
                     >
-                    ${this.controller.isSubDaily
+                    ${this.configuredSubsetOptions?.temporalSubsetting
+                        ?.timePickerEnabled
                         ? html`<span
                               ><strong>Note:</strong> All dates and times are in
                               UTC.</span
@@ -981,15 +957,20 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #handleDateChange = (e: TerraDateRangeChangeEvent) => {
         this.#markFieldTouched('date')
-        this.selectedDateRange = {
-            ...this.selectedDateRange,
-            startDate: e.detail.startDate,
-            endDate: e.detail.endDate,
+        this.selectedSubsetOptions = {
+            ...this.selectedSubsetOptions,
+            dateRange: {
+                startDate: e.detail.startDate,
+                endDate: e.detail.endDate,
+            },
         }
     }
 
     #resetDateRangeSelection = () => {
-        this.selectedDateRange = { startDate: null, endDate: null }
+        this.selectedSubsetOptions = {
+            ...this.selectedSubsetOptions,
+            dateRange: { startDate: null, endDate: null },
+        }
     }
 
     #resetFormatSelection = () => {
@@ -1001,55 +982,27 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         format === 'application/x-netcdf4' ||
                         format === 'application/netcdf'
                 )
-            this.selectedFormat =
-                netcdfFormat || this.capabilitiesQuery.result.data.outputFormats[0]
+            this.selectedSubsetOptions = {
+                ...this.selectedSubsetOptions,
+                format:
+                    netcdfFormat ||
+                    this.capabilitiesQuery.result.data.outputFormats[0],
+            }
         } else {
-            this.selectedFormat = defaultSubsetFileMimeType
+            this.selectedSubsetOptions = {
+                ...this.selectedSubsetOptions,
+                format: defaultSubsetFileMimeType,
+            }
         }
     }
 
+    // TODO: remove this
     #getCollectionDateRange() {
-        // Prefer sampling data for accurate date ranges
-        const samplingMinDate = this.controller.granuleMinDate
-        const samplingMaxDate = this.controller.granuleMaxDate
-
-        if (samplingMinDate && samplingMaxDate) {
-            return {
-                startDate: samplingMinDate.slice(0, 10),
-                endDate: samplingMaxDate.slice(0, 10),
-            }
-        }
-
-        // Fallback to collection metadata if sampling is not available
-        const temporalExtents = this.collectionQuery.result?.data?.umm.TemporalExtents
-        if (!temporalExtents || !temporalExtents.length)
-            return {
-                startDate: null,
-                endDate: null,
-            }
-
-        let minStart = null
-        let maxEnd = null
-        const today = new Date()
-
-        for (const temporal of temporalExtents) {
-            for (const range of temporal.RangeDateTimes || []) {
-                const start = new Date(range.BeginningDateTime)
-                let end
-                if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
-                    end = today
-                } else {
-                    end = new Date(range.EndingDateTime)
-                }
-                if (!minStart || start < minStart) minStart = start
-                if (!maxEnd || end > maxEnd) maxEnd = end
-            }
-        }
-
-        return {
-            startDate: minStart ? minStart.toISOString().slice(0, 10) : null,
-            endDate: maxEnd ? maxEnd.toISOString().slice(0, 10) : null,
-        }
+        return this.service.getEffectiveDateRange(
+            this.firstGranuleQuery.result?.data,
+            this.lastGranuleQuery.result?.data,
+            this.collectionQuery.result?.data
+        )
     }
 
     #handleRegionAccordionToggle() {
@@ -1071,7 +1024,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderSpatialSelection() {
-        const showError = this.touchedFields.has('spatial') && !this.spatialSelection
+        const showError =
+            this.touchedFields.has('spatial') && !this.selectedSubsetOptions.spatial
         let boundingRects: any =
             this.collectionQuery.result?.data?.umm.SpatialExtent
                 ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
@@ -1083,20 +1037,23 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         let spatialString = ''
 
         // convert spatial to string
-        if (this.isLatLng(this.spatialSelection)) {
-            spatialString = `${this.spatialSelection.lat}, ${this.spatialSelection.lng}`
-        } else if (this.isLatLngBounds(this.spatialSelection)) {
-            spatialString = `${this.spatialSelection.getSouthWest().lat}, ${this.spatialSelection.getSouthWest().lng}, ${this.spatialSelection.getNorthEast().lat}, ${this.spatialSelection.getNorthEast().lng}`
+        if (this.isLatLng(this.selectedSubsetOptions.spatial)) {
+            spatialString = `${this.selectedSubsetOptions.spatial.lat}, ${this.selectedSubsetOptions.spatial.lng}`
+        } else if (this.isLatLngBounds(this.selectedSubsetOptions.spatial)) {
+            spatialString = `${this.selectedSubsetOptions.spatial.getSouthWest().lat}, ${this.selectedSubsetOptions.spatial.getSouthWest().lng}, ${this.selectedSubsetOptions.spatial.getNorthEast().lat}, ${this.selectedSubsetOptions.spatial.getNorthEast().lng}`
         } else if (
-            this.spatialSelection &&
-            'w' in this.spatialSelection &&
-            's' in this.spatialSelection &&
-            'e' in this.spatialSelection &&
-            'n' in this.spatialSelection
+            this.selectedSubsetOptions.spatial &&
+            'w' in this.selectedSubsetOptions.spatial &&
+            's' in this.selectedSubsetOptions.spatial &&
+            'e' in this.selectedSubsetOptions.spatial &&
+            'n' in this.selectedSubsetOptions.spatial
         ) {
-            spatialString = `${this.spatialSelection.w}, ${this.spatialSelection.s}, ${this.spatialSelection.e}, ${this.spatialSelection.n}`
-        } else if (this.spatialSelection) {
-            spatialString = this.spatialSelection
+            spatialString = `${this.selectedSubsetOptions.spatial.w}, ${this.selectedSubsetOptions.spatial.s}, ${this.selectedSubsetOptions.spatial.e}, ${this.selectedSubsetOptions.spatial.n}`
+        } else if (
+            this.selectedSubsetOptions.spatial &&
+            typeof this.selectedSubsetOptions.spatial === 'string'
+        ) {
+            spatialString = this.selectedSubsetOptions.spatial
         }
 
         return html`
@@ -1131,7 +1088,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         hide-label
                         hide-point-selection
                         no-world-wrap
-                        .spatialConstraints=${this.controller.spatialConstraints ||
+                        .spatialConstraints=${this.configuredSubsetOptions
+                            ?.spatialSubsetting?.spatialConstraints?.coordinatesStr ||
                         '-180, -90, 180, 90'}
                         .initialValue=${spatialString}
                         @terra-map-change=${this.#handleSpatialChange}
@@ -1140,8 +1098,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
                     >
                         <span
-                            ><strong>Available Range:</strong> ${this.controller
-                                .spatialConstraints}</span
+                            ><strong>Available Range:</strong> ${this
+                                .configuredSubsetOptions?.spatialSubsetting
+                                ?.spatialConstraints?.coordinatesStr}</span
                         >
                     </div>
                 </div>
@@ -1154,21 +1113,33 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const round2 = (n: number) => parseFloat(Number(n).toFixed(2))
 
         if (e.detail.type === MapEventType.BBOX) {
-            this.spatialSelection = {
-                e: round2(e.detail.bounds.getNorthEast().lng),
-                n: round2(e.detail.bounds.getNorthEast().lat),
-                w: round2(e.detail.bounds.getSouthWest().lng),
-                s: round2(e.detail.bounds.getSouthWest().lat),
+            this.selectedSubsetOptions = {
+                ...this.selectedSubsetOptions,
+                spatial: {
+                    e: round2(e.detail.bounds.getNorthEast().lng),
+                    n: round2(e.detail.bounds.getNorthEast().lat),
+                    w: round2(e.detail.bounds.getSouthWest().lng),
+                    s: round2(e.detail.bounds.getSouthWest().lat),
+                },
             }
         } else if (e.detail.type === MapEventType.POINT) {
-            this.spatialSelection = e.detail.latLng
+            this.selectedSubsetOptions = {
+                ...this.selectedSubsetOptions,
+                spatial: e.detail.latLng,
+            }
         } else {
-            this.spatialSelection = null
+            this.selectedSubsetOptions = {
+                ...this.selectedSubsetOptions,
+                spatial: null,
+            }
         }
     }
 
     #resetSpatialSelection = () => {
-        this.spatialSelection = null
+        this.selectedSubsetOptions = {
+            ...this.selectedSubsetOptions,
+            spatial: null,
+        }
     }
 
     #renderVariableSelection() {
@@ -1176,7 +1147,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const giovanniError =
             this.touchedFields.has('variables') && this.#getGiovanniValidationError()
         const basicError =
-            this.touchedFields.has('variables') && this.selectedVariables.length === 0
+            this.touchedFields.has('variables') &&
+            (this.selectedSubsetOptions.variables?.length ?? 0) === 0
         const showError = giovanniError || basicError
         const errorMessage =
             giovanniError || (basicError ? 'Please select at least one variable' : '')
@@ -1200,9 +1172,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ? html`<span class="accordion-value error"
                               >${errorMessage}</span
                           >`
-                        : this.selectedVariables.length
+                        : (this.selectedSubsetOptions.variables?.length ?? 0) > 0
                           ? html`<span class="accordion-value"
-                                >${this.selectedVariables.length} selected</span
+                                >${this.selectedSubsetOptions.variables?.length}
+                                selected</span
                             >`
                           : nothing}
 
@@ -1230,7 +1203,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ${allExpanded ? 'Collapse Tree' : 'Expand Tree'}
                     </button>
 
-                    ${this.#isGiovanniFormat() && this.giovanniConfiguredVariables
+                    ${this.#isGiovanniFormat() &&
+                    this.giovanniConfiguredVariablesQuery.result?.data
                         ? html`
                               <terra-alert
                                   open
@@ -1349,7 +1323,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const collection = this.collectionQuery.result?.data
         let filteredVariables = variables
 
-        if (this.#isGiovanniFormat() && this.giovanniConfiguredVariables) {
+        if (
+            this.#isGiovanniFormat() &&
+            this.giovanniConfiguredVariablesQuery.result?.data
+        ) {
             const originalCount = variables.length
 
             filteredVariables = variables.filter(v => {
@@ -1368,7 +1345,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     v.name
                 )
 
-                return this.giovanniConfiguredVariables!.has(giovanniVariableName)
+                const giovanniConfiguredVars = this.giovanniConfiguredVariablesQuery
+                    .result?.data as Set<string> | undefined
+                return giovanniConfiguredVars?.has(giovanniVariableName) ?? false
             })
 
             console.log(
@@ -1420,8 +1399,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                         name="${isGiovanni
                                             ? 'variable-selection'
                                             : ''}"
-                                        .checked=${this.selectedVariables.some(
-                                            v => v.name === value.__variable.name
+                                        .checked=${this.selectedSubsetOptions.variables?.some(
+                                            (v: Variable) =>
+                                                v.name === value.__variable.name
                                         )}
                                         @change=${(e: Event) =>
                                             this.#toggleVariableSelection(
@@ -1508,18 +1488,34 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         if (this.#isGiovanniFormat()) {
             // Radio button behavior for Giovanni - replace selection with only this variable
             if (checked) {
-                this.selectedVariables = [variable]
+                this.selectedSubsetOptions = {
+                    ...this.selectedSubsetOptions,
+                    variables: [variable],
+                }
             }
         } else {
             // Checkbox behavior for non-Giovanni - allow multiple selections
             if (checked) {
-                if (!this.selectedVariables.some(v => v.name === variable.name)) {
-                    this.selectedVariables = [...this.selectedVariables, variable]
+                if (
+                    !this.selectedSubsetOptions.variables?.some(
+                        v => v.name === variable.name
+                    )
+                ) {
+                    this.selectedSubsetOptions = {
+                        ...this.selectedSubsetOptions,
+                        variables: [
+                            ...(this.selectedSubsetOptions.variables ?? []),
+                            variable,
+                        ],
+                    }
                 }
             } else {
-                this.selectedVariables = this.selectedVariables.filter(
-                    v => v.name !== variable.name
-                )
+                this.selectedSubsetOptions = {
+                    ...this.selectedSubsetOptions,
+                    variables: (this.selectedSubsetOptions.variables ?? []).filter(
+                        v => v.name !== variable.name
+                    ),
+                }
             }
         }
     }
@@ -1529,7 +1525,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #resetVariableSelection = () => {
-        this.selectedVariables = []
+        this.selectedSubsetOptions = {
+            ...this.selectedSubsetOptions,
+            variables: [],
+        }
     }
 
     #renderJobStatus() {
@@ -1872,23 +1871,25 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderSelectedParams() {
         const collection = this.collectionQuery.result?.data
-        const variables = this.selectedVariables.length
-            ? this.selectedVariables.map(v => v.name)
-            : ['All']
+        const variables =
+            (this.selectedSubsetOptions.variables?.length ?? 0) > 0
+                ? this.selectedSubsetOptions.variables!.map(v => v.name)
+                : ['All']
         const dateRange =
-            this.selectedDateRange.startDate && this.selectedDateRange.endDate
-                ? `${this.selectedDateRange.startDate} to ${this.selectedDateRange.endDate}`
+            this.selectedSubsetOptions.dateRange?.startDate &&
+            this.selectedSubsetOptions.dateRange?.endDate
+                ? `${this.selectedSubsetOptions.dateRange.startDate} to ${this.selectedSubsetOptions.dateRange.endDate}`
                 : '—'
         let spatial = '—'
 
-        if (this.spatialSelection) {
-            if ('w' in this.spatialSelection) {
-                spatial = `Bounding Box: ${this.spatialSelection.w}, ${this.spatialSelection.s}, ${this.spatialSelection.e}, ${this.spatialSelection.n}`
+        if (this.selectedSubsetOptions.spatial) {
+            if ('w' in this.selectedSubsetOptions.spatial) {
+                spatial = `Bounding Box: ${this.selectedSubsetOptions.spatial.w}, ${this.selectedSubsetOptions.spatial.s}, ${this.selectedSubsetOptions.spatial.e}, ${this.selectedSubsetOptions.spatial.n}`
             } else if (
-                'lat' in this.spatialSelection &&
-                'lng' in this.spatialSelection
+                'lat' in this.selectedSubsetOptions.spatial &&
+                'lng' in this.selectedSubsetOptions.spatial
             ) {
-                spatial = `Point: ${this.spatialSelection.lat}, ${this.spatialSelection.lng}`
+                spatial = `Point: ${this.selectedSubsetOptions.spatial.lat}, ${this.selectedSubsetOptions.spatial.lng}`
             }
         }
 
@@ -1900,7 +1901,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 </div>
                 <div>
                     <dt><strong>Variables</strong></dt>
-                    <dd>${variables.map(v => html`<div>${v}</div>`)}</dd>
+                    <dd>${variables.map((v: string) => html`<div>${v}</div>`)}</dd>
                 </div>
                 <div>
                     <dt><strong>Date Range</strong></dt>
@@ -1984,17 +1985,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         return this.controller.currentJob!.links.filter(link => link.rel === 'data')
     }
 
-    #hasAtLeastOneSubsetOption() {
-        const capabilities = this.capabilitiesQuery.result?.data
-
-        return (
-            capabilities?.bboxSubset ||
-            capabilities?.shapeSubset ||
-            capabilities?.variableSubset ||
-            capabilities?.temporalSubset
-        )
-    }
-
     #hasSpatialSubset() {
         const capabilities = this.capabilitiesQuery.result?.data
 
@@ -2061,47 +2051,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 return match
             }
         )
-    }
-
-    #estimateJobSize() {
-        const collection = this.collectionQuery.result?.data
-        if (!collection) return
-
-        const range = this.#getCollectionDateRange()
-        let startDate: string | null
-        let endDate: string | null
-        let links = collection?.meta['granule-count'] ?? 0
-
-        if (this.selectedDateRange.startDate && this.selectedDateRange.endDate) {
-            // Use the user selected date range if available
-            startDate = this.selectedDateRange.startDate
-            endDate = this.selectedDateRange.endDate
-        } else {
-            // fallback to the collection's full date range
-            startDate = this.granuleMinDate ?? range.startDate
-            endDate = this.granuleMaxDate ?? range.endDate
-        }
-
-        if (!startDate || !endDate) return
-
-        const start = new Date(startDate)
-        const end = new Date(endDate)
-        const days =
-            Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
-
-        if (range.startDate && range.endDate) {
-            const availableDaysInCollection =
-                Math.floor(
-                    (new Date(range.endDate).getTime() -
-                        new Date(range.startDate).getTime()) /
-                        (1000 * 60 * 60 * 24)
-                ) + 1
-            const granulesPerDay = links / availableDaysInCollection
-
-            links = Math.ceil(days * granulesPerDay)
-        }
-
-        return { days, links }
     }
 
     #refineParameters() {
@@ -2297,61 +2246,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         `
     }
 
-    #renderDataAccessModeSelection() {
-        if (!this.controller.hasGranules) {
-            return nothing
-        }
-
-        return html`
-            <div class="mode-selection">
-                <div class="mode-options">
-                    <label
-                        class="mode-option ${this.dataAccessMode === 'original'
-                            ? 'selected'
-                            : ''}"
-                    >
-                        <input
-                            type="radio"
-                            name="data-access-mode"
-                            value="original"
-                            .checked=${this.dataAccessMode === 'original'}
-                            @change=${() => (this.dataAccessMode = 'original')}
-                        />
-                        <div class="mode-content">
-                            <div class="mode-title">Get Original Files</div>
-                            <div class="mode-description">
-                                Filter file links directly from the archive.
-                            </div>
-                        </div>
-                    </label>
-
-                    <label
-                        class="mode-option ${this.dataAccessMode === 'subset'
-                            ? 'selected'
-                            : ''}"
-                    >
-                        <input
-                            type="radio"
-                            name="data-access-mode"
-                            value="subset"
-                            .checked=${this.dataAccessMode === 'subset'}
-                            @change=${() => (this.dataAccessMode = 'subset')}
-                        />
-                        <div class="mode-content">
-                            <div class="mode-title">Subset Data</div>
-                            <div class="mode-description">
-                                Subset the data to your specific needs.
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
-        `
-    }
-
     #isGiovanniFormat(): boolean {
         return (
-            this.selectedFormat === 'text/csv' || this.selectedFormat === 'image/tiff'
+            this.selectedSubsetOptions.format === 'text/csv' ||
+            this.selectedSubsetOptions.format === 'image/tiff'
         )
     }
 
@@ -2360,11 +2258,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             return null
         }
 
-        if (this.selectedVariables.length === 0) {
+        if ((this.selectedSubsetOptions.variables?.length ?? 0) === 0) {
             return 'Please select a variable to subset.'
         }
 
-        if (this.selectedVariables.length > 1) {
+        if ((this.selectedSubsetOptions.variables?.length ?? 0) > 1) {
             return 'The selected format only supports subsetting one variable at a time.'
         }
 

@@ -58,8 +58,8 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     @state()
     hideCancelled: boolean = true
 
-    @query('[part~="dialog"]')
-    dialog: TerraDialog
+    @state()
+    showSubsetter: boolean = false
 
     @query('[part~="subsetter"]')
     subsetter: TerraDataSubsetter
@@ -140,7 +140,10 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                                               this.selectedJob = undefined
                                               this.selectedCollectionEntryId =
                                                   undefined
-                                              this.dialog?.show()
+                                              this.showSubsetter = true
+                                              this.updateComplete.then(() => {
+                                                  this.subsetter?.showDialog()
+                                              })
                                           }}
                                       >
                                           creating your first request!</a
@@ -153,14 +156,18 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                 </div>
             </div>
 
-            <terra-data-subsetter
-                .jobId=${this.selectedJob}
-                .collectionEntryId=${this.selectedCollectionEntryId}
-                .bearerToken=${this.bearerToken}
-                is-history-view
-                dialog="history-dialog"
-                part="subsetter"
-            ></terra-data-subsetter>
+            ${this.showSubsetter
+                ? html`
+                      <terra-data-subsetter
+                          .jobId=${this.selectedJob}
+                          .collectionEntryId=${this.selectedCollectionEntryId}
+                          .bearerToken=${this.bearerToken}
+                          is-history-view
+                          dialog="history-dialog"
+                          part="subsetter"
+                      ></terra-data-subsetter>
+                  `
+                : nothing}
         `
     }
 
@@ -191,7 +198,10 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                             e.preventDefault()
                             this.selectedJob = undefined
                             this.selectedCollectionEntryId = undefined
-                            this.dialog?.show()
+                            this.showSubsetter = true
+                            this.updateComplete.then(() => {
+                                this.subsetter?.showDialog()
+                            })
                         }}
                     >
                         create a new request.</a
@@ -263,12 +273,14 @@ export default class TerraDataSubsetterHistory extends TerraElement {
         `
     }
 
-    #handleHistoryItemClick(job: SubsetJobStatus) {
+    async #handleHistoryItemClick(job: SubsetJobStatus) {
         const parsedLabels = this.#parseLabelsAsJson(job.labels || [])
         this.selectedJob = job.jobID
         this.selectedCollectionEntryId = parsedLabels['collection-entry-id'] as
             | string
             | undefined
+        this.showSubsetter = true
+        await this.updateComplete
         this.subsetter?.showDialog()
     }
 

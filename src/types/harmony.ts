@@ -33,8 +33,9 @@ export interface Averaging {
 export interface Subsetting {
     temporal: boolean
     variable: boolean
-    multiple_variable: boolean
+    multiple_variable?: boolean
     bbox?: boolean
+    shape?: boolean
 }
 
 export interface Variable {
