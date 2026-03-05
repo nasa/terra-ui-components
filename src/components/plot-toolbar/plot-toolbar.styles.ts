@@ -112,7 +112,7 @@ export default css`
         inset: 0;
         background: rgba(0, 0, 0, 0.3);
         transition: opacity 0.35s ease;
-        z-index: 10;
+        z-index: 1002;
     }
 
     .bottom-sheet-backdrop[data-state='close'] {
@@ -129,7 +129,7 @@ export default css`
         position: fixed;
         left: 50%;
         bottom: 0;
-        z-index: 1002;
+        z-index: 1003;
         width: 100%;
         max-width: 768px;
         min-height: 50vh;
@@ -141,7 +141,7 @@ export default css`
         will-change: transform;
         user-select: none;
         pointer-events: all;
-        touch-action: none;
+        touch-action: pan-y;
         overflow: auto;
         cursor: grab;
     }
@@ -219,7 +219,7 @@ export default css`
         position: absolute;
         top: 100%;
         left: 50px;
-        z-index: 1001;
+        z-index: 2;
         background: white;
         border: 1px solid #ccc;
         border-radius: 0.5em;

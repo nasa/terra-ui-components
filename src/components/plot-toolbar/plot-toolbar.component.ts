@@ -26,6 +26,7 @@ import { getTimeSeriesNotebook } from './notebooks/time-series-notebook.js'
 import { nothing } from 'lit'
 import { PlotToolbarController } from './plot-toolbar.controller.js'
 import { formatDate } from '../../utilities/date.js'
+import { lockBodyScrolling, unlockBodyScrolling } from '../../internal/scroll.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -78,11 +79,7 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @property() productLabel?: string
 
-    metadata: TimeSeriesMetadata
-
     @property({ type: Number }) bottomSheetDragY = 0
-    #isBottomSheetDragging = false
-    #bottomSheetStartY = 0
 
     @state()
     hideTitle: boolean = false
@@ -104,6 +101,10 @@ export default class TerraPlotToolbar extends TerraElement {
 
     _authController = new AuthController(this)
     #controller = new PlotToolbarController(this)
+
+    metadata: TimeSeriesMetadata
+    #isBottomSheetDragging = false
+    #bottomSheetStartY = 0
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
@@ -500,7 +501,7 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #onBottomSheetTouchStart(e: TouchEvent) {
-        this.#handleBottomSheetStartDrag(e.touches[0].clientY)
+        this.#handleBottomSheetStartDrag(e.touches[0].clientY, e.target)
     }
 
     #onBottomSheetTouchMove(e: TouchEvent) {
@@ -510,7 +511,7 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #onBottomSheetMouseDown(e: MouseEvent) {
-        this.#handleBottomSheetStartDrag(e.clientY)
+        this.#handleBottomSheetStartDrag(e.clientY, e.target)
         const move = (ev: MouseEvent) => this.#handleBottomSheetMoveDrag(ev.clientY)
         const up = () => {
             this.#handleBottomSheetEndDrag()
@@ -521,8 +522,14 @@ export default class TerraPlotToolbar extends TerraElement {
         window.addEventListener('mouseup', up)
     }
 
-    #handleBottomSheetStartDrag(y: number) {
+    #handleBottomSheetStartDrag(y: number, target: EventTarget | null) {
         if (!this.activeMenuItem) return
+
+        const content = this.bottomSheet.querySelector('.bottom-sheet-content')
+
+        // Prevent bottom sheet from dragging when content is scrolled and the target element is the content
+        if (content && content.scrollTop > 0 && target !== this.bottomSheet) return
+
         this.#isBottomSheetDragging = true
         this.#bottomSheetStartY = y
         this.bottomSheetDragY = 0
@@ -531,7 +538,6 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #handleBottomSheetMoveDrag(y: number) {
         this.bottomSheetDragY = y - this.#bottomSheetStartY
-
         if (!this.#isBottomSheetDragging) return
         if (this.bottomSheetDragY > 0) {
             this.bottomSheet.style.transform = `translate(-50%, ${this.bottomSheetDragY}px)`
@@ -561,6 +567,7 @@ export default class TerraPlotToolbar extends TerraElement {
             this.closeMenu()
             this.bottomSheet.style.transform = ''
         }, 150)
+        unlockBodyScrolling(this)
     }
 
     #handleActiveMenuItem(event: Event) {
@@ -573,6 +580,7 @@ export default class TerraPlotToolbar extends TerraElement {
 
         // Set the menu item as active.
         this.activeMenuItem = menuName
+        if (this.mobileView) lockBodyScrolling(this)
     }
 
     #handleMenuLeave(event: MouseEvent) {
@@ -724,28 +732,52 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #renderMobileInfoPanel() {
-        // We need to render different html when this.dataType === 'geotiff'
+        const locationArr = this.location.trim().split(',')
+        const isLatLon = locationArr.length === 2
+        const isBoundingBox = locationArr.length === 4
+        const timeAvgMetadata = isBoundingBox
+            ? this.#normalizeTimeAvgMetadata(this.metadata)
+            : this.metadata
+
         return html`
             <h3 class="bottom-sheet-list">Request</h3>
             <ul class="bottom-sheet-list">
-                <li>
-                    <strong>Timestamp: </strong>${formatDate(
-                        this.metadata.Request_time,
-                        'yyyy-MM-dd HH:mm'
-                    )}
-                </li>
+                ${isLatLon
+                    ? html` <li>
+                          <strong>Timestamp: </strong>${formatDate(
+                              this.metadata.Request_time,
+                              'yyyy-MM-dd HH:mm'
+                          )}
+                      </li>`
+                    : ''}
                 <li>
                     <strong>Begin Datetime: </strong>${formatDate(
-                        this.metadata.begin_time
+                        isBoundingBox
+                            ? timeAvgMetadata.userStartDate
+                            : this.metadata.begin_time
                     )}
                 </li>
                 <li>
                     <strong>End Datetime: </strong>${formatDate(
-                        this.metadata.end_time
+                        isBoundingBox
+                            ? timeAvgMetadata.userEndDate
+                            : this.metadata.end_time
                     )}
                 </li>
-                <li><strong>Lat: </strong>${this.metadata.lat}</li>
-                <li><strong>Lon: </strong>${this.metadata.lon}</li>
+                <li>
+                    <strong>${isBoundingBox ? 'West' : 'Lat'}: </strong
+                    >${locationArr[0]}
+                </li>
+                <li>
+                    <strong>${isBoundingBox ? 'South' : 'Lon'}: </strong
+                    >${locationArr[1]}
+                </li>
+                ${isBoundingBox
+                    ? html`
+                          <li><strong>East: </strong>${locationArr[2]}</li>
+                          <li><strong>North: </strong>${locationArr[3]}</li>
+                      `
+                    : ''}
             </ul>
 
             <h3>Data Variable</h3>
@@ -753,21 +785,41 @@ export default class TerraPlotToolbar extends TerraElement {
                 ${this.productLabel
                     ? html`<li><strong>Label: </strong>${this.productLabel}</li>`
                     : ''}
-                <li><strong>Longname: </strong>${this.metadata.param_name}</li>
-                <li><strong>Shortname: </strong>${this.metadata.param_short_name}</li>
-                <li><strong>Units: </strong>${this.metadata.unit}</li>
-                <li><strong>Fill Value: </strong>${this.metadata.undef}</li>
-                <li><strong>Mean Value: </strong>${this.metadata.mean}</li>
                 <li>
-                    <strong>Lat. Resolution: </strong>${this.metadata.lat_resolution}
+                    <strong>Longname: </strong>${this.catalogVariable
+                        .dataFieldLongName}
                 </li>
                 <li>
-                    <strong>Lon. Resolution: </strong>${this.metadata.lon_resolution}
+                    <strong>Shortname: </strong>
+                    ${this.catalogVariable.dataFieldShortName ??
+                    this.catalogVariable.dataFieldAccessName}
                 </li>
                 <li>
-                    <strong>Data Product Name: </strong>${this.metadata.prod_name}
+                    <strong>Units: </strong>
+                    ${this.catalogVariable.dataFieldUnits}
                 </li>
-                <li><strong>DOI: </strong>${this.metadata.doi}</li>
+                <li>
+                    <strong>Fill Value: </strong>
+                    ${isBoundingBox ? timeAvgMetadata.fillValue : this.metadata.undef}
+                </li>
+
+                <li>
+                    <strong>Data Product Name: </strong>
+                    ${this.catalogVariable.dataProductShortName}.${this
+                        .catalogVariable.dataProductVersion}
+                </li>
+                ${isLatLon
+                    ? html`<li><strong>Mean Value: </strong>${this.metadata.mean}</li>
+                          <li>
+                              <strong>Lat. Resolution: </strong>${this.metadata
+                                  .lat_resolution}
+                          </li>
+                          <li>
+                              <strong>Lon. Resolution: </strong>${this.metadata
+                                  .lon_resolution}
+                          </li>
+                          <li><strong>DOI: </strong>${this.metadata.doi}</li>`
+                    : ''}
                 <li>
                     <a
                         href=${this.catalogVariable.dataProductDescriptionUrl}
@@ -1142,5 +1194,28 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #downloadMapJPG() {
         this.emit('terra-plot-toolbar-export-image', { detail: { format: 'jpg' } })
+    }
+
+    /**
+     * Converts raw metadata object with human-readable keys
+     * (e.g. "User Start Date:", "Fill Value:")
+     * into a cleaner camelCase object usable in code
+     * (e.g. metadata.userStartDate, metadata.fillValue).
+     *
+     * @param raw - Original metadata object from Harmony API
+     * @returns Normalized metadata object with camelCase keys
+     */
+    #normalizeTimeAvgMetadata(raw: Record<string, string | number>) {
+        const result: Record<string, string | number> = {}
+
+        Object.entries(raw).forEach(([key, value]) => {
+            const cleanKey = key
+                .replace(/:$/, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+(.)/g, (_, c) => c.toUpperCase())
+            result[cleanKey] = value
+        })
+
+        return result
     }
 }
