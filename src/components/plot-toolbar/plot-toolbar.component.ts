@@ -26,7 +26,6 @@ import { getTimeSeriesNotebook } from './notebooks/time-series-notebook.js'
 import { nothing } from 'lit'
 import { PlotToolbarController } from './plot-toolbar.controller.js'
 import { formatDate } from '../../utilities/date.js'
-import { lockBodyScrolling, unlockBodyScrolling } from '../../internal/scroll.js'
 
 /**
  * @summary Short summary of the component's intended use.
@@ -507,7 +506,9 @@ export default class TerraPlotToolbar extends TerraElement {
     #onBottomSheetTouchMove(e: TouchEvent) {
         if (!this.#isBottomSheetDragging) return
         this.#handleBottomSheetMoveDrag(e.touches[0].clientY)
-        if (this.bottomSheetDragY > 0) e.preventDefault()
+        if (this.bottomSheetDragY > 0) {
+            e.cancelable && e.preventDefault()
+        }
     }
 
     #onBottomSheetMouseDown(e: MouseEvent) {
@@ -527,7 +528,7 @@ export default class TerraPlotToolbar extends TerraElement {
 
         const content = this.bottomSheet.querySelector('.bottom-sheet-content')
 
-        // Prevent bottom sheet from dragging when content is scrolled and the target element is the content
+        // Prevent bottom sheet from being dragged if the user is trying to scroll the content. Only allow dragging if the user is touching the handle or if the content is scrolled to the top
         if (content && content.scrollTop > 0 && target !== this.bottomSheet) return
 
         this.#isBottomSheetDragging = true
@@ -553,6 +554,7 @@ export default class TerraPlotToolbar extends TerraElement {
         this.bottomSheet.style.transition =
             'transform 0.35s cubic-bezier(0.25,1,0.5,1)'
 
+        // if the user has dragged the bottom sheet more than the threshold and released, close the bottom sheet. Otherwise, snap it back to the original position
         if (this.bottomSheetDragY > SWIPE_TO_CLOSE_THRESHOLD) {
             this.#handleBottomSheetClose()
         } else {
@@ -567,7 +569,18 @@ export default class TerraPlotToolbar extends TerraElement {
             this.closeMenu()
             this.bottomSheet.style.transform = ''
         }, 150)
-        unlockBodyScrolling(this)
+
+        // lockBodyScrolling/unlockBodyScrolling seems like not working well, so we'll manually lock/unlock the body scroll
+
+        // Unlock body scrolling when the menu is closed
+        const scrollY = Number(document.body.dataset.scrollLockY || 0)
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        document.body.style.width = ''
+        delete document.body.dataset.scrollLockY
+        window.scrollTo(0, scrollY)
     }
 
     #handleActiveMenuItem(event: Event) {
@@ -580,7 +593,19 @@ export default class TerraPlotToolbar extends TerraElement {
 
         // Set the menu item as active.
         this.activeMenuItem = menuName
-        if (this.mobileView) lockBodyScrolling(this)
+
+        // If mobileView is enabled, we want to lock body scrolling when the menu is open to prevent the background from scrolling
+        if (this.mobileView) {
+            // lockBodyScrolling/unlockBodyScrolling seems like not working well, so we'll manually lock the body scroll
+            // lockBodyScrolling(this)
+            const scrollY = window.scrollY
+            document.body.dataset.scrollLockY = String(scrollY)
+            document.body.style.position = 'fixed'
+            document.body.style.top = `-${scrollY}px`
+            document.body.style.left = '0'
+            document.body.style.right = '0'
+            document.body.style.width = '100%'
+        }
     }
 
     #handleMenuLeave(event: MouseEvent) {
@@ -736,7 +761,7 @@ export default class TerraPlotToolbar extends TerraElement {
         const isLatLon = locationArr.length === 2
         const isBoundingBox = locationArr.length === 4
         const timeAvgMetadata = isBoundingBox
-            ? this.#normalizeTimeAvgMetadata(this.metadata)
+            ? this.#normalizeMetadata(this.metadata)
             : this.metadata
 
         return html`
@@ -1197,16 +1222,16 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     /**
-     * Converts raw metadata object with human-readable keys
+     * Converts raw object with human-readable keys
      * (e.g. "User Start Date:", "Fill Value:")
      * into a cleaner camelCase object usable in code
      * (e.g. metadata.userStartDate, metadata.fillValue).
      *
-     * @param raw - Original metadata object from Harmony API
-     * @returns Normalized metadata object with camelCase keys
+     * @param raw - Original object with human-readable keys
+     * @returns Normalized object with camelCase keys
      */
-    #normalizeTimeAvgMetadata(raw: Record<string, string | number>) {
-        const result: Record<string, string | number> = {}
+    #normalizeMetadata<T>(raw: Record<string, T>) {
+        const result: Record<string, T> = {}
 
         Object.entries(raw).forEach(([key, value]) => {
             const cleanKey = key
