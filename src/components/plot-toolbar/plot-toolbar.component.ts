@@ -765,7 +765,7 @@ export default class TerraPlotToolbar extends TerraElement {
             : this.metadata
 
         return html`
-            <h3 class="bottom-sheet-list">Request</h3>
+            <h3>Request</h3>
             <ul class="bottom-sheet-list">
                 ${isLatLon
                     ? html` <li>

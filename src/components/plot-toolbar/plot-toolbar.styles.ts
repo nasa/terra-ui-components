@@ -219,7 +219,7 @@ export default css`
         position: absolute;
         top: 100%;
         left: 50px;
-        z-index: 2;
+        z-index: 1001;
         background: white;
         border: 1px solid #ccc;
         border-radius: 0.5em;
