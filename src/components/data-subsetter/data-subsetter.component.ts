@@ -1468,6 +1468,18 @@ export default class TerraDataSubsetter extends TerraElement {
                                   Only certain variables are supported for the
                                   selected output format. (Giovanni service)
                               </terra-alert>
+                              <terra-alert
+                                  open
+                                  appearance="white"
+                                  style="margin: 10px 0"
+                              >
+                                  <terra-icon
+                                      slot="icon"
+                                      name="outline-information-circle"
+                                      library="heroicons"
+                                  ></terra-icon>
+                                  User's are allowed to select only one variable for the selected output format. (Giovanni service)
+                              </terra-alert>
                           `
                         : nothing}
                     ${variables.length === 0
