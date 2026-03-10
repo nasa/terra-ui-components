@@ -10,6 +10,16 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Verify release tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Tag $TAG_VERSION does not match package.json version $PACKAGE_VERSION. Did you run \`npm version {minor|patch|major}\`?"
+            exit 1
+          fi
+
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
