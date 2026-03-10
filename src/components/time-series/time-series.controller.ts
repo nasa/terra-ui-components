@@ -62,6 +62,8 @@ export class TimeSeriesController {
     //? Lit behavior is to set the task.value to undefined when aborted
     lastTaskValue: Partial<Data>[] | undefined
 
+    metadata: TimeSeriesMetadata
+
     constructor(host: ReactiveControllerHost & TerraTimeSeries) {
         this.#dataService = this.#getDataService()
 
@@ -82,6 +84,7 @@ export class TimeSeriesController {
 
                 // fetch the time series data
                 const timeSeries = await this.#loadTimeSeries(signal)
+                this.metadata = timeSeries.metadata
 
                 // Filter out fill values from the data
                 const filteredData = this.#filterFillValues(

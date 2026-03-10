@@ -11,7 +11,10 @@ import * as Plotly from 'plotly.js-dist-min'
 import type TerraPlot from '../plot/plot.component.js'
 import type { Plot } from '../plot/plot.types.js'
 import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
-import type { VariableDbEntry } from '../time-series/time-series.types.js'
+import type {
+    VariableDbEntry,
+    TimeSeriesMetadata,
+} from '../time-series/time-series.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
@@ -71,10 +74,11 @@ export default class TerraPlotToolbar extends TerraElement {
      */
     @property({ attribute: 'application-citation' }) applicationCitation?: string
 
-    @property({ type: Boolean, attribute: 'mobile-view', reflect: true }) mobileView =
-        false
+    @property() mobileView = false
 
-    @property({ attribute: 'product-label' }) productLabel?: string
+    @property() productLabel?: string
+
+    @property({ type: Number }) bottomSheetDragY = 0
 
     @state()
     hideTitle: boolean = false
@@ -92,13 +96,18 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @query('#menu') menu: HTMLMenuElement
 
+    @query('.bottom-sheet') private bottomSheet: HTMLDivElement
+
     _authController = new AuthController(this)
     #controller = new PlotToolbarController(this)
+
+    metadata: TimeSeriesMetadata
+    #isBottomSheetDragging = false
+    #bottomSheetStartY = 0
 
     @watch('activeMenuItem')
     handleFocus(_oldValue: MenuNames, newValue: MenuNames) {
         if (this.mobileView) return
-
         if (newValue === null) {
             return
         }
@@ -178,7 +187,8 @@ export default class TerraPlotToolbar extends TerraElement {
         return cache(
             !this.catalogVariable
                 ? html`<div class="spacer"></div>`
-                : html` <header>
+                : html`
+                      <header>
                           <div class="title-container">
                               <slot name="title">
                                   <h2 class="title" @click=${this.#toggleMobileTitle}>
@@ -321,6 +331,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                       font-size="1em"
                                   ></terra-icon>
                               </terra-button>
+
                               <terra-button
                                   outline
                                   aria-expanded=${this.activeMenuItem === 'jupyter'}
@@ -444,37 +455,132 @@ export default class TerraPlotToolbar extends TerraElement {
                       </header>
 
                       ${this.mobileView
-                          ? html`<dialog
-                                ?open=${!!this.activeMenuItem}
-                                class="menu-dialog"
-                            >
-                                <terra-button outline @click=${this.closeMenu}>
-                                    Close
-                                </terra-button>
-                                <div class="spacer"></div>
-                                <div>
-                                    ${this.activeMenuItem === 'information'
-                                        ? this.#renderInfoPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'citation'
-                                        ? this.#renderCitationPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'download'
-                                        ? this.#renderDownloadPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'help'
-                                        ? this.#renderHelpPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'jupyter'
-                                        ? this.#renderJupyterNotebookPanel()
-                                        : ''}
-                                    ${this.activeMenuItem === 'GeoTIFF'
-                                        ? this.#renderGeotiffPanel()
-                                        : ''}
-                                </div>
-                            </dialog>`
-                          : nothing}`
+                          ? html` <div
+                                    class="bottom-sheet-backdrop"
+                                    data-state=${this.activeMenuItem
+                                        ? 'open'
+                                        : 'close'}
+                                    @click=${this.#handleBottomSheetClose}
+                                ></div>
+                                <div
+                                    data-state=${this.activeMenuItem
+                                        ? 'open'
+                                        : 'close'}
+                                    class="bottom-sheet"
+                                    @touchstart=${this.#onBottomSheetTouchStart}
+                                    @touchmove=${this.#onBottomSheetTouchMove}
+                                    @touchend=${this.#handleBottomSheetEndDrag}
+                                    @mousedown=${this.#onBottomSheetMouseDown}
+                                >
+                                    <div class="bottom-sheet-handle"></div>
+                                    <div class="bottom-sheet-content">
+                                        ${this.activeMenuItem === 'information'
+                                            ? this.#renderMobileInfoPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'citation'
+                                            ? this.#renderCitationPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'download'
+                                            ? this.#renderDownloadPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'help'
+                                            ? this.#renderHelpPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'jupyter'
+                                            ? this.#renderJupyterNotebookPanel()
+                                            : ''}
+                                        ${this.activeMenuItem === 'GeoTIFF'
+                                            ? this.#renderGeotiffPanel()
+                                            : ''}
+                                    </div>
+                                </div>`
+                          : nothing}
+                  `
         )
+    }
+
+    #onBottomSheetTouchStart(e: TouchEvent) {
+        this.#handleBottomSheetStartDrag(e.touches[0].clientY, e.target)
+    }
+
+    #onBottomSheetTouchMove(e: TouchEvent) {
+        if (!this.#isBottomSheetDragging) return
+        this.#handleBottomSheetMoveDrag(e.touches[0].clientY)
+        if (this.bottomSheetDragY > 0) {
+            e.cancelable && e.preventDefault()
+        }
+    }
+
+    #onBottomSheetMouseDown(e: MouseEvent) {
+        this.#handleBottomSheetStartDrag(e.clientY, e.target)
+        const move = (ev: MouseEvent) => this.#handleBottomSheetMoveDrag(ev.clientY)
+        const up = () => {
+            this.#handleBottomSheetEndDrag()
+            window.removeEventListener('mousemove', move)
+            window.removeEventListener('mouseup', up)
+        }
+        window.addEventListener('mousemove', move)
+        window.addEventListener('mouseup', up)
+    }
+
+    #handleBottomSheetStartDrag(y: number, target: EventTarget | null) {
+        if (!this.activeMenuItem) return
+
+        const content = this.bottomSheet.querySelector('.bottom-sheet-content')
+
+        // Prevent bottom sheet from being dragged if the user is trying to scroll the content. Only allow dragging if the user is touching the handle or if the content is scrolled to the top
+        if (content && content.scrollTop > 0 && target !== this.bottomSheet) return
+
+        this.#isBottomSheetDragging = true
+        this.#bottomSheetStartY = y
+        this.bottomSheetDragY = 0
+        this.bottomSheet.style.transition = 'none'
+    }
+
+    #handleBottomSheetMoveDrag(y: number) {
+        this.bottomSheetDragY = y - this.#bottomSheetStartY
+        if (!this.#isBottomSheetDragging) return
+        if (this.bottomSheetDragY > 0) {
+            this.bottomSheet.style.transform = `translate(-50%, ${this.bottomSheetDragY}px)`
+        }
+    }
+
+    #handleBottomSheetEndDrag() {
+        const SWIPE_TO_CLOSE_THRESHOLD = 20
+
+        if (!this.#isBottomSheetDragging) return
+
+        this.#isBottomSheetDragging = false
+        this.bottomSheet.style.transition =
+            'transform 0.35s cubic-bezier(0.25,1,0.5,1)'
+
+        // if the user has dragged the bottom sheet more than the threshold and released, close the bottom sheet. Otherwise, snap it back to the original position
+        if (this.bottomSheetDragY > SWIPE_TO_CLOSE_THRESHOLD) {
+            this.#handleBottomSheetClose()
+        } else {
+            this.bottomSheet.style.transform = 'translate(-50%, 0)'
+        }
+        this.bottomSheetDragY = 0
+    }
+
+    #handleBottomSheetClose() {
+        this.bottomSheet.style.transform = 'translate(-50%, 100%)'
+        setTimeout(() => {
+            this.closeMenu()
+            this.bottomSheet.style.transform = ''
+        }, 150)
+
+        // lockBodyScrolling/unlockBodyScrolling seems like not working well, so we'll manually lock/unlock the body scroll
+
+        // Unlock body scrolling when the menu is closed
+        const scrollY = Number(document.body.dataset.scrollLockY || 0)
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.left = ''
+        document.body.style.right = ''
+        document.body.style.width = ''
+        delete document.body.dataset.scrollLockY
+        window.scrollTo(0, scrollY)
     }
 
     #handleActiveMenuItem(event: Event) {
@@ -487,11 +593,23 @@ export default class TerraPlotToolbar extends TerraElement {
 
         // Set the menu item as active.
         this.activeMenuItem = menuName
+
+        // If mobileView is enabled, we want to lock body scrolling when the menu is open to prevent the background from scrolling
+        if (this.mobileView) {
+            // lockBodyScrolling/unlockBodyScrolling seems like not working well, so we'll manually lock the body scroll
+            // lockBodyScrolling(this)
+            const scrollY = window.scrollY
+            document.body.dataset.scrollLockY = String(scrollY)
+            document.body.style.position = 'fixed'
+            document.body.style.top = `-${scrollY}px`
+            document.body.style.left = '0'
+            document.body.style.right = '0'
+            document.body.style.width = '100%'
+        }
     }
 
     #handleMenuLeave(event: MouseEvent) {
         if (this.mobileView) return
-
         // Only close if we're not moving to another element within the component
         // If the GeoTIFF menu is in use, it will only close if you hover outside of the time average map component
         const relatedTarget = event.relatedTarget as HTMLElement
@@ -635,6 +753,111 @@ export default class TerraPlotToolbar extends TerraElement {
                     </a>
                 </dd>
             </dl>
+        `
+    }
+
+    #renderMobileInfoPanel() {
+        const locationArr = this.location.trim().split(',')
+        const isLatLon = locationArr.length === 2
+        const isBoundingBox = locationArr.length === 4
+        const timeAvgMetadata = isBoundingBox
+            ? this.#normalizeMetadata(this.metadata)
+            : this.metadata
+
+        return html`
+            <h3>Request</h3>
+            <ul class="bottom-sheet-list">
+                ${isLatLon
+                    ? html` <li>
+                          <strong>Timestamp: </strong>${formatDate(
+                              this.metadata.Request_time,
+                              'yyyy-MM-dd HH:mm'
+                          )}
+                      </li>`
+                    : ''}
+                <li>
+                    <strong>Begin Datetime: </strong>${formatDate(
+                        isBoundingBox
+                            ? timeAvgMetadata.userStartDate
+                            : this.metadata.begin_time
+                    )}
+                </li>
+                <li>
+                    <strong>End Datetime: </strong>${formatDate(
+                        isBoundingBox
+                            ? timeAvgMetadata.userEndDate
+                            : this.metadata.end_time
+                    )}
+                </li>
+                <li>
+                    <strong>${isBoundingBox ? 'West' : 'Lat'}: </strong
+                    >${locationArr[0]}
+                </li>
+                <li>
+                    <strong>${isBoundingBox ? 'South' : 'Lon'}: </strong
+                    >${locationArr[1]}
+                </li>
+                ${isBoundingBox
+                    ? html`
+                          <li><strong>East: </strong>${locationArr[2]}</li>
+                          <li><strong>North: </strong>${locationArr[3]}</li>
+                      `
+                    : ''}
+            </ul>
+
+            <h3>Data Variable</h3>
+            <ul class="bottom-sheet-list">
+                ${this.productLabel
+                    ? html`<li><strong>Label: </strong>${this.productLabel}</li>`
+                    : ''}
+                <li>
+                    <strong>Longname: </strong>${this.catalogVariable
+                        .dataFieldLongName}
+                </li>
+                <li>
+                    <strong>Shortname: </strong>
+                    ${this.catalogVariable.dataFieldShortName ??
+                    this.catalogVariable.dataFieldAccessName}
+                </li>
+                <li>
+                    <strong>Units: </strong>
+                    ${this.catalogVariable.dataFieldUnits}
+                </li>
+                <li>
+                    <strong>Fill Value: </strong>
+                    ${isBoundingBox ? timeAvgMetadata.fillValue : this.metadata.undef}
+                </li>
+
+                <li>
+                    <strong>Data Product Name: </strong>
+                    ${this.catalogVariable.dataProductShortName}.${this
+                        .catalogVariable.dataProductVersion}
+                </li>
+                ${isLatLon
+                    ? html`<li><strong>Mean Value: </strong>${this.metadata.mean}</li>
+                          <li>
+                              <strong>Lat. Resolution: </strong>${this.metadata
+                                  .lat_resolution}
+                          </li>
+                          <li>
+                              <strong>Lon. Resolution: </strong>${this.metadata
+                                  .lon_resolution}
+                          </li>
+                          <li><strong>DOI: </strong>${this.metadata.doi}</li>`
+                    : ''}
+                <li>
+                    <a
+                        href=${this.catalogVariable.dataProductDescriptionUrl}
+                        rel="noopener noreffer"
+                        target="_blank"
+                        >Dataset Information
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </li>
+            </ul>
         `
     }
 
@@ -996,5 +1219,28 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #downloadMapJPG() {
         this.emit('terra-plot-toolbar-export-image', { detail: { format: 'jpg' } })
+    }
+
+    /**
+     * Converts raw object with human-readable keys
+     * (e.g. "User Start Date:", "Fill Value:")
+     * into a cleaner camelCase object usable in code
+     * (e.g. metadata.userStartDate, metadata.fillValue).
+     *
+     * @param raw - Original object with human-readable keys
+     * @returns Normalized object with camelCase keys
+     */
+    #normalizeMetadata<T>(raw: Record<string, T>) {
+        const result: Record<string, T> = {}
+
+        Object.entries(raw).forEach(([key, value]) => {
+            const cleanKey = key
+                .replace(/:$/, '')
+                .toLowerCase()
+                .replace(/[^a-z0-9]+(.)/g, (_, c) => c.toUpperCase())
+            result[cleanKey] = value
+        })
+
+        return result
     }
 }
