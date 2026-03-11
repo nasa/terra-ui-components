@@ -278,9 +278,11 @@ export type GetVariablesResponse = {
 
 export type HostWithMaybeProperties = ReactiveControllerHost & {
     variableEntryId?: string
+    variableEntryIds?: string[]
     collection?: string
     variable?: string
     startDate?: string
     endDate?: string
     catalogVariable?: Variable
+    catalogVariables?: Variable[]
 }
