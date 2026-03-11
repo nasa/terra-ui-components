@@ -36,7 +36,7 @@ jobs:
         uses: astral-sh/setup-uv@v1
 
       - name: Install Python dependencies
-        run: uv sync --group dev
+        run: uv sync
 
       - name: Build and publish package on npmjs.com and pypi.org
         run: npm publish --access public
