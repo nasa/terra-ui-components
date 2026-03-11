@@ -40,7 +40,6 @@ export const plotlyDefaultData: Partial<PlotData> = {
     // see https://plotly.com/javascript/time-series/
     type: 'scatter',
     mode: 'lines',
-    line: { color: 'rgb(28, 103, 227)' }, // TODO: configureable?
 }
 
 export class TimeSeriesController {
@@ -73,7 +72,7 @@ export class TimeSeriesController {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
                 if (
-                    !this.host.catalogVariable ||
+                    !this.#getRequestedVariables().length ||
                     !this.host.startDate ||
                     !this.host.endDate ||
                     !this.host.location
@@ -82,30 +81,58 @@ export class TimeSeriesController {
                     return initialState
                 }
 
-                // fetch the time series data
-                const timeSeries = await this.#loadTimeSeries(signal)
-                this.metadata = timeSeries.metadata
+                const requestedVariables = this.#getRequestedVariables()
 
-                // Filter out fill values from the data
-                const filteredData = this.#filterFillValues(
-                    timeSeries.data,
-                    timeSeries.metadata?.undef
+                // fetch each requested variable independently and render each as a separate trace
+                const seriesResults = await Promise.all(
+                    requestedVariables.map(async variable => {
+                        const timeSeries = await this.#loadTimeSeries(
+                            signal,
+                            variable
+                        )
+
+                        // Filter out fill values from the data
+                        const filteredData = this.#filterFillValues(
+                            timeSeries.data,
+                            timeSeries.metadata?.undef
+                        )
+
+                        return {
+                            variable,
+                            timeSeries,
+                            filteredData,
+                        }
+                    })
                 )
 
-                // now that we have actual data, map it to a Plotly plot definition
-                // see https://plotly.com/javascript/time-series/
-                this.lastTaskValue = [
-                    {
+                this.metadata = seriesResults[0]?.timeSeries.metadata
+
+                // map each variable result to its own Plotly trace
+                this.lastTaskValue = seriesResults.map(
+                    ({ variable, filteredData }) => ({
                         ...plotlyDefaultData,
+                        name:
+                            variable.dataFieldLongName ??
+                            variable.dataFieldShortName ??
+                            variable.dataFieldId,
+                        hovertemplate: variable.dataFieldUnits
+                            ? `%{x}<br>%{y} ${variable.dataFieldUnits}<extra>%{fullData.name}</extra>`
+                            : '%{x}<br>%{y}<extra>%{fullData.name}</extra>',
                         x: filteredData.map(row => row.timestamp),
                         y: filteredData.map(row => row.value),
-                    },
-                ]
+                    })
+                )
+
+                const firstSeries = seriesResults[0]!
 
                 this.host.emit('terra-time-series-data-change', {
                     detail: {
-                        data: timeSeries,
-                        variable: this.host.catalogVariable,
+                        data: firstSeries.timeSeries,
+                        variable: firstSeries.variable,
+                        series: seriesResults.map(({ variable, timeSeries }) => ({
+                            variable,
+                            data: timeSeries,
+                        })),
                         startDate: formatDate(this.host.startDate),
                         endDate: formatDate(this.host.endDate),
                         location: this.host.location,
@@ -116,6 +143,7 @@ export class TimeSeriesController {
             },
             args: () => [
                 this.host.catalogVariable,
+                this.host.catalogVariables,
                 this.host.startDate,
                 this.host.endDate,
                 this.host.location,
@@ -123,15 +151,27 @@ export class TimeSeriesController {
         })
     }
 
-    async #loadTimeSeries(signal: AbortSignal) {
+    #getRequestedVariables(): Variable[] {
+        if (this.host.catalogVariables?.length) {
+            return this.host.catalogVariables
+        }
+
+        if (this.host.catalogVariable) {
+            return [this.host.catalogVariable]
+        }
+
+        return []
+    }
+
+    async #loadTimeSeries(signal: AbortSignal, catalogVariable: Variable) {
         const startDate = getUTCDate(this.host.startDate!)
         const endDate = getUTCDate(this.host.endDate!, true)
-        const cacheKey = this.getCacheKey()
-        const variableEntryId = this.host.catalogVariable!.dataFieldId
+        const cacheKey = this.getCacheKeyForVariable(catalogVariable)
+        const variableEntryId = catalogVariable.dataFieldId
 
         console.log(
             'Loading time series for variable',
-            this.host.catalogVariable,
+            catalogVariable,
             this.host.startDate,
             this.host.endDate,
             this.host.location
@@ -207,7 +247,7 @@ export class TimeSeriesController {
             : null
         const timeInterval =
             detectedInterval ||
-            (this.host.catalogVariable!.dataProductTimeInterval as TimeInterval) ||
+            (catalogVariable.dataProductTimeInterval as TimeInterval) ||
             TimeInterval.Daily
 
         const allChunks: Array<{ start: Date; end: Date }> = []
@@ -224,7 +264,8 @@ export class TimeSeriesController {
                     variableEntryId,
                     chunk.start,
                     chunk.end,
-                    signal
+                    signal,
+                    catalogVariable
                 )
 
                 return result
@@ -338,18 +379,15 @@ export class TimeSeriesController {
         variableEntryId: string,
         startDate: Date,
         endDate: Date,
-        signal: AbortSignal
+        signal: AbortSignal,
+        catalogVariable: Variable
     ): Promise<TimeSeriesData> {
         let timeSeriesCsvData: string = ''
 
         // Check if we need to warn the user about data point limits
         if (
             !this.#userConfirmedWarning &&
-            !this.#checkDataPointLimits(
-                this.host.catalogVariable!,
-                startDate,
-                endDate
-            )
+            !this.#checkDataPointLimits(catalogVariable, startDate, endDate)
         ) {
             // User needs to confirm before proceeding
             throw new Error('User cancelled data point warning')
@@ -363,7 +401,7 @@ export class TimeSeriesController {
         )
 
         if (parsedLocation.length === 4) {
-            const collection = `${this.host.catalogVariable!.dataProductShortName}_${this.host.catalogVariable!.dataProductVersion}`
+            const collection = `${catalogVariable.dataProductShortName}_${catalogVariable.dataProductVersion}`
             const [w, s, e, n] = parsedLocation
             let subsetOptions = {
                 collectionEntryId: collection,
@@ -744,12 +782,20 @@ export class TimeSeriesController {
             return ''
         }
 
+        return this.getCacheKeyForVariable(this.host.catalogVariable)
+    }
+
+    getCacheKeyForVariable(catalogVariable: Variable): string {
+        if (!this.host.location) {
+            return ''
+        }
+
         const normalizedCoordinates = this.#normalizeCoordinates(
             this.host.location.split(',')
         )
         const normalizedLocation = normalizedCoordinates.join(',%20')
         const environment = this.host.environment ?? 'prod'
-        return `${this.host.catalogVariable.dataFieldId}_${normalizedLocation}_${environment}`
+        return `${catalogVariable.dataFieldId}_${normalizedLocation}_${environment}`
     }
 
     /**
