@@ -7,6 +7,14 @@ export default css`
 
     terra-dialog {
         --terra-font-size-large: 16px;
+        --width: 80%;
+        --max-width: 1200px;
+    }
+
+    @media screen and (max-width: 1200px) {
+        terra-dialog {
+            --width: calc(100vw - 40px);
+        }
     }
 
     :host * {
@@ -19,6 +27,15 @@ export default css`
         margin: 0 auto;
         padding: 20px;
         background: white;
+    }
+
+    .loading-collection {
+        display: flex;
+        align-items: center;
+    }
+
+    .loading-collection terra-loader {
+        margin-right: 8px;
     }
 
     .header {

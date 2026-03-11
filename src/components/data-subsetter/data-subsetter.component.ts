@@ -24,7 +24,10 @@ import {
 } from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
-import type { CmrSearchResult } from '../../metadata-catalog/types.js'
+import type {
+    CmrSearchResult,
+    VariableDetails,
+} from '../../metadata-catalog/types.js'
 import type { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
@@ -108,6 +111,9 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     collectionWithServices?: CollectionWithAvailableServices
+
+    @state()
+    variableDetails?: Array<VariableDetails>
 
     @state()
     selectedVariables: Variable[] = []
@@ -315,6 +321,16 @@ export default class TerraDataSubsetter extends TerraElement {
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title =
             this.collectionWithServices?.collection?.EntryTitle ?? 'Download Data'
+
+        if (!this.collectionWithServices) {
+            if (this.controller.fetchCollectionTask.status === TaskStatus.ERROR) {
+                return html`
+                    <terra-alert open variant="danger" appearance="white">
+                        Failed to find the requested collection.
+                    </terra-alert>
+                `
+            }
+        }
 
         const content = html`
             <div class="container">
@@ -560,10 +576,11 @@ export default class TerraDataSubsetter extends TerraElement {
                                       </terra-menu>
                                   </terra-dropdown>
 
+                                  <!--
                                   <terra-button
                                       outline
                                       @click=${() =>
-                                          this.#handleJupyterNotebookClick()}
+                                      this.#handleJupyterNotebookClick()}
                                   >
                                       <terra-icon
                                           name="outline-code-bracket"
@@ -573,6 +590,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                       ></terra-icon>
                                       Open in Jupyter Notebook
                                   </terra-button>
+                                    -->
                               </div>
                           `
                         : nothing}
@@ -1014,6 +1032,11 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderOutputFormatSelection() {
+        // TODO: refactor component to use output formats from individual services, then each service can have a map of output format friendly names
+        const hasGiovanniService = this.collectionWithServices?.services?.some(
+            s => s.name.indexOf('giovanni') !== -1
+        )
+
         return html`
             <terra-accordion>
                 <div slot="summary">
@@ -1024,7 +1047,12 @@ export default class TerraDataSubsetter extends TerraElement {
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px;"
                 >
-                    <span>${getFriendlyNameForMimeType(this.selectedFormat)}</span>
+                    <span
+                        >${getFriendlyNameForMimeType(
+                            this.selectedFormat,
+                            hasGiovanniService
+                        )}</span
+                    >
 
                     <button class="reset-btn" @click=${this.#resetFormatSelection}>
                         Reset
@@ -1065,7 +1093,10 @@ export default class TerraDataSubsetter extends TerraElement {
                                         @change=${() =>
                                             (this.selectedFormat = format)}
                                     />
-                                    ${getFriendlyNameForMimeType(format)}
+                                    ${getFriendlyNameForMimeType(
+                                        format,
+                                        hasGiovanniService
+                                    )}
                                 </label>
                             `
                         )
@@ -1124,8 +1155,11 @@ export default class TerraDataSubsetter extends TerraElement {
                         end-label="End Date"
                         .minDate=${this.granuleMinDate ?? defaultStartDate}
                         .maxDate=${this.granuleMaxDate ?? defaultEndDate}
-                        .startDate=${this.selectedDateRange.startDate}
-                        .endDate=${this.selectedDateRange.endDate}
+                        .startDate=${this.selectedDateRange.startDate ??
+                        this.granuleMinDate}
+                        .endDate=${this.selectedDateRange.endDate ??
+                        this.granuleMaxDate}
+                        .useEndOfDay=${this.#isGiovanniFormat() ? false : true}
                         @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
                 </div>
@@ -1569,6 +1603,15 @@ export default class TerraDataSubsetter extends TerraElement {
                     const groupPath = [...path, key].join('/')
                     if (value.__isLeaf) {
                         // Leaf node (variable)
+                        // Look up the long name from variableDetails
+                        const variableDetail = this.variableDetails?.find(
+                            d =>
+                                d.name === value.__variable.name &&
+                                d.longName !== value.__variable.name // if the long name is the same as the variable name, we'll just use the variable name
+                        )
+                        const variableName = variableDetail?.longName
+                            ? `${key} = ${variableDetail.longName}${variableDetail.units ? ` (${variableDetail.units})` : ''}`
+                            : key
                         return html`
                             <div class="option-row">
                                 <label class="checkbox-option">
@@ -1586,7 +1629,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                                 value.__variable
                                             )}
                                     />
-                                    <span>${key}</span>
+                                    <span>${variableName}</span>
                                 </label>
                             </div>
                         `
@@ -1978,10 +2021,11 @@ export default class TerraDataSubsetter extends TerraElement {
                                             </terra-menu>
                                         </terra-dropdown>
 
+                                        <!--
                                         <terra-button
                                             outline
                                             @click=${() =>
-                                                this.#handleJupyterNotebookClick()}
+                                            this.#handleJupyterNotebookClick()}
                                         >
                                             <terra-icon
                                                 name="outline-code-bracket"
@@ -1991,7 +2035,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                             ></terra-icon>
                                             Open in Jupyter Notebook
                                         </terra-button>
-                                    </div>
+--></div>
                                 `
                               : nothing}
                           ${this.controller.currentJob!.status === 'running'
@@ -2451,6 +2495,10 @@ export default class TerraDataSubsetter extends TerraElement {
     }
 
     #renderDataAccessModeSelection() {
+        if (!this.controller.hasGranules) {
+            return nothing
+        }
+
         return html`
             <div class="mode-selection">
                 <div class="mode-options">

@@ -6,6 +6,7 @@ import {
     GET_CMR_SEARCH_RESULTS_ALL,
     GET_CMR_SEARCH_RESULTS_COLLECTIONS,
     GET_CMR_SEARCH_RESULTS_VARIABLES,
+    GET_CMR_VARIABLE_DETAILS_BY_COLLECTION_CONCEPT_ID,
 } from './queries.js'
 import {
     type CmrSearchResultsResponse,
@@ -17,6 +18,7 @@ import {
     type CloudCoverRange,
     type CmrCollectionCitationsResponse,
     type CmrCollectionCitationItem,
+    type CmrVariableDetailsResponse,
 } from './types.js'
 
 export class CmrCatalog implements MetadataCatalogInterface {
@@ -212,31 +214,20 @@ export class CmrCatalog implements MetadataCatalogInterface {
             throw new Error(`Failed to fetch granules: ${response.errors[0].message}`)
         }
 
-        console.log(
-            'Response data: ',
-            response.data,
-            response.data.collections.items[0].lowestCloudCover.items[0].cloudCover,
-            response.data.collections.items[0].highestCloudCover.items[0].cloudCover
-        )
+        const lowestCloudCover =
+            response.data.collections?.items?.[0]?.lowestCloudCover?.items?.[0]
+                ?.cloudCover
+        const highestCloudCover =
+            response.data.collections?.items?.[0]?.highestCloudCover?.items?.[0]
+                ?.cloudCover
 
         if (
-            typeof response.data.collections.items[0].lowestCloudCover.items[0]
-                .cloudCover === 'number' &&
-            typeof response.data.collections.items[0].highestCloudCover.items[0]
-                .cloudCover === 'number'
+            typeof lowestCloudCover === 'number' &&
+            typeof highestCloudCover === 'number'
         ) {
-            console.log('Returning cloud cover range: ', {
-                min: response.data.collections.items[0].lowestCloudCover.items[0]
-                    .cloudCover,
-                max: response.data.collections.items[0].highestCloudCover.items[0]
-                    .cloudCover,
-            })
-
             return {
-                min: response.data.collections.items[0].lowestCloudCover.items[0]
-                    .cloudCover,
-                max: response.data.collections.items[0].highestCloudCover.items[0]
-                    .cloudCover,
+                min: lowestCloudCover,
+                max: highestCloudCover,
             }
         }
 
@@ -273,6 +264,31 @@ export class CmrCatalog implements MetadataCatalogInterface {
         }
 
         return response.data.collections.items[0]
+    }
+
+    async getVariablesDetails(collectionConceptId: string, options?: SearchOptions) {
+        const client = await getGraphQLClient('cmr')
+
+        const response = await client.query<CmrVariableDetailsResponse>({
+            query: GET_CMR_VARIABLE_DETAILS_BY_COLLECTION_CONCEPT_ID,
+            variables: {
+                collectionConceptId,
+            },
+            context: {
+                fetchOptions: {
+                    signal: options?.signal,
+                },
+            },
+            fetchPolicy: 'network-only',
+        })
+
+        if (response.errors) {
+            throw new Error(
+                `Failed to fetch variable details: ${response.errors[0].message}`
+            )
+        }
+
+        return response.data
     }
 
     /**

@@ -71,17 +71,6 @@ export class DataAccessController {
                 ],
                 { signal }
             ) => {
-                console.log(
-                    'fetch granules',
-                    collectionEntryId,
-                    startRow,
-                    endRow,
-                    sortBy,
-                    sortDirection,
-                    search,
-                    cloudCover
-                )
-
                 if (!collectionEntryId) {
                     return undefined
                 }
@@ -186,11 +175,12 @@ export class DataAccessController {
     }
 
     get granuleMaxDate() {
-        if (!this.#sampling?.lastGranules) {
+        const granules = this.#sampling?.lastGranules?.items
+
+        if (!granules?.length) {
             return null
         }
 
-        const granules = this.#sampling.lastGranules.items
         return (
             granules[granules.length - 1].temporalExtent?.rangeDateTime
                 ?.endingDateTime ?? null
