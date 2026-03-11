@@ -672,7 +672,7 @@ export default class TerraDataAccess extends TerraElement {
                                             class="panel-close"
                                             @click=${() =>
                                                 this.dateDropdownRef.value?.hide()}
-                                            aria-label="Close date picker"
+                                            aria-label="Close"
                                         >
                                         ×
                                         </button>
@@ -761,7 +761,7 @@ export default class TerraDataAccess extends TerraElement {
                                             class="panel-close"
                                             @click=${() =>
                                                 this.spatialDropdownRef.value?.hide()}
-                                            aria-label="Close spatial picker"
+                                            aria-label="Close"
                                         >
                                         ×
                                         </button>
