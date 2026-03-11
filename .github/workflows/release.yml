@@ -1,5 +1,4 @@
-# This workflow will create a GitHub release every time a tag is pushed
-name: Create GitHub Release
+name: Create GitHub Release and publish to NPM
 
 on:
   push:
@@ -10,6 +9,15 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Verify release tag matches package.json version
         run: |
           TAG_VERSION="${GITHUB_REF_NAME#v}"
@@ -19,6 +27,16 @@ jobs:
             echo "Tag $TAG_VERSION does not match package.json version $PACKAGE_VERSION. Did you run \`npm version {minor|patch|major}\`?"
             exit 1
           fi
+
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Publish package on npmjs.com
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.DEPLOY_TOKEN_PASSWORD }}
 
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
