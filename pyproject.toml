@@ -20,6 +20,3 @@ dev = ["watchfiles", "jupyterlab", "earthaccess"]
 # https://peps.python.org/pep-0735/
 [dependency-groups]
 dev = ["watchfiles", "jupyterlab", "hatch"]
-
-[tool.uv]
-default-groups = ["all"]

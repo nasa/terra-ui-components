@@ -32,11 +32,8 @@ jobs:
         run: |
           npm ci
 
-      - name: Setup UV (Python environment manager)
-        uses: astral-sh/setup-uv@v1
-
-      - name: Install Python dependencies
-        run: uv sync
+      - name: Install hatch
+        run: pip install hatch
 
       - name: Build and publish package on npmjs.com and pypi.org
         run: npm publish --access public
