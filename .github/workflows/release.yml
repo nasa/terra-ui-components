@@ -28,15 +28,19 @@ jobs:
             exit 1
           fi
 
-      - name: Install dependencies and build
+      - name: Install NPM dependencies
         run: |
           npm ci
-          npm run build
 
-      - name: Publish package on npmjs.com
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Build and publish package on npmjs.com and pypi.org
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.DEPLOY_TOKEN_PASSWORD }}
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
 
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
