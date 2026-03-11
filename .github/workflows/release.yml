@@ -1,16 +1,47 @@
-# This workflow will create a GitHub release every time a tag is pushed
-name: Create GitHub Release
+name: Create GitHub Release and publish to NPM
 
 on:
   push:
     tags:
-      - "v2.*"
-      - "v3.*"
+      - "v*"
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "23"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Verify release tag matches package.json version
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Tag $TAG_VERSION does not match package.json version $PACKAGE_VERSION. Did you run \`npm version {minor|patch|major}\`?"
+            exit 1
+          fi
+
+      - name: Install NPM dependencies
+        run: |
+          npm ci
+
+      - name: Install hatch
+        run: pip install hatch
+
+      - name: Build and publish package on npmjs.com and pypi.org
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.DEPLOY_TOKEN_PASSWORD }}
+          HATCH_INDEX_USER: __token__
+          HATCH_INDEX_AUTH: ${{ secrets.PYPI_TOKEN }}
+
       - uses: "marvinpinto/action-automatic-releases@v1.2.1"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
