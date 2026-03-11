@@ -311,9 +311,7 @@ export default class TerraDataAccess extends TerraElement {
         this.startDate = detail.startDate || ''
         this.endDate = detail.endDate || ''
 
-        if (this.startDate && this.endDate) {
-            this.#gridApi?.purgeInfiniteCache()
-        }
+        this.#gridApi?.purgeInfiniteCache()
     }
 
     #getDateRangeButtonText(): string {
