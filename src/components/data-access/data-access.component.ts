@@ -77,6 +77,8 @@ export default class TerraDataAccess extends TerraElement {
     @property({ reflect: true, attribute: 'version' })
     version?: string
 
+    @property({ type: Boolean }) showPanelClose = true
+
     @state()
     private _gridInitialized = false
 
@@ -124,6 +126,8 @@ export default class TerraDataAccess extends TerraElement {
     spatialPickerRef = createRef<TerraSpatialPicker>()
     cloudCoverSliderRef = createRef<TerraSlider>()
     gridRef = createRef<TerraDataGrid<CmrGranule>>()
+    dateDropdownRef = createRef<TerraDropdown>()
+    spatialDropdownRef = createRef<TerraDropdown>()
 
     #controller = new DataAccessController(this)
     #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
@@ -629,7 +633,7 @@ export default class TerraDataAccess extends TerraElement {
                 </div>
 
                 <div class="toggle-row">
-                    <terra-dropdown>
+                    <terra-dropdown ${ref(this.dateDropdownRef)}>
                         <button
                             slot="trigger"
                             class="filter-btn ${this.startDate && this.endDate
@@ -659,6 +663,20 @@ export default class TerraDataAccess extends TerraElement {
                         </button>
 
                         <div class="datepicker-container">
+                            ${this.showPanelClose
+                                ? html`
+                                     <div class="dropdown-header">
+                                        <button
+                                            class="panel-close"
+                                            @click=${() =>
+                                                this.dateDropdownRef.value?.hide()}
+                                            aria-label="Close"
+                                        >
+                                        ×
+                                        </button>
+                                     </div>
+                                    `
+                                : nothing}
                             <terra-date-picker
                                 ${ref(this.datePickerRef)}
                                 range
@@ -704,6 +722,7 @@ export default class TerraDataAccess extends TerraElement {
                         distance="4"
                         hoist
                         @terra-show=${this.#handleSpatialDropdownShow}
+                        ${ref(this.spatialDropdownRef)}
                     >
                         <div slot="trigger" class="filter">
                             <button
@@ -733,6 +752,20 @@ export default class TerraDataAccess extends TerraElement {
                         </div>
 
                         <div class="spatialpicker-container">
+                            ${this.showPanelClose
+                                ? html`
+                                    <div class="dropdown-header">
+                                        <button
+                                            class="panel-close"
+                                            @click=${() =>
+                                                this.spatialDropdownRef.value?.hide()}
+                                            aria-label="Close"
+                                        >
+                                        ×
+                                        </button>
+                                    </div>
+                                `
+                                : nothing}
                             <terra-spatial-picker
                                 ${ref(this.spatialPickerRef)}
                                 hide-label

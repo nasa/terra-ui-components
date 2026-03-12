@@ -627,7 +627,7 @@ export default class TerraDataSubsetter extends TerraElement {
             // Get Data footer
             return html`
                 <div slot="footer" class="footer">
-                    <button class="btn btn-secondary">Reset All</button>
+                    <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
                     <div>
                         <button class="btn btn-primary" @click=${this.#getData}>
                             Get Data
@@ -780,7 +780,7 @@ export default class TerraDataSubsetter extends TerraElement {
             ${this.dataAccessMode === 'subset' && !this.dialog
                 ? html`
                       <div class="footer">
-                          <button class="btn btn-secondary">Reset All</button>
+                          <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
                           <div>
                           <button
                               class="btn btn-primary"
@@ -807,6 +807,31 @@ export default class TerraDataSubsetter extends TerraElement {
                   `
                 : nothing}
         `
+    }
+
+    #resetAllParameters = () => {
+        // Reset variables
+         this.selectedVariables = []
+
+        // Reset spatial to collection bounds (not null)
+        if (this.#hasSpatialSubset()) {
+            this.#resetSpatialSelection()
+        }
+
+        // Reset date range
+        this.selectedDateRange = {
+            startDate: null,
+            endDate: null,
+        }
+
+        // Clear validation state
+        this.touchedFields = new Set()
+        this.validationError = undefined
+
+        // Collapse variable tree
+        this.expandedVariableGroups = new Set()
+
+        this.requestUpdate()
     }
 
     #renderSearchForCollection() {
@@ -1355,8 +1380,37 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
-    #resetSpatialSelection = () => {
-        this.spatialSelection = null
+   #resetSpatialSelection = () => {
+        const spatial_constraints =
+             this.collectionWithServices?.collection?.SpatialExtent
+                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+
+        if (!spatial_constraints) {
+            this.spatialSelection = null
+             return
+        }
+
+        type BoundingRect = {
+            WestBoundingCoordinate: number
+            SouthBoundingCoordinate: number
+            EastBoundingCoordinate: number
+            NorthBoundingCoordinate: number
+        }
+
+        const normalized: BoundingRect[] = Array.isArray(spatial_constraints)
+            ? spatial_constraints
+            : [spatial_constraints]
+
+        const rect = normalized[0]
+
+        this.spatialSelection = {
+            w: Number(rect.WestBoundingCoordinate),
+            s: Number(rect.SouthBoundingCoordinate),
+            e: Number(rect.EastBoundingCoordinate),
+            n: Number(rect.NorthBoundingCoordinate),
+        }
+
+        this.#markFieldTouched('spatial')
     }
 
     #renderVariableSelection() {
@@ -1432,6 +1486,18 @@ export default class TerraDataSubsetter extends TerraElement {
                                   ></terra-icon>
                                   Only certain variables are supported for the
                                   selected output format. (Giovanni service)
+                              </terra-alert>
+                              <terra-alert
+                                  open
+                                  appearance="white"
+                                  style="margin: 10px 0"
+                              >
+                                  <terra-icon
+                                      slot="icon"
+                                      name="outline-information-circle"
+                                      library="heroicons"
+                                  ></terra-icon>
+                                  User's are allowed to select only one variable for the selected output format. (Giovanni service)
                               </terra-alert>
                           `
                         : nothing}

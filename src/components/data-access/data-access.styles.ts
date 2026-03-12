@@ -337,4 +337,22 @@ export default css`
         left: 50%;
         margin-left: -100px;
     }
+
+    .dropdown-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 6px;
+    }
+
+    .panel-close {
+        border: none;
+        background: transparent;
+        font-size: 18px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .panel-close:hover {
+        opacity: 0.7;
+    }
 `
