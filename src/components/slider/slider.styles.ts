@@ -33,7 +33,7 @@ export default css`
         padding: 0;
         background: transparent;
         border: none;
-        color: var(--terra-link-color);
+        color: var(--terra-text-link-default);
         font-size: var(--terra-font-size-small);
         font-weight: var(--terra-font-weight-semibold);
         font-family: var(--terra-font-family--inter);
@@ -44,7 +44,7 @@ export default css`
     }
 
     .slider__clear:hover {
-        color: var(--terra-link-color-hover);
+        color: var(--terra-text-link-hover);
     }
 
     .slider__clear:focus {
@@ -202,8 +202,13 @@ export default css`
         cursor: default;
         box-shadow:;
     }
+
+    .noUi-handle:hover {
+        cursor: pointer;
+    }
+
     .noUi-active {
-        background: var(--terra-control-icon-active);
+        background: var(--terra-slider-handle-background-color-active);
     }
     /* Handle stripes */
     .noUi-handle:before,

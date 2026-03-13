@@ -46,7 +46,7 @@ export default css`
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
-        border-color: var(--terra-panel-border);
+        border-color: var(--terra-container-panel-border);
     }
 
     .search-input-button {
@@ -103,7 +103,7 @@ export default css`
         block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
-        border-radius: var(--terra-panel-border-radius);
+        border-radius: var(--terra-container-panel-border-radius);
         contain: strict;
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh - var(--terra-block-size, 2.1875rem));
@@ -126,7 +126,7 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--terra-panel-border);
+        border-color: var(--terra-container-panel-border);
         border-radius: var(--terra-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));

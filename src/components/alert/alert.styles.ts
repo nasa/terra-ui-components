@@ -53,6 +53,33 @@ export default css`
         color: var(--terra-alert-filled-color-danger);
     }
 
+    /* Subtle alter variant - lighter background with colored text */
+    .alert--subtle.alert--information {
+        background-color: var(--terra-alert-subtle-background-color-information);
+        color: var(--terra-alert-subtle-color-information);
+    }
+
+    .alert--subtle.alert--success {
+        background-color: var(--terra-alert-subtle-background-color-success);
+        color: var(--terra-alert-subtle-color-success);
+    }
+
+    .alert--subtle.alert--neutral {
+        background-color: var(--terra-alert-subtle-background-color-neutral);
+        color: var(--terra-alert-subtle-color-neutral);
+    }
+
+    .alert--subtle.alert--warning {
+        background-color: var(--terra-alert-subtle-background-color-warning);
+        color: var(--terra-alert-subtle-color-warning);
+    }
+
+    .alert--subtle.alert--danger {
+        background-color: var(--terra-alert-subtle-background-color-danger);
+        color: var(--terra-alert-subtle-color-danger);
+    }
+
+    /* Icon and close button colors for filled variant */
     .alert--filled.alert--information .alert__icon,
     .alert--filled.alert--information .alert__close-button {
         color: var(--terra-alert-filled-icon-color-information);
@@ -81,8 +108,9 @@ export default css`
     /* White appearance - white background with colored top border */
     .alert--white {
         background-color: var(--terra-alert-white-background-color);
-        border: solid var(--terra-panel-border-width) var(--terra-panel-border);
-        border-top-width: calc(var(--terra-panel-border-width) * 3);
+        border: solid var(--terra-container-panel-border-width)
+            var(--terra-container-menu-border);
+        border-top-width: calc(var(--terra-container-panel-border-width) * 3);
         color: var(--terra-alert-white-color);
     }
 
@@ -174,12 +202,12 @@ export default css`
         bottom: 0;
         left: 0;
         width: 100%;
-        height: calc(var(--terra-panel-border-width) * 3);
+        height: calc(var(--terra-container-panel-border-width) * 3);
         display: flex;
     }
 
     .alert--white .alert__countdown {
-        background-color: var(--terra-panel-border);
+        background-color: var(--terra-container-panel-bg);
     }
 
     .alert--filled .alert__countdown {

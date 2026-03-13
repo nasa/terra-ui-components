@@ -192,15 +192,18 @@ export default css`
 
     /* Error State - using data attributes from FormControlController */
     :host([data-user-invalid]) .input {
-        border-color: var(--terra-color-nasa-red);
+        background: var(--terra-input-background-error);
+        border-color: var(--terra-input-border-error);
     }
 
     :host([data-user-invalid]) .input:hover:not(.input--disabled) {
-        border-color: var(--terra-color-nasa-red-shade);
+        background: var(--terra-input-background-error);
+        border-color: var(--terra-input-border-error);
     }
 
     :host([data-user-invalid]) .input.input--focused:not(.input--disabled) {
-        border-color: var(--terra-color-nasa-red);
+        background: var(--terra-input-background-error);
+        border-color: var(--terra-input-border-error);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
             var(--terra-color-nasa-red-tint);
     }

@@ -120,7 +120,7 @@ const App = () => (
 
 ### Appearance
 
-Set the `appearance` attribute to control the alert's visual style. The default is `"filled"` which uses a colored background with white text (HDS style). Use `"white"` for a white background with a colored top border.
+Set the `appearance` attribute to control the alert's visual style. The default is `"filled"` which uses a colored background with contrast appropriate text (HDS style). Use `subtle` for muted colored backgrounds and matching colored text. Use `"white"` for a white background with a colored top border.
 
 #### Filled Appearance (Default)
 
@@ -191,6 +191,84 @@ const App = () => (
     </TerraAlert>
     <br />
     <TerraAlert variant="danger" appearance="filled" open>
+      <TerraIcon slot="icon" name="outline-shield-exclamation" library="heroicons" />
+      <strong>Danger</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+  </>
+);
+```
+
+#### Subtle Backgrounds with Colored Text
+
+```html:preview
+<terra-alert variant="information" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
+  <strong>Information</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="success" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-check-circle" library="heroicons"></terra-icon>
+  <strong>Success</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="neutral" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-cog-8-tooth" library="heroicons"></terra-icon>
+  <strong>Neutral</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="warning" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-exclamation-triangle" library="heroicons"></terra-icon>
+  <strong>Warning</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="danger" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-shield-exclamation" library="heroicons"></terra-icon>
+  <strong>Danger</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+```
+
+```jsx:react
+import TerraAlert from '@nasa-terra/components/dist/react/alert';
+import TerraIcon from '@nasa-terra/components/dist/react/icon';
+
+const App = () => (
+  <>
+    <TerraAlert variant="information" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
+      <strong>Information</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="success" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-check-circle" library="heroicons" />
+      <strong>Success</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="neutral" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-cog-8-tooth" library="heroicons" />
+      <strong>Neutral</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="warning" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-exclamation-triangle" library="heroicons" />
+      <strong>Warning</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="danger" appearance="subtle" open>
       <TerraIcon slot="icon" name="outline-shield-exclamation" library="heroicons" />
       <strong>Danger</strong>
       <br />

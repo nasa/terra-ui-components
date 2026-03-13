@@ -206,7 +206,7 @@ Tooltips will be clipped if they're inside a container that has `overflow: auto|
 <style>
   .tooltip-hoist {
     position: relative;
-    border: solid 2px var(--terra-panel-border);
+    border: solid 2px var(--terra-container-menu-border);
     overflow: hidden;
     padding: var(--terra-spacing-medium);
   }

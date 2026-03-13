@@ -9,7 +9,7 @@ layout: component
 <style>
   .hint {
     bottom: 0;
-    color: var(--terra-color-neutral--600, var(--color-neutral--600));
+    color: var(--terra-text-secondary, var(--color-neutral-700));
     flex: 1 1 100%;
     font-size: 0.875rem;
     margin-block: 0;
