@@ -39,7 +39,7 @@ export function getTimeSeriesNotebook(host: TerraPlotToolbar) {
         {
             id: '870c1384-e706-48ee-ba07-fd552a949869',
             cell_type: 'code',
-            source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${host.variableEntryId}'\ntimeseries.startDate = '${host.startDate}'\ntimeseries.endDate = '${host.endDate}'\ntimeseries.location = '${host.location}'\n\ntimeseries`,
+            source: `from terra_ui_components import TerraTimeSeries\ntimeseries = TerraTimeSeries()\n\ntimeseries.variableEntryId = '${host.variableEntryId}'\ntimeseries.startDate = '${host.startDate}'\ntimeseries.endDate = '${host.endDate}'\ntimeseries.location = '${host.location}'\ntimeseries.showJupyter = False\n\ntimeseries`,
             metadata: {
                 trusted: true,
             },

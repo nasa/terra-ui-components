@@ -68,6 +68,11 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Number }) opacity = 1
     @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
         false
+    /**
+     * Option hides the Jupyter notebook button in the plot toolbar. Option is set by parent component (time series, time average-map) if Jupyter notebook environemnt is detected.
+     */
+    @property({ type: Boolean, attribute: 'show-jupyter' }) showJupyter: boolean =
+        true
 
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
@@ -331,30 +336,32 @@ export default class TerraPlotToolbar extends TerraElement {
                                       font-size="1em"
                                   ></terra-icon>
                               </terra-button>
+                              ${this.showJupyter
+                                  ? html`
+                                        <terra-button
+                                            outline
+                                            aria-expanded=${this.activeMenuItem === 'jupyter'}
+                                            aria-controls="menu"
+                                            aria-haspopup="true"
+                                            class="toggle square-button"
+                                            variant="warning"
+                                            @mouseenter=${this.#handleActiveMenuItem}
+                                            @click=${this.#handleActiveMenuItem}
+                                            data-menu-name="jupyter"
+                                        >
+                                            <span class="sr-only"
+                                                >Open in Jupyter Notebook for
+                                                ${this.catalogVariable.dataFieldLongName}</span
+                                            >
 
-                              <terra-button
-                                  outline
-                                  aria-expanded=${this.activeMenuItem === 'jupyter'}
-                                  aria-controls="menu"
-                                  aria-haspopup="true"
-                                  class="toggle square-button"
-                                  variant="warning"
-                                  @mouseenter=${this.#handleActiveMenuItem}
-                                  @click=${this.#handleActiveMenuItem}
-                                  data-menu-name="jupyter"
-                              >
-                                  <span class="sr-only"
-                                      >Open in Jupyter Notebook for
-                                      ${this.catalogVariable.dataFieldLongName}</span
-                                  >
-
-                                  <terra-icon
-                                      name="outline-code-bracket"
-                                      library="heroicons"
-                                      font-size="1.5em"
-                                  ></terra-icon>
-                              </terra-button>
-
+                                            <terra-icon
+                                                name="outline-code-bracket"
+                                                library="heroicons"
+                                                font-size="1.5em"
+                                            ></terra-icon>
+                                        </terra-button>
+                                    `
+                                  : nothing}
                               ${this.dataType == 'geotiff'
                                   ? html`
                                         <terra-button
