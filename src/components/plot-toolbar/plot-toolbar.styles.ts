@@ -74,7 +74,7 @@ export default css`
         z-index: 1000;
         background: var(--terra-container-menu-bg);
         border: 1px solid var(--terra-container-menu-border);
-        border-radius: var(--terra-panel-border-radius);
+        border-radius: var(--terra-container-panel-border-radius);
         box-shadow: var(--terra-shadow-large);
         width: max-content;
         min-width: 20ch;

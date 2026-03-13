@@ -23,6 +23,7 @@ export default css`
         color: var(--terra-popup-color);
         background-color: var(--terra-popup-background-color);
         border-radius: var(--terra-border-radius-medium);
+        border: 1px solid var(--terra-popup-border-color);
         box-shadow: var(--terra-shadow-large);
     }
 

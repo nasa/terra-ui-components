@@ -81,7 +81,7 @@ export default css`
         padding: 0;
         margin: 0;
         font: inherit;
-        color: var(--terra-link-color);
+        color: var(--terra-text-link-default);
         text-decoration: var(--terra-link-text-decoration);
         text-decoration-style: var(--terra-link-text-decoration-style);
         text-underline-offset: var(--terra-link-underline-offset);
@@ -89,7 +89,7 @@ export default css`
     }
 
     .file-upload__browse-link:hover:not(:disabled) {
-        color: var(--terra-link-color-hover);
+        color: var(--terra-text-link-hover);
     }
 
     .file-upload__browse-link:focus {
@@ -139,7 +139,7 @@ export default css`
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-link-color);
+        color: var(--terra-text-link-default);
         text-decoration: var(--terra-link-text-decoration);
         text-decoration-style: var(--terra-link-text-decoration-style);
         text-underline-offset: var(--terra-link-underline-offset);
@@ -147,7 +147,7 @@ export default css`
     }
 
     .file-upload__change-link:hover:not(:disabled) {
-        color: var(--terra-link-color-hover);
+        color: var(--terra-text-link-hover);
     }
 
     .file-upload__change-link:disabled {
@@ -184,7 +184,7 @@ export default css`
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: var(--terra-color-neutral-10);
+        background-color: var(--terra-color-neutral-100);
         color: var(--terra-input-text-placeholder);
     }
 

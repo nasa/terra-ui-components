@@ -76,19 +76,19 @@ export default css`
     .button--standard.button--default {
         background-color: var(--terra-color-action-secondary-default);
         border-color: var(--terra-border-action-secondary-default);
-        color: var(--terra-text-on-action-secondary);
+        color: var(--terra-button-color-default);
     }
 
     .button--standard.button--default:hover:not(.button--disabled) {
         background-color: var(--terra-color-action-secondary-hover);
         border-color: var(--terra-border-action-secondary-hover);
-        color: var(--terra-text-on-action-secondary);
+        color: var(--terra-button-color-default);
     }
 
     .button--standard.button--default:active:not(.button--disabled) {
         background-color: var(--terra-color-action-secondary-active);
         border-color: var(--terra-border-action-secondary-active);
-        color: var(--terra-text-on-action-secondary);
+        color: var(--terra-button-color-default);
     }
 
     .button--standard.button--default.button--disabled {
@@ -102,19 +102,19 @@ export default css`
     .button--standard.button--primary {
         background-color: var(--terra-color-action-primary-default);
         border-color: var(--terra-border-action-primary-default);
-        color: var(--terra-text-on-action-primary);
+        color: var(--terra-button-color-primary);
     }
 
     .button--standard.button--primary:hover:not(.button--disabled) {
         background-color: var(--terra-color-action-primary-hover);
         border-color: var(--terra-border-action-primary-hover);
-        color: var(--terra-text-on-action-primary);
+        color: var(--terra-button-color-primary);
     }
 
     .button--standard.button--primary:active:not(.button--disabled) {
         background-color: var(--terra-color-action-primary-active);
         border-color: var(--terra-border-action-primary-active);
-        color: var(--terra-text-on-action-primary);
+        color: var(--terra-button-color-primary);
     }
 
     .button--standard.button--primary.button--disabled {
@@ -128,19 +128,19 @@ export default css`
     .button--standard.button--cta {
         background-color: var(--terra-color-action-cta-default);
         border-color: var(--terra-border-action-cta-default);
-        color: var(--terra-text-on-action-cta);
+        color: var(--terra-button-color-cta);
     }
 
     .button--standard.button--cta:hover:not(.button--disabled) {
         background-color: var(--terra-color-action-cta-hover);
         border-color: var(--terra-border-action-cta-hover);
-        color: var(--terra-text-on-action-cta);
+        color: var(--terra-button-color-cta);
     }
 
     .button--standard.button--cta:active:not(.button--disabled) {
         background-color: var(--terra-color-action-cta-active);
         border-color: var(--terra-border-action-cta-active);
-        color: var(--terra-text-on-action-cta);
+        color: var(--terra-button-color-cta);
     }
 
     .button--standard.button--cta.button--disabled {
@@ -160,19 +160,19 @@ export default css`
     .button--standard.button--success:hover:not(.button--disabled) {
         background-color: var(--terra-color-action-success-hover);
         border-color: var(--terra-border-action-success-hover);
-        color: var(--terra-text-on-action-success);
+        color: var(--terra-button-color-success);
     }
 
     .button--standard.button--success:active:not(.button--disabled) {
         background-color: var(--terra-color-action-success-active);
         border-color: var(--terra-border-action-success-active);
-        color: var(--terra-text-on-action-success);
+        color: var(--terra-button-color-success);
     }
 
     .button--standard.button--success.button--disabled {
         background-color: var(--terra-color-action-success-disabled);
         border-color: var(--terra-border-action-success-disabled);
-        color: var(--terra-text-on-action-disabled);
+        color: var(--terra-button-color-success);
         cursor: not-allowed;
     }
 
@@ -180,19 +180,19 @@ export default css`
     .button--standard.button--warning {
         background-color: var(--terra-color-action-warning-default);
         border-color: var(--terra-border-action-warning-default);
-        color: var(--terra-text-on-action-warning);
+        color: var(--terra-button-color-warning);
     }
 
     .button--standard.button--warning:hover:not(.button--disabled) {
         background-color: var(--terra-color-action-warning-hover);
         border-color: var(--terra-border-action-warning-hover);
-        color: var(--terra-text-on-action-warning);
+        color: var(--terra-button-color-warning);
     }
 
     .button--standard.button--warning:active:not(.button--disabled) {
         background-color: var(--terra-color-action-warning-active);
         border-color: var(--terra-border-action-warning-active);
-        color: var(--terra-text-on-action-warning);
+        color: var(--terra-button-color-warning);
     }
 
     .button--standard.button--warning.button--disabled {
@@ -206,19 +206,19 @@ export default css`
     .button--standard.button--danger {
         background-color: var(--terra-color-action-error-default);
         border-color: var(--terra-border-action-error-default);
-        color: var(--terra-text-on-action-error);
+        color: var(--terra-button-color-danger);
     }
 
     .button--standard.button--danger:hover:not(.button--disabled) {
         background-color: var(--terra-color-action-error-hover);
         border-color: var(--terra-border-action-error-hover);
-        color: var(--terra-text-on-action-error);
+        color: var(--terra-button-color-danger);
     }
 
     .button--standard.button--danger:active:not(.button--disabled) {
         background-color: var(--terra-color-action-error-active);
         border-color: var(--terra-border-action-error-active);
-        color: var(--terra-text-on-action-error);
+        color: var(--terra-button-color-danger);
     }
 
     .button--standard.button--error.button--disabled {
@@ -246,13 +246,13 @@ export default css`
     .button--outline.button--default.button--checked:not(.button--disabled) {
         background-color: var(--terra-color-action-primary-default);
         border-color: var(--terra-border-action-primary-default);
-        color: var(--terra-text-on-action-primary);
+        color: var(--terra-button-color-primary);
     }
 
     .button--outline.button--primary:active:not(.button--disabled) {
         background-color: var(--terra-color-action-primary-active);
         border-color: var(--terra-border-action-primary-active);
-        color: var(--terra-text-on-action-primary);
+        color: var(--terra-button-color-primary);
     }
 
     /* Default */
@@ -265,13 +265,13 @@ export default css`
     .button--outline.button--default.button--checked:not(.button--disabled) {
         background-color: var(--terra-color-action-secondary-default);
         border-color: var(--terra-border-action-secondary-default);
-        color: var(--terra-text-on-action-secondary);
+        color: var(--terra-button-color-default);
     }
 
     .button--outline.button--default:active:not(.button--disabled) {
         background-color: var(--terra-color-action-secondary-active);
         border-color: var(--terra-border-action-secondary-active);
-        color: var(--terra-text-on-action-secondary);
+        color: var(--terra-button-color-default);
     }
 
     /* CTA */
@@ -284,13 +284,13 @@ export default css`
     .button--outline.button--cta.button--checked:not(.button--disabled) {
         background-color: var(--terra-color-action-cta-hover);
         border-color: var(--terra-border-action-cta-hover);
-        color: var(--terra-text-on-action-cta);
+        color: var(--terra-button-color-cta);
     }
 
     .button--outline.button--cta:active:not(.button--disabled) {
         background-color: var(--terra-color-action-cta-active);
         border-color: var(--terra-border-action-cta-active);
-        color: var(--terra-text-on-action-cta);
+        color: var(--terra-button-color-cta);
     }
 
     /* Success */
@@ -303,13 +303,13 @@ export default css`
     .button--outline.button--success.button--checked:not(.button--disabled) {
         background-color: var(--terra-color-action-success-hover);
         border-color: var(--terra-border-action-success-hover);
-        color: var(--terra-text-on-action-success);
+        color: var(--terra-button-color-success);
     }
 
     .button--outline.button--success:active:not(.button--disabled) {
         background-color: var(--terra-color-action-success-active);
         border-color: var(--terra-border-action-success-active);
-        color: var(--terra-text-on-action-success);
+        color: var(--terra-button-color-success);
     }
 
     /* Warning */
@@ -322,13 +322,13 @@ export default css`
     .button--outline.button--warning.button--checked:not(.button--disabled) {
         background-color: var(--terra-color-action-warning-hover);
         border-color: var(--terra-border-action-warning-hover);
-        color: var(--terra-text-on-action-warning);
+        color: var(--terra-button-color-warning);
     }
 
     .button--outline.button--warning:active:not(.button--disabled) {
         background-color: var(--terra-color-action-warning-active);
         border-color: var(--terra-border-action-warning-active);
-        color: var(--terra-text-on-action-warning);
+        color: var(--terra-button-color-warning);
     }
 
     /* Danger */
@@ -341,13 +341,13 @@ export default css`
     .button--outline.button--danger.button--checked:not(.button--disabled) {
         background-color: var(--terra-color-action-error-hover);
         border-color: var(--terra-border-action-error-hover);
-        color: var(--terra-text-on-action-error);
+        color: var(--terra-button-color-danger);
     }
 
     .button--outline.button--danger:active:not(.button--disabled) {
         border-color: var(--terra-border-action-error-active);
         background-color: var(--terra-color-action-error-active);
-        color: var(--terra-text-on-action-error);
+        color: var(--terra-button-color-danger);
     }
 
     @media (forced-colors: active) {
@@ -381,7 +381,7 @@ export default css`
     .button--text:active:not(.button--disabled) {
         background-color: transparent;
         border-color: transparent;
-        color: var(--terra-button-text-text-color-disabled);
+        color: var(--terra-button-text-text-color-active);
     }
 
     /*

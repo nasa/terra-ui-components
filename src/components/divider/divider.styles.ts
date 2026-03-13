@@ -2,8 +2,11 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --color: var(--terra-divider-color, var(--terra-panel-border));
-        --width: var(--terra-divider-width, var(--terra-panel-border-width));
+        --color: var(--terra-divider-color, var(--terra-container-panel-border));
+        --width: var(
+            --terra-divider-width,
+            var(--terra-container-panel-border-width)
+        );
         --spacing: var(--terra-divider-spacing, var(--terra-spacing-medium));
     }
 

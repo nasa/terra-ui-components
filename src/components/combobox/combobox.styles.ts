@@ -69,7 +69,7 @@ export default css`
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
-        border-color: var(--terra-panel-border);
+        border-color: var(--terra-container-panel-border);
     }
 
     .combobox-button {
@@ -126,7 +126,7 @@ export default css`
 
     .search-results {
         background-color: var(--terra-input-background-default);
-        border-radius: var(--terra-panel-border-radius);
+        border-radius: var(--terra-container-panel-border-radius);
         block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
@@ -153,7 +153,7 @@ export default css`
 
     .search-results[open] {
         border-color: var(--terra-input-border-default);
-        border-radius: var(--terra-panel-border-radius);
+        border-radius: var(--terra-container-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;
@@ -247,7 +247,7 @@ export default css`
         padding: 0.25rem;
         margin: 0.5rem 0;
         background: var(
-            --terra-color-neutral--100
+            --terra-color-neutral-100
         ); /* Light background for the group */
     }
 
@@ -256,7 +256,7 @@ export default css`
         display: flex;
         height: 1.25rem;
         width: 80%; /* Slightly longer than before */
-        background-color: var(--terra-color-neutral--100);
+        background-color: var(--terra-color-neutral-100);
         margin-bottom: 10px;
     }
 
@@ -264,7 +264,7 @@ export default css`
     .skeleton .listbox-option {
         height: 1rem;
         width: 60%; /* Shorter width to differentiate from title */
-        background-color: var(--terra-color-neutral--200);
+        background-color: var(--terra-color-neutral-200);
         margin-top: 5px;
         margin-left: 1.5rem;
     }
@@ -273,10 +273,10 @@ export default css`
     @keyframes pulse {
         0%,
         100% {
-            background-color: var(--terra-color-neutral--200);
+            background-color: var(--terra-color-neutral-200);
         }
         50% {
-            background-color: var(--terra-color-neutral--100);
+            background-color: var(--terra-color-neutral-100);
         }
     }
 

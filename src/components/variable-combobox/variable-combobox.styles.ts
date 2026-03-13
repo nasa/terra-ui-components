@@ -216,8 +216,8 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--terra-panel-border);
-        border-radius: var(--terra-panel-border-radius);
+        border-color: var(--terra-container-panel-border);
+        border-radius: var(--terra-container-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;

@@ -63,18 +63,16 @@ export default class TerraAlert extends TerraElement {
     @property({ type: Boolean, reflect: true }) closable = false
 
     /** The alert's theme variant. */
-    @property({ reflect: true }) variant:
-        | 'information'
-        | 'success'
-        | 'neutral'
-        | 'warning'
-        | 'danger' = 'information'
+    @property({ reflect: true })
+    variant: 'information' | 'success' | 'neutral' | 'warning' | 'danger' =
+        'information'
 
     /**
-     * The alert's appearance style. "filled" uses a colored background with white text (HDS default).
-     * "white" uses a white background with a colored top border and dark text.
+     * The alert's appearance style. "filled" uses a colored background with contrast approriate text (HDS default).
+     * "white" uses a white background with a colored top border and dark text. "subtle" uses muted colored backgrounds
+     * and matching colored text.
      */
-    @property({ reflect: true }) appearance: 'filled' | 'white' = 'filled'
+    @property({ reflect: true }) appearance: 'filled' | 'white' | 'subtle' = 'filled'
 
     /**
      * The length of time, in milliseconds, the alert will show before closing itself. If the user interacts with
@@ -249,6 +247,7 @@ export default class TerraAlert extends TerraElement {
                     'alert--danger': this.variant === 'danger',
                     'alert--filled': this.appearance === 'filled',
                     'alert--white': this.appearance === 'white',
+                    'alert--subtle': this.appearance === 'subtle',
                 })}
                 role="alert"
                 aria-hidden=${this.open ? 'false' : 'true'}

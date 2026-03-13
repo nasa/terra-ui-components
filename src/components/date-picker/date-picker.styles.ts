@@ -124,7 +124,8 @@ export default css`
         left: auto;
         z-index: auto;
         box-shadow: none;
-        border: var(--terra-panel-border-width) solid var(--terra-panel-border);
+        border: var(--terra-container-panel-border-width) solid
+            var(--terra-container-panel-border);
         margin-top: 0;
         overflow: visible;
         width: fit-content;
@@ -147,7 +148,8 @@ export default css`
         width: 10rem;
         padding: var(--terra-spacing-x-small);
         background: var(--terra-date-picker-sidebar-background-color);
-        border-right: var(--terra-panel-border-width) solid var(--terra-panel-border);
+        border-right: var(--terra-container-panel-border-width) solid
+            var(--terra-container-panel-border);
         flex-shrink: 0;
         justify-content: space-between;
     }
@@ -504,7 +506,8 @@ export default css`
         justify-content: center;
         gap: var(--terra-spacing-medium);
         padding: var(--terra-spacing-medium);
-        border-top: var(--terra-panel-border-width) solid var(--terra-panel-border);
+        border-top: var(--terra-container-panel-border-width) solid
+            var(--terra-container-panel-border);
         background: var(--terra-date-picker-time-panel-background-color);
         width: 100%;
     }
@@ -631,8 +634,8 @@ export default css`
         .date-picker__sidebar {
             width: 100%;
             border-right: none;
-            border-bottom: var(--terra-panel-border-width) solid
-                var(--terra-panel-border);
+            border-bottom: var(--terra-container-panel-border-width) solid
+                var(--terra-container-panel-border);
         }
 
         .date-picker__calendars {
