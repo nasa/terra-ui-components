@@ -79,6 +79,7 @@ export default class TerraDatePicker extends TerraElement {
         'Date picker'
     @property({ type: Boolean }) hideClearAll = false
     @property() clearAllLabel: string = 'Clear Dates'
+    @property({ type: Boolean, attribute: 'use-end-of-day' }) useEndOfDay = true
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()
@@ -95,6 +96,18 @@ export default class TerraDatePicker extends TerraElement {
     @state() endHour: number = 23
     @state() endMinute: number = 59
     @state() endSecond: number = 59
+
+    private getDefaultEndHour() {
+        return this.useEndOfDay ? 23 : 0
+    }
+
+    private getDefaultEndMinute() {
+        return this.useEndOfDay ? 59 : 0
+    }
+
+    private getDefaultEndSecond() {
+        return this.useEndOfDay ? 59 : 0
+    }
 
     @state() selectedDates = {
         startDate: new Date().toString(),
@@ -278,9 +291,9 @@ export default class TerraDatePicker extends TerraElement {
         this.startHour = 0
         this.startMinute = 0
         this.startSecond = 0
-        this.endHour = 23
-        this.endMinute = 59
-        this.endSecond = 59
+        this.endHour = this.getDefaultEndHour()
+        this.endMinute = this.getDefaultEndMinute()
+        this.endSecond = this.getDefaultEndSecond()
 
         this.clearInputValidation()
 
@@ -299,6 +312,14 @@ export default class TerraDatePicker extends TerraElement {
 
     willUpdate(changedProperties: Map<PropertyKey, unknown>) {
         super.willUpdate(changedProperties)
+
+        // Handle useEndOfDay property changes
+        if (changedProperties.has('useEndOfDay')) {
+            // Reset end times to match the new useEndOfDay setting
+            this.endHour = this.getDefaultEndHour()
+            this.endMinute = this.getDefaultEndMinute()
+            this.endSecond = this.getDefaultEndSecond()
+        }
 
         // Handle inline property changes
         if (changedProperties.has('inline')) {

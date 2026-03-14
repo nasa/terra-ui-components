@@ -1,6 +1,6 @@
 export const defaultSubsetFileMimeType = 'application/x-netcdf4'
 
-export function getFriendlyNameForMimeType(mimeType: string) {
+export function getFriendlyNameForMimeType(mimeType: string, isGiovanni = false) {
     switch (mimeType) {
         case 'application/x-hdf':
         case 'application/octet-stream':
@@ -11,10 +11,18 @@ export function getFriendlyNameForMimeType(mimeType: string) {
             return 'NetCDF'
 
         case 'text/csv':
+            if (isGiovanni) {
+                return 'Area-averaged time series (CSV)'
+            }
+
             return 'CSV'
 
         case 'image/tiff':
         case 'image/tif':
+            if (isGiovanni) {
+                return 'Time-averaged map (GeoTIFF)'
+            }
+
             return 'TIFF'
 
         default:
