@@ -2,9 +2,9 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --border-color: var(--terra-panel-border);
-        --border-radius: var(--terra-panel-border-radius);
-        --border-width: var(--terra-panel-border-width);
+        --border-color: var(--terra-container-panel-border);
+        --border-radius: var(--terra-container-panel-border-radius);
+        --border-width: var(--terra-container-panel-border-width);
         --padding: var(--terra-spacing-large);
 
         display: inline-block;

@@ -211,8 +211,6 @@ const App = () => (
   <TerraMenu
     style={{
       maxWidth: '240px',
-      border: 'solid 1px var(--terra-panel-border)',
-      borderRadius: 'var(--terra-border-radius-medium)'
     }}
   >
     <TerraMenuLabel>Messages</TerraMenuLabel>

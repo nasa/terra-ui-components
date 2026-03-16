@@ -228,7 +228,7 @@ a {
 }
 
 a:hover {
-    color: var(--terra-text-link-default-hover);
+    color: var(--terra-text-link-hover);
 }
 
 abbr[title] {
