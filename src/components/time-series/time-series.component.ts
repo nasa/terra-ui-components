@@ -392,7 +392,6 @@ export default class TerraTimeSeries extends TerraElement {
                           </terra-alert>
                       `
                     : ''}
-                <h1>SHOW JUPYTER BUTTON: ${this.showJupyter}</h1>
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
                     .data=${this.#timeSeriesController.lastTaskValue ??
