@@ -1218,6 +1218,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                               @show-opacity-value=${this.#handleOpacityChange}
                               @show-color-map=${this.#handleColorMapChange}
                               @show-check-box-toggle=${this.#handleCheckBoxToggle}
+                              .showJupyter=${this.showJupyter}
                               .pixelValue=${this.pixelValue}
                               .pixelCoordinates=${this.pixelCoordinates}
                               show-date-range
