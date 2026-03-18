@@ -6,7 +6,7 @@ export default css`
 
         block-size: var(--terra-block-size, 2.1875rem);
         box-sizing: border-box;
-        color: #1b1b1b; /* HDS uses this color for body text but does not have a defined color in the HDS palette */
+        color: var(--terr-text-primary);
         contain: layout size style;
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh + var(--terra-block-size, 2.1875rem));
@@ -37,16 +37,16 @@ export default css`
     }
 
     .combobox::placeholder {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-input-text-placeholder);
     }
 
     .combobox:focus {
-        border-color: var(--terra-color-carbon-40);
+        border-color: var(--terra-input-border-focus);
         outline: 0;
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
-        border-color: var(--terra-color-carbon-30);
+        border-color: var(--terra-panel-border);
     }
 
     .search-input-button {
@@ -99,10 +99,11 @@ export default css`
     }
 
     .search-results {
-        background-color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-input-background-default);
         block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
+        border-radius: var(--terra-panel-border-radius);
         contain: strict;
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh - var(--terra-block-size, 2.1875rem));
@@ -125,7 +126,8 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--terra-color-carbon-40);
+        border-color: var(--terra-panel-border);
+        border-radius: var(--terra-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;

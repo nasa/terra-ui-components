@@ -3,7 +3,7 @@ import { css } from 'lit'
 export default css`
     :host {
         display: inline-block;
-        color: var(--terra-breadcrumb-color, var(--terra-color-carbon-60));
+        color: var(--terra-breadcrumb-color, var(--terra-color-neutral-70));
         font-family: var(--terra-font-family--inter);
         font-size: 0.875rem;
         line-height: 1.5;
@@ -21,7 +21,7 @@ export default css`
     }
 
     .breadcrumb__link:visited {
-        color: var(--terra-breadcrumb-color-visited, var(--terra-color-carbon-70));
+        color: var(--terra-breadcrumb-color-visited, var(--terra-color-neutral-80));
     }
 
     .breadcrumb__link:hover,

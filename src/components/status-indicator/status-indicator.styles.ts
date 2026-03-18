@@ -34,7 +34,7 @@ export default css`
     .status-indicator--active .status-indicator__dot {
         background-color: var(
             --terra-status-indicator-dot-color-active,
-            var(--terra-color-active-green)
+            var(--terra-color-bg-success-bold)
         );
     }
 
@@ -42,7 +42,7 @@ export default css`
     .status-indicator--completed .status-indicator__dot {
         background-color: var(
             --terra-status-indicator-dot-color-completed,
-            var(--terra-color-carbon-40)
+            var(--terra-color-bg-default-bold)
         );
     }
 
@@ -50,7 +50,7 @@ export default css`
     .status-indicator--testing .status-indicator__dot {
         background-color: var(
             --terra-status-indicator-dot-color-testing,
-            var(--terra-color-international-orange)
+            var(--terra-color-bg-warning-bold)
         );
     }
 
@@ -58,7 +58,7 @@ export default css`
     .status-indicator--future .status-indicator__dot {
         background-color: var(
             --terra-status-indicator-dot-color-future,
-            var(--terra-color-nasa-blue)
+            var--terra-color-bg-info-bold)
         );
     }
 
