@@ -64,6 +64,26 @@ By default, the time series component automatically fetches new data when users 
 </terra-login>
 ```
 
+## Plot Multiple Variables
+
+Use `variable-entry-ids` to request and render multiple variables in one chart. Each variable is fetched and cached independently, and each response is plotted as its own line.
+
+```html:preview
+<terra-login style="width: 100%">
+    <span slot="loading">Loading...please wait</span>
+
+    <terra-time-series
+        slot="logged-in"
+        variable-entry-ids='["GPM_3IMERGDF_07_precipitation", "GPM_3IMERGDE_07_precipitation"]'
+        start-date="01/01/2019"
+        end-date="03/01/2019"
+        location="62,5,95,40"
+    ></terra-time-series>
+
+    <p slot="logged-out">Please login to view this plot</p>
+</terra-login>
+```
+
 ```jsx:react
 import TerraTimeSeries from '@nasa-terra/components/dist/react/time-series'
 

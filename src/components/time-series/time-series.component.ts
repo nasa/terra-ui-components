@@ -23,6 +23,36 @@ import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
 import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
 
+const variableEntryIdsConverter = {
+    fromAttribute: (value: string | null): string[] => {
+        if (!value) {
+            return []
+        }
+
+        try {
+            const parsedValue = JSON.parse(value)
+
+            if (Array.isArray(parsedValue)) {
+                return parsedValue.map(item => String(item).trim()).filter(Boolean)
+            }
+        } catch {
+            // fall back to comma-delimited parsing
+        }
+
+        return value
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean)
+    },
+    toAttribute: (value: string[] | undefined): string | null => {
+        if (!value?.length) {
+            return null
+        }
+
+        return JSON.stringify(value)
+    },
+}
+
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
  * @documentation https://terra-ui.netlify.app/components/time-series
@@ -52,6 +82,16 @@ export default class TerraTimeSeries extends TerraElement {
      */
     @property({ attribute: 'variable-entry-id', reflect: true })
     variableEntryId?: string
+
+    /**
+     * variable entry IDs for multi-variable time series plotting
+     * (ex: ["GPM_3IMERGHH_06_precipitationCal", "GPM_3IMERGHH_06_probLiquidPrecipitation"])
+     */
+    @property({
+        attribute: 'variable-entry-ids',
+        converter: variableEntryIdsConverter,
+    })
+    variableEntryIds: string[] = []
 
     /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
@@ -141,6 +181,8 @@ export default class TerraTimeSeries extends TerraElement {
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 
     @state() catalogVariable: Variable
+
+    @state() catalogVariables: Variable[] = []
 
     /**
      * user quota reached maximum request
@@ -392,7 +434,7 @@ export default class TerraTimeSeries extends TerraElement {
                         title: {
                             text:
                                 this.catalogVariable && this.location
-                                    ? `${this.catalogVariable.dataProductShortName} @ ${this.location}`
+                                    ? `${this.catalogVariable.dataProductShortName}${this.catalogVariables.length > 1 ? ` (${this.catalogVariables.length} variables)` : ''} @ ${this.location}`
                                     : null,
                         },
                     }}"
@@ -415,7 +457,9 @@ export default class TerraTimeSeries extends TerraElement {
 
                 ${this.#timeSeriesController.task.status === TaskStatus.PENDING
                     ? html`<p>
-                          Plotting ${this.catalogVariable?.dataFieldId}&hellip;
+                          ${this.catalogVariables.length > 1
+                              ? `Plotting ${this.catalogVariables.length} variables…`
+                              : `Plotting ${this.catalogVariable?.dataFieldId}…`}
                       </p>`
                     : html`<p>Preparing plot&hellip;</p>`}
 
@@ -457,11 +501,19 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #getYAxisLabel() {
-        if (!this.catalogVariable) {
+        const units = (
+            this.catalogVariables.length
+                ? this.catalogVariables.map(variable => variable.dataFieldUnits)
+                : [this.catalogVariable?.dataFieldUnits]
+        ).filter(Boolean)
+
+        const uniqueUnits = [...new Set(units)]
+
+        if (!uniqueUnits.length) {
             return
         }
 
-        return [this.catalogVariable.dataFieldUnits].filter(Boolean).join(', ')
+        return uniqueUnits.join(', ')
     }
 
     #hasNoData(): boolean {
@@ -506,7 +558,9 @@ export default class TerraTimeSeries extends TerraElement {
 
         // Check if user has provided variable information
         const hasVariableRequest = Boolean(
-            this.variableEntryId || (this.collection && this.variable)
+            this.variableEntryId ||
+                this.variableEntryIds.length ||
+                (this.collection && this.variable)
         )
 
         // If user requested a variable but catalogVariable is not set, variable was not found
