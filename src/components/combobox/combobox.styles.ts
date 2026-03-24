@@ -50,13 +50,16 @@ export default css`
     }
 
     .combobox {
+        background-color: var(--terra-input-background-default);
+        border-width: var(--terra-input-border-width);
+        border-color: var(--terra-input-border-default);
+        border-style: solid;
+        border-radius: var(--terra-input-border-radius);
         block-size: var(--terra-block-size, 2.1875rem);
         flex: 1 1 auto;
         font-size: 1rem;
         padding-inline: 0.5rem;
-        transition:
-            background-color 0.2s ease,
-            border-color 0.2s ease;
+
     }
 
     .combobox::placeholder {

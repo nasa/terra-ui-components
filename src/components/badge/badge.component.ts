@@ -43,7 +43,6 @@ export default class TerraBadge extends TerraElement {
                     'badge--success': this.variant === 'success',
                     'badge--neutral': this.variant === 'neutral',
                     'badge--warning': this.variant === 'warning',
-                    'badge--info': this.variant === 'information',
                     'badge--danger': this.variant === 'danger',
                     'badge--pill': this.pill,
                     'badge--pulse': this.pulse,

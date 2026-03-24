@@ -43,13 +43,6 @@ export default css`
         olor: var(--terra-badge-color-warning);
     }
 
-    .badge--info {
-        background-color: var(
-            --terra-background-color-badge-info,
-            rgba(13, 202, 240, 1)
-        );
-    }
-
     .badge--danger {
         background-color: var(--terra-badge-background-color-danger);
         color: var(--terra-badge-color-danger);

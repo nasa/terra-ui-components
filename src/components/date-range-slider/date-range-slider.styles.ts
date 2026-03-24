@@ -84,6 +84,11 @@ export default css`
         backface-visibility: hidden;
         position: absolute;
     }
+
+    .noUi-handle:hover {
+        cursor: pointer;
+    }
+
     .noUi-touch-area {
         height: 100%;
         width: 100%;
@@ -151,7 +156,7 @@ export default css`
         box-shadow:;
     }
     .noUi-active {
-        background: var(--terra-control-icon-active);
+        background: var(--terra-slider-handle-background-color-active);
     }
     /* Handle stripes;
  */

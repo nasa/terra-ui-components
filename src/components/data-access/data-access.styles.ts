@@ -52,116 +52,6 @@ export default css`
         position: relative;
     }
 
-    terra-date-picker {
-        --terra-input-suffix-display: none;
-        --terra-input-spacing-small: 0;
-        --terra-input-spacing-medium: 0;
-
-        width: 0;
-        height: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    terra-spatial-picker {
-        --terra-input-suffix-display: none;
-        --terra-input-display: none;
-
-        width: 600px;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    terra-spatial-picker .spatial-picker {
-        width: 0 !important;
-        min-height: 38px !important;
-        height: 38px !important;
-        overflow: visible;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__input_fields {
-        display: none !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        opacity: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__input_label,
-    terra-spatial-picker label {
-        display: none !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        font-size: 0 !important;
-        line-height: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__error {
-        display: none !important;
-        visibility: hidden !important;
-    }
-
-    terra-spatial-picker terra-input {
-        --terra-input-border-width: 0;
-        --terra-input-border-default: transparent;
-        --terra-input-suffix-display: none;
-
-        width: 0;
-        height: 0;
-        position: absolute;
-        top: 0;
-        left: 0;
-    }
-
-    terra-spatial-picker .spatial-picker__input_icon {
-        display: none !important;
-    }
-
-    terra-spatial-picker .spatial-picker__map-container {
-        position: absolute !important;
-        top: 100% !important;
-        left: 0 !important;
-        z-index: 1000 !important;
-        width: 600px !important;
-        max-width: 90vw !important;
-        min-width: 400px !important;
-        min-height: 400px !important;
-        background: white !important;
-        border-radius: 0.5rem !important;
-        box-shadow:
-            0 10px 15px -3px rgba(0, 0, 0, 0.1),
-            0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-        padding: 0.5rem !important;
-        pointer-events: auto !important;
-        margin-top: 0.5rem !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        margin-bottom: 0 !important;
-    }
-
-    terra-spatial-picker .spatial-picker__map-container.flipped {
-        top: auto !important;
-        bottom: calc(100% + 0.5rem) !important;
-        margin-top: 0 !important;
-        margin-bottom: 0 !important;
-    }
-
-    terra-spatial-picker terra-map {
-        width: 100% !important;
-        min-width: 100% !important;
-    }
-
     .filter-btn {
         display: inline-flex;
         align-items: center;
@@ -198,10 +88,10 @@ export default css`
         margin-left: 4px;
         padding: 0;
         background: transparent;
-        border: 1px solid rgba(0, 0, 0, 1);
-        border-radius: 50%;
+        border: 1px solid var(--terra-border-action-secondary-default);
+        border-radius: var(--terra-border-radius-circle);
         font-size: 18px;
-        color: var(--terra-text-on-action-secondary)
+        color: var(--terra-button-color-default)
         line-height: 1;
 
         cursor: pointer;
@@ -209,8 +99,8 @@ export default css`
     }
 
     .clear-badge:hover {
-        background: white;
-        color: #333;
+        background: var(--terra-border-action-secondary-hover);
+        color: var(--terra-button-color-default);
     }
 
     .filter-row {
@@ -271,6 +161,31 @@ export default css`
         background: transparent;
     }
 
+    .download-dropdown {
+        position: relative;
+        display: inline-block;
+        z-index: 800;
+    }
+
+    .download-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: var(--terra-color-action-primary-default);
+        color: var(--terra-button-color-primary);
+        border: none;
+        border-radius: 6px;
+        font-size: var(--terra-font-size-small);
+        font-weight: var(--terra-font-weight-semibold);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .download-btn:hover {
+        background: var(--terra-color-action-primary-hover);;
+    }
+
     .download-icon-small {
         width: 16px;
         height: 16px;
@@ -282,10 +197,38 @@ export default css`
         transition: transform 0.2s;
     }
 
+    .download-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--terra-container-menu-bg);
+        border: var(--terra-container-menu-border-width) solid var(--terra-container-menu-border-width);
+        border-radius: var(--terra-container-menu-border-radius);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 801;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.2s;
+        margin-top: 4px;
+        min-width: 200px;
+    }
+
+    .download-menu.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .download-dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
     .jupyter-btn {
-        background: #fff;
-        color: #333;
-        border: 1px solid #eee;
+        background: var(--terra-color-action-secondary-default);
+        color: var(--terra-button-color-defaul);
+        border: 1px solid var(--terra-color-action-secondary);
         border-radius: 4px;
         padding: 6px 12px;
         font-size: 1em;
@@ -301,7 +244,7 @@ export default css`
 
     .jupyter-btn:hover,
     .jupyter-btn:focus {
-        background: #f8f8f8;
+        background: var(--terra-color-action-secondary-hover);
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
         outline: none;
     }
@@ -322,7 +265,7 @@ export default css`
     }
 
     .download-option:hover {
-        background: #f8f9fa;
+        background: var(--terra-color-action-secondary-hover);
     }
 
     .download-option:first-child {

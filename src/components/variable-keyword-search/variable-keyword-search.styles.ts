@@ -6,7 +6,7 @@ export default css`
 
         block-size: var(--terra-block-size, 2.1875rem);
         box-sizing: border-box;
-        color: var(--terr-text-primary);
+        color: var(--terra-text-primary);
         contain: layout size style;
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh + var(--terra-block-size, 2.1875rem));

@@ -289,14 +289,18 @@ Container tokens control the appearance of dialog, menu and panel containers.
 
 ### Container Border
 
-| Token                                    | Value                               |
-| ---------------------------------------- | ----------------------------------- |
-| `--terra-container-dialog-border-radius` | `var(--terra-border-radius-medium)` |
-| `--terra-container-dialog-border-width`  | `1px`                               |
-| `--terra-container-menu-border-radius`   | `var(--terra-border-radius-medium)` |
-| `--terra-container-menu-border-width`    | `1px`                               |
-| `--terra-container-panel-border-radius`  | `var(--terra-border-radius-medium)` |
-| `--terra-container-panel-border-width`   | `1px`                               |
+| Token                                          | Value                               |
+| ---------------------------------------------- | ----------------------------------- |
+| `--terra-container-dialog-border-radius`       | `var(--terra-border-radius-medium)` |
+| `--terra-container-dialog-border-width`        | `1px`                               |
+| `--terra-container-dialog-header-border-color` | `--terra-border-neutral-default`.   |
+| `--terra-container-dialog-header-border-style` | `solid`                             |
+| `--terra-container-dialog-footer-border-color` | `--terra-border-neutral-default`    |
+| `--terra-container-dialog-footer-border-style` | `none`                              |
+| `--terra-container-menu-border-radius`         | `var(--terra-border-radius-medium)` |
+| `--terra-container-menu-border-width`          | `1px`                               |
+| `--terra-container-panel-border-radius`        | `var(--terra-border-radius-medium)` |
+| `--terra-container-panel-border-width`         | `1px`                               |
 
 ## Control
 
