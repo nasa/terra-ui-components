@@ -50,6 +50,7 @@ export default css`
     }
 
     .accordion-content {
+        color: var(--terra-accordion-content-color);
         padding: var(--terra-accordion-content-padding);
     }
 

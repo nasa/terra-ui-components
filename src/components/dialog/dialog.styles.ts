@@ -30,8 +30,10 @@ export default css`
         min-width: 20rem;
         max-width: calc(100% - var(--terra-spacing-2x-large));
         max-height: calc(100% - var(--terra-spacing-2x-large));
-        background-color: var(--terra-panel-background-color);
-        border-radius: var(--terra-border-radius-medium);
+        background-color: var(--terra-container-dialog-bg);
+        border-radius: var(--terra-container-dialog-border-radius);
+        border: var(--terra-container-dialog-border-width) solid
+            var(--terra-container-dialog-border);
         box-shadow: var(--terra-shadow-x-large);
     }
 
@@ -52,9 +54,9 @@ export default css`
     }
 
     .dialog__header {
-        border-color: var(--terra-dialog-header-border-color, #dee2e6);
-        border-style: var(--terra-dialog-header-border-style, solid none);
-        border-width: var(--terra-dialog-header-border-width, 0 0 1px 0);
+        border-color: var(--terra-container-dialog-header-border-color, #dee2e6);
+        border-style: var(--terra-container-dialog-header-border-style, solid none);
+        border-width: var(--terra-container-dialog-border-width, 0 0 1px 0);
         flex: 0 0 auto;
         display: flex;
     }
@@ -86,7 +88,7 @@ export default css`
     }
 
     .dialog__close {
-        --terra-button-text-text-color: black;
+        --terra-button-text-text-color: var(--terra-text-primary);
     }
 
     .dialog__body {
@@ -98,9 +100,9 @@ export default css`
     }
 
     .dialog__footer {
-        border-color: var(--terra-dialog-footer-border-color, #dee2e6);
-        border-style: var(--terra-dialog-footer-border-style, solid none);
-        border-width: var(--terra-dialog-footer-border-width, 1px 0 0 0);
+        border-color: var(--terra-container-dialog-footer-border-color, #dee2e6);
+        border-style: var(--terra-container-dialog-footer-border-style, solid none);
+        border-width: var(--terra-container-dialog-footer-border-width, 1px 0 0 0);
         flex: 0 0 auto;
         text-align: right;
         padding: var(--footer-spacing);

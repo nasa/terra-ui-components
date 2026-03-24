@@ -89,7 +89,23 @@ export default css`
         user-select: none;
     }
 
-    /* Dark mode support - handled by horizon.css design tokens */
+    /* Inverse styles */
+
+    .scroll-hint.inverse {
+        color: var(--terra-scroll-hint-inverse-text-color);
+    }
+
+    .scroll-hint.inverse .scroll-hint__icon {
+        background-color: var(--terra-scroll-hint-inverse-background-color);
+    }
+
+    .scroll-hint.inverse .scroll-hint__icon terra-icon {
+        color: var(--terra-scroll-hint-inverse-icon-color);
+    }
+
+    .scroll-hint.inverse .scroll-hint__text {
+        color: var(--terra-scroll-hint-inverse-text-color);
+    }
 
     /* Pulsing ring animation */
     @keyframes pulse-ring {
