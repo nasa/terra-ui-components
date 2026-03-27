@@ -3,6 +3,9 @@ import { css } from 'lit'
 export default css`
     :host {
         --width: fit-content;
+        --min-width: 20rem;
+        --max-width: calc(100% - var(--terra-spacing-2x-large));
+        --max-height: calc(100% - var(--terra-spacing-2x-large));
         --header-spacing: var(--terra-spacing-large);
         --body-spacing: var(--terra-spacing-large);
         --footer-spacing: var(--terra-spacing-large);
@@ -27,9 +30,9 @@ export default css`
         flex-direction: column;
         z-index: 2;
         width: var(--width);
-        min-width: 20rem;
-        max-width: calc(100% - var(--terra-spacing-2x-large));
-        max-height: calc(100% - var(--terra-spacing-2x-large));
+        min-width: var(--min-width);
+        max-width: var(--max-width);
+        max-height: var(--max-height);
         background-color: var(--terra-panel-background-color);
         border-radius: var(--terra-border-radius-medium);
         box-shadow: var(--terra-shadow-x-large);
