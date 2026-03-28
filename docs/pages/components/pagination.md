@@ -81,6 +81,27 @@ const App = () => (
 );
 ```
 
+### Wider Page Window
+
+Use `sibling-count` to show more page buttons around the current page.
+
+```html:preview
+<terra-pagination
+    centered
+    current="10"
+    total="50"
+    sibling-count="2"
+></terra-pagination>
+```
+
+```jsx:react
+import TerraPagination from '@nasa-terra/components/dist/react/pagination';
+
+const App = () => (
+    <TerraPagination centered current={10} total={50} siblingCount={2} />
+);
+```
+
 ## Examples
 
 ### First Page
@@ -116,6 +137,10 @@ When there are 7 or fewer pages, all page numbers are shown.
 ```html:preview
 <terra-pagination centered current="3" total="7"></terra-pagination>
 ```
+
+## API Notes
+
+-   `sibling-count`: Controls how many neighboring pages appear on each side of the current page in the `full` variant. Defaults to `1`.
 
 ## Events
 
