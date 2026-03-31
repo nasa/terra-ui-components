@@ -38,11 +38,17 @@ export default css`
         display: flex;
         align-items: center;
         font-size: var(--terra-font-size-large);
-        padding-inline-start: var(--terra-spacing-large);
+        padding-inline-start: var(--terra-spacing-2x-large);
         margin-right: var(--terra-spacing-medium);
     }
 
-     .banner__message ::slotted(a) {
+    .banner__message {
+        flex: 1;
+        align-items: center;
+        margin: 0 auto; 
+    }
+
+    .banner__message ::slotted(a) {
         color: inherit !important;
         text-decoration-color: inherit !important;
     }
@@ -63,21 +69,14 @@ export default css`
         color: white;
     }
 
-   .banner__content {
-        flex: 1;
-        text-align: center;
-        max-width: 1200px; 
-        margin: 0 auto; 
-    }
-
   .banner__close {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
-        font-size: var(--terra-font-size-medium);
-        margin-inline-end: var(--terra-spacing-medium);
+        font-size: var(--terra-font-size-large);
+        margin-inline-end: var(--terra-spacing-2x-large);
         align-self: center;
-        margin-left: var(--terra-spacing-medium);
+        margin-left: auto;
     }
 
 `
