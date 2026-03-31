@@ -8,7 +8,7 @@
     "lib": [
       "dom",
       "dom.Iterable",
-      "es2020"
+      "es2024"
     ],
     "emitDeclarationOnly": true,
     "declaration": true,
