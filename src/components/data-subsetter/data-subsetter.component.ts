@@ -24,10 +24,7 @@ import {
 } from '../../utilities/mimetypes.js'
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
-import type {
-    CmrSearchResult,
-    VariableDetails,
-} from '../../metadata-catalog/types.js'
+import type { CmrSearchResult } from '../../metadata-catalog/types.js'
 import type { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
@@ -47,6 +44,10 @@ import { TaskStatus } from '@lit/task'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import TerraAlert from '../alert/alert.component.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import { queryCmrVariables } from '../../queries/cmr.queries.js'
+import cmrVariableService from '../../services/cmr-variable.service.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -61,7 +62,7 @@ import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni
  *
  * @event terra-subset-job-complete - called when a subset job enters a final state (e.g. successful, failed, completed_with_errors)
  */
-export default class TerraDataSubsetter extends TerraElement {
+export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-accordion': TerraAccordion,
@@ -111,9 +112,6 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @state()
     collectionWithServices?: CollectionWithAvailableServices
-
-    @state()
-    variableDetails?: Array<VariableDetails>
 
     @state()
     selectedVariables: Variable[] = []
@@ -186,6 +184,17 @@ export default class TerraDataSubsetter extends TerraElement {
 
     @query('terra-dialog')
     dialogElement?: TerraDialog
+
+    /**
+     * a query to get all variables for the collection
+     * we use this to get more detailed variable information than what Harmony gives us in the capabilities query,
+     * such as the variable's long name, units, and dimensions
+     */
+    variablesQuery = new QueryController(this, () =>
+        queryCmrVariables({
+            collectionConceptId: this.collectionWithServices?.conceptId,
+        })
+    )
 
     controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
@@ -810,7 +819,7 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #resetAllParameters = () => {
         // Reset variables
-         this.selectedVariables = []
+        this.selectedVariables = []
 
         // Reset spatial to collection bounds (not null)
         if (this.#hasSpatialSubset()) {
@@ -1395,14 +1404,14 @@ export default class TerraDataSubsetter extends TerraElement {
         }
     }
 
-   #resetSpatialSelection = () => {
+    #resetSpatialSelection = () => {
         const spatial_constraints =
-             this.collectionWithServices?.collection?.SpatialExtent
+            this.collectionWithServices?.collection?.SpatialExtent
                 ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
         if (!spatial_constraints) {
             this.spatialSelection = null
-             return
+            return
         }
 
         type BoundingRect = {
@@ -1512,7 +1521,8 @@ export default class TerraDataSubsetter extends TerraElement {
                                       name="outline-information-circle"
                                       library="heroicons"
                                   ></terra-icon>
-                                  User's are allowed to select only one variable for the selected output format. (Giovanni service)
+                                  User's are allowed to select only one variable for
+                                  the selected output format. (Giovanni service)
                               </terra-alert>
                           `
                         : nothing}
@@ -1663,21 +1673,23 @@ export default class TerraDataSubsetter extends TerraElement {
 
     #renderVariableTree(node: Record<string, any>, path: string[]): unknown {
         const isGiovanni = this.#isGiovanniFormat()
+
+        console.log('rendering variable tree ', this.variablesQuery.result)
+
         return html`
             <div style="margin-left: ${path.length * 20}px;">
                 ${Object.entries(node).map(([key, value]: [string, any]) => {
                     const groupPath = [...path, key].join('/')
                     if (value.__isLeaf) {
                         // Leaf node (variable)
-                        // Look up the long name from variableDetails
-                        const variableDetail = this.variableDetails?.find(
-                            d =>
-                                d.name === value.__variable.name &&
-                                d.longName !== value.__variable.name // if the long name is the same as the variable name, we'll just use the variable name
+                        const ummVar = cmrVariableService.getVariableByName(
+                            key,
+                            this.variablesQuery.result?.data
                         )
-                        const variableName = variableDetail?.longName
-                            ? `${key} = ${variableDetail.longName}${variableDetail.units ? ` (${variableDetail.units})` : ''}`
+                        const variableLabel = ummVar
+                            ? cmrVariableService.getVariableDisplayLabel(ummVar)
                             : key
+
                         return html`
                             <div class="option-row">
                                 <label class="checkbox-option">
@@ -1695,7 +1707,7 @@ export default class TerraDataSubsetter extends TerraElement {
                                                 value.__variable
                                             )}
                                     />
-                                    <span>${variableName}</span>
+                                    <span>${variableLabel}</span>
                                 </label>
                             </div>
                         `

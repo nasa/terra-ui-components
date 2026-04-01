@@ -31,25 +31,27 @@ export function mergeTooltips(
             var poolValues: Array<Array<string | number>> = [[]]
             var atPool = 0
 
-            // Assign the first tooltip to the first pool, if the tooltip is configured
-            if (tooltips[0]) {
-                pools[0][0] = 0
-                poolPositions[0][0] = positions[0]
-                poolValues[0][0] = values[0]
-            }
-
-            for (var i = 1; i < positions.length; i++) {
-                if (!tooltips[i] || positions[i] - positions[i - 1] > threshold) {
-                    atPool++
-                    pools[atPool] = []
-                    poolValues[atPool] = []
-                    poolPositions[atPool] = []
+            if (tooltips?.length) {
+                // Assign the first tooltip to the first pool, if the tooltip is configured
+                if (tooltips[0]) {
+                    pools[0][0] = 0
+                    poolPositions[0][0] = positions[0]
+                    poolValues[0][0] = values[0]
                 }
 
-                if (tooltips[i]) {
-                    pools[atPool].push(i)
-                    poolValues[atPool].push(values[i])
-                    poolPositions[atPool].push(positions[i])
+                for (var i = 1; i < positions.length; i++) {
+                    if (!tooltips[i] || positions[i] - positions[i - 1] > threshold) {
+                        atPool++
+                        pools[atPool] = []
+                        poolValues[atPool] = []
+                        poolPositions[atPool] = []
+                    }
+
+                    if (tooltips[i]) {
+                        pools[atPool].push(i)
+                        poolValues[atPool].push(values[i])
+                        poolPositions[atPool].push(positions[i])
+                    }
                 }
             }
 
