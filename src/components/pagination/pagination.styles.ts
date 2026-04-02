@@ -50,29 +50,40 @@ export default css`
         transition: color var(--terra-transition-fast);
     }
 
-    /* Circular buttons for prev/next - only for icon-only buttons (full/centered variants) */
+    /* Circular buttons for prev/next - only used for icon-only buttons (full/centered variants) */
     /* Need higher specificity to override base button styles */
-    :host:not([variant='simple']) .pagination__button.pagination__button--prev,
-    :host:not([variant='simple']) .pagination__button.pagination__button--next {
-        width: 2rem !important;
-        height: 2rem !important;
+    .pagination__button.pagination__button--prev,
+    .pagination__button.pagination__button--next {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 2rem;
+        height: 2rem;
         min-width: 2rem !important;
         padding: 0 !important;
         margin: 0 !important;
         border-radius: 50% !important;
-        background-color: var(
-            --terra-pagination-icon-button-background-color
-        ) !important;
-        border: 1px solid var(--terra-pagination-icon-button-border-color) !important;
+        background-color: var(--terra-pagination-icon-button-background-color);
+        border: 1px solid var(--terra-pagination-icon-button-border-color);
         color: var(--terra-pagination-button-color) !important;
         box-sizing: border-box !important;
     }
 
     /* Hover styles for circular icon buttons only */
-    :host:not([variant='simple']) .pagination__button--prev:hover:not(:disabled),
-    :host:not([variant='simple']) .pagination__button--next:hover:not(:disabled) {
+    .pagination__button.pagination__button--prev:hover:not(:disabled),
+    .pagination__button.pagination__button--next:hover:not(:disabled) {
+        appearance: none;
+        -webkit-appearance: none;
         background-color: var(--terra-pagination-icon-button-background-color-hover);
         border-color: var(--terra-pagination-icon-button-border-color-hover);
+    }
+
+    /* For simple variant, prev/next buttons are text-only and should not have circular styling */
+
+    .pagination--simple button.pagination__button--prev,
+    .pagination--simple .pagination__button--next {
+        border: none;
+        width: auto;
+        height: auto;
     }
 
     .pagination__button:hover:not(:disabled) {
@@ -100,8 +111,8 @@ export default css`
     }
 
     /* Disabled icon buttons should have lighter appearance */
-    :host:not([variant='simple']) .pagination__button--prev:disabled,
-    :host:not([variant='simple']) .pagination__button--next:disabled {
+    .pagination__button--prev:disabled,
+    .pagination__button--next:disabled {
         background-color: var(
             --terra-pagination-icon-button-background-color-disabled
         );
@@ -109,8 +120,8 @@ export default css`
         opacity: 1;
     }
 
-    :host:not([variant='simple']) .pagination__button--prev:disabled terra-icon,
-    :host:not([variant='simple']) .pagination__button--next:disabled terra-icon {
+    .pagination__button--prev:disabled terra-icon,
+    .pagination__button--next:disabled terra-icon {
         color: var(--terra-pagination-icon-button-icon-color-disabled);
     }
 
@@ -133,7 +144,7 @@ export default css`
         height: 2px;
         background-color: var(
             --terra-pagination-button-color-current,
-            var(--terra-color-carbon-black)
+            var(--terra-color-neutral-950)
         );
     }
 

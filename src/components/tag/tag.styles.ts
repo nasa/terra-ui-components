@@ -115,7 +115,7 @@ export default css`
     }
 
     .tag--topic:focus {
-        outline: 2px solid var(--terra-color-nasa-blue);
+        outline: 2px solid var(--terra-toggle-focus-ring-color);
         outline-offset: 2px;
     }
 
