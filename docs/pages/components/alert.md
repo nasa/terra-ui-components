@@ -47,7 +47,7 @@ Alerts will not be visible if the open attribute is not present.
 Set the variant attribute to change the alert's variant.
 
 ```html:preview
-<terra-alert variant="primary" open>
+<terra-alert variant="information" open>
 <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
  <strong>This is super informative</strong><br />
   You can tell by how pretty the alert is.
@@ -84,7 +84,7 @@ import TerraIcon from '@nasa-terra/components/dist/react/icon';
 
 const App = () => (
 <>
-  <TerraAlert variant="primary" open>
+  <TerraAlert variant="information" open>
     <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
      <strong>This is super informative</strong>
       <br />
@@ -120,14 +120,14 @@ const App = () => (
 
 ### Appearance
 
-Set the `appearance` attribute to control the alert's visual style. The default is `"filled"` which uses a colored background with white text (HDS style). Use `"white"` for a white background with a colored top border.
+Set the `appearance` attribute to control the alert's visual style. The default is `"filled"` which uses a colored background with contrast appropriate text (HDS style). Use `subtle` for muted colored backgrounds and matching colored text. Use `"white"` for a white background with a colored top border.
 
 #### Filled Appearance (Default)
 
 ```html:preview
-<terra-alert variant="primary" appearance="filled" open>
+<terra-alert variant="information" appearance="filled" open>
   <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
-  <strong>Primary</strong><br />
+  <strong>Information</strong><br />
   This is the HDS default style with a colored background.
 </terra-alert>
 <br />
@@ -162,9 +162,9 @@ import TerraIcon from '@nasa-terra/components/dist/react/icon';
 
 const App = () => (
   <>
-    <TerraAlert variant="primary" appearance="filled" open>
+    <TerraAlert variant="information" appearance="filled" open>
       <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
-      <strong>Primary</strong>
+      <strong>Information</strong>
       <br />
       This is the HDS default style with a colored background.
     </TerraAlert>
@@ -200,12 +200,90 @@ const App = () => (
 );
 ```
 
+#### Subtle Backgrounds with Colored Text
+
+```html:preview
+<terra-alert variant="information" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
+  <strong>Information</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="success" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-check-circle" library="heroicons"></terra-icon>
+  <strong>Success</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="neutral" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-cog-8-tooth" library="heroicons"></terra-icon>
+  <strong>Neutral</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="warning" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-exclamation-triangle" library="heroicons"></terra-icon>
+  <strong>Warning</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+<br />
+<terra-alert variant="danger" appearance="subtle" open>
+  <terra-icon slot="icon" name="outline-shield-exclamation" library="heroicons"></terra-icon>
+  <strong>Danger</strong><br />
+  This is the HDS default style with a colored background.
+</terra-alert>
+```
+
+```jsx:react
+import TerraAlert from '@nasa-terra/components/dist/react/alert';
+import TerraIcon from '@nasa-terra/components/dist/react/icon';
+
+const App = () => (
+  <>
+    <TerraAlert variant="information" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
+      <strong>Information</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="success" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-check-circle" library="heroicons" />
+      <strong>Success</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="neutral" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-cog-8-tooth" library="heroicons" />
+      <strong>Neutral</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="warning" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-exclamation-triangle" library="heroicons" />
+      <strong>Warning</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+    <br />
+    <TerraAlert variant="danger" appearance="subtle" open>
+      <TerraIcon slot="icon" name="outline-shield-exclamation" library="heroicons" />
+      <strong>Danger</strong>
+      <br />
+      This is the HDS default style with a colored background.
+    </TerraAlert>
+  </>
+);
+```
+
 #### White Appearance
 
 ```html:preview
-<terra-alert variant="primary" appearance="white" open>
+<terra-alert variant="information" appearance="white" open>
   <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
-  <strong>Primary</strong><br />
+  <strong>information</strong><br />
   This style uses a white background with a colored top border.
 </terra-alert>
 <br />
@@ -240,9 +318,9 @@ import TerraIcon from '@nasa-terra/components/dist/react/icon';
 
 const App = () => (
   <>
-    <TerraAlert variant="primary" appearance="white" open>
+    <TerraAlert variant="information" appearance="white" open>
       <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
-      <strong>Primary</strong>
+      <strong>information</strong>
       <br />
       This style uses a white background with a colored top border.
     </TerraAlert>
@@ -283,7 +361,7 @@ const App = () => (
 Add the closable attribute to show a close button that will hide the alert.
 
 ```html:preview
-<terra-alert variant="primary" open closable class="alert-closable">
+<terra-alert variant="information" open closable class="alert-closable">
 <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
   You can close this alert any time!
 </terra-alert>
@@ -347,7 +425,7 @@ Set the duration attribute to automatically hide an alert after a period of time
 <div class="alert-duration">
   <terra-button variant="primary">Show Alert</terra-button>
 
-  <terra-alert variant="primary" duration="3000" closable>
+  <terra-alert variant="information" duration="3000" closable>
     <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
    This alert will automatically hide itself after three seconds, unless you interact with it.
   </terra-alert>
@@ -390,7 +468,7 @@ const App = () => {
           Show Alert
         </TerraButton>
 
-        <TerraAlert variant="primary" duration="3000" open={open} closable onTerraAfterHide={() => setOpen(false)}>
+        <TerraAlert variant="information" duration="3000" open={open} closable onTerraAfterHide={() => setOpen(false)}>
           <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
           This alert will automatically hide itself after three seconds, unless you interact with it.
         </TerraAlert>
@@ -410,7 +488,7 @@ Set the countdown attribute to display a loading bar that indicates the alert re
 <div class="alert-countdown">
   <terra-button variant="primary">Show Alert</terra-button>
 
-  <terra-alert variant="primary" duration="10000" countdown="rtl" closable>
+  <terra-alert variant="information" duration="10000" countdown="rtl" closable>
     <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
     You're not stuck, the alert will close after a pretty long duration.
   </terra-alert>
@@ -453,7 +531,7 @@ const App = () => {
           Show Alert
         </TerraButton>
 
-        <TerraAlert variant="primary"  duration="10000" countdown="rtl" open={open} closable onTerraAfterHide={() => setOpen(false)}>
+        <TerraAlert variant="information"  duration="10000" countdown="rtl" open={open} closable onTerraAfterHide={() => setOpen(false)}>
           <TerraIcon slot="icon" name="outline-information-circle" library="heroicons" />
            You're not stuck, the alert will close after a pretty long duration.
         </TerraAlert>

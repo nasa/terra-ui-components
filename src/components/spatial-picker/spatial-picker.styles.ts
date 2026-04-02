@@ -29,12 +29,12 @@ export default css`
         height: 1.4rem;
         width: 1.4rem;
         cursor: pointer;
-        color: var(--terra-color-neutral-500, #6b7280);
+        color: var(--terra-spatial-picker-icon-color, #444447);
         flex-shrink: 0;
     }
 
     :host .spatial-picker__input_icon:hover {
-        color: var(--terra-color-neutral-700, #374151);
+        color: var(--terra-spatial-picker-icon-color-hover, #17171b);
     }
 
     .spatial-picker__map-container {
@@ -80,7 +80,7 @@ export default css`
     }
 
     .spatial-picker__error {
-        color: #a94442;
+        color: var(--terra-color-nasa-red, #f64137);
         font-size: 0.8rem;
         padding: 10px;
     }

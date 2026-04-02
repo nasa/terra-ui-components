@@ -32,8 +32,8 @@ export default css`
         justify-content: center;
         min-height: 8rem;
         padding: var(--terra-spacing-large);
-        background-color: var(--terra-input-background-color);
-        border: 2px dashed var(--terra-input-border-color);
+        background-color: var(--terra-file-upload-dropzone-background-color);
+        border: 2px dashed var(--terra-file-upload-dropzone-border-color);
         border-radius: var(--terra-input-border-radius);
         cursor: pointer;
         transition:
@@ -43,26 +43,26 @@ export default css`
     }
 
     .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled) {
-        border-color: var(--terra-color-nasa-blue);
-        background-color: hsla(212, 100%, 58%, 0.05);
+        border-color: var(--terra-file-upload-dropzone-border-color-hover);
+        background-color: var(--terra-file-upload-dropzone-background-color-hover);
     }
 
     .file-upload__dropzone--dragging {
-        border-color: var(--terra-color-nasa-blue);
+        border-color: var(--terra-file-upload-dropzone-border-color-focus);
         border-style: solid;
-        background-color: hsla(212, 100%, 58%, 0.1);
+        background-color: var(--terra-file-upload-dropzone-background-color-hover);
     }
 
     .file-upload__dropzone--focused:not(.file-upload__dropzone--disabled) {
         outline: none;
-        border-color: var(--terra-color-nasa-blue);
+        border-color: var(--terra-file-upload-dropzone-border-color-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width)
-            var(--terra-input-focus-ring-color);
+            var(--terra-input-border-focus);
     }
 
     .file-upload__dropzone--disabled {
-        background-color: var(--terra-input-background-color-disabled);
-        border-color: var(--terra-input-border-color-disabled);
+        background-color: var(--terra-file-upload-dropzone-background-color-disabled);
+        border-color: var(--terra-file-upload-dropzone-border-color-disabled);
         cursor: not-allowed;
         opacity: 0.5;
     }
@@ -71,7 +71,7 @@ export default css`
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-input-color);
+        color: var(--terra-input-text-default);
         text-align: center;
     }
 
@@ -81,7 +81,7 @@ export default css`
         padding: 0;
         margin: 0;
         font: inherit;
-        color: var(--terra-link-color);
+        color: var(--terra-text-link-default);
         text-decoration: var(--terra-link-text-decoration);
         text-decoration-style: var(--terra-link-text-decoration-style);
         text-underline-offset: var(--terra-link-underline-offset);
@@ -89,7 +89,7 @@ export default css`
     }
 
     .file-upload__browse-link:hover:not(:disabled) {
-        color: var(--terra-link-color-hover);
+        color: var(--terra-text-link-hover);
     }
 
     .file-upload__browse-link:focus {
@@ -111,10 +111,10 @@ export default css`
 
     /* Preview Section */
     .file-upload__preview {
-        border: 2px dashed var(--terra-input-border-color);
+        border: 2px dashed var(--terra-file-upload-dropzone-border-color);
         border-radius: var(--terra-input-border-radius);
         padding: var(--terra-spacing-medium);
-        background-color: var(--terra-input-background-color);
+        background-color: var(--terra-file-upload-dropzone-background-color);
     }
 
     .file-upload__preview-header {
@@ -139,7 +139,7 @@ export default css`
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-link-color);
+        color: var(--terra-text-link-default);
         text-decoration: var(--terra-link-text-decoration);
         text-decoration-style: var(--terra-link-text-decoration-style);
         text-underline-offset: var(--terra-link-underline-offset);
@@ -147,7 +147,7 @@ export default css`
     }
 
     .file-upload__change-link:hover:not(:disabled) {
-        color: var(--terra-link-color-hover);
+        color: var(--terra-text-link-hover);
     }
 
     .file-upload__change-link:disabled {
@@ -184,15 +184,15 @@ export default css`
         display: flex;
         align-items: center;
         justify-content: center;
-        background-color: var(--terra-color-carbon-10);
-        color: var(--terra-color-carbon-50);
+        background-color: var(--terra-color-neutral-100);
+        color: var(--terra-input-text-placeholder);
     }
 
     .file-upload__file-name {
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-input-color);
+        color: var(--terra-input-background-defaul);
         flex: 1;
     }
 
@@ -201,32 +201,5 @@ export default css`
         margin-top: var(--terra-spacing-x-small);
         font-size: var(--terra-input-help-text-font-size-medium);
         color: var(--terra-input-help-text-color);
-    }
-
-    /* Dark Mode */
-    .terra-theme-dark .file-upload__dropzone,
-    :host(.terra-theme-dark) .file-upload__dropzone {
-        background-color: var(--terra-color-carbon-black);
-        border-color: var(--terra-color-carbon-60);
-    }
-
-    .terra-theme-dark
-        .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled),
-    :host(.terra-theme-dark)
-        .file-upload__dropzone:hover:not(.file-upload__dropzone--disabled) {
-        border-color: var(--terra-color-nasa-blue);
-        background-color: hsla(212, 100%, 58%, 0.1);
-    }
-
-    .terra-theme-dark .file-upload__preview,
-    :host(.terra-theme-dark) .file-upload__preview {
-        background-color: var(--terra-color-carbon-black);
-        border-color: var(--terra-color-carbon-60);
-    }
-
-    .terra-theme-dark .file-upload__thumbnail--placeholder,
-    :host(.terra-theme-dark) .file-upload__thumbnail--placeholder {
-        background-color: var(--terra-color-carbon-80);
-        color: var(--terra-color-carbon-50);
     }
 `
