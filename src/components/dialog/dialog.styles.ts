@@ -27,9 +27,9 @@ export default css`
         flex-direction: column;
         z-index: 2;
         width: var(--width);
-        min-width: 20rem;
-        max-width: calc(100% - var(--terra-spacing-2x-large));
-        max-height: calc(100% - var(--terra-spacing-2x-large));
+        min-width: var(--min-width);
+        max-width: var(--max-width);
+        max-height: var(--max-height);
         background-color: var(--terra-container-dialog-bg);
         border-radius: var(--terra-container-dialog-border-radius);
         border: var(--terra-container-dialog-border-width) solid
