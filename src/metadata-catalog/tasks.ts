@@ -1,22 +1,40 @@
 import { Task } from '@lit/task'
 import { GiovanniVariableCatalog } from './giovanni-variable-catalog.js'
 import type { HostWithMaybeProperties } from './types.js'
-import { getVariableEntryId } from './utilities.js'
+import { getVariableEntryIds } from './utilities.js'
 import type { Variable } from '../components/browse-variables/browse-variables.types.js'
 
 // Global cache for variable data to prevent duplicate requests
 const variableCache = new Map<string, Variable>()
 const pendingRequests = new Map<string, Promise<Variable | null>>()
 
+function sameVariableIds(a: Variable[] | undefined, b: Variable[]): boolean {
+    if (!a || a.length !== b.length) {
+        return false
+    }
+
+    return a.every((variable, index) => variable.dataFieldId === b[index].dataFieldId)
+}
+
 function setHostPropertiesFromVariable(
     host: HostWithMaybeProperties,
-    variable: Variable,
-    variableEntryId: string
+    variables: Variable[]
 ) {
-    host.startDate = host.startDate ?? variable.exampleInitialStartDate?.toISOString()
-    host.endDate = host.endDate ?? variable.exampleInitialEndDate?.toISOString()
-    host.catalogVariable = variable
-    host.variableEntryId = variableEntryId
+    const primaryVariable = variables[0]
+
+    if (!primaryVariable) {
+        return
+    }
+
+    host.startDate =
+        host.startDate ?? primaryVariable.exampleInitialStartDate?.toISOString()
+    host.endDate =
+        host.endDate ?? primaryVariable.exampleInitialEndDate?.toISOString()
+    host.catalogVariable = primaryVariable
+    if (!sameVariableIds(host.catalogVariables, variables)) {
+        host.catalogVariables = [...variables]
+    }
+    host.variableEntryId = primaryVariable.dataFieldId
 }
 
 export function getFetchVariableTask(
@@ -27,60 +45,80 @@ export function getFetchVariableTask(
 
     return new Task(host, {
         task: async _args => {
-            const variableEntryId = getVariableEntryId(host)
+            const variableEntryIds = getVariableEntryIds(host)
 
-            console.debug('Fetch variable ', variableEntryId)
+            console.debug('Fetch variables ', variableEntryIds)
 
-            if (!variableEntryId) {
+            if (!variableEntryIds.length) {
                 return
             }
 
-            // Check if we already have this variable cached
-            if (variableCache.has(variableEntryId)) {
-                console.debug('Using cached variable ', variableEntryId)
-                const cachedVariable = variableCache.get(variableEntryId)!
-                setHostPropertiesFromVariable(host, cachedVariable, variableEntryId)
-                return
-            }
+            const variables = (
+                await Promise.all(
+                    variableEntryIds.map(async variableEntryId => {
+                        // Check if we already have this variable cached
+                        if (variableCache.has(variableEntryId)) {
+                            console.debug('Using cached variable ', variableEntryId)
+                            return variableCache.get(variableEntryId)!
+                        }
 
-            // Check if there's already a pending request for this variable
-            if (pendingRequests.has(variableEntryId)) {
-                console.debug(
-                    'Waiting for pending request for variable ',
-                    variableEntryId
+                        // Check if there's already a pending request for this variable
+                        if (pendingRequests.has(variableEntryId)) {
+                            console.debug(
+                                'Waiting for pending request for variable ',
+                                variableEntryId
+                            )
+                            const pendingVariable =
+                                await pendingRequests.get(variableEntryId)!
+                            return pendingVariable
+                        }
+
+                        // Create a new request and cache the promise
+                        const requestPromise = catalog
+                            .getVariable(variableEntryId)
+                            .catch(error => {
+                                console.warn(
+                                    'Failed to fetch variable',
+                                    variableEntryId,
+                                    error
+                                )
+                                return null
+                            })
+                        pendingRequests.set(variableEntryId, requestPromise)
+
+                        try {
+                            const variable = await requestPromise
+
+                            console.debug('Found variable ', variable)
+
+                            if (!variable) {
+                                return null
+                            }
+
+                            // Cache the variable for future use
+                            variableCache.set(variableEntryId, variable)
+
+                            return variable
+                        } finally {
+                            // Clean up the pending request
+                            pendingRequests.delete(variableEntryId)
+                        }
+                    })
                 )
-                const variable = await pendingRequests.get(variableEntryId)!
+            ).filter(Boolean) as Variable[]
 
-                if (variable) {
-                    console.debug('Using cached variable ', variableEntryId)
-                    setHostPropertiesFromVariable(host, variable, variableEntryId)
-                }
+            if (!variables.length) {
                 return
             }
 
-            // Create a new request and cache the promise
-            const requestPromise = catalog.getVariable(variableEntryId)
-            pendingRequests.set(variableEntryId, requestPromise)
-
-            try {
-                const variable = await requestPromise
-
-                console.debug('Found variable ', variable)
-
-                if (!variable) {
-                    return
-                }
-
-                // Cache the variable for future use
-                variableCache.set(variableEntryId, variable)
-
-                setHostPropertiesFromVariable(host, variable, variableEntryId)
-            } finally {
-                // Clean up the pending request
-                pendingRequests.delete(variableEntryId)
-            }
+            setHostPropertiesFromVariable(host, variables)
         },
-        args: () => [host.variableEntryId, host.collection, host.variable],
+        args: () => [
+            host.variableEntryId,
+            host.variableEntryIds?.join('|'),
+            host.collection,
+            host.variable,
+        ],
         autoRun,
     })
 }
