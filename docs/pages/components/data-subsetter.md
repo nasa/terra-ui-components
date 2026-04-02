@@ -45,7 +45,19 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 ### Basic Usage
 
 ```html:preview
-<terra-data-subsetter short-name="OMAERO" version="003"></terra-data-subsetter>
+<terra-data-subsetter short-name="M2I3NPASM" version="5.12.4"></terra-data-subsetter>
+```
+
+### Giovanni services for CSV and TIFF outputs
+
+```html:preview
+<terra-data-subsetter short-name="FLDAS_NOAHMP001_G_CA_D" version="001"></terra-data-subsetter>
+```
+
+### Error handling for collections with no granules
+
+```html:preview
+<terra-data-subsetter short-name="XAERDT_L2_MODIS_Aqua" version="1"></terra-data-subsetter>
 ```
 
 ### No collection (enables Collection search)

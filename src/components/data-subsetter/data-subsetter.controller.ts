@@ -16,6 +16,7 @@ import Fuse from 'fuse.js'
 import type {
     CmrSamplingOfGranules,
     MetadataCatalogInterface,
+    VariableDetails,
 } from '../../metadata-catalog/types.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
@@ -28,6 +29,7 @@ export class DataSubsetterController {
     searchCmrTask: Task<[string | undefined, string], any | undefined>
     samplingTask: Task<[string | undefined], CmrSamplingOfGranules | undefined>
     giovanniConfiguredVariablesTask: Task<[], Set<string> | undefined>
+    variableDetailsTask: Task<[string | undefined], VariableDetails[] | undefined>
     currentJob: SubsetJobStatus | null
 
     #host: ReactiveControllerHost & TerraDataSubsetter
@@ -52,9 +54,42 @@ export class DataSubsetterController {
                       )
                     : undefined
 
+                // Trigger variable details fetch when collection is fetched
+                if (this.#host.collectionWithServices?.conceptId) {
+                    this.variableDetailsTask.run()
+                }
+
                 return this.#host.collectionWithServices
             },
             args: (): [string | undefined] => [this.#host.collectionEntryId],
+        })
+
+        this.variableDetailsTask = new Task(host, {
+            task: async ([conceptId], { signal }) => {
+                if (!conceptId) {
+                    this.#host.variableDetails = undefined
+                    return undefined
+                }
+
+                try {
+                    const details = await this.#metadataCatalog.getVariablesDetails(
+                        conceptId,
+                        {
+                            signal,
+                        }
+                    )
+
+                    this.#host.variableDetails = details?.collection?.variables?.items
+                    return this.#host.variableDetails
+                } catch (error) {
+                    console.warn('Failed to fetch variable details:', error)
+                    return undefined
+                }
+            },
+            args: (): [string | undefined] => [
+                this.#host.collectionWithServices?.conceptId,
+            ],
+            autoRun: false,
         })
 
         this.searchCmrTask = new Task(host, {
@@ -399,6 +434,13 @@ export class DataSubsetterController {
         return labels
     }
 
+    get hasGranules() {
+        return (
+            this.#sampling?.firstGranules?.count &&
+            this.#sampling.firstGranules.count > 0
+        )
+    }
+
     get granuleMinDate() {
         if (!this.#sampling?.firstGranules) {
             return null
@@ -411,11 +453,12 @@ export class DataSubsetterController {
     }
 
     get granuleMaxDate() {
-        if (!this.#sampling?.lastGranules) {
+        const granules = this.#sampling?.lastGranules?.items
+
+        if (!granules?.length) {
             return null
         }
 
-        const granules = this.#sampling.lastGranules.items
         return (
             granules[granules.length - 1].temporalExtent?.rangeDateTime
                 ?.endingDateTime ?? null

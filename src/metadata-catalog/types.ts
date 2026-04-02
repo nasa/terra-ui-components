@@ -45,6 +45,11 @@ export interface MetadataCatalogInterface {
         collectionEntryId: string,
         options?: SearchOptions
     ): Promise<CloudCoverRange | null>
+
+    getVariablesDetails(
+        collectionConceptId: string,
+        options?: SearchOptions
+    ): Promise<CmrVariableDetailsResponse>
 }
 
 export type CmrGranulesResponse = {
@@ -57,6 +62,20 @@ export type CmrGranulesResponse = {
             }
         }>
     }
+}
+
+export type CmrVariableDetailsResponse = {
+    collection: {
+        variables: {
+            items: Array<VariableDetails>
+        }
+    }
+}
+
+export type VariableDetails = {
+    name: string
+    units: string | null
+    longName: string
 }
 
 export type CmrSamplingOfGranulesResponse = {
@@ -259,9 +278,11 @@ export type GetVariablesResponse = {
 
 export type HostWithMaybeProperties = ReactiveControllerHost & {
     variableEntryId?: string
+    variableEntryIds?: string[]
     collection?: string
     variable?: string
     startDate?: string
     endDate?: string
     catalogVariable?: Variable
+    catalogVariables?: Variable[]
 }
