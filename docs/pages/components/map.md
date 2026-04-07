@@ -10,7 +10,15 @@ layout: component
 ### Default Map
 
 ```html:preview
-<terra-map id="configurable-map" show-graticule show-mouse-coordinates show-bounding-box-selection show-polygon-selection show-point-selection show-circle-selection></terra-map>
+<terra-map 
+    id="configurable-map" 
+    show-graticule 
+    show-mouse-coordinates 
+    show-bounding-box-selection 
+    show-polygon-selection 
+    show-point-selection 
+    show-circle-selection
+></terra-map>
 
 <form style="max-width: 600px;">
   <fieldset>

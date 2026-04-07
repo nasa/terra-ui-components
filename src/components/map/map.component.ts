@@ -197,6 +197,7 @@ export default class TerraMap extends TerraElement {
             showPointSelection: this.showPointSelection,
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
+            noWorldWrap: this.noWorldWrap,
             onMouseMove: coordinate => {
                 this.cursorCoordinates = coordinate
             },

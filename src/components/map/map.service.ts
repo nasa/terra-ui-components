@@ -1,6 +1,12 @@
 import { Feature, Graticule, Map, MapBrowserEvent, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
-import { toLonLat, transform, transformExtent, type ProjectionLike } from 'ol/proj.js'
+import {
+    toLonLat,
+    transform,
+    transformExtent,
+    type ProjectionLike,
+    get as getProjection,
+} from 'ol/proj.js'
 import { OSM } from 'ol/source.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
@@ -22,6 +28,7 @@ type MapOptions = {
     showPolygonSelection?: boolean
     showPointSelection?: boolean
     showCircleSelection?: boolean
+    noWorldWrap?: boolean
     onMouseMove?: (coordinate: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
 }
@@ -66,9 +73,12 @@ export class MapService {
     }
 
     #createMap(options: MapOptions) {
-        const baseLayer = this.#createBaseLayer()
+        const baseLayer = this.#createBaseLayer(options)
         const graticuleLayer = this.#createGraticuleLayer(options)
         const drawLayer = this.#createDrawLayer()
+
+        const projection = getProjection('EPSG:3857')
+        const worldExtent = projection?.getExtent()
 
         const map = new Map({
             target: this.#el,
@@ -79,6 +89,7 @@ export class MapService {
                 projection: options.projection ?? 'EPSG:3857',
                 minZoom: options.minZoom,
                 maxZoom: options.maxZoom,
+                ...(options.noWorldWrap ? { extent: worldExtent } : {}),
             }),
         })
 
@@ -163,9 +174,11 @@ export class MapService {
         return map
     }
 
-    #createBaseLayer() {
+    #createBaseLayer(options: MapOptions) {
         return new WebGLTileLayer({
-            source: new OSM() as any,
+            source: new OSM({
+                ...(options.noWorldWrap ? { wrapX: false } : {}),
+            }) as any,
         })
     }
 
