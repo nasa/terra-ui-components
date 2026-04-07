@@ -4,9 +4,53 @@ import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
 function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
-        <span class="group-title" data-tree-walker="filter_skip"
-            >${listItem.collectionEntryId}</span
-        >
+        <div class="group-title" data-tree-walker="filter_skip">
+            <span>${listItem.collectionEntryId}</span>
+            <!-- Use the SAME button component as toolbar -->
+            <terra-button
+                size="small"
+                circle
+                outline
+                type="button"
+                tabindex="-1"
+                class="info-toggle"
+                aria-haspopup="true"
+                aria-controls="variable-info-menu"
+                data-menu-name="information"
+                @mouseenter=${(e: MouseEvent) => {
+                    e.preventDefault()
+                    e.stopImmediatePropagation()
+                    e.stopPropagation()
+                    const variable = listItem.variables?.[0] ?? {}
+
+                    const detail = JSON.parse(variable.eventDetail || '{}')
+                    const mappedCollection = {
+                        dataFieldLongName: detail.collectionLongName,
+                        dataFieldShortName: detail.collectionShortName,
+                        dataFieldAccessName: detail.standardName,
+                        dataFieldUnits: detail.units,
+                        dataProductDescriptionUrl: detail.datasetLandingPage,
+                        dataProductLongName: detail.collectionLongName,
+                        dataFieldDescriptionUrl: detail.variableLandingPage,
+                    }
+
+                    const event = new CustomEvent('terra-show-variable-info', {
+                        detail: {
+                            collection: mappedCollection,
+                        },
+                        bubbles: true,
+                        composed: true,
+                    })
+                    e.currentTarget?.dispatchEvent(event)
+                }}
+            >
+                <span class="sr-only"
+                    >Information for ${listItem.collectionEntryId}</span
+                >
+                <terra-icon name="info" font-size="1em"></terra-icon>
+            </terra-button>
+        </div>
+
         <ul data-tree-walker="filter_skip">
             ${repeat(
                 listItem.variables,
