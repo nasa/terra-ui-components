@@ -6,13 +6,11 @@ import { map } from 'lit/directives/map.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import leafletDrawStyles from './leaflet-draw.styles.js'
 import { Leaflet } from './leaflet-utils.js'
-import leafletStyles from './leaflet.styles.js'
 import { MapController } from './map.controller.js'
 import styles from './map.styles.js'
 import type { ShapeFilesResponse } from '../../geojson/types.js'
-import { MapEventType } from './type.js'
+import { MapService } from './map.service.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -22,12 +20,7 @@ import { MapEventType } from './type.js'
  *
  */
 export default class TerraMap extends TerraElement {
-    static styles: CSSResultGroup = [
-        componentStyles,
-        leafletStyles,
-        leafletDrawStyles,
-        styles,
-    ]
+    static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
      * Minimum zoom level of the map.
@@ -44,7 +37,13 @@ export default class TerraMap extends TerraElement {
     /**
      * Initial map zoom level
      */
-    @property({ type: Number }) zoom: number = 1
+    @property({ type: Number })
+    zoom: number = 1
+
+    @watch('zoom')
+    zoomChanged() {
+        this.#service?.setZoom(this.zoom)
+    }
 
     /**
      * has map navigation toolbar
@@ -53,10 +52,24 @@ export default class TerraMap extends TerraElement {
     hasNavigation: boolean = false
 
     /**
-     * has coordinate tracker
+     * shows mouse coordinates at bottom left of map as user moves mouse over map
+     */
+    @property({ attribute: 'show-mouse-coordinates', type: Boolean })
+    showMouseCoordinates: boolean = false
+
+    /**
+     * @deprecated has coordinate tracker (use show-mouse-coordinates instead)
      */
     @property({ attribute: 'has-coord-tracker', type: Boolean })
-    hasCoordTracker: boolean = false
+    set hasCoordTracker(value: boolean) {
+        console.warn(
+            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
+        )
+        this.showMouseCoordinates = value
+    }
+    get hasCoordTracker() {
+        return this.showMouseCoordinates
+    }
 
     /**
      * has shape selector
@@ -64,11 +77,53 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'has-shape-selector', type: Boolean })
     hasShapeSelector: boolean = false
 
-    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
-    hideBoundingBoxSelection?: boolean
+    @property({ attribute: 'show-graticule', type: Boolean })
+    showGraticule: boolean = false
 
+    @watch('showGraticule')
+    showGraticuleChanged() {
+        this.#service?.toggleLayerVisibility('graticule', this.showGraticule)
+    }
+
+    @property({ attribute: 'show-bounding-box-selection', type: Boolean })
+    showBoundingBoxSelection: boolean = false
+
+    /**
+     * @deprecated hide bounding box selection (use show-bounding-box-selection instead)
+     */
+    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
+    set hideBoundingBoxSelection(value: boolean) {
+        console.warn(
+            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
+        )
+        this.showBoundingBoxSelection = !value
+    }
+    get hideBoundingBoxSelection() {
+        return !this.showBoundingBoxSelection
+    }
+
+    @property({ attribute: 'show-point-selection', type: Boolean })
+    showPointSelection: boolean = false
+
+    /**
+     * @deprecated hide point selection (use show-point-selection instead)
+     */
     @property({ attribute: 'hide-point-selection', type: Boolean })
-    hidePointSelection?: boolean
+    set hidePointSelection(value: boolean) {
+        console.warn(
+            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
+        )
+        this.showPointSelection = !value
+    }
+    get hidePointSelection() {
+        return !this.showPointSelection
+    }
+
+    @property({ attribute: 'show-polygon-selection', type: Boolean })
+    showPolygonSelection: boolean = false
+
+    @property({ attribute: 'show-circle-selection', type: Boolean })
+    showCircleSelection: boolean = false
 
     @property({ type: Boolean })
     staticMode?: boolean = false
@@ -90,11 +145,28 @@ export default class TerraMap extends TerraElement {
     value: any = []
 
     // querySelector for the map element
-    @query('#map')
-    mapElement!: HTMLDivElement
+    @query('[part="map"]')
+    mapElement: HTMLDivElement
 
-    // Track if initial draw event has fired to distinguish user draws from initial/programmatic values
-    private hasProcessedInitialDraw: boolean = false
+    @state()
+    cursorCoordinates: [number, number] = [0, 0]
+
+    #service?: MapService
+
+    @watch([
+        'showBoundingBoxSelection',
+        'showPointSelection',
+        'showPolygonSelection',
+        'showCircleSelection',
+    ])
+    drawButtonSelectionChanged() {
+        this.#service?.updateDrawToolbarVisibility({
+            showBoundingBoxSelection: this.showBoundingBoxSelection,
+            showPointSelection: this.showPointSelection,
+            showPolygonSelection: this.showPolygonSelection,
+            showCircleSelection: this.showCircleSelection,
+        })
+    }
 
     @watch('value')
     valueChanged(_oldValue: any, newValue: any) {
@@ -115,20 +187,29 @@ export default class TerraMap extends TerraElement {
 
     _mapController: MapController = new MapController(this)
 
-    async connectedCallback(): Promise<void> {
-        super.connectedCallback()
-    }
-
     async firstUpdated() {
-        await this.map.initializeMap(this.mapElement, {
+        this.#service = new MapService(this.mapElement, {
             zoom: this.zoom,
             minZoom: this.minZoom,
             maxZoom: this.maxZoom,
-            hasCoordTracker: this.hasCoordTracker,
+            showGraticule: this.showGraticule,
+            showBoundingBoxSelection: this.showBoundingBoxSelection,
+            showPointSelection: this.showPointSelection,
+            showPolygonSelection: this.showPolygonSelection,
+            showCircleSelection: this.showCircleSelection,
+            onMouseMove: coordinate => {
+                this.cursorCoordinates = coordinate
+            },
+            onDraw: detail => {
+                console.log('emitting ', detail)
+                this.emit('terra-map-change', { detail })
+            },
+        })
+
+        /*
+        await this.map.initializeMap(this.mapElement, {
             hasNavigation: this.hasNavigation,
             initialValue: this.value,
-            hideBoundingBoxDrawTool: this.hideBoundingBoxSelection,
-            hidePointSelectionDrawTool: this.hidePointSelection,
             staticMode: this.staticMode,
             noWorldWrap: this.noWorldWrap,
         })
@@ -161,18 +242,7 @@ export default class TerraMap extends TerraElement {
                 this.hasProcessedInitialDraw = true
             }
 
-            this.emit('terra-map-change', {
-                detail: {
-                    cause: 'draw',
-                    type:
-                        'latLng' in layer
-                            ? MapEventType.POINT
-                            : 'bounds' in layer
-                              ? MapEventType.BBOX
-                              : undefined,
-                    ...layer,
-                },
-            })
+            
         })
 
         this.map.on('clear', (_e: any) =>
@@ -183,13 +253,14 @@ export default class TerraMap extends TerraElement {
             })
         )
 
-        this.#markDynamicLeafletContent()
+        this.#markDynamicLeafletContent()*/
     }
 
     getDrawLayer() {
         return this.map.editableLayers.getLayers()[0]
     }
 
+    /*
     #parseConstraints() {
         try {
             const coords = this.spatialConstraints
@@ -201,12 +272,14 @@ export default class TerraMap extends TerraElement {
             return null
         }
     }
-
+*/
+    /*
     #normalizeBounds(bounds: number[]) {
         const [west, south, east, north] = bounds
         return { west, south, east, north }
-    }
+    }*/
 
+    /*
     #isPointInsideBounds(point: any, rawBounds: number[]): boolean {
         if (!Array.isArray(rawBounds) || rawBounds.length !== 4) {
             return true
@@ -220,8 +293,9 @@ export default class TerraMap extends TerraElement {
             point.lng >= west &&
             point.lng <= east
         )
-    }
+    }*/
 
+    /*
     #isBoundsInsideBounds(inner: any, rawOuter: number[]): boolean {
         if (!Array.isArray(rawOuter) || rawOuter.length !== 4) {
             return true
@@ -235,33 +309,7 @@ export default class TerraMap extends TerraElement {
             inner.getWest() >= west &&
             inner.getEast() <= east
         )
-    }
-
-    #markDynamicLeafletContent() {
-        //* Add CSS parts to the following items that Leaflet dynamically inserts:
-        const parts = [
-            {
-                item: this.shadowRoot?.querySelector('.leaflet-draw-draw-rectangle'),
-                name: 'leaflet-bbox',
-            },
-            {
-                item: this.shadowRoot?.querySelector('.leaflet-draw-draw-marker'),
-                name: 'leaflet-point',
-            },
-            {
-                item: this.shadowRoot?.querySelector('.leaflet-draw-edit-edit'),
-                name: 'leaflet-edit',
-            },
-            {
-                item: this.shadowRoot?.querySelector('.leaflet-draw-edit-remove'),
-                name: 'leaflet-remove',
-            },
-        ]
-
-        parts.forEach(({ item, name }) => {
-            item?.setAttribute('part', name)
-        })
-    }
+    }*/
 
     selectTemplate() {
         return html`
@@ -293,11 +341,21 @@ export default class TerraMap extends TerraElement {
     render() {
         return html`
             ${this.hasShapeSelector ? this.selectTemplate() : nothing}
-            <div
-                part="map"
-                id="map"
-                class=${`map ${this.staticMode ? 'static' : ''}`}
-            ></div>
+            <div part="map" class=${`map ${this.staticMode ? 'static' : ''}`}>
+                ${this.showMouseCoordinates
+                    ? html`
+                          <div id="mouse-info">
+                              <div>
+                                  <strong
+                                      >lat: ${this.cursorCoordinates[1].toFixed(2)},
+                                      lng:
+                                      ${this.cursorCoordinates[0].toFixed(2)}</strong
+                                  >
+                              </div>
+                          </div>
+                      `
+                    : nothing}
+            </div>
         `
     }
 

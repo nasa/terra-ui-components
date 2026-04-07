@@ -27,7 +27,7 @@ async function request<T>(
         })
 
         if (!res.ok) {
-            if (!res.headers.get('Content-Type')?.includes('application/json')) {
+            if (!res.headers.get('Content-Type')?.includes('json')) {
                 // response is not JSON, assume it's a server error
                 const text = await res.text()
                 throw new HttpException({
@@ -49,6 +49,15 @@ async function request<T>(
 
         if (res.status === 204) {
             return undefined as T
+        }
+
+        if (!res.headers.get('Content-Type')?.includes('json')) {
+            // response is not JSON, assume it's a server error since this is an API client
+            // the server may be incorrectly sending HTML back, which we can't parse anyway
+            throw new HttpException({
+                status: 500,
+                message: `Expected JSON response but got ${res.headers.get('Content-Type')}`,
+            })
         }
 
         return res.json() as Promise<T>

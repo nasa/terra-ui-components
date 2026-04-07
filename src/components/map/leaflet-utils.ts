@@ -132,11 +132,6 @@ export class Leaflet {
             maxZoom: options.maxZoom,
         }).addTo(this.map)
 
-        // coord tracker true, display coord position tracker
-        if (options.hasCoordTracker) {
-            this.addCoordTracker()
-        }
-
         if (options.hasNavigation) {
             this.addDrawControl(options)
         }
@@ -195,45 +190,6 @@ export class Leaflet {
                 })
             }
         })
-    }
-
-    addCoordTracker() {
-        // coord tracker extends leaflet controls
-        const CoordTracker = L.Control.extend({
-            options: {
-                position: 'bottomleft',
-                title: 'Mouse Position',
-                exclude: [],
-                include: [],
-            },
-            onAdd: function (map: any) {
-                this.div = L.DomUtil.create(
-                    'div',
-                    'leaflet-mouse-position-container leaflet-bar'
-                )
-                this.p = L.DomUtil.create(
-                    'p',
-                    'leaflet-mouse-position-text',
-                    this.div
-                )
-                let content = 'lat: 0, lng: 0'
-
-                this.p.innerHTML = content
-
-                L.DomEvent.addListener(map, 'mousemove', this._onChange, this)
-
-                return this.div
-            },
-            _onChange: function (e: any) {
-                this.p.innerHTML = `lat: ${Math.round(
-                    e.latlng.lat
-                )}, lng: ${Math.round(e.latlng.lng)}`
-            },
-        })
-
-        const coordTracker = new CoordTracker()
-
-        coordTracker.addTo(this.map)
     }
 
     addDrawControl(options: MapViewOptions) {

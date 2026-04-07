@@ -14,12 +14,12 @@ import { watch } from '../../internal/watch.js'
 import {
     marker,
     icon,
-    latLngBounds,
     rectangle,
     type LatLngExpression,
     type LatLng,
     type Rectangle,
 } from 'leaflet'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -594,27 +594,26 @@ export default class TerraSpatialPicker extends TerraElement {
         if ('lat' in this.mapValue && 'lng' in this.mapValue) {
             // It's a point
             const latLng = this.mapValue as LatLng
-            const layer = this.map?.getDrawLayer()
+            //const layer = this.map?.getDrawLayer()
             this.emit('terra-map-change', {
                 detail: {
                     type: MapEventType.POINT,
                     cause: 'draw',
                     latLng: latLng,
-                    geoJson: layer?.toGeoJSON(),
+                    //geoJson: layer?.toGeoJSON(),
                 },
             })
         } else if (Array.isArray(this.mapValue) && this.mapValue.length === 2) {
             // It's a bounding box - convert array to LatLngBounds
-            const bounds = latLngBounds(
-                this.mapValue as [[number, number], [number, number]]
-            )
-            const layer = this.map?.getDrawLayer()
+            const bounds = new LatLngBounds(this.mapValue)
+
+            //const layer = this.map?.getDrawLayer()
             this.emit('terra-map-change', {
                 detail: {
                     type: MapEventType.BBOX,
                     cause: 'draw',
                     bounds: bounds,
-                    geoJson: layer?.toGeoJSON(),
+                    //geoJson: layer?.toGeoJSON(),
                 },
             })
         }

@@ -25,7 +25,6 @@ import {
 import { watch } from '../../internal/watch.js'
 import { debounce } from '../../internal/debounce.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
-import type { LatLng, LatLngBounds } from 'leaflet'
 import { MapEventType } from '../map/type.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import TerraLogin from '../login/login.component.js'
@@ -40,6 +39,7 @@ import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
 import TerraButton from '../button/button.component.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
+import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import { TaskStatus } from '@lit/task'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import TerraAlert from '../alert/alert.component.js'
@@ -48,6 +48,10 @@ import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { queryCmrVariables } from '../../queries/cmr.queries.js'
 import cmrVariableService from '../../services/cmr-variable.service.js'
+import TerraSlider from '../slider/slider.component.js'
+import { queryGesDiscCollection } from '../../queries/gesdisc.queries.js'
+import type { LatLng } from '../map/models/LatLng.js'
+import type { LatLngBounds } from '../map/models/LatLngBounds.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -79,6 +83,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         'terra-menu-item': TerraMenuItem,
         'terra-button': TerraButton,
         'terra-alert': TerraAlert,
+        'terra-slider': TerraSlider,
     }
 
     @property({ reflect: true, attribute: 'collection-entry-id' })
@@ -115,6 +120,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @state()
     selectedVariables: Variable[] = []
+
+    @state()
+    selectedDimensionIndexes: Record<string, number> = {}
 
     @state()
     expandedVariableGroups: Set<string> = new Set()
@@ -192,6 +200,17 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
      */
     variablesQuery = new QueryController(this, () =>
         queryCmrVariables({
+            collectionConceptId: this.collectionWithServices?.conceptId,
+        })
+    )
+
+    /**
+     * a query to get GES DISC collection details, mainly user friendly dimension names
+     * TODO: Ideally we should remove this and use CMR directly when we can to support all DAACs
+     */
+    gesDiscCollectionQuery = new QueryController(this, () =>
+        queryGesDiscCollection({
+            collectionEntryId: this.collectionEntryId,
             collectionConceptId: this.collectionWithServices?.conceptId,
         })
     )
@@ -760,6 +779,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 : nothing}
                             ${this.collectionWithServices?.variableSubset
                                 ? this.#renderVariableSelection()
+                                : nothing}
+                            ${this.collectionWithServices?.variableSubset
+                                ? this.#renderDimensionSelection()
                                 : nothing}
                         </div>
                     `
@@ -1511,19 +1533,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                   Only certain variables are supported for the
                                   selected output format. (Giovanni service)
                               </terra-alert>
-                              <terra-alert
-                                  open
-                                  appearance="white"
-                                  style="margin: 10px 0"
-                              >
-                                  <terra-icon
-                                      slot="icon"
-                                      name="outline-information-circle"
-                                      library="heroicons"
-                                  ></terra-icon>
-                                  User's are allowed to select only one variable for
-                                  the selected output format. (Giovanni service)
-                              </terra-alert>
                           `
                         : nothing}
                     ${variables.length === 0
@@ -1534,6 +1543,111 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                               this.#filterVariableTree(tree),
                               []
                           )}
+                </div>
+            </terra-accordion>
+        `
+    }
+
+    #renderDimensionGroup(dim: { name: string; size: number }) {
+        const currentValue = this.selectedDimensionIndexes[dim.name] ?? 1
+
+        // dimensions in CMR aren't very user-friendly, they are index-based, but don't show the user what the index stands for
+        // it's VERY hard to get the actual values, outside the scope of what a UI should do
+        //
+        // at least for GES DISC collections we can show better labels for dimensions
+        // ideally we would want UMM-Dim or Harmony to give us better labels so we could support all DAACs
+        // TODO: can we get these dimension labels elsewhere?
+        const dimensions =
+            this.gesDiscCollectionQuery?.result?.data?.services?.subset?.find(
+                s => s.dimensions && s.dimensions.length > 0
+            )?.dimensions || []
+
+        return html`
+            <div style="margin-bottom: 16px;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;"
+                >
+                    <span style="font-weight: 600; margin-bottom: 44px"
+                        >Dimension: ${dim.name}</span
+                    >
+                </div>
+                <terra-slider
+                    class="dimension-slider"
+                    mode="range"
+                    min="1"
+                    .max=${dim.size}
+                    step="1"
+                    .value=${currentValue}
+                    has-tooltips
+                    show-inputs
+                    hide-label
+                    .formatTooltip=${dimensions.length > 0
+                        ? (value: number) => {
+                              const found = dimensions.find(
+                                  d => String(d.value) === String(value)
+                              )
+                              return found ? found.label : String(value)
+                          }
+                        : nothing}
+                    @terra-slider-change=${(event: TerraSliderChangeEvent) => {
+                        console.log('change event', event.detail)
+                        const value =
+                            'value' in event.detail ? event.detail.value : undefined
+                        if (typeof value === 'number') {
+                            this.#setDimensionValue(dim.name, value)
+                        }
+                    }}
+                ></terra-slider>
+            </div>
+        `
+    }
+
+    #setDimensionValue(dimName: string, value: number) {
+        const dimensions = this.#getCommonSelectableDimensions()
+        const found = dimensions.find(d => d.name === dimName)
+        if (!found) {
+            return
+        }
+
+        const normalized = Math.min(Math.max(Math.round(value), 1), found.size)
+
+        this.selectedDimensionIndexes = {
+            ...this.selectedDimensionIndexes,
+            [dimName]: normalized,
+        }
+    }
+
+    #renderDimensionSelection() {
+        const dimensions = this.#getCommonSelectableDimensions()
+
+        if (!dimensions.length) {
+            return nothing
+        }
+
+        const selectedCount = Object.keys(this.selectedDimensionIndexes).length
+
+        return html`
+            <terra-accordion>
+                <div slot="summary">
+                    <span class="accordion-title">Select Dimensions:</span>
+                </div>
+                <div
+                    slot="summary-right"
+                    style="display: flex; align-items: center; gap: 10px;"
+                >
+                    ${selectedCount
+                        ? html`<span class="accordion-value"
+                              >${selectedCount}
+                              dimension${selectedCount === 1 ? '' : 's'}
+                              selected</span
+                          >`
+                        : nothing}
+                    <button class="reset-btn" @click=${this.#resetDimensionSelection}>
+                        Reset
+                    </button>
+                </div>
+                <div class="accordion-content">
+                    ${dimensions.map(dim => this.#renderDimensionGroup(dim))}
                 </div>
             </terra-accordion>
         `
@@ -1628,8 +1742,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         let filteredVariables = variables
 
         if (this.#isGiovanniFormat() && this.giovanniConfiguredVariables) {
-            const originalCount = variables.length
-
             filteredVariables = variables.filter(v => {
                 // Convert internal format (dots) to Giovanni format (underscores)
                 // Example: M2T1NXSLV_5.12.4_CLDPRS -> M2T1NXSLV_5_12_4_CLDPRS
@@ -1648,10 +1760,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
                 return this.giovanniConfiguredVariables!.has(giovanniVariableName)
             })
-
-            console.log(
-                `Filtered ${originalCount - filteredVariables.length} variables for Giovanni format. Showing ${filteredVariables.length} of ${originalCount}.`
-            )
         }
 
         const root: Record<string, any> = {}
@@ -1673,8 +1781,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderVariableTree(node: Record<string, any>, path: string[]): unknown {
         const isGiovanni = this.#isGiovanniFormat()
-
-        console.log('rendering variable tree ', this.variablesQuery.result)
 
         return html`
             <div style="margin-left: ${path.length * 20}px;">
@@ -1800,6 +1906,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 )
             }
         }
+
+        this.#pruneDimensionSelections()
     }
 
     #markFieldTouched(field: string) {
@@ -1808,6 +1916,121 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #resetVariableSelection = () => {
         this.selectedVariables = []
+        this.#resetDimensionSelection()
+    }
+
+    #resetDimensionSelection() {
+        this.selectedDimensionIndexes = {}
+    }
+
+    #isDimensionExcluded(dim: { Name: string; Type?: string }) {
+        const normalizedName = dim.Name?.toLowerCase() ?? ''
+        const normalizedType = (dim.Type ?? '').toLowerCase()
+
+        return ['time', 'latitude', 'longitude', 'lat', 'lon', 'x', 'y'].some(
+            value => normalizedName.includes(value) || normalizedType.includes(value)
+        )
+    }
+
+    #getCommonSelectableDimensions(): Array<{
+        name: string
+        type: string
+        size: number
+    }> {
+        const variables = this.variablesQuery.result?.data
+
+        if (!variables) {
+            console.log('no varibles found, cannot determine dimensions')
+            return []
+        }
+
+        type DimensionEntry = { Name: string; Size: number | string; Type?: string }
+
+        const allUmmVars = variables.items ?? []
+
+        if (!allUmmVars.length) {
+            return []
+        }
+
+        const allDimensionSets: DimensionEntry[][] = allUmmVars.map(
+            v => v.umm.Dimensions ?? []
+        )
+
+        if (!allDimensionSets.length) {
+            return []
+        }
+
+        const allDimensionNames = Array.from(
+            new Set(allDimensionSets.flatMap(dimSet => dimSet.map(dim => dim.Name)))
+        )
+
+        const filteredCommon = allDimensionNames
+            .map(name => {
+                const dims = allDimensionSets
+                    .map(set => set.find(dim => dim.Name === name))
+                    .filter((d): d is DimensionEntry => Boolean(d))
+
+                if (!dims.length) {
+                    return null
+                }
+
+                const validSizes = dims
+                    .filter(dim => dim.Size !== undefined && dim.Size !== 'Varies')
+                    .map(dim => Number(dim.Size))
+                    .filter(size => Number.isFinite(size) && size > 0)
+
+                if (!validSizes.length) {
+                    return null
+                }
+
+                const size = Math.min(...validSizes)
+
+                return {
+                    name,
+                    type: dims[0]?.Type ?? 'OTHER',
+                    size,
+                }
+            })
+            .filter((entry): entry is { name: string; type: string; size: number } =>
+                Boolean(entry)
+            )
+            .filter(
+                entry =>
+                    !this.#isDimensionExcluded({ Name: entry.name, Type: entry.type })
+            )
+
+        console.log('common dimensions', filteredCommon)
+
+        return filteredCommon
+    }
+
+    #pruneDimensionSelections() {
+        const commonDimensions = this.#getCommonSelectableDimensions()
+        const allowed = new Map(commonDimensions.map(d => [d.name, d.size]))
+
+        const pruned: Record<string, number> = {}
+
+        for (const [dimName, value] of Object.entries(
+            this.selectedDimensionIndexes
+        )) {
+            if (!allowed.has(dimName)) {
+                continue
+            }
+
+            const maxSize = allowed.get(dimName) ?? 0
+            if (typeof value !== 'number') {
+                continue
+            }
+
+            const safeValue = Math.round(value)
+            if (safeValue < 1 || safeValue > maxSize) {
+                continue
+            }
+
+            pruned[dimName] = safeValue
+        }
+
+        this.selectedDimensionIndexes = pruned
     }
 
     #renderJobStatus() {
@@ -2181,6 +2404,19 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     <dd>${variables.map(v => html`<div>${v}</div>`)}</dd>
                 </div>
                 <div>
+                    <dt><strong>Dimensions</strong></dt>
+                    <dd>
+                        ${Object.entries(this.selectedDimensionIndexes).length
+                            ? Object.entries(this.selectedDimensionIndexes).map(
+                                  ([dimName, value]) =>
+                                      html`<div>
+                                          <strong>${dimName}:</strong> ${value}
+                                      </div>`
+                              )
+                            : '—'}
+                    </dd>
+                </div>
+                <div>
                     <dt><strong>Date Range</strong></dt>
                     <dd>${dateRange}</dd>
                 </div>
@@ -2495,8 +2731,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #handleJupyterNotebookClick() {
         const notebook = getNotebook(this)
-
-        console.log('sending data to JupyterLite')
 
         sendDataToJupyterNotebook('load-notebook', {
             filename: `subset_${this.controller.currentJob?.jobID}.ipynb`,

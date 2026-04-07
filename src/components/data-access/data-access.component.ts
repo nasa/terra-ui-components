@@ -378,6 +378,8 @@ export default class TerraDataAccess extends TerraElement {
             }
 
             // Check if it's a shape from geoJson
+            // TODO: fix
+            /*
             if (this.location.geoJson?.features?.[0]?.properties) {
                 const props = this.location.geoJson.features[0].properties
                 // Try to find a name property
@@ -390,7 +392,7 @@ export default class TerraDataAccess extends TerraElement {
                 if (name) {
                     return name
                 }
-            }
+            }*/
 
             // Fallback: show bounds if available
             if (this.location.type === MapEventType.BBOX && this.location.bounds) {
@@ -529,6 +531,8 @@ export default class TerraDataAccess extends TerraElement {
                 }
 
                 // For shapes (geoJson), try to extract bbox from geoJson
+                // TODO: fix
+                /*
                 if (
                     this.location.geoJson?.bbox &&
                     Array.isArray(this.location.geoJson.bbox)
@@ -545,7 +549,7 @@ export default class TerraDataAccess extends TerraElement {
                         const buffer = 0.01
                         return `${(lng - buffer).toFixed(2)},${(lat - buffer).toFixed(2)},${(lng + buffer).toFixed(2)},${(lat + buffer).toFixed(2)}`
                     }
-                }
+                }*/
             } catch (error) {
                 console.warn('Error formatting bbox for Python script:', error)
             }
@@ -679,17 +683,17 @@ export default class TerraDataAccess extends TerraElement {
                         <div class="datepicker-container">
                             ${this.showPanelClose
                                 ? html`
-                                     <div class="dropdown-header">
-                                        <button
-                                            class="panel-close"
-                                            @click=${() =>
-                                                this.dateDropdownRef.value?.hide()}
-                                            aria-label="Close"
-                                        >
-                                        ×
-                                        </button>
-                                     </div>
-                                    `
+                                      <div class="dropdown-header">
+                                          <button
+                                              class="panel-close"
+                                              @click=${() =>
+                                                  this.dateDropdownRef.value?.hide()}
+                                              aria-label="Close"
+                                          >
+                                              ×
+                                          </button>
+                                      </div>
+                                  `
                                 : nothing}
                             <terra-date-picker
                                 ${ref(this.datePickerRef)}
@@ -768,17 +772,17 @@ export default class TerraDataAccess extends TerraElement {
                         <div class="spatialpicker-container">
                             ${this.showPanelClose
                                 ? html`
-                                    <div class="dropdown-header">
-                                        <button
-                                            class="panel-close"
-                                            @click=${() =>
-                                                this.spatialDropdownRef.value?.hide()}
-                                            aria-label="Close"
-                                        >
-                                        ×
-                                        </button>
-                                    </div>
-                                `
+                                      <div class="dropdown-header">
+                                          <button
+                                              class="panel-close"
+                                              @click=${() =>
+                                                  this.spatialDropdownRef.value?.hide()}
+                                              aria-label="Close"
+                                          >
+                                              ×
+                                          </button>
+                                      </div>
+                                  `
                                 : nothing}
                             <terra-spatial-picker
                                 ${ref(this.spatialPickerRef)}

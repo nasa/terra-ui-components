@@ -7,7 +7,7 @@ import type { API } from 'nouislider'
 export function mergeTooltips(
     slider: HTMLElement & { noUiSlider: API }, // HtmlElement with an initialized slider
     threshold = 15, // minimum proximity (in percentages) to merge tooltips
-    separator = ' - ' // string joining tooltips
+    separator = '&nbsp;-&nbsp;' // string joining tooltips
 ) {
     const textIsRtl = getComputedStyle(slider).direction === 'rtl'
     const isRtl = slider.noUiSlider.options.direction === 'rtl'
@@ -75,6 +75,20 @@ export function mergeTooltips(
                             (textIsRtl && !isVertical ? 100 : 0) +
                             offset / handlesInPool -
                             lastOffset
+
+                        // use custom tooltip formatter, if it exists
+                        // @ts-expect-error
+                        if (slider.noUiSlider.options.tooltips?.to) {
+                            // for each value in poolValues, format it using the tooltip formatter, using the poolIndex
+                            poolValues[poolIndex] = poolValues[poolIndex].map(
+                                value =>
+                                    // @ts-expect-error
+                                    slider.noUiSlider.options.tooltips?.to?.(
+                                        value,
+                                        poolIndex
+                                    ) ?? value
+                            )
+                        }
 
                         // @ts-expect-error
                         tooltips[handleNumber].innerHTML =
