@@ -156,6 +156,9 @@ export default class TerraMap extends TerraElement {
     @state()
     cursorCoordinates: [number, number] = [0, 0]
 
+    @state()
+    shapeLoading: boolean = false
+
     #service?: MapService
 
     @watch([
@@ -205,6 +208,9 @@ export default class TerraMap extends TerraElement {
             onDraw: detail => {
                 this.emit('terra-map-change', { detail })
             },
+            onShapeLoading: loading => {
+                this.shapeLoading = loading
+            },
         })
     }
 
@@ -212,7 +218,7 @@ export default class TerraMap extends TerraElement {
         return html`
             <select
                 class="map__select form-control"
-                @change=${(e: any) => console.log('handle change ', e)}
+                @change=${(e: any) => this.#service?.handleShapeSelect(e)}
             >
                 <option value="">Select a Shape...</option>
 
@@ -249,6 +255,13 @@ export default class TerraMap extends TerraElement {
                                       ${this.cursorCoordinates[0].toFixed(2)}</strong
                                   >
                               </div>
+                          </div>
+                      `
+                    : nothing}
+                ${this.shapeLoading
+                    ? html`
+                          <div class="map__loading-overlay">
+                              <div class="map__spinner"></div>
                           </div>
                       `
                     : nothing}

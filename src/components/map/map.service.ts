@@ -18,6 +18,8 @@ import { MapEventType, type MapEventDetail } from './type.js'
 import { LatLngBounds } from './models/LatLngBounds.js'
 import { LatLng } from './models/LatLng.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
+import GeoJSON from 'ol/format/GeoJSON.js'
+import { GiovanniGeoJsonShapes } from '../../geojson/giovanni-geojson.js'
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -32,6 +34,7 @@ type MapOptions = {
     noWorldWrap?: boolean
     value?: string
     fitToValue?: boolean
+    onShapeLoading?: (loading: boolean) => void
     onMouseMove?: (coordinate: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
 }
@@ -41,6 +44,10 @@ export class MapService {
     #map: Map
     #drawToolbarControl: DrawToolbarControl
     #options: MapOptions
+    #shapeLayer: VectorLayer
+    #geoJsonShapes = new GiovanniGeoJsonShapes()
+    #onDraw: MapOptions['onDraw']
+    #onShapeLoading: MapOptions['onShapeLoading']
 
     constructor(el: HTMLElement, options: MapOptions) {
         this.#el = el
@@ -120,17 +127,69 @@ export class MapService {
         })
     }
 
+    async handleShapeSelect(event: Event) {
+        const select = event.target as HTMLSelectElement
+        const selectedShape = select.value
+
+        if (!selectedShape) return
+
+        // Clear any previously loaded shape
+        this.#shapeLayer.getSource()!.clear()
+
+        this.#onShapeLoading?.(true)
+
+        try {
+            const shapeGeoJson = await this.#geoJsonShapes.getGeoJson(selectedShape)
+
+            // Parse the GeoJSON into OpenLayers features, reprojecting from WGS84 to the map projection
+            const format = new GeoJSON()
+            const features = format.readFeatures(shapeGeoJson, {
+                featureProjection: 'EPSG:3857',
+            })
+
+            const source = this.#shapeLayer.getSource()!
+            source.addFeatures(features)
+
+            // Fit the view to the shape's extent
+            const extent = source.getExtent()
+
+            if (!extent) {
+                return
+            }
+
+            this.#map.getView().fit(extent, {
+                padding: [20, 20, 20, 20],
+                duration: 250,
+            })
+
+            // Emit the shape as a polygon draw event so listeners can react
+            // Note: if MapEventDetail is extended to include a geoJson field in future,
+            // pass shapeGeoJson here so consumers (e.g. data-access) can use it for bbox extraction
+            this.#onDraw?.({
+                cause: 'draw',
+                type: MapEventType.POLYGON,
+                latLngs: [],
+            })
+        } finally {
+            this.#onShapeLoading?.(false)
+        }
+    }
+
     #createMap(options: MapOptions) {
+        this.#onDraw = options.onDraw
+        this.#onShapeLoading = options.onShapeLoading
+
         const baseLayer = this.#createBaseLayer(options)
         const graticuleLayer = this.#createGraticuleLayer(options)
         const drawLayer = this.#createDrawLayer()
+        this.#shapeLayer = this.#createShapeLayer()
 
         const projection = getProjection('EPSG:3857')
         const worldExtent = projection?.getExtent()
 
         const map = new Map({
             target: this.#el,
-            layers: [baseLayer, graticuleLayer, drawLayer],
+            layers: [baseLayer, graticuleLayer, this.#shapeLayer, drawLayer],
             view: new View({
                 center: [0, 0],
                 zoom: options.zoom,
@@ -259,6 +318,18 @@ export class MapService {
         return new VectorLayer({
             source: source,
         })
+    }
+
+    #createShapeLayer() {
+        const source = new VectorSource()
+
+        const layer = new VectorLayer({
+            source,
+        })
+
+        layer.set('name', 'shapes')
+
+        return layer
     }
 
     #updateMapSizeOnResize() {

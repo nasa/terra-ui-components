@@ -467,4 +467,31 @@ export default css`
         box-shadow: none;
         margin-bottom: 1rem;
     }
+
+    .map__loading-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.55);
+        backdrop-filter: blur(2px);
+        z-index: 1000;
+        pointer-events: none;
+    }
+
+    .map__spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(0, 0, 0, 0.12);
+        border-top-color: #3388ff;
+        border-radius: 50%;
+        animation: map-spin 0.75s linear infinite;
+    }
+
+    @keyframes map-spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
 `
