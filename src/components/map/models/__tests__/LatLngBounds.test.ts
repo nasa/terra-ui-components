@@ -19,29 +19,29 @@ describe('LatLngBounds', () => {
         it('should return correct SouthWest corner', () => {
             const sw = bounds.getSouthWest()
             expect(sw).to.be.instanceOf(LatLng)
-            expect(sw.lat).to.equal(-122.4194)
-            expect(sw.lng).to.equal(37.7749)
+            expect(sw.lng).to.equal(-122.4194)
+            expect(sw.lat).to.equal(37.7749)
         })
 
         it('should return correct NorthEast corner', () => {
             const ne = bounds.getNorthEast()
             expect(ne).to.be.instanceOf(LatLng)
-            expect(ne.lat).to.equal(-122.358)
-            expect(ne.lng).to.equal(37.8199)
+            expect(ne.lng).to.equal(-122.358)
+            expect(ne.lat).to.equal(37.8199)
         })
 
         it('should return correct NorthWest corner', () => {
             const nw = bounds.getNorthWest()
             expect(nw).to.be.instanceOf(LatLng)
-            expect(nw.lat).to.equal(-122.4194)
-            expect(nw.lng).to.equal(37.8199)
+            expect(nw.lng).to.equal(-122.4194)
+            expect(nw.lat).to.equal(37.8199)
         })
 
         it('should return correct SouthEast corner', () => {
             const se = bounds.getSouthEast()
             expect(se).to.be.instanceOf(LatLng)
-            expect(se.lat).to.equal(-122.358)
-            expect(se.lng).to.equal(37.7749)
+            expect(se.lng).to.equal(-122.358)
+            expect(se.lat).to.equal(37.7749)
         })
     })
 
@@ -137,10 +137,10 @@ describe('LatLngBounds', () => {
             const sw = bounds.getSouthWest()
             const ne = bounds.getNorthEast()
 
-            expect(sw.lat).to.equal(-122.9)
-            expect(sw.lng).to.equal(37.2)
-            expect(ne.lat).to.equal(-122.0)
-            expect(ne.lng).to.equal(37.9)
+            expect(sw.lng).to.equal(-122.9)
+            expect(sw.lat).to.equal(37.2)
+            expect(ne.lng).to.equal(-122.0)
+            expect(ne.lat).to.equal(37.9)
         })
 
         it('should handle NYC area bounds', () => {

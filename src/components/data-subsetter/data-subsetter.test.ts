@@ -1,6 +1,18 @@
 import { expect, fixture, html, elementUpdated } from '@open-wc/testing'
 import './data-subsetter.js'
 
+const getAccordionContent = (el: any) => {
+    const accordions = Array.from(
+        el.shadowRoot?.querySelectorAll('terra-accordion') ?? []
+    ) as Element[]
+
+    const dimensionsAccordion = accordions.find(acc =>
+        acc.textContent?.includes('Select Dimensions:')
+    )
+
+    return dimensionsAccordion?.querySelector('.accordion-content')
+}
+
 describe('<terra-data-subsetter> dimension intersection support', () => {
     it('renders common dimensions for all available variables when no variable selected', async () => {
         const el: any = await fixture(
@@ -42,42 +54,52 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
             },
         }
 
-        el.variablesQuery.result = {
-            data: {
-                hits: 2,
-                items: [
-                    {
-                        umm: {
-                            Name: 'var1',
-                            Dimensions: [
-                                { Name: 'DimA', Size: 5, Type: 'OTHER' },
-                                { Name: 'time', Size: 10, Type: 'TIME_DIMENSION' },
-                            ],
+        el.dataAccessMode = 'subset'
+
+        el.variablesQuery = {
+            result: {
+                data: {
+                    hits: 2,
+                    items: [
+                        {
+                            umm: {
+                                Name: 'var1',
+                                Dimensions: [
+                                    { Name: 'DimA', Size: 5, Type: 'OTHER' },
+                                    {
+                                        Name: 'time',
+                                        Size: 10,
+                                        Type: 'TIME_DIMENSION',
+                                    },
+                                ],
+                            },
                         },
-                    },
-                    {
-                        umm: {
-                            Name: 'var2',
-                            Dimensions: [
-                                { Name: 'DimA', Size: 5, Type: 'OTHER' },
-                                {
-                                    Name: 'lat',
-                                    Size: 180,
-                                    Type: 'LATITUDE_DIMENSION',
-                                },
-                            ],
+                        {
+                            umm: {
+                                Name: 'var2',
+                                Dimensions: [
+                                    { Name: 'DimA', Size: 5, Type: 'OTHER' },
+                                    {
+                                        Name: 'lat',
+                                        Size: 180,
+                                        Type: 'LATITUDE_DIMENSION',
+                                    },
+                                ],
+                            },
                         },
-                    },
-                ],
+                    ],
+                },
             },
         }
 
         await elementUpdated(el)
 
+        const accordionContent = getAccordionContent(el)
+
         expect(el.shadowRoot?.textContent).to.include('Select Dimensions:')
-        expect(el.shadowRoot?.textContent).to.include('DimA')
-        expect(el.shadowRoot?.textContent).to.not.include('time')
-        expect(el.shadowRoot?.textContent).to.not.include('lat')
+        expect(accordionContent?.textContent).to.include('DimA')
+        expect(accordionContent?.textContent).to.not.include('time')
+        expect(accordionContent?.textContent).to.not.include('lat')
     })
 
     it('shows union dimensions when one selected variable has no dimensions', async () => {
@@ -120,23 +142,29 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
             },
         }
 
-        el.variablesQuery.result = {
-            data: {
-                hits: 2,
-                items: [
-                    {
-                        umm: {
-                            Name: 'var1',
-                            Dimensions: [],
+        el.dataAccessMode = 'subset'
+
+        el.variablesQuery = {
+            result: {
+                data: {
+                    hits: 2,
+                    items: [
+                        {
+                            umm: {
+                                Name: 'var1',
+                                Dimensions: [],
+                            },
                         },
-                    },
-                    {
-                        umm: {
-                            Name: 'var2',
-                            Dimensions: [{ Name: 'DimA', Size: 4, Type: 'OTHER' }],
+                        {
+                            umm: {
+                                Name: 'var2',
+                                Dimensions: [
+                                    { Name: 'DimA', Size: 4, Type: 'OTHER' },
+                                ],
+                            },
                         },
-                    },
-                ],
+                    ],
+                },
             },
         }
 
@@ -147,8 +175,10 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
 
         await elementUpdated(el)
 
+        const accordionContent = getAccordionContent(el)
+
         expect(el.shadowRoot?.textContent).to.include('Select Dimensions:')
-        expect(el.shadowRoot?.textContent).to.include('DimA')
+        expect(accordionContent?.textContent).to.include('DimA')
     })
 
     it('renders only common dimensions and excludes time/lat/lon', async () => {
@@ -191,33 +221,41 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
             },
         }
 
-        el.variablesQuery.result = {
-            data: {
-                hits: 2,
-                items: [
-                    {
-                        umm: {
-                            Name: 'var1',
-                            Dimensions: [
-                                { Name: 'DimA', Size: 4, Type: 'OTHER' },
-                                { Name: 'time', Size: 10, Type: 'TIME_DIMENSION' },
-                            ],
+        el.dataAccessMode = 'subset'
+
+        el.variablesQuery = {
+            result: {
+                data: {
+                    hits: 2,
+                    items: [
+                        {
+                            umm: {
+                                Name: 'var1',
+                                Dimensions: [
+                                    { Name: 'DimA', Size: 4, Type: 'OTHER' },
+                                    {
+                                        Name: 'time',
+                                        Size: 10,
+                                        Type: 'TIME_DIMENSION',
+                                    },
+                                ],
+                            },
                         },
-                    },
-                    {
-                        umm: {
-                            Name: 'var2',
-                            Dimensions: [
-                                { Name: 'DimA', Size: 4, Type: 'OTHER' },
-                                {
-                                    Name: 'lat',
-                                    Size: 180,
-                                    Type: 'LATITUDE_DIMENSION',
-                                },
-                            ],
+                        {
+                            umm: {
+                                Name: 'var2',
+                                Dimensions: [
+                                    { Name: 'DimA', Size: 4, Type: 'OTHER' },
+                                    {
+                                        Name: 'lat',
+                                        Size: 180,
+                                        Type: 'LATITUDE_DIMENSION',
+                                    },
+                                ],
+                            },
                         },
-                    },
-                ],
+                    ],
+                },
             },
         }
 
@@ -228,19 +266,16 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
 
         await elementUpdated(el)
 
+        const accordionContent = getAccordionContent(el)
+
         expect(el.shadowRoot?.textContent).to.include('Select Dimensions:')
-        expect(el.shadowRoot?.textContent).to.include('DimA')
-        expect(el.shadowRoot?.textContent).to.not.include('time')
-        expect(el.shadowRoot?.textContent).to.not.include('lat')
+        expect(accordionContent?.textContent).to.include('DimA')
+        expect(accordionContent?.textContent).to.not.include('time')
+        expect(accordionContent?.textContent).to.not.include('lat')
 
-        const expandButton = el.shadowRoot?.querySelector(
-            'button[aria-label="Expand DimA"]'
-        )
-        expect(expandButton).to.exist
-        ;(expandButton as HTMLElement).click()
-        await elementUpdated(el)
-
-        expect(el.shadowRoot?.textContent).to.include('1')
-        expect(el.shadowRoot?.textContent).to.include('4')
+        const slider = accordionContent?.querySelector('terra-slider')
+        expect(slider).to.exist
+        expect((slider as any)?.max).to.equal(4)
+        expect((slider as any)?.min).to.equal(1)
     })
 })
