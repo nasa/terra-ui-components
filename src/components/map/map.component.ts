@@ -6,7 +6,6 @@ import { map } from 'lit/directives/map.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import { Leaflet } from './leaflet-utils.js'
 import { MapController } from './map.controller.js'
 import styles from './map.styles.js'
 import type { ShapeFilesResponse } from '../../geojson/types.js'
@@ -141,8 +140,14 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'spatial-constraints' })
     spatialConstraints: string = '-180, -90, 180, 90'
 
-    @property({ type: Array })
-    value: any = []
+    @property({ type: String })
+    value?: string
+
+    /**
+     * if true, when setting a value, the map will focus on the feature
+     */
+    @property({ type: Boolean, attribute: 'fit-to-feature' })
+    fitToValue: boolean = false
 
     // querySelector for the map element
     @query('[part="map"]')
@@ -170,14 +175,8 @@ export default class TerraMap extends TerraElement {
 
     @watch('value')
     valueChanged(_oldValue: any, newValue: any) {
-        if (newValue.length > 0) {
-            this.map?.setValue(this.value)
-        } else if (newValue.length === 0 && this.map.isMapReady) {
-            this.map.clearLayers()
-        }
+        this.#service?.setValue(newValue)
     }
-
-    map = new Leaflet()
 
     /**
      * List of geojson shapes
@@ -198,125 +197,22 @@ export default class TerraMap extends TerraElement {
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
             noWorldWrap: this.noWorldWrap,
+            value: this.value,
+            fitToValue: this.fitToValue,
             onMouseMove: coordinate => {
                 this.cursorCoordinates = coordinate
             },
             onDraw: detail => {
-                console.log('emitting ', detail)
                 this.emit('terra-map-change', { detail })
             },
         })
-
-        /*
-        await this.map.initializeMap(this.mapElement, {
-            hasNavigation: this.hasNavigation,
-            initialValue: this.value,
-            staticMode: this.staticMode,
-            noWorldWrap: this.noWorldWrap,
-        })
-
-        this.map.on('draw', (layer: any) => {
-            // Skip validation for the first draw (initial value) - only validate user-initiated draws
-            if (this.hasProcessedInitialDraw) {
-                // Validate against spatial constraints before emitting
-                const constraints = this.#parseConstraints()
-                if (constraints) {
-                    if (
-                        'latLng' in layer &&
-                        !this.#isPointInsideBounds(layer.latLng, constraints)
-                    ) {
-                        // Point is outside constraints, clear it and don't emit
-                        this.map.clearLayers()
-                        return
-                    }
-                    if (
-                        'bounds' in layer &&
-                        !this.#isBoundsInsideBounds(layer.bounds, constraints)
-                    ) {
-                        // Bounds outside constraints, clear it and don't emit
-                        this.map.clearLayers()
-                        return
-                    }
-                }
-            } else {
-                // Mark that we've processed the initial draw
-                this.hasProcessedInitialDraw = true
-            }
-
-            
-        })
-
-        this.map.on('clear', (_e: any) =>
-            this.emit('terra-map-change', {
-                detail: {
-                    cause: 'clear',
-                },
-            })
-        )
-
-        this.#markDynamicLeafletContent()*/
     }
-
-    getDrawLayer() {
-        return this.map.editableLayers.getLayers()[0]
-    }
-
-    /*
-    #parseConstraints() {
-        try {
-            const coords = this.spatialConstraints
-                ?.split(',')
-                .map(c => parseFloat(c.trim()))
-            if (!coords || coords.length !== 4) return null
-            return coords
-        } catch {
-            return null
-        }
-    }
-*/
-    /*
-    #normalizeBounds(bounds: number[]) {
-        const [west, south, east, north] = bounds
-        return { west, south, east, north }
-    }*/
-
-    /*
-    #isPointInsideBounds(point: any, rawBounds: number[]): boolean {
-        if (!Array.isArray(rawBounds) || rawBounds.length !== 4) {
-            return true
-        }
-
-        const { west, south, east, north } = this.#normalizeBounds(rawBounds)
-
-        return (
-            point.lat >= south &&
-            point.lat <= north &&
-            point.lng >= west &&
-            point.lng <= east
-        )
-    }*/
-
-    /*
-    #isBoundsInsideBounds(inner: any, rawOuter: number[]): boolean {
-        if (!Array.isArray(rawOuter) || rawOuter.length !== 4) {
-            return true
-        }
-
-        const { west, south, east, north } = this.#normalizeBounds(rawOuter)
-
-        return (
-            inner.getSouth() >= south &&
-            inner.getNorth() <= north &&
-            inner.getWest() >= west &&
-            inner.getEast() <= east
-        )
-    }*/
 
     selectTemplate() {
         return html`
             <select
                 class="map__select form-control"
-                @change=${this.map.handleShapeSelect}
+                @change=${(e: any) => console.log('handle change ', e)}
             >
                 <option value="">Select a Shape...</option>
 
@@ -358,9 +254,5 @@ export default class TerraMap extends TerraElement {
                     : nothing}
             </div>
         `
-    }
-
-    invalidateSize() {
-        this.map.map.invalidateSize()
     }
 }

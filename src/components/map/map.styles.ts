@@ -411,19 +411,8 @@ export default css`
         border: solid 1px var(--terra-map-border-color);
     }
 
-    .map.static .leaflet-control-container {
+    .map.static .ol-control {
         display: none;
-    }
-
-    .leaflet-mouse-position-container {
-        color: var(--terra-input-color);
-        padding: 5px;
-        background-color: var(--terra-input-background-color);
-    }
-
-    .leaflet-mouse-position-text {
-        margin: 0;
-        font-weight: 700;
     }
 
     .control-button {

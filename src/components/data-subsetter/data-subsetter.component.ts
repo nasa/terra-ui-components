@@ -1311,12 +1311,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
     }
 
-    #handleRegionAccordionToggle() {
-        // sometimes the map will show up kind of wonky when it's in an accordion
-        // this makes sure it resets itself if that occurs
-        this.spatialPicker?.invalidateSize()
-    }
-
     isLatLng(value: any): value is LatLng {
         return value && typeof value.lat === 'number' && typeof value.lng === 'number'
     }
@@ -1359,9 +1353,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         return html`
-            <terra-accordion
-                @terra-accordion-toggle=${this.#handleRegionAccordionToggle}
-            >
+            <terra-accordion>
                 <div slot="summary">
                     <span class="accordion-title">Refine Region:</span>
                 </div>

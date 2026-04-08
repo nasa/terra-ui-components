@@ -18,7 +18,6 @@ import type {
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
-import { parseBoundingBox } from '../map/leaflet-utils.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
@@ -89,11 +88,6 @@ export default class TerraPlotToolbar extends TerraElement {
     @state()
     showLocationTooltip: boolean = false
 
-    @state()
-    locationMapValue: any = []
-
-    #tooltipTimeout: number | null = null
-
     @query('#menu') menu: HTMLMenuElement
 
     @query('.bottom-sheet') private bottomSheet: HTMLDivElement
@@ -116,30 +110,6 @@ export default class TerraPlotToolbar extends TerraElement {
     }
     closeMenu() {
         this.activeMenuItem = null
-    }
-
-    #handleLocationMouseEnter() {
-        if (this.location && this.location.trim()) {
-            try {
-                this.locationMapValue = parseBoundingBox(this.location.trim())
-                // Add a small delay to prevent flickering
-                this.#tooltipTimeout = window.setTimeout(() => {
-                    this.showLocationTooltip = true
-                }, 150)
-            } catch (error) {
-                console.warn('Failed to parse location for tooltip:', error)
-                // Don't show tooltip if parsing fails
-                this.showLocationTooltip = false
-            }
-        }
-    }
-
-    #handleLocationMouseLeave() {
-        if (this.#tooltipTimeout) {
-            clearTimeout(this.#tooltipTimeout)
-            this.#tooltipTimeout = null
-        }
-        this.showLocationTooltip = false
     }
 
     #getLocationIcon() {
@@ -214,10 +184,10 @@ export default class TerraPlotToolbar extends TerraElement {
                                           ? html`• ${this.#getLocationIcon()}
                                                 <span
                                                     class="location-text"
-                                                    @mouseenter=${this
-                                                        .#handleLocationMouseEnter}
-                                                    @mouseleave=${this
-                                                        .#handleLocationMouseLeave}
+                                                    @mouseenter=${() =>
+                                                        (this.showLocationTooltip = true)}
+                                                    @mouseleave=${() =>
+                                                        (this.showLocationTooltip = true)}
                                                     >${(this.location ?? '').replace(
                                                         /,/g,
                                                         ', '
@@ -441,11 +411,8 @@ export default class TerraPlotToolbar extends TerraElement {
                               ? html`
                                     <div class="location-tooltip">
                                         <terra-map
-                                            .value=${this.locationMapValue}
-                                            zoom="4"
-                                            has-navigation="false"
-                                            hide-bounding-box-selection="true"
-                                            hide-point-selection="true"
+                                            .value=${this.location}
+                                            .fitToValue=${true}
                                             .staticMode=${true}
                                             style="width: 300px; height: 200px;"
                                         ></terra-map>

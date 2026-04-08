@@ -2,8 +2,12 @@ import { Control } from 'ol/control.js'
 import { Draw } from 'ol/interaction.js'
 import { createBox } from 'ol/interaction/Draw.js'
 import type VectorLayer from 'ol/layer/Vector.js'
-import { transformExtent } from 'ol/proj.js'
+import Feature from 'ol/Feature.js'
+import { Point, Polygon } from 'ol/geom.js'
+import { transform, transformExtent } from 'ol/proj.js'
 import { Fill, Stroke, Style } from 'ol/style.js'
+import { LatLng } from '../models/LatLng.js'
+import { LatLngBounds } from '../models/LatLngBounds.js'
 
 export type DrawTool = 'bbox' | 'polygon' | 'point' | 'circle'
 
@@ -75,12 +79,80 @@ export class DrawToolbarControl extends Control {
         this.toggleButtonVisibility('circle')
     }
 
+    setValue(value: LatLng | LatLngBounds, fitToValue: boolean = false) {
+        this.#cleanup()
+
+        const source = this.vectorLayer.getSource()
+        if (!source) return
+
+        source.clear()
+
+        let feature
+
+        if (value instanceof LatLng) {
+            feature = this.buildPointFeature(value)
+        } else if (value instanceof LatLngBounds) {
+            feature = this.buildBBoxFeature(value)
+        }
+
+        if (!feature) return
+
+        source.addFeature(feature)
+
+        if (fitToValue) {
+            this.#fitToFeature(feature)
+        }
+    }
+
     setMap(map: any) {
         super.setMap(map)
 
         if (map) {
             map.getViewport().appendChild(this.#tooltipEl)
         }
+    }
+
+    buildPointFeature(latLng: LatLng) {
+        const coords = transform([latLng.lng, latLng.lat], 'EPSG:4326', 'EPSG:3857')
+        const point = new Point(coords)
+        const feature = new Feature({ geometry: point })
+        feature.set('drawtool', 'point')
+        return feature
+    }
+
+    buildBBoxFeature(bounds: LatLngBounds) {
+        const west = bounds.getWest()
+        const south = bounds.getSouth()
+        const east = bounds.getEast()
+        const north = bounds.getNorth()
+        const coordinates = [
+            [west, south],
+            [west, north],
+            [east, north],
+            [east, south],
+            [west, south],
+        ].map(coord => transform(coord, 'EPSG:4326', 'EPSG:3857'))
+        const polygon = new Polygon([coordinates])
+        const feature = new Feature({ geometry: polygon })
+        feature.set('drawtool', 'bbox')
+        return feature
+    }
+
+    #fitToFeature(feature: Feature) {
+        const map = this.getMap()
+        if (!map) return
+
+        const geometry = feature.getGeometry()
+        if (!geometry) return
+
+        const extent = geometry.getExtent()
+        if (!extent) return
+
+        map.getView().fit(extent, {
+            padding: [20, 20, 20, 20],
+            maxZoom: 5, // don't allow zooming in too far, you lose context of where you are on the map
+            duration: 250,
+        })
     }
 
     toggleButtonVisibility(tool: DrawTool) {

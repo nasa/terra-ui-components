@@ -20,7 +20,6 @@ import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
-import { StringifyBoundingBox } from '../map/leaflet-utils.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import type {
     IDatasource,
@@ -304,14 +303,6 @@ export default class TerraDataAccess extends TerraElement {
         this.#gridApi?.purgeInfiniteCache()
     }
 
-    #handleSpatialDropdownShow() {
-        // Trigger invalidateSize on the map when dropdown opens
-        // This ensures the Leaflet map recalculates its size correctly
-        setTimeout(() => {
-            this.spatialPickerRef.value?.invalidateSize()
-        }, 0)
-    }
-
     #handleDateRangeChange(event: CustomEvent) {
         const detail = event.detail
         this.startDate = detail.startDate || ''
@@ -332,7 +323,7 @@ export default class TerraDataAccess extends TerraElement {
                     timeZone: 'UTC',
                 })
             }
-            return `${formatDate(this.startDate)} – ${formatDate(this.endDate)}`
+            return `${formatDate(this.startDate)} \u2013 ${formatDate(this.endDate)}`
         }
         return 'Date Range'
     }
@@ -367,14 +358,8 @@ export default class TerraDataAccess extends TerraElement {
             }
 
             if (this.location.type === MapEventType.BBOX && this.location.bounds) {
-                const boundsStr = StringifyBoundingBox(this.location.bounds)
-                const coords = boundsStr.split(', ').map(c => parseFloat(c.trim()))
-
-                if (coords.length === 4) {
-                    return `${coords[1].toFixed(2)}, ${coords[0].toFixed(2)}, ${coords[3].toFixed(2)}, ${coords[2].toFixed(2)}`
-                }
-
-                return boundsStr
+                const b = this.location.bounds
+                return `${b.getSouth().toFixed(2)}, ${b.getWest().toFixed(2)}, ${b.getNorth().toFixed(2)}, ${b.getEast().toFixed(2)}`
             }
 
             // Check if it's a shape from geoJson
@@ -396,7 +381,8 @@ export default class TerraDataAccess extends TerraElement {
 
             // Fallback: show bounds if available
             if (this.location.type === MapEventType.BBOX && this.location.bounds) {
-                return StringifyBoundingBox(this.location.bounds)
+                const b = this.location.bounds
+                return `${b.getSouth().toFixed(2)}, ${b.getWest().toFixed(2)}, ${b.getNorth().toFixed(2)}, ${b.getEast().toFixed(2)}`
             }
         } catch (error) {
             // If formatting fails, return default
@@ -462,7 +448,7 @@ export default class TerraDataAccess extends TerraElement {
 
     #getCloudCoverButtonText(): string {
         if (this.cloudCover.min !== undefined && this.cloudCover.max !== undefined) {
-            return `${this.cloudCover.min.toFixed(1)}% – ${this.cloudCover.max.toFixed(1)}%`
+            return `${this.cloudCover.min.toFixed(1)}% \u2013 ${this.cloudCover.max.toFixed(1)}%`
         }
         return 'Cloud Cover'
     }
@@ -507,16 +493,8 @@ export default class TerraDataAccess extends TerraElement {
                     this.location.type === MapEventType.BBOX &&
                     this.location.bounds
                 ) {
-                    // StringifyBoundingBox returns format: "lng1, lat1, lng2, lat2" (with spaces)
-                    // We need to remove spaces and ensure it's west,south,east,north
-                    const boundsStr = StringifyBoundingBox(this.location.bounds)
-                    // Remove spaces and split to verify format
-                    const coords = boundsStr.split(',').map(c => parseFloat(c.trim()))
-                    if (coords.length === 4) {
-                        // StringifyBoundingBox returns: west, south, east, north already
-                        return coords.join(',')
-                    }
-                    return boundsStr.replace(/\s+/g, '')
+                    // toBBoxString() returns west,south,east,north (no spaces)
+                    return this.location.bounds.toBBoxString()
                 }
 
                 // For point type, create a small bbox around the point (0.01 degree buffer)
@@ -739,7 +717,6 @@ export default class TerraDataAccess extends TerraElement {
                         placement="bottom-start"
                         distance="4"
                         hoist
-                        @terra-show=${this.#handleSpatialDropdownShow}
                         ${ref(this.spatialDropdownRef)}
                     >
                         <div slot="trigger" class="filter">

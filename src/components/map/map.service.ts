@@ -7,7 +7,7 @@ import {
     type ProjectionLike,
     get as getProjection,
 } from 'ol/proj.js'
-import { OSM } from 'ol/source.js'
+import OSM from 'ol/source/OSM.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
 import VectorSource, { VectorSourceEvent } from 'ol/source/Vector.js'
@@ -17,6 +17,7 @@ import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
 import { MapEventType, type MapEventDetail } from './type.js'
 import { LatLngBounds } from './models/LatLngBounds.js'
 import { LatLng } from './models/LatLng.js'
+import { BadRequestException } from '../../exceptions/http.exception.js'
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -29,6 +30,8 @@ type MapOptions = {
     showPointSelection?: boolean
     showCircleSelection?: boolean
     noWorldWrap?: boolean
+    value?: string
+    fitToValue?: boolean
     onMouseMove?: (coordinate: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
 }
@@ -37,9 +40,11 @@ export class MapService {
     #el: HTMLElement // the map component's root element
     #map: Map
     #drawToolbarControl: DrawToolbarControl
+    #options: MapOptions
 
     constructor(el: HTMLElement, options: MapOptions) {
         this.#el = el
+        this.#options = options
 
         this.#map = this.#createMap(options)
 
@@ -56,6 +61,49 @@ export class MapService {
 
     setZoom(zoom: number) {
         this.#map.getView().setZoom(zoom)
+    }
+
+    setValue(value: string) {
+        const location = this.parseLocationString(value)
+
+        this.#drawToolbarControl.setValue(location, this.#options.fitToValue)
+    }
+
+    /**
+     * takes a string and parses it into a point, bounding box
+     * TODO: support parsing circle and polygon
+     */
+    parseLocationString(location: string) {
+        try {
+            const locationParts = location
+                .split(',')
+                .map(part => parseFloat(part.trim()))
+
+            // handle lat/lng points
+            if (locationParts.length === 2) {
+                return new LatLng(locationParts[0], locationParts[1])
+            }
+
+            // handle bounding box
+            if (locationParts.length === 4) {
+                return new LatLngBounds([
+                    locationParts[0],
+                    locationParts[1],
+                    locationParts[2],
+                    locationParts[3],
+                ])
+            }
+
+            throw new Error(
+                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`
+            )
+        } catch (e) {
+            throw new BadRequestException({
+                message:
+                    'Failed to parse location string. Location must be in format: `lat,lng` for a point or `west,south,east,north` for a bounding box',
+                cause: e,
+            })
+        }
     }
 
     updateDrawToolbarVisibility(options: {
@@ -107,6 +155,10 @@ export class MapService {
 
         map.addControl(this.#drawToolbarControl)
 
+        if (options.value !== undefined) {
+            this.setValue(options.value)
+        }
+
         // listen for when any drawing is completed and dispatch a custom event with the drawn geometry
         drawLayer
             .getSource()!
@@ -134,8 +186,8 @@ export class MapService {
                     const coordinates = geometry.getCoordinates()[0].slice(0, -1) // remove last point (duplicate of first)
 
                     const latLngs = coordinates.map(([x, y]) => {
-                        const latLng = transform([x, y], 'EPSG:3857', 'EPSG:4326')
-                        return new LatLng(latLng[0], latLng[1])
+                        const [lng, lat] = transform([x, y], 'EPSG:3857', 'EPSG:4326')
+                        return new LatLng(lat, lng)
                     })
 
                     options.onDraw?.({
@@ -145,16 +197,16 @@ export class MapService {
                     })
                 } else if (geometry instanceof Point) {
                     const coords = geometry.getCoordinates()
-                    const latLng = transform(coords, 'EPSG:3857', 'EPSG:4326')
+                    const [lng, lat] = transform(coords, 'EPSG:3857', 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
                         type: MapEventType.POINT,
-                        latLng: new LatLng(latLng[0], latLng[1]),
+                        latLng: new LatLng(lat, lng),
                     })
                 } else if (geometry instanceof Circle) {
                     const radius = geometry.getRadius()
-                    const latLngCenter = transform(
+                    const [lng, lat] = transform(
                         geometry.getCenter(),
                         'EPSG:3857',
                         'EPSG:4326'
@@ -163,7 +215,7 @@ export class MapService {
                     options.onDraw?.({
                         cause: 'draw',
                         type: MapEventType.CIRCLE,
-                        center: new LatLng(latLngCenter[0], latLngCenter[1]),
+                        center: new LatLng(lat, lng),
                         radius,
                     })
                 } else {

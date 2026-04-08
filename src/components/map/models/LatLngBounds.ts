@@ -3,22 +3,21 @@ import { LatLng } from './LatLng.js'
 export class LatLngBounds {
     constructor(private extent: number[]) {}
 
-    //[west, south, east, north]
-
+    // extent is [west, south, east, north]; LatLng is (lat, lng)
     getSouthWest(): LatLng {
-        return new LatLng(this.extent[0], this.extent[1])
+        return new LatLng(this.extent[1], this.extent[0]) // (south, west)
     }
 
     getNorthEast(): LatLng {
-        return new LatLng(this.extent[2], this.extent[3])
+        return new LatLng(this.extent[3], this.extent[2]) // (north, east)
     }
 
     getNorthWest(): LatLng {
-        return new LatLng(this.extent[0], this.extent[3])
+        return new LatLng(this.extent[3], this.extent[0]) // (north, west)
     }
 
     getSouthEast(): LatLng {
-        return new LatLng(this.extent[2], this.extent[1])
+        return new LatLng(this.extent[1], this.extent[2]) // (south, east)
     }
 
     getWest(): number {

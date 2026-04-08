@@ -195,7 +195,7 @@ export default class TerraDataRods extends TerraElement {
             <terra-spatial-picker
                 initial-value=${this.location}
                 .spatialConstraints=${this.variableBoundingBox}
-                exportparts="map:spatial-picker__map, leaflet-bbox:spatial-picker__leaflet-bbox, leaflet-point:spatial-picker__leaflet-point"
+                exportparts="map:spatial-picker__map"
                 label="Select Point"
                 @terra-map-change=${this.#handleMapChange}
             ></terra-spatial-picker>

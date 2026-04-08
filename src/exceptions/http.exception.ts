@@ -2,7 +2,7 @@ type HttpExceptionProperties = {
     status: number
     message: string
     // optionally holds the original error that caused the httpexception
-    cause?: Error
+    cause?: Error | unknown
 }
 
 export class HttpException extends Error {
@@ -14,7 +14,7 @@ export class HttpException extends Error {
         super(message)
         this.status = status
         this.message = message
-        this.cause = cause
+        this.cause = cause && cause instanceof Error ? cause : undefined
 
         Object.setPrototypeOf(this, HttpException.prototype)
     }
