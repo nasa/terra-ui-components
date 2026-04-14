@@ -258,11 +258,11 @@ export default css`
     .input {
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
-        color: var(--terra-input-color);
+        color: var(--terra-input-text);
         font-weight: var(--terra-input-font-weight);
         line-height: var(--terra-input-line-height);
-        background-color: var(--terra-input-background-color);
-        border: var(--terra-input-border-width) solid var(--terra-input-border-color);
+        background-color: var(--terra-input-background);
+        border: var(--terra-input-border-width) solid var(--terra-input-border);
         border-radius: var(--terra-input-border-radius);
     }
 
@@ -279,11 +279,11 @@ export default css`
 
     a {
         text-decoration: underline;
-        text-decoration-color: #585858;
+        text-decoration-color: var(--terra-text-link-default);
         text-decoration-style: dashed;
         text-decoration-thickness: 0.05em;
         text-underline-offset: 0.25rem;
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-text-link-default);
     }
 
     /* UTILITY CSS */

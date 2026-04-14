@@ -33,27 +33,17 @@ const App = () => (
 
 ## Variants and Options
 
-Scroll hints come in 2 color schemes, so they can be used in light and dark modules and pages. The component automatically adapts to the current theme.
+The scroll hint automatically adapts to the current theme (light or dark mode), however if you need to use a scroll hint on a content panel that is the inverse of your theme, you can set the 'inverse' variant option to 'true'. For example if your theme is set to light mode and you have a dark panel that needs a scroll hint component.
 
-### Light Background
+### Inverse Background
 
-```html:preview
-<div style="background-color: #f5f5f5; padding: 2rem;">
-    <h1>Light Background</h1>
-    <p>Scroll hint on light background</p>
-    <terra-scroll-hint inline></terra-scroll-hint>
-</div>
-```
-
-### Dark Background
-
-When placing the scroll hint on a dark background, use the `dark` prop to force dark mode styles for better visibility:
+When placing the scroll hint on a dark or light background, use the `inverse` prop to force dark mode styles for better visibility:
 
 ```html:preview
-<div style="background-color: #1a1a1a; padding: 2rem; color: white;">
-    <h1>Dark Background</h1>
-    <p>Scroll hint on dark background with dark prop</p>
-    <terra-scroll-hint inline dark></terra-scroll-hint>
+<div class="inverse" style="padding: 2rem;">
+    <h1>Inverse Background</h1>
+    <p>Scroll hint on and opposing background with inverse prop</p>
+    <terra-scroll-hint inline inverse></terra-scroll-hint>
 </div>
 ```
 

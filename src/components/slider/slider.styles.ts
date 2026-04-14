@@ -5,7 +5,7 @@ export default css`
         display: block;
     }
 
-    .slider__header {
+    . header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -25,6 +25,7 @@ export default css`
         display: flex;
         align-items: center;
         gap: var(--terra-spacing-small, 0.75rem);
+        margin-bottom: var(--terra-spacing-small, 0.75rem);
     }
 
     .slider__clear {
@@ -32,7 +33,7 @@ export default css`
         padding: 0;
         background: transparent;
         border: none;
-        color: var(--terra-link-color);
+        color: var(--terra-text-link-default);
         font-size: var(--terra-font-size-small);
         font-weight: var(--terra-font-weight-semibold);
         font-family: var(--terra-font-family--inter);
@@ -43,7 +44,7 @@ export default css`
     }
 
     .slider__clear:hover {
-        color: var(--terra-link-color-hover);
+        color: var(--terra-text-link-hover);
     }
 
     .slider__clear:focus {
@@ -123,7 +124,7 @@ export default css`
         transform-style: flat;
     }
     .noUi-txt-dir-rtl.noUi-horizontal .noUi-origin {
-        border: 1px solid var(--terra-input-border-color);
+        border: 1px solid var(--terra-input-border-default);
         left: 0;
         right: auto;
     }
@@ -201,11 +202,13 @@ export default css`
         cursor: default;
         box-shadow:;
     }
+
+    .noUi-handle:hover {
+        cursor: pointer;
+    }
+
     .noUi-active {
-        box-shadow:
-            inset 0 0 1px #fff,
-            inset 0 1px 7px #ddd,
-            0 3px 6px -3px #bbb;
+        background: var(--terra-slider-handle-background-color-active);
     }
     /* Handle stripes */
     .noUi-handle:before,
@@ -332,10 +335,11 @@ export default css`
         position: absolute;
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
-        color: var(--terra-input-color);
-        border: var(--terra-input-border-width) solid var(--terra-input-border-color);
+        color: var(--terra-input-text-default);
+        border: var(--terra-input-border-width) solid
+            var(--terra-input-border-default);
         border-radius: var(--terra-input-border-radius);
-        background: var(--terra-input-background-color);
+        background: var(--terra-input-background-default);
         padding: 5px 10px;
         text-align: center;
         white-space: nowrap;
@@ -408,12 +412,12 @@ export default css`
     .slider-inputs input {
         width: 80px;
         padding: 6px 8px;
-        border: 1px solid var(--terra-input-border-color, #ccc);
+        border: 1px solid var(--terra-input-border-default, #ccc);
         border-radius: 4px;
         font-size: 14px;
         text-align: center;
-        background: var(--terra-input-background-color, #fff);
-        color: var(--terra-input-color, #333);
+        background: var(--terra-input-background-default, #fff);
+        color: var(--terra-input-text-default, #333);
     }
 
     .slider-inputs input:focus {

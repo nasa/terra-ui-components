@@ -27,6 +27,11 @@ import type { CSSResultGroup } from 'lit'
  * @csspart suffix - The container that wraps the suffix.
  *
  * @cssproperty --terra-option-* - All option design tokens from horizon.css are supported.
+ * @cssproperty --terra-options-item-text - The text color of the option.
+ * @cssproperty --terra-options-item-text-hover - The text color of the option on hover.
+ * @cssproperty --terra-options-item-text-active - The text color of the option when active.
+ * @cssproperty --terra-options-item-background-hover - The background color of the option on hover.
+ * @cssproperty --terra-options-item-background-active - The background color of the option when active.
  */
 export default class TerraOption extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]

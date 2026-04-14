@@ -5,71 +5,23 @@ meta:
 ---
 
 # Color Tokens
-
-Color tokens help maintain consistent use of color throughout your app. The Horizon Design System provides palettes for theme colors as definined in the <a href='https://website.nasa.gov/hds/foundations/color/'>Horizon Design System Foundations guide</a>.
-
-Color tokens are referenced using the `--terra-color-{name}-{n}` CSS custom property, where `{name}` is the name of the palette and `{n}` is the numeric value of the desired swatch.
+The Terra UI components use the Horizon Design System color palette. The Horizon Design System is inspired by the colors of space and NASA’s brand. The purpose is to unify NASA websites and applications across the agency. The color palette is designed to be bold and vibrant, while also being accessible and functional. 
+The Horizon Design System provides palettes for theme colors as definined in the <a href='https://website.nasa.gov/hds/foundations/color/'>Horizon Design System Foundations guide</a>.
 
 ## Theme Tokens
-
+Color tokens help maintain consistent use of color throughout your app. Color tokens are referenced throughout the CSS rules to define the backgrounds, border and text colors used by the components. The color tokens prefixes are as follows; `--terra-color-{name}`, `--terra-text-{name}` and `--terra-border-{name}` where `{name}` is .
 Theme tokens give you a semantic way to reference colors in your app. The primary palette is typically based on a brand color, whereas success, neutral, warning, and danger are used to visualize actions that correspond to their respective meanings.
 
-### Primary
+### Horizon Design System Color Tokens
+The <a href='/tokens/generated/horizon-design-system-color-tokens'>Horizon Design System color tokens</a> 
 
-Our primary palette consists of black, white, red, and blue. These colors are used in logical ways throughout the site to highlight actions when they are important. We use a restricted palette to give attention and hierarchy to our content without distraction.
+### Primitive Color Tokens
+The <a href='/tokens/generated/primitive-tokens'>Primitive tokens</a> are expanded color palettes of the Horizon Design System colors. Primitive tokens are the raw base color values of your design system without any usage or meaning attached. They provide a consistent palette and enable light and dark theming. Primitive tokens feed into the <a href='/tokens/generated/foundation-tokens'>Foundation tokens</a>.
 
-<code>--terra-color-<em>{name}</em></code>
+### Foundation Color Tokens
 
-<div class="color-palette">
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-black);"></div>carbon-black</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-spacesuit-white);"></div>spacesuit-white</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-red);"></div>nasa-red</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-blue);"></div>nasa-blue</div>
-</div>
+The <a href='/tokens/generated/foundation-tokens'>Foundation tokens</a> map raw primitives to general-purpose design concepts (like surface, text, border, brand) without tying them to specific components. They organize select primatives into design roles to create a consistent system vocabulary. <a href='/tokens/generated/foundation-tokens'>Foundation tokens</a> feed into the <a href='/tokens/generated/semantic-tokens'>Semantic tokens</a>.
 
-### Extended Palette
+### Semantic Color Tokens
 
-The extended palette consists of a tint and shade for the brand colors in the primary palette. Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible.
-
-<code>--terra-color-<em>{name}</em></code>
-
-<div class="color-palette">
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-red-tint);"></div>nasa-red-tint</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-red-shade);"></div>nasa-red-shade</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-blue-tint);"></div>nasa-blue-tint</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-blue-shade);"></div>nasa-blue-shade</div>
-</div>
-
-### Neutrals
-
-Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content.
-
-<code>--terra-color-carbon-<em>{n}</em></code>
-
-<div class="color-palette">
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-90);"></div>90</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-80);"></div>80</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-70);"></div>70</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-60);"></div>60</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-50);"></div>50</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-40);"></div>40</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-30);"></div>30</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-20);"></div>20</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-10);"></div>10</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-5);"></div>5</div>
-</div>
-
-### Additional Colors
-
-International Orange and Active Green are colors that are used sparingly and intentionally.
-
-<code>--terra-color-<em>{name}</em></code>
-
-<div class="color-palette">
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange);"></div>international-orange</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange-tint);"></div>international-orange-tint</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange-shade);"></div>international-orange-shade</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-active-green);"></div>active-green</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-active-green-tint);"></div>active-green-tint</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-active-green-shade);"></div>active-green-shade</div>
-</div>
+<a href='/tokens/generated/semantic-tokens'>Semantic tokens</a> define how colors (or values) are used in the UI. They map <a href='/tokens/generated/foundation-tokens'>Foundation tokens</a> to specific UI roles and states (like button, tabs, input, dialog, or breadcrumb). These tokens are used by style rules to connect the design to UI elements.
