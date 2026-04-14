@@ -30,7 +30,7 @@ To use the Horizon theme, import the CSS file in your HTML:
 ```html
 <link
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.css"
+    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.scss"
 />
 ```
 
@@ -39,7 +39,7 @@ Or if you're using npm:
 ```html
 <link
     rel="stylesheet"
-    href="node_modules/@nasa-terra/components/%NPMDIR%/themes/horizon.css"
+    href="node_modules/@nasa-terra/components/%NPMDIR%/themes/horizon.scss"
 />
 ```
 
@@ -47,7 +47,7 @@ The theme is automatically applied to `:root`, so all CSS variables are availabl
 
 ### Dark Mode
 
-The `horizon.css` theme file includes both light and dark themes. Dark mode can be enabled in two ways:
+The `horizon.scss` theme file includes both light and dark themes. Dark mode can be enabled in two ways:
 
 **Automatic dark mode (requires opt-in):**
 
