@@ -3,6 +3,9 @@ import { css } from 'lit'
 export default css`
     :host {
         --width: fit-content;
+        --min-width: 20rem;
+        --max-width: calc(100% - var(--terra-spacing-2x-large));
+        --max-height: calc(100% - var(--terra-spacing-2x-large));
         --header-spacing: var(--terra-spacing-large);
         --body-spacing: var(--terra-spacing-large);
         --footer-spacing: var(--terra-spacing-large);
