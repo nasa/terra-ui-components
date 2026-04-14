@@ -20,10 +20,6 @@ export function getUTCDate(date: MaybeDate, endOfDay: boolean = false) {
         utcDate = new Date()
     }
 
-    // Convert to UTC by adjusting for timezone offset
-    const offset = utcDate.getTimezoneOffset()
-    utcDate = new Date(utcDate.getTime() + offset * 60000)
-
     if (endOfDay) {
         utcDate.setUTCHours(23, 59, 59, 999)
     }
