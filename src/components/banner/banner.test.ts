@@ -13,12 +13,12 @@ describe('<terra-banner>', () => {
         it('should render content in default slot', async () => {
             const el: any = await fixture(html`
                 <terra-banner open>
-                    <p>Banner alert content</p>
+                    <p>Banner content</p>
                 </terra-banner>
             `)
             const content = el.querySelector('p')
             expect(content).to.exist
-            expect(content?.textContent).to.equal('Banner Alert content')
+            expect(content?.textContent).to.equal('Banner content')
         })
 
         it('should be hidden by default', async () => {
