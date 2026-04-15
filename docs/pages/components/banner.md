@@ -41,6 +41,12 @@ Set the variant attribute to change the banner's variant.
   You can tell by how pretty the banner is.
 </terra-banner>
 <br />
+<terra-banner variant="neutral" open>
+<terra-icon slot="icon" name="outline-cog-8-tooth" library="heroicons"></terra-icon>
+  <strong>Your settings have been updated</strong><br />
+  Settings will take effect on next login.
+</terra-banner>
+<br />
 <terra-banner variant="danger" open>
 <terra-icon slot="icon" name="outline-shield-exclamation" library="heroicons"></terra-icon>
 <strong>Your account has been deleted</strong><br />
@@ -59,6 +65,12 @@ const App = () => (
      <strong>This is super informative</strong>
       <br />
       You can tell by how pretty the banner is.
+  </TerraBanner>
+  <br />
+  <TerraBanner variant="neutral" open>
+    <TerraIcon slot="icon" name="outline-cog-8-tooth" library="heroicons" />
+      <strong>Your settings have been updated</strong><br />
+      Settings will take effect on next login.
   </TerraBanner>
   <br />
   <TerraBanner variant="danger" open>

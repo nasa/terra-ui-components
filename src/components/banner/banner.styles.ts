@@ -63,6 +63,11 @@ export default css`
         padding-top: var(--terra-spacing-large);
         padding-bottom: var(--terra-spacing-large);
     }
+
+    .banner--neutral {
+        background-color: var(--terra-color-carbon-60);
+        color: white;
+    }
   
    .banner--danger {
         background-color: var(--terra-color-nasa-red);

@@ -47,7 +47,7 @@ export default class TerraBanner extends TerraElement {
   @property({ type: Boolean, reflect: true }) closable = false
 
   /** The banner's theme variant. */
-  @property({ reflect: true }) variant: 'primary' | 'danger' = 'primary'
+  @property({ reflect: true }) variant: 'primary' | 'neutral' | 'danger' = 'primary'
 
   @property({ type: Boolean, reflect: true }) sticky = true
 
@@ -107,6 +107,7 @@ export default class TerraBanner extends TerraElement {
           'banner--sticky': this.sticky,
           'banner--has-icon': this.hasSlotController.test('icon'),
           'banner--primary': this.variant === 'primary',
+          'banner--neutral': this.variant === 'neutral',
           'banner--danger': this.variant === 'danger',
         })}
         role="banner"
