@@ -64,7 +64,8 @@ export default class TerraTimeAverageMap extends TerraElement {
     @property({ type: String, attribute: 'color-map-name', reflect: true })
     colorMapName: string = 'viridis'
     @property({ type: Number }) opacity = 1
-
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
+        true
     @state() catalogVariable: Variable
     @state() pixelValue: string = 'N/A'
     @state() pixelCoordinates: string = 'N/A'
@@ -1200,6 +1201,7 @@ export default class TerraTimeAverageMap extends TerraElement {
                               .colormaps=${this.colormaps}
                               .colorMapName=${this.colorMapName}
                               .opacity=${this.opacity}
+                              .showHelp=${this.showHelp}
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`
                 )}
