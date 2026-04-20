@@ -1,44 +1,44 @@
-import { property, state } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
-import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
-import styles from './data-access.styles.js'
+import type {
+    ColDef,
+    GridApi,
+    ICellRendererParams,
+    IDatasource,
+    IGetRowsParams,
+} from 'ag-grid-community'
 import type { CSSResultGroup } from 'lit'
-import { DataAccessController } from './data-access.controller.js'
+import { html, nothing } from 'lit'
+import { property, state } from 'lit/decorators.js'
+import { createRef, ref } from 'lit/directives/ref.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import type { TerraSelectEvent } from '../../events/terra-select.js'
+import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
+import { debounce } from '../../internal/debounce.js'
+import TerraElement from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
+import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import type { CmrGranule } from '../../metadata-catalog/types.js'
-import TerraLoader from '../loader/loader.component.js'
 import {
     calculateGranuleSize,
     getGranuleUrl,
 } from '../../metadata-catalog/utilities.js'
-import TerraIcon from '../icon/icon.component.js'
-import { debounce } from '../../internal/debounce.js'
-import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
+import { getBasePath } from '../../utilities/base-path.js'
+import TerraAlert from '../alert/alert.component.js'
+import TerraButton from '../button/button.component.js'
+import TerraDataGrid from '../data-grid/data-grid.component.js'
 import TerraDatePicker from '../date-picker/date-picker.component.js'
-import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
-import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
-import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraIcon from '../icon/icon.component.js'
+import TerraLoader from '../loader/loader.component.js'
 import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
-import { createRef, ref } from 'lit/directives/ref.js'
-import type {
-    IDatasource,
-    IGetRowsParams,
-    ICellRendererParams,
-    ColDef,
-    GridApi,
-} from 'ag-grid-community'
-import TerraSlider from '../slider/slider.component.js'
-import TerraDataGrid from '../data-grid/data-grid.component.js'
-import { getBasePath } from '../../utilities/base-path.js'
-import TerraDropdown from '../dropdown/dropdown.component.js'
-import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
-import TerraButton from '../button/button.component.js'
-import type { TerraSelectEvent } from '../../events/terra-select.js'
+import TerraMenu from '../menu/menu.component.js'
+import TerraSlider from '../slider/slider.component.js'
+import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
+import { DataAccessController } from './data-access.controller.js'
+import styles from './data-access.styles.js'
 import { getDataAccessNotebook } from './notebooks/data-access-notebook.js'
-import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
-import TerraAlert from '../alert/alert.component.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -118,7 +118,10 @@ export default class TerraDataAccess extends TerraElement {
     location: MapEventDetail | null = null
 
     @state()
-    cloudCover: { min?: number; max?: number } = { min: undefined, max: undefined }
+    cloudCover: { min?: number; max?: number } = {
+        min: undefined,
+        max: undefined,
+    }
 
     @state()
     cloudCoverPickerOpen = false
@@ -131,7 +134,8 @@ export default class TerraDataAccess extends TerraElement {
     spatialDropdownRef = createRef<TerraDropdown>()
 
     #controller = new DataAccessController(this)
-    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
+    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null =
+        null
 
     get #gridApi(): GridApi<CmrGranule> | undefined {
         return this.gridRef.value?.getGridApi()
@@ -142,7 +146,7 @@ export default class TerraDataAccess extends TerraElement {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside
+                this.#boundHandleCloudCoverClickOutside,
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -161,7 +165,7 @@ export default class TerraDataAccess extends TerraElement {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside
+                this.#boundHandleCloudCoverClickOutside,
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -249,7 +253,7 @@ export default class TerraDataAccess extends TerraElement {
             {
                 colId: 'size',
                 headerName: 'Size (MB)',
-                valueGetter: g => {
+                valueGetter: (g) => {
                     if (!g.data) {
                         return undefined
                     }
@@ -277,7 +281,7 @@ export default class TerraDataAccess extends TerraElement {
             cacheBlockSize: 50,
             maxConcurrentDatasourceRequests: 2,
             infiniteInitialRowCount: 50,
-            onGridReady: params => {
+            onGridReady: (params) => {
                 // Update cloud cover column visibility when grid is ready
                 params.api.applyColumnState({
                     state: [
@@ -352,12 +356,18 @@ export default class TerraDataAccess extends TerraElement {
         }
 
         try {
-            if (this.location.type === MapEventType.POINT && this.location.latLng) {
+            if (
+                this.location.type === MapEventType.POINT &&
+                this.location.latLng
+            ) {
                 const { lat, lng } = this.location.latLng
                 return `${lat.toFixed(2)}, ${lng.toFixed(2)}`
             }
 
-            if (this.location.type === MapEventType.BBOX && this.location.bounds) {
+            if (
+                this.location.type === MapEventType.BBOX &&
+                this.location.bounds
+            ) {
                 const b = this.location.bounds
                 return `${b.getSouth().toFixed(2)}, ${b.getWest().toFixed(2)}, ${b.getNorth().toFixed(2)}, ${b.getEast().toFixed(2)}`
             }
@@ -380,7 +390,10 @@ export default class TerraDataAccess extends TerraElement {
             }*/
 
             // Fallback: show bounds if available
-            if (this.location.type === MapEventType.BBOX && this.location.bounds) {
+            if (
+                this.location.type === MapEventType.BBOX &&
+                this.location.bounds
+            ) {
                 const b = this.location.bounds
                 return `${b.getSouth().toFixed(2)}, ${b.getWest().toFixed(2)}, ${b.getNorth().toFixed(2)}, ${b.getEast().toFixed(2)}`
             }
@@ -417,7 +430,7 @@ export default class TerraDataAccess extends TerraElement {
                         this.#handleCloudCoverClickOutside.bind(this)
                     document.addEventListener(
                         'click',
-                        this.#boundHandleCloudCoverClickOutside
+                        this.#boundHandleCloudCoverClickOutside,
                     )
                 }
             } else {
@@ -425,7 +438,7 @@ export default class TerraDataAccess extends TerraElement {
                 if (this.#boundHandleCloudCoverClickOutside) {
                     document.removeEventListener(
                         'click',
-                        this.#boundHandleCloudCoverClickOutside
+                        this.#boundHandleCloudCoverClickOutside,
                     )
                     this.#boundHandleCloudCoverClickOutside = null
                 }
@@ -439,7 +452,7 @@ export default class TerraDataAccess extends TerraElement {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside
+                this.#boundHandleCloudCoverClickOutside,
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -447,7 +460,10 @@ export default class TerraDataAccess extends TerraElement {
     }
 
     #getCloudCoverButtonText(): string {
-        if (this.cloudCover.min !== undefined && this.cloudCover.max !== undefined) {
+        if (
+            this.cloudCover.min !== undefined &&
+            this.cloudCover.max !== undefined
+        ) {
             return `${this.cloudCover.min.toFixed(1)}% \u2013 ${this.cloudCover.max.toFixed(1)}%`
         }
         return 'Cloud Cover'
@@ -472,12 +488,12 @@ export default class TerraDataAccess extends TerraElement {
         }
 
         const response = await fetch(
-            getBasePath('assets/data-access/download_files.py.txt')
+            getBasePath('assets/data-access/download_files.py.txt'),
         )
 
         if (!response.ok) {
             alert(
-                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime'
+                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime',
             )
         }
 
@@ -542,17 +558,17 @@ export default class TerraDataAccess extends TerraElement {
                 /{{filter_temporal}}/gi,
                 this.startDate && this.endDate
                     ? this.startDate + ',' + this.endDate
-                    : ''
+                    : '',
             )
             .replace(/{{filter_bbox}}/gi, getBboxString())
             .replace(/{{filter_search}}/gi, this.search ?? '')
             .replace(
                 /{{filter_cloud_cover_min}}/gi,
-                this.cloudCover.min?.toString() ?? ''
+                this.cloudCover.min?.toString() ?? '',
             )
             .replace(
                 /{{filter_cloud_cover_max}}/gi,
-                this.cloudCover.max?.toString() ?? ''
+                this.cloudCover.max?.toString() ?? '',
             )
 
         const blob = new Blob([content], { type: 'text/plain' })
@@ -622,7 +638,7 @@ export default class TerraDataAccess extends TerraElement {
                         .value=${this.search ?? ''}
                         @input=${(event: Event) => {
                             this.handleSearch(
-                                (event.target as HTMLInputElement).value
+                                (event.target as HTMLInputElement).value,
                             )
                         }}
                     />
@@ -632,9 +648,9 @@ export default class TerraDataAccess extends TerraElement {
                     <terra-dropdown ${ref(this.dateDropdownRef)}>
                         <button
                             slot="trigger"
-                            class="filter-btn ${this.startDate && this.endDate
-                                ? 'active'
-                                : ''}"
+                            class="filter-btn ${
+                                this.startDate && this.endDate ? 'active' : ''
+                            }"
                         >
                             <terra-icon
                                 name="outline-calendar"
@@ -642,8 +658,9 @@ export default class TerraDataAccess extends TerraElement {
                                 font-size="18px"
                             ></terra-icon>
                             <span>${this.#getDateRangeButtonText()}</span>
-                            ${this.startDate && this.endDate
-                                ? html`
+                            ${
+                                this.startDate && this.endDate
+                                    ? html`
                                       <button
                                           class="clear-badge"
                                           @click=${(e: Event) => {
@@ -655,12 +672,14 @@ export default class TerraDataAccess extends TerraElement {
                                           ×
                                       </button>
                                   `
-                                : nothing}
+                                    : nothing
+                            }
                         </button>
 
                         <div class="datepicker-container">
-                            ${this.showPanelClose
-                                ? html`
+                            ${
+                                this.showPanelClose
+                                    ? html`
                                       <div class="dropdown-header">
                                           <button
                                               class="panel-close"
@@ -672,7 +691,8 @@ export default class TerraDataAccess extends TerraElement {
                                           </button>
                                       </div>
                                   `
-                                : nothing}
+                                    : nothing
+                            }
                             <terra-date-picker
                                 ${ref(this.datePickerRef)}
                                 range
@@ -682,33 +702,40 @@ export default class TerraDataAccess extends TerraElement {
                                 inline
                                 .startDate=${this.startDate}
                                 .endDate=${this.endDate}
-                                .startPlaceholder=${this.#controller.isSubDaily
-                                    ? 'YYYY-MM-DD HH:mm:ss'
-                                    : 'YYYY-MM-DD'}
-                                .endPlaceholder=${this.#controller.isSubDaily
-                                    ? 'YYYY-MM-DD HH:mm:ss'
-                                    : 'YYYY-MM-DD'}
+                                .startPlaceholder=${
+                                    this.#controller.isSubDaily
+                                        ? 'YYYY-MM-DD HH:mm:ss'
+                                        : 'YYYY-MM-DD'
+                                }
+                                .endPlaceholder=${
+                                    this.#controller.isSubDaily
+                                        ? 'YYYY-MM-DD HH:mm:ss'
+                                        : 'YYYY-MM-DD'
+                                }
                                 .minDate=${this.#controller.granuleMinDate}
                                 .maxDate=${this.#controller.granuleMaxDate}
-                                @terra-date-range-change=${this
-                                    .#handleDateRangeChange}
+                                @terra-date-range-change=${
+                                    this.#handleDateRangeChange
+                                }
                             >
-                                ${this.#controller.granuleMinDate &&
-                                this.#controller.granuleMaxDate
-                                    ? html` <p
+                                ${
+                                    this.#controller.granuleMinDate &&
+                                    this.#controller.granuleMaxDate
+                                        ? html` <p
                                           slot="additional-text"
                                           class="available-range"
                                       >
                                           <strong>Available Range:</strong>
                                           ${this.#formatAvailableRangeDate(
-                                              this.#controller.granuleMinDate
+                                              this.#controller.granuleMinDate,
                                           )}
                                           -
                                           ${this.#formatAvailableRangeDate(
-                                              this.#controller.granuleMaxDate
+                                              this.#controller.granuleMaxDate,
                                           )}
                                       </p>`
-                                    : nothing}
+                                        : nothing
+                                }
                             </terra-date-picker>
                         </div>
                     </terra-dropdown>
@@ -729,8 +756,9 @@ export default class TerraDataAccess extends TerraElement {
                                     font-size="18px"
                                 ></terra-icon>
                                 <span>${this.#getSpatialButtonText()}</span>
-                                ${this.location
-                                    ? html`
+                                ${
+                                    this.location
+                                        ? html`
                                           <button
                                               class="clear-badge"
                                               @click=${(e: Event) => {
@@ -742,13 +770,15 @@ export default class TerraDataAccess extends TerraElement {
                                               ×
                                           </button>
                                       `
-                                    : nothing}
+                                        : nothing
+                                }
                             </button>
                         </div>
 
                         <div class="spatialpicker-container">
-                            ${this.showPanelClose
-                                ? html`
+                            ${
+                                this.showPanelClose
+                                    ? html`
                                       <div class="dropdown-header">
                                           <button
                                               class="panel-close"
@@ -760,33 +790,38 @@ export default class TerraDataAccess extends TerraElement {
                                           </button>
                                       </div>
                                   `
-                                : nothing}
+                                    : nothing
+                            }
                             <terra-spatial-picker
                                 ${ref(this.spatialPickerRef)}
                                 hide-label
                                 inline
-                                no-world-wrap
-                                .spatialConstraints=${this.#controller
-                                    .spatialConstraints || '-180, -90, 180, 90'}
+                                .spatialConstraints=${
+                                    this.#controller.spatialConstraints ||
+                                    '-180, -90, 180, 90'
+                                }
                                 @terra-map-change=${this.#handleMapChange}
                             >
                                 <p class="available-range" slot="additional-text">
-                                    <strong>Available range:</strong> ${this
-                                        .#controller.spatialConstraints}
+                                    <strong>Available range:</strong> ${
+                                        this.#controller.spatialConstraints
+                                    }
                                 </p>
                             </terra-spatial-picker>
                         </div>
                     </terra-dropdown>
 
-                    ${this.#controller.cloudCoverRange
-                        ? html`
+                    ${
+                        this.#controller.cloudCoverRange
+                            ? html`
                               <div class="filter">
                                   <button
-                                      class="filter-btn ${this.cloudCover.min !==
-                                          undefined &&
-                                      this.cloudCover.max !== undefined
-                                          ? 'active'
-                                          : ''}"
+                                      class="filter-btn ${
+                                          this.cloudCover.min !== undefined &&
+                                          this.cloudCover.max !== undefined
+                                              ? 'active'
+                                              : ''
+                                      }"
                                       @click=${(e: Event) => {
                                           e.stopPropagation()
                                           this.#toggleCloudCoverPicker()
@@ -798,9 +833,10 @@ export default class TerraDataAccess extends TerraElement {
                                           font-size="18px"
                                       ></terra-icon>
                                       <span>${this.#getCloudCoverButtonText()}</span>
-                                      ${this.cloudCover.min !== undefined &&
-                                      this.cloudCover.max !== undefined
-                                          ? html`
+                                      ${
+                                          this.cloudCover.min !== undefined &&
+                                          this.cloudCover.max !== undefined
+                                              ? html`
                                                 <button
                                                     class="clear-badge"
                                                     @click=${(e: Event) => {
@@ -812,15 +848,17 @@ export default class TerraDataAccess extends TerraElement {
                                                     ×
                                                 </button>
                                             `
-                                          : nothing}
+                                              : nothing
+                                      }
                                   </button>
 
                                   <!-- hidden slider to show when clicking the filter -->
                                   <div
-                                      class="cloud-cover-dropdown ${this
-                                          .cloudCoverPickerOpen
-                                          ? 'open'
-                                          : ''}"
+                                      class="cloud-cover-dropdown ${
+                                          this.cloudCoverPickerOpen
+                                              ? 'open'
+                                              : ''
+                                      }"
                                       @click=${(e: Event) => e.stopPropagation()}
                                   >
                                       <terra-slider
@@ -828,21 +866,29 @@ export default class TerraDataAccess extends TerraElement {
                                           mode="range"
                                           min=${this.#controller.cloudCoverRange?.min}
                                           max=${this.#controller.cloudCoverRange?.max}
-                                          start-value=${this.cloudCover.min ??
-                                          this.#controller.cloudCoverRange?.min}
-                                          end-value=${this.cloudCover.max ??
-                                          this.#controller.cloudCoverRange?.max}
+                                          start-value=${
+                                              this.cloudCover.min ??
+                                              this.#controller.cloudCoverRange
+                                                  ?.min
+                                          }
+                                          end-value=${
+                                              this.cloudCover.max ??
+                                              this.#controller.cloudCoverRange
+                                                  ?.max
+                                          }
                                           step="0.1"
                                           hide-label
                                           label="Cloud Cover"
-                                          @terra-slider-change=${this
-                                              .#handleCloudCoverChange}
+                                          @terra-slider-change=${
+                                              this.#handleCloudCoverChange
+                                          }
                                           show-inputs
                                       ></terra-slider>
                                   </div>
                               </div>
                           `
-                        : nothing}
+                            : nothing
+                    }
                 </div>
 
                 <div class="results-info">
@@ -850,9 +896,11 @@ export default class TerraDataAccess extends TerraElement {
                         >${this.#controller.totalGranules.toLocaleString()}</strong
                     >
                     files selected
-                    ${this.#controller.estimatedSize
-                        ? html` (~${this.#controller.estimatedSize})`
-                        : nothing}
+                    ${
+                        this.#controller.estimatedSize
+                            ? html` (~${this.#controller.estimatedSize})`
+                            : nothing
+                    }
                 </div>
             </div>
 
@@ -871,8 +919,9 @@ export default class TerraDataAccess extends TerraElement {
                 })}
             </div>
 
-            ${this.footerSlot
-                ? html`
+            ${
+                this.footerSlot
+                    ? html`
                       <div
                           slot="footer"
                           style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
@@ -942,7 +991,7 @@ export default class TerraDataAccess extends TerraElement {
                             -->
                       </div>
                   `
-                : html`
+                    : html`
                       <div
                           style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
                       >
@@ -1010,7 +1059,8 @@ export default class TerraDataAccess extends TerraElement {
                           </terra-button>
                         -->
                       </div>
-                  `}
+                  `
+            }
         `
     }
 

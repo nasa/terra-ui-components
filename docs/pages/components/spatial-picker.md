@@ -29,7 +29,7 @@ This example disables infinite horizontal scrolling on the map.
 
 ```html:preview
 <div style="height: 300px;">
-<terra-spatial-picker has-navigation no-world-wrap></terra-spatial-picker>
+<terra-spatial-picker has-navigation></terra-spatial-picker>
 </div>
 ```
 

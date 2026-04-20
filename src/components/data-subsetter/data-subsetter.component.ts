@@ -1476,7 +1476,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         inline
                         hide-label
                         hide-point-selection
-                        no-world-wrap
                         .spatialConstraints=${
                             this.controller.spatialConstraints ||
                             '-180, -90, 180, 90'

@@ -1,18 +1,18 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './spatial-picker.styles.js'
-import TerraElement from '../../internal/terra-element.js'
-import TerraMap from '../map/map.component.js'
-import TerraInput from '../input/input.component.js'
-import TerraDropdown from '../dropdown/dropdown.component.js'
-import { html, nothing } from 'lit'
-import { createRef, ref } from 'lit/directives/ref.js'
-import { property, query, state } from 'lit/decorators.js'
 import type { CSSResultGroup } from 'lit'
+import { html, nothing } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
+import { createRef, ref } from 'lit/directives/ref.js'
+import TerraElement from '../../internal/terra-element.js'
+import componentStyles from '../../styles/component.styles.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraInput from '../input/input.component.js'
+import TerraMap from '../map/map.component.js'
+import { LatLng } from '../map/models/LatLng.js'
+import type { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
-import { LatLng } from '../map/models/LatLng.js'
-import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import { SpatialPickerService } from './spatial-picker.service.js'
+import styles from './spatial-picker.styles.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -31,8 +31,8 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'min-zoom', type: Number }) minZoom: number = 0
     @property({ attribute: 'max-zoom', type: Number }) maxZoom: number = 23
     @property({ type: Number }) zoom: number = 1
-    @property({ attribute: 'has-navigation', type: Boolean }) hasNavigation: boolean =
-        true
+    @property({ attribute: 'has-navigation', type: Boolean })
+    hasNavigation: boolean = true
     @property({ attribute: 'has-coord-tracker', type: Boolean })
     hasCoordTracker: boolean = true
     @property({ attribute: 'has-shape-selector', type: Boolean })
@@ -51,7 +51,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            '"hide-bounding-box-selection" is deprecated. Use "show-bounding-box-selection" instead.'
+            '"hide-bounding-box-selection" is deprecated. Use "show-bounding-box-selection" instead.',
         )
         this.showBoundingBoxSelection = !value
     }
@@ -71,7 +71,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            '"hide-point-selection" is deprecated. Use "show-point-selection" instead.'
+            '"hide-point-selection" is deprecated. Use "show-point-selection" instead.',
         )
         this.showPointSelection = !value
     }
@@ -95,12 +95,13 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
 
-    @property({ attribute: 'no-world-wrap', type: Boolean }) noWorldWrap: boolean =
-        false
+    @property({ attribute: 'world-wrap', type: Boolean })
+    worldWrap: boolean = false
     @property({ type: Boolean }) inline: boolean = false
     @property({ attribute: 'show-map-on-focus', type: Boolean })
     showMapOnFocus: boolean = false
-    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean = false
+    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean =
+        false
     @property({ attribute: 'help-text' }) helpText = ''
 
     /** The canonical serialized value passed down to terra-map. */
@@ -125,7 +126,8 @@ export default class TerraSpatialPicker extends TerraElement {
     firstUpdated() {
         const urlParams = new URLSearchParams(window.location.search)
         const spatialParam = urlParams.get('spatial')
-        const seed = this.urlState && spatialParam ? spatialParam : this.initialValue
+        const seed =
+            this.urlState && spatialParam ? spatialParam : this.initialValue
 
         if (seed) {
             this._applyValue(seed, { emit: false })
@@ -227,7 +229,7 @@ export default class TerraSpatialPicker extends TerraElement {
         // Validate against constraints before accepting the draw
         const constraintError = SpatialPickerService.validateConstraints(
             value,
-            this.spatialConstraints
+            this.spatialConstraints,
         )
         if (constraintError) {
             this.error = constraintError
@@ -264,7 +266,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints
+            this.spatialConstraints,
         )
 
         if (!result.ok) {
@@ -285,7 +287,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints
+            this.spatialConstraints,
         )
 
         if (!result.ok) {
@@ -368,7 +370,7 @@ export default class TerraSpatialPicker extends TerraElement {
             ?has-shape-selector=${this.hasShapeSelector}
             ?show-bounding-box-selection=${this.showBoundingBoxSelection}
             ?show-point-selection=${this.showPointSelection}
-            ?no-world-wrap=${this.noWorldWrap}
+            ?no-world-wrap=${!this.worldWrap}
             spatial-constraints=${this.spatialConstraints}
             @terra-map-change=${this._handleMapChange}
         ></terra-map>`
@@ -426,9 +428,11 @@ export default class TerraSpatialPicker extends TerraElement {
                     >
                         ${this.renderMap()}
                     </div>
-                    ${this.error
-                        ? html`<div class="spatial-picker__error">${this.error}</div>`
-                        : nothing}
+                    ${
+                        this.error
+                            ? html`<div class="spatial-picker__error">${this.error}</div>`
+                            : nothing
+                    }
                 </div>
             `
         }
@@ -452,9 +456,11 @@ export default class TerraSpatialPicker extends TerraElement {
                         ${this.renderMap()}
                     </div>
                 </terra-dropdown>
-                ${this.error
-                    ? html`<div class="spatial-picker__error">${this.error}</div>`
-                    : nothing}
+                ${
+                    this.error
+                        ? html`<div class="spatial-picker__error">${this.error}</div>`
+                        : nothing
+                }
             </div>
         `
     }
