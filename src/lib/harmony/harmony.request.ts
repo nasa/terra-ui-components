@@ -9,7 +9,7 @@ export const Environments = {
 
 export type Environments = (typeof Environments)[keyof typeof Environments]
 
-const HARMONY_URLS = {
+export const HARMONY_URLS = {
     [Environments.PROD]: 'https://harmony.earthdata.nasa.gov',
     [Environments.UAT]: 'https://harmony.uat.earthdata.nasa.gov',
 }
@@ -53,7 +53,7 @@ export class HarmonyRequest {
 
         // variables might have been passed in as concept ids, use the helper method to ensure we add them in the right spot
         this.options.variables = undefined // clear out variables first
-        options?.variables?.forEach(v => {
+        options?.variables?.forEach((v) => {
             this.variable(v)
         })
     }
@@ -63,8 +63,12 @@ export class HarmonyRequest {
     }
 
     get baseUrl() {
-        const { environment, collectionConceptId, variableConceptIds, variables } =
-            this.options
+        const {
+            environment,
+            collectionConceptId,
+            variableConceptIds,
+            variables,
+        } = this.options
 
         if (!collectionConceptId) {
             throw new BadRequestException({
@@ -105,11 +109,11 @@ export class HarmonyRequest {
         if (location instanceof LatLngBounds) {
             params.append(
                 'subset',
-                `lat(${location.getSouth()}:${location.getNorth()})`
+                `lat(${location.getSouth()}:${location.getNorth()})`,
             )
             params.append(
                 'subset',
-                `lon(${location.getWest()}:${location.getEast()})`
+                `lon(${location.getWest()}:${location.getEast()})`,
             )
         }
 
@@ -118,11 +122,14 @@ export class HarmonyRequest {
 
         if (startDate) {
             // at least start date is required
-            params.append('subset', `time("${startDate}":"${endDate ?? startDate}")`)
+            params.append(
+                'subset',
+                `time("${startDate}":"${endDate ?? startDate}")`,
+            )
         }
 
         if (dimensions && dimensions.length > 0) {
-            dimensions.forEach(dim => {
+            dimensions.forEach((dim) => {
                 params.append('subset', `${dim.name}(${dim.min}:${dim.max})`)
             })
         }
@@ -135,7 +142,7 @@ export class HarmonyRequest {
             params.append('label', labels.join(','))
         }
 
-        variables?.forEach(v => {
+        variables?.forEach((v) => {
             params.append('variable', v)
         })
 

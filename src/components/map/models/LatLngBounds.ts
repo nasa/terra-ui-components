@@ -37,6 +37,10 @@ export class LatLngBounds {
     }
 
     toBBoxString() {
-        return `${this.getWest()},${this.getSouth()},${this.getEast()},${this.getNorth()}`
+        return `${this.getWest().toFixed(2)},${this.getSouth().toFixed(2)},${this.getEast().toFixed(2)},${this.getNorth().toFixed(2)}`
+    }
+
+    toString() {
+        return this.toBBoxString()
     }
 }

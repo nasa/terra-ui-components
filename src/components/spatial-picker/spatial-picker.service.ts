@@ -1,7 +1,8 @@
+/** biome-ignore-all lint/complexity/noStaticOnlyClass: <TODO: fix this class> */
 import { LatLng } from '../map/models/LatLng.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 
-export type SpatialValue = LatLng | LatLngBounds
+export type SpatialValue = string | LatLng | LatLngBounds
 
 export type AllowedTypes = {
     allowPoint: boolean
@@ -9,7 +10,7 @@ export type AllowedTypes = {
 }
 
 export type ParseResult =
-    | { ok: true; value: SpatialValue; serialized: string }
+    | { ok: true; value: LatLng | LatLngBounds; serialized: string }
     | { ok: false; error: string }
 
 export class SpatialPickerService {
@@ -20,8 +21,8 @@ export class SpatialPickerService {
      *   "lat, lng"                   → LatLng
      *   "west, south, east, north"   → LatLngBounds
      */
-    static parse(input: string): SpatialValue {
-        const parts = input.split(',').map(p => p.trim())
+    static parse(input: string): LatLng | LatLngBounds {
+        const parts = input.split(',').map((p) => p.trim())
         const nums = parts.map(Number)
 
         if (nums.some(isNaN)) {
@@ -37,14 +38,20 @@ export class SpatialPickerService {
         }
 
         throw new Error(
-            'Input must contain exactly 2 values (point) or 4 values (bounding box).'
+            'Input must contain exactly 2 values (point) or 4 values (bounding box).',
         )
     }
 
     /**
      * Validate that coordinates are within their legal ranges.
      */
-    static validateRanges(value: SpatialValue): string | null {
+    static validateRanges(value?: SpatialValue): string | null {
+        if (!value) return null
+
+        if (typeof value === 'string') {
+            value = SpatialPickerService.parse(value)
+        }
+
         if (value instanceof LatLng) {
             if (value.lat < -90 || value.lat > 90) {
                 return `Latitude ${value.lat} is out of range (-90 to 90).`
@@ -76,7 +83,7 @@ export class SpatialPickerService {
      */
     static validateAllowedType(
         value: SpatialValue,
-        allowed: AllowedTypes
+        allowed: AllowedTypes,
     ): string | null {
         const isPoint = value instanceof LatLng
         const isBbox = value instanceof LatLngBounds
@@ -102,9 +109,9 @@ export class SpatialPickerService {
      */
     static validateConstraints(
         value: SpatialValue,
-        constraintsStr: string
+        constraintsStr: string,
     ): string | null {
-        const parts = constraintsStr.split(',').map(p => parseFloat(p.trim()))
+        const parts = constraintsStr.split(',').map((p) => parseFloat(p.trim()))
         if (parts.length !== 4 || parts.some(isNaN)) return null
 
         const [west, south, east, north] = parts
@@ -141,13 +148,24 @@ export class SpatialPickerService {
     /**
      * Serialize a parsed value back to canonical string form.
      */
-    static serialize(value: SpatialValue): string {
+    static serialize(value?: SpatialValue): string {
+        if (!value) return ''
+
+        if (typeof value === 'string') {
+            return value
+        }
+
         if (value instanceof LatLng) {
             return `${value.lat.toFixed(2)}, ${value.lng.toFixed(2)}`
         }
         // LatLngBounds: west, south, east, north
-        return [value.getWest(), value.getSouth(), value.getEast(), value.getNorth()]
-            .map(n => n.toFixed(2))
+        return [
+            value.getWest(),
+            value.getSouth(),
+            value.getEast(),
+            value.getNorth(),
+        ]
+            .map((n) => n.toFixed(2))
             .join(', ')
     }
 
@@ -157,29 +175,39 @@ export class SpatialPickerService {
     static validate(
         input: string,
         allowed: AllowedTypes,
-        constraintsStr?: string
+        constraintsStr?: string,
     ): ParseResult {
         let value: SpatialValue
 
         try {
-            value = this.parse(input)
+            value = SpatialPickerService.parse(input)
         } catch (e) {
-            const formatHint = this.formatHint(allowed)
+            const formatHint = SpatialPickerService.formatHint(allowed)
             return { ok: false, error: `Invalid format. ${formatHint}` }
         }
 
-        const rangeError = this.validateRanges(value)
+        const rangeError = SpatialPickerService.validateRanges(value)
         if (rangeError) return { ok: false, error: rangeError }
 
-        const typeError = this.validateAllowedType(value, allowed)
+        const typeError = SpatialPickerService.validateAllowedType(
+            value,
+            allowed,
+        )
         if (typeError) return { ok: false, error: typeError }
 
         if (constraintsStr) {
-            const constraintError = this.validateConstraints(value, constraintsStr)
+            const constraintError = SpatialPickerService.validateConstraints(
+                value,
+                constraintsStr,
+            )
             if (constraintError) return { ok: false, error: constraintError }
         }
 
-        return { ok: true, value, serialized: this.serialize(value) }
+        return {
+            ok: true,
+            value,
+            serialized: SpatialPickerService.serialize(value),
+        }
     }
 
     private static formatHint(allowed: AllowedTypes): string {

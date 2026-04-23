@@ -39,7 +39,7 @@ export class DrawToolbarControl extends Control {
 
         let tools: DrawTool[] = ['bbox', 'polygon', 'point', 'circle']
 
-        tools.forEach(tool => {
+        tools.forEach((tool) => {
             const btn = document.createElement('button')
             btn.innerHTML = this.#getIcon(tool)
             btn.title = this.#getTitle(tool)
@@ -79,15 +79,21 @@ export class DrawToolbarControl extends Control {
         this.toggleButtonVisibility('circle')
     }
 
-    setValue(value: LatLng | LatLngBounds, fitToValue: boolean = false) {
+    clearValue() {
         this.#cleanup()
+        this.vectorLayer.getSource()?.clear()
+    }
+
+    setValue(value: LatLng | LatLngBounds, fitToValue: boolean = false) {
+        this.clearValue()
 
         const source = this.vectorLayer.getSource()
         if (!source) return
 
-        source.clear()
-
-        let feature
+        let feature:
+            | ReturnType<typeof this.buildPointFeature>
+            | ReturnType<typeof this.buildBBoxFeature>
+            | undefined
 
         if (value instanceof LatLng) {
             feature = this.buildPointFeature(value)
@@ -113,7 +119,11 @@ export class DrawToolbarControl extends Control {
     }
 
     buildPointFeature(latLng: LatLng) {
-        const coords = transform([latLng.lng, latLng.lat], 'EPSG:4326', 'EPSG:3857')
+        const coords = transform(
+            [latLng.lng, latLng.lat],
+            'EPSG:4326',
+            'EPSG:3857',
+        )
         const point = new Point(coords)
         const feature = new Feature({ geometry: point })
         feature.set('drawtool', 'point')
@@ -131,7 +141,7 @@ export class DrawToolbarControl extends Control {
             [east, north],
             [east, south],
             [west, south],
-        ].map(coord => transform(coord, 'EPSG:4326', 'EPSG:3857'))
+        ].map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))
         const polygon = new Polygon([coordinates])
         const feature = new Feature({ geometry: polygon })
         feature.set('drawtool', 'bbox')
@@ -162,7 +172,7 @@ export class DrawToolbarControl extends Control {
             ] ?? false
 
         const btn = this.element.querySelector(
-            `button:nth-child(${this.#getButtonIndex(tool)})`
+            `button:nth-child(${this.#getButtonIndex(tool)})`,
         ) as HTMLButtonElement
 
         if (btn) {
@@ -179,7 +189,8 @@ export class DrawToolbarControl extends Control {
     }
 
     #getIcon(tool: DrawTool) {
-        if (tool === 'bbox') return '<div class="control-button control-bbox"></div>'
+        if (tool === 'bbox')
+            return '<div class="control-button control-bbox"></div>'
         if (tool === 'polygon')
             return '<div class="control-button control-polygon"></div>'
         if (tool === 'point')
@@ -290,7 +301,11 @@ export class DrawToolbarControl extends Control {
                 const extent = geom.getExtent()
 
                 // TODO: cleanup for other types (polygon, circle)
-                const bbox4326 = transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
+                const bbox4326 = transformExtent(
+                    extent,
+                    'EPSG:3857',
+                    'EPSG:4326',
+                )
 
                 const [west, south, east, north] = bbox4326
 

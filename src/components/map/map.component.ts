@@ -62,7 +62,7 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'has-coord-tracker', type: Boolean })
     set hasCoordTracker(value: boolean) {
         console.warn(
-            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
+            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.',
         )
         this.showMouseCoordinates = value
     }
@@ -93,7 +93,7 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
+            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.',
         )
         this.showBoundingBoxSelection = !value
     }
@@ -110,7 +110,7 @@ export default class TerraMap extends TerraElement {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
+            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.',
         )
         this.showPointSelection = !value
     }
@@ -202,13 +202,13 @@ export default class TerraMap extends TerraElement {
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
-            onMouseMove: coordinate => {
+            onMouseMove: (coordinate) => {
                 this.cursorCoordinates = coordinate
             },
-            onDraw: detail => {
+            onDraw: (detail) => {
                 this.emit('terra-map-change', { detail })
             },
-            onShapeLoading: loading => {
+            onShapeLoading: (loading) => {
                 this.shapeLoading = loading
             },
         })
@@ -223,9 +223,9 @@ export default class TerraMap extends TerraElement {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(this.shapes?.categories, category => {
+                    map(this.shapes?.categories, (category) => {
                         return html`<optgroup label="${category.title}">
-                            ${category.shapes.map(shape => {
+                            ${category.shapes.map((shape) => {
                                 return html`
                                     <option
                                         value="shape=${shape.shapefileID}/${shape.shapeID}"
@@ -235,7 +235,7 @@ export default class TerraMap extends TerraElement {
                                 `
                             })}
                         </optgroup> `
-                    })
+                    }),
                 )}
             </select>
         `
@@ -245,8 +245,9 @@ export default class TerraMap extends TerraElement {
         return html`
             ${this.hasShapeSelector ? this.selectTemplate() : nothing}
             <div part="map" class=${`map ${this.staticMode ? 'static' : ''}`}>
-                ${this.showMouseCoordinates
-                    ? html`
+                ${
+                    this.showMouseCoordinates
+                        ? html`
                           <div id="mouse-info">
                               <div>
                                   <strong
@@ -257,14 +258,17 @@ export default class TerraMap extends TerraElement {
                               </div>
                           </div>
                       `
-                    : nothing}
-                ${this.shapeLoading
-                    ? html`
+                        : nothing
+                }
+                ${
+                    this.shapeLoading
+                        ? html`
                           <div class="map__loading-overlay">
                               <div class="map__spinner"></div>
                           </div>
                       `
-                    : nothing}
+                        : nothing
+                }
             </div>
         `
     }

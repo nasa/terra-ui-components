@@ -125,7 +125,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     selectedVariables: Variable[] = []
 
     @state()
-    selectedDimensionIndexes: Record<string, number> = {}
+    selectedDimensionIndexes: Record<string, { start: number; end: number }> =
+        {}
 
     @state()
     expandedVariableGroups: Set<string> = new Set()
@@ -786,10 +787,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const temporalExtents = collection?.TemporalExtents
         const spatialExtent = collection?.SpatialExtent
 
-        const showTemporalSection = temporalExtents && temporalExtents.length
+        const showTemporalSection = temporalExtents?.length
         const showSpatialSection =
-            spatialExtent &&
-            spatialExtent.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+            spatialExtent?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
         return html`
             ${
@@ -1385,7 +1385,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         // Fallback to collection metadata if sampling is not available
         const temporalExtents =
             this.collectionWithServices?.collection?.TemporalExtents
-        if (!temporalExtents || !temporalExtents.length)
+        if (!temporalExtents?.length)
             return {
                 startDate: null,
                 endDate: null,
@@ -1398,7 +1398,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         for (const temporal of temporalExtents) {
             for (const range of temporal.RangeDateTimes) {
                 const start = new Date(range.BeginningDateTime)
-                let end
+                let end: Date
                 if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
                     end = today
                 } else {
@@ -1415,33 +1415,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
     }
 
-    isLatLng(value: any): value is LatLng {
-        return (
-            value &&
-            typeof value.lat === 'number' &&
-            typeof value.lng === 'number'
-        )
-    }
-
-    isLatLngBounds(value: any): value is LatLngBounds {
-        return (
-            value &&
-            typeof value.getSouthWest === 'function' &&
-            typeof value.getNorthEast === 'function'
-        )
-    }
-
     #renderSpatialSelection() {
         const showError =
             this.touchedFields.has('spatial') && !this.spatialSelection
-        let boundingRects: any =
-            this.collectionWithServices?.collection?.SpatialExtent
-                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
-
-        if (boundingRects && !Array.isArray(boundingRects)) {
-            boundingRects = [boundingRects]
-        }
-
         const spatialString =
             this.spatialSelection?.toString() ?? this.spatialSelection
 
@@ -1475,7 +1451,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         part="spatial-picker"
                         inline
                         hide-label
-                        hide-point-selection
                         .spatialConstraints=${
                             this.controller.spatialConstraints ||
                             '-180, -90, 180, 90'
@@ -1513,31 +1488,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
      * resets the spatial selection back to the bounds of the collection
      */
     #resetSpatialSelection = () => {
-        const spatial_constraints =
-            this.collectionWithServices?.collection?.SpatialExtent
-                ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
-
-        if (!spatial_constraints) {
-            this.spatialSelection = undefined
-            return
-        }
-
-        // bounding rectangles can come through as an object or array, normalize to an array
-        const normalized = Array.isArray(spatial_constraints)
-            ? spatial_constraints
-            : [spatial_constraints]
-
-        // TODO: likely there will be datasets with more complex bounding rectangles
-        const rect = normalized[0]
-
-        // setting spatial selection to the bounds of the collection
-        // TODO: this should be moved into either the spatial picker (make it collection aware) or a service?
-        this.spatialSelection = new LatLngBounds([
-            Number(rect.WestBoundingCoordinate),
-            Number(rect.SouthBoundingCoordinate),
-            Number(rect.NorthBoundingCoordinate),
-            Number(rect.EastBoundingCoordinate),
-        ])
+        this.spatialSelection = undefined
+        this.spatialPicker.clear()
 
         this.#markFieldTouched('spatial')
     }
@@ -1670,7 +1622,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     min="1"
                     .max=${dim.size}
                     step="1"
-                    .value=${currentValue}
+                    .startValue=${currentValue.start}
+                    .endValue=${currentValue.end}
                     has-tooltips
                     show-inputs
                     hide-label
@@ -1685,13 +1638,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             : nothing
                     }
                     @terra-slider-change=${(event: TerraSliderChangeEvent) => {
-                        console.log('change event', event.detail)
-                        const value =
-                            'value' in event.detail
-                                ? event.detail.value
-                                : undefined
-                        if (typeof value === 'number') {
-                            this.#setDimensionValue(dim.name, value)
+                        if ('startValue' in event.detail) {
+                            const { startValue, endValue } = event.detail
+                            this.#setDimensionValue(
+                                dim.name,
+                                startValue,
+                                endValue,
+                            )
                         }
                     }}
                 ></terra-slider>
@@ -1699,18 +1652,32 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         `
     }
 
-    #setDimensionValue(dimName: string, value: number) {
+    #setDimensionValue(dimName: string, startValue: number, endValue?: number) {
         const dimensions = this.#getCommonSelectableDimensions()
         const found = dimensions.find((d) => d.name === dimName)
+
         if (!found) {
             return
         }
 
-        const normalized = Math.min(Math.max(Math.round(value), 1), found.size)
+        const normalizedStartValue = Math.min(
+            Math.max(Math.round(startValue), 1),
+            found.size,
+        )
+        const normalizedEndValue = Math.min(
+            Math.max(Math.round(endValue ?? startValue), 1),
+            found.size,
+        )
+
+        // if the dimension start and end is the full index range, we won't include that dimension in the request since it's redundant
+        if (normalizedStartValue <= 1 && normalizedEndValue >= found.size) {
+            delete this.selectedDimensionIndexes[dimName]
+            return
+        }
 
         this.selectedDimensionIndexes = {
             ...this.selectedDimensionIndexes,
-            [dimName]: normalized,
+            [dimName]: { start: normalizedStartValue, end: normalizedEndValue },
         }
     }
 
@@ -2064,7 +2031,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const variables = this.variablesQuery.result?.data
 
         if (!variables) {
-            console.log('no varibles found, cannot determine dimensions')
+            console.log('no variables found, cannot determine dimensions')
             return []
         }
 
@@ -2139,8 +2106,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         Type: entry.type,
                     }),
             )
-
-        console.log('common dimensions', filteredCommon)
 
         return filteredCommon
     }
@@ -2233,12 +2198,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 </div>
 
                 ${
-                    this.controller.currentJob!.status !== 'canceled' &&
-                    this.controller.currentJob!.status !== 'failed'
+                    this.controller.currentJob?.status !== 'canceled' &&
+                    this.controller.currentJob?.status !== 'failed'
                         ? html` <div class="progress-container">
                           <div class="progress-text">
                               ${
-                                  this.controller.currentJob!.progress >= 100
+                                  this.controller.currentJob?.progress >= 100
                                       ? html`
                                         <span class="status-complete"
                                             >✓ Search complete</span
@@ -2249,8 +2214,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                         <span class="status-running"
                                             >Searching for data...
                                             (${
-                                                this.controller.currentJob!
-                                                    .progress
+                                                this.controller.currentJob
+                                                    ?.progress
                                             }%)</span
                                         >
                                     `
@@ -2258,10 +2223,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           </div>
 
                           <div class="progress-bar">
-                              <div
-                                  class="progress-fill"
+                              <div class="progress-fill"
                                   style="width: ${
-                                      this.controller.currentJob!.progress
+                                      this.controller.currentJob?.progress
                                   }%"
                               ></div>
                           </div>
@@ -2275,13 +2239,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     >
                     out of estimated
                     <span class="estimated-total"
-                        >${this.controller.currentJob!.numInputGranules.toLocaleString()}</span
+                        >${this.controller.currentJob?.numInputGranules.toLocaleString()}</span
                     >
                 </div>
 
                 ${this.#renderJobMessage()}
                 ${
-                    this.controller.currentJob!.errors?.length
+                    this.controller.currentJob?.errors?.length
                         ? html`
                           <terra-accordion>
                               <div slot="summary">
@@ -2290,7 +2254,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                       style="color: #dc3545;"
                                       >Errors
                                       (${
-                                          this.controller.currentJob!.errors
+                                          this.controller.currentJob?.errors
                                               .length
                                       })</span
                                   >
@@ -2299,7 +2263,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                   <ul
                                       style="color: #dc3545; font-size: 14px; padding-left: 20px;"
                                   >
-                                      ${this.controller.currentJob!.errors.map(
+                                      ${this.controller.currentJob?.errors.map(
                                           (err: {
                                               url: string
                                               message: string
@@ -2407,9 +2371,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     ? html`
                       <div class="footer">
                           ${
-                              this.controller.currentJob!.status ===
+                              this.controller.currentJob?.status ===
                                   Status.SUCCESSFUL ||
-                              this.controller.currentJob!.status ===
+                              this.controller.currentJob?.status ===
                                   Status.COMPLETE_WITH_ERRORS
                                   ? html`
                                     <div
@@ -2699,7 +2663,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             type = 'error'
         }
 
-        let color, bg
+        let color: string, bg: string
         if (type === 'error') {
             color = '#dc3545'
             bg = '#f8d7da'

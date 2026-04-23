@@ -8,6 +8,7 @@ import {
 } from '../../data-services/harmony-data-service.js'
 import { Status, type SubsetJobStatus } from '../../data-services/types.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
+import { harmonyApi } from '../../apis/harmony.api.js'
 import { CmrCatalog } from '../../metadata-catalog/cmr-catalog.js'
 import type {
     CmrSamplingOfGranules,
@@ -127,7 +128,7 @@ export class DataSubsetterController {
         })
 
         this.giovanniConfiguredVariablesTask = new Task(host, {
-            task: async ([], { signal }) => {
+            task: async (_, { signal }) => {
                 try {
                     const response = await fetch(
                         'https://api.giovanni.earthdata.nasa.gov/configured-variables/',
@@ -145,7 +146,7 @@ export class DataSubsetterController {
                     const data = await response.json()
 
                     const variableNames = new Set(
-                        data['configured_variables'] as string[],
+                        data.configured_variables as string[],
                     )
 
                     this.#host.giovanniConfiguredVariables = variableNames
@@ -163,19 +164,16 @@ export class DataSubsetterController {
         })
 
         this.jobStatusTask = new Task(host, {
-            task: async ([], { signal }) => {
-                let job
+            task: async (_, { signal }) => {
+                let job: SubsetJobStatus | undefined
 
                 if (this.currentJob?.jobID) {
-                    // we already have a job, get it's status
-                    job = await this.#dataService.getSubsetJobStatus(
-                        this.currentJob.jobID,
-                        {
-                            signal,
-                            bearerToken: this.#host.bearerToken,
-                            environment: this.#host.environment,
-                        },
-                    )
+                    // we already have a job, get its status
+                    job = await harmonyApi.getJobStatus(this.currentJob.jobID, {
+                        signal,
+                        bearerToken: this.#host.bearerToken,
+                        environment: this.#host.environment,
+                    })
                 } else {
                     const isGiovanniFormat =
                         this.#host.selectedFormat === 'text/csv' ||
@@ -243,6 +241,20 @@ export class DataSubsetterController {
                         harmonyRequest.average('time')
                     }
 
+                    if (
+                        Object.keys(this.#host.selectedDimensionIndexes).length
+                    ) {
+                        Object.entries(
+                            this.#host.selectedDimensionIndexes,
+                        ).forEach(([dimName, { start, end }]) => {
+                            harmonyRequest.dimension({
+                                name: dimName,
+                                min: start,
+                                max: end,
+                            })
+                        })
+                    }
+
                     // add a label to identify the subsetter as the source
                     harmonyRequest.label('terra-data-subsetter')
 
@@ -256,15 +268,11 @@ export class DataSubsetterController {
 
                     // create the new job
                     try {
-                        job = await this.#dataService.createSubsetJob(
-                            // @ts-ignore
-                            harmonyRequest,
-                            {
-                                signal,
-                                bearerToken: this.#host.bearerToken,
-                                environment: this.#host.environment,
-                            },
-                        )
+                        job = await harmonyApi.createJob(harmonyRequest, {
+                            signal,
+                            bearerToken: this.#host.bearerToken,
+                            environment: this.#host.environment,
+                        })
                     } catch (error) {
                         console.error('createSubsetJob ERROR: ', error)
                         // Set the job to failed state so UI can show the error

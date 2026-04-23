@@ -80,7 +80,10 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     /** Initial/current value of the picker. */
-    @property({ attribute: 'initial-value' }) initialValue: string = ''
+    @property({ attribute: 'initial-value' }) initialValue:
+        | string
+        | LatLng
+        | LatLngBounds = ''
 
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Region'
@@ -130,14 +133,23 @@ export default class TerraSpatialPicker extends TerraElement {
             this.urlState && spatialParam ? spatialParam : this.initialValue
 
         if (seed) {
-            this._applyValue(seed, { emit: false })
+            if (typeof seed === 'string') {
+                this._applyValue(seed, { emit: false })
+            } else {
+                // LatLng or LatLngBounds passed directly — skip parse/validate
+                this._commit(SpatialPickerService.serialize(seed), seed)
+            }
         }
     }
 
     // ─── Public API ────────────────────────────────────────────────────────────
 
-    setValue(value: string) {
+    setValue(value: string | LatLng | LatLngBounds) {
         this._applyValue(value, { emit: true })
+    }
+
+    clear() {
+        this._clearValue()
     }
 
     open() {
@@ -279,11 +291,24 @@ export default class TerraSpatialPicker extends TerraElement {
     }
 
     /**
-     * Apply a value string without going through the validation pipeline
+     * Apply a value without going through the validation pipeline
      * (used for initialValue / setValue where we still want to display what
      * was given, but we do want to show an error if it's malformed).
      */
-    private _applyValue(raw: string, { emit }: { emit: boolean }) {
+    private _applyValue(
+        raw: string | LatLng | LatLngBounds,
+        { emit }: { emit: boolean },
+    ) {
+        if (typeof raw !== 'string') {
+            // Already a typed value — serialize and commit directly
+            const serialized = SpatialPickerService.serialize(raw)
+            this.error = ''
+            this.mapValue = serialized
+            if (this.terraInput) this.terraInput.value = serialized
+            if (emit) this._emitChange(raw)
+            this._updateURLParam(serialized)
+            return
+        }
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
@@ -314,6 +339,7 @@ export default class TerraSpatialPicker extends TerraElement {
         this.terraInput?.setCustomValidity('')
         this.mapValue = serialized
         if (this.terraInput) this.terraInput.value = serialized
+        this.initialValue = serialized
         this._updateURLParam(serialized)
         this._emitChange(value)
     }
@@ -381,7 +407,7 @@ export default class TerraSpatialPicker extends TerraElement {
             slot=${slot ?? nothing}
             .label=${this.label}
             .hideLabel=${this.hideLabel}
-            .value=${this.initialValue}
+            .value=${SpatialPickerService.serialize(this.initialValue)}
             placeholder="${this.spatialConstraints}"
             aria-controls="map"
             aria-expanded=${this.inline ? true : this.isExpanded}
