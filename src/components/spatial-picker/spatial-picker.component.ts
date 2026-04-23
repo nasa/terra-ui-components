@@ -136,6 +136,9 @@ export default class TerraSpatialPicker extends TerraElement {
 
     @property({ attribute: 'help-text' }) helpText = ''
 
+    @property({ attribute: 'closable', type: Boolean })
+    showClose: boolean = false  
+
     @state()
     mapValue: any
 
@@ -887,6 +890,22 @@ export default class TerraSpatialPicker extends TerraElement {
                         class="spatial-picker__map-container"
                         @click=${(e: Event) => e.stopPropagation()}
                     >
+                         ${this.showClose
+                                        ? html`
+                                     <div class="dropdown-header">
+                                        <button
+                                            class="spatial-picker__close-btn"
+                                            @click=${(e: Event) => {
+                                                e.stopPropagation()
+                                                this.close()
+                                            }}
+                                            aria-label="Close"
+                                         >
+                                         ✕
+                                         </button>
+                                    </div>
+                                    `
+                                    : nothing}
                         ${this.renderMap()}
                     </div>
                 </terra-dropdown>

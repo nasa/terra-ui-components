@@ -67,7 +67,7 @@ Use help text to display the desired date formatting, in case visitors choose to
 | `presets`       | `presets`        | `PresetRange[]` | `[]` (auto-fill)                      | Custom preset ranges; when empty, a default set is provided                                   |
 | `inline`        | `inline`         | `boolean`       | `false`                               | Displays the calendar inline (always visible) instead of as a popover dropdown                |
 | `splitInputs`   | `split-inputs`   | `boolean`       | `false`                               | When `range` is true, displays two separate inputs side by side (one for start, one for end)  |
-
+| `showClose`   | `closable`   | `boolean`       | `false`                               | Optional close button to close date picker
 ## Events
 
 The component emits:
@@ -97,6 +97,15 @@ The component emits:
   range
   start-date="2024-03-20"
   end-date="2024-03-25"
+></terra-date-picker>
+```
+### Closable Date Picker
+
+```html:preview
+<terra-date-picker
+  id="basic-picker"
+  start-date="2024-03-20"
+  closable
 ></terra-date-picker>
 ```
 
