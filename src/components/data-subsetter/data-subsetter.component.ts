@@ -27,6 +27,10 @@ import { getBasePath } from '../../utilities/base-path.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import {
+    isFeatureEnabled,
+    KnownFeatureFlags,
+} from '../../utilities/feature-flags.js'
+import {
     defaultSubsetFileMimeType,
     getFriendlyNameForMimeType,
 } from '../../utilities/mimetypes.js'
@@ -42,7 +46,7 @@ import TerraInput from '../input/input.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraLogin from '../login/login.component.js'
 import type { LatLng } from '../map/models/LatLng.js'
-import { LatLngBounds } from '../map/models/LatLngBounds.js'
+import type { LatLngBounds } from '../map/models/LatLngBounds.js'
 import { MapEventType } from '../map/type.js'
 import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
@@ -109,6 +113,19 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @property({ attribute: 'bearer-token' })
     bearerToken?: string
+
+    /**
+     * Comma-separated list of feature flags to enable.
+     * Features can also be enabled via the `?terra-features=flag1,flag2` URL parameter.
+     *
+     * Supported flags:
+     * - `dimension-subset` — shows the dimension subsetting accordion
+     *
+     * @example
+     * <terra-data-subsetter features="dimension-subset"></terra-data-subsetter>
+     */
+    @property()
+    features?: string
 
     /**
      * Optional dialog ID. When set, the subsetter will render inside a dialog with this ID.
@@ -850,7 +867,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                     : nothing
                             }
                             ${
-                                this.collectionWithServices?.variableSubset
+                                this.collectionWithServices?.variableSubset &&
+                                isFeatureEnabled(
+                                    KnownFeatureFlags.DIMENSION_SUBSET,
+                                    this.features,
+                                )
                                     ? this.#renderDimensionSelection()
                                     : nothing
                             }
@@ -1995,8 +2016,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 )
             }
         }
-
-        this.#pruneDimensionSelections()
     }
 
     #markFieldTouched(field: string) {
@@ -2108,35 +2127,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             )
 
         return filteredCommon
-    }
-
-    #pruneDimensionSelections() {
-        const commonDimensions = this.#getCommonSelectableDimensions()
-        const allowed = new Map(commonDimensions.map((d) => [d.name, d.size]))
-
-        const pruned: Record<string, number> = {}
-
-        for (const [dimName, value] of Object.entries(
-            this.selectedDimensionIndexes,
-        )) {
-            if (!allowed.has(dimName)) {
-                continue
-            }
-
-            const maxSize = allowed.get(dimName) ?? 0
-            if (typeof value !== 'number') {
-                continue
-            }
-
-            const safeValue = Math.round(value)
-            if (safeValue < 1 || safeValue > maxSize) {
-                continue
-            }
-
-            pruned[dimName] = safeValue
-        }
-
-        this.selectedDimensionIndexes = pruned
     }
 
     #renderJobStatus() {
