@@ -621,7 +621,7 @@ export default class TerraDataAccess extends TerraElement {
                     <strong>No granules found.</strong>
                     <p>
                         This collection does not have any granules available to access
-                        or subset.
+                        or transform.
                     </p>
                 </terra-alert>
             `

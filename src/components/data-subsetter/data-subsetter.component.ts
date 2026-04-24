@@ -502,6 +502,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           `
                             : nothing
                     }
+                    <slot name="dialog-header-content"></slot>
                     ${content} ${this.#renderFooterForDialog()}
                 </terra-dialog>
             `
@@ -2980,9 +2981,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             @change=${() => (this.dataAccessMode = 'subset')}
                         />
                         <div class="mode-content">
-                            <div class="mode-title">Subset Data</div>
+                            <div class="mode-title">Transform Data</div>
                             <div class="mode-description">
-                                Subset the data to your specific needs.
+                                Transform the data to your specific needs.
                             </div>
                         </div>
                     </label>
