@@ -68,7 +68,9 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Number }) opacity = 1
     @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
         false
-
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
+        true 
+        
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
@@ -311,29 +313,32 @@ export default class TerraPlotToolbar extends TerraElement {
                                   ></terra-icon>
                               </terra-button>
 
-                              <terra-button
-                                  circle
-                                  outline
-                                  aria-expanded=${this.activeMenuItem === 'help'}
-                                  aria-controls="menu"
-                                  aria-haspopup="true"
-                                  class="toggle help-toggle"
-                                  @mouseenter=${this.#handleActiveMenuItem}
-                                  @click=${this.#handleActiveMenuItem}
-                                  data-menu-name="help"
-                              >
-                                  <span class="sr-only"
-                                      >Help link for
-                                      ${this.catalogVariable.dataFieldLongName}</span
-                                  >
+                              ${this.showHelp
+                                  ? html`
+                                    <terra-button
+                                        circle
+                                        outline
+                                        aria-expanded=${this.activeMenuItem === 'help'}
+                                        aria-controls="menu"
+                                        aria-haspopup="true"
+                                        class="toggle help-toggle"
+                                        @mouseenter=${this.#handleActiveMenuItem}
+                                        @click=${this.#handleActiveMenuItem}
+                                        data-menu-name="help"
+                                    >
+                                        <span class="sr-only"
+                                            >Help link for
+                                            ${this.catalogVariable.dataFieldLongName}</span
+                                        >
 
-                                  <terra-icon
-                                    name="outline-question-mark-circle"
-                                    library="heroicons"
-                                    font-size="1.7em"
-                                  ></terra-icon>
-                              </terra-button>
-
+                                        <terra-icon
+                                            name="outline-question-mark-circle"
+                                            library="heroicons"
+                                            font-size="1.7em"
+                                        ></terra-icon>
+                                    </terra-button>
+                                    `
+                                  : nothing}
                               <terra-button
                                   circle
                                   outline

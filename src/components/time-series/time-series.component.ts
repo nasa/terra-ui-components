@@ -137,6 +137,9 @@ export default class TerraTimeSeries extends TerraElement {
     @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
         false
 
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
+        true
+        
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
@@ -349,6 +352,7 @@ export default class TerraTimeSeries extends TerraElement {
                                     .cacheKey=${this.#timeSeriesController.getCacheKey()}
                                     .variableEntryId=${this.variableEntryId}
                                     .showCitation=${this.showCitation}
+                                    .showHelp=${this.showHelp}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
                                 >
