@@ -77,17 +77,17 @@ export class AppModule {}
 ## Reference Terra UI Components in your Angular component code
 
 ```js
-import { SlDrawer } from '@nasa-terra/components';
+import { TerraDrawer } from '@nasa-terra/components';
 
 @Component({
   selector: 'app-drawer-example',
-  template: '<div id="page"><button (click)="showDrawer()">Show drawer</button><sl-drawer #drawer label="Drawer" class="drawer-focus" style="--size: 50vw"><p>Drawer content</p></sl-drawer></div>'
+  template: '<div id="page"><button (click)="showDrawer()">Show drawer</button><terra-drawer #drawer label="Drawer" class="drawer-focus" style="--size: 50vw"><p>Drawer content</p></terra-drawer></div>'
 })
 export class DrawerExampleComponent implements OnInit {
 
   // use @ViewChild to get a reference to the #drawer element within component template
   @ViewChild('drawer')
-  drawer?: ElementRef<SlDrawer>;
+  drawer?: ElementRef<TerraDrawer>;
 
   ...
 

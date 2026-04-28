@@ -39,32 +39,51 @@ try {
 
     console.log(`Updated base.py version to: ${newVersion}`)
 
-    function updateNotebookVersion(notebookDir) {
-        const notebookFiles = fs
-            .readdirSync(notebookDir)
-            .filter(file => file.endsWith('.ts'))
+    function updateFilesWithNewVersions(searchDir) {
+        const files = fs
+            .readdirSync(searchDir)
+            .filter(
+                file =>
+                    file.endsWith('.js') ||
+                    file.endsWith('.ts') ||
+                    file.endsWith('.tsx')
+            )
 
-        for (const notebookFile of notebookFiles) {
-            const notebookPath = path.join(notebookDir, notebookFile)
-            let notebookContent = fs.readFileSync(notebookPath, 'utf8')
+        for (const file of files) {
+            const filePath = path.join(searchDir, file)
+            const originalFileContent = fs.readFileSync(filePath, 'utf8')
+            let updatedFileContent = originalFileContent
 
-            // Replace terra_ui_components==VERSION pattern
-            const updatedContent = notebookContent.replace(
+            // Replace terra_ui_components==VERSION pattern for Jupyter Notebooks containing version
+            updatedFileContent = updatedFileContent.replace(
                 /"terra_ui_components==\d+\.\d+\.\d+"/g,
                 `"terra_ui_components==${newVersion}"`
             )
 
-            if (updatedContent !== notebookContent) {
-                fs.writeFileSync(notebookPath, updatedContent, 'utf8')
-                console.log(`Updated ${notebookFile} version to: ${newVersion}`)
+            // Replace CDN path for any files including the CDN path
+            updatedFileContent = updatedFileContent.replace(
+                /https:\/\/cdn.jsdelivr.net\/npm\/@nasa-terra\/components@\d+\.\d+\.\d+\/cdn\//g,
+                `https://cdn.jsdelivr.net/npm/@nasa-terra/components@${newVersion}/cdn/`
+            )
+
+            if (updatedFileContent !== originalFileContent) {
+                fs.writeFileSync(filePath, updatedFileContent, 'utf8')
+                console.log(`Updated ${filePath} version to: ${newVersion}`)
             }
         }
     }
 
     // Update notebook files
-    updateNotebookVersion(path.join('src', 'components', 'plot-toolbar', 'notebooks'))
-    updateNotebookVersion(
+    updateFilesWithNewVersions(
+        path.join('src', 'components', 'plot-toolbar', 'notebooks')
+    )
+    updateFilesWithNewVersions(
         path.join('src', 'components', 'data-subsetter', 'notebooks')
+    )
+
+    // update NextJS boilerplate version
+    updateFilesWithNewVersions(
+        path.join('packages', 'create-terra-ui-app', 'boilerplates', 'nextjs')
     )
 
     // Stage all updated files
@@ -72,12 +91,13 @@ try {
     execSync(`git add ${basePyPath}`)
     execSync('git add src/components/plot-toolbar/notebooks')
     execSync('git add src/components/data-subsetter/notebooks')
+    execSync('git add packages/create-terra-ui-app')
 
     // Amend the previous commit to include the updated versions
     execSync('git commit --amend --no-edit')
 
     console.log(
-        'Amended commit to include updated pyproject.toml, base.py, and notebook versions.'
+        'Amended commit to include updated pyproject.toml, base.py, notebook versions, and boilerplate files.'
     )
 } catch (error) {
     console.error('Error updating Python version:', error.message)

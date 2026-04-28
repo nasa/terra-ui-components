@@ -32,6 +32,8 @@ export const GET_SERVICE_CAPABILITIES = gql`
                 conceptId
             }
             collection {
+                ShortName
+                Version
                 granuleCount
                 EntryTitle
                 SpatialExtent {

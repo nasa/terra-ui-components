@@ -25,8 +25,8 @@ interface IconSource {
 
 /**
  * @summary Icons are symbols that can be used to represent various options within an application.
- * @documentation https://disc.gsfc.nasa.gov/components/icon
- * @status experimental
+ * @documentation https://terra-ui.netlify.app/components/icon
+ * @status stable
  * @since 1.0
  *
  * @event terra-load - Emitted when the icon has loaded.

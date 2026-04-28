@@ -1,6 +1,6 @@
-import '../../../dist/terra-ui-components.js'
 import { aTimeout, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import sinon from 'sinon'
+import './variable-combobox.js'
 
 function okJson(body: unknown) {
     return Promise.resolve(

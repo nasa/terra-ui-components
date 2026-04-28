@@ -101,16 +101,36 @@ export class DataSubsetterController {
                         }
                     )
                 } else {
-                    const labels = this.#buildJobLabels()
+                    const isGiovanniFormat =
+                        this.#host.selectedFormat === 'text/csv' ||
+                        this.#host.selectedFormat === 'image/tiff'
+
+                    // For CSV/TIFF, use collectionEntryId format like time-average-map
+                    // For other formats, use collectionConceptId
+                    const collectionId = isGiovanniFormat
+                        ? `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}`
+                        : this.#host.collectionWithServices?.conceptId ?? ''
 
                     let subsetOptions = {
-                        collectionConceptId:
-                            this.#host.collectionWithServices?.conceptId ?? '',
-                        ...(this.#host.collectionWithServices?.variableSubset && {
-                            variableConceptIds: this.#host.selectedVariables.map(
-                                v => v.conceptId
-                            ),
-                        }),
+                        ...(isGiovanniFormat
+                            ? { collectionEntryId: collectionId }
+                            : { collectionConceptId: collectionId }),
+                        ...(this.#host.collectionWithServices?.variableSubset &&
+                            (isGiovanniFormat
+                                ? {
+                                      variableConceptIds: ['parameter_vars'],
+                                      variableEntryIds:
+                                          this.#host.selectedVariables.map(
+                                              v =>
+                                                  `${this.#host.collectionWithServices?.shortName}_${this.#host.collectionWithServices?.collection?.Version}_${v.name}`
+                                          ),
+                                  }
+                                : {
+                                      variableConceptIds:
+                                          this.#host.selectedVariables.map(
+                                              v => v.conceptId
+                                          ),
+                                  })),
                         ...('w' in (this.#host.spatialSelection ?? {}) &&
                             this.#host.collectionWithServices?.bboxSubset && {
                                 boundingBox: this.#host
@@ -132,8 +152,16 @@ export class DataSubsetterController {
                                 ?.length && {
                                 format: this.#host.selectedFormat,
                             }),
-                        labels,
+                        // Add Cloud Giovanni specific average parameters
+                        ...(this.#host.selectedFormat === 'text/csv' && {
+                            average: 'area',
+                        }),
+                        ...(this.#host.selectedFormat === 'image/tiff' && {
+                            average: 'time',
+                        }),
+                        labels: [] as string[],
                     }
+                    subsetOptions.labels = this.#buildJobLabels(subsetOptions) // Overwrite the empty labels
 
                     console.log(
                         `Creating a job for collection, ${this.#host.collectionWithServices?.conceptId}, with subset options`,
@@ -232,17 +260,37 @@ export class DataSubsetterController {
         }
     }
 
-    #buildJobLabels(): string[] {
-        const labels = []
+    #buildJobLabels(subsetOptions: Record<string, any>): Array<string> {
+        const labels: string[] = []
+        // Using every subsetOptions key/value pair as a label to append
+        for (const key of Object.keys(subsetOptions)) {
+            if (key !== 'labels') {
+                // Prevents empty label from being
+                const value = subsetOptions[key]
 
-        if (this.#host.collectionWithServices?.collection?.EntryTitle) {
+                // Convert to string
+                const valueStr =
+                    typeof value === 'object' ? JSON.stringify(value) : value
+                labels.push(encodeURIComponent(`${key}: ${valueStr}`))
+            }
+        }
+
+        // Extra labels not from subsetOptions
+        if (this.#host.collectionEntryId) {
             labels.push(
                 encodeURIComponent(
-                    this.#host.collectionWithServices?.collection?.EntryTitle
+                    `collection-entry-id: ${this.#host.collectionEntryId}`
                 )
             )
         }
 
+        if (this.#host.collectionWithServices?.collection?.EntryTitle) {
+            labels.push(
+                encodeURIComponent(
+                    `collection-entry-title: ${this.#host.collectionWithServices.collection.EntryTitle}`
+                )
+            )
+        }
         return labels
     }
 }

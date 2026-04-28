@@ -254,8 +254,6 @@ export default css`
 
     /* Input Field */
 
-    input[type='text'],
-    input[type='password'],
     select,
     .input {
         font-family: var(--terra-input-font-family);

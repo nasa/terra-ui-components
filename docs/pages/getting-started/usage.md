@@ -27,7 +27,7 @@ Some properties are boolean, so they only have true/false values. To activate a 
 In rare cases, a property may require an array, an object, or a function. For example, to customize the color picker's list of preset swatches, you set the `swatches` property to an array of colors. This must be done with JavaScript.
 
 ```html
-<sl-color-picker></sl-color-picker>
+<terra-color-picker></terra-color-picker>
 
 <script>
     const colorPicker = document.querySelector('terra-color-picker')
@@ -41,10 +41,10 @@ Refer to a component's documentation for a complete list of its properties.
 
 You can listen for standard events such as `click`, `mouseover`, etc. as you normally would. However, it's important to note that many events emitted within a component's shadow root will be [retargeted](https://dom.spec.whatwg.org/#retarget) to the host element. This may result in, for example, multiple `click` handlers executing even if the user clicks just once. Furthermore, `event.target` will point to the host element, making things even more confusing.
 
-As a result, you should almost always listen for custom events instead. For example, instead of listening to `click` to determine when an `<sl-checkbox>` gets toggled, listen to `terra-change`.
+As a result, you should almost always listen for custom events instead. For example, instead of listening to `click` to determine when an `<terra-checkbox>` gets toggled, listen to `terra-change`.
 
 ```html
-<sl-checkbox>Check me</sl-checkbox>
+<terra-checkbox>Check me</terra-checkbox>
 
 <script>
     const checkbox = document.querySelector('terra-checkbox')
@@ -61,7 +61,7 @@ All custom events are prefixed with `terra-` to prevent collisions with standard
 Some components have methods you can call to trigger various behaviors. For example, you can set focus on a Terra input using the `focus()` method.
 
 ```html
-<sl-input></sl-input>
+<terra-input></terra-input>
 
 <script>
     const input = document.querySelector('terra-input')
@@ -85,7 +85,7 @@ Some components also have _named_ slots. A named slot can be populated by adding
 
 ```html
 <terra-button>
-    <sl-icon slot="prefix" name="gear"></sl-icon>
+    <terra-icon slot="prefix" name="gear"></terra-icon>
     Settings
 </terra-button>
 ```
@@ -100,10 +100,10 @@ Custom elements cannot have self-closing tags. Similar to `<script>` and `<texta
 
 ```html
 <!-- Don't do this -->
-<sl-input />
+<terra-input />
 
 <!-- Always do this -->
-<sl-input></sl-input>
+<terra-input></terra-input>
 ```
 
 ## Differences from Native Elements

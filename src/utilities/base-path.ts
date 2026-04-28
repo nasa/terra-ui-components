@@ -9,7 +9,7 @@ export function setBasePath(path: string) {
  * Gets the library's base path.
  *
  * The base path is used to load assets such as icons and images, so it needs to be set for components to work properly.
- * By default, this script will look for a script ending in shoelace.js or shoelace-autoloader.js and set the base path
+ * By default, this script will look for a script ending in terra-ui-components.js or terra-ui-components-autoloader.js and set the base path
  * to the directory that contains that file. To override this behavior, you can add the data-terra-ui-components attribute to any
  * script on the page (it probably makes the most sense to attach it to the Terra script, but it could also be on a
  * bundle). The value can be a local folder or it can point to a CORS-enabled endpoint such as a CDN.

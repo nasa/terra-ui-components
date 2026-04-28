@@ -10,11 +10,11 @@ You can load Terra via CDN or by installing it locally. If you're using a framew
 
 ## CDN Installation (Easiest)
 
-<sl-tab-group>
-<sl-tab slot="nav" panel="autoloader" active>Autoloader</sl-tab>
-<sl-tab slot="nav" panel="traditional">Traditional Loader</sl-tab>
+<terra-tabs>
+<terra-tab slot="nav" panel="autoloader" active>Autoloader</terra-tab>
+<terra-tab slot="nav" panel="traditional">Traditional Loader</terra-tab>
 
-<sl-tab-panel name="autoloader">
+<terra-tab-panel name="autoloader">
 
 The experimental autoloader is the easiest and most efficient way to use Terra. A lightweight script watches the DOM for unregistered Terra elements and lazy loads them for you — even if they're added dynamically.
 
@@ -22,13 +22,13 @@ While convenient, autoloading may lead to a [Flash of Undefined Custom Elements]
 
 <!-- prettier-ignore -->
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/light.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.css" />
 <script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js"></script>
 ```
 
-</sl-tab-panel>
+</terra-tab-panel>
 
-<sl-tab-panel name="traditional">
+<terra-tab-panel name="traditional">
 
 The traditional CDN loader registers all Terra elements up front. Note that, if you're only using a handful of components, it will be much more efficient to stick with the autoloader. However, you can also [cherry pick](#cherry-picking) components if you want to load specific ones up front.
 
@@ -38,35 +38,12 @@ The traditional CDN loader registers all Terra elements up front. Note that, if 
 <script type="module" src="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/terra-ui-components-autoloader.js" ></script>
 ```
 
-</sl-tab-panel>
-</sl-tab-group>
+</terra-tab-panel>
+</terra-tabs>
 
-### Dark Theme
+### Dark Mode
 
-The code above will load the light theme. If you want to use the [dark theme](/getting-started/themes#dark-theme) instead, update the stylesheet as shown below and add `<html class="terra-theme-dark">` to your page.
-
-<!-- prettier-ignore -->
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/dark.css" />
-```
-
-### Light & Dark Theme
-
-If you want to load the light or dark theme based on the user's `prefers-color-scheme` setting, use the stylesheets below. The `media` attributes ensure that only the user's preferred theme stylesheet loads and the `onload` attribute sets the appropriate [theme class](/getting-started/themes) on the `<html>` element.
-
-```html
-<link
-    rel="stylesheet"
-    media="(prefers-color-scheme:light)"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/light.css"
-/>
-<link
-    rel="stylesheet"
-    media="(prefers-color-scheme:dark)"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/dark.css"
-    onload="document.documentElement.classList.add('terra-theme-dark');"
-/>
-```
+The Horizon theme includes both light and dark modes. Dark mode can be enabled automatically based on system preference by adding the `terra-prefers-color-scheme` class to the `<body>` element, or you can manually control it with the `terra-theme-dark` class. For more details, see the [Themes documentation](/getting-started/themes#dark-mode).
 
 Now you can [start using Terra!](/getting-started/usage)
 
@@ -153,7 +130,7 @@ Here's an example that loads only the button component. Again, if you're not usi
 ```html
 <link
     rel="stylesheet"
-    href="/path/to/terra-ui-components/%NPMDIR%/themes/light.css"
+    href="/path/to/terra-ui-components/%NPMDIR%/themes/horizon.css"
 />
 
 <script
@@ -188,13 +165,11 @@ npm install @nasa-terra/components
 
 Now it's time to configure your bundler. Configurations vary for each tool, but here are some examples to help you get started.
 
--   [Example webpack config](https://github.com/shoelace-style/webpack-example/blob/master/webpack.config.js)
--   [Example Rollup config](https://github.com/shoelace-style/rollup-example/blob/master/rollup.config.js)
+-   EXAMPLES TBD. Please open an issue if needed
 
 Once your bundler is configured, you'll be able to import Terra components and utilities.
 
-```js
-import '@nasa-terra/components/%NPMDIR%/themes/light.css'
+import '@nasa-terra/components/%NPMDIR%/themes/horizon.css'
 import '@nasa-terra/components/%NPMDIR%/components/button/button.js'
 import '@nasa-terra/components/%NPMDIR%/components/icon/icon.js'
 import '@nasa-terra/components/%NPMDIR%/components/input/input.js'
@@ -204,8 +179,9 @@ import { setBasePath } from '@nasa-terra/components/%NPMDIR%/utilities/base-path
 // Set the base path to the folder you copied Terra's assets to
 setBasePath('/path/to/terra-ui-components/%NPMDIR%')
 
-// <terra-button>, <sl-icon>, <sl-input>, and <sl-rating> are ready to use!
-```
+// <terra-button>, <terra-icon>, and <terra-input> are ready to use!
+
+````
 
 :::warning
 Component modules include side effects for registration purposes. Because of this, importing directly from `@nasa-terra/components` may result in a larger bundle size than necessary. For optimal tree shaking, always cherry pick, i.e. import components and utilities from their respective files, as shown above.
@@ -218,7 +194,7 @@ By default, imports to components will auto-register themselves. This may not be
 ```diff
 - import TerraButton from '@nasa-terra/components/%NPMDIR%/components/button/button.js';
 + import TerraButton from '@nasa-terra/components/%NPMDIR%/components/button/button.component.js';
-```
+````
 
 Notice how the import ends with `.component.js`. This is the current convention to convey the import does not register itself.
 

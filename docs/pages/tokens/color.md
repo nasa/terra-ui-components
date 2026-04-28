@@ -14,43 +14,39 @@ Color tokens are referenced using the `--terra-color-{name}-{n}` CSS custom prop
 
 Theme tokens give you a semantic way to reference colors in your app. The primary palette is typically based on a brand color, whereas success, neutral, warning, and danger are used to visualize actions that correspond to their respective meanings.
 
+### Primary
+
+Our primary palette consists of black, white, red, and blue. These colors are used in logical ways throughout the site to highlight actions when they are important. We use a restricted palette to give attention and hierarchy to our content without distraction.
+
+<code>--terra-color-<em>{name}</em></code>
+
 <div class="color-palette">
-  <div class="color-palette__name">
-    Primary<br>
-    <p>Our primary palette consists of black, white, red, and blue. These colors are used in 
-      logical ways throughout the site to highlight actions when they are important. We use 
-      a restricted palette to give attention and hierarchy to our content without distraction.
-    </p>
-    <code>--terra-color-<em>{name}</em></code>
-  </div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-black);"></div>carbon-black</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-spacesuit-white);"></div>spacesuit-white</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-red);"></div>nasa-red</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-blue);"></div>nasa-blue</div>
 </div>
 
+### Extended Palette
+
+The extended palette consists of a tint and shade for the brand colors in the primary palette. Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible.
+
+<code>--terra-color-<em>{name}</em></code>
+
 <div class="color-palette">
-  <div class="color-palette__name">
-    Extended Palette<br>
-    <p>The extended palette consists of a tint and shade for the brand colors in the primary palette. 
-      Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible.
-    </p>
-    <code>--terra-color-<em>{name}</em></code>
-  </div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-red-tint);"></div>nasa-red-tint</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-red-shade);"></div>nasa-red-shade</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-blue-tint);"></div>nasa-blue-tint</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-nasa-blue-shade);"></div>nasa-blue-shade</div>
 </div>
 
+### Neutrals
+
+Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content.
+
+<code>--terra-color-carbon-<em>{n}</em></code>
+
 <div class="color-palette">
-  <div class="color-palette__name">
-    Neutrals<br>
-    <p>Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
-     Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content.
-    </p>
-    <code>--terra-color-carbon-<em>{n}</em></code>
-  </div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-90);"></div>90</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-80);"></div>80</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-70);"></div>70</div>
@@ -63,13 +59,13 @@ Theme tokens give you a semantic way to reference colors in your app. The primar
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-carbon-5);"></div>5</div>
 </div>
 
+### Additional Colors
+
+International Orange and Active Green are colors that are used sparingly and intentionally.
+
+<code>--terra-color-<em>{name}</em></code>
+
 <div class="color-palette">
-  <div class="color-palette__name">
-    Additional Colors<br>
-    <p>International Orange and Active Green are colors that are used sparingly and intentionally.
-    </p>
-    <code>--terra-color-<em>{name}</em></code>
-  </div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange);"></div>international-orange</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange-tint);"></div>international-orange-tint</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange-shade);"></div>international-orange-shade</div>

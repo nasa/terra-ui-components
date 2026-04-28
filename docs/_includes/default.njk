@@ -62,103 +62,117 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=DM+Mono&family=Inter&family=Public+Sans&display=swap" rel="stylesheet">
-
-        <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/shoelace-autoloader.js"></script>
     </head>
     <body>
         <a id="skip-to-main" class="visually-hidden" href="#main-content" data-smooth-link="false">
       Skip to main content
     </a>
 
-        {# Menu toggle #}
-        <button id="menu-toggle" type="button" aria-label="Menu">
-            <svg width="148" height="148" viewBox="0 0 148 148" xmlns="http://www.w3.org/2000/svg">
-                <g stroke="currentColor" stroke-width="18" fill="none" fill-rule="evenodd" stroke-linecap="round">
-                    <path d="M9.5 125.5h129M9.5 74.5h129M9.5 23.5h129"></path>
-                </g>
-            </svg>
-        </button>
+        {# Top Navigation Bar #}
+        <terra-site-header site-name="Terra UI">
+            <div class="top-nav__right" slot="right">
+                <terra-dropdown id="about-dropdown" placement="bottom-start" distance="3" hover>
+                    <terra-button slot="trigger" size="medium" variant="text" caret title="About">
+                        About
+                    </terra-button>
+                    <terra-menu role="menu">
+                        <terra-menu-item value="project-overview">
+                            <a href="{{ '/' | url }}">Project Overview</a>
+                        </terra-menu-item>
+                        <terra-menu-item value="contributing">
+                            <a href="{{ '/about/contributing' | url }}">Contributing</a>
+                        </terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+                <terra-dropdown id="getting-started-dropdown" placement="bottom-start" distance="3" hover>
+                    <terra-button slot="trigger" size="medium" variant="text" caret title="Getting Started">
+                        Getting Started
+                    </terra-button>
+                    <terra-menu role="menu">
+                        <terra-menu-item value="installation">
+                            <a href="{{ '/getting-started/installation' | url }}">Installation</a>
+                        </terra-menu-item>
+                        <terra-menu-item value="usage">
+                            <a href="{{ '/getting-started/usage' | url }}">Usage</a>
+                        </terra-menu-item>
+                        <terra-menu-item value="themes">
+                            <a href="{{ '/getting-started/themes' | url }}">Themes</a>
+                        </terra-menu-item>
+                        <terra-menu-item value="customizing">
+                            <a href="{{ '/getting-started/customizing' | url }}">Customizing</a>
+                        </terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
 
-        {# Icon toolbar #}
-        <div id="icon-toolbar">
-            {# GitHub #}
-            <a href="https://github.com/nasa/terra-ui-components" title="View Terra UI Components on GitHub">
-                <sl-icon name="github"></sl-icon>
-            </a>
-            <sl-dropdown id="environment-selector" placement="bottom-end" distance="3">
-                <terra-button slot="trigger" size="large" variant="text" caret="" title="Environment" data-optional="" data-valid="" data-user-valid="">
-                    <span id="environment-display">UAT</span>
-                </terra-button>
-                <sl-menu role="menu">
-                    <sl-menu-item type="checkbox" value="uat" tabindex="-1" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">UAT</sl-menu-item>
-                    <sl-menu-item type="checkbox" value="prod" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">PROD</sl-menu-item>
-                </sl-menu>
-            </sl-dropdown>
-            <sl-dropdown id="theme-selector" placement="bottom-end" distance="3">
-                <terra-button slot="trigger" size="large" variant="text" caret="" title="Press \ to toggle" data-optional="" data-valid="" data-user-valid="">
-                    <sl-icon class="only-light" name="sun-fill" aria-hidden="true" library="default"></sl-icon>
-                    <sl-icon class="only-dark" name="moon-fill" aria-hidden="true" library="default"></sl-icon>
-                </terra-button>
-                <sl-menu role="menu">
-                    <sl-menu-item type="checkbox" value="light" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Light</sl-menu-item>
-                    <sl-menu-item type="checkbox" value="dark" tabindex="-1" role="menuitemcheckbox" aria-checked="false" aria-disabled="false">Dark</sl-menu-item>
-                    <sl-divider role="separator" aria-orientation="horizontal"></sl-divider>
-                    <sl-menu-item type="checkbox" value="auto" tabindex="0" role="menuitemcheckbox" aria-checked="true" aria-disabled="false" checked="">System</sl-menu-item>
-                </sl-menu>
-            </sl-dropdown>
-        </div>
-
-        <aside id="sidebar" data-preserve-scroll>
-            <header>
-                <a href="/" class="sidebar-logo">
-                    <img src="{{ assetUrl('images/logo.svg') }}" alt="Terra UI Components"/>
-                    Terra UI Components
+                <terra-dropdown id="frameworks-dropdown" placement="bottom-start" distance="3" hover>
+                    <terra-button slot="trigger" size="medium" variant="text" caret title="Frameworks">
+                        Frameworks
+                    </terra-button>
+                    <terra-menu role="menu">
+                        <terra-menu-item value="react">
+                            <a href="{{ '/frameworks/react' | url }}">React</a>
+                        </terra-menu-item>
+                        <terra-menu-item value="vue">
+                            <a href="{{ '/frameworks/vue' | url }}">Vue</a>
+                        </terra-menu-item>
+                        <terra-menu-item value="angular">
+                            <a href="{{ '/frameworks/angular' | url }}">Angular</a>
+                        </terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+                
+                <button class="top-nav__search" type="button" title="Press / to search" aria-label="Search" data-plugin="search">
+                    <terra-icon name="solid-magnifying-glass" library="heroicons"></terra-icon>
+                </button>
+                <a href="https://github.com/nasa/terra-ui-components" title="View Terra UI Components on GitHub" class="top-nav__icon-link">
+                    <svg style="width: 24px; fill: #fff;" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
                 </a>
-                <div class="sidebar-version">
-                    {{ meta.version }}
-                </div>
-            </header>
 
-            <div class="sidebar-buttons">
-                <terra-button size="small" class="repo-button repo-button--github" href="https://github.com/nasa/terra-ui-components" target="_blank">
-                    <sl-icon slot="prefix" name="github"></sl-icon> Code
-        </terra-button>
-                <terra-button size="small" class="repo-button repo-button--star" href="https://github.com/nasa/terra-ui-components/stargazers" target="_blank">
-                    <sl-icon slot="prefix" name="star-fill"></sl-icon> Star
-        </terra-button>
+                <terra-dropdown id="theme-selector" placement="bottom-end" distance="3">
+                    <terra-button slot="trigger" size="medium" variant="text" caret title="Press \ to toggle">
+                        <terra-icon class="only-light" name="solid-sun" library="heroicons"></terra-icon>
+                        <terra-icon class="only-dark" name="solid-moon" library="heroicons"></terra-icon>
+                    </terra-button>
+                    
+                    <terra-menu>
+                        <terra-menu-item type="checkbox" value="light">Light</terra-menu-item>
+                        <terra-menu-item type="checkbox" value="dark">Dark</terra-menu-item>
+                        <terra-divider></terra-divider>
+                        <terra-menu-item type="checkbox" value="auto">System</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
             </div>
+        </terra-site-header>
 
-            <button class="search-box" type="button" title="Press / to search" aria-label="Search" data-plugin="search">
-                <sl-icon name="search"></sl-icon>
-                <span>Search</span>
-            </button>
+        <section id="content-container">
+            <aside id="sidebar" data-preserve-scroll>
+                <nav>
+                    {% include 'sidebar.njk' %}
+                </nav>
+            </aside>
 
-            <nav>
-                {% include 'sidebar.njk' %}
-            </nav>
-        </aside>
+            {# Content #}
+            <main>
+                <a id="main-content"></a>
+                <article id="content" class="content{% if (meta.toc is defined and meta.toc) or (meta.toc is not defined and toc) %} content--with-toc{% endif %}">
+                    {% if (meta.toc is defined and meta.toc) 
+                        or(meta.toc is not defined and toc) %}
+                        <div class="content__toc">
+                            <ul>
+                                <li class="top">
+                                    <a href="#">{{ meta.title }}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
 
-        {# Content #}
-        <main>
-            <a id="main-content"></a>
-            <article id="content" class="content{% if (meta.toc is defined and meta.toc) or (meta.toc is not defined and toc) %} content--with-toc{% endif %}">
-                {% if (meta.toc is defined and meta.toc) 
-                    or(meta.toc is not defined and toc) %}
-                    <div class="content__toc">
-                        <ul>
-                            <li class="top">
-                                <a href="#">{{ meta.title }}</a>
-                            </li>
-                        </ul>
+                    <div class="content__body">
+                        {% block content %}
+                            {{ content | safe }}
+                        {% endblock %}
                     </div>
-                {% endif %}
-
-                <div class="content__body">
-                    {% block content %}
-                        {{ content | safe }}
-                    {% endblock %}
-                </div>
-            </article>
-        </main>
+                </article>
+            </main>
+        </div>
     </body>
 </html>

@@ -12,7 +12,7 @@
       <div class="search__content">
         <div class="search__header">
           <div id="search-combobox" class="search__input-wrapper">
-            <sl-icon name="search"></sl-icon>
+            <terra-icon name="solid-magnifying-glass" library="heroicons"></terra-icon>
             <input
               id="search-input"
               class="search__input"
@@ -32,7 +32,7 @@
               aria-activedescendant
             >
             <button type="button" class="search__clear-button" aria-label="Clear entry" tabindex="-1" hidden>
-              <sl-icon name="x-circle-fill"></sl-icon>
+              <terra-icon name="solid-x-circle" library="heroicons"></terra-icon>
             </button>
           </div>
         </div>
@@ -301,29 +301,9 @@
                 const displayTitle = page.title ?? ''
                 const displayDescription = page.description ?? ''
                 const displayUrl = page.url.replace(/^\//, '').replace(/\/$/, '')
-                let icon = 'file-text'
 
                 a.setAttribute('role', 'option')
                 a.setAttribute('id', `search-result-item-${match.ref}`)
-
-                if (page.url.includes('getting-started/')) {
-                    icon = 'lightbulb'
-                }
-                if (page.url.includes('resources/')) {
-                    icon = 'book'
-                }
-                if (page.url.includes('components/')) {
-                    icon = 'puzzle'
-                }
-                if (page.url.includes('tokens/')) {
-                    icon = 'palette2'
-                }
-                if (page.url.includes('utilities/')) {
-                    icon = 'wrench'
-                }
-                if (page.url.includes('tutorials/')) {
-                    icon = 'joystick'
-                }
 
                 li.classList.add('search__result')
                 li.setAttribute('role', 'option')
@@ -332,9 +312,6 @@
 
                 a.href = page.url
                 a.innerHTML = `
-          <div class="search__result-icon" aria-hidden="true">
-            <sl-icon name="${icon}"></sl-icon>
-          </div>
           <div class="search__result__details">
             <div class="search__result-title"></div>
             <div class="search__result-description"></div>

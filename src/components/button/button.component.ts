@@ -14,26 +14,33 @@ import type {
     TerraDialogHideEvent,
     TerraDialogShowEvent,
 } from '../../terra-ui-components.js'
+import TerraIcon from '../icon/icon.component.js'
 
 /**
  * @summary Buttons represent actions that are available to the user.
- * @documentation https://shoelace.style/components/button
+ * @documentation https://terra-ui.netlify.app/components/button
  * @status stable
- * @since 2.0
+ * @since 1.0
  *
  * @slot - The button's label.
  * @slot prefix - A presentational prefix icon or similar element.
  * @slot suffix - A presentational suffix icon or similar element.
  *
+ * @event terra-blur - emitted when the button is blurred
+ * @event terra-focus - emitted when the button is focused
+ *
  * @csspart base - The component's base wrapper.
  * @csspart prefix - The container that wraps the prefix.
  * @csspart label - The button's label.
  * @csspart suffix - The container that wraps the suffix.
- * @csspart caret - The button's caret icon, an `<sl-icon>` element.
+ * @csspart caret - The button's caret icon, an `<terra-icon>` element.
  * @csspart spinner - The spinner that shows when the button is in the loading state.
  */
 export default class TerraButton extends TerraElement implements TerraFormControl {
     static styles: CSSResultGroup = [componentStyles, styles]
+    static dependencies = {
+        'terra-icon': TerraIcon,
+    }
 
     private readonly formControlController = new FormControlController(this, {
         assumeInteractionOn: ['click'],
@@ -156,6 +163,9 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     @property({ attribute: 'for-dialog' })
     forDialog?: string
 
+    /** The ARIA role for the button. Defaults to 'button'. */
+    @property({ reflect: true }) role: string | null = 'button'
+
     /** if button is used to control another element on the page, such as an accordion or dialog, this state communicates whether the controlled element is expanded */
     @state()
     expanded: boolean = false
@@ -222,12 +232,12 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
     private handleBlur() {
         this.hasFocus = false
-        this.emit('sl-blur')
+        this.emit('terra-blur')
     }
 
     private handleFocus() {
         this.hasFocus = true
-        this.emit('sl-focus')
+        this.emit('terra-focus')
     }
 
     private handleClick() {
@@ -243,7 +253,58 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
         if (this.forDialog) {
             // this is a trigger for a dialog, go ahead and show the dialog
-            const el = document.getElementById(this.forDialog) as TerraDialog
+            // First try document.getElementById (for dialogs in light DOM)
+            let el = document.getElementById(this.forDialog) as TerraDialog
+
+            // If not found, search in shadow DOMs
+            if (!el) {
+                // Helper function to recursively search shadow roots
+                const findInShadowRoots = (
+                    root: Document | ShadowRoot
+                ): TerraDialog | null => {
+                    // Try getElementById if available (Document has it, ShadowRoot doesn't)
+                    if (
+                        'getElementById' in root &&
+                        typeof root.getElementById === 'function'
+                    ) {
+                        const found = root.getElementById(this.forDialog!)
+                        if (found) {
+                            return found as TerraDialog
+                        }
+                    }
+
+                    // Search all elements in this root
+                    const allElements = root.querySelectorAll('*')
+                    for (const element of allElements) {
+                        // Check if this element is the dialog we're looking for
+                        if (
+                            element.id === this.forDialog &&
+                            element.tagName.toLowerCase() === 'terra-dialog'
+                        ) {
+                            return element as TerraDialog
+                        }
+
+                        // If element has a shadow root, search it recursively
+                        if (
+                            element.shadowRoot &&
+                            element.shadowRoot.mode === 'open'
+                        ) {
+                            const found = findInShadowRoots(element.shadowRoot)
+                            if (found) {
+                                return found
+                            }
+                        }
+                    }
+
+                    return null
+                }
+
+                const found = findInShadowRoots(document)
+                if (found) {
+                    el = found
+                }
+            }
+
             el?.show()
         }
     }
@@ -267,6 +328,11 @@ export default class TerraButton extends TerraElement implements TerraFormContro
             // Disabled form controls are always valid
             this.formControlController.setValidity(this.disabled)
         }
+    }
+
+    @watch('href')
+    handleHrefChange() {
+        this.role = this.isLink() ? null : 'button'
     }
 
     /** Simulates a click on the button. */
@@ -388,7 +454,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         target=${ifDefined(isLink ? this.target : undefined)}
         download=${ifDefined(isLink ? this.download : undefined)}
         rel=${ifDefined(isLink ? this.rel : undefined)}
-        role=${ifDefined(isLink ? undefined : 'button')}
+        role=${ifDefined(this.role)}
         aria-disabled=${this.disabled ? 'true' : 'false'}
         tabindex=${this.disabled ? '-1' : '0'}
         @blur=${this.handleBlur}
@@ -416,6 +482,19 @@ export default class TerraButton extends TerraElement implements TerraFormContro
                     : ``
             }
         </slot>
+        ${
+            this.caret
+                ? html`
+                      <span part="caret" class="button__caret">
+                          <terra-icon
+                              name="solid-chevron-down"
+                              library="heroicons"
+                              aria-hidden="true"
+                          ></terra-icon>
+                      </span>
+                  `
+                : ''
+        }
       </${tag}>
     `
     }

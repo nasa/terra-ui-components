@@ -1,48 +1,87 @@
 <ul>
     <li>
-        <h2>Getting Started</h2>
+        <h2>Design System</h2>
         <ul>
             <li>
-                <a href="{{ '/' | url }}">Home</a>
+                <a href="{{ '/horizon-design-system' | url }}">Overview</a>
             </li>
             <li>
-                <a href="{{ '/getting-started/installation' | url }}">Installation</a>
+                <a href="{{ '/tokens/typography' | url }}">Typography</a>
             </li>
             <li>
-                <a href="{{ '/getting-started/usage' | url }}">Usage</a>
+                <a href="{{ '/tokens/color' | url }}">Color</a>
             </li>
             <li>
-                <a href="{{ '/getting-started/themes' | url }}">Themes</a>
+                <a href="{{ '/tokens/spacing' | url }}">Spacing</a>
             </li>
             <li>
-                <a href="{{ '/getting-started/customizing' | url }}">Customizing</a>
+                <a href="{{ '/tokens/elevation' | url }}">Elevation</a>
+            </li>
+            <li>
+                <a href="{{ '/tokens/border-radius' | url }}">Border Radius</a>
+            </li>
+            <li>
+                <a href="{{ '/tokens/transition' | url }}">Transition</a>
+            </li>
+            <li>
+                <a href="{{ '/tokens/z-index' | url }}">Z-index</a>
+            </li>
+            <li>
+                <a href="{{ '/tokens/more' | url }}">More Tokens</a>
+            </li>
+            <li>
+                <a href="{{ '/horizon-design-system/#adoption-status' | url }}">HDS Adoption Status</a>
             </li>
         </ul>
     </li>
+    
     <li>
-        <h2>Frameworks</h2>
+        <h2>Forms</h2>
         <ul>
             <li>
-                <a href="{{ '/frameworks/react' | url }}">React</a>
-            </li>
-            <li>
-                <a href="{{ '/frameworks/vue' | url }}">Vue</a>
-            </li>
-            <li>
-                <a href="{{ '/frameworks/angular' | url }}">Angular</a>
+                <a href="{{ '/forms' | url }}">Overview</a>
             </li>
         </ul>
     </li>
-    <li>
-        <h2>Components</h2>
-        <ul>
-            {% for component in meta.components %}
-                <li>
-                    <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
-                        {{ component.name | classNameToComponentName }}
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
-    </li>
+
+    
+    {% for sectionName in meta.sidebarSectionOrder %}
+        {% if meta.componentsBySection[sectionName] %}
+            <li>
+                <h2>{{ sectionName }}</h2>
+                <ul>
+                    {% for component in meta.componentsBySection[sectionName] %}
+                        <li>
+                            <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
+                                {{ component.name | classNameToComponentName }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    {% endfor %}
+    {# Include any sections not in the defined order (fallback) #}
+    {% for sectionName, components in meta.componentsBySection %}
+        {% set isInOrder = false %}
+        {% for orderedSection in meta.sidebarSectionOrder %}
+            {% if orderedSection == sectionName %}
+                {% set isInOrder = true %}
+            {% endif %}
+        {% endfor %}
+        {% if not isInOrder %}
+            <li>
+                <h2>{{ sectionName }}</h2>
+                <ul>
+                    {% for component in components %}
+                        <li>
+                            <a href="{{ '/components/' + (component.tagName | removeTerraPrefix) | url }}">
+                                {{ component.name | classNameToComponentName }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endif %}
+    {% endfor %}
 </ul>

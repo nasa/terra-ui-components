@@ -60,9 +60,14 @@ Once you have configured your application for custom elements, you should be abl
     <div class="container">
         <h1>QR code generator</h1>
 
-        <sl-input maxlength="255" clearable label="Value" v-model="qrCode"></sl-input>
+        <terra-input
+            maxlength="255"
+            clearable
+            label="Value"
+            v-model="qrCode"
+        ></terra-input>
 
-        <sl-qr-code :value="qrCode"></sl-qr-code>
+        <terra-qr-code :value="qrCode"></terra-qr-code>
     </div>
 </template>
 
@@ -91,7 +96,7 @@ Once you have configured your application for custom elements, you should be abl
 When binding complex data such as objects and arrays, use the `.prop` modifier to make Vue bind them as a property instead of an attribute.
 
 ```html
-<sl-color-picker :swatches.prop="mySwatches" />
+<terra-color-picker :swatches.prop="mySwatches" />
 ```
 
 ### Two-way Binding
@@ -100,9 +105,9 @@ One caveat is there's currently [no support for v-model on custom elements](http
 
 ```html
 <!-- This doesn't work -->
-<sl-input v-model="name"></sl-input>
+<terra-input v-model="name"></terra-input>
 <!-- This works, but it's a bit longer -->
-<sl-input :value="name" @input="name = $event.target.value"></sl-input>
+<terra-input :value="name" @input="name = $event.target.value"></terra-input>
 ```
 
 ### Slots
@@ -112,7 +117,7 @@ Slots in Terra/web components are functionally the same as basic slots in Vue. S
 Here is an example:
 
 ```html
-<sl-drawer
+<terra-drawer
     label="Drawer"
     placement="start"
     class="drawer-placement-start"
@@ -124,5 +129,5 @@ Here is an example:
             >Close</terra-button
         >
     </div>
-</sl-drawer>
+</terra-drawer>
 ```

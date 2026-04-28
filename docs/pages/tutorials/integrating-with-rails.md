@@ -45,7 +45,7 @@ After importing the theme, you'll need to import the JavaScript files for Terra.
 
 ```js
 import '../stylesheets/application.scss'
-import { setBasePath, SlAlert, SlAnimation, TerraButton, ... } from '@nasa-terra/components'
+import { setBasePath, TerraAlert, TerraAnimation, TerraButton, ... } from '@nasa-terra/components'
 
 // ...
 

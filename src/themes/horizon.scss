@@ -1,0 +1,1122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
+
+:root,
+:host,
+.terra-theme-horizon {
+    color-scheme: normal light;
+
+    /* Horizon Design System */
+
+    /* HDS Colors
+
+    /* Primary Palette
+     * Our primary palette consists of black, white, red, and blue. These colors are used in 
+     * logical ways throughout the site to highlight actions when they are important. We use 
+     * a restricted palette to give attention and hierarchy to our content without distraction.
+     */
+    --terra-color-carbon-black: hsla(0, 0%, 0%, 1);
+    --terra-color-spacesuit-white: hsla(0, 100%, 100%, 1);
+    --terra-color-nasa-red: hsla(3, 91%, 59%, 1);
+    --terra-color-nasa-blue: hsla(217, 78%, 50%, 1);
+
+    /* Extended Palette 
+     * The extended palette consists of a tint and shade for the brand colors in the primary palette. 
+     * Usage of these colors varies depending on the touch point, but they come in handy to ensure that your combinations are always AAA accessible. 
+     */
+    --terra-color-nasa-red-tint: hsla(3, 100%, 66%, 1);
+    --terra-color-nasa-red-shade: hsla(357, 99%, 36%, 1);
+    --terra-color-nasa-blue-tint: hsla(212, 100%, 58%, 1);
+    --terra-color-nasa-blue-shade: hsla(218, 86%, 31%, 1);
+
+    /* Additional Colors 
+     * International Orange and Active Green are colors that are used sparingly and intentionally.
+     */
+    --terra-color-international-orange: hsla(23, 83%, 53%, 1);
+    --terra-color-international-orange-tint: hsl(23, 82%, 61%);
+    --terra-color-international-orange-shade: hsla(24, 90%, 32%, 1);
+    --terra-color-active-green: hsla(145, 67%, 57%, 1);
+    --terra-color-active-green-tint: hsl(145, 52%, 64%, 1);
+    --terra-color-active-green-shade: hsla(144, 75%, 38%, 1);
+    --terra-color-nasa-blue-dark: hsla(214, 52%, 24.5%, 1);
+    --terra-color-blue-light: hsla(218, 62%, 85%, 1);
+
+    /* Neutrals
+     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+     * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+     */
+    --terra-color-carbon-90: hsla(240, 8%, 10%, 1);
+    --terra-color-carbon-80: hsla(240, 4%, 19%, 1);
+    --terra-color-carbon-70: hsla(240, 2%, 27%, 1);
+    --terra-color-carbon-60: hsla(240, 2%, 35%, 1);
+    --terra-color-carbon-50: hsla(240, 1%, 47%, 1);
+    --terra-color-carbon-40: hsla(240, 2%, 59%, 1);
+    --terra-color-carbon-30: hsla(240, 1%, 73%, 1);
+    --terra-color-carbon-20: hsla(0, 0%, 82%, 1);
+    --terra-color-carbon-10: hsla(0, 0%, 89%, 1);
+    --terra-color-carbon-5: hsl(0, 0%, 96%, 1);
+
+    /* Button BG colors TESTED for AA Accessibility of large text & graphical objects.
+    /* HDS colors failed tests when using white text on buttons. If we use dark text we can use original HDS colors.
+     */
+    --terra-color-success-green: hsl(145, 67%, 40%);
+    --terra-color-success-green-hover: hsl(145, 67%, 30%);
+    --terra-color-success-green-focus: hsl(145, 52%, 54%);
+
+    /* Default Button Color - not a defined color in the HDS theme
+     */
+    --terra-color-default-gray: hsla(240, 13%, 66%, 1);
+    --terra-color-default-gray-tint: hsla(240, 2%, 59%, 1);
+    --terra-color-default-gray-shade: hsl(240, 9%, 40%, 1);
+
+    /* HDS button styles
+    */
+    --terra-button-border-width: 1px;
+
+    --terra-button-font-size-small: var(--terra-font-size-x-small);
+    --terra-button-font-size-medium: var(--terra-font-size-small);
+    --terra-button-font-size-large: var(--terra-font-size-medium);
+
+    --terra-button-height-small: 1.875rem; /* 30px */
+    --terra-button-height-medium: 2.25rem; /* 36px */
+    --terra-button-height-large: 3rem; /* 48px */
+
+    --terra-button-outline-text-color: var(--terra-color-carbon-black);
+    --terra-button-text-text-color: var(--terra-color-nasa-blue);
+    --terra-button-text-text-color-hover: var(--terra-color-nasa-blue-shade);
+    --terra-button-page-link-text-color: var(--terra-color-carbon-black);
+
+    /*
+    * Border radii
+    */
+
+    --terra-border-radius-small: 0.125rem; /* 2px */
+    --terra-border-radius-medium: 0.25rem; /* 4px */
+    --terra-border-radius-large: 0.5rem; /* 8px */
+    --terra-border-radius-x-large: 1rem; /* 16px */
+
+    /* Icon sizes */
+    --terra-icon-small: 1.2rem; /* 19px */
+    --terra-icon-medium: 1.75rem; /* 50px */
+    --terra-icon-large: 2.2rem; /* 68px */
+    --terra-icon-x-large: 3rem; /* 76px */
+
+    /* Avatar sizes */
+    --terra-avatar-size-small: 2rem; /* 32px */
+    --terra-avatar-size-medium: 2.5rem; /* 40px */
+    --terra-avatar-size-large: 3.5rem; /* 56px */
+
+    /* Avatar colors */
+    --terra-avatar-background-color: var(--terra-color-carbon-40);
+    --terra-avatar-color: var(--terra-color-spacesuit-white);
+
+    /* Avatar typography */
+    --terra-avatar-font-family: var(--terra-font-family--inter);
+    --terra-avatar-font-weight: var(--terra-font-weight-normal);
+
+    /* Chip sizes */
+    --terra-chip-height-small: 1.375rem;
+    --terra-chip-height-medium: 1.875rem;
+    --terra-chip-height-large: 2.5rem;
+
+    /* Chip spacing */
+    --terra-chip-padding-small: var(--terra-spacing-x-small);
+    --terra-chip-padding-medium: var(--terra-spacing-small);
+    --terra-chip-padding-large: var(--terra-spacing-medium);
+    --terra-chip-margin: var(--terra-spacing-2x-small);
+
+    /* Chip border */
+    --terra-chip-border-width: 1.5px;
+
+    /* Chip typography */
+    --terra-chip-font-family: var(--terra-font-family--inter);
+    --terra-chip-font-weight: var(--terra-font-weight-bold);
+
+    /* Chip colors */
+    --terra-chip-background-color: var(--terra-color-spacesuit-white);
+    --terra-chip-border-color: var(--terra-color-nasa-blue);
+    --terra-chip-color: var(--terra-color-carbon-70);
+    --terra-chip-color-hover: var(--terra-color-carbon-90);
+    --terra-chip-icon-color: var(--terra-color-carbon-70);
+    --terra-chip-icon-color-hover: var(--terra-color-carbon-90);
+
+    /* Chip transitions */
+    --terra-chip-transition: fill var(--terra-transition-fast);
+
+    /* Accordion */
+    --terra-accordion-background-color: var(--terra-color-spacesuit-white);
+    --terra-accordion-border-color: var(--terra-color-carbon-20);
+    --terra-accordion-border-width: 1px;
+    --terra-accordion-border-radius: var(--terra-border-radius-large);
+    --terra-accordion-summary-background-color: var(--terra-color-carbon-5);
+    --terra-accordion-summary-background-color-hover: var(--terra-color-carbon-10);
+    --terra-accordion-summary-border-color: var(--terra-color-carbon-20);
+    --terra-accordion-summary-padding: var(--terra-spacing-small)
+        var(--terra-spacing-medium);
+    --terra-accordion-summary-font-size: var(--terra-font-size-small);
+    --terra-accordion-summary-font-weight: var(--terra-font-weight-semibold);
+    --terra-accordion-summary-color: var(--terra-color-carbon-80);
+    --terra-accordion-content-padding: var(--terra-spacing-medium);
+    --terra-accordion-transition: background-color var(--terra-transition-fast);
+
+    /* Skeleton */
+    --terra-skeleton-background-color: var(--terra-color-carbon-50);
+    --terra-skeleton-sheen-color: var(--terra-color-carbon-60);
+    --terra-skeleton-border-radius: var(--terra-border-radius-medium);
+    --terra-skeleton-margin-bottom: var(--terra-spacing-small);
+    --terra-skeleton-min-height: var(--terra-spacing-medium);
+
+    /* Loader sizes */
+    --terra-loader-size-small: 30px;
+    --terra-loader-size-medium: 52px;
+    --terra-loader-size-large: 100px;
+    --terra-loader-stroke-width-small: 3.5px;
+    --terra-loader-stroke-width-medium: 3.5px;
+    --terra-loader-stroke-width-large: 2.5px;
+
+    /* Loader colors */
+    --terra-loader-track-color: var(--terra-color-carbon-20);
+    --terra-loader-progress-color: var(--terra-color-nasa-blue);
+    --terra-loader-planet-color: var(--terra-color-carbon-20);
+    --terra-loader-moon-color: var(--terra-color-nasa-blue);
+
+    /* Loader typography */
+    --terra-loader-text-letter-spacing: var(--terra-letter-spacing-loose);
+    --terra-loader-text-padding: var(--terra-spacing-2x-small);
+
+    /* Menu Item */
+    --terra-menu-item-font-family: var(--terra-font-family--inter);
+    --terra-menu-item-background-color-hover: var(--terra-color-carbon-10);
+    --terra-menu-item-background-color-focus: var(--terra-color-nasa-blue);
+    --terra-menu-item-color: var(--terra-color-carbon-70);
+    --terra-menu-item-color-hover: var(--terra-color-carbon-90);
+    --terra-menu-item-color-focus: var(--terra-color-spacesuit-white);
+
+    /* Popup */
+    --terra-popup-arrow-size: 6px;
+    --terra-popup-arrow-color: var(--terra-color-carbon-black);
+
+    /* Alert */
+    --terra-alert-line-height: var(--terra-line-height-normal);
+    --terra-alert-filled-background-color-primary: var(--terra-color-nasa-blue-shade);
+    --terra-alert-filled-background-color-success: var(--terra-color-success-green);
+    --terra-alert-filled-background-color-neutral: var(--terra-color-carbon-60);
+    --terra-alert-filled-background-color-warning: var(
+        --terra-color-international-orange
+    );
+    --terra-alert-filled-background-color-danger: var(--terra-color-nasa-red);
+    --terra-alert-filled-color: var(--terra-color-spacesuit-white);
+    --terra-alert-filled-icon-color: var(--terra-color-spacesuit-white);
+
+    /*
+    * Theme Tokens
+    */
+
+    --terra-border-radius-circle: 50%;
+
+    /*
+   * Elevations
+   */
+
+    --terra-shadow-x-small: 0 1px 2px hsl(240 3.8% 46.1% / 6%);
+    --terra-shadow-small: 0 1px 2px hsl(240 3.8% 46.1% / 12%);
+    --terra-shadow-medium: 0 2px 4px hsl(240 3.8% 46.1% / 12%);
+    --terra-shadow-large: 0 2px 8px hsl(240 3.8% 46.1% / 12%);
+    --terra-shadow-x-large: 0 4px 16px hsl(240 3.8% 46.1% / 12%);
+
+    /*
+   * Spacings
+   */
+
+    --terra-spacing-3x-small: 0.125rem; /* 2px */
+    --terra-spacing-2x-small: 0.25rem; /* 4px */
+    --terra-spacing-x-small: 0.5rem; /* 8px */
+    --terra-spacing-small: 0.75rem; /* 12px */
+    --terra-spacing-medium: 1rem; /* 16px */
+    --terra-spacing-large: 1.25rem; /* 20px */
+    --terra-spacing-x-large: 1.75rem; /* 28px */
+    --terra-spacing-2x-large: 2.25rem; /* 36px */
+    --terra-spacing-3x-large: 3rem; /* 48px */
+    --terra-spacing-4x-large: 4.5rem; /* 72px */
+
+    /*
+   * Transitions
+   */
+
+    --terra-transition-x-slow: 1000ms;
+    --terra-transition-slow: 500ms;
+    --terra-transition-medium: 250ms;
+    --terra-transition-fast: 150ms;
+    --terra-transition-x-fast: 50ms;
+
+    /*
+   * Typography
+   */
+
+    /* Fonts */
+    --terra-font-family--inter: 'Inter', sans-serif;
+    --terra-font-family--public-sans: 'Public Sans', sans-serif;
+    --terra-font-family--dm-mono: 'DM Mono', monospace;
+
+    /* Font colors */
+    --terra-font-color-primary: var(--terra-color-carbon-90);
+    --terra-font-color-secondary: var(--terra-color-carbon-70);
+    --terra-font-color-tertiary: var(--terra-color-carbon-50);
+
+    /* Font sizes */
+    --terra-font-size-2x-small: 0.625rem; /* 10px */
+    --terra-font-size-x-small: 0.75rem; /* 12px */
+    --terra-font-size-small: 0.875rem; /* 14px */
+    --terra-font-size-medium: 1rem; /* 16px */
+    --terra-font-size-large: 1.25rem; /* 20px */
+    --terra-font-size-x-large: 1.5rem; /* 24px */
+    --terra-font-size-2x-large: 2.25rem; /* 36px */
+    --terra-font-size-3x-large: 3rem; /* 48px */
+    --terra-font-size-4x-large: 4.5rem; /* 72px */
+
+    /* Font weights */
+    --terra-font-weight-light: 300;
+    --terra-font-weight-normal: 400;
+    --terra-font-weight-semibold: 600;
+    --terra-font-weight-bold: 700;
+
+    /* Letter spacings */
+    --terra-letter-spacing-denser: -0.03em;
+    --terra-letter-spacing-dense: -0.015em;
+    --terra-letter-spacing-normal: normal;
+    --terra-letter-spacing-loose: 0.075em;
+    --terra-letter-spacing-looser: 0.15em;
+
+    /* Line heights */
+    /* This is the range of line heights I found in the HDS Guide specified in percentages. Percentage values may produce unexpected results. 
+       HDS uses many values for the typography which makes it difficult to translate to readable variable names.  
+        110%;
+        118.182%;
+        125%;
+        130%;
+        133.333%;
+        135.714%;
+        142.857%;
+        172.727%;
+        181.818%; 
+    */
+
+    --terra-line-height-denser: 1;
+    --terra-line-height-dense: 1.4;
+    --terra-line-height-normal: 1.8;
+    --terra-line-height-loose: 2.2;
+    --terra-line-height-looser: 2.6;
+
+    /* Focus rings */
+    --terra-focus-ring-color: var(--terra-color-nasa-blue);
+    --terra-focus-ring-style: solid;
+    --terra-focus-ring-width: 3px;
+    --terra-focus-ring: var(--terra-focus-ring-style) var(--terra-focus-ring-width)
+        var(--terra-focus-ring-color);
+    --terra-focus-ring-offset: 1px;
+
+    /*
+   * Forms
+   */
+
+    /* Inputs */
+    --terra-input-height-small: 1.875rem; /* 30px */
+    --terra-input-height-medium: 2.5rem; /* 40px */
+    --terra-input-height-large: 3.125rem; /* 50px */
+
+    --terra-input-font-family: var(--terra-font-family--public-sans);
+    --terra-input-font-size: var(--terra-font-size-small);
+    --terra-input-color: hsla(
+        240,
+        4%,
+        19%,
+        1
+    ); /* Use same color for both light & dark theme - don't tie to Neutrals scale */
+    --terra-input-font-weight: var(--terra-font-weight-normal);
+    --terra-input-line-height: var(--terra-line-height-denser);
+    --terra-input-border-color: var(--terra-color-carbon-20);
+    --terra-input-background-color: var(--terra-color-spacesuit-white);
+    --terra-input-background-color-odd: var(--terra-color-carbon-5);
+    --terra-input-border-width: 1px;
+    --terra-input-border-radius: var(--terra-border-radius-medium);
+
+    --terra-input-background-color-hover: var(--terra-input-background-color);
+    --terra-input-background-color-focus: var(--terra-input-background-color);
+    --terra-input-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-input-border-color-hover: var(--terra-color-carbon-40);
+    --terra-input-border-color-focus: var(--terra-color-primary-50);
+    --terra-input-border-color-disabled: var(--terra-color-carbon-30);
+
+    --terra-input-required-content: '*';
+    --terra-input-required-content-offset: -2px;
+    --terra-input-required-content-color: var(--terra-color-nasa-red);
+
+    --terra-input-border-radius-small: var(--terra-border-radius-medium);
+    --terra-input-border-radius-medium: var(--terra-border-radius-medium);
+    --terra-input-border-radius-large: var(--terra-border-radius-medium);
+
+    --terra-input-font-weight: var(--terra-font-weight-normal);
+    --terra-input-font-size-small: var(--terra-font-size-small);
+    --terra-input-font-size-medium: var(--terra-font-size-medium);
+    --terra-input-font-size-large: var(--terra-font-size-large);
+    --terra-input-letter-spacing: var(--terra-letter-spacing-normal);
+
+    --terra-input-color-hover: var(--terra-color-carbon-70);
+    --terra-input-color-focus: var(--terra-color-carbon-70);
+    --terra-input-color-disabled: var(--terra-color-carbon-90);
+    --terra-input-icon-color: var(--terra-color-carbon-50);
+    --terra-input-icon-color-hover: var(--terra-color-carbon-60);
+    --terra-input-icon-color-focus: var(--terra-color-carbon-60);
+    --terra-input-placeholder-color: var(--terra-color-carbon-50);
+    --terra-input-placeholder-color-disabled: var(--terra-color-carbon-60);
+    --terra-input-spacing-small: var(--terra-spacing-small);
+    --terra-input-spacing-medium: var(--terra-spacing-medium);
+    --terra-input-spacing-large: var(--terra-spacing-large);
+
+    --terra-input-focus-ring-color: hsl(198.6 88.7% 48.4% / 40%);
+    --terra-input-focus-ring-offset: 0;
+
+    --terra-input-filled-background-color: var(--terra-color-carbon-10);
+    --terra-input-filled-background-color-hover: var(--terra-color-carbon-10);
+    --terra-input-filled-background-color-focus: var(--terra-color-carbon-10);
+    --terra-input-filled-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-input-filled-color: var(--terra-color-carbon-80);
+    --terra-input-filled-color-hover: var(--terra-color-carbon-80);
+    --terra-input-filled-color-focus: var(--terra-color-carbon-70);
+    --terra-input-filled-color-disabled: var(--terra-color-carbon-80);
+
+    /* Labels */
+
+    --terra-input-label-font-family: var(--terra-font-family--inter);
+    --terra-input-label-font-size: var(--terra-font-size-small);
+    --terra-input-label-color: var(--terra-color-carbon-80);
+    --terra-input-label-line-weight: var(--terra-font-weight-semibold);
+    --terra-input-label-line-height: var(--terra-line-height-looser);
+
+    /* Map Component */
+
+    --terra-map-background-color: var(--terra-color-carbon-5);
+    --terra-map-border-color: var(--terra-color-carbon-20);
+
+    /* Help text */
+    --terra-input-help-text-font-size-small: var(--terra-font-size-x-small);
+    --terra-input-help-text-font-size-medium: var(--terra-font-size-small);
+    --terra-input-help-text-font-size-large: var(--terra-font-size-medium);
+    --terra-input-help-text-color: var(--terra-color-carbon-50);
+
+    /*
+     * Checkbox Component
+     * Checkboxes are a form field used when there are multiple options to select from a list.
+     */
+
+    /* Checkbox sizes */
+    --terra-checkbox-size-small: 0.875rem; /* 14px */
+    --terra-checkbox-size-medium: 1.125rem; /* 18px */
+    --terra-checkbox-size-large: 1.375rem; /* 22px */
+
+    /* Checkbox colors */
+    --terra-checkbox-background-color: var(--terra-color-spacesuit-white);
+    --terra-checkbox-background-color-hover: var(--terra-color-spacesuit-white);
+    --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-background-color-checked-hover: var(
+        --terra-color-nasa-blue-shade
+    );
+    --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-checkbox-border-color: var(--terra-color-carbon-20);
+    --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
+    --terra-checkbox-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-checkbox-border-width: 1px;
+    --terra-checkbox-border-radius: 2px;
+    --terra-checkbox-icon-color: var(--terra-color-spacesuit-white);
+    --terra-checkbox-label-color: var(--terra-color-carbon-80);
+    --terra-checkbox-label-font-family: var(--terra-font-family--inter);
+    --terra-checkbox-label-font-size: var(--terra-font-size-small);
+    --terra-checkbox-label-font-weight: var(--terra-font-weight-normal);
+
+    /* Checkbox focus */
+    --terra-checkbox-focus-ring-color: var(--terra-color-nasa-blue);
+    --terra-checkbox-focus-ring-width: var(--terra-focus-ring-width);
+    --terra-checkbox-focus-ring-offset: var(--terra-focus-ring-offset);
+
+    /*
+     * Radio Component
+     * Radio buttons are a form field used when only a single selection can be made from a list.
+     */
+
+    /* Radio sizes */
+    --terra-radio-size-small: 0.875rem; /* 14px */
+    --terra-radio-size-medium: 1.125rem; /* 18px */
+    --terra-radio-size-large: 1.375rem; /* 22px */
+
+    /* Radio colors */
+    --terra-radio-background-color: var(--terra-color-spacesuit-white);
+    --terra-radio-background-color-hover: var(--terra-color-spacesuit-white);
+    --terra-radio-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-radio-border-color: var(--terra-color-carbon-20);
+    --terra-radio-border-color-hover: var(--terra-color-carbon-40);
+    --terra-radio-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-radio-border-width: 1px;
+    --terra-radio-icon-color: var(--terra-color-spacesuit-white);
+    --terra-radio-label-color: var(--terra-color-carbon-80);
+    --terra-radio-label-font-family: var(--terra-font-family--inter);
+    --terra-radio-label-font-size: var(--terra-font-size-small);
+    --terra-radio-label-font-weight: var(--terra-font-weight-normal);
+
+    /* Radio focus */
+    --terra-radio-focus-ring-color: var(--terra-color-nasa-blue);
+    --terra-radio-focus-ring-width: var(--terra-focus-ring-width);
+    --terra-radio-focus-ring-offset: var(--terra-focus-ring-offset);
+
+    /*
+     * Toggle Component
+     * Toggles allow the user to toggle an option on or off.
+     */
+
+    /* Toggle sizes */
+    --terra-toggle-size-small: 0.875rem; /* 14px */
+    --terra-toggle-size-medium: 1.125rem; /* 18px */
+    --terra-toggle-size-large: 1.375rem; /* 22px */
+
+    /* Toggle colors */
+    --terra-toggle-background-color-off: var(--terra-color-carbon-30);
+    --terra-toggle-background-color-on: var(--terra-color-nasa-blue);
+    --terra-toggle-border-color-off: var(--terra-color-carbon-30);
+    --terra-toggle-border-color-on: var(--terra-color-nasa-blue);
+    --terra-toggle-thumb-background-color: var(--terra-color-spacesuit-white);
+    --terra-toggle-thumb-border-color-off: var(--terra-color-carbon-30);
+    --terra-toggle-thumb-border-color-on: var(--terra-color-nasa-blue);
+    --terra-toggle-label-color: var(--terra-color-carbon-90);
+
+    /* Toggle focus */
+    --terra-toggle-focus-ring-color: var(--terra-color-nasa-blue);
+
+    /*
+     * Links
+     * Link styles for interactive text elements.
+     */
+
+    --terra-link-color: var(--terra-color-carbon-90);
+    --terra-link-color-hover: var(--terra-color-carbon-90);
+    --terra-link-text-decoration: underline;
+    --terra-link-text-decoration-style: dotted;
+    --terra-link-underline-offset: 2px;
+
+    /*
+     * Pagination Component
+     * Pagination is a navigational element that allows users to navigate between content or pages.
+     */
+
+    /* Pagination button colors */
+    --terra-pagination-button-color: var(--terra-color-carbon-90);
+    --terra-pagination-button-color-hover: var(--terra-color-carbon-90);
+    --terra-pagination-button-color-current: var(--terra-color-carbon-black);
+
+    /* Pagination icon button colors (for circular prev/next buttons) */
+    --terra-pagination-icon-button-background-color: var(
+        --terra-color-spacesuit-white
+    );
+    --terra-pagination-icon-button-border-color: var(--terra-color-carbon-30);
+    --terra-pagination-icon-button-background-color-hover: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-hover: var(--terra-color-carbon-40);
+    --terra-pagination-icon-button-background-color-disabled: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-disabled: var(
+        --terra-color-carbon-20
+    );
+    --terra-pagination-icon-button-icon-color-disabled: var(--terra-color-carbon-40);
+
+    /*
+     * Slider Component
+     * Sliders are form fields that allow for selection of a range of values.
+     */
+
+    /* Slider track */
+    --terra-slider-track-background-color: #fafafa;
+    --terra-slider-track-border-color: var(--terra-input-border-color);
+    --terra-slider-connect-color: var(--terra-color-nasa-blue);
+
+    /* Slider handle */
+    --terra-slider-handle-background-color: var(--terra-color-spacesuit-white);
+    --terra-slider-handle-border-color: var(--terra-color-nasa-blue);
+
+    /* Slider label */
+    --terra-slider-label-color: var(--terra-color-carbon-90);
+    --terra-slider-range-color: var(--terra-color-carbon-90);
+
+    /*
+   * Overlays
+   */
+
+    --terra-overlay-background-color: hsl(240 3.8% 46.1% / 33%);
+
+    /*
+   * Panels
+   */
+
+    --terra-panel-background-color: var(--terra-color-spacesuit-white);
+    --terra-panel-border-color: var(--terra-color-carbon-20);
+    --terra-panel-border-width: 1px;
+
+    /* Alert white appearance colors */
+    --terra-alert-white-background-color: var(--terra-panel-background-color);
+    --terra-alert-white-color: var(--terra-color-carbon-70);
+
+    /*
+   * Tooltips & Popovers
+   */
+
+    /* Tooltip tokens (compact inline help) */
+    --terra-tooltip-border-radius: var(--terra-border-radius-medium);
+    --terra-tooltip-background-color: var(--terra-color-carbon-80);
+    --terra-tooltip-color: var(--terra-color-spacesuit-white);
+    --terra-tooltip-font-family: var(--terra-font-family--public-sans);
+    --terra-tooltip-font-weight: var(--terra-font-weight-normal);
+    --terra-tooltip-font-size: var(--terra-font-size-small);
+    --terra-tooltip-line-height: var(--terra-line-height-looser);
+    --terra-tooltip-padding: var(--terra-spacing-2x-small)
+        var(--terra-spacing-x-small);
+    --terra-tooltip-arrow-size: 6px;
+
+    /* Popover tokens (card-like panels attached to an anchor) */
+    --terra-popover-border-radius: var(--terra-border-radius-medium);
+    --terra-popover-background-color: var(--terra-panel-background-color);
+    --terra-popover-color: var(--terra-font-color-primary);
+    --terra-popover-font-family: var(--terra-font-family--public-sans);
+    --terra-popover-font-weight: var(--terra-font-weight-normal);
+    --terra-popover-font-size: var(--terra-font-size-small);
+    --terra-popover-line-height: var(--terra-line-height-normal);
+    --terra-popover-padding: var(--terra-spacing-medium);
+    --terra-popover-shadow: var(--terra-shadow-medium);
+    --terra-popover-arrow-size: var(--terra-tooltip-arrow-size);
+
+    /*
+   * Z-indexes
+   */
+
+    --terra-z-index-drawer: 700;
+    --terra-z-index-dialog: 1000;
+    --terra-z-index-dropdown: 900;
+    --terra-z-index-toast: 950;
+    --terra-z-index-tooltip: 1000;
+
+    /*
+   * Caption Component
+   * Captions are small text blocks that describe photos, provide additional context and information,
+   * and give credit to photographers and other content owners and creators.
+   */
+
+    --terra-caption-font-family: var(--terra-font-family--public-sans);
+    --terra-caption-font-size: var(--terra-font-size-small);
+    --terra-caption-font-weight: var(--terra-font-weight-normal);
+    --terra-caption-line-height: var(--terra-line-height-normal);
+    --terra-caption-color: var(--terra-color-carbon-50);
+    --terra-caption-credit-color: var(--terra-color-carbon-70);
+
+    /*
+   * Status Indicator Component
+   * Status indicators are dynamic labels that indicate the current state of a mission or project.
+   */
+
+    --terra-status-indicator-font-family: var(--terra-font-family--inter);
+    --terra-status-indicator-font-size: var(--terra-font-size-small);
+    --terra-status-indicator-font-weight: var(--terra-font-weight-normal);
+    --terra-status-indicator-label-color: var(--terra-color-carbon-90);
+    --terra-status-indicator-dot-color-active: var(--terra-color-active-green);
+    --terra-status-indicator-dot-color-completed: var(--terra-color-carbon-40);
+    --terra-status-indicator-dot-color-testing: var(
+        --terra-color-international-orange
+    );
+    --terra-status-indicator-dot-color-future: var(--terra-color-nasa-blue);
+
+    /*
+   * Tag Component
+   * Tags are simple labels that help categorize items.
+   */
+
+    /* Tag typography */
+    --terra-tag-font-family: var(--terra-font-family--inter);
+    --terra-tag-font-size-small: var(--terra-font-size-x-small);
+    --terra-tag-font-size-medium: var(--terra-font-size-small);
+    --terra-tag-font-size-large: var(--terra-font-size-medium);
+    --terra-tag-font-weight: var(--terra-font-weight-normal);
+    --terra-tag-font-weight-urgent: var(--terra-font-weight-bold, 700);
+
+    /* Tag icon sizes (content tags) */
+    --terra-tag-icon-size-small: 1.25rem;
+    --terra-tag-icon-size-medium: 1.5rem;
+    --terra-tag-icon-size-large: 1.75rem;
+    --terra-tag-icon-inner-size-small: 0.75rem;
+    --terra-tag-icon-inner-size-medium: 0.875rem;
+    --terra-tag-icon-inner-size-large: 1rem;
+    --terra-tag-icon-border-color: var(--terra-color-carbon-40);
+
+    /* Tag colors */
+    --terra-tag-color: var(--terra-color-carbon-90);
+    --terra-tag-background-color: transparent;
+    --terra-tag-border-color: var(--terra-color-carbon-30);
+    --terra-tag-border-color-hover: var(--terra-color-carbon-40);
+    --terra-tag-background-color-hover: var(--terra-color-carbon-5);
+
+    /* Tag urgent variant colors */
+    --terra-tag-urgent-color: var(--terra-color-spacesuit-white);
+    --terra-tag-urgent-background-color: var(--terra-color-nasa-red);
+
+    /* Tag padding by size */
+    --terra-tag-padding-small: 0.25rem 0.5rem;
+    --terra-tag-padding-medium: var(--terra-spacing-x-small, 0.5rem)
+        var(--terra-spacing-small, 0.75rem);
+    --terra-tag-padding-large: 0.625rem 1rem;
+
+    /*
+   * Scroll Hint Component
+   * Scroll hint is an animated button that prompts visitors to scroll.
+   */
+
+    --terra-scroll-hint-icon-background-color: var(--terra-color-carbon-black);
+    --terra-scroll-hint-icon-color: var(--terra-color-spacesuit-white);
+    --terra-scroll-hint-text-color: var(--terra-color-carbon-black);
+    --terra-scroll-hint-ring-color: var(--terra-color-nasa-red);
+
+    /*
+     * Tab Component
+     * Tabs divide content into meaningful, related sections.
+     */
+
+    /* Tab typography */
+    --terra-tab-font-family: var(--terra-font-family--inter);
+    --terra-tab-font-size-large: var(--terra-font-size-medium);
+    --terra-tab-font-size-small: var(--terra-font-size-small);
+    --terra-tab-font-weight-normal: var(--terra-font-weight-normal);
+    --terra-tab-font-weight-active: var(--terra-font-weight-bold);
+
+    /* Tab colors */
+    --terra-tab-color: var(--terra-color-carbon-black);
+    --terra-tab-color-hover: var(--terra-color-carbon-black);
+    --terra-tab-color-active: var(--terra-color-carbon-black);
+
+    /* Tab padding */
+    --terra-tab-padding-large: var(--terra-spacing-small) var(--terra-spacing-medium);
+    --terra-tab-padding-small: var(--terra-spacing-2x-small)
+        var(--terra-spacing-small);
+    --terra-tab-padding-closable: var(--terra-spacing-2x-small);
+
+    /* Tab close button */
+    --terra-tab-close-button-padding: var(--terra-spacing-2x-small);
+    --terra-tab-close-button-margin: var(--terra-spacing-2x-small);
+
+    /* Tab states */
+    --terra-tab-opacity-disabled: 0.5;
+
+    /* Tab focus */
+    --terra-tab-focus-ring-offset: 2px;
+
+    /*
+     * Tabs Component
+     * Tabs organize content into a container that shows one section at a time.
+     */
+
+    /* Tabs indicator */
+    --terra-tabs-indicator-color: var(--terra-color-carbon-black);
+    --terra-tabs-indicator-width: 2px;
+    --terra-tabs-track-color: var(--terra-color-carbon-20);
+    --terra-tabs-track-width: 1px;
+
+    /* Tabs scroll controls */
+    --terra-tabs-scroll-button-width: var(--terra-spacing-x-large);
+
+    /*
+     * Data Grid Component
+     * Data grid is built on AG Grid and uses Horizon Design System tokens.
+     */
+
+    /* Data Grid - Colors - Primary */
+    --terra-data-grid-active-color: var(--terra-color-nasa-blue);
+    --terra-data-grid-background-color: var(--terra-input-background-color);
+    --terra-data-grid-foreground-color: var(--terra-color-carbon-90);
+    --terra-data-grid-secondary-foreground-color: var(--terra-color-carbon-70);
+    --terra-data-grid-disabled-foreground-color: var(--terra-color-carbon-50);
+
+    /* Data Grid - Colors - Borders */
+    --terra-data-grid-border-color: var(--terra-color-carbon-20);
+    --terra-data-grid-secondary-border-color: var(--terra-color-carbon-10);
+    --terra-data-grid-input-border-color: var(--terra-color-carbon-20);
+    --terra-data-grid-input-border-color-invalid: var(--terra-color-nasa-red);
+    --terra-data-grid-input-disabled-border-color: var(--terra-color-carbon-30);
+
+    /* Data Grid - Colors - Backgrounds */
+    --terra-data-grid-header-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-tooltip-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-odd-row-background-color: var(
+        --terra-input-background-color-odd
+    );
+    --terra-data-grid-control-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-subheader-background-color: var(--terra-color-spacesuit-white);
+    --terra-data-grid-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-menu-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-input-disabled-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-checkbox-background-color: var(--terra-color-spacesuit-white);
+    --terra-data-grid-chip-background-color: var(--terra-color-carbon-10);
+
+    /* Data Grid - Colors - Interactive States */
+    --terra-data-grid-row-hover-color: var(--terra-color-carbon-5);
+    --terra-data-grid-column-hover-color: var(--terra-color-carbon-5);
+    --terra-data-grid-selected-row-background-color: hsla(212, 100%, 58%, 0.2);
+    --terra-data-grid-range-selection-background-color: hsla(212, 100%, 58%, 0.2);
+    --terra-data-grid-range-selection-background-color-2: hsla(212, 100%, 58%, 0.36);
+    --terra-data-grid-range-selection-background-color-3: hsla(212, 100%, 58%, 0.49);
+    --terra-data-grid-range-selection-background-color-4: hsla(212, 100%, 58%, 0.59);
+    --terra-data-grid-range-selection-border-color: var(--terra-color-nasa-blue);
+    --terra-data-grid-input-focus-border-color: hsla(212, 100%, 58%, 0.4);
+
+    /* Data Grid - Colors - Validation & Status */
+    --terra-data-grid-invalid-color: var(--terra-color-nasa-red);
+    --terra-data-grid-checkbox-unchecked-color: var(--terra-color-carbon-50);
+    --terra-data-grid-checkbox-checked-color: var(--terra-color-nasa-blue);
+
+    /* Data Grid - Colors - Advanced Filters */
+    --terra-data-grid-advanced-filter-join-pill-color: var(
+        --terra-color-nasa-red-tint
+    );
+    --terra-data-grid-advanced-filter-column-pill-color: var(
+        --terra-color-active-green
+    );
+    --terra-data-grid-advanced-filter-option-pill-color: var(
+        --terra-color-international-orange
+    );
+    --terra-data-grid-advanced-filter-value-pill-color: var(
+        --terra-color-nasa-blue-tint
+    );
+
+    /* Data Grid - Colors - Find/Search */
+    --terra-data-grid-find-match-color: var(--terra-color-carbon-90);
+    --terra-data-grid-find-match-background-color: #ffff00;
+    --terra-data-grid-find-active-match-color: var(--terra-color-carbon-90);
+    --terra-data-grid-find-active-match-background-color: #ffa500;
+
+    /* Data Grid - Colors - Buttons & Actions */
+    --terra-data-grid-filter-panel-apply-button-color: var(
+        --terra-color-spacesuit-white
+    );
+    --terra-data-grid-filter-panel-apply-button-background-color: var(
+        --terra-color-nasa-blue
+    );
+    --terra-data-grid-selected-tab-underline-color: var(--terra-color-nasa-blue);
+
+    /* Data Grid - Typography */
+    --terra-data-grid-font-family: var(--terra-font-family--inter);
+    --terra-data-grid-font-size: var(--terra-font-size-small);
+    --terra-data-grid-icon-font-family: agGridAlpine;
+
+    /* Data Grid - Spacing & Sizing */
+    --terra-data-grid-grid-size: var(--terra-spacing-x-small);
+    --terra-data-grid-icon-size: var(--terra-icon-small);
+    --terra-data-grid-row-height: calc(var(--terra-data-grid-grid-size) * 7);
+    --terra-data-grid-header-height: calc(var(--terra-data-grid-grid-size) * 8);
+    --terra-data-grid-list-item-height: calc(var(--terra-data-grid-grid-size) * 4);
+    --terra-data-grid-cell-horizontal-padding: calc(
+        var(--terra-data-grid-grid-size) * 3
+    );
+    --terra-data-grid-cell-widget-spacing: calc(var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-widget-container-vertical-padding: calc(
+        var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-widget-container-horizontal-padding: calc(
+        var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-widget-vertical-spacing: calc(
+        var(--terra-data-grid-grid-size) * 1.5
+    );
+    --terra-data-grid-column-select-indent-size: var(--terra-data-grid-icon-size);
+    --terra-data-grid-set-filter-indent-size: var(--terra-data-grid-icon-size);
+    --terra-data-grid-advanced-filter-builder-indent-size: calc(
+        var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-toggle-button-height: 18px;
+    --terra-data-grid-toggle-button-width: 28px;
+    --terra-data-grid-tab-min-width: 240px;
+    --terra-data-grid-side-bar-panel-width: 250px;
+
+    /* Data Grid - Borders & Radius */
+    --terra-data-grid-borders: solid 1px;
+    --terra-data-grid-border-radius: var(--terra-border-radius-medium);
+    --terra-data-grid-borders-side-button: none;
+    --terra-data-grid-side-button-selected-background-color: transparent;
+    --terra-data-grid-header-column-resize-handle-display: block;
+    --terra-data-grid-header-column-resize-handle-width: 2px;
+    --terra-data-grid-header-column-resize-handle-height: 30%;
+
+    /* Data Grid - Shadows */
+    --terra-data-grid-card-shadow: var(--terra-shadow-small);
+    --terra-data-grid-popup-shadow: var(--terra-shadow-small);
+
+    /* Data Grid - Transitions */
+    --terra-data-grid-selected-tab-underline-width: 2px;
+    --terra-data-grid-selected-tab-underline-transition-speed: var(
+        --terra-transition-medium
+    );
+
+    /* Data Grid - Height */
+    --terra-data-grid-height: 400px;
+}
+
+/* ============================================================================
+ * Dark Theme Overrides
+ * ============================================================================
+ * Dark mode inherits all tokens from the light theme above and only overrides
+ * what's different. Dark mode is activated by:
+ * 1. System preference: @media (prefers-color-scheme: dark) - only when body has .terra-prefers-color-scheme class
+ * 2. Manual override: .terra-theme-dark class
+ * 
+ * The class-based approach takes precedence over system preference.
+ */
+
+@mixin terra-theme-dark {
+    color-scheme: dark;
+
+    /* Primary Palette changes for dark mode */
+    --terra-color-nasa-red: hsl(2, 68%, 52%);
+
+    /* Extended Palette changes for dark mode */
+    --terra-color-nasa-red-shade: hsla(0, 91%, 37%, 1);
+
+    /* Default Button Color - not defined color in the HDS theme */
+    --terra-color-default-gray: hsla(240, 2%, 59%, 1);
+    --terra-color-default-gray-tint: hsla(240, 10%, 70%, 1);
+    --terra-color-default-gray-shade: hsl(240, 9%, 40%, 1);
+
+    /* Neutrals for dark mode
+        * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+        * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
+        */
+    --terra-color-carbon-90: hsl(0, 0%, 96%);
+    --terra-color-carbon-80: hsla(0, 0%, 89%, 1);
+    --terra-color-carbon-70: hsla(0, 0%, 82%, 1);
+    --terra-color-carbon-60: hsla(240, 1%, 73%, 1);
+    --terra-color-carbon-50: hsla(240, 2%, 59%, 1);
+    --terra-color-carbon-40: hsla(240, 1%, 47%, 1);
+    --terra-color-carbon-30: hsla(240, 2%, 35%, 1);
+    --terra-color-carbon-20: hsl(240, 2%, 27%);
+    --terra-color-carbon-10: hsl(240, 3%, 19%);
+    --terra-color-carbon-5: hsla(240, 8%, 10%, 1);
+
+    /* HDS button styles */
+    --terra-button-outline-text-color: var(--terra-color-spacesuit-white);
+    --terra-button-text-text-color: hsl(217, 78%, 58%);
+    --terra-button-text-text-color-hover: var(--terra-color-nasa-blue);
+    --terra-button-page-link-text-color: var(--terra-color-spacesuit-white);
+
+    /* Input Styles */
+    --terra-input-background-color: var(--terra-color-carbon-10);
+    --terra-input-background-color-odd: var(--terra-color-carbon-20);
+    --terra-input-background-color-hover: var(--terra-color-carbon-10);
+    --terra-input-background-color-focus: var(--terra-color-carbon-10);
+    --terra-input-border-color: var(--terra-color-carbon-60);
+    --terra-input-color: var(--terra-color-carbon-90);
+    --terra-input-color-hover: var(--terra-color-carbon-90);
+    --terra-input-color-focus: var(--terra-color-carbon-90);
+
+    /* Panels - Dark Mode */
+    --terra-panel-background-color: var(--terra-color-carbon-10);
+    --terra-panel-border-color: var(--terra-color-carbon-20);
+
+    /* Map Component */
+    --terra-map-background-color: var(--terra-color-carbon-10);
+    --terra-map-border-color: var(--terra-color-carbon-20);
+
+    /* Chip Component - Dark Mode */
+    --terra-chip-background-color: var(--terra-color-carbon-black);
+    --terra-chip-color: var(--terra-color-carbon-60);
+    --terra-chip-color-hover: var(--terra-color-carbon-80);
+    --terra-chip-icon-color: var(--terra-color-carbon-60);
+    --terra-chip-icon-color-hover: var(--terra-color-carbon-80);
+
+    /* Alert white appearance - Dark Mode */
+    --terra-alert-white-background-color: var(--terra-color-carbon-10);
+    --terra-alert-white-color: var(--terra-color-carbon-60);
+
+    /* Accordion - Dark Mode */
+    --terra-accordion-background-color: var(--terra-color-carbon-10);
+    --terra-accordion-border-color: var(--terra-color-carbon-20);
+    --terra-accordion-summary-background-color: var(--terra-color-carbon-5);
+    --terra-accordion-summary-background-color-hover: var(--terra-color-carbon-10);
+    --terra-accordion-summary-border-color: var(--terra-color-carbon-20);
+    --terra-accordion-summary-color: var(--terra-color-carbon-60);
+
+    /* Caption - Dark Mode */
+    --terra-caption-color: var(--terra-color-carbon-60);
+    --terra-caption-credit-color: var(--terra-color-carbon-70);
+
+    /* Status Indicator - Dark Mode */
+    --terra-status-indicator-label-color: var(--terra-color-carbon-60);
+
+    /* Tag - Dark Mode */
+    --terra-tag-color: var(--terra-color-carbon-60);
+    --terra-tag-icon-border-color: var(--terra-color-carbon-30);
+    --terra-tag-border-color: var(--terra-color-carbon-20);
+    --terra-tag-border-color-hover: var(--terra-color-carbon-30);
+    --terra-tag-background-color-hover: var(--terra-color-carbon-10);
+
+    /* Scroll Hint - Dark Mode */
+    --terra-scroll-hint-icon-background-color: var(--terra-color-spacesuit-white);
+    --terra-scroll-hint-icon-color: var(--terra-color-carbon-black);
+    --terra-scroll-hint-text-color: var(--terra-color-spacesuit-white);
+
+    /* Checkbox - Dark Mode */
+    --terra-checkbox-background-color: var(--terra-color-carbon-10);
+    --terra-checkbox-background-color-hover: var(--terra-color-carbon-10);
+    --terra-checkbox-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-background-color-checked-hover: var(
+        --terra-color-nasa-blue-shade
+    );
+    --terra-checkbox-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-checkbox-border-color: var(--terra-color-carbon-20);
+    --terra-checkbox-border-color-hover: var(--terra-color-carbon-40);
+    --terra-checkbox-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-checkbox-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-checkbox-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-checkbox-label-color: var(--terra-color-carbon-60);
+
+    /* Radio - Dark Mode */
+    --terra-radio-background-color: var(--terra-color-carbon-10);
+    --terra-radio-background-color-hover: var(--terra-color-carbon-10);
+    --terra-radio-background-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-background-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-background-color-disabled: var(--terra-color-carbon-10);
+    --terra-radio-border-color: var(--terra-color-carbon-20);
+    --terra-radio-border-color-hover: var(--terra-color-carbon-40);
+    --terra-radio-border-color-checked: var(--terra-color-nasa-blue);
+    --terra-radio-border-color-checked-hover: var(--terra-color-nasa-blue-shade);
+    --terra-radio-border-color-disabled: var(--terra-color-carbon-30);
+    --terra-radio-label-color: var(--terra-color-carbon-60);
+
+    /* Toggle - Dark Mode */
+    --terra-toggle-label-color: var(--terra-color-carbon-60);
+
+    /* Links - Dark Mode */
+    --terra-link-color: var(--terra-color-carbon-60);
+    --terra-link-color-hover: var(--terra-color-carbon-60);
+
+    /* Pagination - Dark Mode */
+    --terra-pagination-button-color: var(--terra-color-carbon-60);
+    --terra-pagination-button-color-hover: var(--terra-color-carbon-80);
+    --terra-pagination-button-color-current: var(--terra-color-carbon-90);
+    --terra-pagination-icon-button-background-color: var(--terra-color-carbon-10);
+    --terra-pagination-icon-button-border-color: var(--terra-color-carbon-30);
+    --terra-pagination-icon-button-background-color-hover: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-hover: var(--terra-color-carbon-40);
+    --terra-pagination-icon-button-background-color-disabled: var(
+        --terra-color-carbon-5
+    );
+    --terra-pagination-icon-button-border-color-disabled: var(
+        --terra-color-carbon-20
+    );
+    --terra-pagination-icon-button-icon-color-disabled: var(--terra-color-carbon-40);
+
+    /* Slider - Dark Mode */
+    --terra-slider-track-background-color: var(--terra-color-carbon-10);
+    --terra-slider-track-border-color: var(--terra-color-carbon-20);
+    --terra-slider-connect-color: var(--terra-color-nasa-blue-tint);
+    --terra-slider-handle-background-color: var(--terra-color-carbon-black);
+    --terra-slider-handle-border-color: var(--terra-color-nasa-blue-tint);
+    --terra-slider-label-color: var(--terra-color-carbon-60);
+    --terra-slider-range-color: var(--terra-color-carbon-60);
+
+    /* Tab - Dark Mode */
+    --terra-tab-color: var(--terra-color-carbon-60);
+    --terra-tab-color-hover: var(--terra-color-carbon-80);
+    --terra-tab-color-active: var(--terra-color-carbon-90);
+
+    /* Tabs - Dark Mode */
+    --terra-tabs-indicator-color: var(--terra-color-carbon-90);
+    --terra-tabs-track-color: var(--terra-color-carbon-20);
+
+    /* Data Grid - Dark Mode */
+    --terra-data-grid-background-color: var(--terra-input-background-color);
+    --terra-data-grid-foreground-color: var(--terra-input-color);
+    --terra-data-grid-secondary-foreground-color: var(--terra-color-carbon-60);
+    --terra-data-grid-disabled-foreground-color: var(--terra-color-carbon-50);
+    --terra-data-grid-border-color: var(--terra-input-border-color);
+    --terra-data-grid-secondary-border-color: var(--terra-color-carbon-20);
+    --terra-data-grid-input-border-color: var(--terra-input-border-color);
+    --terra-data-grid-input-disabled-border-color: var(--terra-color-carbon-30);
+    --terra-data-grid-header-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-tooltip-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-odd-row-background-color: var(
+        --terra-input-background-color-odd
+    );
+    --terra-data-grid-control-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-subheader-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-panel-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-menu-background-color: var(--terra-color-carbon-5);
+    --terra-data-grid-input-disabled-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-checkbox-background-color: var(--terra-color-carbon-10);
+    --terra-data-grid-chip-background-color: var(--terra-color-carbon-20);
+    --terra-data-grid-row-hover-color: var(--terra-color-carbon-5);
+    --terra-data-grid-column-hover-color: var(--terra-color-carbon-5);
+}
+
+:host,
+.terra-theme-dark {
+    @include terra-theme-dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    body.terra-prefers-color-scheme :root,
+    body.terra-prefers-color-scheme :host,
+    body.terra-prefers-color-scheme,
+    html.terra-prefers-color-scheme :root,
+    html.terra-prefers-color-scheme :host,
+    html.terra-prefers-color-scheme {
+        @include terra-theme-dark;
+    }
+}
+
+/* Site header - ensures the site header immediately renders and doesn't wait for web component to load */
+terra-site-header {
+    display: block;
+    background-color: var(--terra-color-carbon-black);
+    color: var(--terra-color-spacesuit-white);
+    height: 88px;
+}
+
+/* Toast stack - appears outside of a component so needs it's own styles */
+.terra-toast-stack {
+    position: fixed;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: var(--terra-z-index-toast);
+    width: 28rem;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: auto;
+    padding: var(--terra-spacing-medium);
+    box-sizing: border-box;
+}
+
+.terra-toast-stack terra-alert,
+.terra-toast-stack terra-toast {
+    display: block;
+    margin-bottom: var(--terra-spacing-medium);
+}
+
+.terra-toast-stack terra-alert:last-child,
+.terra-toast-stack terra-toast:last-child {
+    margin-bottom: 0;
+}
+
+.terra-toast-stack terra-alert::part(base),
+.terra-toast-stack terra-toast::part(base) {
+    box-shadow: var(--terra-shadow-large);
+}

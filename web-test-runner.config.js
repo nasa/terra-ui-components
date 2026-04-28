@@ -1,6 +1,12 @@
 import { esbuildPlugin } from '@web/dev-server-esbuild'
 import { globbySync } from 'globby'
 import { playwrightLauncher } from '@web/test-runner-playwright'
+import { readFileSync } from 'fs'
+
+const packageJson = JSON.parse(
+    readFileSync(new URL('./package.json', import.meta.url), 'utf-8')
+)
+const componentsVersion = packageJson.version ?? 'test'
 
 export default {
     rootDir: '.',
@@ -19,13 +25,14 @@ export default {
         esbuildPlugin({
             ts: true,
             target: 'es2020',
+            define: {
+                __COMPONENTS_VERSION__: JSON.stringify(componentsVersion),
+            },
         }),
     ],
     browsers: [
         playwrightLauncher({ product: 'chromium' }),
-        // Firefox started failing randomly so we're temporarily disabling it here. This could be a rogue test, not really
-        // sure what's happening.
-        // playwrightLauncher({ product: 'firefox' }),
+        playwrightLauncher({ product: 'firefox' }),
         playwrightLauncher({ product: 'webkit' }),
     ],
     testRunnerHtml: testFramework => `

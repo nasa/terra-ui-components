@@ -5,7 +5,7 @@ export default css`
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100px;
+        height: var(--terra-loader-size-large);
     }
 
     .loader {
@@ -17,35 +17,35 @@ export default css`
     /* Loader variations */
 
     .loader--large {
-        --size: 52px;
-        --stroke-width: 3.5px;
+        --size: var(--terra-loader-size-medium);
+        --stroke-width: var(--terra-loader-stroke-width-medium);
     }
 
     .loader--small {
-        --size: 30px;
-        --stroke-width: 3.5px;
+        --size: var(--terra-loader-size-small);
+        --stroke-width: var(--terra-loader-stroke-width-small);
     }
 
     .loader--orbit {
-        --size: 100px;
+        --size: var(--terra-loader-size-large);
     }
 
     .planet {
-        fill: var(--terra-color-carbon-20);
+        fill: var(--terra-loader-planet-color);
         cx: 80px;
         cy: 80px;
         r: 50px;
     }
 
     .moon {
-        fill: var(--terra-color-nasa-blue);
+        fill: var(--terra-loader-moon-color);
         r: 5.5px;
     }
 
     #orbit {
         /* total length of orbit ellipse = 298.2393493652344 */
-        stroke: var(--terra-color-nasa-blue);
-        stroke-width: 2.5px;
+        stroke: var(--terra-loader-progress-color);
+        stroke-width: var(--terra-loader-stroke-width-large);
         stroke-dasharray: 250 48;
         fill: none;
     }
@@ -60,8 +60,8 @@ export default css`
         width: var(--size);
         position: absolute;
         top: calc((var(--size) / 2) - 10px);
-        padding-left: 4px;
-        letter-spacing: 0.1rem;
+        padding-left: var(--terra-loader-text-padding);
+        letter-spacing: var(--terra-loader-text-letter-spacing);
         text-align: center;
     }
 
@@ -88,7 +88,7 @@ export default css`
     }
 
     .circular-progress circle.bg {
-        stroke: var(--terra-color-carbon-20);
+        stroke: var(--terra-loader-track-color);
     }
 
     .circular-progress circle.fg {
@@ -96,7 +96,7 @@ export default css`
         transform-origin: var(--half-size) var(--half-size);
         stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
         transition: stroke-dasharray 0.3s linear 0s; /* Defines how --dash value changes to stroke-dasharray are animated */
-        stroke: var(--terra-color-nasa-blue);
+        stroke: var(--terra-loader-progress-color);
     }
 
     .circular-progress.indeterminate circle.fg {

@@ -123,51 +123,6 @@ export default function (plop) {
                 pattern: /\/\* plop:component \*\//,
                 template: `export { default as {{ properCase tag }} } from './components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.js';\n/* plop:component */`,
             },
-            // Widget scaffolding with proper __init__.py files
-            {
-                type: 'add',
-                path: '../../src/terra_ui_components/{{ tagToUnderscore tag }}/__init__.py',
-                template:
-                    'from .{{ tagToUnderscore tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n\n__all__ = ["Terra{{ properCase (tagWithoutPrefix tag) }}"]',
-            },
-            {
-                type: 'add',
-                path: '../../src/terra_ui_components/{{ tagToUnderscore tag }}/{{ tagToUnderscore tag }}.py',
-                templateFile: 'templates/widget/widget.py.hbs',
-                data: () => {
-                    const componentName = plop.getHelper('tagWithoutPrefix')(data.tag)
-                    const pythonName = plop.getHelper('tagToUnderscore')(data.tag)
-                    const componentPath = path.join(
-                        path.dirname(fileURLToPath(import.meta.url)),
-                        '../../src/components',
-                        componentName,
-                        `${componentName}.component.ts`
-                    )
-
-                    const content = fs.readFileSync(componentPath, 'utf-8')
-                    return {
-                        name: componentName,
-                        pythonName,
-                        className:
-                            'Terra' + plop.getHelper('properCase')(componentName),
-                        properties: plop.getHelper('extractProperties')(content),
-                        events: plop.getHelper('extractEvents')(content),
-                    }
-                },
-            },
-            // Update root __init__.py
-            {
-                type: 'modify',
-                path: '../../src/terra_ui_components/__init__.py',
-                pattern: /(from[\s\S]*?)(__all__\s*=\s*\[[\s\S]*?\])/,
-                template: `$1from .{{ tagToUnderscore tag }} import Terra{{ properCase (tagWithoutPrefix tag) }}\n$2`,
-            },
-            {
-                type: 'modify',
-                path: '../../src/terra_ui_components/__init__.py',
-                pattern: /(__all__\s*=\s*\[[\s\S]*?)\]/,
-                template: `$1, "Terra{{ properCase (tagWithoutPrefix tag) }}"]`,
-            },
         ],
     })
 

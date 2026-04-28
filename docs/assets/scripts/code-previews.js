@@ -45,28 +45,43 @@
     }
 
     function setFlavor(newFlavor) {
-        flavor = ['html', 'react'].includes(newFlavor) ? newFlavor : 'html'
+        flavor = ['html', 'react', 'jupyter'].includes(newFlavor) ? newFlavor : 'html'
         sessionStorage.setItem('flavor', flavor)
 
         // Set the flavor class on the body
         document.documentElement.classList.toggle('flavor-html', flavor === 'html')
         document.documentElement.classList.toggle('flavor-react', flavor === 'react')
+        document.documentElement.classList.toggle(
+            'flavor-jupyter',
+            flavor === 'jupyter'
+        )
     }
 
     function syncFlavor() {
         setFlavor(getFlavor())
 
         document.querySelectorAll('.code-preview__button--html').forEach(preview => {
-            if (flavor === 'html') {
-                preview.classList.add('code-preview__button--selected')
-            }
+            preview.classList.toggle(
+                'code-preview__button--selected',
+                flavor === 'html'
+            )
         })
 
         document.querySelectorAll('.code-preview__button--react').forEach(preview => {
-            if (flavor === 'react') {
-                preview.classList.add('code-preview__button--selected')
-            }
+            preview.classList.toggle(
+                'code-preview__button--selected',
+                flavor === 'react'
+            )
         })
+
+        document
+            .querySelectorAll('.code-preview__button--jupyter')
+            .forEach(preview => {
+                preview.classList.toggle(
+                    'code-preview__button--selected',
+                    flavor === 'jupyter'
+                )
+            })
     }
 
     const componentsVersion = document.documentElement.getAttribute(
@@ -147,6 +162,9 @@
             // Show React
             setFlavor('react')
             toggleSource(codeBlock, true)
+        } else if (button?.classList.contains('code-preview__button--jupyter')) {
+            setFlavor('jupyter')
+            //toggleSource(codeBlock, true)
         } else if (button?.classList.contains('code-preview__toggle')) {
             // Toggle source
             toggleSource(codeBlock)
@@ -163,6 +181,10 @@
             cb.querySelector('.code-preview__button--react')?.classList.toggle(
                 'code-preview__button--selected',
                 flavor === 'react'
+            )
+            cb.querySelector('.code-preview__button--jupyter')?.classList.toggle(
+                'code-preview__button--selected',
+                flavor === 'jupyter'
             )
         })
     })

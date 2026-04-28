@@ -11,7 +11,7 @@ import { AuthController } from '../../auth/auth.controller.js'
 
 /**
  * @summary A form that logs in to Earthdata Login (EDL) and returns a bearer token.
- * @documentation https://disc.gsfc.nasa.gov/components/login
+ * @documentation https://terra-ui.netlify.app/components/login
  * @status stable
  * @since 1.0
  *

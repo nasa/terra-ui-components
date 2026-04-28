@@ -236,7 +236,7 @@ export default {
             referencesTemplate: (_, tag) => [
                 {
                     name: 'Documentation',
-                    url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
+                    url: `https://terra-ui.netlify.app/components/${tag.replace(
                         'terra-',
                         ''
                     )}`,
@@ -251,7 +251,7 @@ export default {
             referencesTemplate: (_, tag) => {
                 return {
                     name: 'Documentation',
-                    url: `https://disc.gsfc.nasa.gov/components/${tag.replace(
+                    url: `https://terra-ui.netlify.app/components/${tag.replace(
                         'terra-',
                         ''
                     )}`,

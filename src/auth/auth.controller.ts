@@ -1,10 +1,11 @@
 import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
-import { authService, type AuthState } from './auth.service.js'
+import { authService, type AuthState, type User } from './auth.service.js'
 
 export class AuthController<C> {
     task: Task<[], AuthState>
+    loginTask: Task<[string, string], User | null>
     private unsubscribe?: () => void
 
     #host: ReactiveControllerHost & C
@@ -44,6 +45,14 @@ export class AuthController<C> {
             args: (): any => [],
             autoRun: true,
         })
+
+        this.loginTask = new Task(this.#host, {
+            task: async ([username, password]) => {
+                return await this.#loginWithCredentials(username, password)
+            },
+            args: (): any => [],
+            autoRun: false,
+        })
     }
 
     get state() {
@@ -67,5 +76,9 @@ export class AuthController<C> {
         if (this.unsubscribe) {
             this.unsubscribe()
         }
+    }
+
+    #loginWithCredentials(username: string, password: string) {
+        return authService.loginWithCredentials(username, password)
     }
 }

@@ -16,26 +16,22 @@ Design tokens offer a high-level way to customize the library with minimal effor
 
 Design tokens are accessed through CSS custom properties that are defined in your theme. Because design tokens live at the page level, they're prefixed with `--terra-` to avoid collisions with other libraries.
 
-To customize a design token, simply override it in your stylesheet using a `:root` block. Here's an example that changes the primary theme to purple based on existing [color primitives](/tokens/color#primitives).
+To customize a design token, simply override it in your stylesheet using a `:root` block. Here's an example that customizes some Horizon design tokens:
 
 ```css
 :root {
-    /* Changes the primary theme color to purple using primitives */
-    --terra-color-primary-50: var(--terra-color-purple-50);
-    --terra-color-primary-100: var(--terra-color-purple-100);
-    --terra-color-primary-200: var(--terra-color-purple-200);
-    --terra-color-primary-300: var(--terra-color-purple-300);
-    --terra-color-primary-400: var(--terra-color-purple-400);
-    --terra-color-primary-500: var(--terra-color-purple-500);
-    --terra-color-primary-600: var(--terra-color-purple-600);
-    --terra-color-primary-700: var(--terra-color-purple-700);
-    --terra-color-primary-800: var(--terra-color-purple-800);
-    --terra-color-primary-900: var(--terra-color-purple-900);
-    --terra-color-primary-950: var(--terra-color-purple-950);
+    /* Override NASA blue with a custom color */
+    --terra-color-nasa-blue: #0052cc;
+
+    /* Customize spacing */
+    --terra-spacing-small: 0.75rem;
+
+    /* Customize border radius */
+    --terra-border-radius-medium: 0.375rem;
 }
 ```
 
-Many design tokens are described further along in this documentation. For a complete list, refer to `src/themes/light.css` in the project's [source code](https://github.com/nasa/terra-ui-components/blob/current/src/themes/light.css).
+Many design tokens are described further along in this documentation. For a complete list, refer to `src/themes/horizon.css` in the project's [source code](https://github.com/nasa/terra-ui-components/blob/current/src/themes/horizon.css).
 
 ## CSS Parts
 
@@ -46,28 +42,29 @@ Terra components use a [shadow DOM](https://developer.mozilla.org/en-US/docs/Web
 Here's an example that modifies buttons with the `tomato-button` class.
 
 ```html:preview
-<terra-button class="tomato-button"> Tomato Button </terra-button>
+<terra-button class="custom-button"> Custom Button </terra-button>
 
 <style>
-  .tomato-button::part(base) {
-    background: var(--terra-color-neutral-0);
-    border: solid 1px tomato;
+  .custom-button::part(base) {
+    background: var(--terra-color-spacesuit-white);
+    border: solid 1px var(--terra-color-nasa-red);
   }
 
-  .tomato-button::part(base):hover {
-    background: rgba(255, 99, 71, 0.1);
+  .custom-button::part(base):hover {
+    background: var(--terra-color-nasa-red-tint);
+    color: var(--terra-color-spacesuit-white);
   }
 
-  .tomato-button::part(base):active {
-    background: rgba(255, 99, 71, 0.2);
+  .custom-button::part(base):active {
+    background: var(--terra-color-nasa-red-shade);
   }
 
-  .tomato-button::part(base):focus-visible {
-    box-shadow: 0 0 0 3px rgba(255, 99, 71, 0.33);
+  .custom-button::part(base):focus-visible {
+    box-shadow: 0 0 0 3px var(--terra-color-nasa-red-tint);
   }
 
-  .tomato-button::part(label) {
-    color: tomato;
+  .custom-button::part(label) {
+    color: var(--terra-color-nasa-red);
   }
 </style>
 ```
@@ -105,7 +102,7 @@ terra-avatar.your-class {
 Alternatively, you can set them inline directly on the element.
 
 ```html
-<sl-avatar style="--size: 6rem;"></sl-avatar>
+<terra-avatar style="--size: 6rem;"></terra-avatar>
 ```
 
 Not all components expose CSS custom properties. For those that do, they can be found in the component's API documentation.

@@ -59,7 +59,7 @@ Now you can start using Terra components in your app!
 When binding complex data such as objects and arrays, use the `.prop` modifier to make Vue bind them as a property instead of an attribute.
 
 ```html
-<sl-color-picker :swatches.prop="mySwatches" />
+<terra-color-picker :swatches.prop="mySwatches" />
 ```
 
 ### Two-way Binding
@@ -68,7 +68,7 @@ One caveat is there's currently [no support for v-model on custom elements](http
 
 ```html
 <!-- This doesn't work -->
-<sl-input v-model="name"></sl-input>
+<terra-input v-model="name"></terra-input>
 <!-- This works, but it's a bit longer -->
-<sl-input :value="name" @input="name = $event.target.value"></sl-input>
+<terra-input :value="name" @input="name = $event.target.value"></terra-input>
 ```

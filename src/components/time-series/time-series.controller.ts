@@ -17,14 +17,16 @@ import type {
     VariableDbEntry,
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
-import type { TimeInterval } from '../../types.js'
+import { TimeInterval } from '../../types.js'
 import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import {
     FINAL_STATUSES,
     HarmonyDataService,
 } from '../../data-services/harmony-data-service.js'
-import type { SubsetJobStatus } from '../../data-services/types.js'
+import type { SubsetJobStatus, SubsetJobError } from '../../data-services/types.js'
+import { extractHarmonyError } from '../../utilities/harmony.js'
+import { Status } from '../../data-services/types.js'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
 const REFRESH_HARMONY_DATA_INTERVAL = 2000
@@ -74,20 +76,26 @@ export class TimeSeriesController {
                     !this.host.endDate ||
                     !this.host.location
                 ) {
-                    // requirements not yet met to fetch the time series data
+                    console.log('Requirements not met to fetch the time series data ')
                     return initialState
                 }
 
                 // fetch the time series data
                 const timeSeries = await this.#loadTimeSeries(signal)
 
+                // Filter out fill values from the data
+                const filteredData = this.#filterFillValues(
+                    timeSeries.data,
+                    timeSeries.metadata?.undef
+                )
+
                 // now that we have actual data, map it to a Plotly plot definition
                 // see https://plotly.com/javascript/time-series/
                 this.lastTaskValue = [
                     {
                         ...plotlyDefaultData,
-                        x: timeSeries.data.map(row => row.timestamp),
-                        y: timeSeries.data.map(row => row.value),
+                        x: filteredData.map(row => row.timestamp),
+                        y: filteredData.map(row => row.value),
                     },
                 ]
 
@@ -138,8 +146,8 @@ export class TimeSeriesController {
             isDateRangeContained(
                 startDate,
                 endDate,
-                new Date(existingTerraData?.startDate),
-                new Date(existingTerraData?.endDate)
+                getUTCDate(existingTerraData?.startDate),
+                getUTCDate(existingTerraData?.endDate, true)
             )
         )
         console.log('Is cache valid?', this.#isCacheValid(existingTerraData))
@@ -149,35 +157,60 @@ export class TimeSeriesController {
             isDateRangeContained(
                 startDate,
                 endDate,
-                new Date(existingTerraData.startDate),
-                new Date(existingTerraData.endDate)
+                getUTCDate(existingTerraData?.startDate),
+                getUTCDate(existingTerraData?.endDate, true)
             ) &&
             this.#isCacheValid(existingTerraData)
         ) {
             console.log('Returning existing data from cache ', this.getCacheKey())
 
+            // Filter fill values from cached data (in case old cached data contains fill values)
+            const fillValue = existingTerraData.metadata?.undef
+            const filteredData = this.#filterFillValues(
+                existingTerraData.data,
+                fillValue
+            )
+            const filteredTimeSeries: TimeSeriesData = {
+                ...existingTerraData,
+                data: filteredData,
+            }
+
             // already have the data downloaded!
-            return this.#getDataInRange(existingTerraData)
+            return this.#getDataInRange(filteredTimeSeries)
         }
 
         // Calculate what data we need to fetch (accounting for data we already have)
         const dataGaps = this.#calculateDataGaps(existingTerraData)
 
         if (dataGaps.length === 0 && existingTerraData) {
+            // Filter fill values from cached data (in case old cached data contains fill values)
+            const filteredData = this.#filterFillValues(
+                existingTerraData.data,
+                existingTerraData.metadata?.undef
+            )
+            const filteredTimeSeries: TimeSeriesData = {
+                ...existingTerraData,
+                data: filteredData,
+            }
+
             // No gaps to fill, return existing data
-            return this.#getDataInRange(existingTerraData)
+            return this.#getDataInRange(filteredTimeSeries)
         }
 
         // We have gaps, so we'll need to request new data
         // We'll do this in chunks in case the number of data points exceeds the API-imposed limit
+        const detectedInterval = existingTerraData?.data
+            ? this.#detectTimeInterval(existingTerraData.data)
+            : null
+        const timeInterval =
+            detectedInterval ||
+            (this.host.catalogVariable!.dataProductTimeInterval as TimeInterval) ||
+            TimeInterval.Daily
+
         const allChunks: Array<{ start: Date; end: Date }> = []
 
         for (const gap of dataGaps) {
-            const chunks = calculateDateChunks(
-                this.host.catalogVariable!.dataProductTimeInterval as TimeInterval,
-                gap.start,
-                gap.end
-            )
+            const chunks = calculateDateChunks(timeInterval, gap.start, gap.end)
             allChunks.push(...chunks)
         }
 
@@ -204,12 +237,15 @@ export class TimeSeriesController {
             metadata = { ...metadata, ...chunkResult.metadata }
         }
 
+        // Deduplicate by timestamp to prevent duplicate entries
+        allData = this.#deduplicateByTimestamp(allData)
+
         const consolidatedResult: TimeSeriesData = {
             metadata,
             data: allData,
         }
 
-        // Save the consolidated data to IndexedDB
+        // Save the consolidated data to IndexedDB (including fill values to avoid unnecessary API requests)
         if (allData.length > 0) {
             // Sort data by timestamp to ensure they're in order
             const sortedData = [...allData].sort(
@@ -233,9 +269,11 @@ export class TimeSeriesController {
             )
         }
 
+        // Filter fill values before returning (but keep them in cache)
+        const filteredData = this.#filterFillValues(allData, metadata?.undef)
         return this.#getDataInRange({
             metadata: consolidatedResult.metadata,
-            data: allData,
+            data: filteredData,
         })
     }
 
@@ -346,25 +384,63 @@ export class TimeSeriesController {
             )
 
             // create the new job
-            const job = await this.#dataService.createSubsetJob(subsetOptions, {
-                signal,
-                bearerToken: this.host.bearerToken,
-                environment: this.host.environment,
-            })
+            let job: SubsetJobStatus | undefined
+            try {
+                job = await this.#dataService.createSubsetJob(subsetOptions, {
+                    signal,
+                    bearerToken: this.host.bearerToken,
+                    environment: this.host.environment,
+                })
+            } catch (error) {
+                // Handle GraphQL errors from Harmony
+                this.#handleHarmonyError(error)
+                throw error
+            }
 
             if (!job) {
-                throw new Error('Failed to create subset job')
+                const error = new Error('Failed to create subset job')
+                this.#handleHarmonyError(error)
+                throw error
             }
 
             const jobStatus = await this.#waitForHarmonyJob(job, signal)
 
+            // Check if job failed or has errors
+            if (jobStatus.status === Status.FAILED) {
+                const errorMessage =
+                    jobStatus.message ||
+                    jobStatus.errors?.[0]?.message ||
+                    'The subset job failed'
+                const error = new Error(errorMessage)
+                this.#handleHarmonyError(error, jobStatus.errors)
+                throw error
+            }
+
+            if (
+                jobStatus.status === Status.COMPLETE_WITH_ERRORS &&
+                jobStatus.errors &&
+                jobStatus.errors.length > 0
+            ) {
+                const errorMessage =
+                    jobStatus.errors[0].message ||
+                    'The subset job completed with errors'
+                const error = new Error(errorMessage)
+                this.#handleHarmonyError(error, jobStatus.errors)
+                throw error
+            }
+
             // the job is completed, fetch the data for the job
-            const { text } = await this.#dataService.getSubsetJobData(jobStatus, {
-                signal,
-                bearerToken: this.host.bearerToken,
-                environment: this.host.environment,
-            })
-            timeSeriesCsvData = text
+            try {
+                const { text } = await this.#dataService.getSubsetJobData(jobStatus, {
+                    signal,
+                    bearerToken: this.host.bearerToken,
+                    environment: this.host.environment,
+                })
+                timeSeriesCsvData = text
+            } catch (error) {
+                this.#handleHarmonyError(error)
+                throw error
+            }
         } else {
             const [lat, lon] = this.#normalizeCoordinates(parsedLocation)
 
@@ -391,11 +467,31 @@ export class TimeSeriesController {
             })
 
             if (!response.ok) {
+                // Try to parse JSON error response
+                let errorDetails: {
+                    code?: string
+                    message?: string
+                    context?: string
+                } = {}
+                const contentType = response.headers.get('content-type')
+                if (contentType?.includes('application/json')) {
+                    try {
+                        errorDetails = await response.json()
+                    } catch {
+                        // If JSON parsing fails, use status text
+                        errorDetails = { message: response.statusText }
+                    }
+                } else {
+                    errorDetails = { message: response.statusText }
+                }
+
                 this.host.dispatchEvent(
                     new CustomEvent('terra-time-series-error', {
                         detail: {
                             status: response.status,
-                            message: response.statusText,
+                            code: errorDetails.code || String(response.status),
+                            message: errorDetails.message || response.statusText,
+                            context: errorDetails.context,
                         },
                         bubbles: true,
                         composed: true,
@@ -403,7 +499,7 @@ export class TimeSeriesController {
                 )
 
                 throw new Error(
-                    `Failed to fetch time series data: ${response.statusText}`
+                    `Failed to fetch time series data: ${errorDetails.message || response.statusText}`
                 )
             }
 
@@ -414,7 +510,13 @@ export class TimeSeriesController {
     }
 
     #waitForHarmonyJob(job: SubsetJobStatus, signal: AbortSignal) {
-        return new Promise<SubsetJobStatus>(async resolve => {
+        return new Promise<SubsetJobStatus>(async (resolve, reject) => {
+            // Check if already aborted before starting
+            if (signal.aborted) {
+                reject(new Error('Job polling was aborted'))
+                return
+            }
+
             let jobStatus: SubsetJobStatus | undefined
 
             try {
@@ -427,14 +529,50 @@ export class TimeSeriesController {
                 console.log('Job status', jobStatus)
             } catch (error) {
                 console.error('Error checking harmony job status', error)
+
+                // If aborted, reject the promise to stop polling (don't show error)
+                if (signal.aborted || (error as Error)?.name === 'AbortError') {
+                    reject(error)
+                    return
+                }
+
+                // Handle GraphQL errors from status check
+                this.#handleHarmonyError(error)
+                reject(error)
+                return
             }
 
             if (jobStatus && FINAL_STATUSES.has(jobStatus.status)) {
                 console.log('Job is done', jobStatus)
                 resolve(jobStatus)
             } else {
+                // Check if aborted before scheduling next poll
+                if (signal.aborted) {
+                    reject(new Error('Job polling was aborted'))
+                    return
+                }
+
+                // Set up abort listener to immediately reject if aborted during the wait
+                const abortHandler = () => {
+                    reject(new Error('Job polling was aborted'))
+                }
+                signal.addEventListener('abort', abortHandler, { once: true })
+
                 setTimeout(async () => {
-                    resolve(await this.#waitForHarmonyJob(job, signal))
+                    // Remove the abort listener since we're about to check again
+                    signal.removeEventListener('abort', abortHandler)
+
+                    // Check if aborted immediately when timeout fires
+                    if (signal.aborted) {
+                        reject(new Error('Job polling was aborted'))
+                        return
+                    }
+
+                    try {
+                        resolve(await this.#waitForHarmonyJob(job, signal))
+                    } catch (error) {
+                        reject(error)
+                    }
                 }, REFRESH_HARMONY_DATA_INTERVAL)
             }
         })
@@ -497,19 +635,69 @@ export class TimeSeriesController {
      * Normalizes timestamp format to be consistent between point-based and area-averaged data
      * Point-based data format: "2013-11-28 23:30"
      * Area-averaged data format: "2009-01-01T00:30:00.000000000"
-     * This function converts area-averaged format to match point-based format
+     * This function converts both formats to ISO 8601 format while preserving full time resolution
      */
     #normalizeTimestamp(timestamp: string): string {
         try {
-            // Parse the timestamp and format it consistently
+            // Parse the timestamp
             const date = new Date(timestamp)
 
-            return formatDate(date)
+            // Check if the date is valid
+            if (isNaN(date.getTime())) {
+                console.warn('Invalid timestamp:', timestamp)
+                return timestamp
+            }
+
+            // Format as ISO 8601 to preserve full time resolution
+            // This ensures sub-hourly, hourly, and daily data all maintain their precision
+            return date.toISOString()
         } catch (error) {
             // If parsing fails, return the original timestamp
             console.warn('Failed to normalize timestamp:', timestamp, error)
             return timestamp
         }
+    }
+
+    /**
+     * Filters out fill values from time series data
+     */
+    #filterFillValues(
+        data: TimeSeriesDataRow[],
+        fillValue: string | number | undefined
+    ): TimeSeriesDataRow[] {
+        if (!fillValue) {
+            return data
+        }
+
+        return data.filter(row => {
+            const rowValue = row.value.trim()
+            const fillValueStr = String(fillValue).trim()
+            // Compare as strings first (most common case)
+            if (rowValue === fillValueStr) {
+                return false
+            }
+            // Also compare as numbers to handle formatting differences
+            const rowNum = parseFloat(rowValue)
+            const fillNum = parseFloat(fillValueStr)
+            if (!isNaN(rowNum) && !isNaN(fillNum) && rowNum === fillNum) {
+                return false
+            }
+            return true
+        })
+    }
+
+    /**
+     * Deduplicates time series data by timestamp, keeping the first occurrence
+     */
+    #deduplicateByTimestamp(data: TimeSeriesDataRow[]): TimeSeriesDataRow[] {
+        const seen = new Map<string, TimeSeriesDataRow>()
+        for (const row of data) {
+            const timestamp = row.timestamp
+            if (!seen.has(timestamp)) {
+                seen.set(timestamp, row)
+            }
+        }
+        return Array.from(seen.values())
     }
 
     /**
@@ -614,7 +802,95 @@ export class TimeSeriesController {
         }
     }
 
+    /**
+     * Detects the actual time interval from the data by analyzing timestamp differences
+     * Returns the detected TimeInterval or null if unable to determine
+     */
+    #detectTimeInterval(data: TimeSeriesDataRow[]): TimeInterval | null {
+        if (data.length < 2) {
+            return null
+        }
+
+        // Sort data by timestamp to ensure we're analyzing in order
+        const sortedData = [...data].sort(
+            (a, b) =>
+                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        )
+
+        // Calculate time differences between consecutive points
+        const intervals: number[] = []
+        for (let i = 1; i < Math.min(sortedData.length, 100); i++) {
+            const prevTime = new Date(sortedData[i - 1].timestamp).getTime()
+            const currTime = new Date(sortedData[i].timestamp).getTime()
+            const diffMs = currTime - prevTime
+            if (diffMs > 0) {
+                intervals.push(diffMs)
+            }
+        }
+
+        if (intervals.length === 0) {
+            return null
+        }
+
+        // Find the most common interval (mode)
+        const intervalCounts = new Map<number, number>()
+        intervals.forEach(interval => {
+            // Round to nearest minute to handle small variations
+            const rounded = Math.round(interval / (1000 * 60)) * (1000 * 60)
+            intervalCounts.set(rounded, (intervalCounts.get(rounded) || 0) + 1)
+        })
+
+        let mostCommonInterval = 0
+        let maxCount = 0
+        intervalCounts.forEach((count, interval) => {
+            if (count > maxCount) {
+                maxCount = count
+                mostCommonInterval = interval
+            }
+        })
+
+        // Convert milliseconds to TimeInterval
+        const MILLIS_IN_HOUR = 1000 * 60 * 60
+        const MILLIS_IN_DAY = MILLIS_IN_HOUR * 24
+
+        if (mostCommonInterval <= MILLIS_IN_HOUR / 2 + 60000) {
+            // 30 minutes or less (with 1 minute tolerance)
+            return TimeInterval.HalfHourly
+        } else if (mostCommonInterval <= MILLIS_IN_HOUR + 60000) {
+            // ~1 hour
+            return TimeInterval.Hourly
+        } else if (mostCommonInterval <= MILLIS_IN_HOUR * 3 + 60000) {
+            // ~3 hours
+            return TimeInterval.ThreeHourly
+        } else if (mostCommonInterval <= MILLIS_IN_DAY + 60000) {
+            // ~1 day
+            return TimeInterval.Daily
+        } else if (mostCommonInterval <= MILLIS_IN_DAY * 7 + 60000) {
+            // ~1 week
+            return TimeInterval.Weekly
+        }
+
+        // Default to daily if we can't determine
+        return TimeInterval.Daily
+    }
+
     #getDataService() {
         return new HarmonyDataService()
+    }
+
+    /**
+     * Handles errors from Harmony GraphQL operations and dispatches them as events
+     */
+    #handleHarmonyError(error: unknown, jobErrors?: Array<SubsetJobError>): void {
+        const errorDetails = extractHarmonyError(error, jobErrors)
+
+        // Dispatch the error event
+        this.host.dispatchEvent(
+            new CustomEvent('terra-time-series-error', {
+                detail: errorDetails,
+                bubbles: true,
+                composed: true,
+            })
+        )
     }
 }

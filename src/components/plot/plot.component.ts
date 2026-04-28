@@ -9,8 +9,8 @@ import * as Plotly from 'plotly.js-dist-min'
 
 /**
  * @summary A web component for interactive graphs using Plotly.js.
- * @documentation https://disc.gsfc.nasa.gov/components/plot
- * @status experimental
+ * @documentation https://terra-ui.netlify.app/components/plot
+ * @status stable
  * @since 1.0
  *
  * @csspart base - The component's base wrapper.

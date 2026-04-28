@@ -3,6 +3,7 @@ meta:
     title: Plot Toolbar
     description:
 layout: component
+sidebarSection: Hidden
 ---
 
 ```html:preview
