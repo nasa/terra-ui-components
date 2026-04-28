@@ -136,6 +136,9 @@ export default class TerraSpatialPicker extends TerraElement {
 
     @property({ attribute: 'help-text' }) helpText = ''
 
+    /**
+     * Whether to show a close button in the dropdown header (only applies when inline is false)
+     */
     @property({ attribute: 'closable', type: Boolean })
     showClose: boolean = false  
 
