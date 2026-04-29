@@ -612,10 +612,4 @@ export default css`
             flex-direction: column;
         }
     }
-
-    .flatpickr-day.disabled {
-        background: #f0f0f0;
-        color: #ccc;
-        cursor: not-allowed;
-    }
 `

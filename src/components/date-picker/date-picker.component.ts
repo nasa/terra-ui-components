@@ -37,7 +37,6 @@ interface PresetRange {
  * @eventDetail { startDate: string, endDate: string } - ISO date strings or YYYY-MM-DD format.
  *
  * @csspart base - The component's base wrapper.
- * @event terra-date-selection-invalid - Fired when user selects date outside allowed range
  * @csspart input - The date input element (terra-input).
  * @csspart calendar - The calendar dropdown.
  * @csspart sidebar - The preset ranges sidebar.
