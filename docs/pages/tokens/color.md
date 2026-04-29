@@ -67,9 +67,4 @@ International Orange and Active Green are colors that are used sparingly and int
 
 <div class="color-palette">
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange);"></div>international-orange</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange-tint);"></div>international-orange-tint</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-international-orange-shade);"></div>international-orange-shade</div>
   <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-active-green);"></div>active-green</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-active-green-tint);"></div>active-green-tint</div>
-  <div class="color-palette__example"><div class="color-palette__swatch" style="background-color: var(--terra-color-active-green-shade);"></div>active-green-shade</div>
-</div>

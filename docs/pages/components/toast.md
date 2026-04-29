@@ -12,7 +12,7 @@ Toasts are used to display brief, non-intrusive notifications that appear tempor
 Toasts automatically appear in a fixed position (top-right by default) and stack vertically when multiple toasts are shown. They can be dismissed by clicking the close button or will automatically hide after a specified duration.
 
 ```html:preview
-<terra-toast variant="primary" closable>
+<terra-toast variant="information" closable>
   <terra-icon slot="icon" name="solid-information-circle" library="heroicons"></terra-icon>
   This is a toast notification.
 </terra-toast>
@@ -34,14 +34,14 @@ Set the `variant` attribute to change the toast's variant.
 
 ```html:preview
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-  <terra-button id="toast-primary">Primary</terra-button>
+  <terra-button id="toast-information">Information</terra-button>
   <terra-button id="toast-success">Success</terra-button>
   <terra-button id="toast-neutral">Neutral</terra-button>
   <terra-button id="toast-warning">Warning</terra-button>
   <terra-button id="toast-danger">Danger</terra-button>
 </div>
 
-<terra-toast id="toast-primary-toast" variant="primary" closable>
+<terra-toast id="toast-information-toast" variant="information" closable>
   <terra-icon slot="icon" name="solid-information-circle" library="heroicons"></terra-icon>
   <strong>This is super informative</strong><br />
   You can tell by how pretty the toast is.
@@ -75,7 +75,7 @@ Set the `variant` attribute to change the toast's variant.
   // Wait for custom elements to be defined
   await customElements.whenDefined('terra-toast');
 
-  ['primary', 'success', 'neutral', 'warning', 'danger'].forEach(async (variant) => {
+  ['information', 'success', 'neutral', 'warning', 'danger'].forEach(async (variant) => {
     const button = document.querySelector(`#toast-${variant}`);
     const toast = document.querySelector(`#toast-${variant}-toast`);
     button.addEventListener('click', async () => {
@@ -175,7 +175,7 @@ For convenience, you can create toasts with a function call rather than composin
   let count = 0;
 
   button.addEventListener('click', () => {
-    TerraToastClass.notify(`This is custom toast #${++count}`, 'primary', 'solid-information-circle', 3000);
+    TerraToastClass.notify(`This is custom toast #${++count}`, 'information', 'solid-information-circle', 3000);
   });
 </script>
 ```
@@ -184,7 +184,7 @@ You can also create toasts with different variants:
 
 ```html:preview
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-  <terra-button id="toast-notify-primary">Primary</terra-button>
+  <terra-button id="toast-notify-information">Information</terra-button>
   <terra-button id="toast-notify-success">Success</terra-button>
   <terra-button id="toast-notify-warning">Warning</terra-button>
   <terra-button id="toast-notify-danger">Danger</terra-button>
@@ -197,8 +197,8 @@ You can also create toasts with different variants:
   // Access TerraToast constructor class for static methods
   const TerraToastClass = customElements.get('terra-toast');
 
-  document.querySelector('#toast-notify-primary').addEventListener('click', () => {
-    TerraToastClass.notify('This is a primary toast', 'primary', 'solid-information-circle');
+  document.querySelector('#toast-notify-information').addEventListener('click', () => {
+    TerraToastClass.notify('This is a information toast', 'information', 'solid-information-circle');
   });
 
   document.querySelector('#toast-notify-success').addEventListener('click', () => {

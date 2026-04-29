@@ -2,9 +2,9 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        --border-color: var(--terra-panel-border-color);
-        --border-radius: var(--terra-border-radius-medium);
-        --border-width: var(--terra-panel-border-width);
+        --border-color: var(--terra-container-panel-border);
+        --border-radius: var(--terra-container-panel-border-radius);
+        --border-width: var(--terra-container-panel-border-width);
         --padding: var(--terra-spacing-large);
 
         display: inline-block;
@@ -13,7 +13,7 @@ export default css`
     .card {
         display: flex;
         flex-direction: column;
-        background-color: var(--terra-panel-background-color);
+        background-color: var(--terra-card-background-color, #ffffff);
         box-shadow: var(--terra-shadow-x-small);
         border: solid var(--border-width) var(--border-color);
         border-radius: var(--border-radius);

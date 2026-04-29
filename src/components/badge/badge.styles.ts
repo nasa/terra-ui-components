@@ -20,35 +20,32 @@ export default css`
         user-select: none;
         -webkit-user-select: none;
         cursor: inherit;
-        color: var(--terra-color-spacesuit-white);
     }
 
     /* Variant modifiers */
-    .badge--primary {
-        background-color: var(--terra-color-nasa-blue);
+    .badge--information {
+        background-color: var(--terra-badge-background-color-information);
+        color: var(--terra-badge-color-information);
     }
 
     .badge--success {
-        background-color: var(--terra-color-success-green);
+        background-color: var(--terra-badge-background-color-success);
+        color: var(--terra-badge-color-success);
     }
 
     .badge--neutral {
-        background-color: var(--terra-color-carbon-60);
+        background-color: var(--terra-badge-background-color-neutral);
+        color: var(--terra-badge-color-neutral);
     }
 
     .badge--warning {
-        background-color: var(--terra-color-international-orange);
-    }
-
-    .badge--info {
-        background-color: var(
-            --terra-background-color-badge-info,
-            rgba(13, 202, 240, 1)
-        );
+        background-color: var(--terra-badge-background-color-warning);
+        olor: var(--terra-badge-color-warning);
     }
 
     .badge--danger {
-        background-color: var(--terra-color-nasa-red);
+        background-color: var(--terra-badge-background-color-danger);
+        color: var(--terra-badge-color-danger);
     }
 
     /* Pill modifier */
@@ -61,24 +58,24 @@ export default css`
         animation: pulse 1.5s infinite;
     }
 
-    .badge--pulse.badge--primary {
-        --pulse-color: var(--terra-color-nasa-blue);
+    .badge--pulse.badge--information {
+        --pulse-color: var(--terra-color-bg-info-bold);
     }
 
     .badge--pulse.badge--success {
-        --pulse-color: var(--terra-color-success-green);
+        --pulse-color: var(--terra-color-bg-success-bold);
     }
 
     .badge--pulse.badge--neutral {
-        --pulse-color: var(--terra-color-carbon-60);
+        --pulse-color: var(--terra-color-bg-default-bold);
     }
 
     .badge--pulse.badge--warning {
-        --pulse-color: var(--terra-color-international-orange);
+        --pulse-color: var(--terra-color-bg-warning-bold);
     }
 
     .badge--pulse.badge--danger {
-        --pulse-color: var(--terra-color-nasa-red);
+        --pulse-color: var(--terra-color-bg-error-bold);
     }
 
     @keyframes pulse {

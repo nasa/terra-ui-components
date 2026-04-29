@@ -19,11 +19,12 @@ const App = () => <TerraButton>Button</TerraButton>;
 
 ### Variants
 
-Use the `variant` attribute to set the button's variant.
+Use the `variant` attribute to set the button's variant. CTA (Call To Action) is used to grab a users attention to an action.
 
 ```html:preview
 <terra-button variant="default">Default</terra-button>
 <terra-button variant="primary">Primary</terra-button>
+<terra-button variant="cta">CTA</terra-button>
 <terra-button variant="success">Success</terra-button>
 <terra-button variant="warning">Warning</terra-button>
 <terra-button variant="danger">Danger</terra-button>
@@ -36,6 +37,7 @@ const App = () => (
   <>
     <TerraButton variant="default">Default</TerraButton>
     <TerraButton variant="primary">Primary</TerraButton>
+    <terra-button variant="cta">CTA</terra-button>
     <TerraButton variant="success">Success</TerraButton>
     <TerraButton variant="warning">Warning</TerraButton>
     <TerraButton variant="danger">Danger</TerraButton>
@@ -72,6 +74,7 @@ Use the `outline` attribute to draw outlined buttons with transparent background
 ```html:preview
 <terra-button variant="default" outline>Default</terra-button>
 <terra-button variant="primary" outline>Primary</terra-button>
+<terra-button variant="cta" outline>CTA</terra-button>
 <terra-button variant="success" outline>Success</terra-button>
 <terra-button variant="warning" outline>Warning</terra-button>
 <terra-button variant="danger" outline>Danger</terra-button>
@@ -87,6 +90,9 @@ const App = () => (
     </TerraButton>
     <TerraButton variant="primary" outline>
       Primary
+    </TerraButton>
+    <TerraButton variant="cta" outline>
+      CTA
     </TerraButton>
     <TerraButton variant="success" outline>
       Success

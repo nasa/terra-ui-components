@@ -26,7 +26,6 @@ export default css`
         text-align: left;
         margin: 0 auto;
         padding: 20px;
-        background: white;
     }
 
     .loading-collection {
@@ -44,13 +43,13 @@ export default css`
         justify-content: space-between;
         margin-bottom: 30px;
         padding-bottom: 15px;
-        border-bottom: 1px solid #e9ecef;
+        border-bottom: 1px solid var;
     }
 
     .header h1 {
         font-size: 16px;
         font-weight: 600;
-        color: #0066cc;
+        color: var(--terra-text-brand-on-secondary, #1c67e3);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -79,30 +78,26 @@ export default css`
     }
 
     .size-info.warning {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
+        background: var(--terra-color-bg-warning-subtle, #fed7be);
+        border: 1px solid var(--terra-border-warning, #a24b14);
+        color: var(--terra-text-on-warning, #856404);
     }
 
     .size-info.neutral {
-        background: #f8f9fa;
+        background: var(--terra-color-bg-neutral-subtle, #f8f9fa);
+        border: 1px solid var(--terra-border-neutral-default, #b9b9bb);
+        color: var(--terra-text-on-default, #666);
     }
 
     .size-info h2 {
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 8px;
-        color: #333;
     }
 
     .size-stats {
         font-size: 14px;
-        color: #666;
         margin-bottom: 10px;
-    }
-
-    .size-warning {
-        font-size: 14px;
-        color: #856404;
     }
 
     .section,
@@ -110,36 +105,15 @@ export default css`
         margin-bottom: 25px;
     }
 
-    .section-title,
     .results-title {
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 15px;
-        color: #333;
-    }
-
-    .section-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .help-icon,
-    .info-icon {
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: #6c757d;
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        cursor: help;
+        color: var(--terra-text-secondary);
     }
 
     .accordion-value {
-        color: #28a745;
+        color: var(--terra-color-green-600, #28a745);
         font-weight: 500;
         display: flex;
         align-items: center;
@@ -147,7 +121,7 @@ export default css`
     }
 
     .accordion-value.error {
-        color: #dc3545;
+        color: var(--terra-color-red-600, #dc3545);
     }
 
     .accordion-value::before {
@@ -201,7 +175,7 @@ export default css`
         align-items: center;
         margin-top: 30px;
         padding-top: 20px;
-        border-top: 1px solid #dee2e6;
+        border-top: 1px solid var(--terra-border-neutral-default, #b9b9bb);
         position: relative;
         overflow: visible;
     }
@@ -270,7 +244,7 @@ export default css`
     .search-status,
     .job-info {
         font-size: 14px;
-        color: #666;
+        color: var(--terra-text-secondary);
         display: flex;
         align-items: center;
         gap: 8px;
@@ -473,31 +447,6 @@ export default css`
         background-color: #f8f9fa;
     }
 
-    .size-info {
-        border: 1px solid transparent;
-        border-radius: 6px;
-        padding: 15px;
-        margin-bottom: 25px;
-    }
-
-    .size-info h2 {
-        font-size: 16px;
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #333;
-    }
-
-    .size-stats {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 10px;
-    }
-
-    .size-warning {
-        font-size: 14px;
-        color: #856404;
-    }
-
     .section {
         margin-bottom: 25px;
     }
@@ -506,18 +455,25 @@ export default css`
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 15px;
-        color: #333;
+        color: var(--terra-text-primary);
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    .help-icon {
+    .section-description {
+        font-size: 14px;
+        color: var(--terra-text-secondary);
+        margin-bottom: var(--terra-spacing-medium);
+    }
+
+    .help-icon,
+    .info-icon {
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background: #6c757d;
-        color: white;
+        background: var(--terra-color-bg-info-bold, #1c67e3);
+        color: var(--terra-text-on-semantic, white);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -588,7 +544,7 @@ export default css`
         align-items: center;
         margin-top: 30px;
         padding-top: 20px;
-        border-top: 1px solid #dee2e6;
+        border-top: 1px solid var(--terra-border-neutral-default, #b9b9bb);
         position: relative;
         overflow: visible;
     }
@@ -604,22 +560,25 @@ export default css`
     }
 
     .btn-secondary {
-        background: #f8f9fa;
-        color: #666;
-        border-color: #dee2e6;
+        background: var(--terra-color-action-secondary-default, #f8f9fa);
+        color: var(--terra-text-on-action-secondary, #d1d1d1);
+        border-color: var(--terra-border-action-secondary-default, #f8f9fa);
     }
 
     .btn-secondary:hover {
-        background: #e9ecef;
+        background: var(--terra-color-action-secondary-hover, #b9b9bb);
+        border-color: var(--terra-border-action-secondary-hover, #b9b9bb);
     }
 
     .btn-primary {
-        background: #0066cc;
-        color: white;
+        background: var(--terra-color-action-primary-default, #1c67e3);
+        border-color: var(--terra-border-action-primary-default, #1c67e3);
+        color: var(--terra-text-on-action-primary, white);
     }
 
     .btn-primary:hover {
-        background: #0056b3;
+        background: var(--terra-color-action-primary-hover, #1a58be);
+        border-color: var(--terra-border-action-primary-hover, #1a58be);
     }
 
     .hidden {
@@ -733,7 +692,7 @@ export default css`
     }
 
     .search-results-section {
-        border-top: 1px solid #dee2e6;
+        border-top: 1px solid var(--terra-border-neutral-default, #b9b9bb);
         padding-top: 15px;
         margin-top: 15px;
     }
@@ -908,30 +867,6 @@ export default css`
         transform: rotate(180deg);
     }
 
-    .jupyter-btn {
-        background: #fff;
-        color: #333;
-        border: 1px solid #eee;
-        border-radius: 4px;
-        padding: 6px 12px;
-        font-size: 1em;
-        cursor: pointer;
-        transition:
-            background 0.2s,
-            box-shadow 0.2s;
-        margin-left: 8px;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .jupyter-btn:hover,
-    .jupyter-btn:focus {
-        background: #f8f8f8;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-        outline: none;
-    }
-
     .download-option {
         display: flex;
         align-items: center;
@@ -983,22 +918,22 @@ export default css`
         align-items: flex-start;
         gap: 12px;
         padding: 16px;
-        border: 2px solid #dee2e6;
+        border: 2px solid var(--terra-border-neutral-default, #b9b9bb);
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s;
-        background: white;
+        background: var(--terra-color-bg-surface-neutral-secondary, #ffffff);
         position: relative;
     }
 
     .mode-option:hover {
-        border-color: #0066cc;
+        border-color: var(--terra-border-brand-tertiary, #0066cc);
         box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
     }
 
     .mode-option.selected {
-        border-color: #0066cc;
-        background: #f0f8ff;
+        border-color: var(--terra-border-info, #0066cc);
+        background: var(--terra-color-bg-info-subtle, #b4cee5);
         box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
     }
 
@@ -1015,18 +950,24 @@ export default css`
     .mode-title {
         font-size: 16px;
         font-weight: 600;
-        color: #333;
+        color: var(--terra-text-primary, #f6f6f6);
         margin-bottom: 6px;
     }
 
     .mode-description {
         font-size: 14px;
-        color: #666;
+        color: var(--terra-text-secondary, #e3e3e3);
         line-height: 1.4;
     }
 
     .mode-option.selected .mode-title {
-        color: #0066cc;
+        color: var(--terra-text-primary, #f6f6f6);
+    }
+
+    .mode-option.selected .mode-description {
+        font-size: 14px;
+        color: var(--terra-text-secondary, #e3e3e3);
+        line-height: 1.4;
     }
 
     @media (max-width: 768px) {

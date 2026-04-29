@@ -20,7 +20,7 @@ export default css`
         font-weight: var(--terra-font-weight-normal);
         line-height: var(--terra-line-height-normal);
         letter-spacing: var(--terra-letter-spacing-normal);
-        color: var(--terra-menu-item-color);
+        color: var(--terra-menu-item-text-default);
         padding: var(--terra-spacing-2x-small) var(--terra-spacing-2x-small);
         transition: var(--terra-transition-fast) fill;
         user-select: none;
@@ -105,14 +105,14 @@ export default css`
 
     :host(:hover:not([aria-disabled='true'], :focus-visible)) .menu-item,
     .menu-item--submenu-expanded {
-        background-color: var(--terra-menu-item-background-color-hover);
-        color: var(--terra-menu-item-color-hover);
+        background-color: var(--terra-menu-item-background-hover);
+        color: var(--terra-menu-item-text-hover);
     }
 
     :host(:focus-visible) .menu-item {
         outline: none;
-        background-color: var(--terra-menu-item-background-color-focus);
-        color: var(--terra-menu-item-color-focus);
+        background-color: var(--terra-menu-item-background-active);
+        color: var(--terra-menu-item-text-focus);
         opacity: 1;
     }
 

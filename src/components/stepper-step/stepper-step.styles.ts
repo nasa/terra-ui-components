@@ -27,7 +27,7 @@ export default css`
         align-items: center;
         justify-content: center;
         min-height: 4px;
-        background-color: var(--terra-color-carbon-20);
+        background-color: var(--terra-steper-background-color);
         transition: background-color var(--terra-transition-medium);
     }
 
@@ -43,17 +43,17 @@ export default css`
 
     /* Completed state */
     .stepper-step--completed .stepper-step__bar {
-        background-color: var(--terra-color-nasa-blue-tint);
+        background-color: var(--terra-stepper-complete-color);
     }
 
     /* Current state */
     .stepper-step--current .stepper-step__bar {
-        background-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-stepper-current-color);
     }
 
     /* Upcoming state */
     .stepper-step--upcoming .stepper-step__bar {
-        background-color: var(--terra-color-carbon-20);
+        background-color: var(--terra-stepper-upcoming-color);
     }
 
     .stepper-step__icon {
@@ -63,7 +63,7 @@ export default css`
         width: 1.25rem;
         height: 1.25rem;
         color: var(--terra-color-spacesuit-white);
-        background-color: var(--terra-color-success-green);
+        background-color: var(--terra-color-bg-success-bold);
         border-radius: 50%;
         padding: 0.25rem;
         margin-right: var(--terra-spacing-x-small);
@@ -87,15 +87,15 @@ export default css`
     }
 
     .stepper-step--completed .stepper-step__title {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-text-secondary);
     }
 
     .stepper-step--current .stepper-step__title {
-        color: var(--terra-color-nasa-blue);
+        color: var(--terra-stepper-current-color);
     }
 
     .stepper-step--upcoming .stepper-step__title {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-text-secondary);
     }
 
     .stepper-step__caption {
@@ -103,7 +103,7 @@ export default css`
         font-size: var(--terra-font-size-x-small);
         font-weight: var(--terra-font-weight-normal);
         line-height: var(--terra-line-height-normal);
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-text-tertiary);
         margin-top: var(--terra-spacing-x-small);
     }
 

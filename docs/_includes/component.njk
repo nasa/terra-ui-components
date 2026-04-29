@@ -6,7 +6,7 @@
 {% block content %}
   {# Determine the badge variant #}
   {% if component.status == 'stable' %}
-    {% set badgeVariant = 'primary' %}
+    {% set badgeVariant = 'information' %}
   {% elseif component.status == 'experimental' %}
     {% set badgeVariant = 'warning' %}
   {% elseif component.status == 'planned' %}

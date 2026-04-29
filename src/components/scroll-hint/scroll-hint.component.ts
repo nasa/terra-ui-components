@@ -1,3 +1,4 @@
+import { classMap } from 'lit/directives/class-map.js'
 import { html } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { watch } from '../../internal/watch.js'
@@ -28,6 +29,9 @@ import type { CSSResultGroup } from 'lit'
  * @cssproperty --terra-scroll-hint-icon-color - The color of the chevron icon.
  * @cssproperty --terra-scroll-hint-text-color - The color of the text.
  * @cssproperty --terra-scroll-hint-ring-color - The color of the pulsing ring.
+ * @cssproperty --terra-scroll-hint-inverse-background-color - The background color of the icon circle in inverse mode.
+ * @cssproperty --terra-scroll-hint-inverse-icon-color - The color of the chevron icon in inverse mode.
+ * @cssproperty --terra-scroll-hint-inverse-text-color - The color of the text in inverse mode.
  */
 export default class TerraScrollHint extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -38,8 +42,8 @@ export default class TerraScrollHint extends TerraElement {
     /** When true, the component will be positioned inline in the DOM flow instead of fixed to the viewport. */
     @property({ type: Boolean, reflect: true }) inline = false
 
-    /** When true, forces dark mode styles regardless of system preference. Useful when placing the component on a dark background. */
-    @property({ type: Boolean, reflect: true }) dark = false
+    /** When true, forces inverse mode styles regardless of system preference. Useful when placing the component on a dark background. */
+    @property({ type: Boolean, reflect: true }) inverse = false
 
     /** The delay in milliseconds before showing the scroll hint after inactivity. Defaults to 3000ms (3 seconds). */
     @property({ type: Number }) inactivityDelay = 3000
@@ -202,7 +206,10 @@ export default class TerraScrollHint extends TerraElement {
         return html`
             <button
                 part="button"
-                class="scroll-hint"
+                class=${classMap({
+                    'scroll-hint': true,
+                    inverse: this.inverse,
+                })}
                 @click="${this.handleClick}"
                 aria-label="Scroll to continue"
             >

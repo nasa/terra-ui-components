@@ -20,6 +20,11 @@ export default css`
         isolation: isolate;
         max-width: var(--auto-size-available-width, none);
         max-height: var(--auto-size-available-height, none);
+        color: var(--terra-popup-color);
+        background-color: var(--terra-popup-background-color);
+        border-radius: var(--terra-border-radius-medium);
+        border: 1px solid var(--terra-popup-border-color);
+        box-shadow: var(--terra-shadow-large);
     }
 
     .popup--fixed {

@@ -150,26 +150,6 @@ const App = () => {
 };
 ```
 
-## Dark Mode
-
-Pagination automatically adapts to dark mode based on system preference.
-
-### Light Background
-
-```html:preview
-<div style="background-color: #f5f5f5; padding: 2rem;">
-    <terra-pagination centered current="10" total="20"></terra-pagination>
-</div>
-```
-
-### Dark Background
-
-```html:preview
-<div style="background-color: #1a1a1a; padding: 2rem;">
-    <terra-pagination centered current="10" total="20"></terra-pagination>
-</div>
-```
-
 ## Customization
 
 You can customize pagination appearance using CSS custom properties:

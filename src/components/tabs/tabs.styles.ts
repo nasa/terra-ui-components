@@ -119,13 +119,13 @@ export default css`
         position: relative;
         flex-direction: row;
         border-bottom: solid var(--terra-tabs-track-width)
-            var(--terra-tabs-track-color);
+            var(--terra-tab-track-color);
     }
 
     .tabs--top .tabs__indicator {
         bottom: 0;
         height: var(--terra-tabs-indicator-width);
-        background-color: var(--terra-tabs-indicator-color);
+        background-color: var(--terra-tab-indicator-selected);
     }
 
     .tabs--top .tabs__body {
@@ -166,13 +166,13 @@ export default css`
         flex: 1 1 auto;
         position: relative;
         flex-direction: row;
-        border-top: solid var(--terra-tabs-track-width) var(--terra-tabs-track-color);
+        border-top: solid var(--terra-tabs-track-width) var(--terra-tab-track-color);
     }
 
     .tabs--bottom .tabs__indicator {
         top: 0;
         height: var(--terra-tabs-indicator-width);
-        background-color: var(--terra-tabs-indicator-color);
+        background-color: var(--terra-tab-indicator-selected);
     }
 
     .tabs--bottom .tabs__body {
@@ -199,13 +199,13 @@ export default css`
         flex: 0 0 auto;
         flex-direction: column;
         border-inline-end: solid var(--terra-tabs-track-width)
-            var(--terra-tabs-track-color);
+            var(--terra-tab-track-color);
     }
 
     .tabs--start .tabs__indicator {
         right: 0;
         width: var(--terra-tabs-indicator-width);
-        background-color: var(--terra-tabs-indicator-color);
+        background-color: var(--terra-tab-indicator-selected);
     }
 
     .tabs--start.tabs--rtl .tabs__indicator {
@@ -237,13 +237,13 @@ export default css`
     .tabs--end .tabs__tabs {
         flex: 0 0 auto;
         flex-direction: column;
-        border-left: solid var(--terra-tabs-track-width) var(--terra-tabs-track-color);
+        border-left: solid var(--terra-tabs-track-width) var(--terra-tab-track-color);
     }
 
     .tabs--end .tabs__indicator {
         left: 0;
         width: var(--terra-tabs-indicator-width);
-        background-color: var(--terra-tabs-indicator-color);
+        background-color: var(--terra-tab-indicator-selected);
     }
 
     .tabs--end.tabs--rtl .tabs__indicator {

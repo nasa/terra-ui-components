@@ -3,8 +3,8 @@ import { css } from 'lit'
 export default css`
     :host {
         --height: 1rem;
-        --track-color: var(--terra-color-carbon-20);
-        --indicator-color: var(--terra-color-nasa-blue);
+        --track-color: var(--terra-color-neutral-200);
+        --indicator-color: var(--terra-color-bg-info-bold);
         --label-color: var(--terra-color-spacesuit-white);
 
         display: block;
@@ -39,23 +39,23 @@ export default css`
 
     /* Variant modifiers */
     .progress-bar--primary .progress-bar__indicator {
-        background-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-color-bg-info-bold);
     }
 
     .progress-bar--success .progress-bar__indicator {
-        background-color: var(--terra-color-success-green);
+        background-color: var(--terra-color-bg-success-bold);
     }
 
     .progress-bar--warning .progress-bar__indicator {
-        background-color: var(--terra-color-international-orange);
+        background-color: var(--terra-color-bg-warning-bold);
     }
 
     .progress-bar--danger .progress-bar__indicator {
-        background-color: var(--terra-color-nasa-red);
+        background-color: var(--terra-color-bg-error-bold);
     }
 
     .progress-bar--default .progress-bar__indicator {
-        background-color: var(--terra-color-default-gray);
+        background-color: var(--terra-color-bg-default-bold);
     }
 
     /* Indeterminate */

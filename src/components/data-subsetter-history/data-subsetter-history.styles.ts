@@ -7,9 +7,12 @@ export default css`
         right: 32px;
         bottom: 0;
         z-index: 1000;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+        box-shadow: var(
+            --terra-subsetter-history-panel-shadow,
+            0 4px 24px rgba(0, 0, 0, 0.12)
+        );
         border-radius: 12px 12px 0 0;
-        background: #fff;
+        background: var(--terra-color-bg-surface-neutral-primary, #fff);
         min-width: 340px;
         max-width: 400px;
         font-family: var(
@@ -18,7 +21,7 @@ export default css`
             Arial,
             sans-serif
         );
-        color: #222;
+        color: var(--terra-color-text-primary, #222);
         transition:
             box-shadow 0.2s,
             transform 0.2s;
@@ -30,8 +33,8 @@ export default css`
         gap: 12px;
         font-size: 1.1rem;
         font-weight: 600;
-        background: #183153;
-        color: #fff;
+        background: var(--terra-subsetter-history-header-background, #183153);
+        color: var(--terra-subsetter-history-header-text, #fff);
         border-radius: 12px 12px 0 0;
         padding: 12px 20px;
         cursor: pointer;
@@ -39,7 +42,7 @@ export default css`
     }
 
     .history-header .count {
-        background: #fff;
+        background: var(--terra-text-primary-inverse, #fff);
         color: #183153;
         font-weight: 700;
         border-radius: 16px;
@@ -50,10 +53,10 @@ export default css`
 
     .history-panel {
         padding: 0 0 16px 0;
-        background: #fff;
+        background: var(--terra-subsetter-history-panel-background, #fff);
         border-radius: 0 0 12px 12px;
         box-shadow: none;
-        border-top: 1px solid #e9ecef;
+        border: 1px solid var(--terra-border-neutral-default, #e9ecef);
         transition: max-height 0.2s;
     }
 
@@ -63,12 +66,12 @@ export default css`
         margin: 16px 0 0 20px;
     }
     .tab {
-        background: #f8f9fa;
+        background: var(--terra-history-item-background, #f8f9fa);
         border: none;
         border-radius: 16px;
         padding: 4px 16px;
         font-size: 0.95em;
-        color: #222;
+        color: var(--terra-history-item-text, #222);
         cursor: pointer;
         font-weight: 500;
         transition:
@@ -76,8 +79,8 @@ export default css`
             color 0.2s;
     }
     .tab.active {
-        background: #183153;
-        color: #fff;
+        background: var(--terra-subsetter-history-header-background, #183153);
+        color: var(--terra-subsetter-history-header-text, #fff);
     }
 
     .history-list {
@@ -87,7 +90,8 @@ export default css`
         overflow-y: auto;
     }
     .history-item {
-        background: #f8f9fa;
+        background: var(--terra-history-item-background, #f8f9fa);
+        border: 1px solid var(--terra-history-item-border, #e3e3e3);
         border-radius: 8px;
         padding: 16px 16px 12px 16px;
         margin-bottom: 12px;
@@ -100,9 +104,6 @@ export default css`
         display: flex;
         align-items: center;
         gap: 10px;
-        font-size: 1em;
-        font-weight: 600;
-        color: #222;
     }
     .history-item .item-header .icon {
         display: flex;
@@ -112,7 +113,7 @@ export default css`
     .history-item .item-title {
         font-size: 1em;
         font-weight: 500;
-        color: #222;
+        color: var(--terra-history-item-text, #222);
         margin-bottom: 4px;
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -122,7 +123,7 @@ export default css`
         white-space: normal;
     }
     .history-item .progress-bar {
-        background: #e9ecef;
+        background: var(--terra-history-item-progress-background, #e9ecef);
         border-radius: 6px;
         height: 24px;
         width: 100%;
@@ -132,7 +133,7 @@ export default css`
         align-items: center;
     }
     .history-item .progress-fill {
-        background: #4caf50;
+        background: var(--terra-history-item-progress-bar-fill, #4caf50);
         height: 100%;
         border-radius: 6px 0 0 6px;
         transition: width 0.3s;
@@ -189,7 +190,7 @@ export default css`
 
     .history-link {
         font-size: 0.98em;
-        color: #0066cc;
+        color: var(--terra-text-link-default, #0066cc);
         text-decoration: none;
         display: flex;
         align-items: center;
@@ -197,6 +198,7 @@ export default css`
     }
 
     .history-link:hover {
+        color: var(--terra-text-link-hover, #004999);
         text-decoration: underline;
     }
 
@@ -208,13 +210,13 @@ export default css`
     }
 
     .history-alert-link {
-        color: #0066cc;
+        color: var(--terra-text-link-default, #0066cc);
         text-decoration: underline;
         cursor: pointer;
     }
 
     .history-alert-link:hover {
         text-decoration: underline;
-        color: #004999;
+        color: var(--terra-text-link-hover, #004999);
     }
 `

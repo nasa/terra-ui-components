@@ -18,7 +18,7 @@ A simple popup anchored to a button. This example shows how to toggle the popup'
 ```html:preview
 <terra-popup id="basic-popup">
   <terra-button id="basic-popup-anchor" slot="anchor">Toggle popup</terra-button>
-  <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+  <div style="padding: 1rem;">
     This is a popup!
   </div>
 </terra-popup>
@@ -41,22 +41,22 @@ The `placement` attribute controls where the popup appears relative to its ancho
 <div style="display: flex; gap: 1rem; flex-wrap: wrap; padding: 2rem;">
   <terra-popup id="popup-top" placement="top">
     <terra-button id="popup-top-anchor" slot="anchor">Top</terra-button>
-    <div style="padding: 0.5rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">Popup</div>
+    <div style="padding: 0.5rem;">Popup</div>
   </terra-popup>
 
   <terra-popup id="popup-bottom" placement="bottom">
     <terra-button id="popup-bottom-anchor" slot="anchor">Bottom</terra-button>
-    <div style="padding: 0.5rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">Popup</div>
+    <div style="padding: 0.5rem;">Popup</div>
   </terra-popup>
 
   <terra-popup id="popup-left" placement="left">
     <terra-button id="popup-left-anchor" slot="anchor">Left</terra-button>
-    <div style="padding: 0.5rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">Popup</div>
+    <div style="padding: 0.5rem;">Popup</div>
   </terra-popup>
 
   <terra-popup id="popup-right" placement="right">
     <terra-button id="popup-right-anchor" slot="anchor">Right</terra-button>
-    <div style="padding: 0.5rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">Popup</div>
+    <div style="padding: 0.5rem;">Popup</div>
   </terra-popup>
 </div>
 
@@ -82,7 +82,7 @@ Use the `distance` attribute to set the distance between the anchor and popup, a
 ```html:preview
 <terra-popup id="distance-popup" distance="20" skidding="10">
   <terra-button id="distance-popup-anchor" slot="anchor">With Distance</terra-button>
-  <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+  <div style="padding: 1rem;">
     This popup has distance and skidding applied.
   </div>
 </terra-popup>
@@ -105,14 +105,14 @@ Use the `flip` attribute to automatically flip the popup to the opposite side wh
 <div style="display: flex; gap: 1rem; padding: 2rem;">
   <terra-popup id="flip-popup" placement="top" flip>
     <terra-button id="flip-popup-anchor" slot="anchor">Flip Enabled</terra-button>
-    <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+    <div style="padding: 1rem;">
       This will flip to bottom if there's no space above.
     </div>
   </terra-popup>
 
   <terra-popup id="shift-popup" placement="right" shift>
     <terra-button id="shift-popup-anchor" slot="anchor">Shift Enabled</terra-button>
-    <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+    <div style="padding: 1rem;">
       This will shift to stay in view.
     </div>
   </terra-popup>
@@ -140,7 +140,7 @@ Add an arrow to the popup using the `arrow` attribute.
 ```html:preview
 <terra-popup id="arrow-popup" arrow>
   <terra-button id="arrow-popup-anchor" slot="anchor">With Arrow</terra-button>
-  <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+  <div style="padding: 1rem;">
     This popup has an arrow pointing to the anchor.
   </div>
 </terra-popup>
@@ -162,7 +162,7 @@ Use the `auto-size` attribute to automatically resize the popup to prevent overf
 ```html:preview
 <terra-popup id="auto-size-popup" auto-size="vertical" style="max-width: 200px;">
   <terra-button id="auto-size-popup-anchor" slot="anchor">Auto Size</terra-button>
-  <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+  <div style="padding: 1rem;">
     This popup will automatically resize vertically to fit in the viewport.
   </div>
 </terra-popup>
@@ -184,7 +184,7 @@ Use the `sync` attribute to match the popup's width or height to the anchor elem
 ```html:preview
 <terra-popup id="sync-popup" sync="width">
   <terra-button id="sync-popup-anchor" slot="anchor" style="width: 200px;">Sync Width</terra-button>
-  <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+  <div style="padding: 1rem;">
     This popup's width matches the button.
   </div>
 </terra-popup>
@@ -209,7 +209,7 @@ Use the `strategy="fixed"` attribute when the popup needs to escape overflow con
   <div style="height: 300px;"></div>
   <terra-popup id="fixed-popup" strategy="fixed">
     <terra-button id="fixed-popup-anchor" slot="anchor">Fixed Strategy</terra-button>
-    <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+    <div style="padding: 1rem;">
       This popup uses fixed positioning to escape the overflow container.
     </div>
   </terra-popup>
@@ -232,7 +232,7 @@ You can anchor the popup to an element outside of it using the `anchor` attribut
 ```html:preview
 <terra-button id="external-anchor">External Anchor</terra-button>
 <terra-popup id="external-popup" anchor="#external-anchor">
-  <div style="padding: 1rem; background: white; border: 1px solid var(--terra-color-carbon-20); border-radius: var(--terra-border-radius-medium);">
+  <div style="padding: 1rem;">
     This popup is anchored to the button above.
   </div>
 </terra-popup>

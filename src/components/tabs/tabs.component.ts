@@ -35,8 +35,8 @@ import type TerraTabPanel from '../tab-panel/tab-panel.js'
  * @csspart scroll-button--start - The starting scroll button.
  * @csspart scroll-button--end - The ending scroll button.
  *
- * @cssproperty --terra-tabs-indicator-color - The color of the active tab indicator.
- * @cssproperty --terra-tabs-track-color - The color of the indicator's track (the line that separates tabs from panels).
+ * @cssproperty --terra-tab-indicator-selected - The color of the active tab indicator.
+ * @cssproperty --terra-tab-track-color - The color of the indicator's track (the line that separates tabs from panels).
  * @cssproperty --terra-tabs-track-width - The width of the indicator's track (the line that separates tabs from panels).
  */
 export default class TerraTabs extends TerraElement {

@@ -256,8 +256,9 @@ export default class TerraPlotToolbar extends TerraElement {
                                   >
 
                                   <terra-icon
-                                      name="info"
-                                      font-size="1em"
+                                        name="outline-information-circle"
+                                        library="heroicons"
+                                        font-size="1.7em"
                                   ></terra-icon>
                               </terra-button>
 
@@ -331,13 +332,15 @@ export default class TerraPlotToolbar extends TerraElement {
                                         >
 
                                         <terra-icon
-                                            name="question"
-                                            font-size="1em"
+                                            name="outline-question-mark-circle"
+                                            library="heroicons"
+                                            font-size="1.7em"
                                         ></terra-icon>
                                     </terra-button>
                                     `
                                   : nothing}
                               <terra-button
+                                  circle
                                   outline
                                   aria-expanded=${this.activeMenuItem === 'jupyter'}
                                   aria-controls="menu"
