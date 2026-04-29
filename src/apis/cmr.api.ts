@@ -61,14 +61,14 @@ class CmrApi {
     async getCollection(
         shortName: string,
         version: string,
-        options?: RequestOptions
+        options?: RequestOptions,
     ) {
         return this.getCollectionByEntryId(`${shortName}_${version}`, options)
     }
 
     async getCollectionByEntryId(
         collectionEntryId?: string,
-        options?: RequestOptions
+        options?: RequestOptions,
     ) {
         if (!collectionEntryId) {
             throw new BadRequestException({
@@ -80,7 +80,7 @@ class CmrApi {
         // we'll grab the first item to represent the collection
         const ummResponse = await this.#request<UmmResponse<UmmC>>(
             `collections.umm_json?entry_id=${collectionEntryId}&include_granule_counts=true`,
-            options
+            options,
         )
 
         if (!ummResponse.items.length) {
@@ -95,7 +95,7 @@ class CmrApi {
 
     async searchVariables(
         searchParams: SearchVariablesParams,
-        options?: RequestOptions
+        options?: RequestOptions,
     ) {
         if (!searchParams.collectionConceptId) {
             throw new BadRequestException({
@@ -105,11 +105,64 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmVar>>(
             `variables.umm_json?keyword=${searchParams.collectionConceptId}&page_size=${searchParams.pageSize ?? 200}`,
-            options
+            options,
         )
     }
 
-    async searchGranules(params: SearchGranulesParams, options?: RequestOptions) {
+    async getSamplingOfGranules(
+        collectionEntryId: string,
+        options?: RequestOptions,
+    ): Promise<{
+        minDate?: string
+        maxDate?: string
+        isSubDaily: boolean
+        hasGranules: boolean
+    }> {
+        const [first, last] = await Promise.all([
+            this.searchGranules(
+                {
+                    collectionEntryId,
+                    pageSize: 1,
+                    sortBy: 'umm.TemporalExtent.RangeDateTime.BeginningDateTime',
+                    sortDirection: 'asc',
+                },
+                options,
+            ),
+            this.searchGranules(
+                {
+                    collectionEntryId,
+                    pageSize: 1,
+                    sortBy: 'umm.TemporalExtent.RangeDateTime.BeginningDateTime',
+                    sortDirection: 'desc',
+                },
+                options,
+            ),
+        ])
+
+        const firstGranule = first.items[0]?.umm
+        const firstExtent = firstGranule?.TemporalExtent?.RangeDateTime
+        const isSubDaily =
+            firstExtent?.BeginningDateTime != null &&
+            firstExtent.EndingDateTime != null
+                ? (new Date(firstExtent.EndingDateTime).getTime() -
+                      new Date(firstExtent.BeginningDateTime).getTime()) /
+                      (1000 * 60 * 60) <
+                  24
+                : false
+
+        return {
+            minDate: firstExtent?.BeginningDateTime?.toString(),
+            maxDate:
+                last.items[0]?.umm.TemporalExtent?.RangeDateTime?.BeginningDateTime?.toString(),
+            isSubDaily,
+            hasGranules: first.hits > 0,
+        }
+    }
+
+    async searchGranules(
+        params: SearchGranulesParams,
+        options?: RequestOptions,
+    ) {
         if (!params.collectionEntryId && !params.collectionConceptId) {
             throw new BadRequestException({
                 message:
@@ -131,7 +184,7 @@ class CmrApi {
             ...(params.sortBy && {
                 'sort_key[]': this.#getGranuleSortKey(
                     params.sortBy,
-                    params.sortDirection ?? 'asc'
+                    params.sortDirection ?? 'asc',
                 ),
             }),
             ...(params.search && {
@@ -155,7 +208,7 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmG>>(
             `granules.umm_json?${searchParams.toString()}`,
-            options
+            options,
         )
     }
 

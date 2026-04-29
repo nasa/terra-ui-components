@@ -168,13 +168,3 @@ export const GET_SUBSET_JOB_STATUS = gql`
         }
     }
 `
-
-export const CANCEL_SUBSET_JOB = gql`
-    query CancelSubsetJob($jobId: String) {
-        cancelSubsetJob(jobId: $jobId) {
-            jobID
-            status
-            message
-        }
-    }
-`

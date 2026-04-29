@@ -1,14 +1,11 @@
-import { TaskStatus } from '@lit/task'
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { AuthController } from '../../auth/auth.controller.js'
-import { QueryController } from '../../controllers/query.controller.js'
 import {
+    CollectionController,
     type CollectionWithAvailableServices,
-    Status,
-    type Variable,
-} from '../../data-services/types.js'
+} from '../../controllers/collection.controller.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
@@ -19,13 +16,11 @@ import { watch } from '../../internal/watch.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import type { CmrSearchResult } from '../../metadata-catalog/types.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
-import { queryCmrVariables } from '../../queries/cmr.queries.js'
-import { queryGesDiscCollection } from '../../queries/gesdisc.queries.js'
+
 import cmrVariableService from '../../services/cmr-variable.service.js'
 import componentStyles from '../../styles/component.styles.js'
 import { getBasePath } from '../../utilities/base-path.js'
 import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
-import { extractHarmonyError } from '../../utilities/harmony.js'
 import {
     isFeatureEnabled,
     KnownFeatureFlags,
@@ -52,9 +47,16 @@ import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
 import TerraSlider from '../slider/slider.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
-import { DataSubsetterController } from './data-subsetter.controller.js'
 import styles from './data-subsetter.styles.js'
 import { getNotebook } from './notebooks/subsetter-notebook.js'
+import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
+import { getUTCDate } from '../../utilities/date.js'
+import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
+import {
+    OUTPUT_FORMATS,
+    Status,
+    type Variable,
+} from '../../apis/harmony.api.js'
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -214,35 +216,18 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @query('terra-dialog')
     dialogElement?: TerraDialog
 
-    /**
-     * a query to get all variables for the collection
-     * we use this to get more detailed variable information than what Harmony gives us in the capabilities query,
-     * such as the variable's long name, units, and dimensions
-     */
-    variablesQuery = new QueryController(this, () =>
-        queryCmrVariables({
-            collectionConceptId: this.collectionWithServices?.conceptId,
-        }),
-    )
+    #collectionController = new CollectionController(this, {
+        getCollectionEntryId: () => this.collectionEntryId,
+        getBearerToken: () => this.bearerToken,
+    })
 
-    /**
-     * a query to get GES DISC collection details, mainly user friendly dimension names
-     * TODO: Ideally we should remove this and use CMR directly when we can to support all DAACs
-     */
-    gesDiscCollectionQuery = new QueryController(this, () =>
-        queryGesDiscCollection({
-            collectionEntryId: this.collectionEntryId,
-            collectionConceptId: this.collectionWithServices?.conceptId,
-        }),
-    )
-
-    controller = new DataSubsetterController(this)
     #authController = new AuthController(this)
+    #harmonyRequestController = new HarmonyRequestController(this)
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
-            this.controller.fetchJobByID(this.jobId)
+            this.#harmonyRequestController.startPollForJobStatus(this.jobId)
             this.dataAccessMode = 'subset'
         }
     }
@@ -269,7 +254,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         if (this.jobId) {
-            this.controller.fetchJobByID(this.jobId)
+            this.#harmonyRequestController.startPollForJobStatus(this.jobId)
             this.dataAccessMode = 'subset'
         }
 
@@ -279,32 +264,32 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     updated(changedProps: Map<string, unknown>) {
         super.updated(changedProps)
 
-        const taskStatus = this.controller?.jobStatusTask?.status
-
-        // Check if task has an error and handle it
-        if (taskStatus === TaskStatus.ERROR) {
-            const taskError = this.controller?.jobStatusTask?.error
-            if (taskError) {
-                // Extract error information using the utility
-                const errorDetails = extractHarmonyError(taskError)
-
-                // Don't show errors for user-initiated cancellations
-                if (errorDetails.isCancellation) {
-                    return
-                }
-
-                // Set the job to failed state with the error message
-                if (this.controller.currentJob) {
-                    this.controller.currentJob = {
-                        ...this.controller.currentJob,
-                        status: Status.FAILED,
-                        message:
-                            errorDetails.message ||
-                            'Failed to create subset job',
-                    }
-                }
-            }
+        // Sync collection data from CollectionController into @state properties so
+        // existing @watch decorators fire as before.
+        const newCollectionInfo = this.#collectionController.collectionInfo
+        if (newCollectionInfo !== this.collectionWithServices) {
+            this.collectionWithServices = newCollectionInfo
         }
+
+        const sampling = this.#collectionController.sampling?.data
+        if (sampling?.minDate !== this.granuleMinDate) {
+            this.granuleMinDate = sampling?.minDate
+        }
+        if (sampling?.maxDate !== this.granuleMaxDate) {
+            this.granuleMaxDate = sampling?.maxDate
+        }
+
+        const newGiovanni = this.#collectionController.giovanniVariables
+        if (
+            newGiovanni.size !== (this.giovanniConfiguredVariables?.size ?? 0)
+        ) {
+            this.giovanniConfiguredVariables = newGiovanni
+        }
+    }
+
+    /** True if the collection contains sub-daily granules. Used by DataSubsetterController to format dates. */
+    get isSubDaily() {
+        return this.#collectionController.isSubDaily
     }
 
     @watch(['collectionWithServices'])
@@ -313,16 +298,22 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.selectedDateRange = { startDate, endDate }
 
         const formats = Array.from(
-            new Set(this.collectionWithServices?.outputFormats || []),
+            new Set(this.collectionWithServices?.summary?.outputFormats || []),
         )
 
         // Consolidate NetCDF formats - if both exist, only keep netcdf4
-        const hasNetcdf4 = formats.includes('application/x-netcdf4')
-        const hasNetcdfClassic = formats.includes('application/netcdf')
+        const hasNetcdf4 = formats.includes(
+            OUTPUT_FORMATS['application/netcdf4'],
+        )
+        const hasNetcdfClassic = formats.includes(
+            OUTPUT_FORMATS['application/netcdf'],
+        )
 
         let displayFormats = formats
         if (hasNetcdf4 && hasNetcdfClassic) {
-            displayFormats = formats.filter((f) => f !== 'application/netcdf')
+            displayFormats = formats.filter(
+                (f) => f !== OUTPUT_FORMATS['application/netcdf'],
+            )
         }
 
         // auto-select default format
@@ -331,8 +322,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         } else {
             // Prefer NetCDF if available, otherwise first option
             this.selectedFormat =
-                displayFormats.find((f) => f === 'application/x-netcdf4') ||
-                displayFormats[0]
+                displayFormats.find(
+                    (f) => f === OUTPUT_FORMATS['application/netcdf4'],
+                ) || displayFormats[0]
         }
 
         this.collectionLoading = false
@@ -368,16 +360,14 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     render() {
         const showJobStatus =
-            this.controller.currentJob && !this.refineParameters
+            this.#harmonyRequestController.jobId && !this.refineParameters
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title =
             this.collectionWithServices?.collection?.EntryTitle ??
             'Download Data'
 
         if (!this.collectionWithServices) {
-            if (
-                this.controller.fetchCollectionTask.status === TaskStatus.ERROR
-            ) {
+            if (this.#collectionController.hasCapabilitiesError) {
                 return html`
                     <terra-alert open variant="danger" appearance="white">
                         Failed to find the requested collection.
@@ -588,16 +578,16 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderFooterForDialog() {
         const showJobStatus =
-            this.controller.currentJob && !this.refineParameters
+            this.#harmonyRequestController.jobId && !this.refineParameters
 
-        if (showJobStatus && this.controller.currentJob) {
+        if (showJobStatus && this.#harmonyRequestController.jobId) {
             // Job status footer - return the footer content with slot="footer"
             return html`
                 <div slot="footer" class="footer">
                     ${
-                        this.controller.currentJob.status ===
+                        this.#harmonyRequestController.status ===
                             Status.SUCCESSFUL ||
-                        this.controller.currentJob.status ===
+                        this.#harmonyRequestController.status ===
                             Status.COMPLETE_WITH_ERRORS
                             ? html`
                               <div
@@ -689,7 +679,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             : nothing
                     }
                     ${
-                        this.controller.currentJob.status === 'running'
+                        this.#harmonyRequestController.status === Status.RUNNING
                             ? html`<button
                               class="btn btn-success"
                               @click=${this.#cancelJob}
@@ -711,12 +701,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 this.bearerToken
                                     ? html`<a
                                       href="https://harmony.earthdata.nasa.gov/jobs/${
-                                          this.controller.currentJob.jobID
+                                          this.#harmonyRequestController.jobId
                                       }"
                                       target="_blank"
-                                      >${this.controller.currentJob.jobID}</a
+                                      >${this.#harmonyRequestController.jobId}</a
                                   >`
-                                    : this.controller.currentJob.jobID
+                                    : this.#harmonyRequestController.jobId
                             }
                         </span>
                         <span class="info-icon">?</span>
@@ -834,7 +824,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 : nothing
                         }
                         ${
-                            this.collectionWithServices?.outputFormats
+                            this.collectionWithServices?.summary.outputFormats
                                 ?.length && hasSubsetOption
                                 ? html`
                                   <div class="section">
@@ -853,7 +843,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             </p>
 
                             ${
-                                this.collectionWithServices?.temporalSubset
+                                this.collectionWithServices?.summary.subsetting
+                                    .temporal
                                     ? this.#renderDateRangeSelection()
                                     : nothing
                             }
@@ -863,12 +854,14 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                     : nothing
                             }
                             ${
-                                this.collectionWithServices?.variableSubset
+                                this.collectionWithServices?.summary.subsetting
+                                    .variable
                                     ? this.#renderVariableSelection()
                                     : nothing
                             }
                             ${
-                                this.collectionWithServices?.variableSubset &&
+                                this.collectionWithServices?.summary.subsetting
+                                    .variable &&
                                 isFeatureEnabled(
                                     KnownFeatureFlags.DIMENSION_SUBSET,
                                     this.features,
@@ -881,7 +874,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                       : html`
                         ${
                             showTemporalSection &&
-                            !this.collectionWithServices?.temporalSubset
+                            !this.collectionWithServices?.summary.subsetting
+                                .temporal
                                 ? this.#renderAvailableTemporalRangeSection()
                                 : nothing
                         }
@@ -1231,21 +1225,24 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 <div class="accordion-content" style="margin-top: 12px;">
                     ${(() => {
                         const allFormats =
-                            this.collectionWithServices?.outputFormats || []
+                            this.collectionWithServices?.summary
+                                .outputFormats || []
                         const uniqueFormats = Array.from(new Set(allFormats))
 
                         // Consolidate NetCDF formats - if both exist, only show netcdf4
                         const hasNetcdf4 = uniqueFormats.includes(
-                            'application/x-netcdf4',
+                            OUTPUT_FORMATS['application/x-netcdf4'],
                         )
-                        const hasNetcdfClassic =
-                            uniqueFormats.includes('application/netcdf')
+                        const hasNetcdfClassic = uniqueFormats.includes(
+                            OUTPUT_FORMATS['application/netcdf'],
+                        )
 
                         let displayFormats = uniqueFormats
                         if (hasNetcdf4 && hasNetcdfClassic) {
                             // Both exist - remove netcdf classic, keep netcdf4
                             displayFormats = uniqueFormats.filter(
-                                (f) => f !== 'application/netcdf',
+                                (f) =>
+                                    f !== OUTPUT_FORMATS['application/netcdf'],
                             )
                         }
 
@@ -1326,7 +1323,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         range
                         split-inputs
                         show-presets
-                        ?enable-time=${this.controller.isSubDaily}
+                        ?enable-time=${this.isSubDaily}
                         start-label="Start Date"
                         end-label="End Date"
                         .minDate=${this.granuleMinDate ?? defaultStartDate}
@@ -1352,7 +1349,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ${defaultEndDate}</span
                     >
                     ${
-                        this.controller.isSubDaily
+                        this.isSubDaily
                             ? html`<span
                               ><strong>Note:</strong> All dates and times are in
                               UTC.</span
@@ -1379,14 +1376,16 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #resetFormatSelection = () => {
         // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.outputFormats?.length) {
-            const netcdfFormat = this.collectionWithServices.outputFormats.find(
-                (format) =>
-                    format === 'application/x-netcdf4' ||
-                    format === 'application/netcdf',
-            )
+        if (this.collectionWithServices?.summary.outputFormats?.length) {
+            const netcdfFormat =
+                this.collectionWithServices.summary.outputFormats.find(
+                    (format) =>
+                        format === OUTPUT_FORMATS['application/x-netcdf4'] ||
+                        format === OUTPUT_FORMATS['application/netcdf'],
+                )
             this.selectedFormat =
-                netcdfFormat || this.collectionWithServices.outputFormats[0]
+                netcdfFormat ||
+                this.collectionWithServices.summary.outputFormats[0]
         } else {
             this.selectedFormat = defaultSubsetFileMimeType
         }
@@ -1394,8 +1393,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #getCollectionDateRange() {
         // Prefer sampling data for accurate date ranges
-        const samplingMinDate = this.controller.granuleMinDate
-        const samplingMaxDate = this.controller.granuleMaxDate
+        const samplingMinDate = this.granuleMinDate
+        const samplingMaxDate = this.granuleMaxDate
 
         if (samplingMinDate && samplingMaxDate) {
             return {
@@ -1418,7 +1417,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const today = new Date()
 
         for (const temporal of temporalExtents) {
-            for (const range of temporal.RangeDateTimes) {
+            for (const range of temporal.RangeDateTimes || []) {
                 const start = new Date(range.BeginningDateTime)
                 let end: Date
                 if (temporal.EndsAtPresentFlag || !range.EndingDateTime) {
@@ -1474,7 +1473,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         inline
                         hide-label
                         .spatialConstraints=${
-                            this.controller.spatialConstraints ||
+                            this.#collectionController.spatialConstraints ||
                             '-180, -90, 180, 90'
                         }
                         .initialValue=${spatialString}
@@ -1485,7 +1484,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     >
                         <span
                             ><strong>Available Range:</strong> ${
-                                this.controller.spatialConstraints
+                                this.#collectionController.spatialConstraints
                             }</span
                         >
                     </div>
@@ -1625,7 +1624,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         // ideally we would want UMM-Dim or Harmony to give us better labels so we could support all DAACs
         // TODO: can we get these dimension labels elsewhere?
         const dimensions =
-            this.gesDiscCollectionQuery?.result?.data?.services?.subset?.find(
+            this.#collectionController.gesDiscCollection?.data?.services?.subset?.find(
                 (s) => s.dimensions && s.dimensions.length > 0,
             )?.dimensions || []
 
@@ -1882,7 +1881,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         // Leaf node (variable)
                         const ummVar = cmrVariableService.getVariableByName(
                             key,
-                            this.variablesQuery.result?.data,
+                            this.#collectionController.variables?.data,
                         )
                         const variableLabel = ummVar
                             ? cmrVariableService.getVariableDisplayLabel(ummVar)
@@ -2048,7 +2047,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         type: string
         size: number
     }> {
-        const variables = this.variablesQuery.result?.data
+        const variables = this.#collectionController.variables?.data
 
         if (!variables) {
             console.log('no variables found, cannot determine dimensions')
@@ -2131,7 +2130,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderJobStatus() {
-        if (!this.controller.currentJob?.jobID) {
+        if (!this.#harmonyRequestController.jobId) {
             return html`<div class="results-section" id="job-status-section">
                 <div
                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
@@ -2189,12 +2188,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 </div>
 
                 ${
-                    this.controller.currentJob?.status !== 'canceled' &&
-                    this.controller.currentJob?.status !== 'failed'
+                    this.#harmonyRequestController.status !== 'canceled' &&
+                    this.#harmonyRequestController.status !== 'failed'
                         ? html` <div class="progress-container">
                           <div class="progress-text">
                               ${
-                                  this.controller.currentJob?.progress >= 100
+                                  this.#harmonyRequestController.progress >= 100
                                       ? html`
                                         <span class="status-complete"
                                             >✓ Search complete</span
@@ -2205,8 +2204,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                         <span class="status-running"
                                             >Searching for data...
                                             (${
-                                                this.controller.currentJob
-                                                    ?.progress
+                                                this.#harmonyRequestController
+                                                    .progress
                                             }%)</span
                                         >
                                     `
@@ -2216,7 +2215,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           <div class="progress-bar">
                               <div class="progress-fill"
                                   style="width: ${
-                                      this.controller.currentJob?.progress
+                                      this.#harmonyRequestController.progress
                                   }%"
                               ></div>
                           </div>
@@ -2230,13 +2229,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     >
                     out of estimated
                     <span class="estimated-total"
-                        >${this.controller.currentJob?.numInputGranules.toLocaleString()}</span
+                        >${this.#harmonyRequestController.data?.numInputGranules.toLocaleString()}</span
                     >
                 </div>
 
                 ${this.#renderJobMessage()}
                 ${
-                    this.controller.currentJob?.errors?.length
+                    this.#harmonyRequestController.data?.errors?.length
                         ? html`
                           <terra-accordion>
                               <div slot="summary">
@@ -2245,8 +2244,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                       style="color: #dc3545;"
                                       >Errors
                                       (${
-                                          this.controller.currentJob?.errors
-                                              .length
+                                          this.#harmonyRequestController.data
+                                              ?.errors.length
                                       })</span
                                   >
                               </div>
@@ -2254,7 +2253,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                   <ul
                                       style="color: #dc3545; font-size: 14px; padding-left: 20px;"
                                   >
-                                      ${this.controller.currentJob?.errors.map(
+                                      ${this.#harmonyRequestController.data?.errors.map(
                                           (err: {
                                               url: string
                                               message: string
@@ -2362,9 +2361,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     ? html`
                       <div class="footer">
                           ${
-                              this.controller.currentJob?.status ===
+                              this.#harmonyRequestController.status ===
                                   Status.SUCCESSFUL ||
-                              this.controller.currentJob?.status ===
+                              this.#harmonyRequestController.status ===
                                   Status.COMPLETE_WITH_ERRORS
                                   ? html`
                                     <div
@@ -2461,7 +2460,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                   : nothing
                           }
                           ${
-                              this.controller.currentJob!.status === 'running'
+                              this.#harmonyRequestController.status ===
+                              Status.RUNNING
                                   ? html`<button
                                     class="btn btn-success"
                                     @click=${this.#cancelJob}
@@ -2483,13 +2483,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                       this.bearerToken
                                           ? html`<a
                                             href="https://harmony.earthdata.nasa.gov/jobs/${
-                                                this.controller.currentJob!
-                                                    .jobID
+                                                this.#harmonyRequestController
+                                                    .jobId
                                             }"
                                             target="_blank"
-                                            >${this.controller.currentJob!.jobID}</a
+                                            >${this.#harmonyRequestController.jobId}</a
                                         >`
-                                          : this.controller.currentJob!.jobID
+                                          : this.#harmonyRequestController.jobId
                                   }
                               </span>
                               <span class="info-icon">?</span>
@@ -2555,12 +2555,25 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         `
     }
 
-    #cancelJob() {
+    async #cancelJob() {
+        if (!this.jobId) {
+            // no job id, can't cancel
+            return
+        }
+
         this.cancelingGetData = true
-        this.controller.cancelCurrentJob()
+
+        try {
+            await this.#harmonyRequestController.cancelJob({
+                jobId: this.jobId,
+                options: { bearerToken: this.bearerToken },
+            })
+        } finally {
+            this.cancelingGetData = false
+        }
     }
 
-    #getData() {
+    async #getData() {
         // Validate before proceeding
         const validationError = this.#getGiovanniValidationError()
         if (validationError) {
@@ -2575,18 +2588,86 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.cancelingGetData = false
         this.#touchAllFields() // touch all fields, so errors will show if fields are invalid
 
-        // cancel any existing running job
-        this.controller.cancelCurrentJob()
-        this.controller.currentJob = null
+        // TODO: fix this Giovanni code
+        const isGiovanniFormat =
+            this.selectedFormat === 'text/csv' ||
+            this.selectedFormat === 'image/tiff'
 
-        // Clear the jobId so we can create a new job
-        this.jobId = undefined
+        const variables = isGiovanniFormat
+            ? this.selectedVariables.map((v) =>
+                  // the Giovanni variable catalog uses different variable entry ids, we need to support them
+                  // ex. CMR: M2T1NXSLV_5.2.14 in Giovanni uses underscores: M2T1NXSLV_5_2_14
+                  convertVariableEntryIdToGiovanniFormat(
+                      this.collectionWithServices!.shortName ?? '',
+                      this.collectionWithServices!.collection?.Version ?? '',
+                      v.name,
+                  ),
+              )
+            : this.selectedVariables.map((v) => v.conceptId)
 
-        this.controller.jobStatusTask.run().then(() => {
-            // After job is created, update jobId
-            if (this.controller.currentJob?.jobID) {
-                this.jobId = this.controller.currentJob.jobID
-            }
+        const harmonyRequest = new HarmonyRequest({
+            collectionConceptId: this.collectionWithServices!.conceptId,
+            variables,
+            location: this.spatialSelection,
+        })
+
+        if (
+            this.collectionWithServices?.summary.subsetting.temporal &&
+            this.selectedDateRange.startDate &&
+            this.selectedDateRange.endDate
+        ) {
+            // TODO: this is overly complex, we should just store UTC dates by default and can trim before calling Harmony
+            harmonyRequest.startDate(
+                this.isSubDaily
+                    ? this.selectedDateRange.startDate
+                    : getUTCDate(
+                          this.selectedDateRange.startDate,
+                      ).toISOString(),
+            )
+            harmonyRequest.endDate(
+                this.isSubDaily
+                    ? this.selectedDateRange.endDate
+                    : getUTCDate(this.selectedDateRange.endDate).toISOString(),
+            )
+        }
+
+        if (this.selectedFormat) {
+            // For giovanni services, always use text/csv (not image/tiff)
+            // TODO: do we really have to pass text/csv for Giovanni? Should test this
+            harmonyRequest.format(
+                isGiovanniFormat ? 'text/csv' : this.selectedFormat,
+            )
+        }
+
+        // Add Cloud Giovanni specific average parameters
+        // TODO: fix these, Giovanni isn't the only service using CSV
+        if (this.selectedFormat === 'text/csv') {
+            harmonyRequest.average('area')
+        }
+        if (this.selectedFormat === 'image/tiff') {
+            harmonyRequest.average('time')
+        }
+
+        if (Object.keys(this.selectedDimensionIndexes).length) {
+            Object.entries(this.selectedDimensionIndexes).forEach(
+                ([dimName, { start, end }]) => {
+                    harmonyRequest.dimension({
+                        name: dimName,
+                        min: start,
+                        max: end,
+                    })
+                },
+            )
+        }
+
+        // add a label to identify the subsetter as the source
+        harmonyRequest.label('terra-data-subsetter')
+
+        console.log('Creating Harmony job with request:', harmonyRequest)
+
+        this.jobId = await this.#harmonyRequestController.startJob({
+            harmonyRequest,
+            options: { bearerToken: this.bearerToken },
         })
 
         // scroll the job-status-section into view
@@ -2605,37 +2686,37 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #numberOfFilesFoundEstimate() {
         return Math.floor(
-            (this.controller.currentJob!.numInputGranules *
-                this.controller.currentJob!.progress) /
+            (this.#harmonyRequestController.data!.numInputGranules *
+                this.#harmonyRequestController.progress) /
                 100,
         )
     }
 
     #getDocumentationLinks() {
-        return this.controller.currentJob!.links.filter(
+        return this.#harmonyRequestController.data!.links.filter(
             (link) => link.rel === 'stac-catalog-json',
         )
     }
 
     #getDataLinks() {
-        return this.controller.currentJob!.links.filter(
+        return this.#harmonyRequestController.data!.links.filter(
             (link) => link.rel === 'data',
         )
     }
 
     #hasAtLeastOneSubsetOption() {
         return (
-            this.collectionWithServices?.bboxSubset ||
-            this.collectionWithServices?.shapeSubset ||
-            this.collectionWithServices?.variableSubset ||
-            this.collectionWithServices?.temporalSubset
+            this.collectionWithServices?.summary.subsetting.bbox ||
+            this.collectionWithServices?.summary.subsetting.shape ||
+            this.collectionWithServices?.summary.subsetting.variable ||
+            this.collectionWithServices?.summary.subsetting.temporal
         )
     }
 
     #hasSpatialSubset() {
         return (
-            this.collectionWithServices?.bboxSubset ||
-            this.collectionWithServices?.shapeSubset
+            this.collectionWithServices?.summary.subsetting.bbox ||
+            this.collectionWithServices?.summary.subsetting.shape
         )
     }
 
@@ -2648,9 +2729,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const errorStatuses = [Status.FAILED]
 
         let type = 'normal'
-        if (warningStatuses.includes(this.controller.currentJob!.status)) {
+        if (
+            warningStatuses.includes(
+                this.#harmonyRequestController.data!.status,
+            )
+        ) {
             type = 'warning'
-        } else if (errorStatuses.includes(this.controller.currentJob!.status)) {
+        } else if (
+            errorStatuses.includes(this.#harmonyRequestController.data!.status)
+        ) {
             type = 'error'
         }
 
@@ -2683,7 +2770,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #getJobMessageText() {
-        return this.controller.currentJob?.message.replace(
+        return this.#harmonyRequestController.data?.message.replace(
             /\b(The job|the job|job|Job)\b/g,
             (match) => {
                 switch (match) {
@@ -2702,13 +2789,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #estimateJobSize() {
-        const collection = this.collectionWithServices?.collection
-        if (!collection) return
+        if (!this.collectionWithServices?.granuleCount) return
 
         const range = this.#getCollectionDateRange()
         let startDate: string | null
         let endDate: string | null
-        let links = collection.granuleCount ?? 0
+        let links = this.collectionWithServices?.granuleCount ?? 0
 
         if (
             this.selectedDateRange.startDate &&
@@ -2784,7 +2870,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #downloadLinksAsTxt(event: Event) {
         event.stopPropagation()
-        if (!this.controller.currentJob?.links) {
+        if (!this.#harmonyRequestController.data?.links) {
             return
         }
 
@@ -2801,7 +2887,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         // Create a temporary link element and trigger download
         const a = document.createElement('a')
         a.href = url
-        a.download = `subset_links_${this.controller.currentJob!.jobID}.txt`
+        a.download = `subset_links_${this.#harmonyRequestController.jobId}.txt`
         document.body.appendChild(a)
         a.click()
 
@@ -2811,7 +2897,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     async #downloadPythonScript(event: Event) {
         event.stopPropagation()
-        if (!this.controller.currentJob?.links) {
+        if (!this.#harmonyRequestController.data?.links) {
             return
         }
 
@@ -2826,7 +2912,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         const content = (await response.text())
-            .replace(/{{jobId}}/gi, this.controller.currentJob!.jobID)
+            .replace(/{{jobId}}/gi, this.#harmonyRequestController.jobId ?? '')
             .replace(
                 /{{HARMONY_ENV}}/gi,
                 `Environment.${this.environment?.toUpperCase()}`,
@@ -2842,7 +2928,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         // Create a temporary link element and trigger download
         const a = document.createElement('a')
         a.href = url
-        a.download = `download_subset_files_${this.controller.currentJob!.jobID}.py`
+        a.download = `download_subset_files_${this.#harmonyRequestController.jobId}.py`
         document.body.appendChild(a)
         a.click()
 
@@ -2852,7 +2938,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     async #downloadEarthdataDownload(event: Event) {
         event.stopPropagation()
-        if (!this.controller.currentJob?.links) {
+        if (!this.#harmonyRequestController.data?.links) {
             return
         }
 
@@ -2863,7 +2949,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const notebook = getNotebook(this)
 
         sendDataToJupyterNotebook('load-notebook', {
-            filename: `subset_${this.controller.currentJob?.jobID}.ipynb`,
+            filename: `subset_${this.#harmonyRequestController.jobId}.ipynb`,
             notebook,
             bearerToken: this.bearerToken,
         })
@@ -2941,7 +3027,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderDataAccessModeSelection() {
-        if (!this.controller.hasGranules) {
+        if (!this.#collectionController.hasGranules) {
             return nothing
         }
 

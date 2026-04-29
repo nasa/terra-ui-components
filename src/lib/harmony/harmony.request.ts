@@ -1,18 +1,7 @@
+import { HARMONY_URLS, Environments } from '../../apis/harmony.api.js'
 import type { LatLng } from '../../components/map/models/LatLng.js'
 import { LatLngBounds } from '../../components/map/models/LatLngBounds.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
-
-export const Environments = {
-    PROD: 'PROD',
-    UAT: 'UAT',
-} as const
-
-export type Environments = (typeof Environments)[keyof typeof Environments]
-
-export const HARMONY_URLS = {
-    [Environments.PROD]: 'https://harmony.earthdata.nasa.gov',
-    [Environments.UAT]: 'https://harmony.uat.earthdata.nasa.gov',
-}
 
 export type HarmonyRequestOptions = {
     environment?: Environments

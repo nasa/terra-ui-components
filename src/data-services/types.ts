@@ -1,23 +1,7 @@
-import type { MaybeBearerToken } from '../components/time-series/time-series.types.js'
-
 export type SearchOptions = {
     signal?: AbortSignal
-    bearerToken?: MaybeBearerToken
+    bearerToken?: string | null
     environment?: 'uat' | 'prod'
-}
-
-export interface DataServiceInterface {
-    getCollectionWithAvailableServices(
-        collectionEntryId: string,
-        options?: SearchOptions
-    ): Promise<CollectionWithAvailableServices>
-
-    createSubsetJob(
-        input: CreateSubsetJobInput,
-        options?: SearchOptions
-    ): Promise<SubsetJobStatus | undefined>
-
-    getSubsetJobStatus(jobId: string): Promise<SubsetJobStatus>
 }
 
 export interface CollectionWithAvailableServices {

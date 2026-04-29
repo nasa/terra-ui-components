@@ -1,4 +1,5 @@
 import { HttpException } from '../exceptions/http.exception.js'
+import { authService } from '../auth/auth.service.js'
 
 export type RequestOptions = {
     method?: HttpMethod
@@ -16,7 +17,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
  */
 async function request<T>(
     url: string,
-    { method = 'GET', body, headers = {}, signal }: RequestOptions = {}
+    { method = 'GET', body, headers = {}, signal }: RequestOptions = {},
 ): Promise<T> {
     try {
         const res = await fetch(url, {
@@ -27,6 +28,10 @@ async function request<T>(
         })
 
         if (!res.ok) {
+            if (res.status === 401) {
+                authService.logout() // clear any existing auth state since our token is no longer valid
+            }
+
             if (!res.headers.get('Content-Type')?.includes('json')) {
                 // response is not JSON, assume it's a server error
                 const text = await res.text()
@@ -88,7 +93,8 @@ export const apiClient = {
         request<T>(url, { ...options }),
     post: <T>(url: string, body: unknown, options?: RequestOptions) =>
         request<T>(url, { method: 'POST', body, ...options }),
-    put: <T>(url: string, body: unknown) => request<T>(url, { method: 'PUT', body }),
+    put: <T>(url: string, body: unknown) =>
+        request<T>(url, { method: 'PUT', body }),
     patch: <T>(url: string, body: unknown) =>
         request<T>(url, { method: 'PATCH', body }),
     delete: <T>(url: string) => request<T>(url, { method: 'DELETE' }),

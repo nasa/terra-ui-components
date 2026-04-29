@@ -14,7 +14,8 @@ export const sharedQueryClient = new QueryClient({
                 if (
                     error instanceof HttpException &&
                     error.status >= 400 &&
-                    error.status < 500
+                    error.status < 500 &&
+                    error.status !== 401
                 ) {
                     // don't retry for client errors
                     return false
@@ -59,7 +60,9 @@ export interface QueryClientHost {
     queryClient: QueryClient
 }
 
-export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => {
+export const QueryClientMixin = <T extends Constructor<LitElement>>(
+    Base: T,
+) => {
     class WithQueryClient extends Base implements QueryClientHost {
         queryClient: QueryClient = sharedQueryClient
 

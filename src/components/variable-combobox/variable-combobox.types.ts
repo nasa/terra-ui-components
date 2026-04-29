@@ -22,5 +22,3 @@ export type GroupedListItem = {
 }
 
 export type ReadableTaskStatus = 'INITIAL' | 'PENDING' | 'COMPLETE' | 'ERROR'
-
-export type MaybeBearerToken = string | null

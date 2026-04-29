@@ -4,7 +4,7 @@ import type { MapEventDetail } from '../components/map/type.js'
 
 export type SearchOptions = {
     signal?: AbortSignal
-    bearerToken?: string
+    bearerToken?: string | null
     limit?: number
     offset?: number
     sortBy?: string
@@ -22,33 +22,33 @@ export type SearchOptions = {
 export interface MetadataCatalogInterface {
     getCollectionCitation(
         collectionEntryId: string,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<CmrCollectionCitationItem>
 
     searchCmr(
         keyword: string,
         type: 'collection' | 'variable' | 'all',
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<Array<CmrSearchResult>>
 
     getGranules(
         collectionEntryId: string,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<CmrGranulesResponse>
 
     getSamplingOfGranules(
         collectionEntryId: string,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<CmrSamplingOfGranulesResponse>
 
     getCloudCoverRange(
         collectionEntryId: string,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<CloudCoverRange | null>
 
     getVariablesDetails(
         collectionConceptId: string,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<CmrVariableDetailsResponse>
 }
 

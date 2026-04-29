@@ -1,15 +1,11 @@
 import { getGraphQLClient } from '../lib/graphql-client.js'
 import {
-    CANCEL_SUBSET_JOB,
     CREATE_SUBSET_JOB,
-    GET_SERVICE_CAPABILITIES,
     GET_SUBSET_JOB_STATUS,
     GET_SUBSET_JOBS,
 } from './queries.js'
 import {
     Status,
-    type CollectionWithAvailableServices,
-    type DataServiceInterface,
     type SubsetJobStatus,
     type SearchOptions,
     type SubsetJobs,
@@ -30,48 +26,10 @@ export const FINAL_STATUSES = new Set<Status>([
     Status.COMPLETE_WITH_ERRORS,
 ])
 
-export class HarmonyDataService implements DataServiceInterface {
-    async getCollectionWithAvailableServices(
-        collectionEntryId: string,
-        options?: SearchOptions
-    ): Promise<CollectionWithAvailableServices> {
-        const client = await getGraphQLClient()
-
-        console.log(
-            'Getting collection with available services for ',
-            collectionEntryId,
-            options
-        )
-
-        const response = await client.query<{
-            getServiceCapabilities: CollectionWithAvailableServices
-        }>({
-            query: GET_SERVICE_CAPABILITIES,
-            variables: {
-                collectionEntryId,
-            },
-            context: {
-                headers: {
-                    'x-environment': options?.environment ?? 'prod',
-                },
-                fetchOptions: {
-                    signal: options?.signal,
-                },
-            },
-        })
-
-        if (response.errors) {
-            throw new Error(
-                `Failed to create subset job: ${response.errors[0].message}`
-            )
-        }
-
-        return response.data.getServiceCapabilities
-    }
-
+export class HarmonyDataService {
     async createSubsetJob(
         input: CreateSubsetJobInput,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<SubsetJobStatus | undefined> {
         try {
             const client = await getGraphQLClient()
@@ -106,7 +64,7 @@ export class HarmonyDataService implements DataServiceInterface {
 
             if (response.errors) {
                 throw new Error(
-                    `Failed to create subset job: ${response.errors[0].message}`
+                    `Failed to create subset job: ${response.errors[0].message}`,
                 )
             }
 
@@ -140,7 +98,7 @@ export class HarmonyDataService implements DataServiceInterface {
 
         if (response.errors) {
             throw new Error(
-                `Failed to fetch subset jobs: ${response.errors[0].message}`
+                `Failed to fetch subset jobs: ${response.errors[0].message}`,
             )
         }
 
@@ -149,7 +107,7 @@ export class HarmonyDataService implements DataServiceInterface {
 
     async getSubsetJobStatus(
         jobId: string,
-        searchOptions?: SearchOptions
+        searchOptions?: SearchOptions,
     ): Promise<SubsetJobStatus> {
         const client = await getGraphQLClient()
 
@@ -176,51 +134,18 @@ export class HarmonyDataService implements DataServiceInterface {
 
         if (response.errors) {
             throw new Error(
-                `Failed to create subset job: ${response.errors[0].message}`
+                `Failed to create subset job: ${response.errors[0].message}`,
             )
         }
 
         return response.data.getSubsetJobStatus
     }
 
-    async cancelSubsetJob(
-        jobId: string,
-        options?: SearchOptions
-    ): Promise<SubsetJobStatus> {
-        const client = await getGraphQLClient()
-
-        const response = await client.query<{
-            cancelSubsetJob: SubsetJobStatus
-        }>({
-            query: CANCEL_SUBSET_JOB,
-            variables: {
-                jobId,
-            },
-            context: {
-                headers: {
-                    ...(options?.bearerToken && {
-                        authorization: options.bearerToken,
-                    }),
-                    'x-environment': options?.environment ?? 'prod',
-                },
-            },
-            fetchPolicy: 'no-cache', //! important, we don't want to get cached results here!
-        })
-
-        if (response.errors) {
-            throw new Error(
-                `Failed to cancel subset job: ${response.errors[0].message}`
-            )
-        }
-
-        return response.data.cancelSubsetJob
-    }
-
     async getSubsetJobData(
         job: SubsetJobStatus,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<{ blob: Blob; text: string }> {
-        const link = job.links.find(link => link.rel === 'data')?.href
+        const link = job.links.find((link) => link.rel === 'data')?.href
 
         if (!link) {
             throw new Error('No data link found for job')
@@ -241,7 +166,7 @@ export class HarmonyDataService implements DataServiceInterface {
 
         if (!response.ok) {
             throw new Error(
-                `Failed to fetch subset job link contents: ${response.statusText}`
+                `Failed to fetch subset job link contents: ${response.statusText}`,
             )
         }
 

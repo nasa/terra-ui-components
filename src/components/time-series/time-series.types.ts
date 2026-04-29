@@ -37,5 +37,3 @@ export type TimeSeriesMetadata = {
     lon: number
     [key: string]: string | number
 }
-
-export type MaybeBearerToken = string | null
