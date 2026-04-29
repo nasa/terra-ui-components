@@ -1,5 +1,5 @@
 import { property, state, query } from 'lit/decorators.js'
-import { html } from 'lit'
+import { html, nothing } from 'lit'
 import { createRef, ref } from 'lit/directives/ref.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
@@ -80,6 +80,8 @@ export default class TerraDatePicker extends TerraElement {
     @property({ type: Boolean }) hideClearAll = false
     @property() clearAllLabel: string = 'Clear Dates'
     @property({ type: Boolean, attribute: 'use-end-of-day' }) useEndOfDay = true
+    @property({ attribute: 'closable', type: Boolean })
+    showClose: boolean = false      
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()
@@ -2251,6 +2253,22 @@ export default class TerraDatePicker extends TerraElement {
     private renderCalendarContent() {
         return html`
             <div class="date-picker__dropdown" part="calendar">
+             ${this.showClose
+                                        ? html`
+                                     <div class="dropdown-header">
+                                        <button
+                                            class="date-picker__close-btn"
+                                            @click=${(e: Event) => {
+                                                e.stopPropagation()
+                                                this.close()
+                                            }}
+                                            aria-label="Close"
+                                         >
+                                         ✕
+                                         </button>
+                                    </div>
+                                    `
+                                    : nothing}
                 <div class="date-picker__content">
                     ${this.showPresets && this.filteredPresets.length > 0
                         ? html`
