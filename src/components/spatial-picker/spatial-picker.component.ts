@@ -289,6 +289,20 @@ export default class TerraSpatialPicker extends TerraElement {
     private _validateAndSetValue() {
         const inputValue = this.terraInput?.value || ''
 
+        // If input is empty, clear everything
+        if (!inputValue.trim()) {
+            this.mapValue = []
+            this.error = ''
+            if (this.terraInput) {
+                this.terraInput.setCustomValidity('')
+            }
+            if (this.map?.map?.isMapReady) {
+                this.map.map.clearLayers()
+            }
+            this._updateURLParam(null)
+            return
+        }
+
         // If both hide flags are true, skip validation
         if (this.hidePointSelection && this.hideBoundingBoxSelection) {
             // Don't validate, just try to parse and set
