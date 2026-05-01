@@ -241,6 +241,7 @@ export class DrawToolbarControl extends Control {
                 ...base,
                 type: 'Circle',
                 geometryFunction: createBox(),
+                freehand: true
             }
         }
 
@@ -248,6 +249,7 @@ export class DrawToolbarControl extends Control {
             return {
                 ...base,
                 type: 'Circle',
+                freehand: true
             }
         }
 
@@ -262,6 +264,7 @@ export class DrawToolbarControl extends Control {
         return {
             ...base,
             type: 'Point',
+            freehand: true
         }
     }
 
