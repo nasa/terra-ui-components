@@ -25,10 +25,6 @@ import {
     isFeatureEnabled,
     KnownFeatureFlags,
 } from '../../utilities/feature-flags.js'
-import {
-    defaultSubsetFileMimeType,
-    getFriendlyNameForMimeType,
-} from '../../utilities/mimetypes.js'
 import TerraAccordion from '../accordion/accordion.component.js'
 import TerraAlert from '../alert/alert.component.js'
 import TerraButton from '../button/button.component.js'
@@ -53,10 +49,16 @@ import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { getUTCDate } from '../../utilities/date.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import {
-    OUTPUT_FORMATS,
     Status,
+    type ConfiguredOutputFormat,
     type Variable,
 } from '../../apis/harmony.api.js'
+
+const defaultOutputFormat: ConfiguredOutputFormat = {
+    key: 'application/x-netcdf4',
+    label: 'NetCDF',
+    description: 'Download data in NetCDF format',
+}
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -166,7 +168,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     @state()
-    selectedFormat: string = defaultSubsetFileMimeType
+    selectedFormat: ConfiguredOutputFormat = defaultOutputFormat
 
     @state()
     cancelingGetData: boolean = false
@@ -297,35 +299,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const { startDate, endDate } = this.#getCollectionDateRange()
         this.selectedDateRange = { startDate, endDate }
 
-        const formats = Array.from(
-            new Set(this.collectionWithServices?.summary?.outputFormats || []),
-        )
-
-        // Consolidate NetCDF formats - if both exist, only keep netcdf4
-        const hasNetcdf4 = formats.includes(
-            OUTPUT_FORMATS['application/netcdf4'],
-        )
-        const hasNetcdfClassic = formats.includes(
-            OUTPUT_FORMATS['application/netcdf'],
-        )
-
-        let displayFormats = formats
-        if (hasNetcdf4 && hasNetcdfClassic) {
-            displayFormats = formats.filter(
-                (f) => f !== OUTPUT_FORMATS['application/netcdf'],
-            )
-        }
-
-        // auto-select default format
-        if (displayFormats.length === 1) {
-            this.selectedFormat = displayFormats[0] // only one option
-        } else {
-            // Prefer NetCDF if available, otherwise first option
-            this.selectedFormat =
-                displayFormats.find(
-                    (f) => f === OUTPUT_FORMATS['application/netcdf4'],
-                ) || displayFormats[0]
-        }
+        this.#resetFormatSelection()
 
         this.collectionLoading = false
         this.collectionAccordionOpen = false
@@ -349,7 +323,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @watch('selectedFormat')
     selectedFormatChanged() {
         // When switching to Giovanni format, keep only the first selected variable
-        if (this.#isGiovanniFormat() && this.selectedVariables.length > 1) {
+        if (
+            this.selectedFormat.isGiovanniFormat &&
+            this.selectedVariables.length > 1
+        ) {
             this.selectedVariables = [this.selectedVariables[0]]
         }
     }
@@ -1195,11 +1172,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderOutputFormatSelection() {
-        // TODO: refactor component to use output formats from individual services, then each service can have a map of output format friendly names
-        const hasGiovanniService = this.collectionWithServices?.services?.some(
-            (s) => s.name.indexOf('giovanni') !== -1,
-        )
-
         return html`
             <terra-accordion>
                 <div slot="summary">
@@ -1210,12 +1182,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     slot="summary-right"
                     style="display: flex; align-items: center; gap: 10px;"
                 >
-                    <span
-                        >${getFriendlyNameForMimeType(
-                            this.selectedFormat,
-                            hasGiovanniService,
-                        )}</span
-                    >
+                    <span>${this.selectedFormat.label}</span>
 
                     <button class="reset-btn" @click=${this.#resetFormatSelection}>
                         Reset
@@ -1224,29 +1191,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
                 <div class="accordion-content" style="margin-top: 12px;">
                     ${(() => {
-                        const allFormats =
-                            this.collectionWithServices?.summary
-                                .outputFormats || []
-                        const uniqueFormats = Array.from(new Set(allFormats))
-
-                        // Consolidate NetCDF formats - if both exist, only show netcdf4
-                        const hasNetcdf4 = uniqueFormats.includes(
-                            OUTPUT_FORMATS['application/x-netcdf4'],
-                        )
-                        const hasNetcdfClassic = uniqueFormats.includes(
-                            OUTPUT_FORMATS['application/netcdf'],
-                        )
-
-                        let displayFormats = uniqueFormats
-                        if (hasNetcdf4 && hasNetcdfClassic) {
-                            // Both exist - remove netcdf classic, keep netcdf4
-                            displayFormats = uniqueFormats.filter(
-                                (f) =>
-                                    f !== OUTPUT_FORMATS['application/netcdf'],
-                            )
-                        }
-
-                        return displayFormats.map(
+                        return (
+                            this.collectionWithServices
+                                ?.configuredOutputFormats || []
+                        ).map(
                             (format) => html`
                                 <label
                                     style="display: flex; align-items: center; gap: 8px; padding: 5px;"
@@ -1259,10 +1207,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                         @change=${() =>
                                             (this.selectedFormat = format)}
                                     />
-                                    ${getFriendlyNameForMimeType(
-                                        format,
-                                        hasGiovanniService,
-                                    )}
+                                    ${format.label}
                                 </label>
                             `,
                         )
@@ -1336,7 +1281,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             this.selectedDateRange.endDate ??
                             this.granuleMaxDate
                         }
-                        .useEndOfDay=${!this.#isGiovanniFormat()}
+                        .useEndOfDay=${!this.selectedFormat.isGiovanniFormat}
                         @terra-date-range-change=${this.#handleDateChange}
                     ></terra-date-picker>
                 </div>
@@ -1376,18 +1321,19 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #resetFormatSelection = () => {
         // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.summary.outputFormats?.length) {
+        if (this.collectionWithServices?.configuredOutputFormats.length) {
             const netcdfFormat =
-                this.collectionWithServices.summary.outputFormats.find(
-                    (format) =>
-                        format === OUTPUT_FORMATS['application/x-netcdf4'] ||
-                        format === OUTPUT_FORMATS['application/netcdf'],
+                this.collectionWithServices.configuredOutputFormats.find(
+                    (f) =>
+                        f.key === 'application/x-netcdf4' ||
+                        f.key === 'application/netcdf',
                 )
+
             this.selectedFormat =
                 netcdfFormat ||
-                this.collectionWithServices.summary.outputFormats[0]
+                this.collectionWithServices.configuredOutputFormats[0]
         } else {
-            this.selectedFormat = defaultSubsetFileMimeType
+            this.selectedFormat = defaultOutputFormat
         }
     }
 
@@ -1580,7 +1526,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     </button>
 
                     ${
-                        this.#isGiovanniFormat() &&
+                        this.selectedFormat.isGiovanniFormat &&
                         this.giovanniConfiguredVariables
                             ? html`
                               <terra-alert
@@ -1828,7 +1774,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #buildVariableTree(variables: Variable[]): Record<string, any> {
         let filteredVariables = variables
 
-        if (this.#isGiovanniFormat() && this.giovanniConfiguredVariables) {
+        if (
+            this.selectedFormat.isGiovanniFormat &&
+            this.giovanniConfiguredVariables
+        ) {
             filteredVariables = variables.filter((v) => {
                 // Convert internal format (dots) to Giovanni format (underscores)
                 // Example: M2T1NXSLV_5.12.4_CLDPRS -> M2T1NXSLV_5_12_4_CLDPRS
@@ -1871,7 +1820,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderVariableTree(node: Record<string, any>, path: string[]): unknown {
-        const isGiovanni = this.#isGiovanniFormat()
+        const isGiovanni = this.selectedFormat.isGiovanniFormat
 
         return html`
             <div style="margin-left: ${path.length * 20}px;">
@@ -1992,7 +1941,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.#markFieldTouched('variables')
         const checked = (e.target as HTMLInputElement).checked
 
-        if (this.#isGiovanniFormat()) {
+        if (this.selectedFormat.isGiovanniFormat) {
             // Radio button behavior for Giovanni - replace selection with only this variable
             if (checked) {
                 this.selectedVariables = [variable]
@@ -2588,12 +2537,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.cancelingGetData = false
         this.#touchAllFields() // touch all fields, so errors will show if fields are invalid
 
-        // TODO: fix this Giovanni code
-        const isGiovanniFormat =
-            this.selectedFormat === 'text/csv' ||
-            this.selectedFormat === 'image/tiff'
-
-        const variables = isGiovanniFormat
+        const variables = this.selectedFormat.isGiovanniFormat
             ? this.selectedVariables.map((v) =>
                   // the Giovanni variable catalog uses different variable entry ids, we need to support them
                   // ex. CMR: M2T1NXSLV_5.2.14 in Giovanni uses underscores: M2T1NXSLV_5_2_14
@@ -2635,16 +2579,18 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             // For giovanni services, always use text/csv (not image/tiff)
             // TODO: do we really have to pass text/csv for Giovanni? Should test this
             harmonyRequest.format(
-                isGiovanniFormat ? 'text/csv' : this.selectedFormat,
+                this.selectedFormat.isGiovanniFormat
+                    ? 'text/csv'
+                    : this.selectedFormat.key,
             )
         }
 
         // Add Cloud Giovanni specific average parameters
-        // TODO: fix these, Giovanni isn't the only service using CSV
-        if (this.selectedFormat === 'text/csv') {
+        // TODO: is their better logic to how these average parameters are applied? I don't see it in the capabilities response
+        if (this.selectedFormat.key === 'text/csv') {
             harmonyRequest.average('area')
         }
-        if (this.selectedFormat === 'image/tiff') {
+        if (this.selectedFormat.key === 'image/tiff') {
             harmonyRequest.average('time')
         }
 
@@ -3078,15 +3024,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         `
     }
 
-    #isGiovanniFormat(): boolean {
-        return (
-            this.selectedFormat === 'text/csv' ||
-            this.selectedFormat === 'image/tiff'
-        )
-    }
-
     #getGiovanniValidationError(): string | null {
-        if (!this.#isGiovanniFormat()) {
+        if (!this.selectedFormat.isGiovanniFormat) {
             return null
         }
 

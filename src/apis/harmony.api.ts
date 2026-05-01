@@ -66,6 +66,9 @@ export interface HarmonyCapabilitiesResponse {
     services: Service[]
     variables: Variable[]
     capabilitiesVersion: string
+
+    // this is a custom field that provides a better list of output formats to present the user including labels and descriptions
+    configuredOutputFormats: ConfiguredOutputFormat[]
 }
 
 export interface HarmonyCapabilitiesSummary {
@@ -86,7 +89,14 @@ export interface HarmonyCapabilitiesSummary {
         area: boolean
     }
     concatenation: boolean
-    outputFormats: OutputFormats[]
+    outputFormats: string[]
+}
+
+export type ConfiguredOutputFormat = {
+    key: string
+    label: string
+    description: string
+    isGiovanniFormat?: boolean
 }
 
 export interface Service {
@@ -97,7 +107,7 @@ export interface Service {
 
 export interface Capabilities {
     subsetting: Subsetting
-    output_formats: string[]
+    outputFormats: string[]
     averaging?: Averaging
 }
 
@@ -144,15 +154,16 @@ class HarmonyApi {
             options,
         )
 
-        // the variables don't currently return a concept id as a standalone property
-        // the variables return a url that contains the concept id, so we'll extract it from there
-        // ex: https://cmr.earthdata.nasa.gov/search/concepts/V2621793591-GES_DISC"
-        capabilities.variables.forEach((variable) => {
-            const match = variable.href.match(/\/concepts\/(V\d+-\w+)$/)
-            if (match) {
-                variable.conceptId = match[1]
-            }
-        })
+        // the variables returned from the Harmony capabilities endpoint don't include the concept ID
+        // but we can extract it from the href property and add it to each variable for easier reference later
+        capabilities.variables = this.addConceptIdToVariables(
+            capabilities.variables,
+        )
+
+        // add a custom property to the capabilities response that provides a better list of output formats to present to the user
+        // including labels and descriptions
+        capabilities.configuredOutputFormats =
+            this.getOutputFormatOptions(capabilities)
 
         return capabilities
     }
@@ -214,6 +225,216 @@ class HarmonyApi {
                 }),
             },
         })
+    }
+
+    /**
+     * Extracts the variable concept ID from the variable's href and adds it as a property on the variable object.
+     */
+    addConceptIdToVariables(variables: Variable[]) {
+        return variables.map((v) => {
+            const match = v.href.match(/\/concepts\/(V\d+-\w+)$/)
+            if (match) {
+                v.conceptId = match[1]
+            }
+            return v
+        })
+    }
+
+    /**
+     * Processes the Harmony capabilities response to generate a list of output format options with user-friendly labels and descriptions.
+     * If Giovanni is the only service available, only return Giovanni-specific formats.
+     * If Giovanni is present with other services, include both Giovanni and non-Giovanni formats, avoiding duplicates.
+     * If Giovanni is not present, return only non-Giovanni formats.
+     */
+    getOutputFormatOptions(capabilities: HarmonyCapabilitiesResponse) {
+        const hasNonGiovanniServices =
+            this.#hasNonGiovanniServices(capabilities)
+        const hasGiovanniServices = this.#hasGiovanniServices(capabilities)
+        const giovanniFormats = hasGiovanniServices
+            ? this.#getGiovanniFormats(capabilities)
+            : []
+
+        // If Giovanni is the only service, use only Giovanni formats
+        if (hasGiovanniServices && !hasNonGiovanniServices) {
+            return giovanniFormats
+        }
+
+        const outputFormats: ConfiguredOutputFormat[] = []
+
+        // Get formats only from non-Giovanni services
+        const nonGiovanniFormats = this.#getNonGiovanniFormats(capabilities)
+
+        // Process non-Giovanni output formats
+        nonGiovanniFormats.forEach((format) => {
+            let label = format
+            let description = `Download data in ${format} format`
+
+            switch (format) {
+                case 'application/x-hdf':
+                case 'application/octet-stream':
+                    label = 'HDF-EOS5'
+                    description = 'Download data in HDF-EOS5 format'
+                    break
+
+                case 'application/x-netcdf4':
+                case 'application/netcdf':
+                    label = 'NetCDF'
+                    description = 'Download data in NetCDF format'
+                    break
+
+                case 'application/x-netcdf4;profile=opendap_url':
+                    label = 'OPeNDAP URL (x-netcdf4)'
+                    description =
+                        'Download data in OPeNDAP URL (x-netcdf4) format'
+                    break
+
+                case 'text/csv':
+                    label = 'CSV'
+                    description = 'Download data in CSV format'
+                    break
+
+                case 'image/tiff':
+                case 'image/tif':
+                    label = 'TIFF'
+                    description = 'Download data in TIFF format'
+                    break
+
+                case 'image/png':
+                    label = 'PNG'
+                    description = 'Download data in PNG format'
+                    break
+
+                case 'image/jpg':
+                case 'image/jpeg':
+                    label = 'JPEG'
+                    description = 'Download data in JPEG format'
+                    break
+
+                case 'application/shapefile+zip':
+                    label = 'Shapefile+zip'
+                    description = 'Download data in Shapefile+zip format'
+                    break
+
+                case 'application/x-zarr':
+                    label = 'ZARR'
+                    description = 'Download data in ZARR format'
+                    break
+
+                default:
+                    // for unknown formats, we can just use the MIME type as the label and a generic description
+                    label = format
+                    description = `Download data in ${format} format`
+            }
+
+            outputFormats.push({
+                key: format,
+                label,
+                description,
+            })
+        })
+
+        // Add Giovanni-specific formats if Giovanni is present with other services
+        if (hasGiovanniServices && hasNonGiovanniServices) {
+            outputFormats.push(...giovanniFormats)
+        }
+
+        return outputFormats
+    }
+
+    #hasGiovanniServices(capabilities: HarmonyCapabilitiesResponse): boolean {
+        return (
+            capabilities?.services?.some((service) =>
+                service.name.toLowerCase().includes('giovanni'),
+            ) ?? false
+        )
+    }
+
+    #hasNonGiovanniServices(
+        capabilities: HarmonyCapabilitiesResponse,
+    ): boolean {
+        return (
+            capabilities?.services?.some(
+                (service) => !service.name.toLowerCase().includes('giovanni'),
+            ) ?? false
+        )
+    }
+
+    #getNonGiovanniFormats(
+        capabilities: HarmonyCapabilitiesResponse,
+    ): string[] {
+        if (!capabilities?.services) {
+            return []
+        }
+
+        const nonGiovanniServices = capabilities.services.filter(
+            (service) => !service.name.toLowerCase().includes('giovanni'),
+        )
+
+        // Collect all unique output formats from non-Giovanni services
+        const formats = new Set<string>()
+        nonGiovanniServices.forEach((service) => {
+            service.capabilities.outputFormats?.forEach((format) => {
+                formats.add(format)
+            })
+        })
+
+        const formatArray = Array.from(formats)
+
+        // If both application/netcdf and application/x-netcdf4 are present,
+        // only use application/x-netcdf4
+        if (
+            formatArray.includes('application/netcdf') &&
+            formatArray.includes('application/x-netcdf4')
+        ) {
+            return formatArray.filter(
+                (format) => format !== 'application/netcdf',
+            )
+        }
+
+        return formatArray
+    }
+
+    #getGiovanniFormats(
+        capabilities: HarmonyCapabilitiesResponse,
+    ): ConfiguredOutputFormat[] {
+        const giovanniFormats: ConfiguredOutputFormat[] = []
+
+        capabilities.services.forEach((service) => {
+            const serviceName = service.name.toLowerCase()
+
+            if (serviceName.includes('giovanni-time-series')) {
+                giovanniFormats.push({
+                    key: 'text/csv',
+                    label: 'CSV (point-based time series; one file)',
+                    description: 'Single variable plotted over time',
+                    isGiovanniFormat: true,
+                })
+            }
+
+            if (serviceName.includes('giovanni-averaging')) {
+                giovanniFormats.push(
+                    {
+                        key: 'image/tiff',
+                        label: 'GeoTIFF (time-averaged map; one file)',
+                        description: 'Time averaged representation as map',
+                        isGiovanniFormat: true,
+                    },
+                    {
+                        key: 'text/csv',
+                        label: 'CSV (area-averaged time series; one file)',
+                        description: 'Area averaged data over time',
+                        isGiovanniFormat: true,
+                    },
+                )
+            }
+        })
+
+        return giovanniFormats.filter(
+            (format, index, formats) =>
+                formats.findIndex(
+                    (existing) => existing.label === format.label,
+                ) === index,
+        )
     }
 }
 

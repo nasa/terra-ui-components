@@ -81,15 +81,11 @@ export class QueryController<
             TQueryKey
         >(resolvedOptions)
 
-        console.log('setting up query observer with options', defaultedOptions)
-
         this.queryObserver = new QueryObserver(queryClient, defaultedOptions)
 
         this.result = optimistic
             ? this.queryObserver.getOptimisticResult(defaultedOptions)
             : undefined
-
-        console.log('got a result back ', this.result)
 
         this.host.requestUpdate()
     }
