@@ -6,24 +6,20 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
         <div class="group-title" data-tree-walker="filter_skip">
             <span>${listItem.collectionEntryId}</span>
-            <!-- Use the SAME button component as toolbar -->
-            <terra-button
-                size="small"
-                circle
-                outline
-                type="button"
-                tabindex="-1"
-                class="info-toggle"
-                aria-haspopup="true"
-                aria-controls="variable-info-menu"
-                data-menu-name="information"
+
+            <span
+                class="info-icon"
+                role="button"
+                tabindex="0"
+                aria-label="Information for ${listItem.collectionEntryId}"
                 @mouseenter=${(e: MouseEvent) => {
                     e.preventDefault()
                     e.stopImmediatePropagation()
                     e.stopPropagation()
-                    const variable = listItem.variables?.[0] ?? {}
 
+                    const variable = listItem.variables?.[0] ?? {}
                     const detail = JSON.parse(variable.eventDetail || '{}')
+
                     const mappedCollection = {
                         dataFieldLongName: detail.collectionLongName,
                         dataFieldShortName: detail.collectionShortName,
@@ -35,20 +31,20 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                     }
 
                     const event = new CustomEvent('terra-show-variable-info', {
-                        detail: {
-                            collection: mappedCollection,
-                        },
+                        detail: { collection: mappedCollection },
                         bubbles: true,
                         composed: true,
                     })
+
                     e.currentTarget?.dispatchEvent(event)
                 }}
             >
-                <span class="sr-only"
-                    >Information for ${listItem.collectionEntryId}</span
-                >
-                <terra-icon name="info" font-size="1em"></terra-icon>
-            </terra-button>
+                <terra-icon
+                    name="outline-information-circle"
+                    library="heroicons"
+                    font-size="1.4em"
+                ></terra-icon>
+            </span>
         </div>
 
         <ul data-tree-walker="filter_skip">

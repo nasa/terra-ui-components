@@ -475,8 +475,20 @@ export default class TerraVariableCombobox extends TerraElement {
         if (!this.variableInfo || !this.infoAnchor) return nothing
 
         const rect = this.infoAnchor.getBoundingClientRect()
-        const style = `
+        const menuWidth = 380
+        const spaceRight = window.innerWidth - rect.right
+
+        const shouldFlipLeft = spaceRight < menuWidth
+
+        const style = shouldFlipLeft
+            ? `
+            right: ${rect.width + 4}px;
+            left: auto;
+            position: absolute;
+        `
+            : `
             left: ${rect.width + 4}px;
+            right: auto;
             position: absolute;
         `
 
@@ -539,7 +551,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     aria-describedby=${this.useTags ? 'tag-container' : nothing}
                     placeholder=${this.useTags
                         ? nothing
-                        : this.placeholder ?? `${this.label}…`}
+                        : (this.placeholder ?? `${this.label}…`)}
                     .value=${this.useTags
                         ? TerraVariableCombobox.initialQuery
                         : this.query}

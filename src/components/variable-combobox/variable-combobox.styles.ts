@@ -286,26 +286,28 @@ export default css`
     }
 
     .info-icon {
+        display: inline-flex;
+        align-items: center;
         margin-left: 0.4rem;
         cursor: pointer;
         color: var(--terra-color-primary, #0071bc);
-        vertical-align: middle;
+        line-height: 1;
     }
 
     .info-icon:hover {
         color: var(--terra-color-primary-hover, #004f8c);
     }
 
-    .info-toggle {
-        --terra-button-size: 1.25em;
-        margin-left: 0.5rem;
+    /* Optional: better accessibility feedback */
+    .info-icon:focus {
+        outline: 2px solid rgba(0, 113, 188, 0.4);
+        border-radius: 50%;
     }
 
     menu#variable-info-menu {
         all: unset;
         position: absolute;
         top: 1.5rem;
-        left: 100%;
         z-index: 1000;
         background: white;
         border: 1px solid #ccc;
