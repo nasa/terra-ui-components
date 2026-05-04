@@ -4,9 +4,49 @@ import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
 function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
-        <span class="group-title" data-tree-walker="filter_skip"
-            >${listItem.collectionEntryId}</span
-        >
+        <div class="group-title" data-tree-walker="filter_skip">
+            <span>${listItem.collectionEntryId}</span>
+
+            <span
+                class="info-icon"
+                role="button"
+                tabindex="0"
+                aria-label="Information for ${listItem.collectionEntryId}"
+                @mouseenter=${(e: MouseEvent) => {
+                    e.preventDefault()
+                    e.stopImmediatePropagation()
+                    e.stopPropagation()
+
+                    const variable = listItem.variables?.[0] ?? {}
+                    const detail = JSON.parse(variable.eventDetail || '{}')
+
+                    const mappedCollection = {
+                        dataFieldLongName: detail.collectionLongName,
+                        dataFieldShortName: detail.collectionShortName,
+                        dataFieldAccessName: detail.standardName,
+                        dataFieldUnits: detail.units,
+                        dataProductDescriptionUrl: detail.datasetLandingPage,
+                        dataProductLongName: detail.collectionLongName,
+                        dataFieldDescriptionUrl: detail.variableLandingPage,
+                    }
+
+                    const event = new CustomEvent('terra-show-variable-info', {
+                        detail: { collection: mappedCollection },
+                        bubbles: true,
+                        composed: true,
+                    })
+
+                    e.currentTarget?.dispatchEvent(event)
+                }}
+            >
+                <terra-icon
+                    name="outline-information-circle"
+                    library="heroicons"
+                    font-size="1.4em"
+                ></terra-icon>
+            </span>
+        </div>
+
         <ul data-tree-walker="filter_skip">
             ${repeat(
                 listItem.variables,

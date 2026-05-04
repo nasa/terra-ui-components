@@ -239,6 +239,9 @@ export default css`
         font-family: var(--terra-font-family--inter);
         font-weight: 700;
         margin-block: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .listbox-option {
@@ -287,5 +290,61 @@ export default css`
             stroke-dasharray: 42 150;
             stroke-dashoffset: -59;
         }
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.4rem;
+        cursor: pointer;
+        color: var(--terra-color-primary, #0071bc);
+        line-height: 1;
+    }
+
+    .info-icon:hover {
+        color: var(--terra-color-primary-hover, #004f8c);
+    }
+
+    /* Optional: better accessibility feedback */
+    .info-icon:focus {
+        outline: 2px solid rgba(0, 113, 188, 0.4);
+        border-radius: 50%;
+    }
+
+    menu#variable-info-menu {
+        all: unset;
+        position: absolute;
+        top: 1.5rem;
+        z-index: 1000;
+        background: white;
+        border: 1px solid #ccc;
+        border-radius: 0.5em;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        width: max-content;
+        min-width: 20ch;
+        max-width: 100%;
+        padding: 1em;
+        display: none;
+        margin-left: 0.5rem;
+    }
+
+    menu#variable-info-menu[data-expanded='true'] {
+        display: block;
+    }
+
+    menu#variable-info-menu [role='menuitem'] {
+        display: block;
+        list-style: none;
+        margin: 0;
+        padding: 0.5em 0;
+    }
+
+    menu#variable-info-menu dt {
+        font-weight: var(--terra-font-weight-semibold);
+    }
+
+    menu#variable-info-menu dd {
+        font-style: italic;
+        text-wrap: balance;
     }
 `
