@@ -61,15 +61,15 @@ export class HarmonyRequestController implements ReactiveController {
             const result = await this.#createJob.mutate(variables)
 
             this.#jobId = result.jobID
+
+            return result
         } catch (error) {
             this.#jobId = null
             // TODO: where to handle error?
             throw error
+        } finally {
+            this.host.requestUpdate()
         }
-
-        this.host.requestUpdate()
-
-        return this.#jobId
     }
 
     async cancelJob(options: CancelHarmonyJobVariables) {

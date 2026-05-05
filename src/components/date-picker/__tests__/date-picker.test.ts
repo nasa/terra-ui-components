@@ -1,8 +1,8 @@
 import { expect, fixture, html } from '@open-wc/testing'
 import { elementUpdated } from '@open-wc/testing-helpers'
 import { oneEvent } from '@open-wc/testing-helpers'
-import './date-picker.js'
-import type TerraDatePicker from './date-picker.js'
+import '../date-picker.js'
+import type TerraDatePicker from '../date-picker.js'
 
 // Helper to get a date string in YYYY-MM-DD format
 function formatDate(date: Date): string {

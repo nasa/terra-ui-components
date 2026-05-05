@@ -14,6 +14,7 @@ import Point from 'ol/geom/Point.js'
 import { getLength } from 'ol/sphere.js'
 import Feature from 'ol/Feature.js'
 import TerraElement from '../../internal/terra-element.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
 import type { CSSResultGroup } from 'lit'
@@ -42,7 +43,7 @@ import type DataTileSource from 'ol/source/DataTile.js'
 import type DataTile from 'ol/DataTile.js'
 import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 
-export default class TerraTimeAverageMap extends TerraElement {
+export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-button': TerraButton,
@@ -85,7 +86,7 @@ export default class TerraTimeAverageMap extends TerraElement {
         context?: string
     } | null = null
 
-    #controller: TimeAvgMapController
+    #controller: TimeAvgMapController = new TimeAvgMapController(this)
     #map: Map | null = null
     #gtLayer: WebGLTileLayer | null = null
     #bordersLayer: VectorLayer<VectorSource> | null = null
@@ -188,7 +189,6 @@ export default class TerraTimeAverageMap extends TerraElement {
     }
 
     async firstUpdated() {
-        this.#controller = new TimeAvgMapController(this)
         // Initialize the base layer open street map
         this.intializeMap()
         this._fetchVariableTask.run()

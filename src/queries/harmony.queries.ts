@@ -9,6 +9,10 @@ import type { RequestOptions } from '../lib/api.client.js'
 
 const POLL_INTERVAL_MS = 3000
 
+function isFetchableHarmonyJobId(jobID?: string | null): jobID is string {
+    return Boolean(jobID && jobID !== 'new')
+}
+
 export function queryHarmonyCapabilities(
     collectionConceptId?: string,
     options?: RequestOptions,
@@ -44,10 +48,10 @@ export function queryHarmonyJobStatus(
     return {
         queryKey: ['harmony', 'jobs', jobID],
         queryFn: async ({ signal }) => {
-            if (!jobID) return null
+            if (!isFetchableHarmonyJobId(jobID)) return null
             return harmonyApi.getJobStatus(jobID, { ...options, signal })
         },
-        enabled: !!jobID,
+        enabled: isFetchableHarmonyJobId(jobID),
         // Poll until the job reaches a final state
         refetchInterval: (query) => {
             const status = query.state.data?.status

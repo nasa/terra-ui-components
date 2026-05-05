@@ -420,26 +420,52 @@ export default class TerraSpatialPicker extends TerraElement {
                 e.stopPropagation()
                 this._click(e)
             }}
-            resettable
             name="spatial"
             .helpText=${this.helpText}
         >
-            <svg
-                slot="suffix"
-                class="spatial-picker__input_icon"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1.5"
-                stroke="currentColor"
-                @click=${this._click}
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
-                />
-            </svg>
+            <div slot="suffix" class="spatial-picker__suffix-icons">
+                ${
+                    this.mapValue
+                        ? html`<button
+                          type="button"
+                          class="spatial-picker__clear-btn"
+                          aria-label="Clear input"
+                          tabindex="-1"
+                          @click=${(e: Event) => {
+                              e.stopPropagation()
+                              this._clearValue()
+                          }}
+                      >
+                          <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                          >
+                              <path
+                                  fill-rule="evenodd"
+                                  d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25Zm-1.72 6.97a.75.75 0 1 0-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 1 0 1.06 1.06L12 13.06l1.72 1.72a.75.75 0 1 0 1.06-1.06L13.06 12l1.72-1.72a.75.75 0 1 0-1.06-1.06L12 10.94l-1.72-1.72Z"
+                                  clip-rule="evenodd"
+                              />
+                          </svg>
+                      </button>`
+                        : nothing
+                }
+                <svg
+                    class="spatial-picker__input_icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    @click=${this._click}
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"
+                    />
+                </svg>
+            </div>
         </terra-input>`
     }
 

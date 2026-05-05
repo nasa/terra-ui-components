@@ -1,5 +1,5 @@
 import { HARMONY_URLS, Environments } from '../../apis/harmony.api.js'
-import type { LatLng } from '../../components/map/models/LatLng.js'
+import { LatLng } from '../../components/map/models/LatLng.js'
 import { LatLngBounds } from '../../components/map/models/LatLngBounds.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 
@@ -93,9 +93,9 @@ export class HarmonyRequest {
             dimensions,
         } = this.options
 
-        // TODO: implement point
-
-        if (location instanceof LatLngBounds) {
+        if (location instanceof LatLng) {
+            params.append('point', `${location.lat},${location.lng}`)
+        } else if (location instanceof LatLngBounds) {
             params.append(
                 'subset',
                 `lat(${location.getSouth()}:${location.getNorth()})`,

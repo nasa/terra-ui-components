@@ -28,7 +28,7 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
 
         if (response.errors) {
             throw new Error(
-                `Failed to fetch search keywords: ${response.errors[0].message}`
+                `Failed to fetch search keywords: ${response.errors[0].message}`,
             )
         }
 
@@ -38,17 +38,20 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
     async searchVariablesAndFacets(
         query?: string,
         selectedFacets?: SelectedFacets,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<SearchResponse> {
         const client = await getGraphQLClient()
+
+        const { query: adjustedQuery, selectedFacets: adjustedSelectedFacets } =
+            this.#handleGiovanniCatalogInconsistencies(query, selectedFacets)
 
         const response = await client.query<{
             getVariables: GetVariablesResponse
         }>({
             query: GET_VARIABLES,
             variables: {
-                q: query,
-                filter: selectedFacets,
+                q: adjustedQuery,
+                filter: adjustedSelectedFacets,
             },
             context: {
                 fetchOptions: {
@@ -59,7 +62,7 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
 
         if (response.errors) {
             throw new Error(
-                `Failed to fetch variables: ${response.errors[0].message}`
+                `Failed to fetch variables: ${response.errors[0].message}`,
             )
         }
 
@@ -79,7 +82,7 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
             wavelengths: [],
         }
 
-        facets.forEach(facet => {
+        facets.forEach((facet) => {
             const category = facet.category as keyof FacetsByCategory
             if (category in facetsByCategory) {
                 facetsByCategory[category] = facet.values
@@ -95,7 +98,7 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
 
     async getVariable(
         variableEntryId: string,
-        options?: SearchOptions
+        options?: SearchOptions,
     ): Promise<Variable | null> {
         const client = await getGraphQLClient()
 
@@ -114,25 +117,32 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
         })
 
         if (response.errors) {
-            throw new Error(`Failed to fetch variable: ${response.errors[0].message}`)
+            throw new Error(
+                `Failed to fetch variable: ${response.errors[0].message}`,
+            )
         }
 
         const { variables } = response.data!.getVariables
 
-        return variables.length ? this.#adaptVariablesForResponse(variables)[0] : null
+        return variables.length
+            ? this.#adaptVariablesForResponse(variables)[0]
+            : null
     }
 
     #adaptVariablesForResponse(variables: Variable[]) {
-        return variables.map(variable => {
+        return variables.map((variable) => {
             const exampleInitialDates =
                 this.#getReasonableInitialStartAndEndDateTime(variable)
 
             return {
                 ...variable,
-                exampleInitialStartDate: exampleInitialDates?.exampleInitialStartDate,
-                exampleInitialEndDate: exampleInitialDates?.exampleInitialEndDate,
+                exampleInitialStartDate:
+                    exampleInitialDates?.exampleInitialStartDate,
+                exampleInitialEndDate:
+                    exampleInitialDates?.exampleInitialEndDate,
                 dataFieldShortName:
-                    !variable.dataFieldShortName || variable.dataFieldShortName == ''
+                    !variable.dataFieldShortName ||
+                    variable.dataFieldShortName === ''
                         ? variable.dataFieldAccessName
                         : variable.dataFieldShortName,
             }
@@ -146,7 +156,7 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
      * This function returns a reasonable slice of time that components can choose to use
      */
     #getReasonableInitialStartAndEndDateTime(
-        variable: Variable
+        variable: Variable,
     ): ExampleInitialDates | undefined {
         if (
             !variable?.dataProductBeginDateTime ||
@@ -159,17 +169,47 @@ export class GiovanniVariableCatalog implements VariableCatalogInterface {
         // get the diff betwwen start and end; it doesn't matter that we adjust for local time, because the adjustment is the same
         const diff = Math.abs(
             new Date(variable.dataProductEndDateTime as string).getTime() -
-                new Date(variable.dataProductBeginDateTime as string).getTime()
+                new Date(variable.dataProductBeginDateTime as string).getTime(),
         )
         const threeQuarterRange = Math.floor(diff * 0.75)
         const startDate = Math.abs(
             new Date(variable.dataProductBeginDateTime as string).getTime() +
-                threeQuarterRange
+                threeQuarterRange,
         )
 
         return {
             exampleInitialStartDate: getUTCDate(startDate),
             exampleInitialEndDate: getUTCDate(variable.dataProductEndDateTime),
         }
+    }
+
+    /*
+    We are using the on-prem Giovanni catalog, but we are filtering the variables results by what is in Cloud Giovanni
+    This causes some instances of search results coming back empty, the following are some known "hacks" to get results working in the meantime
+    
+    This function should be removed as soon as either Cloud giovanni has it's own searchable catalog OR we can use CMR/UMM-Var
+    */
+    #handleGiovanniCatalogInconsistencies(
+        query?: string,
+        selectedFacets?: SelectedFacets,
+    ) {
+        // fix for "Aerosols" search returning no results
+        if (
+            (query === 'Aerosols' || query === 'aerosols') &&
+            !selectedFacets?.observations?.includes('Aerosols')
+        ) {
+            return {
+                query: undefined,
+                selectedFacets: {
+                    ...selectedFacets,
+                    disciplines: [
+                        ...(selectedFacets?.disciplines || []),
+                        'Aerosols',
+                    ],
+                },
+            }
+        }
+
+        return { query, selectedFacets }
     }
 }

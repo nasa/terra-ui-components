@@ -2611,10 +2611,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
         console.log('Creating Harmony job with request:', harmonyRequest)
 
-        this.jobId = await this.#harmonyRequestController.startJob({
+        const job = await this.#harmonyRequestController.startJob({
             harmonyRequest,
             options: { bearerToken: this.bearerToken },
         })
+
+        this.jobId = job.jobID
 
         // scroll the job-status-section into view
         setTimeout(() => {

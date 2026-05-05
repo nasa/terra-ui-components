@@ -23,6 +23,11 @@ export const HARMONY_URLS = {
         'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy',
 }
 
+export const CLOUD_GIOVANNI_URLS = {
+    [Environments.PROD]: 'https://api.giovanni.earthdata.nasa.gov',
+    [Environments.UAT]: 'https://api.giovanni.uat.earthdata.nasa.gov',
+}
+
 export enum Status {
     FETCHING = 'fetching',
     PREVIEWING = 'previewing',
@@ -202,6 +207,18 @@ class HarmonyApi {
         options?: SearchOptions,
     ): Promise<SubsetJobStatus> {
         return this.#request<SubsetJobStatus>(`jobs/${jobId}/cancel`, options)
+    }
+
+    /**
+     * When a Harmony job finishes, it provides URLs for downloading the results. This method can be used to fetch the results from those URLs, which may require authentication if the data is not public.
+     */
+    async fetchUrl(url: string, options?: SearchOptions) {
+        // we want to remove known Cloud Giovanni hostnames from the beginning of the URL if present so that the request goes through our anonymous proxy
+        const relativeUrl = url
+            .replace(CLOUD_GIOVANNI_URLS.PROD, '')
+            .replace(CLOUD_GIOVANNI_URLS.UAT, '')
+
+        return this.#request(relativeUrl, options)
     }
 
     #request<T>(url: string, options?: SearchOptions) {
