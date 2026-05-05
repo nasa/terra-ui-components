@@ -222,7 +222,7 @@ export class DrawToolbarControl extends Control {
             dragVertexDelay: 0,
             style: new Style({
                 stroke: new Stroke({
-                    color: '#3388ff',
+                    color: '#0088ff',
                     width: 2,
                     lineDash: [8, 4],
                 }),
@@ -241,6 +241,7 @@ export class DrawToolbarControl extends Control {
                 ...base,
                 type: 'Circle',
                 geometryFunction: createBox(),
+                freehand: true
             }
         }
 
@@ -248,6 +249,7 @@ export class DrawToolbarControl extends Control {
             return {
                 ...base,
                 type: 'Circle',
+                freehand: true
             }
         }
 
