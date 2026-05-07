@@ -53,6 +53,12 @@ export default css`
         -webkit-user-select: none;
     }
 
+    :host([interactive]) .tooltip__body {
+        pointer-events: auto;
+        user-select: text;
+        -webkit-user-select: text;
+    }
+
     .tooltip__image {
         display: none;
     }

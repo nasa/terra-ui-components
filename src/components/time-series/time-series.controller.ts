@@ -30,6 +30,8 @@ import { LatLng } from '../map/models/LatLng.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
 import TimeSeriesCacheService from './time-series-cache.service.js'
+import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
+import * as Plotly from 'plotly.js-dist-min'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
 const HARMONY_LINK_PROXY_URL =
@@ -49,6 +51,8 @@ export const plotlyDefaultData: Partial<PlotData> = {
 export class TimeSeriesController {
     #userConfirmedWarning = false
     #cacheService = new TimeSeriesCacheService()
+    #thumbnailService = new ThumbnailService()
+    #lastHarmonyJobId: string | undefined
     #collectionController: CollectionController
     #harmonyRequestController: HarmonyRequestController
 
@@ -156,6 +160,12 @@ export class TimeSeriesController {
                         location: this.host.location,
                     },
                 })
+
+                if (this.#lastHarmonyJobId) {
+                    this.#capturePlotThumbnail(this.#lastHarmonyJobId).catch(
+                        console.error,
+                    )
+                }
 
                 return this.lastTaskValue
             },
@@ -417,6 +427,13 @@ export class TimeSeriesController {
             .format('text/csv')
             .label('terra-time-series')
 
+        if (this.host.applicationId) {
+            harmonyRequest.label(this.host.applicationId)
+        }
+
+        // add some helpful labels to the request for user experience so users don't just see concept ids
+        harmonyRequest.addLabelsFromVariable(catalogVariable)
+
         if (isBoundingBoxLocation) {
             harmonyRequest.average('area')
         }
@@ -432,6 +449,7 @@ export class TimeSeriesController {
                 },
             })
             jobId = job.jobID
+            this.#lastHarmonyJobId = jobId
 
             this.host.emit('terra-harmony-job-status-update', {
                 detail: job,
@@ -944,6 +962,56 @@ export class TimeSeriesController {
         )
 
         throw error
+    }
+
+    async #capturePlotThumbnail(
+        harmonyJobId: string,
+        delayMs = 1000,
+        thumbWidth = 200,
+        thumbHeight = 200,
+    ): Promise<void> {
+        // Give Plotly time to finish rendering
+        await this.#sleep(delayMs)
+
+        const plotEl = this.host.plot?.base
+        if (!plotEl) {
+            return
+        }
+
+        try {
+            const dataUrl = await Plotly.toImage(
+                plotEl as Plotly.PlotlyHTMLElement,
+                {
+                    format: 'jpeg',
+                    width: 500,
+                    height: 500,
+                },
+            )
+
+            const img = new Image()
+            img.src = dataUrl
+            await img.decode()
+
+            const canvas = document.createElement('canvas')
+            canvas.width = thumbWidth
+            canvas.height = thumbHeight
+            const ctx = canvas.getContext('2d')
+            if (!ctx) return undefined
+            ctx.drawImage(img, 0, 0, thumbWidth, thumbHeight)
+
+            const blob = await new Promise<Blob>((resolve, reject) =>
+                canvas.toBlob(
+                    (b) =>
+                        b ? resolve(b) : reject(new Error('toBlob failed')),
+                    'image/jpeg',
+                    0.8,
+                ),
+            )
+
+            await this.#thumbnailService.store(harmonyJobId, blob)
+        } catch (error) {
+            console.error('Failed to capture time series thumbnail', error)
+        }
     }
 
     #sleep(ms: number, signal?: AbortSignal): Promise<void> {

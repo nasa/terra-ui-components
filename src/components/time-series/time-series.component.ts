@@ -182,6 +182,12 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     })
     productLabel?: string
 
+    /**
+     * the application ID is used for tracking purposes and will be included in the labels of Harmony jobs created by this component
+     */
+    @property({ attribute: 'application-id' })
+    applicationId?: string
+
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 

@@ -1,6 +1,10 @@
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import type { SubsetJobStatus, SearchOptions } from '../data-services/types.js'
+import type {
+    SubsetJobStatus,
+    SearchOptions,
+    SubsetJobLink,
+} from '../data-services/types.js'
 import { BadRequestException } from '../exceptions/http.exception.js'
 
 const API_VERSION = '3'
@@ -174,6 +178,30 @@ class HarmonyApi {
     }
 
     /**
+     * Gets a user's Harmony jobs
+     */
+    async getJobs(
+        params?: {
+            page?: number
+            limit?: number
+            // Filters jobs to those which include at least one of the labels specified. Multiple labels can be specified using a comma-separated list.
+            label?: string
+        },
+        options?: SearchOptions,
+    ) {
+        const queryParams = new URLSearchParams()
+        if (params?.page) queryParams.append('page', params.page.toString())
+        if (params?.limit) queryParams.append('limit', params.limit.toString())
+        if (params?.label) queryParams.append('label', params.label)
+
+        return this.#request<{
+            count: number
+            jobs: SubsetJobStatus[]
+            links: SubsetJobLink[]
+        }>(`jobs?${queryParams.toString()}`, options)
+    }
+
+    /**
      * Create a subset job by sending a GET request to the Harmony OGC API endpoint.
      * The harmonyRequest.requestUrl contains the full URL with all subset parameters.
      */
@@ -196,6 +224,30 @@ class HarmonyApi {
         options?: SearchOptions,
     ): Promise<SubsetJobStatus> {
         return this.#request<SubsetJobStatus>(`jobs/${jobId}`, options)
+    }
+
+    /**
+     * Removes one or more labels from one or more Harmony jobs.
+     * After removal, the jobs will no longer match label-based filters.
+     *
+     * @example
+     * await harmonyApi.removeJobLabels({ jobIDs: ['abc', 'def'], labels: ['my-label'] }, { bearerToken })
+     */
+    async removeJobLabels(
+        params: { jobIDs: string[]; labels: string[] },
+        options?: SearchOptions,
+    ): Promise<void> {
+        const url = `${HARMONY_URLS[Environments.PROD]}/labels`
+        return apiClient.delete<void>(url, {
+            body: { jobID: params.jobIDs, label: params.labels },
+            headers: {
+                'Content-Type': 'application/json',
+                ...(options?.bearerToken && {
+                    Authorization: `Bearer ${options.bearerToken}`,
+                }),
+            },
+            signal: options?.signal,
+        })
     }
 
     /**

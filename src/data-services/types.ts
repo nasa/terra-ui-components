@@ -125,6 +125,8 @@ export type SubsetJobStatus = {
     labels?: string[]
     errors?: Array<SubsetJobError>
     links: Array<SubsetJobLink>
+    /** Thumbnail image blob stored locally in IndexedDB, if available */
+    thumbnailBlob?: Blob
 }
 
 export type SubsetJobError = {

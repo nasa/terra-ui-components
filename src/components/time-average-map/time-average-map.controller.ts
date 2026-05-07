@@ -17,6 +17,7 @@ import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
 import TimeAvgMapCacheService from './time-average-map-cache.service.js'
+import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
 
 const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
@@ -28,6 +29,7 @@ export class TimeAvgMapController {
 
     #host: ReactiveControllerHost & TerraTimeAvgMap & QueryClientHost
     #cacheService = new TimeAvgMapCacheService()
+    #thumbnailService = new ThumbnailService()
     #collectionController: CollectionController
     #harmonyRequestController: HarmonyRequestController
 
@@ -101,6 +103,13 @@ export class TimeAvgMapController {
                     .format('image/tiff')
                     .average('time')
                     .label('terra-time-average-map')
+
+                if (this.#host.applicationId) {
+                    harmonyRequest.label(this.#host.applicationId)
+                }
+
+                // add some helpful labels to the request for user experience so users don't just see concept ids
+                harmonyRequest.addLabelsFromVariable(catalogVariable)
 
                 console.log('Creating time average map job...')
 
@@ -301,6 +310,24 @@ export class TimeAvgMapController {
         })
 
         this.#host.updateGeoTIFFLayer(blob)
+
+        const harmonyJobId = this.#host.harmonyJobId
+        if (harmonyJobId) {
+            this.#captureThumbnail(harmonyJobId).catch(console.error)
+        }
+    }
+
+    async #captureThumbnail(
+        harmonyJobId: string,
+        delayMs = 1500,
+    ): Promise<void> {
+        // Wait for OpenLayers to finish rendering the GeoTIFF layer
+        await new Promise<void>((resolve) => setTimeout(resolve, delayMs))
+
+        const blob = await this.#host.captureMapThumbnail()
+        if (blob) {
+            await this.#thumbnailService.store(harmonyJobId, blob)
+        }
     }
 
     #handleHarmonyError(

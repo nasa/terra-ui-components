@@ -5,13 +5,14 @@ export const DB_NAME = 'terra'
 export enum IndexedDbStores {
     TIME_SERIES = 'time-series',
     TIME_AVERAGE_MAP = 'time-average-map',
+    THUMBNAILS = 'thumbnails',
 }
 
 /**
  * Get the indexedDB database
  */
 export async function getDb() {
-    return await openDB(DB_NAME, 3, {
+    return await openDB(DB_NAME, 4, {
         upgrade(db, oldVersion) {
             if (oldVersion < 1) {
                 db.createObjectStore(IndexedDbStores.TIME_SERIES, {
@@ -40,6 +41,9 @@ export async function getDb() {
                 db.createObjectStore(IndexedDbStores.TIME_SERIES, {
                     keyPath: 'key',
                 })
+                db.createObjectStore(IndexedDbStores.THUMBNAILS, {
+                    keyPath: 'harmonyJobId',
+                })
             }
         },
     })
@@ -59,14 +63,21 @@ export async function withDb<T>(callback: (db: IDBPDatabase) => Promise<T>) {
     }
 }
 
-export function getDataByKey<T>(store: IndexedDbStores, key: string): Promise<T> {
-    return withDb(async db => {
+export function getDataByKey<T>(
+    store: IndexedDbStores,
+    key: string,
+): Promise<T> {
+    return withDb(async (db) => {
         return await db.get(store, key)
     })
 }
 
-export function storeDataByKey<T>(store: IndexedDbStores, key: string, data: T) {
-    return withDb(async db => {
+export function storeDataByKey<T>(
+    store: IndexedDbStores,
+    key: string,
+    data: T,
+) {
+    return withDb(async (db) => {
         await db.put(store, {
             key,
             ...data,
@@ -75,7 +86,7 @@ export function storeDataByKey<T>(store: IndexedDbStores, key: string, data: T) 
 }
 
 export function deleteDataByKey(store: IndexedDbStores, key: string) {
-    return withDb(async db => {
+    return withDb(async (db) => {
         await db.delete(store, key)
     })
 }
