@@ -89,6 +89,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
     #controller: TimeAvgMapController = new TimeAvgMapController(this)
     #map: Map | null = null
     #gtLayer: WebGLTileLayer | null = null
+    #geoTiffGraticuleLayer: Graticule | null = null
+    #statesLayer: VectorLayer<VectorSource> | null = null
     #bordersLayer: VectorLayer<VectorSource> | null = null
     #vectorSource: VectorSource | null = null
     #vectorLayer: VectorLayer | null = null
@@ -633,13 +635,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         if (this.#map) {
             this.#map.addLayer(this.#gtLayer)
 
-            if (this.#bordersLayer) {
-                this.#map.removeLayer(this.#bordersLayer)
-                this.#bordersLayer = null
-            }
-
             // Add borders/coastlines layer on top of the GeoTIFF layer
-            await this.addBordersLayerForGeoTIFF(gtSource)
+            await this.addSupportingLayersForGeoTIFF(gtSource)
         }
 
         this.metadata = await this.fetchGeotiffMetadata(gtSource)
@@ -695,7 +692,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
             layers: [baseLayer, this.#graticuleLayer],
             view: new View({
                 center: [0, 0],
-                zoom: 2,
+                zoom: 1,
                 projection: 'EPSG:3857',
             }),
         })
@@ -712,9 +709,26 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         }
     }
 
-    async addBordersLayerForGeoTIFF(gtSource: GeoTIFF) {
+    async addSupportingLayersForGeoTIFF(gtSource: GeoTIFF) {
         if (!this.#map) {
             return
+        }
+
+        // Remove existing supporting layers if they exist 
+        // (e.g. if user changes variable and we need to load a new GeoTIFF)
+        if (this.#geoTiffGraticuleLayer) {
+            this.#map.removeLayer(this.#geoTiffGraticuleLayer)
+            this.#geoTiffGraticuleLayer = null
+        }
+
+        if (this.#statesLayer) {
+            this.#map.removeLayer(this.#statesLayer)
+            this.#statesLayer = null
+        }
+
+        if (this.#bordersLayer) {
+            this.#map.removeLayer(this.#bordersLayer)
+            this.#bordersLayer = null
         }
 
         // Get the GeoTIFF extent to clip borders rendering
@@ -731,6 +745,43 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         } catch (error) {
             console.warn('Could not get GeoTIFF extent for border clipping:', error)
         }
+
+        // Add a graticule layer with the same extent as the GeoTIFF for better visualization
+        // of the grid
+        this.#geoTiffGraticuleLayer = new Graticule({
+            extent: geoTiffExtent,
+            strokeStyle: new Stroke({
+                color: 'rgba(0,0,0,0.5)',
+                width: 2,
+                lineDash: [0.5, 4],
+            }),
+            showLabels: true,
+            wrapX: false,
+        })
+
+        this.#map.addLayer(this.#geoTiffGraticuleLayer)
+
+        // Add a states vector layer with the same extent as the GeoTIFF to provide geographic 
+        // context. This is optional but can be helpful for users to orient themselves when looking 
+        // at the map. We use a GeoJSON source from Natural Earth, but this could be swapped out 
+        // for any vector source with appropriate styling.
+        const statesVectorSource = new VectorSource({
+            url: 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/10m/cultural/ne_10m_admin_1_states_provinces.json',
+            format: new GeoJSON(),
+        })
+
+        this.#statesLayer = new VectorLayer({
+            source: statesVectorSource,
+            extent: geoTiffExtent,
+            style: new Style({
+                stroke: new Stroke({
+                    color: '#222222',
+                    width: 0.75,
+                }),
+            }),
+        })
+
+        this.#map.addLayer(this.#statesLayer)
 
         const vectorSource = new VectorSource({
             url: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson',
@@ -749,6 +800,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         })
 
         this.#map.addLayer(this.#bordersLayer)
+
+
     }
 
     async fetchGeotiffMetadata(
