@@ -358,6 +358,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                                     .showCitation=${this.showCitation}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
+                                    show-location
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
                                 </terra-plot-toolbar>`
