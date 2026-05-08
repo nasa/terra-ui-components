@@ -373,6 +373,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         const thumbUrl = job?.thumbnailBlob
             ? URL.createObjectURL(job.thumbnailBlob)
             : null
+        const harmonyRequest = HarmonyRequest.fromUrl(job?.request ?? '')
 
         return html`
             <div
@@ -393,7 +394,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                               />`
                             : html`<terra-icon
                                   library="heroicons"
-                                  name="outline-chart-bar"
+                                  name=${harmonyRequest.getTerraIcon()}
                                   style="font-size: 1.5rem"
                               ></terra-icon>`
                     }

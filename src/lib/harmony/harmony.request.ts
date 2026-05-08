@@ -47,6 +47,10 @@ export class HarmonyRequest {
         options?.variables?.forEach((v) => {
             this.variable(v)
         })
+
+        if (options?.environment) {
+            this.environment(options.environment.toUpperCase() as Environments)
+        }
     }
 
     get requestUrl() {
@@ -257,6 +261,17 @@ export class HarmonyRequest {
     }
 
     /**
+     * given a Harmony request, determines the most appropriate Terra icon to represent it.
+     */
+    getTerraIcon() {
+        if (this.options.labels?.includes('terra-time-average-map')) {
+            return 'outline-map'
+        }
+
+        return 'outline-chart-bar'
+    }
+
+    /**
      * Parses a Harmony OGC request URL and returns a HarmonyRequest instance
      * with the corresponding options populated.
      *
@@ -265,7 +280,11 @@ export class HarmonyRequest {
      *   'https://harmony.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat(5:40)&subset=lon(62:95)&format=text%2Fcsv'
      * )
      */
-    static fromUrl(url: string): HarmonyRequest {
+    static fromUrl(url?: string): HarmonyRequest {
+        if (!url) {
+            return new HarmonyRequest()
+        }
+
         const parsed = new URL(url)
 
         // Determine environment from origin

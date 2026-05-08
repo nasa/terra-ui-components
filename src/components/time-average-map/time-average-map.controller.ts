@@ -170,6 +170,8 @@ export class TimeAvgMapController {
                     harmonyJobId: jobStatus.jobID,
                 })
 
+                this.#host.harmonyJobId = jobStatus.jobID
+
                 this.#updateGeoTIFFLayer(blob)
 
                 return blob

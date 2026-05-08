@@ -11,7 +11,7 @@ sidebarSection: Hidden
     <span slot="loading">Loading...please wait</span>
 
     <div slot="logged-in" id="demo" style="padding: 100px 0;">
-        <terra-harmony-history filter-by-labels="terra-time-series" remove-labels-on-delete></terra-harmony-history>
+        <terra-harmony-history filter-by-labels="terra-time-series,terra-time-average-map" remove-labels-on-delete></terra-harmony-history>
         <button>Reset</button>
     </div>
 
