@@ -58,8 +58,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() endDate: string
     @property() cacheKey: string
     @property() dataType: DataType
-    @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean =
-        true
+    @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean
     @property({ type: Boolean, attribute: 'show-date-range' }) showDateRange: boolean
     @property({ type: Array }) colormaps: string[] = []
     @property({ type: String, attribute: 'color-map-name', reflect: true })
