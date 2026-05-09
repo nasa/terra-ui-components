@@ -178,9 +178,11 @@ export default class TerraDataRods extends TerraElement {
             : undefined
 
         return html`
-            ${this.spatialWarningMessage && this.lastChanged === 'location'
-                ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
-                : null}
+            ${
+                this.spatialWarningMessage && this.lastChanged === 'location'
+                    ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
+                    : null
+            }
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 .value=${getVariableEntryId(this)}
@@ -189,9 +191,11 @@ export default class TerraDataRods extends TerraElement {
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
-            ${this.spatialWarningMessage && this.lastChanged === 'variable'
-                ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
-                : null}
+            ${
+                this.spatialWarningMessage && this.lastChanged === 'variable'
+                    ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
+                    : null
+            }
             <terra-spatial-picker
                 initial-value=${this.location}
                 .spatialConstraints=${this.variableBoundingBox}
@@ -207,6 +211,7 @@ export default class TerraDataRods extends TerraElement {
                 .location=${this.location ?? undefined}
                 bearer-token=${this.bearerToken}
                 show-citation=${true}
+                cache
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             >
                 <li slot="help-links">
@@ -226,11 +231,13 @@ export default class TerraDataRods extends TerraElement {
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
                 @terra-date-selection-invalid="${this.#handleInvalidDateSelection}"
             ></terra-date-range-slider>
-            ${this.dateErrorMessage
-                ? html`<div class="date-error" style="color: red;">
+            ${
+                this.dateErrorMessage
+                    ? html`<div class="date-error" style="color: red;">
                       ${this.dateErrorMessage}
                   </div>`
-                : null}
+                    : null
+            }
         `
     }
 

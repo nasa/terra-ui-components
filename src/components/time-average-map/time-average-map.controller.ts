@@ -7,7 +7,7 @@ import {
     type SubsetJobError,
     Status,
 } from '../../data-services/types.js'
-import { FINAL_STATUSES, harmonyApi } from '../../apis/harmony.api.js'
+import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
 import { formatDate } from '../../utilities/date.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
@@ -18,9 +18,6 @@ import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
 import TimeAvgMapCacheService from './time-average-map-cache.service.js'
 import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
-
-const HISTORY_LOOKUP_DAYS = 7
-const HISTORY_JOB_LIMIT = 10
 
 const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
@@ -67,9 +64,9 @@ export class TimeAvgMapController {
                 this.#harmonyRequestController.reset()
                 this.#host.harmonyJobId = undefined
 
-                // Try cache first (unless no-cache mode)
+                // Try cache first (only when cache is enabled)
                 const cacheKey = this.getCacheKey()
-                if (!this.#host.noCache) {
+                if (this.#host.cache) {
                     const existing =
                         await this.#cacheService.getValidCacheEntry(cacheKey)
 
@@ -82,6 +79,54 @@ export class TimeAvgMapController {
                         this.#updateGeoTIFFLayer(existing.blob)
                         return existing.blob
                     }
+                }
+
+                // If a specific jobId is provided, skip request building and poll directly
+                if (this.#host.jobId) {
+                    console.log(
+                        'Using provided jobId, waiting for harmony job...',
+                    )
+                    const jobStatus = await this.#waitForHarmonyJob(
+                        this.#host.jobId,
+                        signal,
+                    )
+
+                    if (jobStatus.status === Status.FAILED) {
+                        const errorMessage =
+                            jobStatus.message ||
+                            jobStatus.errors?.[0]?.message ||
+                            'The subset job failed'
+                        const error = new Error(errorMessage)
+                        this.#handleHarmonyError(error, jobStatus.errors)
+                        throw error
+                    }
+
+                    if (
+                        jobStatus.status === Status.COMPLETE_WITH_ERRORS &&
+                        jobStatus.errors &&
+                        jobStatus.errors.length > 0
+                    ) {
+                        const errorMessage =
+                            jobStatus.errors[0].message ||
+                            'The subset job completed with errors'
+                        const error = new Error(errorMessage)
+                        this.#handleHarmonyError(error, jobStatus.errors)
+                        throw error
+                    }
+
+                    const blob = await this.#fetchJobBlob(jobStatus, signal)
+
+                    if (this.#host.cache) {
+                        await this.#cacheService.storeEntry(cacheKey, {
+                            blob,
+                            environment: this.#host.environment,
+                            harmonyJobId: this.#host.jobId,
+                        })
+                    }
+
+                    this.#host.harmonyJobId = this.#host.jobId
+                    this.#updateGeoTIFFLayer(blob)
+                    return blob
                 }
 
                 // Build the Harmony request
@@ -113,38 +158,6 @@ export class TimeAvgMapController {
 
                 // add some helpful labels to the request for user experience so users don't just see concept ids
                 harmonyRequest.addLabelsFromVariable(catalogVariable)
-
-                // Check Harmony history for a recent matching job before creating a new one
-                const historyJobs = await this.#fetchRecentHistoryJobs()
-                const historyMatch = historyJobs.find((job) =>
-                    this.#isMatchingTimeAvgMapJob(job, harmonyRequest),
-                )
-
-                if (historyMatch) {
-                    console.log(
-                        'Found matching time average map job in Harmony history',
-                        historyMatch.jobID,
-                    )
-                    // The jobs list endpoint doesn't include per-file data links — fetch the full status.
-                    const fullHistoryJob = await harmonyApi.getJobStatus(
-                        historyMatch.jobID,
-                        { bearerToken: this.#host.bearerToken, signal },
-                    )
-                    const blob = await this.#fetchJobBlob(
-                        fullHistoryJob,
-                        signal,
-                    )
-                    if (!this.#host.noCache) {
-                        await this.#cacheService.storeEntry(cacheKey, {
-                            blob,
-                            environment: this.#host.environment,
-                            harmonyJobId: historyMatch.jobID,
-                        })
-                    }
-                    this.#host.harmonyJobId = historyMatch.jobID
-                    this.#updateGeoTIFFLayer(blob)
-                    return blob
-                }
 
                 console.log('Creating time average map job...')
 
@@ -198,8 +211,8 @@ export class TimeAvgMapController {
                 // Fetch the blob output
                 const blob = await this.#fetchJobBlob(jobStatus, signal)
 
-                // Store in cache (unless no-cache mode)
-                if (!this.#host.noCache) {
+                // Store in cache (only when cache is enabled)
+                if (this.#host.cache) {
                     await this.#cacheService.storeEntry(cacheKey, {
                         blob,
                         environment: this.#host.environment,
@@ -382,115 +395,6 @@ export class TimeAvgMapController {
                 composed: true,
             }),
         )
-    }
-
-    /**
-     * Fetches recent successful Harmony jobs for this component type.
-     * Returns an empty array if the user is unauthenticated (no bearer token).
-     */
-    async #fetchRecentHistoryJobs(): Promise<SubsetJobStatus[]> {
-        if (!this.#host.bearerToken) {
-            return []
-        }
-
-        try {
-            const result = await harmonyApi.getJobs(
-                {
-                    page: 1,
-                    limit: HISTORY_JOB_LIMIT,
-                    label: 'terra-time-average-map',
-                },
-                { bearerToken: this.#host.bearerToken },
-            )
-
-            const cutoff = new Date()
-            cutoff.setDate(cutoff.getDate() - HISTORY_LOOKUP_DAYS)
-
-            return result.jobs.filter((job) => {
-                if (job.status !== Status.SUCCESSFUL) return false
-                if (new Date(job.createdAt) < cutoff) return false
-                if (
-                    job.dataExpiration &&
-                    new Date(job.dataExpiration) < new Date()
-                )
-                    return false
-                return true
-            })
-        } catch {
-            // If history lookup fails for any reason, silently fall through to creating a new job
-            return []
-        }
-    }
-
-    /**
-     * Returns true if a Harmony history job matches the parameters of the given request.
-     * Compares collection, variable, date range, bounding box, format, and average type.
-     * Does not require application-id or metadata labels to match.
-     */
-    #isMatchingTimeAvgMapJob(
-        job: SubsetJobStatus,
-        harmonyRequest: HarmonyRequest,
-    ): boolean {
-        const parsed = HarmonyRequest.fromUrl(job.request)
-        const req = harmonyRequest.options
-        const hist = parsed.options
-
-        if (hist.collectionConceptId !== req.collectionConceptId) return false
-        if (hist.format !== 'image/tiff') return false
-        if (hist.average !== 'time') return false
-
-        // Compare variables (order-independent set equality)
-        const reqVars = new Set([
-            ...(req.variables ?? []),
-            ...(req.variableConceptIds ?? []),
-        ])
-        const histVars = new Set([
-            ...(hist.variables ?? []),
-            ...(hist.variableConceptIds ?? []),
-        ])
-        if (reqVars.size !== histVars.size) return false
-        for (const v of reqVars) {
-            if (!histVars.has(v)) return false
-        }
-
-        // Compare date range (date portion only)
-        const reqStart = req.startDate?.slice(0, 10)
-        const reqEnd = req.endDate?.slice(0, 10)
-        const histStart = hist.startDate?.slice(0, 10)
-        const histEnd = hist.endDate?.slice(0, 10)
-        if (reqStart !== histStart || reqEnd !== histEnd) return false
-
-        // Compare bounding box with epsilon tolerance
-        if (
-            req.location instanceof LatLngBounds &&
-            hist.location instanceof LatLngBounds
-        ) {
-            const epsilon = 0.001
-            if (
-                Math.abs(req.location.getSouth() - hist.location.getSouth()) >
-                epsilon
-            )
-                return false
-            if (
-                Math.abs(req.location.getNorth() - hist.location.getNorth()) >
-                epsilon
-            )
-                return false
-            if (
-                Math.abs(req.location.getWest() - hist.location.getWest()) >
-                epsilon
-            )
-                return false
-            if (
-                Math.abs(req.location.getEast() - hist.location.getEast()) >
-                epsilon
-            )
-                return false
-        } else {
-            return false
-        }
-
-        return true
     }
 
     #sleep(ms: number, signal: AbortSignal): Promise<void> {
