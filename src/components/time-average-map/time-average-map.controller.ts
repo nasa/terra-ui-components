@@ -130,7 +130,10 @@ export class TimeAvgMapController {
                         historyMatch.jobID,
                         { bearerToken: this.#host.bearerToken, signal },
                     )
-                    const blob = await this.#fetchJobBlob(fullHistoryJob, signal)
+                    const blob = await this.#fetchJobBlob(
+                        fullHistoryJob,
+                        signal,
+                    )
                     if (!this.#host.noCache) {
                         await this.#cacheService.storeEntry(cacheKey, {
                             blob,
@@ -392,7 +395,11 @@ export class TimeAvgMapController {
 
         try {
             const result = await harmonyApi.getJobs(
-                { page: 1, limit: HISTORY_JOB_LIMIT, label: 'terra-time-average-map' },
+                {
+                    page: 1,
+                    limit: HISTORY_JOB_LIMIT,
+                    label: 'terra-time-average-map',
+                },
                 { bearerToken: this.#host.bearerToken },
             )
 
@@ -402,7 +409,11 @@ export class TimeAvgMapController {
             return result.jobs.filter((job) => {
                 if (job.status !== Status.SUCCESSFUL) return false
                 if (new Date(job.createdAt) < cutoff) return false
-                if (job.dataExpiration && new Date(job.dataExpiration) < new Date()) return false
+                if (
+                    job.dataExpiration &&
+                    new Date(job.dataExpiration) < new Date()
+                )
+                    return false
                 return true
             })
         } catch {
@@ -429,8 +440,14 @@ export class TimeAvgMapController {
         if (hist.average !== 'time') return false
 
         // Compare variables (order-independent set equality)
-        const reqVars = new Set([...(req.variables ?? []), ...(req.variableConceptIds ?? [])])
-        const histVars = new Set([...(hist.variables ?? []), ...(hist.variableConceptIds ?? [])])
+        const reqVars = new Set([
+            ...(req.variables ?? []),
+            ...(req.variableConceptIds ?? []),
+        ])
+        const histVars = new Set([
+            ...(hist.variables ?? []),
+            ...(hist.variableConceptIds ?? []),
+        ])
         if (reqVars.size !== histVars.size) return false
         for (const v of reqVars) {
             if (!histVars.has(v)) return false
@@ -444,12 +461,31 @@ export class TimeAvgMapController {
         if (reqStart !== histStart || reqEnd !== histEnd) return false
 
         // Compare bounding box with epsilon tolerance
-        if (req.location instanceof LatLngBounds && hist.location instanceof LatLngBounds) {
+        if (
+            req.location instanceof LatLngBounds &&
+            hist.location instanceof LatLngBounds
+        ) {
             const epsilon = 0.001
-            if (Math.abs(req.location.getSouth() - hist.location.getSouth()) > epsilon) return false
-            if (Math.abs(req.location.getNorth() - hist.location.getNorth()) > epsilon) return false
-            if (Math.abs(req.location.getWest() - hist.location.getWest()) > epsilon) return false
-            if (Math.abs(req.location.getEast() - hist.location.getEast()) > epsilon) return false
+            if (
+                Math.abs(req.location.getSouth() - hist.location.getSouth()) >
+                epsilon
+            )
+                return false
+            if (
+                Math.abs(req.location.getNorth() - hist.location.getNorth()) >
+                epsilon
+            )
+                return false
+            if (
+                Math.abs(req.location.getWest() - hist.location.getWest()) >
+                epsilon
+            )
+                return false
+            if (
+                Math.abs(req.location.getEast() - hist.location.getEast()) >
+                epsilon
+            )
+                return false
         } else {
             return false
         }

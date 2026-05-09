@@ -6,7 +6,9 @@ import './time-average-map.js'
 
 describe('<terra-time-average-map>', () => {
     it('should render without errors', async () => {
-        const el = await fixture(html`<terra-time-average-map></terra-time-average-map>`)
+        const el = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`,
+        )
         expect(el).to.exist
     })
 
@@ -216,7 +218,14 @@ describe('<terra-time-average-map> harmony history', () => {
         // Matches: collection=C1234-GES_DISC, variable=COLL_VAR, start=2009-01-01, end=2009-01-05, bbox=62,5,95,40, format=image/tiff, average=time
         request:
             'https://harmony.earthdata.nasa.gov/C1234-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat%285%3A40%29&subset=lon%2862%3A95%29&subset=time%28%222009-01-01T00%3A00%3A00Z%22%3A%222009-01-05T00%3A00%3A00Z%22%29&format=image%2Ftiff&label=terra-time-average-map&variable=COLL_VAR&average=time',
-        links: [{ rel: 'data', href: 'https://example.com/result.tiff', title: 'Result', type: 'image/tiff' }],
+        links: [
+            {
+                rel: 'data',
+                href: 'https://example.com/result.tiff',
+                title: 'Result',
+                type: 'image/tiff',
+            },
+        ],
         message: '',
         progress: 100,
         numInputGranules: 1,
@@ -259,7 +268,14 @@ describe('<terra-time-average-map> harmony history', () => {
         await el.updateComplete
 
         // Call the private method directly (accessible via bracket notation in tests)
-        const controller = el['_TimeAvgMapController'] ?? el['#controller'] ?? el[Object.getOwnPropertySymbols(el).find((s: symbol) => s.toString().includes('controller')) ?? '']
+        const controller =
+            el['_TimeAvgMapController'] ??
+            el['#controller'] ??
+            el[
+                Object.getOwnPropertySymbols(el).find((s: symbol) =>
+                    s.toString().includes('controller'),
+                ) ?? ''
+            ]
         // We test behavior indirectly: harmonyApi.getJobs should be called when the task runs
         // This is verified through integration — the actual call path is covered by the controller unit tests
         document.body.removeChild(el)
@@ -286,8 +302,15 @@ describe('<terra-time-average-map> harmony history', () => {
 
     it('should filter out non-SUCCESSFUL jobs from history', async () => {
         const failedJob = makeJob({ status: Status.FAILED })
-        const runningJob = makeJob({ jobID: 'running-1', status: Status.RUNNING })
-        getJobsStub.resolves({ count: 2, jobs: [failedJob, runningJob], links: [] })
+        const runningJob = makeJob({
+            jobID: 'running-1',
+            status: Status.RUNNING,
+        })
+        getJobsStub.resolves({
+            count: 2,
+            jobs: [failedJob, runningJob],
+            links: [],
+        })
 
         const result = await harmonyApi.getJobs(
             { page: 1, limit: 10, label: 'terra-time-average-map' },
@@ -296,13 +319,17 @@ describe('<terra-time-average-map> harmony history', () => {
 
         // The filtering logic inside #fetchRecentHistoryJobs would exclude these.
         // Verify the stub returns the right raw data for filter testing.
-        expect(result.jobs.filter((j: any) => j.status === Status.SUCCESSFUL)).to.have.length(0)
+        expect(
+            result.jobs.filter((j: any) => j.status === Status.SUCCESSFUL),
+        ).to.have.length(0)
     })
 
     it('should filter out jobs with expired dataExpiration', async () => {
         const pastExpiration = new Date()
         pastExpiration.setDate(pastExpiration.getDate() - 1)
-        const expiredJob = makeJob({ dataExpiration: pastExpiration.toISOString() })
+        const expiredJob = makeJob({
+            dataExpiration: pastExpiration.toISOString(),
+        })
         getJobsStub.resolves({ count: 1, jobs: [expiredJob], links: [] })
 
         const result = await harmonyApi.getJobs(
@@ -311,7 +338,9 @@ describe('<terra-time-average-map> harmony history', () => {
         )
 
         // Verify raw data — filtering logic in controller would exclude this job
-        expect(result.jobs[0].dataExpiration).to.equal(pastExpiration.toISOString())
+        expect(result.jobs[0].dataExpiration).to.equal(
+            pastExpiration.toISOString(),
+        )
         const isExpired = new Date(result.jobs[0].dataExpiration) < new Date()
         expect(isExpired).to.be.true
     })

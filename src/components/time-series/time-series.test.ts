@@ -58,7 +58,14 @@ describe('<terra-time-series> harmony history', () => {
         // Matches: collection=C1234-GES_DISC, variable=COLL_VAR, start=2009-01-01, end=2009-01-05, bbox=62,5,95,40, format=text/csv, average=area
         request:
             'https://harmony.earthdata.nasa.gov/C1234-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat%285%3A40%29&subset=lon%2862%3A95%29&subset=time%28%222009-01-01T00%3A00%3A00Z%22%3A%222009-01-05T23%3A59%3A59Z%22%29&format=text%2Fcsv&label=terra-time-series&variable=COLL_VAR&average=area',
-        links: [{ rel: 'data', href: 'https://example.com/result.csv', title: 'Result', type: 'text/csv' }],
+        links: [
+            {
+                rel: 'data',
+                href: 'https://example.com/result.csv',
+                title: 'Result',
+                type: 'text/csv',
+            },
+        ],
         message: '',
         progress: 100,
         numInputGranules: 1,
@@ -116,7 +123,9 @@ describe('<terra-time-series> harmony history', () => {
             { bearerToken: 'test-token' },
         )
 
-        const successful = result.jobs.filter((j: any) => j.status === Status.SUCCESSFUL)
+        const successful = result.jobs.filter(
+            (j: any) => j.status === Status.SUCCESSFUL,
+        )
         expect(successful).to.have.length(1)
         expect(successful[0].jobID).to.equal('j3')
     })
@@ -125,7 +134,10 @@ describe('<terra-time-series> harmony history', () => {
         const oldDate = new Date()
         oldDate.setDate(oldDate.getDate() - 8)
         const oldJob = makeJob({ createdAt: oldDate.toISOString() })
-        const recentJob = makeJob({ jobID: 'recent', createdAt: oneWeekAgo.toISOString() })
+        const recentJob = makeJob({
+            jobID: 'recent',
+            createdAt: oneWeekAgo.toISOString(),
+        })
 
         getJobsStub.resolves({ count: 2, jobs: [oldJob, recentJob], links: [] })
 
@@ -155,7 +167,8 @@ describe('<terra-time-series> harmony history', () => {
         )
 
         const valid = result.jobs.filter(
-            (j: any) => !j.dataExpiration || new Date(j.dataExpiration) >= new Date(),
+            (j: any) =>
+                !j.dataExpiration || new Date(j.dataExpiration) >= new Date(),
         )
         expect(valid).to.have.length(0)
     })

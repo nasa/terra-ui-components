@@ -569,7 +569,11 @@ export class TimeSeriesController {
 
         try {
             const result = await harmonyApi.getJobs(
-                { page: 1, limit: HISTORY_JOB_LIMIT, label: 'terra-time-series' },
+                {
+                    page: 1,
+                    limit: HISTORY_JOB_LIMIT,
+                    label: 'terra-time-series',
+                },
                 { bearerToken: this.host.bearerToken },
             )
 
@@ -579,7 +583,11 @@ export class TimeSeriesController {
             return result.jobs.filter((job) => {
                 if (job.status !== Status.SUCCESSFUL) return false
                 if (new Date(job.createdAt) < cutoff) return false
-                if (job.dataExpiration && new Date(job.dataExpiration) < new Date()) return false
+                if (
+                    job.dataExpiration &&
+                    new Date(job.dataExpiration) < new Date()
+                )
+                    return false
                 return true
             })
         } catch {
@@ -621,10 +629,14 @@ export class TimeSeriesController {
         // Compare bounding box with epsilon tolerance
         if (!(hist.location instanceof LatLngBounds)) return false
         const epsilon = 0.001
-        if (Math.abs(location.getSouth() - hist.location.getSouth()) > epsilon) return false
-        if (Math.abs(location.getNorth() - hist.location.getNorth()) > epsilon) return false
-        if (Math.abs(location.getWest() - hist.location.getWest()) > epsilon) return false
-        if (Math.abs(location.getEast() - hist.location.getEast()) > epsilon) return false
+        if (Math.abs(location.getSouth() - hist.location.getSouth()) > epsilon)
+            return false
+        if (Math.abs(location.getNorth() - hist.location.getNorth()) > epsilon)
+            return false
+        if (Math.abs(location.getWest() - hist.location.getWest()) > epsilon)
+            return false
+        if (Math.abs(location.getEast() - hist.location.getEast()) > epsilon)
+            return false
 
         return true
     }
