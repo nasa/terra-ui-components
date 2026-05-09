@@ -256,7 +256,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         if (this.jobId) {
-            this.#harmonyRequestController.startPollForJobStatus(this.jobId)
+            this.#harmonyRequestController.startPollForJobStatus(this.jobId, {
+                bearerToken: this.bearerToken,
+            })
             this.dataAccessMode = 'subset'
         }
 

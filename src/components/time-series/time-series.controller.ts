@@ -653,7 +653,9 @@ export class TimeSeriesController {
         jobId: string,
         signal: AbortSignal,
     ): Promise<SubsetJobStatus> {
-        this.#harmonyRequestController.startPollForJobStatus(jobId)
+        this.#harmonyRequestController.startPollForJobStatus(jobId, {
+            bearerToken: this.host.bearerToken,
+        })
 
         while (true) {
             if (signal.aborted) {

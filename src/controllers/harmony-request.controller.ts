@@ -76,7 +76,8 @@ export class HarmonyRequestController implements ReactiveController {
         return this.#cancelJob.mutate(options)
     }
 
-    startPollForJobStatus(jobId: string) {
+    startPollForJobStatus(jobId: string, options?: SearchOptions) {
+        this.#options = options
         this.#jobId = jobId
     }
 
