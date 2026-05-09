@@ -188,6 +188,14 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'application-id' })
     applicationId?: string
 
+    /**
+     * When true, disables IndexedDB caching entirely — data will not be read from or written to the local cache.
+     * Harmony history is still checked before creating a new request.
+     * Useful for applications that always want a fresh server-side request (e.g., Giovanni).
+     */
+    @property({ type: Boolean, attribute: 'no-cache' })
+    noCache = false
+
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 

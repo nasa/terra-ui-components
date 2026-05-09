@@ -22,7 +22,7 @@ import type {
     SubsetJobError,
 } from '../../data-services/types.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
-import { FINAL_STATUSES, Status } from '../../apis/harmony.api.js'
+import { FINAL_STATUSES, harmonyApi, Status } from '../../apis/harmony.api.js'
 import { CollectionController } from '../../controllers/collection.controller.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
@@ -40,6 +40,8 @@ const TIME_SERIES_NO_USER_PROXY_URL =
     'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
 const HARMONY_STATUS_WAIT_INTERVAL_MS = 300
 const MAX_CONCEPT_ID_WAIT_MS = 10000
+const HISTORY_LOOKUP_DAYS = 7
+const HISTORY_JOB_LIMIT = 10
 
 export const plotlyDefaultData: Partial<PlotData> = {
     // holds the default Plotly configuration options.
@@ -214,9 +216,10 @@ export class TimeSeriesController {
             this.host.location,
         )
 
-        // check the database for any existing data
-        const existingTerraData =
-            await this.#cacheService.getValidCacheEntry(cacheKey)
+        // check the database for any existing data (unless no-cache mode)
+        const existingTerraData = this.host.noCache
+            ? undefined
+            : await this.#cacheService.getValidCacheEntry(cacheKey)
         const existingStartDate = existingTerraData?.startDate
             ? getUTCDate(existingTerraData.startDate)
             : undefined
@@ -320,9 +323,45 @@ export class TimeSeriesController {
             allChunks.push(...chunks)
         }
 
+        // Fetch recent Harmony history once before the chunk loop.
+        // Only for bbox locations (point data uses a non-Harmony proxy — no job history).
+        const parsedLocation = this.#parseLocationInput()
+        const historyJobs =
+            parsedLocation instanceof LatLngBounds && this.host.bearerToken
+                ? await this.#fetchRecentHistoryJobs()
+                : []
+
         // Request chunks in parallel
         const chunkResults = await Promise.all(
             allChunks.map(async (chunk) => {
+                // Check Harmony history first for a matching chunk
+                if (historyJobs.length > 0) {
+                    const conceptId =
+                        await this.#waitForCollectionConceptId(signal)
+                    const historyMatch = historyJobs.find((job) =>
+                        this.#isMatchingTimeSeriesJob(
+                            job,
+                            conceptId,
+                            variableEntryId,
+                            chunk.start,
+                            chunk.end,
+                            parsedLocation as LatLngBounds,
+                        ),
+                    )
+
+                    if (historyMatch) {
+                        console.log(
+                            'Found matching time series job in Harmony history',
+                            historyMatch.jobID,
+                        )
+                        this.#lastHarmonyJobId = historyMatch.jobID
+                        return this.#fetchTimeSeriesDataFromJob(
+                            historyMatch,
+                            signal,
+                        )
+                    }
+                }
+
                 const result = await this.#fetchTimeSeriesChunk(
                     variableEntryId,
                     chunk.start,
@@ -357,13 +396,16 @@ export class TimeSeriesController {
         }
 
         // Save the consolidated data to IndexedDB (including fill values to avoid unnecessary API requests)
-        await this.#cacheService.storeConsolidatedData({
-            cacheKey,
-            variableEntryId,
-            environment: this.host.environment,
-            metadata: consolidatedResult.metadata,
-            data: allData,
-        })
+        // Skip if no-cache mode is enabled
+        if (!this.host.noCache) {
+            await this.#cacheService.storeConsolidatedData({
+                cacheKey,
+                variableEntryId,
+                environment: this.host.environment,
+                metadata: consolidatedResult.metadata,
+                data: allData,
+            })
+        }
 
         // Filter fill values before returning (but keep them in cache)
         const filteredData = this.#filterFillValues(allData, metadata?.undef)
@@ -511,6 +553,119 @@ export class TimeSeriesController {
             )
             this.#handleHarmonyError(error)
             throw error
+        }
+
+        return this.#parseTimeSeriesCsv(await response.text())
+    }
+
+    /**
+     * Fetches recent successful Harmony time series jobs from the user's history.
+     * Returns an empty array if the user is unauthenticated (no bearer token).
+     */
+    async #fetchRecentHistoryJobs(): Promise<SubsetJobStatus[]> {
+        if (!this.host.bearerToken) {
+            return []
+        }
+
+        try {
+            const result = await harmonyApi.getJobs(
+                { page: 1, limit: HISTORY_JOB_LIMIT, label: 'terra-time-series' },
+                { bearerToken: this.host.bearerToken },
+            )
+
+            const cutoff = new Date()
+            cutoff.setDate(cutoff.getDate() - HISTORY_LOOKUP_DAYS)
+
+            return result.jobs.filter((job) => {
+                if (job.status !== Status.SUCCESSFUL) return false
+                if (new Date(job.createdAt) < cutoff) return false
+                if (job.dataExpiration && new Date(job.dataExpiration) < new Date()) return false
+                return true
+            })
+        } catch {
+            // If history lookup fails for any reason, silently fall through to creating a new job
+            return []
+        }
+    }
+
+    /**
+     * Returns true if a Harmony history job matches the given chunk parameters.
+     * Only applies to bounding box locations — point data uses a non-Harmony proxy.
+     */
+    #isMatchingTimeSeriesJob(
+        job: SubsetJobStatus,
+        collectionConceptId: string,
+        variableEntryId: string,
+        chunkStart: Date,
+        chunkEnd: Date,
+        location: LatLngBounds,
+    ): boolean {
+        const parsed = HarmonyRequest.fromUrl(job.request)
+        const hist = parsed.options
+
+        if (hist.collectionConceptId !== collectionConceptId) return false
+        if (hist.format !== 'text/csv') return false
+        if (hist.average !== 'area') return false
+
+        // Variable comparison: the request stores variable shortnames in options.variables
+        const histVars = hist.variables ?? []
+        if (!histVars.includes(variableEntryId)) return false
+
+        // Compare date range at YYYY-MM-DD level to avoid time-of-day skew
+        const reqStart = format(chunkStart, 'yyyy-MM-dd')
+        const reqEnd = format(chunkEnd, 'yyyy-MM-dd')
+        const histStart = hist.startDate?.slice(0, 10)
+        const histEnd = hist.endDate?.slice(0, 10)
+        if (reqStart !== histStart || reqEnd !== histEnd) return false
+
+        // Compare bounding box with epsilon tolerance
+        if (!(hist.location instanceof LatLngBounds)) return false
+        const epsilon = 0.001
+        if (Math.abs(location.getSouth() - hist.location.getSouth()) > epsilon) return false
+        if (Math.abs(location.getNorth() - hist.location.getNorth()) > epsilon) return false
+        if (Math.abs(location.getWest() - hist.location.getWest()) > epsilon) return false
+        if (Math.abs(location.getEast() - hist.location.getEast()) > epsilon) return false
+
+        return true
+    }
+
+    /**
+     * Fetches and parses time series CSV data from an existing Harmony job's data link.
+     * Used when a matching job is found in the user's Harmony history.
+     */
+    async #fetchTimeSeriesDataFromJob(
+        job: SubsetJobStatus,
+        signal: AbortSignal,
+    ): Promise<TimeSeriesData> {
+        // The jobs list endpoint doesn't include per-file data links — fetch the full status.
+        const fullJob = await harmonyApi.getJobStatus(job.jobID, {
+            bearerToken: this.host.bearerToken,
+            signal,
+        })
+
+        const dataLink = fullJob.links.find((link) => link.rel === 'data')?.href
+
+        if (!dataLink) {
+            throw new Error(
+                `No data link found for Harmony history job ${job.jobID}`,
+            )
+        }
+
+        const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(dataLink)}`
+
+        const response = await fetch(proxyUrl, {
+            signal,
+            headers: {
+                ...(this.host.bearerToken
+                    ? { Authorization: `Bearer ${this.host.bearerToken}` }
+                    : {}),
+            },
+        })
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch time series data from history job: ${response.statusText}`,
+            )
         }
 
         return this.#parseTimeSeriesCsv(await response.text())
