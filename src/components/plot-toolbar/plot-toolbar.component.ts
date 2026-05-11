@@ -18,7 +18,6 @@ import type {
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
-import TerraPopup from '../popup/popup.component.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
@@ -49,7 +48,6 @@ export default class TerraPlotToolbar extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
         'terra-map': TerraMap,
-        'terra-popup': TerraPopup,
         'terra-dropdown': TerraDropdown,
     }
 
