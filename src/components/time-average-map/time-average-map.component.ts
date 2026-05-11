@@ -692,7 +692,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
             layers: [baseLayer, this.#graticuleLayer],
             view: new View({
                 center: [0, 0],
-                zoom: 1,
+                zoom: 2,
                 projection: 'EPSG:3857',
             }),
         })
