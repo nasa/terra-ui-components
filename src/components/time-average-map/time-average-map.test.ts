@@ -3,7 +3,9 @@ import './time-average-map.js'
 
 describe('<terra-time-average-map>', () => {
     it('should render without errors', async () => {
-        const el = await fixture(html`<terra-time-average-map></terra-time-average-map>`)
+        const el = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`,
+        )
         expect(el).to.exist
     })
 
@@ -179,5 +181,35 @@ describe('<terra-time-average-map>', () => {
             html`<terra-time-average-map></terra-time-average-map>`,
         )
         expect(el.opacity).to.equal(1)
+    })
+
+    it('should default cache to false', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`,
+        )
+        expect(el.cache).to.equal(false)
+    })
+
+    it('should set cache to true via property', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`,
+        )
+        el.cache = true
+        await el.updateComplete
+        expect(el.cache).to.equal(true)
+    })
+
+    it('should default jobId to undefined', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`,
+        )
+        expect(el.jobId).to.be.undefined
+    })
+
+    it('should set jobId via attribute', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map job-id="abc-123"></terra-time-average-map>`,
+        )
+        expect(el.jobId).to.equal('abc-123')
     })
 })

@@ -19,7 +19,6 @@ import { LatLngBounds } from './models/LatLngBounds.js'
 import { LatLng } from './models/LatLng.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
-import { GiovanniGeoJsonShapes } from '../../geojson/giovanni-geojson.js'
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -34,6 +33,7 @@ type MapOptions = {
     noWorldWrap?: boolean
     value?: string
     fitToValue?: boolean
+    getGeoJson?: (shapeId: string) => Promise<unknown>
     onShapeLoading?: (loading: boolean) => void
     onMouseMove?: (coordinate: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
@@ -45,7 +45,6 @@ export class MapService {
     #drawToolbarControl: DrawToolbarControl
     #options: MapOptions
     #shapeLayer: VectorLayer
-    #geoJsonShapes = new GiovanniGeoJsonShapes()
     #onDraw: MapOptions['onDraw']
     #onShapeLoading: MapOptions['onShapeLoading']
 
@@ -144,8 +143,9 @@ export class MapService {
         this.#onShapeLoading?.(true)
 
         try {
-            const shapeGeoJson =
-                await this.#geoJsonShapes.getGeoJson(selectedShape)
+            const shapeGeoJson = await this.#options.getGeoJson?.(selectedShape)
+
+            if (!shapeGeoJson) return
 
             // Parse the GeoJSON into OpenLayers features, reprojecting from WGS84 to the map projection
             const format = new GeoJSON()

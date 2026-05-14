@@ -17,10 +17,7 @@ import {
     isDateRangeContained,
 } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
-import type {
-    SubsetJobStatus,
-    SubsetJobError,
-} from '../../data-services/types.js'
+import type { SubsetJobStatus, SubsetJobError } from '../../apis/harmony.api.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import { FINAL_STATUSES, Status } from '../../apis/harmony.api.js'
 import { CollectionController } from '../../controllers/collection.controller.js'
@@ -30,12 +27,12 @@ import { LatLng } from '../map/models/LatLng.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
 import TimeSeriesCacheService from './time-series-cache.service.js'
+import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
+import * as Plotly from 'plotly.js-dist-min'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
 const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
-const TIME_SERIES_NO_USER_PROXY_URL =
-    'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
 const HARMONY_STATUS_WAIT_INTERVAL_MS = 300
 const MAX_CONCEPT_ID_WAIT_MS = 10000
 
@@ -49,6 +46,9 @@ export const plotlyDefaultData: Partial<PlotData> = {
 export class TimeSeriesController {
     #userConfirmedWarning = false
     #cacheService = new TimeSeriesCacheService()
+    #thumbnailService = new ThumbnailService()
+    #lastHarmonyJobId: string | undefined
+    #lastFetchedVariableIds: string | undefined
     #collectionController: CollectionController
     #harmonyRequestController: HarmonyRequestController
 
@@ -91,6 +91,12 @@ export class TimeSeriesController {
                     console.log(
                         'Requirements not met to fetch the time series data ',
                     )
+                    const currentVariableIds = this.#getRequestedVariables()
+                        .map((v) => v.dataFieldId)
+                        .join('|')
+                    if (currentVariableIds !== this.#lastFetchedVariableIds) {
+                        this.lastTaskValue = undefined
+                    }
                     return initialState
                 }
 
@@ -119,6 +125,9 @@ export class TimeSeriesController {
                 )
 
                 this.metadata = seriesResults[0]?.timeSeries.metadata
+                this.#lastFetchedVariableIds = this.#getRequestedVariables()
+                    .map((v) => v.dataFieldId)
+                    .join('|')
 
                 // map each variable result to its own Plotly trace
                 this.lastTaskValue = seriesResults.map(
@@ -156,6 +165,12 @@ export class TimeSeriesController {
                         location: this.host.location,
                     },
                 })
+
+                if (this.#lastHarmonyJobId) {
+                    this.#capturePlotThumbnail(this.#lastHarmonyJobId).catch(
+                        console.error,
+                    )
+                }
 
                 return this.lastTaskValue
             },
@@ -204,9 +219,53 @@ export class TimeSeriesController {
             this.host.location,
         )
 
-        // check the database for any existing data
-        const existingTerraData =
-            await this.#cacheService.getValidCacheEntry(cacheKey)
+        // If a job ID is provided, skip cache/chunking and directly wait for that job
+        if (this.host.jobId) {
+            const jobStatus = await this.#waitForHarmonyJob(
+                this.host.jobId,
+                signal,
+            )
+
+            if (jobStatus.status === Status.FAILED) {
+                const errorMessage =
+                    jobStatus.message ||
+                    jobStatus.errors?.[0]?.message ||
+                    'The subset job failed'
+                const error = new Error(errorMessage)
+                this.#handleHarmonyError(error, jobStatus.errors)
+                throw error
+            }
+
+            if (
+                jobStatus.status === Status.COMPLETE_WITH_ERRORS &&
+                jobStatus.errors &&
+                jobStatus.errors.length > 0
+            ) {
+                const errorMessage =
+                    jobStatus.errors[0].message ||
+                    'The subset job completed with errors'
+                const error = new Error(errorMessage)
+                this.#handleHarmonyError(error, jobStatus.errors)
+                throw error
+            }
+
+            const dataLink = jobStatus.links.find(
+                (link) => link.rel === 'data',
+            )?.href
+            if (!dataLink) {
+                const error = new Error('No data link found for Harmony job')
+                this.#handleHarmonyError(error, jobStatus.errors)
+                throw error
+            }
+
+            this.#lastHarmonyJobId = this.host.jobId
+            return this.#fetchHarmonyDataLink(dataLink, signal)
+        }
+
+        // check the database for any existing data (only when cache is enabled)
+        const existingTerraData = this.host.cache
+            ? await this.#cacheService.getValidCacheEntry(cacheKey)
+            : undefined
         const existingStartDate = existingTerraData?.startDate
             ? getUTCDate(existingTerraData.startDate)
             : undefined
@@ -347,13 +406,16 @@ export class TimeSeriesController {
         }
 
         // Save the consolidated data to IndexedDB (including fill values to avoid unnecessary API requests)
-        await this.#cacheService.storeConsolidatedData({
-            cacheKey,
-            variableEntryId,
-            environment: this.host.environment,
-            metadata: consolidatedResult.metadata,
-            data: allData,
-        })
+        // Only when cache mode is enabled
+        if (this.host.cache) {
+            await this.#cacheService.storeConsolidatedData({
+                cacheKey,
+                variableEntryId,
+                environment: this.host.environment,
+                metadata: consolidatedResult.metadata,
+                data: allData,
+            })
+        }
 
         // Filter fill values before returning (but keep them in cache)
         const filteredData = this.#filterFillValues(allData, metadata?.undef)
@@ -390,17 +452,6 @@ export class TimeSeriesController {
         this.#userConfirmedWarning = false
 
         const location = this.#parseLocationInput()
-
-        if (location instanceof LatLng) {
-            return this.#fetchPointTimeSeriesChunkFromProxy(
-                variableEntryId,
-                startDate,
-                endDate,
-                signal,
-                location,
-            )
-        }
-
         const isBoundingBoxLocation = location instanceof LatLngBounds
         const collectionConceptId =
             await this.#waitForCollectionConceptId(signal)
@@ -417,6 +468,13 @@ export class TimeSeriesController {
             .format('text/csv')
             .label('terra-time-series')
 
+        if (this.host.applicationId) {
+            harmonyRequest.label(this.host.applicationId)
+        }
+
+        // add some helpful labels to the request for user experience so users don't just see concept ids
+        harmonyRequest.addLabelsFromVariable(catalogVariable)
+
         if (isBoundingBoxLocation) {
             harmonyRequest.average('area')
         }
@@ -432,6 +490,7 @@ export class TimeSeriesController {
                 },
             })
             jobId = job.jobID
+            this.#lastHarmonyJobId = jobId
 
             this.host.emit('terra-harmony-job-status-update', {
                 detail: job,
@@ -476,7 +535,18 @@ export class TimeSeriesController {
             throw error
         }
 
-        const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(dataLink)}`
+        return this.#fetchHarmonyDataLink(dataLink, signal)
+    }
+
+    async #fetchHarmonyDataLink(
+        dataLink: string,
+        signal: AbortSignal,
+    ): Promise<TimeSeriesData> {
+        const normalizedLink = dataLink.replace(
+            'proxy-timeseries',
+            'timeseries',
+        )
+        const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(normalizedLink)}`
 
         const response = await fetch(proxyUrl, {
             signal,
@@ -498,77 +568,13 @@ export class TimeSeriesController {
         return this.#parseTimeSeriesCsv(await response.text())
     }
 
-    async #fetchPointTimeSeriesChunkFromProxy(
-        variableEntryId: string,
-        startDate: Date,
-        endDate: Date,
-        signal: AbortSignal,
-        location: LatLng,
-    ): Promise<TimeSeriesData> {
-        const lat = location.lat.toFixed(2)
-        const lon = location.lng.toFixed(2)
-
-        const url = `${TIME_SERIES_NO_USER_PROXY_URL}?${new URLSearchParams({
-            data: variableEntryId,
-            lat,
-            lon,
-            time_start: `${format(startDate, 'yyyy-MM-dd')}T00:00:00`,
-            time_end: `${format(endDate, 'yyyy-MM-dd')}T23:59:59`,
-        }).toString()}`
-
-        const response = await fetch(url, {
-            mode: 'cors',
-            signal,
-            headers: {
-                Accept: 'application/json',
-            },
-        })
-
-        if (!response.ok) {
-            let errorDetails: {
-                code?: string
-                message?: string
-                context?: string
-            } = {}
-
-            const contentType = response.headers.get('content-type')
-
-            if (contentType?.includes('application/json')) {
-                try {
-                    errorDetails = await response.json()
-                } catch {
-                    errorDetails = { message: response.statusText }
-                }
-            } else {
-                errorDetails = { message: response.statusText }
-            }
-
-            this.host.dispatchEvent(
-                new CustomEvent('terra-time-series-error', {
-                    detail: {
-                        status: response.status,
-                        code: errorDetails.code || String(response.status),
-                        message: errorDetails.message || response.statusText,
-                        context: errorDetails.context,
-                    },
-                    bubbles: true,
-                    composed: true,
-                }),
-            )
-
-            throw new Error(
-                `Failed to fetch time series data: ${errorDetails.message || response.statusText}`,
-            )
-        }
-
-        return this.#parseTimeSeriesCsv(await response.text())
-    }
-
     async #waitForHarmonyJob(
         jobId: string,
         signal: AbortSignal,
     ): Promise<SubsetJobStatus> {
-        this.#harmonyRequestController.startPollForJobStatus(jobId)
+        this.#harmonyRequestController.startPollForJobStatus(jobId, {
+            bearerToken: this.host.bearerToken,
+        })
 
         while (true) {
             if (signal.aborted) {
@@ -944,6 +950,56 @@ export class TimeSeriesController {
         )
 
         throw error
+    }
+
+    async #capturePlotThumbnail(
+        harmonyJobId: string,
+        delayMs = 1000,
+        thumbWidth = 200,
+        thumbHeight = 200,
+    ): Promise<void> {
+        // Give Plotly time to finish rendering
+        await this.#sleep(delayMs)
+
+        const plotEl = this.host.plot?.base
+        if (!plotEl) {
+            return
+        }
+
+        try {
+            const dataUrl = await Plotly.toImage(
+                plotEl as Plotly.PlotlyHTMLElement,
+                {
+                    format: 'jpeg',
+                    width: 500,
+                    height: 500,
+                },
+            )
+
+            const img = new Image()
+            img.src = dataUrl
+            await img.decode()
+
+            const canvas = document.createElement('canvas')
+            canvas.width = thumbWidth
+            canvas.height = thumbHeight
+            const ctx = canvas.getContext('2d')
+            if (!ctx) return undefined
+            ctx.drawImage(img, 0, 0, thumbWidth, thumbHeight)
+
+            const blob = await new Promise<Blob>((resolve, reject) =>
+                canvas.toBlob(
+                    (b) =>
+                        b ? resolve(b) : reject(new Error('toBlob failed')),
+                    'image/jpeg',
+                    0.8,
+                ),
+            )
+
+            await this.#thumbnailService.store(harmonyJobId, blob)
+        } catch (error) {
+            console.error('Failed to capture time series thumbnail', error)
+        }
     }
 
     #sleep(ms: number, signal?: AbortSignal): Promise<void> {

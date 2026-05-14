@@ -1,7 +1,9 @@
 import { HARMONY_URLS, Environments } from '../../apis/harmony.api.js'
+export { Environments } from '../../apis/harmony.api.js'
 import { LatLng } from '../../components/map/models/LatLng.js'
 import { LatLngBounds } from '../../components/map/models/LatLngBounds.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
+import type { Variable } from '../../components/browse-variables/browse-variables.types.js'
 
 export type HarmonyRequestOptions = {
     environment?: Environments
@@ -33,18 +35,22 @@ export type RangeDimension = {
  * usage: new HarmonyRequest().location(location).format(format).requestUrl
  */
 export class HarmonyRequest {
-    private options: Partial<HarmonyRequestOptions>
+    #options: Partial<HarmonyRequestOptions>
 
     constructor(options?: Partial<HarmonyRequestOptions>) {
-        this.options = {
+        this.#options = {
             ...options,
         }
 
         // variables might have been passed in as concept ids, use the helper method to ensure we add them in the right spot
-        this.options.variables = undefined // clear out variables first
+        this.#options.variables = undefined // clear out variables first
         options?.variables?.forEach((v) => {
             this.variable(v)
         })
+
+        if (options?.environment) {
+            this.environment(options.environment.toUpperCase() as Environments)
+        }
     }
 
     get requestUrl() {
@@ -57,7 +63,7 @@ export class HarmonyRequest {
             collectionConceptId,
             variableConceptIds,
             variables,
-        } = this.options
+        } = this.#options
 
         if (!collectionConceptId) {
             throw new BadRequestException({
@@ -91,10 +97,10 @@ export class HarmonyRequest {
             average,
             anonymous,
             dimensions,
-        } = this.options
+        } = this.#options
 
         if (location instanceof LatLng) {
-            params.append('point', `${location.lat},${location.lng}`)
+            params.append('point', `${location.lng},${location.lat}`)
         } else if (location instanceof LatLngBounds) {
             params.append(
                 'subset',
@@ -127,9 +133,9 @@ export class HarmonyRequest {
             params.append('format', format)
         }
 
-        if (labels) {
-            params.append('label', labels.join(','))
-        }
+        labels?.forEach((label) => {
+            params.append('label', label)
+        })
 
         variables?.forEach((v) => {
             params.append('variable', v)
@@ -146,9 +152,26 @@ export class HarmonyRequest {
         return params.toString()
     }
 
+    get options() {
+        return this.#options
+    }
+
     private set(patch: Partial<HarmonyRequestOptions>) {
-        this.options = { ...this.options, ...patch }
+        this.#options = { ...this.#options, ...patch }
         return this
+    }
+
+    /**
+     * Helper method to get a label value by prefix, e.g. getLabelByPrefix('instrument-short-name') will return the value of the label that starts with 'instrument-short-name:'
+     */
+    getLabelByPrefix(prefix: string) {
+        const label = this.#options.labels?.find((l) =>
+            l.startsWith(`${prefix}:`),
+        )
+
+        const value = label ? label.split(':')[1].trim() : undefined
+
+        return value !== 'NOT APPLICABLE' ? value : undefined
     }
 
     environment(environment: HarmonyRequestOptions['environment']) {
@@ -163,14 +186,14 @@ export class HarmonyRequest {
         if (this.isVariableConceptId(variable)) {
             return this.set({
                 variableConceptIds: [
-                    ...(this.options.variableConceptIds ?? []),
+                    ...(this.#options.variableConceptIds ?? []),
                     variable,
                 ],
             })
         }
 
         return this.set({
-            variables: [...(this.options.variables ?? []), variable],
+            variables: [...(this.#options.variables ?? []), variable],
         })
     }
 
@@ -199,8 +222,24 @@ export class HarmonyRequest {
 
     label(label: string) {
         return this.set({
-            labels: [...(this.options.labels ?? []), label],
+            labels: [...(this.#options.labels ?? []), label],
         })
+    }
+
+    addLabelsFromVariable(variable: Variable) {
+        this.label(
+            `collection: ${variable.dataProductShortName}_${variable.dataProductVersion}`,
+        )
+        this.label(
+            `variable-display-name: ${variable.dataFieldLongName || variable.dataFieldId}`,
+        )
+        this.label(
+            `instrument-short-name: ${variable.dataProductInstrumentShortName}`,
+        )
+        this.label(`time-interval: ${variable.dataProductTimeInterval}`)
+        this.label(`units: ${variable.dataFieldUnits}`)
+
+        return this
     }
 
     average(average: string) {
@@ -209,7 +248,7 @@ export class HarmonyRequest {
 
     dimension(dimension: RangeDimension) {
         return this.set({
-            dimensions: [...(this.options.dimensions ?? []), dimension],
+            dimensions: [...(this.#options.dimensions ?? []), dimension],
         })
     }
 
@@ -219,5 +258,132 @@ export class HarmonyRequest {
 
     isVariableConceptId(value: string) {
         return /^V\d+-.+$/.test(value)
+    }
+
+    /**
+     * given a Harmony request, determines the most appropriate Terra icon to represent it.
+     */
+    getTerraIcon() {
+        if (this.options.labels?.includes('terra-time-average-map')) {
+            return 'outline-map'
+        }
+
+        return 'outline-chart-bar'
+    }
+
+    /**
+     * Parses a Harmony OGC request URL and returns a HarmonyRequest instance
+     * with the corresponding options populated.
+     *
+     * @example
+     * const request = HarmonyRequest.fromUrl(
+     *   'https://harmony.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat(5:40)&subset=lon(62:95)&format=text%2Fcsv'
+     * )
+     */
+    static fromUrl(url?: string): HarmonyRequest {
+        if (!url) {
+            return new HarmonyRequest()
+        }
+
+        const parsed = new URL(url)
+
+        // Determine environment from origin
+        let environment: Environments | undefined
+        if (parsed.origin === HARMONY_URLS[Environments.PROD]) {
+            environment = Environments.PROD
+        } else if (parsed.origin === HARMONY_URLS[Environments.UAT]) {
+            environment = Environments.UAT
+        }
+
+        // Parse path: /{collectionConceptId}/ogc-api-coverages/1.0.0/collections/{collectionsValue}/coverage/rangeset
+        // e.g. ['', 'C2723754847-GES_DISC', 'ogc-api-coverages', '1.0.0', 'collections', 'parameter_vars', 'coverage', 'rangeset']
+        const pathParts = parsed.pathname.split('/')
+        const collectionConceptId = pathParts[1] || undefined
+        const collectionsValue = pathParts[5]
+
+        // Variable concept IDs are encoded in the path when not using 'parameter_vars' or 'all'
+        let variableConceptIds: string[] | undefined
+        if (
+            collectionsValue &&
+            collectionsValue !== 'parameter_vars' &&
+            collectionsValue !== 'all'
+        ) {
+            variableConceptIds = collectionsValue.split(',')
+        }
+
+        // Parse subset params for location, time, and named dimensions
+        const subsets = parsed.searchParams.getAll('subset')
+        let south: number | undefined
+        let north: number | undefined
+        let west: number | undefined
+        let east: number | undefined
+        let startDate: string | undefined
+        let endDate: string | undefined
+        const dimensions: RangeDimension[] = []
+
+        for (const subset of subsets) {
+            const latMatch = subset.match(/^lat\((.+):(.+)\)$/)
+            const lonMatch = subset.match(/^lon\((.+):(.+)\)$/)
+            const timeMatch = subset.match(/^time\("(.+)":"(.+)"\)$/)
+            const dimMatch = subset.match(/^(\w+)\((.+):(.+)\)$/)
+
+            if (latMatch) {
+                south = parseFloat(latMatch[1])
+                north = parseFloat(latMatch[2])
+            } else if (lonMatch) {
+                west = parseFloat(lonMatch[1])
+                east = parseFloat(lonMatch[2])
+            } else if (timeMatch) {
+                startDate = timeMatch[1]
+                endDate = timeMatch[2]
+            } else if (dimMatch) {
+                dimensions.push({
+                    name: dimMatch[1],
+                    min: parseFloat(dimMatch[2]),
+                    max: parseFloat(dimMatch[3]),
+                })
+            }
+        }
+
+        // Build location from parsed lat/lon bounds or point
+        let location: LatLng | LatLngBounds | undefined
+        if (
+            south !== undefined &&
+            north !== undefined &&
+            west !== undefined &&
+            east !== undefined
+        ) {
+            // LatLngBounds expects [west, south, east, north]
+            location = new LatLngBounds([west, south, east, north])
+        }
+
+        const point = parsed.searchParams.get('point')
+        if (point) {
+            const [lng, lat] = point.split(',').map(Number)
+            location = new LatLng(lat, lng)
+        }
+
+        const format = parsed.searchParams.get('format') ?? undefined
+        const label = parsed.searchParams.getAll('label') ?? undefined
+        const labels = label && label.length > 0 ? label : undefined
+        const variables = parsed.searchParams.getAll('variable')
+        const average = parsed.searchParams.get('average') ?? undefined
+        const anonymous =
+            parsed.searchParams.get('maxResults') === '10' ? true : undefined
+
+        return new HarmonyRequest({
+            environment,
+            collectionConceptId,
+            variableConceptIds,
+            variables: variables.length > 0 ? variables : undefined,
+            location,
+            startDate,
+            endDate,
+            format,
+            labels,
+            average,
+            anonymous,
+            dimensions: dimensions.length > 0 ? dimensions : undefined,
+        })
     }
 }

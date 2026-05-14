@@ -21,7 +21,7 @@ import {
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 
 const variableEntryIdsConverter = {
@@ -181,6 +181,25 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
         reflect: true,
     })
     productLabel?: string
+
+    /**
+     * the application ID is used for tracking purposes and will be included in the labels of Harmony jobs created by this component
+     */
+    @property({ attribute: 'application-id' })
+    applicationId?: string
+
+    /**
+     * When true, enables IndexedDB caching — data will be read from and written to the local cache.
+     * Defaults to false, meaning no caching is performed.
+     */
+    @property({ type: Boolean })
+    cache = false
+
+    /**
+     * If provided, skips creating a new Harmony job and instead waits for this existing job ID to complete.
+     */
+    @property({ attribute: 'job-id' })
+    jobId?: string
 
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar

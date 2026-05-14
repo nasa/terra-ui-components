@@ -1,6 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
-import { Status, type SubsetJobStatus } from '../data-services/types.js'
-import type { SearchOptions } from '../metadata-catalog/types.js'
+import { Status, type SubsetJobStatus } from '../apis/harmony.api.js'
+import type { SearchOptions } from '../apis/harmony.api.js'
 import type { QueryClientHost } from '../mixins/query-client.mixin.js'
 import {
     queryCancelHarmonySubsetJob,
@@ -76,7 +76,8 @@ export class HarmonyRequestController implements ReactiveController {
         return this.#cancelJob.mutate(options)
     }
 
-    startPollForJobStatus(jobId: string) {
+    startPollForJobStatus(jobId: string, options?: SearchOptions) {
+        this.#options = options
         this.#jobId = jobId
     }
 

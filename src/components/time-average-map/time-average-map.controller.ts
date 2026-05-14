@@ -6,7 +6,7 @@ import {
     type SubsetJobStatus,
     type SubsetJobError,
     Status,
-} from '../../data-services/types.js'
+} from '../../apis/harmony.api.js'
 import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
 import { formatDate } from '../../utilities/date.js'
@@ -17,6 +17,7 @@ import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
 import TimeAvgMapCacheService from './time-average-map-cache.service.js'
+import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
 
 const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
@@ -28,6 +29,7 @@ export class TimeAvgMapController {
 
     #host: ReactiveControllerHost & TerraTimeAvgMap & QueryClientHost
     #cacheService = new TimeAvgMapCacheService()
+    #thumbnailService = new ThumbnailService()
     #collectionController: CollectionController
     #harmonyRequestController: HarmonyRequestController
 
@@ -62,9 +64,9 @@ export class TimeAvgMapController {
                 this.#harmonyRequestController.reset()
                 this.#host.harmonyJobId = undefined
 
-                // Try cache first
+                // Try cache first (only when cache is enabled)
                 const cacheKey = this.getCacheKey()
-                {
+                if (this.#host.cache) {
                     const existing =
                         await this.#cacheService.getValidCacheEntry(cacheKey)
 
@@ -77,6 +79,54 @@ export class TimeAvgMapController {
                         this.#updateGeoTIFFLayer(existing.blob)
                         return existing.blob
                     }
+                }
+
+                // If a specific jobId is provided, skip request building and poll directly
+                if (this.#host.jobId) {
+                    console.log(
+                        'Using provided jobId, waiting for harmony job...',
+                    )
+                    const jobStatus = await this.#waitForHarmonyJob(
+                        this.#host.jobId,
+                        signal,
+                    )
+
+                    if (jobStatus.status === Status.FAILED) {
+                        const errorMessage =
+                            jobStatus.message ||
+                            jobStatus.errors?.[0]?.message ||
+                            'The subset job failed'
+                        const error = new Error(errorMessage)
+                        this.#handleHarmonyError(error, jobStatus.errors)
+                        throw error
+                    }
+
+                    if (
+                        jobStatus.status === Status.COMPLETE_WITH_ERRORS &&
+                        jobStatus.errors &&
+                        jobStatus.errors.length > 0
+                    ) {
+                        const errorMessage =
+                            jobStatus.errors[0].message ||
+                            'The subset job completed with errors'
+                        const error = new Error(errorMessage)
+                        this.#handleHarmonyError(error, jobStatus.errors)
+                        throw error
+                    }
+
+                    const blob = await this.#fetchJobBlob(jobStatus, signal)
+
+                    if (this.#host.cache) {
+                        await this.#cacheService.storeEntry(cacheKey, {
+                            blob,
+                            environment: this.#host.environment,
+                            harmonyJobId: this.#host.jobId,
+                        })
+                    }
+
+                    this.#host.harmonyJobId = this.#host.jobId
+                    this.#updateGeoTIFFLayer(blob)
+                    return blob
                 }
 
                 // Build the Harmony request
@@ -101,6 +151,13 @@ export class TimeAvgMapController {
                     .format('image/tiff')
                     .average('time')
                     .label('terra-time-average-map')
+
+                if (this.#host.applicationId) {
+                    harmonyRequest.label(this.#host.applicationId)
+                }
+
+                // add some helpful labels to the request for user experience so users don't just see concept ids
+                harmonyRequest.addLabelsFromVariable(catalogVariable)
 
                 console.log('Creating time average map job...')
 
@@ -154,12 +211,16 @@ export class TimeAvgMapController {
                 // Fetch the blob output
                 const blob = await this.#fetchJobBlob(jobStatus, signal)
 
-                // Store in cache
-                await this.#cacheService.storeEntry(cacheKey, {
-                    blob,
-                    environment: this.#host.environment,
-                    harmonyJobId: jobStatus.jobID,
-                })
+                // Store in cache (only when cache is enabled)
+                if (this.#host.cache) {
+                    await this.#cacheService.storeEntry(cacheKey, {
+                        blob,
+                        environment: this.#host.environment,
+                        harmonyJobId: jobStatus.jobID,
+                    })
+                }
+
+                this.#host.harmonyJobId = jobStatus.jobID
 
                 this.#updateGeoTIFFLayer(blob)
 
@@ -227,7 +288,9 @@ export class TimeAvgMapController {
         jobId: string,
         signal: AbortSignal,
     ): Promise<SubsetJobStatus> {
-        this.#harmonyRequestController.startPollForJobStatus(jobId)
+        this.#harmonyRequestController.startPollForJobStatus(jobId, {
+            bearerToken: this.#host.bearerToken,
+        })
 
         while (true) {
             if (signal.aborted) {
@@ -301,6 +364,24 @@ export class TimeAvgMapController {
         })
 
         this.#host.updateGeoTIFFLayer(blob)
+
+        const harmonyJobId = this.#host.harmonyJobId
+        if (harmonyJobId) {
+            this.#captureThumbnail(harmonyJobId).catch(console.error)
+        }
+    }
+
+    async #captureThumbnail(
+        harmonyJobId: string,
+        delayMs = 1500,
+    ): Promise<void> {
+        // Wait for OpenLayers to finish rendering the GeoTIFF layer
+        await new Promise<void>((resolve) => setTimeout(resolve, delayMs))
+
+        const blob = await this.#host.captureMapThumbnail()
+        if (blob) {
+            await this.#thumbnailService.store(harmonyJobId, blob)
+        }
     }
 
     #handleHarmonyError(

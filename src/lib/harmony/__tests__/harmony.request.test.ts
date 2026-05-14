@@ -15,7 +15,7 @@ describe('HarmonyRequest', () => {
         it('throws error when no collectionConceptId is provided', () => {
             const request = new HarmonyRequest()
             expect(() => request.baseUrl).to.throw(
-                'Collection concept id is required'
+                'Collection concept id is required',
             )
         })
 
@@ -23,7 +23,9 @@ describe('HarmonyRequest', () => {
             const request = new HarmonyRequest({
                 collectionConceptId: COLLECTION_CONCEPT_ID,
             })
-            expect(request.baseUrl).to.include('https://harmony.earthdata.nasa.gov')
+            expect(request.baseUrl).to.include(
+                'https://harmony.earthdata.nasa.gov',
+            )
         })
 
         it('uses the UAT harmony URL when environment is UAT', () => {
@@ -32,7 +34,7 @@ describe('HarmonyRequest', () => {
                 environment: Environments.UAT,
             })
             expect(request.baseUrl).to.include(
-                'https://harmony.uat.earthdata.nasa.gov'
+                'https://harmony.uat.earthdata.nasa.gov',
             )
         })
 
@@ -43,7 +45,7 @@ describe('HarmonyRequest', () => {
                 variableConceptIds: [VARIABLE_CONCEPT_ID],
             })
             expect(request.baseUrl).to.equal(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/${VARIABLE_CONCEPT_ID}/coverage/rangeset`
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/${VARIABLE_CONCEPT_ID}/coverage/rangeset`,
             )
         })
 
@@ -62,7 +64,7 @@ describe('HarmonyRequest', () => {
                 variables: [VARIABLE_ENTRY_ID],
             })
             expect(request.baseUrl).to.equal(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset`
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset`,
             )
         })
 
@@ -117,7 +119,9 @@ describe('HarmonyRequest', () => {
             })
             const params = decodeURIComponent(request.params)
             // startDate should appear twice
-            expect(params.split('2026-01-01T00:00:00.000Z').length - 1).to.equal(2)
+            expect(
+                params.split('2026-01-01T00:00:00.000Z').length - 1,
+            ).to.equal(2)
         })
 
         it('does not append a time subset when startDate is not provided', () => {
@@ -256,7 +260,7 @@ describe('HarmonyRequest', () => {
             })
             const url = decodeURIComponent(request.requestUrl)
             expect(url).to.include(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`,
             )
             expect(url).to.include(`/collections/${VARIABLE_CONCEPT_ID}/`)
             expect(url).to.include('subset=lat(5.29:37.49)')
@@ -277,7 +281,7 @@ describe('HarmonyRequest', () => {
             })
             const url = decodeURIComponent(request.requestUrl)
             expect(url).to.include(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`,
             )
             expect(url).to.include('/collections/parameter_vars/')
             expect(url).to.include('subset=lat(5.29:37.49)')
@@ -300,7 +304,9 @@ describe('HarmonyRequest', () => {
                 format: 'application/x-netcdf4',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812863-GES_DISC')
+            expect(url).to.include(
+                'harmony.earthdata.nasa.gov/C1276812863-GES_DISC',
+            )
             expect(url).to.include('/collections/V2296950155-GES_DISC/')
             expect(url).to.include('subset=lat(14.85:27.92)')
             expect(url).to.include('subset=lon(65.74:91.76)')
@@ -323,7 +329,9 @@ describe('HarmonyRequest', () => {
                 average: 'time',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812863-GES_DISC')
+            expect(url).to.include(
+                'harmony.earthdata.nasa.gov/C1276812863-GES_DISC',
+            )
             expect(url).to.include('/collections/parameter_vars/')
             expect(url).to.include('subset=lat(5.29:37.49)')
             expect(url).to.include('subset=lon(62.23:94.57)')
@@ -347,14 +355,18 @@ describe('HarmonyRequest', () => {
                 format: 'application/x-netcdf4;profile=opendap_url',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812863-GES_DISC')
+            expect(url).to.include(
+                'harmony.earthdata.nasa.gov/C1276812863-GES_DISC',
+            )
             expect(url).to.include('/collections/V2296950155-GES_DISC/')
             expect(url).to.include('subset=lat(-12.16:31.74)')
             expect(url).to.include('subset=lon(63.63:101.6)')
             expect(url).to.include('subset=time(')
             expect(url).to.include('2025-09-02T00:00:00.000Z')
             expect(url).to.include('2025-09-04T00:00:00.000Z')
-            expect(url).to.include('format=application/x-netcdf4;profile=opendap_url')
+            expect(url).to.include(
+                'format=application/x-netcdf4;profile=opendap_url',
+            )
         })
 
         it('PODAAC L2 subsetter request with a different collection', () => {
@@ -369,7 +381,9 @@ describe('HarmonyRequest', () => {
                 format: 'application/x-netcdf4',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include('harmony.earthdata.nasa.gov/C1239966755-GES_DISC')
+            expect(url).to.include(
+                'harmony.earthdata.nasa.gov/C1239966755-GES_DISC',
+            )
             expect(url).to.include('/collections/V2778423892-GES_DISC/')
             expect(url).to.include('subset=lat(12.32:47.86)')
             expect(url).to.include('subset=lon(45:85.08)')
@@ -382,7 +396,9 @@ describe('HarmonyRequest', () => {
 
     describe('builder methods', () => {
         it('collection() sets the collectionConceptId', () => {
-            const request = new HarmonyRequest().collection(COLLECTION_CONCEPT_ID)
+            const request = new HarmonyRequest().collection(
+                COLLECTION_CONCEPT_ID,
+            )
             expect(request.baseUrl).to.include(COLLECTION_CONCEPT_ID)
         })
 
@@ -523,7 +539,9 @@ describe('HarmonyRequest', () => {
                 labels: ['harmony-py'],
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812882-GES_DISC')
+            expect(url).to.include(
+                'harmony.earthdata.nasa.gov/C1276812882-GES_DISC',
+            )
             expect(url).to.include('/collections/parameter_vars/')
             expect(url).to.include('subset=lat(0:90)')
             expect(url).to.include('subset=lon(-180:180)')
@@ -545,7 +563,7 @@ describe('HarmonyRequest', () => {
                     .dateRange(START_DATE, END_DATE)
                     .format('application/x-netcdf4')
                     .label(`collectionConceptId: ${COLLECTION_CONCEPT_ID}`)
-                    .average('time').requestUrl
+                    .average('time').requestUrl,
             )
 
             expect(url).to.include('harmony.earthdata.nasa.gov')
@@ -562,9 +580,13 @@ describe('HarmonyRequest', () => {
     describe('isVariableConceptId', () => {
         it('valid cases', () => {
             const request = new HarmonyRequest()
-            expect(request.isVariableConceptId('V2621793629-GES_DISC')).to.equal(true)
+            expect(
+                request.isVariableConceptId('V2621793629-GES_DISC'),
+            ).to.equal(true)
             expect(request.isVariableConceptId('V1-foo')).to.equal(true)
-            expect(request.isVariableConceptId('V123-abc-def-123')).to.equal(true)
+            expect(request.isVariableConceptId('V123-abc-def-123')).to.equal(
+                true,
+            )
             expect(request.isVariableConceptId('V999-!@#$%^&*')).to.equal(true)
         })
 
@@ -574,6 +596,143 @@ describe('HarmonyRequest', () => {
             expect(request.isVariableConceptId('V-abc')).to.equal(false)
             expect(request.isVariableConceptId('123-abc')).to.equal(false)
             expect(request.isVariableConceptId('foo')).to.equal(false)
+        })
+    })
+
+    describe('fromUrl', () => {
+        const EXAMPLE_URL =
+            'https://harmony.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat(5%3A40)&subset=lon(62%3A95)&subset=time(%222009-01-01T00%3A00%3A00Z%22%3A%222009-01-05T23%3A59%3A59Z%22)&format=text%2Fcsv&label=terra-time-series&variable=GPM_3IMERGHH_07_precipitation&average=area'
+
+        it('parses collectionConceptId from the URL path', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            expect(request.baseUrl).to.include('C2723754847-GES_DISC')
+        })
+
+        it('sets environment to PROD for the production harmony URL', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            expect(request.baseUrl).to.include(
+                'https://harmony.earthdata.nasa.gov',
+            )
+            expect(request.baseUrl).to.not.include('uat')
+        })
+
+        it('sets environment to UAT for the UAT harmony URL', () => {
+            const uatUrl =
+                'https://harmony.uat.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/all/coverage/rangeset?subset=lat(5:40)&subset=lon(62:95)'
+            const request = HarmonyRequest.fromUrl(uatUrl)
+            expect(request.baseUrl).to.include(
+                'https://harmony.uat.earthdata.nasa.gov',
+            )
+        })
+
+        it('parses parameter_vars path as named variables (not concept ids)', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            // parameter_vars means variable names are in query params, so baseUrl includes parameter_vars
+            expect(request.baseUrl).to.include('parameter_vars')
+        })
+
+        it('parses variable concept ids from the URL path', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C1276812863-GES_DISC/ogc-api-coverages/1.0.0/collections/V2586807132-GES_DISC/coverage/rangeset?subset=lat(5:40)&subset=lon(62:95)'
+            const request = HarmonyRequest.fromUrl(url)
+            expect(request.baseUrl).to.include('V2586807132-GES_DISC')
+            expect(request.baseUrl).to.not.include('parameter_vars')
+        })
+
+        it('parses multiple variable concept ids joined by commas in the path', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C1276812863-GES_DISC/ogc-api-coverages/1.0.0/collections/V1-GES_DISC,V2-GES_DISC/coverage/rangeset?subset=lat(0:90)&subset=lon(-180:180)'
+            const request = HarmonyRequest.fromUrl(url)
+            expect(request.baseUrl).to.include('V1-GES_DISC,V2-GES_DISC')
+        })
+
+        it('parses lat/lon subsets into a LatLngBounds location', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            const params = decodeURIComponent(request.params)
+            expect(params).to.include('subset=lat(5:40)')
+            expect(params).to.include('subset=lon(62:95)')
+        })
+
+        it('parses the time subset into startDate and endDate', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            const params = decodeURIComponent(request.params)
+            expect(params).to.include('2009-01-01T00:00:00Z')
+            expect(params).to.include('2009-01-05T23:59:59Z')
+        })
+
+        it('parses the format query param', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            expect(request.params).to.include('format=text%2Fcsv')
+        })
+
+        it('parses the label query param into labels array', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            const params = decodeURIComponent(request.params)
+            expect(params).to.include('label=terra-time-series')
+        })
+
+        it('parses multiple comma-separated labels', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/all/coverage/rangeset?subset=lat(0:90)&subset=lon(0:180)&label=label-a,label-b'
+            const request = HarmonyRequest.fromUrl(url)
+            const params = decodeURIComponent(request.params)
+            expect(params).to.include('label-a')
+            expect(params).to.include('label-b')
+        })
+
+        it('parses variable query params', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            expect(request.params).to.include(
+                'variable=GPM_3IMERGHH_07_precipitation',
+            )
+        })
+
+        it('parses multiple variable query params', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C1276812882-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat(0:90)&subset=lon(-180:180)&variable=SO2&variable=PS'
+            const request = HarmonyRequest.fromUrl(url)
+            expect(request.params).to.include('variable=SO2')
+            expect(request.params).to.include('variable=PS')
+        })
+
+        it('parses the average query param', () => {
+            const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            expect(request.params).to.include('average=area')
+        })
+
+        it('parses maxResults=10 as anonymous access', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/all/coverage/rangeset?subset=lat(0:90)&subset=lon(0:180)&maxResults=10'
+            const request = HarmonyRequest.fromUrl(url)
+            expect(request.params).to.include('maxResults=10')
+        })
+
+        it('parses named dimension subsets', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C1276812882-GES_DISC/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset?subset=lat(0:90)&subset=lon(-180:180)&subset=lev(1:5)&variable=SO2'
+            const request = HarmonyRequest.fromUrl(url)
+            const params = decodeURIComponent(request.params)
+            expect(params).to.include('subset=lev(1:5)')
+        })
+
+        it('parses a point subset into a LatLng location', () => {
+            const url =
+                'https://harmony.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/all/coverage/rangeset?point=37.5,94.0'
+            const request = HarmonyRequest.fromUrl(url)
+            const params = decodeURIComponent(request.params)
+            expect(params).to.include('point=37.5,94')
+        })
+
+        it('produces a requestUrl that round-trips through fromUrl', () => {
+            const original = HarmonyRequest.fromUrl(EXAMPLE_URL)
+            const roundtripped = HarmonyRequest.fromUrl(original.requestUrl)
+            const originalParams = decodeURIComponent(original.params)
+            const roundtrippedParams = decodeURIComponent(roundtripped.params)
+            expect(roundtrippedParams).to.include('subset=lat(5:40)')
+            expect(roundtrippedParams).to.include('subset=lon(62:95)')
+            expect(roundtrippedParams).to.include('2009-01-01T00:00:00Z')
+            expect(roundtrippedParams).to.include('2009-01-05T23:59:59Z')
+            expect(roundtrippedParams).to.equal(originalParams)
         })
     })
 })

@@ -8,6 +8,69 @@ import type { UmmC } from './types/cmr/umm-c.js'
 import type { UmmVar } from './types/cmr/umm-var.js'
 import type { UmmG } from './types/cmr/umm-g.js'
 
+export type CmrCollectionCitationItem = {
+    doi: {
+        doi: string
+    }
+    collectionCitations: Array<CmrCollectionCitation>
+}
+
+export type CmrCollectionCitation = {
+    creator: string
+    editor: string
+    dataPresentationForm: string
+    onlineResource: {
+        linkage: string
+    }
+    publisher: string
+    title: string
+    seriesName: string
+    releaseDate: string
+    version: string
+    releasePlace: string
+}
+
+export type CmrSearchResult = {
+    type: 'collection' | 'variable'
+    collectionConceptId: string
+    collectionEntryId: string
+    summary: string
+    conceptId: string
+    entryId: string
+    provider: string
+    title: string
+}
+
+export type CmrGranule = {
+    conceptId: string
+    dataGranule: CmrGranuleDataGranule
+    title: string
+    timeEnd: string
+    timeStart: string
+    relatedUrls: Array<{
+        type: string
+        url: string
+    }>
+    cloudCover: unknown
+}
+
+export type CmrGranuleDataGranule = {
+    archiveAndDistributionInformation: Array<ArchiveAndDistributionInformation>
+}
+
+export type ArchiveAndDistributionInformation = {
+    name: string
+    size: number
+    sizeUnit: string
+    sizeInBytes?: number
+    files?: Array<ArchiveAndDistributionInformation>
+}
+
+export type CloudCoverRange = {
+    min: number
+    max: number
+}
+
 const baseUrl = 'https://cmr.earthdata.nasa.gov/search/'
 
 export interface UmmResponse<T> {
@@ -210,6 +273,45 @@ class CmrApi {
             `granules.umm_json?${searchParams.toString()}`,
             options,
         )
+    }
+
+    async getCollectionCitation(
+        collectionEntryId: string,
+        options?: RequestOptions,
+    ): Promise<CmrCollectionCitationItem> {
+        const collection = await this.getCollectionByEntryId(
+            collectionEntryId,
+            options,
+        )
+        const umm = collection.umm
+
+        if (!umm.CollectionCitations?.length) {
+            throw new Error(
+                `No collection citations found for ${collectionEntryId}`,
+            )
+        }
+
+        return {
+            doi: {
+                doi: umm.DOI?.DOI ?? '',
+            },
+            collectionCitations: umm.CollectionCitations.map((citation) => ({
+                creator: citation.Creator ?? '',
+                editor: citation.Editor ?? '',
+                dataPresentationForm: citation.DataPresentationForm ?? '',
+                onlineResource: {
+                    linkage: citation.OnlineResource?.Linkage ?? '',
+                },
+                publisher: citation.Publisher ?? '',
+                title: citation.Title ?? '',
+                seriesName: citation.SeriesName ?? '',
+                releaseDate: citation.ReleaseDate
+                    ? String(citation.ReleaseDate)
+                    : '',
+                version: citation.Version ?? '',
+                releasePlace: citation.ReleasePlace ?? '',
+            })),
+        }
     }
 
     #request<T>(path: string, requestOptions?: RequestOptions) {

@@ -111,6 +111,7 @@ export class SpatialPickerService {
         value: SpatialValue,
         constraintsStr: string,
     ): string | null {
+        if (!constraintsStr) return null
         const parts = constraintsStr.split(',').map((p) => parseFloat(p.trim()))
         if (parts.length !== 4 || parts.some(isNaN)) return null
 
