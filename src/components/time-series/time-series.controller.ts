@@ -36,8 +36,6 @@ import * as Plotly from 'plotly.js-dist-min'
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
 const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
-const TIME_SERIES_NO_USER_PROXY_URL =
-    'https://8weebb031a.execute-api.us-east-1.amazonaws.com/SIT/timeseries-no-user'
 const HARMONY_STATUS_WAIT_INTERVAL_MS = 300
 const MAX_CONCEPT_ID_WAIT_MS = 10000
 
@@ -253,28 +251,8 @@ export class TimeSeriesController {
                 throw error
             }
 
-            const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(dataLink)}`
-            const response = await fetch(proxyUrl, {
-                signal,
-                headers: {
-                    ...(this.host.bearerToken
-                        ? {
-                              Authorization: `Bearer ${this.host.bearerToken}`,
-                          }
-                        : {}),
-                },
-            })
-
-            if (!response.ok) {
-                const error = new Error(
-                    `Failed to fetch subset job link contents: ${response.statusText}`,
-                )
-                this.#handleHarmonyError(error)
-                throw error
-            }
-
             this.#lastHarmonyJobId = this.host.jobId
-            return this.#parseTimeSeriesCsv(await response.text())
+            return this.#fetchHarmonyDataLink(dataLink, signal)
         }
 
         // check the database for any existing data (only when cache is enabled)
@@ -467,17 +445,6 @@ export class TimeSeriesController {
         this.#userConfirmedWarning = false
 
         const location = this.#parseLocationInput()
-
-        if (location instanceof LatLng) {
-            return this.#fetchPointTimeSeriesChunkFromProxy(
-                variableEntryId,
-                startDate,
-                endDate,
-                signal,
-                location,
-            )
-        }
-
         const isBoundingBoxLocation = location instanceof LatLngBounds
         const collectionConceptId =
             await this.#waitForCollectionConceptId(signal)
@@ -561,7 +528,18 @@ export class TimeSeriesController {
             throw error
         }
 
-        const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(dataLink)}`
+        return this.#fetchHarmonyDataLink(dataLink, signal)
+    }
+
+    async #fetchHarmonyDataLink(
+        dataLink: string,
+        signal: AbortSignal,
+    ): Promise<TimeSeriesData> {
+        const normalizedLink = dataLink.replace(
+            'proxy-timeseries',
+            'timeseries',
+        )
+        const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(normalizedLink)}`
 
         const response = await fetch(proxyUrl, {
             signal,
@@ -578,72 +556,6 @@ export class TimeSeriesController {
             )
             this.#handleHarmonyError(error)
             throw error
-        }
-
-        return this.#parseTimeSeriesCsv(await response.text())
-    }
-
-    async #fetchPointTimeSeriesChunkFromProxy(
-        variableEntryId: string,
-        startDate: Date,
-        endDate: Date,
-        signal: AbortSignal,
-        location: LatLng,
-    ): Promise<TimeSeriesData> {
-        const lat = location.lat.toFixed(2)
-        const lon = location.lng.toFixed(2)
-
-        const url = `${TIME_SERIES_NO_USER_PROXY_URL}?${new URLSearchParams({
-            data: variableEntryId,
-            lat,
-            lon,
-            time_start: `${format(startDate, 'yyyy-MM-dd')}T00:00:00`,
-            time_end: `${format(endDate, 'yyyy-MM-dd')}T23:59:59`,
-        }).toString()}`
-
-        const response = await fetch(url, {
-            mode: 'cors',
-            signal,
-            headers: {
-                Accept: 'application/json',
-            },
-        })
-
-        if (!response.ok) {
-            let errorDetails: {
-                code?: string
-                message?: string
-                context?: string
-            } = {}
-
-            const contentType = response.headers.get('content-type')
-
-            if (contentType?.includes('application/json')) {
-                try {
-                    errorDetails = await response.json()
-                } catch {
-                    errorDetails = { message: response.statusText }
-                }
-            } else {
-                errorDetails = { message: response.statusText }
-            }
-
-            this.host.dispatchEvent(
-                new CustomEvent('terra-time-series-error', {
-                    detail: {
-                        status: response.status,
-                        code: errorDetails.code || String(response.status),
-                        message: errorDetails.message || response.statusText,
-                        context: errorDetails.context,
-                    },
-                    bubbles: true,
-                    composed: true,
-                }),
-            )
-
-            throw new Error(
-                `Failed to fetch time series data: ${errorDetails.message || response.statusText}`,
-            )
         }
 
         return this.#parseTimeSeriesCsv(await response.text())

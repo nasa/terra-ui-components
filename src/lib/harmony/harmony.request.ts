@@ -100,7 +100,7 @@ export class HarmonyRequest {
         } = this.#options
 
         if (location instanceof LatLng) {
-            params.append('point', `${location.lat},${location.lng}`)
+            params.append('point', `${location.lng},${location.lat}`)
         } else if (location instanceof LatLngBounds) {
             params.append(
                 'subset',
@@ -359,7 +359,7 @@ export class HarmonyRequest {
 
         const point = parsed.searchParams.get('point')
         if (point) {
-            const [lat, lng] = point.split(',').map(Number)
+            const [lng, lat] = point.split(',').map(Number)
             location = new LatLng(lat, lng)
         }
 
