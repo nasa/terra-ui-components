@@ -48,6 +48,7 @@ export class TimeSeriesController {
     #cacheService = new TimeSeriesCacheService()
     #thumbnailService = new ThumbnailService()
     #lastHarmonyJobId: string | undefined
+    #lastFetchedVariableIds: string | undefined
     #collectionController: CollectionController
     #harmonyRequestController: HarmonyRequestController
 
@@ -90,6 +91,12 @@ export class TimeSeriesController {
                     console.log(
                         'Requirements not met to fetch the time series data ',
                     )
+                    const currentVariableIds = this.#getRequestedVariables()
+                        .map((v) => v.dataFieldId)
+                        .join('|')
+                    if (currentVariableIds !== this.#lastFetchedVariableIds) {
+                        this.lastTaskValue = undefined
+                    }
                     return initialState
                 }
 
@@ -118,6 +125,9 @@ export class TimeSeriesController {
                 )
 
                 this.metadata = seriesResults[0]?.timeSeries.metadata
+                this.#lastFetchedVariableIds = this.#getRequestedVariables()
+                    .map((v) => v.dataFieldId)
+                    .join('|')
 
                 // map each variable result to its own Plotly trace
                 this.lastTaskValue = seriesResults.map(
