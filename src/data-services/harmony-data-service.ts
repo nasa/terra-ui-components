@@ -1,15 +1,10 @@
 import { getGraphQLClient } from '../lib/graphql-client.js'
-import {
-    CREATE_SUBSET_JOB,
-    GET_SUBSET_JOB_STATUS,
-    GET_SUBSET_JOBS,
-} from './queries.js'
+import { GET_SUBSET_JOB_STATUS, GET_SUBSET_JOBS } from './queries.js'
 import {
     Status,
     type SubsetJobStatus,
     type SearchOptions,
     type SubsetJobs,
-    type CreateSubsetJobInput,
 } from './types.js'
 
 export const HARMONY_CONFIG = {
@@ -27,54 +22,6 @@ export const FINAL_STATUSES = new Set<Status>([
 ])
 
 export class HarmonyDataService {
-    async createSubsetJob(
-        input: CreateSubsetJobInput,
-        options?: SearchOptions,
-    ): Promise<SubsetJobStatus | undefined> {
-        try {
-            const client = await getGraphQLClient()
-            const response = await client.mutate<{
-                createSubsetJob: SubsetJobStatus
-            }>({
-                mutation: CREATE_SUBSET_JOB,
-                variables: {
-                    collectionConceptId: input.collectionConceptId,
-                    collectionEntryId: input.collectionEntryId,
-                    variableConceptIds: input.variableConceptIds,
-                    variableEntryIds: input.variableEntryIds,
-                    average: input.average,
-                    boundingBox: input.boundingBox,
-                    startDate: input.startDate,
-                    endDate: input.endDate,
-                    format: input.format,
-                    labels: input.labels,
-                },
-                context: {
-                    headers: {
-                        ...(options?.bearerToken && {
-                            authorization: options.bearerToken,
-                        }),
-                        'x-environment': options?.environment ?? 'prod',
-                    },
-                    fetchOptions: {
-                        signal: options?.signal,
-                    },
-                },
-            })
-
-            if (response.errors) {
-                throw new Error(
-                    `Failed to create subset job: ${response.errors[0].message}`,
-                )
-            }
-
-            return response.data?.createSubsetJob
-        } catch (err) {
-            console.error('createSubsetJob ERROR: ', err)
-            throw err
-        }
-    }
-
     async getSubsetJobs(searchOptions?: SearchOptions): Promise<SubsetJobs> {
         const client = await getGraphQLClient()
 

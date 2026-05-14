@@ -17,10 +17,7 @@ import {
     isDateRangeContained,
 } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
-import type {
-    SubsetJobStatus,
-    SubsetJobError,
-} from '../../data-services/types.js'
+import type { SubsetJobStatus, SubsetJobError } from '../../apis/harmony.api.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
 import { FINAL_STATUSES, Status } from '../../apis/harmony.api.js'
 import { CollectionController } from '../../controllers/collection.controller.js'

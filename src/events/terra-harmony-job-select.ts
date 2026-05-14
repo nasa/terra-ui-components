@@ -1,4 +1,4 @@
-import type { SubsetJobStatus } from '../data-services/types.js'
+import type { SubsetJobStatus } from '../apis/harmony.api.js'
 
 export type TerraHarmonyJobSelectEvent = CustomEvent<{ job: SubsetJobStatus }>
 

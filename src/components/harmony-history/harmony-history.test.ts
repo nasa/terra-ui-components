@@ -5,8 +5,8 @@ import {
     elementUpdated,
     oneEvent,
 } from '@open-wc/testing'
-import { Status } from '../../data-services/types.js'
-import type { SubsetJobStatus } from '../../data-services/types.js'
+import { Status } from '../../apis/harmony.api.js'
+import type { SubsetJobStatus } from '../../apis/harmony.api.js'
 import './harmony-history.js'
 
 function makeJob(overrides: Partial<SubsetJobStatus> = {}): SubsetJobStatus {

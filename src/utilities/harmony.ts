@@ -1,6 +1,6 @@
 import { html } from 'lit'
 import type { TemplateResult } from 'lit'
-import type { SubsetJobError } from '../data-services/types.js'
+import type { SubsetJobError } from '../apis/harmony.api.js'
 
 export interface HarmonyErrorDetails {
     status: number
@@ -83,14 +83,16 @@ export function isCancellationError(error: unknown): boolean {
 
     // Check graphQLErrors array
     if (Array.isArray(apolloError.graphQLErrors)) {
-        const hasCancellation = apolloError.graphQLErrors.some((gqlError: any) => {
-            const msg = (gqlError.message || '').toLowerCase()
-            return (
-                msg.includes('cancelled') ||
-                msg.includes('canceled') ||
-                msg.includes('aborted')
-            )
-        })
+        const hasCancellation = apolloError.graphQLErrors.some(
+            (gqlError: any) => {
+                const msg = (gqlError.message || '').toLowerCase()
+                return (
+                    msg.includes('cancelled') ||
+                    msg.includes('canceled') ||
+                    msg.includes('aborted')
+                )
+            },
+        )
         if (hasCancellation) {
             return true
         }
@@ -107,7 +109,7 @@ export function isCancellationError(error: unknown): boolean {
  */
 export function extractHarmonyError(
     error: unknown,
-    jobErrors?: Array<SubsetJobError>
+    jobErrors?: Array<SubsetJobError>,
 ): HarmonyErrorDetails {
     let errorCode = '400' // Default to 400 for GraphQL errors (usually client errors)
     let errorMessage = 'An error occurred'
@@ -192,7 +194,7 @@ export function extractHarmonyError(
         // GraphQL errors often have a format like "Failed to create subset job: <message>"
         // or the error might be an Apollo error with more details
         const graphQLErrorMatch = errorMessage.match(
-            /Failed to (?:create|fetch|cancel) subset job:\s*(.+)/i
+            /Failed to (?:create|fetch|cancel) subset job:\s*(.+)/i,
         )
         if (graphQLErrorMatch) {
             errorContext = graphQLErrorMatch[1]
@@ -247,7 +249,8 @@ export function formatHarmonyErrorMessage(error: HarmonyError): TemplateResult {
 
     // Handle 400 - Bad request, show the error message from the API
     if (errorCode === '400') {
-        const errorText = error.context || error.message || 'Bad or missing input'
+        const errorText =
+            error.context || error.message || 'Bad or missing input'
         return html`${errorText}`
     }
 

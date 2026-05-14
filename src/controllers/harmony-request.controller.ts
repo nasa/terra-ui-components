@@ -1,5 +1,5 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
-import { Status, type SubsetJobStatus } from '../data-services/types.js'
+import { Status, type SubsetJobStatus } from '../apis/harmony.api.js'
 import type { SearchOptions } from '../metadata-catalog/types.js'
 import type { QueryClientHost } from '../mixins/query-client.mixin.js'
 import {

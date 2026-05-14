@@ -3,7 +3,7 @@ import type {
     QueryObserverOptions,
 } from '@tanstack/query-core'
 import { harmonyApi, FINAL_STATUSES } from '../apis/harmony.api.js'
-import type { SearchOptions, SubsetJobStatus } from '../data-services/types.js'
+import type { SearchOptions, SubsetJobStatus } from '../apis/harmony.api.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
 import type { RequestOptions } from '../lib/api.client.js'
 import { ThumbnailService } from '../lib/thumbnails/thumbnail.service.js'

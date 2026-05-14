@@ -2,7 +2,7 @@ import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type TerraDataSubsetterHistory from './data-subsetter-history.component.js'
-import { type SubsetJobs } from '../../data-services/types.js'
+import { type SubsetJobs } from '../../apis/harmony.api.js'
 import { HarmonyDataService } from '../../data-services/harmony-data-service.js'
 
 // we want to keep a relatively fresh jobs list, but if the history is collapsed we don't need to trigger it as often
@@ -31,7 +31,8 @@ export class DataSubsetterHistoryController {
                 //      the history panel is expanded
                 //      the browser window is focused
                 const shouldFetch =
-                    this.#windowIsVisible && (!this.#host.collapsed || !this.jobs)
+                    this.#windowIsVisible &&
+                    (!this.#host.collapsed || !this.jobs)
 
                 if (shouldFetch && this.#host.bearerToken) {
                     // only fetch new jobs if the history panel is expanded AND the user is looking at the browser window
@@ -43,7 +44,10 @@ export class DataSubsetterHistoryController {
                 }
 
                 // call the task again automatically after a bit
-                this.#jobTimeout = setTimeout(() => this.task.run(), JOBS_POLL_MILLIS)
+                this.#jobTimeout = setTimeout(
+                    () => this.task.run(),
+                    JOBS_POLL_MILLIS,
+                )
 
                 return this.jobs
             },
@@ -54,14 +58,14 @@ export class DataSubsetterHistoryController {
     hostConnected() {
         document.addEventListener(
             'visibilitychange',
-            this.#handleVisibilityChange.bind(this)
+            this.#handleVisibilityChange.bind(this),
         )
     }
 
     hostDisconnected() {
         document.removeEventListener(
             'visibilitychange',
-            this.#handleVisibilityChange.bind(this)
+            this.#handleVisibilityChange.bind(this),
         )
     }
 

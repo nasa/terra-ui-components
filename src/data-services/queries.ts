@@ -62,61 +62,6 @@ export const GET_SERVICE_CAPABILITIES = gql`
     }
 `
 
-export const CREATE_SUBSET_JOB = gql`
-    mutation CreateSubsetJob(
-        $collectionConceptId: String
-        $collectionEntryId: String
-        $variableConceptIds: [String]
-        $variableEntryIds: [String]
-        $average: String
-        $boundingBox: BoundingBoxInput
-        $startDate: String
-        $endDate: String
-        $format: String
-        $labels: [String]
-    ) {
-        createSubsetJob(
-            input: {
-                collectionConceptId: $collectionConceptId
-                collectionEntryId: $collectionEntryId
-                variableConceptIds: $variableConceptIds
-                variableEntryIds: $variableEntryIds
-                average: $average
-                boundingBox: $boundingBox
-                startDate: $startDate
-                endDate: $endDate
-                format: $format
-                labels: $labels
-            }
-        ) {
-            jobID
-            status
-            message
-            progress
-            createdAt
-            updatedAt
-            dataExpiration
-            request
-            numInputGranules
-            originalDataSize
-            outputDataSize
-            dataSizePercentChange
-            labels
-            links {
-                title
-                href
-                rel
-                type
-                bbox
-                temporal {
-                    start
-                    end
-                }
-            }
-        }
-    }
-`
-
 export const GET_SUBSET_JOBS = gql`
     query {
         getSubsetJobs {

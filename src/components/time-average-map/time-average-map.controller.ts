@@ -6,7 +6,7 @@ import {
     type SubsetJobStatus,
     type SubsetJobError,
     Status,
-} from '../../data-services/types.js'
+} from '../../apis/harmony.api.js'
 import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
 import { formatDate } from '../../utilities/date.js'

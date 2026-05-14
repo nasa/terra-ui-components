@@ -1,10 +1,5 @@
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import type {
-    SubsetJobStatus,
-    SearchOptions,
-    SubsetJobLink,
-} from '../data-services/types.js'
 import { BadRequestException } from '../exceptions/http.exception.js'
 
 const API_VERSION = '3'
@@ -137,6 +132,54 @@ export interface Variable {
     conceptId: string
     name: string
     href: string
+}
+
+export type SubsetJobStatus = {
+    jobID: string
+    status: Status
+    message: string
+    progress: number
+    createdAt: string
+    updatedAt: string
+    dataExpiration: string
+    request: string
+    numInputGranules: number
+    originalDataSize?: string
+    outputDataSize?: string
+    dataSizePercentChange?: string
+    labels?: string[]
+    errors?: Array<SubsetJobError>
+    links: Array<SubsetJobLink>
+    /** Thumbnail image blob stored locally in IndexedDB, if available */
+    thumbnailBlob?: Blob
+}
+
+export type SubsetJobError = {
+    url: string
+    message: string
+}
+
+export type SubsetJobLink = {
+    title: string
+    href: string
+    rel: string
+    type: string
+    bbox?: number[]
+    temporal?: {
+        start: string
+        end: string
+    }
+}
+
+export type SearchOptions = {
+    signal?: AbortSignal
+    bearerToken?: string | null
+    environment?: 'uat' | 'prod'
+}
+
+export type SubsetJobs = {
+    count: number
+    jobs: Array<SubsetJobStatus>
 }
 
 /**

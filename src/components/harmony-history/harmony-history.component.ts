@@ -13,10 +13,7 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './harmony-history.styles.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { FINAL_STATUSES } from '../../apis/harmony.api.js'
-import type {
-    SubsetJobStatus,
-    SubsetJobLink,
-} from '../../data-services/types.js'
+import type { SubsetJobStatus, SubsetJobLink } from '../../apis/harmony.api.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraTooltip from '../tooltip/tooltip.component.js'
 import TerraIcon from '../icon/icon.component.js'

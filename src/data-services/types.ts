@@ -79,19 +79,6 @@ export type BoundingBox = {
     n: number
 }
 
-export type CreateSubsetJobInput = {
-    collectionConceptId?: string
-    collectionEntryId?: string
-    variableConceptIds?: Array<string>
-    variableEntryIds?: Array<string>
-    boundingBox?: BoundingBox
-    startDate?: string
-    endDate?: string
-    format?: string
-    average?: string
-    labels?: Array<string>
-}
-
 export enum Status {
     FETCHING = 'fetching',
     PREVIEWING = 'previewing',
