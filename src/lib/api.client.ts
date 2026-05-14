@@ -57,12 +57,18 @@ async function request<T>(
         }
 
         if (!res.headers.get('Content-Type')?.includes('json')) {
-            // response is not JSON, assume it's a server error since this is an API client
-            // the server may be incorrectly sending HTML back, which we can't parse anyway
-            throw new HttpException({
-                status: 500,
-                message: `Expected JSON response but got ${res.headers.get('Content-Type')}`,
-            })
+            // on prem Giovanni sometimes returns JSON as plain text, we'll try to parse it anyway but if it fails we'll throw a generic error since we can't trust the response
+            try {
+                return res.json() as Promise<T>
+            } catch (err) {
+                // response is not JSON, assume it's a server error since this is an API client
+                // the server may be incorrectly sending HTML back, which we can't parse anyway
+                throw new HttpException({
+                    status: 500,
+                    message: `Expected JSON response but got ${res.headers.get('Content-Type')}`,
+                    cause: err,
+                })
+            }
         }
 
         return res.json() as Promise<T>

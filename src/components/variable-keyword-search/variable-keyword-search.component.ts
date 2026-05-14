@@ -12,6 +12,7 @@ import { FetchController } from './variable-keyword-search.controller.js'
 import styles from './variable-keyword-search.styles.js'
 import type { ListItem } from './variable-keyword-search.types.js'
 import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 
 /**
  * @summary Fuzzy-search for dataset keywords in combobox with list autocomplete.
@@ -31,7 +32,9 @@ import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
  * @event terra-variable-keyword-search-change - Emitted when an option is selected.
  * @event terra-search - Emitted when the component is triggering a search (like a form triggering submit).
  */
-export default class TerraVariableKeywordSearch extends TerraElement {
+export default class TerraVariableKeywordSearch extends QueryClientMixin(
+    TerraElement,
+) {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,

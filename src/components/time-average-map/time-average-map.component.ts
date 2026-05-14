@@ -29,8 +29,8 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { toLonLat, transformExtent } from 'ol/proj.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
-import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import { getVariableEntryId } from '../../utilities/variable.js'
 import {
     extractHarmonyError,
     formatHarmonyErrorMessage,

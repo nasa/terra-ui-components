@@ -18,7 +18,7 @@ export interface HarmonyError {
 
 /**
  * Checks if an error indicates a user cancellation by checking the error message
- * and nested error structures (like Apollo's cause/networkError)
+ * and nested error structures
  * @param error - The error to check
  * @returns true if the error indicates a user cancellation
  */
@@ -43,20 +43,18 @@ export function isCancellationError(error: unknown): boolean {
         return true
     }
 
-    // Check Apollo error structure for nested errors
-    const apolloError = error as any
-
     // Check cause property (standard Error.cause)
     // Cause can be an Error object or a string
-    if (apolloError.cause) {
+    const { cause } = error as Error & { cause?: unknown }
+    if (cause) {
         let causeMessage: string
-        if (apolloError.cause instanceof Error) {
-            causeMessage = apolloError.cause.message.toLowerCase()
-            if (apolloError.cause.name === 'AbortError') {
+        if (cause instanceof Error) {
+            causeMessage = cause.message.toLowerCase()
+            if (cause.name === 'AbortError') {
                 return true
             }
         } else {
-            causeMessage = String(apolloError.cause).toLowerCase()
+            causeMessage = String(cause).toLowerCase()
         }
 
         if (
@@ -64,36 +62,6 @@ export function isCancellationError(error: unknown): boolean {
             causeMessage.includes('canceled') ||
             causeMessage.includes('aborted')
         ) {
-            return true
-        }
-    }
-
-    // Check networkError (Apollo-specific)
-    if (apolloError.networkError instanceof Error) {
-        const networkMessage = apolloError.networkError.message.toLowerCase()
-        if (
-            networkMessage.includes('cancelled') ||
-            networkMessage.includes('canceled') ||
-            networkMessage.includes('aborted') ||
-            apolloError.networkError.name === 'AbortError'
-        ) {
-            return true
-        }
-    }
-
-    // Check graphQLErrors array
-    if (Array.isArray(apolloError.graphQLErrors)) {
-        const hasCancellation = apolloError.graphQLErrors.some(
-            (gqlError: any) => {
-                const msg = (gqlError.message || '').toLowerCase()
-                return (
-                    msg.includes('cancelled') ||
-                    msg.includes('canceled') ||
-                    msg.includes('aborted')
-                )
-            },
-        )
-        if (hasCancellation) {
             return true
         }
     }
@@ -119,54 +87,20 @@ export function extractHarmonyError(
     if (error instanceof Error) {
         errorMessage = error.message
 
-        // Check for Apollo error structure with nested errors
-        // Apollo errors can have cause, networkError, or graphQLErrors
-        const apolloError = error as any
-
-        // Check for "caused by" or underlying error that indicates user cancellation
-        let underlyingError: Error | undefined
-        let underlyingMessage: string | undefined
+        const { cause } = error as Error & { cause?: unknown }
 
         // Check cause property (standard Error.cause)
         // Cause can be an Error object or a string
-        if (apolloError.cause) {
-            if (apolloError.cause instanceof Error) {
-                underlyingError = apolloError.cause
-                underlyingMessage = apolloError.cause.message
+        let underlyingMessage: string | undefined
+        if (cause) {
+            if (cause instanceof Error) {
+                underlyingMessage = cause.message
             } else {
-                // Cause is a string (e.g., "Cancelled time series request")
-                underlyingMessage = String(apolloError.cause)
+                underlyingMessage = String(cause)
             }
         }
 
-        // Check networkError (Apollo-specific)
-        if (apolloError.networkError instanceof Error) {
-            underlyingError = apolloError.networkError
-            underlyingMessage = apolloError.networkError.message
-        }
-
-        // Check graphQLErrors array
-        if (
-            Array.isArray(apolloError.graphQLErrors) &&
-            apolloError.graphQLErrors.length > 0
-        ) {
-            const firstGQLError = apolloError.graphQLErrors[0]
-            if (firstGQLError?.originalError instanceof Error) {
-                underlyingError = firstGQLError.originalError
-            } else if (firstGQLError?.message) {
-                // Use GraphQL error message if it indicates cancellation
-                const gqlMessage = firstGQLError.message.toLowerCase()
-                if (
-                    gqlMessage.includes('cancelled') ||
-                    gqlMessage.includes('canceled') ||
-                    gqlMessage.includes('aborted')
-                ) {
-                    errorMessage = firstGQLError.message
-                }
-            }
-        }
-
-        // If we found an underlying error or message, check if it indicates user cancellation
+        // If the underlying cause indicates cancellation, surface that message
         if (underlyingMessage) {
             const underlyingMessageLower = underlyingMessage.toLowerCase()
             if (
@@ -174,31 +108,17 @@ export function extractHarmonyError(
                 underlyingMessageLower.includes('canceled') ||
                 underlyingMessageLower.includes('aborted')
             ) {
-                // Use the underlying error message instead of the Apollo wrapper
                 errorMessage = underlyingMessage
-            }
-        } else if (underlyingError) {
-            const underlyingMessageLower = underlyingError.message.toLowerCase()
-            if (
-                underlyingMessageLower.includes('cancelled') ||
-                underlyingMessageLower.includes('canceled') ||
-                underlyingMessageLower.includes('aborted') ||
-                underlyingError.name === 'AbortError'
-            ) {
-                // Use the underlying error message instead of the Apollo wrapper
-                errorMessage = underlyingError.message
             }
         }
 
-        // Try to extract GraphQL error information
-        // GraphQL errors often have a format like "Failed to create subset job: <message>"
-        // or the error might be an Apollo error with more details
-        const graphQLErrorMatch = errorMessage.match(
+        // Try to extract a more specific message from known error formats
+        const errorMatch = errorMessage.match(
             /Failed to (?:create|fetch|cancel) subset job:\s*(.+)/i,
         )
-        if (graphQLErrorMatch) {
-            errorContext = graphQLErrorMatch[1]
-            errorMessage = graphQLErrorMatch[1] // Use the extracted message as the main message
+        if (errorMatch) {
+            errorContext = errorMatch[1]
+            errorMessage = errorMatch[1]
         } else {
             errorContext = errorMessage
         }

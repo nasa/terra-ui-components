@@ -21,7 +21,7 @@ import {
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 
 const variableEntryIdsConverter = {

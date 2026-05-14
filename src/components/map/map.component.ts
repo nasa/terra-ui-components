@@ -6,10 +6,14 @@ import { map } from 'lit/directives/map.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import { MapController } from './map.controller.js'
 import styles from './map.styles.js'
-import type { ShapeFilesResponse } from '../../geojson/types.js'
 import { MapService } from './map.service.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import {
+    queryGiovanniShapeFiles,
+    queryGiovanniGeoJsonShape,
+} from '../../queries/giovanni.queries.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -18,7 +22,7 @@ import { MapService } from './map.service.js'
  * @since 1.0
  *
  */
-export default class TerraMap extends TerraElement {
+export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
@@ -184,10 +188,7 @@ export default class TerraMap extends TerraElement {
     /**
      * List of geojson shapes
      */
-    @state()
-    shapes: ShapeFilesResponse
-
-    _mapController: MapController = new MapController(this)
+    shapesQuery = new QueryController(this, () => queryGiovanniShapeFiles())
 
     async firstUpdated() {
         this.#service = new MapService(this.mapElement, {
@@ -202,6 +203,8 @@ export default class TerraMap extends TerraElement {
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
+            getGeoJson: (shapeId) =>
+                this.queryClient.fetchQuery(queryGiovanniGeoJsonShape(shapeId)),
             onMouseMove: (coordinate) => {
                 this.cursorCoordinates = coordinate
             },
@@ -215,6 +218,7 @@ export default class TerraMap extends TerraElement {
     }
 
     selectTemplate() {
+        const shapes = this.shapesQuery.result?.data
         return html`
             <select
                 class="map__select form-control"
@@ -223,12 +227,12 @@ export default class TerraMap extends TerraElement {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(this.shapes?.categories, (category) => {
+                    map(shapes ?? undefined, (category) => {
                         return html`<optgroup label="${category.title}">
                             ${category.shapes.map((shape) => {
                                 return html`
                                     <option
-                                        value="shape=${shape.shapefileID}/${shape.shapeID}"
+                                        value="${shape.shapefileID}/${shape.shapeID}"
                                     >
                                         ${shape.name}
                                     </option>

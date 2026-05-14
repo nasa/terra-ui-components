@@ -14,8 +14,8 @@ import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-chang
 import TerraTimeSeries from '../time-series/time-series.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { MapEventType } from '../map/type.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
-import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import { getVariableEntryId } from '../../utilities/variable.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API

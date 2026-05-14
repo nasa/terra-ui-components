@@ -14,7 +14,7 @@ import { debounce } from '../../internal/debounce.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
-import type { CmrSearchResult } from '../../metadata-catalog/types.js'
+import type { CmrSearchResult } from '../../apis/cmr.api.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 
 import cmrVariableService from '../../services/cmr-variable.service.js'

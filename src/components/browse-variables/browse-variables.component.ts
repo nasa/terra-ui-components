@@ -11,8 +11,8 @@ import { BrowseVariablesController } from './browse-variables.controller.js'
 import { getRandomIntInclusive } from '../../utilities/number.js'
 import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
 import { watch } from '../../internal/watch.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { CSSResultGroup } from 'lit'
@@ -38,7 +38,9 @@ import { getSortLabel, SortOrder } from '../../utilities/sort.js'
  * @dependency terra-icon
  * @dependency terra-loader
  */
-export default class TerraBrowseVariables extends TerraElement {
+export default class TerraBrowseVariables extends QueryClientMixin(
+    TerraElement,
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-variable-keyword-search': TerraVariableKeywordSearch,
@@ -677,7 +679,7 @@ export default class TerraBrowseVariables extends TerraElement {
 
     render() {
         const showLoader =
-            this.#controller.task.status === TaskStatus.PENDING && // only show the loader when doing a fetch
+            this.#controller.isPending && // only show the loader when doing a fetch
             this.#controller.facetsByCategory // we won't show the loader initially, we'll show skeleton loading instead
 
         return html`
@@ -716,6 +718,6 @@ export default class TerraBrowseVariables extends TerraElement {
     }
 
     getVariable(variableEntryId: string) {
-        return this.#controller.catalog.getVariable(variableEntryId)
+        return this.#controller.getVariable(variableEntryId)
     }
 }

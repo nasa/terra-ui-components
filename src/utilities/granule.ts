@@ -1,36 +1,14 @@
 import type {
-    ArchiveAndDistributionInformation,
     CmrGranule,
     CmrGranuleDataGranule,
-    HostWithMaybeProperties,
-} from './types.js'
+    ArchiveAndDistributionInformation,
+} from '../apis/cmr.api.js'
 
 export function getGranuleUrl(granule: CmrGranule) {
-    const getDataUrl = granule.relatedUrls.find(url => url.type === 'GET DATA')
+    const getDataUrl = granule.relatedUrls.find(
+        (url) => url.type === 'GET DATA',
+    )
     return getDataUrl?.url
-}
-
-export function getVariableEntryId(host: HostWithMaybeProperties) {
-    if (host.variableEntryIds?.length) {
-        return host.variableEntryIds[0]
-    }
-
-    if (!host.variableEntryId && !(host.collection && host.variable)) {
-        return
-    }
-
-    return host.variableEntryId ?? `${host.collection}_${host.variable}`
-}
-
-export function getVariableEntryIds(host: HostWithMaybeProperties): string[] {
-    if (host.variableEntryIds?.length) {
-        return [
-            ...new Set(host.variableEntryIds.map(id => id.trim()).filter(Boolean)),
-        ]
-    }
-
-    const variableEntryId = getVariableEntryId(host)
-    return variableEntryId ? [variableEntryId] : []
 }
 
 export function formatGranuleSize(sizeInMB: number): string {
@@ -51,15 +29,15 @@ export function formatGranuleSize(sizeInMB: number): string {
 }
 
 export function calculateMeanGranuleSize(
-    granules: { dataGranule: CmrGranuleDataGranule }[]
+    granules: { dataGranule: CmrGranuleDataGranule }[],
 ) {
-    const sizes = granules.map(granule => calculateGranuleSize(granule, 'MB'))
+    const sizes = granules.map((granule) => calculateGranuleSize(granule, 'MB'))
     return sizes.reduce((a, b) => a + b, 0) / sizes.length
 }
 
 export function calculateGranuleSize(
     granule: { dataGranule: CmrGranuleDataGranule },
-    unit: 'MB' | 'GB' | 'TB' | 'PB'
+    unit: 'MB' | 'GB' | 'TB' | 'PB',
 ) {
     const archiveInfo = granule.dataGranule.archiveAndDistributionInformation
 
@@ -79,13 +57,10 @@ export function calculateGranuleSize(
     let totalBytes = 0
 
     function processItem(item: ArchiveAndDistributionInformation) {
-        // Prioritize SizeInBytes if available
-        // this is recommended by the CMR team
         if (item.sizeInBytes != null) {
             return item.sizeInBytes
         }
 
-        // Otherwise use Size with SizeUnit
         if (item.size != null && item.sizeUnit) {
             const conversionFactor =
                 BYTES_PER_UNIT[item.sizeUnit as keyof typeof BYTES_PER_UNIT]
