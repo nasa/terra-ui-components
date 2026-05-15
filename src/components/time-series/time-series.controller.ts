@@ -18,7 +18,7 @@ import {
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import type { SubsetJobStatus, SubsetJobError } from '../../apis/harmony.api.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
-import { FINAL_STATUSES, Status } from '../../apis/harmony.api.js'
+import { FINAL_STATUSES, Status, harmonyApi } from '../../apis/harmony.api.js'
 import { CollectionController } from '../../controllers/collection.controller.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
@@ -78,9 +78,88 @@ export class TimeSeriesController {
         })
         this.#harmonyRequestController = new HarmonyRequestController(this.host)
 
+        // When a jobId is provided without the other required params, fetch the job
+        // and hydrate the host properties from the original request URL so the main
+        // task can run as normal.
+        new Task(host, {
+            task: async (_args, { signal }) => {
+                const { jobId } = this.host
+
+                console.log(
+                    'Checking for jobId to hydrate host properties',
+                    jobId,
+                    this.host.startDate,
+                    this.host.endDate,
+                    this.host.location,
+                    this.host.bearerToken,
+                )
+
+                if (
+                    !jobId ||
+                    !this.host.bearerToken ||
+                    (this.host.startDate &&
+                        this.host.endDate &&
+                        this.host.location)
+                ) {
+                    return
+                }
+
+                const jobStatus = await harmonyApi.getJobStatus(jobId, {
+                    bearerToken: this.host.bearerToken,
+                    signal,
+                })
+
+                const parsed = HarmonyRequest.fromUrl(jobStatus.request)
+                const {
+                    startDate,
+                    endDate,
+                    location,
+                    variables,
+                    variableConceptIds,
+                } = parsed.options
+
+                if (startDate) this.host.startDate = startDate
+                if (endDate) this.host.endDate = endDate
+
+                if (location instanceof LatLng) {
+                    this.host.location = `${location.lat},${location.lng}`
+                } else if (location instanceof LatLngBounds) {
+                    const [w, s, e, n] = [
+                        location.getWest(),
+                        location.getSouth(),
+                        location.getEast(),
+                        location.getNorth(),
+                    ]
+                    this.host.location = `${w},${s},${e},${n}`
+                }
+
+                // Set variable entry id so the variable task fires and resolves catalogVariable
+                const variableId = variables?.[0] ?? variableConceptIds?.[0]
+                if (variableId && !this.host.variableEntryId) {
+                    this.host.variableEntryId = variableId
+                }
+
+                console.log('Hydrated host properties from job status', {
+                    startDate: this.host.startDate,
+                    endDate: this.host.endDate,
+                    location: this.host.location,
+                })
+
+                this.host.requestUpdate()
+            },
+            args: () => [this.host.jobId, this.host.bearerToken],
+        })
+
         this.task = new Task(host, {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
+                console.log('Fetching time series data', {
+                    variables: this.#getRequestedVariables(),
+                    startDate: this.host.startDate,
+                    endDate: this.host.endDate,
+                    location: this.host.location,
+                })
+
                 if (
                     !this.#getRequestedVariables().length ||
                     !this.host.startDate ||
