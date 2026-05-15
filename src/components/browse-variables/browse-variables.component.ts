@@ -6,12 +6,13 @@ import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
 import TerraVariableKeywordSearch from '../variable-keyword-search/variable-keyword-search.component.js'
+import TerraAlert from '../alert/alert.component.js'
 import { BrowseVariablesController } from './browse-variables.controller.js'
 import { getRandomIntInclusive } from '../../utilities/number.js'
 import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
 import { watch } from '../../internal/watch.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { CSSResultGroup } from 'lit'
@@ -37,7 +38,9 @@ import { getSortLabel, SortOrder } from '../../utilities/sort.js'
  * @dependency terra-icon
  * @dependency terra-loader
  */
-export default class TerraBrowseVariables extends TerraElement {
+export default class TerraBrowseVariables extends QueryClientMixin(
+    TerraElement,
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-variable-keyword-search': TerraVariableKeywordSearch,
@@ -45,6 +48,7 @@ export default class TerraBrowseVariables extends TerraElement {
         'terra-skeleton': TerraSkeleton,
         'terra-icon': TerraIcon,
         'terra-loader': TerraLoader,
+        'terra-alert': TerraAlert,
     }
 
     /**
@@ -96,7 +100,7 @@ export default class TerraBrowseVariables extends TerraElement {
     handleObservationChange() {
         const selectedObservation =
             this.shadowRoot?.querySelector<HTMLInputElement>(
-                'input[name="observation"]:checked'
+                'input[name="observation"]:checked',
             )?.value ?? 'All'
 
         if (selectedObservation === 'All') {
@@ -133,7 +137,7 @@ export default class TerraBrowseVariables extends TerraElement {
     #selectFacetField(
         facet: string,
         field: string,
-        selectOneFieldAtATime: boolean = false
+        selectOneFieldAtATime: boolean = false,
     ) {
         const existingFields = this.selectedFacets[facet] || []
 
@@ -145,7 +149,9 @@ export default class TerraBrowseVariables extends TerraElement {
 
         this.selectedFacets = {
             ...this.selectedFacets,
-            [facet]: selectOneFieldAtATime ? [field] : [...existingFields, field],
+            [facet]: selectOneFieldAtATime
+                ? [field]
+                : [...existingFields, field],
         }
     }
 
@@ -160,7 +166,9 @@ export default class TerraBrowseVariables extends TerraElement {
             return // facet has no fields that have been selected
         }
 
-        const filteredFields = this.selectedFacets[facet].filter(f => f !== field) // remove the given field
+        const filteredFields = this.selectedFacets[facet].filter(
+            (f) => f !== field,
+        ) // remove the given field
 
         if (!filteredFields.length) {
             // no fields left, just clear the facet
@@ -176,19 +184,19 @@ export default class TerraBrowseVariables extends TerraElement {
 
     #handleVariableSelection(variable: Variable, checked: Boolean) {
         const variableIsSelected = this.selectedVariables.find(
-            v => v.dataFieldLongName === variable.dataFieldLongName
+            (v) => v.dataFieldLongName === variable.dataFieldLongName,
         )
 
         if (checked && !variableIsSelected) {
             // need to add variable to list of selected variables
             this.selectedVariables = ([] as Variable[]).concat(
                 this.selectedVariables,
-                variable
+                variable,
             )
         } else if (!checked && variableIsSelected) {
             // need to remove variable from list of selected variables
             this.selectedVariables = this.selectedVariables.filter(
-                v => v.dataFieldLongName !== variable.dataFieldLongName
+                (v) => v.dataFieldLongName !== variable.dataFieldLongName,
             )
         }
     }
@@ -203,7 +211,7 @@ export default class TerraBrowseVariables extends TerraElement {
             requestAnimationFrame(() => {
                 const menu = event.target as HTMLElement
                 const allItems = menu.querySelectorAll('terra-menu-item')
-                allItems.forEach(item => {
+                allItems.forEach((item) => {
                     const itemValue = item.value
                     if (itemValue === this.sortOrder) {
                         item.checked = true
@@ -232,7 +240,7 @@ export default class TerraBrowseVariables extends TerraElement {
     #getBrowsingText(): string {
         // Collect all selected facet field names
         const selectedFacetNames: string[] = []
-        Object.values(this.selectedFacets).forEach(fields => {
+        Object.values(this.selectedFacets).forEach((fields) => {
             selectedFacetNames.push(...fields)
         })
 
@@ -287,8 +295,9 @@ export default class TerraBrowseVariables extends TerraElement {
                 <aside>
                     <h3>Observations</h3>
 
-                    ${this.#controller.facetsByCategory?.observations.length
-                        ? html`
+                    ${
+                        this.#controller.facetsByCategory?.observations.length
+                            ? html`
                               <label>
                                   <input
                                       type="radio"
@@ -301,7 +310,7 @@ export default class TerraBrowseVariables extends TerraElement {
                               >
 
                               ${this.#controller.facetsByCategory?.observations.map(
-                                  field =>
+                                  (field) =>
                                       html`<label>
                                           <input
                                               type="radio"
@@ -310,13 +319,14 @@ export default class TerraBrowseVariables extends TerraElement {
                                               @change=${this.handleObservationChange}
                                           />
                                           ${field.name}
-                                      </label>`
+                                      </label>`,
                               )}
                           `
-                        : html`<terra-skeleton
+                            : html`<terra-skeleton
                               rows="4"
                               variableWidths
-                          ></terra-skeleton>`}
+                          ></terra-skeleton>`
+                    }
 
                     <terra-button
                         variant="text"
@@ -328,17 +338,18 @@ export default class TerraBrowseVariables extends TerraElement {
 
                 <main>
                     ${columns.map(
-                        column => html`
+                        (column) => html`
                             <div class="column">
                                 <h3>${column.title}</h3>
                                 <ul role="list">
-                                    ${this.#controller.facetsByCategory?.[
-                                        column.facetKey
-                                    ]
-                                        ?.filter(field => field.count > 0)
-                                        .map(
-                                            field =>
-                                                html`<li
+                                    ${
+                                        this.#controller.facetsByCategory?.[
+                                            column.facetKey
+                                        ]
+                                            ?.filter((field) => field.count > 0)
+                                            .map(
+                                                (field) =>
+                                                    html`<li
                                                     role="button"
                                                     tabindex="0"
                                                     aria-selected="false"
@@ -346,15 +357,16 @@ export default class TerraBrowseVariables extends TerraElement {
                                                     @click=${this.toggleFacetSelect}
                                                 >
                                                     ${field.name}
-                                                </li>`
-                                        ) ??
-                                    html`<terra-skeleton
+                                                </li>`,
+                                            ) ??
+                                        html`<terra-skeleton
                                         rows=${getRandomIntInclusive(8, 12)}
                                         variableWidths
-                                    ></terra-skeleton>`}
+                                    ></terra-skeleton>`
+                                    }
                                 </ul>
                             </div>
-                        `
+                        `,
                     )}
                 </main>
             </div>
@@ -365,10 +377,10 @@ export default class TerraBrowseVariables extends TerraElement {
         facetKey: string,
         title: string,
         fields?: FacetField[],
-        open?: boolean
+        open?: boolean,
     ) {
         // Check if there are any fields with count > 0
-        const hasValidFields = (fields ?? []).some(field => field.count > 0)
+        const hasValidFields = (fields ?? []).some((field) => field.count > 0)
 
         if (!hasValidFields) {
             return nothing
@@ -377,7 +389,7 @@ export default class TerraBrowseVariables extends TerraElement {
         return html`<details ?open=${open}>
             <summary>${title}</summary>
 
-            ${(fields ?? []).map(field =>
+            ${(fields ?? []).map((field) =>
                 field.count > 0
                     ? html`
                           <div class="facet">
@@ -387,7 +399,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                       @change=${() =>
                                           this.#selectFacetField(
                                               facetKey,
-                                              field.name
+                                              field.name,
                                           )}
                                       ?checked=${this.selectedFacets[
                                           facetKey
@@ -398,12 +410,12 @@ export default class TerraBrowseVariables extends TerraElement {
                               >
                           </div>
                       `
-                    : nothing
+                    : nothing,
             )}
         </details>`
     }
 
-    #renderVariablesBrowse() {
+    #renderVariablesBrowse(loading?: boolean) {
         const facets: {
             title: string
             facetKey: keyof FacetsByCategory
@@ -503,13 +515,13 @@ export default class TerraBrowseVariables extends TerraElement {
             <aside>
                 <h3>Filter</h3>
 
-                ${facets.map(facet =>
+                ${facets.map((facet) =>
                     this.#renderFacet(
                         facet.facetKey,
                         facet.title,
                         this.#controller.facetsByCategory?.[facet.facetKey],
-                        facet.open
-                    )
+                        facet.open,
+                    ),
                 )}
             </aside>
 
@@ -517,6 +529,17 @@ export default class TerraBrowseVariables extends TerraElement {
                 <!-- LEFT COLUMN -->
                 <section class="left-column">
                     <ul class="variable-list">
+                        ${
+                            !loading && !variables.length
+                                ? html`
+                            <terra-alert variant="primary" appearance="white" open>
+                                <p>We didn't find any variables matching your search and filters.</p>
+                                <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
+                            </terra-alert>
+                        `
+                                : nothing
+                        }
+
                         ${variables.map(
                             (variable, index) => html`
                                 <li
@@ -530,9 +553,10 @@ export default class TerraBrowseVariables extends TerraElement {
                                     @click=${(event: Event) => {
                                         const target =
                                             event.currentTarget as HTMLLIElement
-                                        const targetCheckbox = target.querySelector(
-                                            'input[type="checkbox"]'
-                                        ) as HTMLInputElement | null
+                                        const targetCheckbox =
+                                            target.querySelector(
+                                                'input[type="checkbox"]',
+                                            ) as HTMLInputElement | null
 
                                         if (!targetCheckbox) {
                                             return
@@ -540,7 +564,7 @@ export default class TerraBrowseVariables extends TerraElement {
 
                                         target?.setAttribute(
                                             'aria-selected',
-                                            `${targetCheckbox.checked}`
+                                            `${targetCheckbox.checked}`,
                                         )
                                     }}
                                 >
@@ -554,7 +578,7 @@ export default class TerraBrowseVariables extends TerraElement {
                                                         e.currentTarget as HTMLInputElement
                                                     this.#handleVariableSelection(
                                                         variable,
-                                                        input.checked
+                                                        input.checked,
                                                     )
                                                 }}
                                                 style="display: none;"
@@ -572,22 +596,29 @@ export default class TerraBrowseVariables extends TerraElement {
                                         </label>
                                     </div>
                                 </li>
-                            `
+                            `,
                         )}
                     </ul>
                 </section>
 
                 <!-- RIGHT COLUMN -->
+                ${
+                    !loading && !variables.length
+                        ? nothing
+                        : html`
                 <section class="right-column">
-                    ${this.activeIndex !== undefined
+                ${
+                    this.activeIndex !== undefined
                         ? html`
                               <div class="sticky-element">
                                   <p>
                                       <label
                                           ><strong>Name in Data File:</strong></label
                                       >
-                                      ${variables[this.activeIndex]
-                                          .dataFieldShortName}
+                                      ${
+                                          variables[this.activeIndex]
+                                              .dataFieldShortName
+                                      }
                                   </p>
                                   <p>
                                       <label><strong>Units:</strong></label>
@@ -597,11 +628,15 @@ export default class TerraBrowseVariables extends TerraElement {
                                       <label
                                           ><strong>Temporal Coverage:</strong></label
                                       >
-                                      ${variables[this.activeIndex]
-                                          .dataProductBeginDateTime}
+                                      ${
+                                          variables[this.activeIndex]
+                                              .dataProductBeginDateTime
+                                      }
                                       –
-                                      ${variables[this.activeIndex]
-                                          .dataProductEndDateTime}
+                                      ${
+                                          variables[this.activeIndex]
+                                              .dataProductEndDateTime
+                                      }
                                   </p>
                                   <p>
                                       <label><strong>Region Coverage:</strong></label>
@@ -614,36 +649,45 @@ export default class TerraBrowseVariables extends TerraElement {
                                       <label
                                           ><strong>Spatial Resolution:</strong></label
                                       >
-                                      ${variables[this.activeIndex]
-                                          .dataProductSpatialResolution}
+                                      ${
+                                          variables[this.activeIndex]
+                                              .dataProductSpatialResolution
+                                      }
                                   </p>
                                   <p>
                                       <label><strong>Dataset:</strong></label>
-                                      ${variables[this.activeIndex]
-                                          .dataProductShortName}_${variables[
-                                          this.activeIndex
-                                      ].dataProductVersion}
+                                      ${
+                                          variables[this.activeIndex]
+                                              .dataProductShortName
+                                      }_${
+                                          variables[this.activeIndex]
+                                              .dataProductVersion
+                                      }
                                   </p>
                               </div>
                           `
                         : html`<p class="placeholder">
                               Hover over a variable to see details
-                          </p>`}
+                          </p>`
+                }
                 </section>
+                `
+                }
             </main>
         </div> `
     }
 
     render() {
         const showLoader =
-            this.#controller.task.status === TaskStatus.PENDING && // only show the loader when doing a fetch
+            this.#controller.isPending && // only show the loader when doing a fetch
             this.#controller.facetsByCategory // we won't show the loader initially, we'll show skeleton loading instead
 
         return html`
             <div class="container">
                 <header class="search">
-                    ${this.showVariablesBrowse
-                        ? html`
+                    ${
+                        this.showVariablesBrowse
+                            ? html`
                               <terra-button @click=${this.reset}>
                                   <terra-icon
                                       name="solid-chevron-left"
@@ -652,16 +696,19 @@ export default class TerraBrowseVariables extends TerraElement {
                                   ></terra-icon>
                               </terra-button>
                           `
-                        : nothing}
+                            : nothing
+                    }
 
                     <terra-variable-keyword-search
                         @terra-search=${this.handleSearch}
                     ></terra-variable-keyword-search>
                 </header>
 
-                ${this.showVariablesBrowse
-                    ? this.#renderVariablesBrowse()
-                    : this.#renderCategorySelect()}
+                ${
+                    this.showVariablesBrowse
+                        ? this.#renderVariablesBrowse(Boolean(showLoader))
+                        : this.#renderCategorySelect()
+                }
 
                 <dialog ?open=${showLoader}>
                     <terra-loader indeterminate></terra-loader>
@@ -671,6 +718,6 @@ export default class TerraBrowseVariables extends TerraElement {
     }
 
     getVariable(variableEntryId: string) {
-        return this.#controller.catalog.getVariable(variableEntryId)
+        return this.#controller.getVariable(variableEntryId)
     }
 }

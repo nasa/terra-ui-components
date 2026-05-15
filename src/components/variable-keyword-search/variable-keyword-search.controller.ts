@@ -1,43 +1,52 @@
 import type { StatusRenderer } from '@lit/task'
-import { Task, TaskStatus } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import type { ReadableTaskStatus } from './variable-keyword-search.types.js'
-import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
-import type { SearchKeywordsResponse } from '../../metadata-catalog/types.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
+import { queryGiovanniSearchKeywords } from '../../queries/giovanni.queries.js'
+import type giovanniApi from '../../apis/giovanni.api.js'
+
+type SearchKeywords = Awaited<ReturnType<typeof giovanniApi.getSearchKeywords>>
 
 export class FetchController {
-    #apiTask: Task<[], SearchKeywordsResponse>
+    #query: QueryController<SearchKeywords | null>
 
-    constructor(host: ReactiveControllerHost) {
-        const variableCatalog = new GiovanniVariableCatalog()
-
-        this.#apiTask = new Task(host, {
-            task: async () => variableCatalog.getSearchKeywords(),
-            args: (): any => [],
-        })
+    constructor(host: ReactiveControllerHost & QueryClientHost) {
+        this.#query = new QueryController(host, () =>
+            queryGiovanniSearchKeywords(),
+        )
     }
 
     get taskComplete() {
-        return this.#apiTask.taskComplete
+        return this.#query.result?.isSuccess ?? false
     }
 
     get value() {
-        return this.#apiTask.value
+        return this.#query.result?.data
     }
 
-    get taskStatus() {
-        const readableStatus = Object.entries(TaskStatus).reduce<
-            Record<number, ReadableTaskStatus>
-        >((accumulator, [key, value]) => {
-            accumulator[value] = key as ReadableTaskStatus
-
-            return accumulator
-        }, {})
-
-        return readableStatus[this.#apiTask.status]
+    get taskStatus(): ReadableTaskStatus {
+        if (this.#query.result?.isError) return 'ERROR'
+        if (this.#query.result?.isSuccess) return 'COMPLETE'
+        if (this.#query.result?.isPending) return 'PENDING'
+        return 'INITIAL'
     }
 
-    render(renderFunctions: StatusRenderer<SearchKeywordsResponse>) {
-        return this.#apiTask.render(renderFunctions)
+    render<T>(renderFunctions: StatusRenderer<T>) {
+        const result = this.#query.result
+
+        if (!result || (result.isPending && result.fetchStatus === 'idle')) {
+            return renderFunctions.initial?.()
+        }
+
+        if (result.isPending || result.isFetching) {
+            return renderFunctions.pending?.()
+        }
+
+        if (result.isError) {
+            return renderFunctions.error?.(result.error)
+        }
+
+        return renderFunctions.complete?.(result.data as T)
     }
 }

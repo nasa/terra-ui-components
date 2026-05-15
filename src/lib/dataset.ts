@@ -7,7 +7,7 @@ const MILLIS_IN_DAY = MILLIS_IN_HOUR * 24
 export function calculateDataPoints(
     timeInterval: TimeInterval,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
 ) {
     const diffMs = endDate.getTime() - startDate.getTime()
 
@@ -21,11 +21,17 @@ export function calculateDataPoints(
         case TimeInterval.ThreeHourly:
             return Math.floor(diffMs / (MILLIS_IN_HOUR * 3)) + 1
 
+        case TimeInterval.EightDaily:
+            return Math.floor(diffMs / (MILLIS_IN_DAY * 8)) + 1
+
         case TimeInterval.Daily:
             return Math.floor(diffMs / MILLIS_IN_DAY) + 1
 
         case TimeInterval.Weekly:
             return Math.floor(diffMs / (MILLIS_IN_DAY * 7)) + 1
+
+        case TimeInterval.Monthly:
+            return Math.floor(diffMs / (MILLIS_IN_DAY * 30)) + 1
 
         default:
             throw new Error(`Unsupported time interval: ${timeInterval}`)
@@ -38,10 +44,14 @@ export function calculateDataPoints(
 export function calculateDateChunks(
     timeInterval: TimeInterval,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
 ): Array<{ start: Date; end: Date }> {
     // Get total data points for the full range
-    const totalDataPoints = calculateDataPoints(timeInterval, startDate, endDate)
+    const totalDataPoints = calculateDataPoints(
+        timeInterval,
+        startDate,
+        endDate,
+    )
 
     if (totalDataPoints <= MAX_DATAPOINTS_PER_REQUEST) {
         // Within the allowed number of data points, return the whole range
@@ -74,7 +84,7 @@ export function calculateDateChunks(
         const chunkDataPoints = calculateDataPoints(
             timeInterval,
             chunkStart,
-            potentialChunkEnd
+            potentialChunkEnd,
         )
 
         if (chunkDataPoints > MAX_DATAPOINTS_PER_REQUEST) {

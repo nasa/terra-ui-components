@@ -14,8 +14,8 @@ import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-chang
 import TerraTimeSeries from '../time-series/time-series.component.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import { MapEventType } from '../map/type.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
-import { getVariableEntryId } from '../../metadata-catalog/utilities.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import { getVariableEntryId } from '../../utilities/variable.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
@@ -178,9 +178,11 @@ export default class TerraDataRods extends TerraElement {
             : undefined
 
         return html`
-            ${this.spatialWarningMessage && this.lastChanged === 'location'
-                ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
-                : null}
+            ${
+                this.spatialWarningMessage && this.lastChanged === 'location'
+                    ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
+                    : null
+            }
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 .value=${getVariableEntryId(this)}
@@ -189,15 +191,18 @@ export default class TerraDataRods extends TerraElement {
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
 
-            ${this.spatialWarningMessage && this.lastChanged === 'variable'
-                ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
-                : null}
+            ${
+                this.spatialWarningMessage && this.lastChanged === 'variable'
+                    ? html`<div class="warning">⚠️ ${this.spatialWarningMessage}</div>`
+                    : null
+            }
             <terra-spatial-picker
                 initial-value=${this.location}
                 .spatialConstraints=${this.variableBoundingBox}
-                exportparts="map:spatial-picker__map, leaflet-bbox:spatial-picker__leaflet-bbox, leaflet-point:spatial-picker__leaflet-point"
+                exportparts="map:spatial-picker__map"
                 label="Select Point"
                 @terra-map-change=${this.#handleMapChange}
+                .showBoundingBoxSelection=${false}
             ></terra-spatial-picker>
 
             <terra-time-series
@@ -207,6 +212,7 @@ export default class TerraDataRods extends TerraElement {
                 .location=${this.location ?? undefined}
                 bearer-token=${this.bearerToken}
                 show-citation=${true}
+                cache
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             >
                 <li slot="help-links">
@@ -226,11 +232,13 @@ export default class TerraDataRods extends TerraElement {
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
                 @terra-date-selection-invalid="${this.#handleInvalidDateSelection}"
             ></terra-date-range-slider>
-            ${this.dateErrorMessage
-                ? html`<div class="date-error" style="color: red;">
+            ${
+                this.dateErrorMessage
+                    ? html`<div class="date-error" style="color: red;">
                       ${this.dateErrorMessage}
                   </div>`
-                : null}
+                    : null
+            }
         `
     }
 
@@ -264,6 +272,7 @@ export default class TerraDataRods extends TerraElement {
     }
 
     #handleMapChange(event: TerraMapChangeEvent) {
+        console.log('map change event', event)
         if (event.detail.type === MapEventType.POINT) {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
