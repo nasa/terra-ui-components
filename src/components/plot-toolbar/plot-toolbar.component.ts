@@ -22,6 +22,7 @@ import type {
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
@@ -51,6 +52,7 @@ export default class TerraPlotToolbar extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
         'terra-map': TerraMap,
+        'terra-dropdown': TerraDropdown,
     }
 
     @property() catalogVariable: Variable
@@ -92,9 +94,6 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @state()
     activeMenuItem: MenuNames = null
-
-    @state()
-    showLocationTooltip: boolean = false
 
     @query('#menu') menu: HTMLMenuElement
 
@@ -200,16 +199,20 @@ export default class TerraPlotToolbar extends TerraElement {
                                       ${
                                           this.showLocation
                                               ? html`• ${this.#getLocationIcon()}
-                                                <span
-                                                    class="location-text"
-                                                    @mouseenter=${() =>
-                                                        (this.showLocationTooltip = true)}
-                                                    @mouseleave=${() =>
-                                                        (this.showLocationTooltip = true)}
-                                                    >${(
+                                            <terra-dropdown hover placement="bottom-start" distance="10">
+                                                <span slot="trigger" class="location-text">
+                                                    ${(
                                                         this.location ?? ''
-                                                    ).replace(/,/g, ', ')}</span
-                                                >`
+                                                    ).replace(/,/g, ', ')}
+                                                </span>
+                                                <terra-map
+                                                    .value=${this.location}
+                                                    .fitToValue=${true}
+                                                    .staticMode=${true}
+                                                    style="width: 300px; height: 200px;"
+                                                ></terra-map>
+                                            </terra-dropdown>
+                                            `
                                               : ''
                                       }
                                       ${
@@ -454,20 +457,6 @@ export default class TerraPlotToolbar extends TerraElement {
                                     </menu>
                                 `
                                   : nothing
-                          }
-                          ${
-                              this.showLocationTooltip
-                                  ? html`
-                                    <div class="location-tooltip">
-                                        <terra-map
-                                            .value=${this.location}
-                                            .fitToValue=${true}
-                                            .staticMode=${true}
-                                            style="width: 300px; height: 200px;"
-                                        ></terra-map>
-                                    </div>
-                                `
-                                  : ''
                           }
                       </header>
 
