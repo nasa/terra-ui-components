@@ -296,8 +296,13 @@ export default css`
     .variable label {
         cursor: pointer;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         font-weight: 400;
+    }
+
+    .variable label input[type='checkbox'] {
+        align-self: flex-start;
+        margin-top: 0.40em;
     }
 
     .left-column {
