@@ -14,9 +14,10 @@ layout: component
     <terra-time-series slot="logged-in"
         collection="GPM_3IMERGHH_07"
         variable="precipitation"
-        start-date="01/01/2019"
-        end-date="03/01/2019"
+        start-date="2019-01-01T06:00:00Z"
+        end-date="2019-03-01T18:30:00Z"
         location="33.9375,-86.9375"
+        cache
     ></terra-time-series>
 
     <p slot="logged-out">Please login to view this plot</p>
@@ -36,6 +37,7 @@ layout: component
             start-date="01/01/2009"
             end-date="01/05/2009"
             location="62,5,95,40"
+            cache
         ></terra-time-series>
     </template>
 
@@ -58,6 +60,7 @@ By default, the time series component automatically fetches new data when users 
         end-date="03/01/2019"
         location="33.9375,-86.9375"
         disable-auto-fetch
+        cache
     ></terra-time-series>
 
     <p slot="logged-out">Please login to view this plot</p>
@@ -78,6 +81,7 @@ Use `variable-entry-ids` to request and render multiple variables in one chart. 
         start-date="01/01/2019"
         end-date="03/01/2019"
         location="62,5,95,40"
+        cache
     ></terra-time-series>
 
     <p slot="logged-out">Please login to view this plot</p>

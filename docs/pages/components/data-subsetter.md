@@ -85,6 +85,7 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 -   Use `bearer-token` for authenticated users.
 -   Place the component inside a dialog for a focused, modal workflow.
 -   Listen for the `terra-subset-job-complete` event to trigger downstream actions (e.g., notifications, analytics).
+-   For variable subsetting, choose one or more variables and then optionally refine by common dimensions. The component now displays a second accordion when selected variables have shared, non-spatial/non-temporal dimensions.
 
 ## Accessibility
 

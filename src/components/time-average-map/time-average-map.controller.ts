@@ -1,118 +1,95 @@
 import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
-import { format } from 'date-fns'
 import {
     type SubsetJobStatus,
     type SubsetJobError,
     Status,
-} from '../../data-services/types.js'
-import {
-    FINAL_STATUSES,
-    HarmonyDataService,
-} from '../../data-services/harmony-data-service.js'
+} from '../../apis/harmony.api.js'
+import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import type TerraTimeAvgMap from './time-average-map.component.js'
-import {
-    IndexedDbStores,
-    getDataByKey,
-    storeDataByKey,
-} from '../../internal/indexeddb.js'
 import { formatDate } from '../../utilities/date.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
+import { CollectionController } from '../../controllers/collection.controller.js'
+import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
+import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
+import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
+import TimeAvgMapCacheService from './time-average-map-cache.service.js'
+import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
 
-const REFRESH_HARMONY_DATA_INTERVAL = 2000
+const HARMONY_LINK_PROXY_URL =
+    'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
+const HARMONY_STATUS_WAIT_INTERVAL_MS = 300
+const MAX_COLLECTION_CONCEPT_ID_WAIT_MS = 10000
 
 export class TimeAvgMapController {
-    jobStatusTask: any
-    currentJob: SubsetJobStatus | null
+    jobStatusTask: Task<[], Blob | undefined>
 
-    #host: ReactiveControllerHost & TerraTimeAvgMap
-    #dataService: HarmonyDataService
-    blobUrl: Blob
+    #host: ReactiveControllerHost & TerraTimeAvgMap & QueryClientHost
+    #cacheService = new TimeAvgMapCacheService()
+    #thumbnailService = new ThumbnailService()
+    #collectionController: CollectionController
+    #harmonyRequestController: HarmonyRequestController
 
-    constructor(host: ReactiveControllerHost & TerraTimeAvgMap) {
+    blobUrl: Blob | undefined
+
+    constructor(
+        host: ReactiveControllerHost & TerraTimeAvgMap & QueryClientHost,
+    ) {
         this.#host = host
-        this.#dataService = this.#getDataService()
+
+        this.#collectionController = new CollectionController(this.#host, {
+            getCollectionEntryId: () => this.#getCollectionEntryId(),
+            getBearerToken: () => this.#host.bearerToken,
+        })
+
+        this.#harmonyRequestController = new HarmonyRequestController(
+            this.#host,
+        )
 
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
-                let job
+                const startDate = this.#host.startDate
+                const endDate = this.#host.endDate
+                const location = this.#host.location
+                const catalogVariable = this.#host.catalogVariable
 
-                const start_date = new Date(this.#host?.startDate ?? Date.now())
-                const end_date = new Date(this.#host?.endDate ?? Date.now())
-                const [w, s, e, n] = this.#host.location?.split(',') ?? []
-
-                const collection = `${this.#host.catalogVariable!.dataProductShortName}_${this.#host.catalogVariable!.dataProductVersion}`
-
-                let subsetOptions = {
-                    collectionEntryId: `${collection}`,
-                    variableConceptIds: ['parameter_vars'],
-                    variableEntryIds: [
-                        `${this.#host.collection!}_${this.#host.variable}`,
-                    ],
-                    startDate: format(start_date, 'yyyy-MM-dd') + 'T00%3A00%3A00',
-                    endDate: format(end_date, 'yyyy-MM-dd') + 'T00%3A00%3A00',
-                    format: 'text/csv',
-                    boundingBox: {
-                        w: parseFloat(w),
-                        s: parseFloat(s),
-                        e: parseFloat(e),
-                        n: parseFloat(n),
-                    },
-                    average: 'time',
+                if (!startDate || !endDate || !location || !catalogVariable) {
+                    return undefined
                 }
-                console.log(`Creating a job with options`, subsetOptions)
 
-                // we'll start with an empty job to clear out any existing job
-                this.currentJob = this.#getEmptyJob()
+                // Reset job state
+                this.#harmonyRequestController.reset()
                 this.#host.harmonyJobId = undefined
 
-                try {
-                    // Try cache first
-                    const cacheKey = this.getCacheKey()
-                    const existing = await getDataByKey<{
-                        key: string
-                        cachedAt: number
-                        environment?: string
-                        blob: Blob
-                        harmonyJobId?: string
-                    }>(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey)
+                // Try cache first (only when cache is enabled)
+                const cacheKey = this.getCacheKey()
+                if (this.#host.cache) {
+                    const existing =
+                        await this.#cacheService.getValidCacheEntry(cacheKey)
 
                     if (existing) {
                         console.log(
                             'Returning existing map blob from cache',
-                            cacheKey
+                            cacheKey,
                         )
-
                         this.#host.harmonyJobId = existing.harmonyJobId
                         this.#updateGeoTIFFLayer(existing.blob)
-
                         return existing.blob
                     }
+                }
 
-                    console.log('Calling create subset job..')
-                    try {
-                        job = await this.#dataService.createSubsetJob(subsetOptions, {
-                            signal,
-                            bearerToken: this.#host.bearerToken,
-                            environment: this.#host.environment,
-                        })
-                    } catch (error) {
-                        // Handle GraphQL errors from Harmony
-                        this.#handleHarmonyError(error)
-                        throw error
-                    }
+                // If a specific jobId is provided, skip request building and poll directly
+                if (this.#host.jobId) {
+                    console.log(
+                        'Using provided jobId, waiting for harmony job...',
+                    )
+                    const jobStatus = await this.#waitForHarmonyJob(
+                        this.#host.jobId,
+                        signal,
+                    )
 
-                    if (!job) {
-                        const error = new Error('Failed to create subset job')
-                        this.#handleHarmonyError(error)
-                        throw error
-                    }
-
-                    console.log('Waiting for harmony job..')
-                    const jobStatus = await this.#waitForHarmonyJob(job, signal)
-
-                    // Check if job failed or has errors
                     if (jobStatus.status === Status.FAILED) {
                         const errorMessage =
                             jobStatus.message ||
@@ -136,44 +113,238 @@ export class TimeAvgMapController {
                         throw error
                     }
 
-                    // the job is completed, fetch the data for the job
-                    let blob: Blob
-                    try {
-                        const result = await this.#dataService.getSubsetJobData(
-                            jobStatus,
-                            {
-                                signal,
-                                bearerToken: this.#host.bearerToken,
-                                environment: this.#host.environment,
-                            }
-                        )
-                        blob = result.blob
-                    } catch (error) {
-                        this.#handleHarmonyError(error)
-                        throw error
+                    const blob = await this.#fetchJobBlob(jobStatus, signal)
+
+                    if (this.#host.cache) {
+                        await this.#cacheService.storeEntry(cacheKey, {
+                            blob,
+                            environment: this.#host.environment,
+                            harmonyJobId: this.#host.jobId,
+                        })
                     }
 
-                    // Store in cache
-                    await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {
-                        key: cacheKey,
-                        cachedAt: new Date().getTime(),
-                        environment: this.#host.environment,
-                        blob,
-                        harmonyJobId: jobStatus.jobID,
+                    this.#host.harmonyJobId = this.#host.jobId
+                    this.#updateGeoTIFFLayer(blob)
+                    return blob
+                }
+
+                // Build the Harmony request
+                const collectionConceptId =
+                    await this.#waitForCollectionConceptId(signal)
+
+                const [w, s, e, n] = location.split(',').map(Number)
+                const locationBounds = new LatLngBounds([w, s, e, n])
+
+                const harmonyRequest = new HarmonyRequest({
+                    collectionConceptId,
+                    location: locationBounds,
+                    environment: this.#host.environment as any,
+                })
+                    .variable(
+                        `${this.#host.collection!}_${this.#host.variable}`,
+                    )
+                    .dateRange(
+                        new Date(startDate).toISOString(),
+                        new Date(endDate).toISOString(),
+                    )
+                    .format('image/tiff')
+                    .average('time')
+                    .label('terra-time-average-map')
+
+                if (this.#host.applicationId) {
+                    harmonyRequest.label(this.#host.applicationId)
+                }
+
+                // add some helpful labels to the request for user experience so users don't just see concept ids
+                harmonyRequest.addLabelsFromVariable(catalogVariable)
+
+                console.log('Creating time average map job...')
+
+                let jobId: string
+                try {
+                    const job = await this.#harmonyRequestController.startJob({
+                        harmonyRequest,
+                        options: {
+                            signal,
+                            bearerToken: this.#host.bearerToken,
+                            environment: this.#host.environment,
+                        },
                     })
 
-                    this.#updateGeoTIFFLayer(blob)
+                    jobId = job.jobID
 
-                    return blob
-                } catch (err) {
-                    const error_msg = `Failed to create subset job: ${err}`
-                    console.error(error_msg)
-                    throw new Error(error_msg)
+                    this.#host.emit('terra-harmony-job-status-update', {
+                        detail: job,
+                    })
+                } catch (error) {
+                    this.#handleHarmonyError(error)
+                    throw error
                 }
+
+                console.log('Waiting for harmony job...')
+                const jobStatus = await this.#waitForHarmonyJob(jobId, signal)
+
+                if (jobStatus.status === Status.FAILED) {
+                    const errorMessage =
+                        jobStatus.message ||
+                        jobStatus.errors?.[0]?.message ||
+                        'The subset job failed'
+                    const error = new Error(errorMessage)
+                    this.#handleHarmonyError(error, jobStatus.errors)
+                    throw error
+                }
+
+                if (
+                    jobStatus.status === Status.COMPLETE_WITH_ERRORS &&
+                    jobStatus.errors &&
+                    jobStatus.errors.length > 0
+                ) {
+                    const errorMessage =
+                        jobStatus.errors[0].message ||
+                        'The subset job completed with errors'
+                    const error = new Error(errorMessage)
+                    this.#handleHarmonyError(error, jobStatus.errors)
+                    throw error
+                }
+
+                // Fetch the blob output
+                const blob = await this.#fetchJobBlob(jobStatus, signal)
+
+                // Store in cache (only when cache is enabled)
+                if (this.#host.cache) {
+                    await this.#cacheService.storeEntry(cacheKey, {
+                        blob,
+                        environment: this.#host.environment,
+                        harmonyJobId: jobStatus.jobID,
+                    })
+                }
+
+                this.#host.harmonyJobId = jobStatus.jobID
+
+                this.#updateGeoTIFFLayer(blob)
+
+                return blob
             },
-            args: (): any => [],
+            args: (): [] => [],
             autoRun: false,
         })
+    }
+
+    render(renderFunctions: StatusRenderer<Blob | undefined>) {
+        return this.jobStatusTask.render(renderFunctions)
+    }
+
+    getCacheKey(): string {
+        const collection = this.#host.collection ?? ''
+        const variable = this.#host.variable ?? ''
+        const start = this.#host.startDate ?? ''
+        const end = this.#host.endDate ?? ''
+        const location = this.#host.location ?? ''
+        const environment = this.#host.environment ?? 'prod'
+        return this.#cacheService.getCacheKey(
+            collection,
+            variable,
+            start,
+            end,
+            location,
+            environment,
+        )
+    }
+
+    #getCollectionEntryId(): string | undefined {
+        const collection = this.#host.collection
+        const variable = this.#host.catalogVariable
+
+        if (!collection || !variable) return undefined
+
+        return `${variable.dataProductShortName}_${variable.dataProductVersion}`
+    }
+
+    async #waitForCollectionConceptId(signal: AbortSignal): Promise<string> {
+        const deadline = Date.now() + MAX_COLLECTION_CONCEPT_ID_WAIT_MS
+
+        while (true) {
+            if (signal.aborted) {
+                throw new Error(
+                    'Aborted while waiting for collection concept ID',
+                )
+            }
+
+            const conceptId = this.#collectionController.conceptId
+            if (conceptId) {
+                return conceptId
+            }
+
+            if (Date.now() > deadline) {
+                throw new Error('Timed out waiting for collection concept ID')
+            }
+
+            await this.#sleep(200, signal)
+        }
+    }
+
+    async #waitForHarmonyJob(
+        jobId: string,
+        signal: AbortSignal,
+    ): Promise<SubsetJobStatus> {
+        this.#harmonyRequestController.startPollForJobStatus(jobId, {
+            bearerToken: this.#host.bearerToken,
+        })
+
+        while (true) {
+            if (signal.aborted) {
+                throw new Error('Job polling was aborted')
+            }
+
+            const jobStatus = this.#harmonyRequestController.data
+
+            if (jobStatus) {
+                this.#host.emit('terra-harmony-job-status-update', {
+                    detail: jobStatus,
+                })
+            }
+
+            if (
+                jobStatus?.jobID === jobId &&
+                FINAL_STATUSES.has(jobStatus.status)
+            ) {
+                return jobStatus
+            }
+
+            await this.#sleep(HARMONY_STATUS_WAIT_INTERVAL_MS, signal)
+        }
+    }
+
+    async #fetchJobBlob(
+        jobStatus: SubsetJobStatus,
+        signal: AbortSignal,
+    ): Promise<Blob> {
+        const dataLink = jobStatus.links.find(
+            (link) => link.rel === 'data',
+        )?.href
+
+        if (!dataLink) {
+            throw new Error('No data link found for Harmony job')
+        }
+
+        const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(dataLink)}`
+
+        const response = await fetch(proxyUrl, {
+            signal,
+            headers: {
+                ...(this.#host.bearerToken
+                    ? { Authorization: `Bearer ${this.#host.bearerToken}` }
+                    : {}),
+            },
+        })
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch subset job data: ${response.statusText}`,
+            )
+        }
+
+        return response.blob()
     }
 
     #updateGeoTIFFLayer(blob: Blob) {
@@ -192,140 +363,53 @@ export class TimeAvgMapController {
         })
 
         this.#host.updateGeoTIFFLayer(blob)
-    }
 
-    render(renderFunctions: StatusRenderer<any>) {
-        return this.jobStatusTask.render(renderFunctions)
-    }
-
-    fetchJobByID(jobID: string) {
-        this.currentJob = {
-            jobID,
-            status: Status.FETCHING,
-            message: 'Your job is being retrieved.',
-            progress: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            dataExpiration: '',
-            request: '',
-            numInputGranules: 0,
-            links: [],
-        }
-
-        // run the job status task to get the job details
-        this.jobStatusTask.run()
-    }
-
-    #waitForHarmonyJob(job: SubsetJobStatus, signal: AbortSignal) {
-        return new Promise<SubsetJobStatus>(async (resolve, reject) => {
-            if (signal.aborted) {
-                reject(new Error('Job polling was aborted'))
-                return
-            }
-
-            let jobStatus: SubsetJobStatus | undefined
-
-            try {
-                jobStatus = await this.#dataService.getSubsetJobStatus(job.jobID, {
-                    signal,
-                    bearerToken: this.#host.bearerToken,
-                    environment: this.#host.environment,
-                })
-                console.log('Job status', jobStatus)
-
-                this.#host.harmonyJobId = jobStatus.jobID
-            } catch (error) {
-                console.error('Error checking harmony job status', error)
-
-                // If aborted, reject the promise to stop polling (don't show error)
-                if (signal.aborted || (error as Error)?.name === 'AbortError') {
-                    reject(error)
-                    return
-                }
-
-                // Handle GraphQL errors from status check
-                this.#handleHarmonyError(error)
-                reject(error)
-                return
-            }
-
-            if (jobStatus && FINAL_STATUSES.has(jobStatus.status)) {
-                console.log('Job is done', jobStatus)
-                resolve(jobStatus)
-            } else {
-                if (signal.aborted) {
-                    reject(new Error('Job polling was aborted'))
-                    return
-                }
-
-                // Set up abort listener to immediately reject if aborted during the wait
-                const abortHandler = () => {
-                    reject(new Error('Job polling was aborted'))
-                }
-                signal.addEventListener('abort', abortHandler, { once: true })
-
-                setTimeout(async () => {
-                    // Remove the abort listener since we're about to check again
-                    signal.removeEventListener('abort', abortHandler)
-
-                    // Check if aborted immediately when timeout fires
-                    if (signal.aborted) {
-                        reject(new Error('Job polling was aborted'))
-                        return
-                    }
-
-                    try {
-                        resolve(await this.#waitForHarmonyJob(job, signal))
-                    } catch (error) {
-                        reject(error)
-                    }
-                }, REFRESH_HARMONY_DATA_INTERVAL)
-            }
-        })
-    }
-
-    #getDataService() {
-        return new HarmonyDataService()
-    }
-
-    #getEmptyJob() {
-        return {
-            jobID: '',
-            status: Status.RUNNING,
-            message: 'Your job is being created and will start soon.',
-            progress: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            dataExpiration: '',
-            request: '',
-            numInputGranules: 0,
-            links: [],
+        const harmonyJobId = this.#host.harmonyJobId
+        if (harmonyJobId) {
+            this.#captureThumbnail(harmonyJobId).catch(console.error)
         }
     }
 
-    getCacheKey(): string {
-        const environment = this.#host.environment ?? 'prod'
-        const location = this.#host.location ?? ''
-        const collection = this.#host.collection ?? ''
-        const variable = this.#host.variable ?? ''
-        const start = this.#host.startDate ?? ''
-        const end = this.#host.endDate ?? ''
-        return `map_${collection}_${variable}_${start}_${end}_${location}_${environment}`
+    async #captureThumbnail(
+        harmonyJobId: string,
+        delayMs = 1500,
+    ): Promise<void> {
+        // Wait for OpenLayers to finish rendering the GeoTIFF layer
+        await new Promise<void>((resolve) => setTimeout(resolve, delayMs))
+
+        const blob = await this.#host.captureMapThumbnail()
+        if (blob) {
+            await this.#thumbnailService.store(harmonyJobId, blob)
+        }
     }
 
-    /**
-     * Handles errors from Harmony GraphQL operations and dispatches them as events
-     */
-    #handleHarmonyError(error: unknown, jobErrors?: Array<SubsetJobError>): void {
+    #handleHarmonyError(
+        error: unknown,
+        jobErrors?: Array<SubsetJobError>,
+    ): void {
         const errorDetails = extractHarmonyError(error, jobErrors)
 
-        // Dispatch the error event
         this.#host.dispatchEvent(
             new CustomEvent('terra-time-average-map-error', {
                 detail: errorDetails,
                 bubbles: true,
                 composed: true,
-            })
+            }),
         )
+    }
+
+    #sleep(ms: number, signal: AbortSignal): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (signal.aborted) {
+                reject(new Error('Aborted'))
+                return
+            }
+
+            const timer = setTimeout(resolve, ms)
+            signal.addEventListener('abort', () => {
+                clearTimeout(timer)
+                reject(new Error('Aborted'))
+            })
+        })
     }
 }

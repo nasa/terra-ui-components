@@ -75,8 +75,9 @@ export default class TerraDatePicker extends TerraElement {
     /** The ARIA role for the button. Defaults to 'group'. */
     @property({ reflect: true }) role: string | null = 'group'
     /** The ARIA label for the date picker. Defaults to 'Date picker'.*/
-    @property({ reflect: true, attribute: 'aria-label' }) ariaLabel: string | null =
-        'Date picker'
+    @property({ reflect: true, attribute: 'aria-label' }) ariaLabel:
+        | string
+        | null = 'Date picker'
     @property({ type: Boolean }) hideClearAll = false
     @property() clearAllLabel: string = 'Clear Dates'
     @property({ type: Boolean, attribute: 'use-end-of-day' }) useEndOfDay = true
@@ -169,7 +170,9 @@ export default class TerraDatePicker extends TerraElement {
             const [year, month, day] = datePart.split('-').map(Number)
             const [hours, minutes, seconds] = timePart.split(':').map(Number)
             // When time is enabled, parse as UTC to match API's UTC min/max dates
-            return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
+            return new Date(
+                Date.UTC(year, month - 1, day, hours, minutes, seconds),
+            )
         }
 
         // For ISO strings with time (including UTC 'Z' suffix), use standard Date parsing
@@ -239,8 +242,8 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private get filteredPresets(): PresetRange[] {
-        return (this.presets || []).filter(preset =>
-            this.isPresetWithinBounds(preset.getValue())
+        return (this.presets || []).filter((preset) =>
+            this.isPresetWithinBounds(preset.getValue()),
         )
     }
 
@@ -335,7 +338,10 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Handle minDate/maxDate changes
-        if (changedProperties.has('minDate') || changedProperties.has('maxDate')) {
+        if (
+            changedProperties.has('minDate') ||
+            changedProperties.has('maxDate')
+        ) {
             // When minDate or maxDate changes (e.g., from async API call),
             // update calendar view to show the maxDate if no selection exists yet
             if (this.maxDate && !this.selectedStart && !this.selectedEnd) {
@@ -354,7 +360,10 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Handle startDate/endDate changes
-        if (changedProperties.has('startDate') || changedProperties.has('endDate')) {
+        if (
+            changedProperties.has('startDate') ||
+            changedProperties.has('endDate')
+        ) {
             // Sync internal state with props when they change
             if (this.startDate) {
                 const start = this.parseLocalDate(this.startDate)
@@ -386,25 +395,30 @@ export default class TerraDatePicker extends TerraElement {
                     // Check if the range is entirely within one month
                     const isSingleMonthRange = this.isSameMonth(
                         this.selectedStart,
-                        this.selectedEnd
+                        this.selectedEnd,
                     )
 
                     if (isSingleMonthRange) {
                         // Case 1: Left calendar already shows the selection month
-                        if (this.isDateInMonth(this.selectedStart, this.leftMonth)) {
+                        if (
+                            this.isDateInMonth(
+                                this.selectedStart,
+                                this.leftMonth,
+                            )
+                        ) {
                             this.leftMonth = new Date(this.selectedStart)
                             // If right calendar also shows the same month (initial load scenario),
                             // set it to the next month. Otherwise, preserve user's navigation.
                             if (
                                 this.isDateInMonth(
                                     this.selectedStart,
-                                    this.rightMonth
+                                    this.rightMonth,
                                 )
                             ) {
                                 // Both calendars show the same month - set right to next month
                                 this.rightMonth = new Date(this.selectedStart)
                                 this.rightMonth.setMonth(
-                                    this.rightMonth.getMonth() + 1
+                                    this.rightMonth.getMonth() + 1,
                                 )
                             }
                             // Otherwise, don't change rightMonth - user has navigated it elsewhere
@@ -412,7 +426,10 @@ export default class TerraDatePicker extends TerraElement {
                         // Case 2: Right calendar already shows the selection month
                         // Skip changing the left calendar
                         else if (
-                            this.isDateInMonth(this.selectedStart, this.rightMonth)
+                            this.isDateInMonth(
+                                this.selectedStart,
+                                this.rightMonth,
+                            )
                         ) {
                             // Don't change leftMonth - user is already looking at the month on the right
                             this.rightMonth = new Date(this.selectedStart)
@@ -542,7 +559,7 @@ export default class TerraDatePicker extends TerraElement {
             if (this.selectedStart && this.selectedEnd) {
                 const isSingleMonthRange = this.isSameMonth(
                     this.selectedStart,
-                    this.selectedEnd
+                    this.selectedEnd,
                 )
 
                 if (isSingleMonthRange) {
@@ -584,7 +601,10 @@ export default class TerraDatePicker extends TerraElement {
         this.isOpen = false
     }
 
-    private formatDisplayDate(date: Date | null, isStart: boolean = true): string {
+    private formatDisplayDate(
+        date: Date | null,
+        isStart: boolean = true,
+    ): string {
         if (!date) return ''
 
         // Get the format to use
@@ -598,15 +618,14 @@ export default class TerraDatePicker extends TerraElement {
             const month = String(date.getUTCMonth() + 1).padStart(2, '0')
             const day = String(date.getUTCDate()).padStart(2, '0')
             // Use time picker state values instead of date object's time
-            const hours = String(isStart ? this.startHour : this.endHour).padStart(
-                2,
-                '0'
-            )
+            const hours = String(
+                isStart ? this.startHour : this.endHour,
+            ).padStart(2, '0')
             const minutes = String(
-                isStart ? this.startMinute : this.endMinute
+                isStart ? this.startMinute : this.endMinute,
             ).padStart(2, '0')
             const seconds = String(
-                isStart ? this.startSecond : this.endSecond
+                isStart ? this.startSecond : this.endSecond,
             ).padStart(2, '0')
 
             return format
@@ -651,7 +670,9 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private getEndDateDisplayValue(): string {
-        return this.selectedEnd ? this.formatDisplayDate(this.selectedEnd, false) : ''
+        return this.selectedEnd
+            ? this.formatDisplayDate(this.selectedEnd, false)
+            : ''
     }
 
     private parseAndFormatDate(dateStr: string): string | null {
@@ -675,7 +696,9 @@ export default class TerraDatePicker extends TerraElement {
             const hours = timeComponents[0] || 0
             const minutes = timeComponents[1] || 0
             const seconds = timeComponents[2] || 0
-            date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
+            date = new Date(
+                Date.UTC(year, month - 1, day, hours, minutes, seconds),
+            )
         } else {
             // For other formats, try new Date() and validate
             date = new Date(trimmed)
@@ -717,8 +740,9 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private clearInputValidation() {
-        const inputs = this.renderRoot.querySelectorAll<TerraInput>('terra-input')
-        inputs.forEach(input => {
+        const inputs =
+            this.renderRoot.querySelectorAll<TerraInput>('terra-input')
+        inputs.forEach((input) => {
             input.setCustomValidity('')
         })
     }
@@ -765,11 +789,14 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         if (this.range) {
-            // Split by ' - ' (with spaces)
-            const parts = value.split(' - ')
+            // Normalize bare hyphen between DD and YYYY (e.g. 2024-03-15-2024-03-16)
+            // by inserting spaces so the split below can find it
+            const normalized = value.replace(/(\d{2})-(\d{4})/, '$1 - $2')
+            // Split by en-dash (with or without spaces) or space-hyphen-space
+            const parts = normalized.split(/\s*–\s*|\s+-\s+/)
             if (parts.length !== 2) {
                 const message =
-                    'Date range must be in format: YYYY-MM-DD - YYYY-MM-DD'
+                    'Date range must be in format: YYYY-MM-DD – YYYY-MM-DD'
                 this.setInputValidationError(input, message)
                 return
             }
@@ -806,8 +833,8 @@ export default class TerraDatePicker extends TerraElement {
                         day,
                         this.startHour,
                         this.startMinute,
-                        this.startSecond
-                    )
+                        this.startSecond,
+                    ),
                 )
             } else {
                 start = this.parseLocalDate(startFormatted)
@@ -827,8 +854,8 @@ export default class TerraDatePicker extends TerraElement {
                         day,
                         this.endHour,
                         this.endMinute,
-                        this.endSecond
-                    )
+                        this.endSecond,
+                    ),
                 )
             } else {
                 end = this.parseLocalDate(endFormatted)
@@ -890,8 +917,8 @@ export default class TerraDatePicker extends TerraElement {
                         day,
                         this.startHour,
                         this.startMinute,
-                        this.startSecond
-                    )
+                        this.startSecond,
+                    ),
                 )
             } else {
                 // Time not enabled - just parse the date
@@ -959,8 +986,8 @@ export default class TerraDatePicker extends TerraElement {
                     day,
                     this.startHour,
                     this.startMinute,
-                    this.startSecond
-                )
+                    this.startSecond,
+                ),
             )
         } else {
             // Time not enabled - just parse the date
@@ -1033,8 +1060,8 @@ export default class TerraDatePicker extends TerraElement {
                     day,
                     this.endHour,
                     this.endMinute,
-                    this.endSecond
-                )
+                    this.endSecond,
+                ),
             )
         } else {
             // Time not enabled - just parse the date
@@ -1064,7 +1091,9 @@ export default class TerraDatePicker extends TerraElement {
             if (this.enableTime && this.isSameDay(date, this.selectedStart)) {
                 // When time is enabled and dates are the same, validate time instead of full datetime
                 const startTimeSeconds =
-                    this.startHour * 3600 + this.startMinute * 60 + this.startSecond
+                    this.startHour * 3600 +
+                    this.startMinute * 60 +
+                    this.startSecond
                 const endTimeSeconds =
                     this.endHour * 3600 + this.endMinute * 60 + this.endSecond
                 if (endTimeSeconds < startTimeSeconds) {
@@ -1268,16 +1297,28 @@ export default class TerraDatePicker extends TerraElement {
         if (!this.selectedStart || !this.selectedEnd) return false
         const time = date.getTime()
         return (
-            time >= this.selectedStart.getTime() && time <= this.selectedEnd.getTime()
+            time >= this.selectedStart.getTime() &&
+            time <= this.selectedEnd.getTime()
         )
     }
 
     private isInHoverRange(date: Date): boolean {
-        if (!this.range || !this.selectedStart || !this.hoverDate || this.selectedEnd)
+        if (
+            !this.range ||
+            !this.selectedStart ||
+            !this.hoverDate ||
+            this.selectedEnd
+        )
             return false
         const time = date.getTime()
-        const start = Math.min(this.selectedStart.getTime(), this.hoverDate.getTime())
-        const end = Math.max(this.selectedStart.getTime(), this.hoverDate.getTime())
+        const start = Math.min(
+            this.selectedStart.getTime(),
+            this.hoverDate.getTime(),
+        )
+        const end = Math.max(
+            this.selectedStart.getTime(),
+            this.hoverDate.getTime(),
+        )
         return time >= start && time <= end
     }
 
@@ -1286,10 +1327,18 @@ export default class TerraDatePicker extends TerraElement {
             const min = this.parseLocalDate(this.minDate)
             // Use UTC for comparison to avoid timezone issues with API dates
             const minMidnight = new Date(
-                Date.UTC(min.getUTCFullYear(), min.getUTCMonth(), min.getUTCDate())
+                Date.UTC(
+                    min.getUTCFullYear(),
+                    min.getUTCMonth(),
+                    min.getUTCDate(),
+                ),
             )
             const dateMidnight = new Date(
-                Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+                Date.UTC(
+                    date.getUTCFullYear(),
+                    date.getUTCMonth(),
+                    date.getUTCDate(),
+                ),
             )
             if (dateMidnight < minMidnight) return true
         }
@@ -1297,10 +1346,18 @@ export default class TerraDatePicker extends TerraElement {
             const max = this.parseLocalDate(this.maxDate)
             // Use UTC for comparison to avoid timezone issues with API dates
             const maxMidnight = new Date(
-                Date.UTC(max.getUTCFullYear(), max.getUTCMonth(), max.getUTCDate())
+                Date.UTC(
+                    max.getUTCFullYear(),
+                    max.getUTCMonth(),
+                    max.getUTCDate(),
+                ),
             )
             const dateMidnight = new Date(
-                Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+                Date.UTC(
+                    date.getUTCFullYear(),
+                    date.getUTCMonth(),
+                    date.getUTCDate(),
+                ),
             )
             if (dateMidnight > maxMidnight) return true
         }
@@ -1349,7 +1406,9 @@ export default class TerraDatePicker extends TerraElement {
                         this.startMinute * 60 +
                         this.startSecond
                     const endTimeSeconds =
-                        this.endHour * 3600 + this.endMinute * 60 + this.endSecond
+                        this.endHour * 3600 +
+                        this.endMinute * 60 +
+                        this.endSecond
                     if (endTimeSeconds < startTimeSeconds) {
                         this.emit('terra-date-selection-invalid', {
                             detail: {
@@ -1444,17 +1503,19 @@ export default class TerraDatePicker extends TerraElement {
                     this.startHour,
                     this.startMinute,
                     this.startSecond,
-                    0
+                    0,
                 )
                 startDateTime = startDate.toISOString()
             } else {
                 // Format using local date components to avoid timezone conversion issues
                 const year = this.selectedStart.getFullYear()
-                const month = String(this.selectedStart.getMonth() + 1).padStart(
+                const month = String(
+                    this.selectedStart.getMonth() + 1,
+                ).padStart(2, '0')
+                const day = String(this.selectedStart.getDate()).padStart(
                     2,
-                    '0'
+                    '0',
                 )
-                const day = String(this.selectedStart.getDate()).padStart(2, '0')
                 startDateTime = `${year}-${month}-${day}`
             }
         }
@@ -1462,12 +1523,20 @@ export default class TerraDatePicker extends TerraElement {
         if (this.selectedEnd) {
             if (this.enableTime) {
                 const endDate = new Date(this.selectedEnd)
-                endDate.setUTCHours(this.endHour, this.endMinute, this.endSecond, 0)
+                endDate.setUTCHours(
+                    this.endHour,
+                    this.endMinute,
+                    this.endSecond,
+                    0,
+                )
                 endDateTime = endDate.toISOString()
             } else {
                 // Format using local date components to avoid timezone conversion issues
                 const year = this.selectedEnd.getFullYear()
-                const month = String(this.selectedEnd.getMonth() + 1).padStart(2, '0')
+                const month = String(this.selectedEnd.getMonth() + 1).padStart(
+                    2,
+                    '0',
+                )
                 const day = String(this.selectedEnd.getDate()).padStart(2, '0')
                 endDateTime = `${year}-${month}-${day}`
             }
@@ -1500,7 +1569,7 @@ export default class TerraDatePicker extends TerraElement {
     private changeTime(
         type: 'hour' | 'minute' | 'second',
         delta: number,
-        isStart: boolean
+        isStart: boolean,
     ) {
         if (type === 'hour') {
             if (isStart) {
@@ -1546,7 +1615,7 @@ export default class TerraDatePicker extends TerraElement {
     private handleTimeInput(
         event: Event,
         type: 'hour' | 'minute' | 'second',
-        isStart: boolean
+        isStart: boolean,
     ) {
         const input = event.target as HTMLInputElement
         let value = parseInt(input.value, 10)
@@ -1635,25 +1704,30 @@ export default class TerraDatePicker extends TerraElement {
                                 </svg>
                             </button>
 
-                            ${showDropdown
-                                ? html`
+                            ${
+                                showDropdown
+                                    ? html`
                                       <div class="calendar__month-dropdown">
                                           ${this.MONTHS.map(
                                               (monthName, index) => html`
                                                   <button
                                                       type="button"
-                                                      class="calendar__month-option ${index ===
-                                                      month.getMonth()
-                                                          ? 'calendar__month-option--selected'
-                                                          : ''}"
+                                                      class="calendar__month-option ${
+                                                          index ===
+                                                          month.getMonth()
+                                                              ? 'calendar__month-option--selected'
+                                                              : ''
+                                                      }"
                                                       @click=${() =>
                                                           this.selectMonth(
                                                               index,
-                                                              isLeft
+                                                              isLeft,
                                                           )}
                                                   >
-                                                      ${index === month.getMonth()
-                                                          ? html`
+                                                      ${
+                                                          index ===
+                                                          month.getMonth()
+                                                              ? html`
                                                                 <svg
                                                                     width="16"
                                                                     height="16"
@@ -1670,14 +1744,16 @@ export default class TerraDatePicker extends TerraElement {
                                                                     />
                                                                 </svg>
                                                             `
-                                                          : ''}
+                                                              : ''
+                                                      }
                                                       ${monthName}
                                                   </button>
-                                              `
+                                              `,
                                           )}
                                       </div>
                                   `
-                                : ''}
+                                    : ''
+                            }
                         </div>
 
                         <div class="calendar__year-input-wrapper">
@@ -1757,11 +1833,12 @@ export default class TerraDatePicker extends TerraElement {
                 </div>
                 <div class="calendar__weekdays">
                     ${this.DAYS.map(
-                        day => html`<div class="calendar__weekday">${day}</div>`
+                        (day) =>
+                            html`<div class="calendar__weekday">${day}</div>`,
                     )}
                 </div>
                 <div class="calendar__days">
-                    ${days.map(date => {
+                    ${days.map((date) => {
                         // When time is enabled, use UTC components; otherwise use local
                         const dateMonth = this.enableTime
                             ? date.getUTCMonth()
@@ -1783,16 +1860,20 @@ export default class TerraDatePicker extends TerraElement {
                         return html`
                             <button
                                 type="button"
-                                class="calendar__day ${!isCurrentMonth
-                                    ? 'calendar__day--outside'
-                                    : ''} 
+                                class="calendar__day ${
+                                    !isCurrentMonth
+                                        ? 'calendar__day--outside'
+                                        : ''
+                                } 
                                        ${isSelected ? 'calendar__day--selected' : ''}
                                        ${isStart ? 'calendar__day--start' : ''}
                                        ${isEnd ? 'calendar__day--end' : ''}
                                        ${inRange ? 'calendar__day--in-range' : ''}
-                                       ${inHoverRange
-                                    ? 'calendar__day--hover-range'
-                                    : ''}
+                                       ${
+                                           inHoverRange
+                                               ? 'calendar__day--hover-range'
+                                               : ''
+                                       }
                                        ${isDisabled ? 'calendar__day--disabled' : ''}"
                                 @click=${() => this.selectDate(date)}
                                 @mouseenter=${() => this.handleDateHover(date)}
@@ -2002,8 +2083,9 @@ export default class TerraDatePicker extends TerraElement {
                     </div>
                 </div>
 
-                ${this.range
-                    ? html`
+                ${
+                    this.range
+                        ? html`
                           <span class="date-picker__separator">–</span>
 
                           <div class="date-picker__time-section">
@@ -2016,7 +2098,11 @@ export default class TerraDatePicker extends TerraElement {
                                               .toString()
                                               .padStart(2, '0')}
                                           @input=${(e: Event) =>
-                                              this.handleTimeInput(e, 'hour', false)}
+                                              this.handleTimeInput(
+                                                  e,
+                                                  'hour',
+                                                  false,
+                                              )}
                                           @blur=${(e: Event) => {
                                               const input =
                                                   e.target as HTMLInputElement
@@ -2032,7 +2118,11 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('hour', 1, false)}
+                                                  this.changeTime(
+                                                      'hour',
+                                                      1,
+                                                      false,
+                                                  )}
                                           >
                                               <svg
                                                   width="10"
@@ -2053,7 +2143,11 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('hour', -1, false)}
+                                                  this.changeTime(
+                                                      'hour',
+                                                      -1,
+                                                      false,
+                                                  )}
                                           >
                                               <svg
                                                   width="10"
@@ -2086,7 +2180,7 @@ export default class TerraDatePicker extends TerraElement {
                                               this.handleTimeInput(
                                                   e,
                                                   'minute',
-                                                  false
+                                                  false,
                                               )}
                                           @blur=${(e: Event) => {
                                               const input =
@@ -2103,7 +2197,11 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('minute', 1, false)}
+                                                  this.changeTime(
+                                                      'minute',
+                                                      1,
+                                                      false,
+                                                  )}
                                           >
                                               <svg
                                                   width="10"
@@ -2127,7 +2225,7 @@ export default class TerraDatePicker extends TerraElement {
                                                   this.changeTime(
                                                       'minute',
                                                       -1,
-                                                      false
+                                                      false,
                                                   )}
                                           >
                                               <svg
@@ -2161,7 +2259,7 @@ export default class TerraDatePicker extends TerraElement {
                                               this.handleTimeInput(
                                                   e,
                                                   'second',
-                                                  false
+                                                  false,
                                               )}
                                           @blur=${(e: Event) => {
                                               const input =
@@ -2178,7 +2276,11 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('second', 1, false)}
+                                                  this.changeTime(
+                                                      'second',
+                                                      1,
+                                                      false,
+                                                  )}
                                           >
                                               <svg
                                                   width="10"
@@ -2202,7 +2304,7 @@ export default class TerraDatePicker extends TerraElement {
                                                   this.changeTime(
                                                       'second',
                                                       -1,
-                                                      false
+                                                      false,
                                                   )}
                                           >
                                               <svg
@@ -2225,7 +2327,8 @@ export default class TerraDatePicker extends TerraElement {
                               </div>
                           </div>
                       `
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }
@@ -2270,14 +2373,15 @@ export default class TerraDatePicker extends TerraElement {
                                     `
                                     : nothing}
                 <div class="date-picker__content">
-                    ${this.showPresets && this.filteredPresets.length > 0
-                        ? html`
+                    ${
+                        this.showPresets && this.filteredPresets.length > 0
+                            ? html`
                               <div class="date-picker__sidebar" part="sidebar">
                                   <slot name="sidebar-header"></slot>
 
                                   <div class="presets">
                                       ${this.filteredPresets.map(
-                                          preset => html`
+                                          (preset) => html`
                                               <button
                                                   type="button"
                                                   class="date-picker__preset"
@@ -2286,7 +2390,7 @@ export default class TerraDatePicker extends TerraElement {
                                               >
                                                   ${preset.label}
                                               </button>
-                                          `
+                                          `,
                                       )}
                                   </div>
 
@@ -2302,13 +2406,16 @@ export default class TerraDatePicker extends TerraElement {
                                   </slot>
                               </div>
                           `
-                        : ''}
+                            : ''
+                    }
 
                     <div class="date-picker__calendars">
                         ${this.renderCalendar(this.leftMonth, true)}
-                        ${this.range
-                            ? this.renderCalendar(this.rightMonth, false)
-                            : ''}
+                        ${
+                            this.range
+                                ? this.renderCalendar(this.rightMonth, false)
+                                : ''
+                        }
                     </div>
                 </div>
 
@@ -2324,19 +2431,22 @@ export default class TerraDatePicker extends TerraElement {
         if (this.inline) {
             return html`
                 <div
-                    class="date-picker date-picker--inline ${showSplitInputs
-                        ? 'date-picker--split-inputs'
-                        : ''}"
+                    class="date-picker date-picker--inline ${
+                        showSplitInputs ? 'date-picker--split-inputs' : ''
+                    }"
                     @click=${(e: Event) => e.stopPropagation()}
                 >
-                    ${showSplitInputs
-                        ? html`
+                    ${
+                        showSplitInputs
+                            ? html`
                               <div class="date-picker__inputs">
                                   <terra-input
-                                      .label=${this.startLabel ||
-                                      (this.label
-                                          ? `${this.label} (Start)`
-                                          : 'Start Date')}
+                                      .label=${
+                                          this.startLabel ||
+                                          (this.label
+                                              ? `${this.label} (Start)`
+                                              : 'Start Date')
+                                      }
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.startHelpText || this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
@@ -2348,10 +2458,12 @@ export default class TerraDatePicker extends TerraElement {
                                       ${this.renderCalendarIcon()}
                                   </terra-input>
                                   <terra-input
-                                      .label=${this.endLabel ||
-                                      (this.label
-                                          ? `${this.label} (End)`
-                                          : 'End Date')}
+                                      .label=${
+                                          this.endLabel ||
+                                          (this.label
+                                              ? `${this.label} (End)`
+                                              : 'End Date')
+                                      }
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.endHelpText || this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
@@ -2364,7 +2476,7 @@ export default class TerraDatePicker extends TerraElement {
                                   </terra-input>
                               </div>
                           `
-                        : html`
+                            : html`
                               <terra-input
                                   .label=${this.label}
                                   .hideLabel=${this.hideLabel}
@@ -2377,7 +2489,8 @@ export default class TerraDatePicker extends TerraElement {
                               >
                                   ${this.renderCalendarIcon()}
                               </terra-input>
-                          `}
+                          `
+                    }
 
                     <slot name="additional-text"></slot>
 
@@ -2387,8 +2500,10 @@ export default class TerraDatePicker extends TerraElement {
                             part="calendar"
                         >
                             <div class="date-picker__content">
-                                ${this.showPresets && this.filteredPresets.length > 0
-                                    ? html`
+                                ${
+                                    this.showPresets &&
+                                    this.filteredPresets.length > 0
+                                        ? html`
                                           <div
                                               class="date-picker__sidebar"
                                               part="sidebar"
@@ -2397,18 +2512,18 @@ export default class TerraDatePicker extends TerraElement {
 
                                               <div class="presets">
                                                   ${this.filteredPresets.map(
-                                                      preset => html`
+                                                      (preset) => html`
                                                           <button
                                                               type="button"
                                                               class="date-picker__preset"
                                                               @click=${() =>
                                                                   this.selectPreset(
-                                                                      preset
+                                                                      preset,
                                                                   )}
                                                           >
                                                               ${preset.label}
                                                           </button>
-                                                      `
+                                                      `,
                                                   )}
                                               </div>
 
@@ -2424,13 +2539,19 @@ export default class TerraDatePicker extends TerraElement {
                                               </slot>
                                           </div>
                                       `
-                                    : ''}
+                                        : ''
+                                }
 
                                 <div class="date-picker__calendars">
                                     ${this.renderCalendar(this.leftMonth, true)}
-                                    ${this.range
-                                        ? this.renderCalendar(this.rightMonth, false)
-                                        : ''}
+                                    ${
+                                        this.range
+                                            ? this.renderCalendar(
+                                                  this.rightMonth,
+                                                  false,
+                                              )
+                                            : ''
+                                    }
                                 </div>
                             </div>
 
@@ -2444,13 +2565,14 @@ export default class TerraDatePicker extends TerraElement {
         // Non-inline mode: use dropdown
         return html`
             <div
-                class="date-picker ${showSplitInputs
-                    ? 'date-picker--split-inputs'
-                    : ''}"
+                class="date-picker ${
+                    showSplitInputs ? 'date-picker--split-inputs' : ''
+                }"
                 @click=${(e: Event) => e.stopPropagation()}
             >
-                ${showSplitInputs
-                    ? html`
+                ${
+                    showSplitInputs
+                        ? html`
                           <div class="date-picker__inputs">
                               <terra-dropdown
                                   ${ref(this.dropdownRef)}
@@ -2462,10 +2584,12 @@ export default class TerraDatePicker extends TerraElement {
                               >
                                   <terra-input
                                       slot="trigger"
-                                      .label=${this.startLabel ||
-                                      (this.label
-                                          ? `${this.label} (Start)`
-                                          : 'Start Date')}
+                                      .label=${
+                                          this.startLabel ||
+                                          (this.label
+                                              ? `${this.label} (Start)`
+                                              : 'Start Date')
+                                      }
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.startHelpText || this.helpText}
                                       .value=${this.getStartDateDisplayValue()}
@@ -2487,10 +2611,12 @@ export default class TerraDatePicker extends TerraElement {
                               >
                                   <terra-input
                                       slot="trigger"
-                                      .label=${this.endLabel ||
-                                      (this.label
-                                          ? `${this.label} (End)`
-                                          : 'End Date')}
+                                      .label=${
+                                          this.endLabel ||
+                                          (this.label
+                                              ? `${this.label} (End)`
+                                              : 'End Date')
+                                      }
                                       .hideLabel=${this.hideLabel}
                                       .helpText=${this.endHelpText || this.helpText}
                                       .value=${this.getEndDateDisplayValue()}
@@ -2505,7 +2631,7 @@ export default class TerraDatePicker extends TerraElement {
                               </terra-dropdown>
                           </div>
                       `
-                    : html`
+                        : html`
                           <terra-dropdown
                               ${ref(this.dropdownRef)}
                               placement="bottom-start"
@@ -2529,7 +2655,8 @@ export default class TerraDatePicker extends TerraElement {
                               </terra-input>
                               ${this.renderCalendarContent()}
                           </terra-dropdown>
-                      `}
+                      `
+                }
             </div>
         `
     }

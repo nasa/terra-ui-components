@@ -21,7 +21,7 @@ export function getNotebook(host: TerraDataSubsetter) {
         {
             id: '2733501b-0de4-4067-8aff-864e1b4c76cb',
             cell_type: 'code',
-            source: '%pip install -q "terra_ui_components==0.0.173" "anywidget==0.9.15"',
+            source: '%pip install -q "terra_ui_components==0.0.185" "anywidget==0.9.15"',
             metadata: {
                 trusted: true,
             },
@@ -37,7 +37,7 @@ export function getNotebook(host: TerraDataSubsetter) {
         {
             id: '870c1384-e706-48ee-ba07-fd552a949869',
             cell_type: 'code',
-            source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\n${host.collectionEntryId ? `subsetter.collectionEntryId = '${host.collectionEntryId}'\n` : ''}${host.controller.currentJob?.jobID ? `subsetter.jobId = '${host.controller.currentJob.jobID}'\n` : ''}${host.environment ? `subsetter.environment = '${host.environment}'` : ''}\nsubsetter`,
+            source: `from terra_ui_components import TerraDataSubsetter\nsubsetter = TerraDataSubsetter()\n\n${host.collectionEntryId ? `subsetter.collectionEntryId = '${host.collectionEntryId}'\n` : ''}${host.jobId ? `subsetter.jobId = '${host.jobId}'\n` : ''}${host.environment ? `subsetter.environment = '${host.environment}'` : ''}\nsubsetter`,
             metadata: {
                 trusted: true,
             },

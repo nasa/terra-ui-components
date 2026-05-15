@@ -42,8 +42,7 @@ export default class TerraOption extends TerraElement {
 
     /**
      * The option's value. When selected, the containing form control will receive this value. The value must be unique
-     * from other options in the same group. Values may not contain spaces, as spaces are used as delimiters when listing
-     * multiple values.
+     * from other options in the same group.
      */
     @property({ reflect: true }) value = ''
 
@@ -95,14 +94,6 @@ export default class TerraOption extends TerraElement {
         if (typeof this.value !== 'string') {
             this.value = String(this.value)
         }
-
-        if (this.value.includes(' ')) {
-            console.error(
-                `Option values cannot include a space. All spaces have been replaced with underscores.`,
-                this
-            )
-            this.value = this.value.replace(/ /g, '_')
-        }
     }
 
     /** Returns a plain text label based on the option's content. */
@@ -110,7 +101,7 @@ export default class TerraOption extends TerraElement {
         const nodes = this.childNodes
         let label = ''
 
-        ;[...nodes].forEach(node => {
+        ;[...nodes].forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
                 if (!(node as HTMLElement).hasAttribute('slot')) {
                     label += (node as HTMLElement).textContent

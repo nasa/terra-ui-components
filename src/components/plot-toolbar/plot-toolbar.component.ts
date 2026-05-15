@@ -10,7 +10,11 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import * as Plotly from 'plotly.js-dist-min'
 import type TerraPlot from '../plot/plot.component.js'
 import type { Plot } from '../plot/plot.types.js'
-import { DB_NAME, getDataByKey, IndexedDbStores } from '../../internal/indexeddb.js'
+import {
+    DB_NAME,
+    getDataByKey,
+    IndexedDbStores,
+} from '../../internal/indexeddb.js'
 import type {
     VariableDbEntry,
     TimeSeriesMetadata,
@@ -18,7 +22,7 @@ import type {
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
-import { parseBoundingBox } from '../map/leaflet-utils.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
@@ -48,6 +52,7 @@ export default class TerraPlotToolbar extends TerraElement {
         'terra-icon': TerraIcon,
         'terra-button': TerraButton,
         'terra-map': TerraMap,
+        'terra-dropdown': TerraDropdown,
     }
 
     @property() catalogVariable: Variable
@@ -59,22 +64,24 @@ export default class TerraPlotToolbar extends TerraElement {
     @property() endDate: string
     @property() cacheKey: string
     @property() dataType: DataType
-    @property({ type: Boolean, attribute: 'show-location' }) showLocation: boolean =
-        true
-    @property({ type: Boolean, attribute: 'show-date-range' }) showDateRange: boolean
+    @property({ type: Boolean, attribute: 'show-location' })
+    showLocation: boolean = true
+    @property({ type: Boolean, attribute: 'show-date-range' })
+    showDateRange: boolean
     @property({ type: Array }) colormaps: string[] = []
     @property({ type: String, attribute: 'color-map-name', reflect: true })
     colorMapName: string = 'viridis'
     @property({ type: Number }) opacity = 1
-    @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
-        false
+    @property({ type: Boolean, attribute: 'show-citation' })
+    showCitation: boolean = false
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
-        true 
-        
+        true
+
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
-    @property({ attribute: 'application-citation' }) applicationCitation?: string
+    @property({ attribute: 'application-citation' })
+    applicationCitation?: string
 
     @property() mobileView = false
 
@@ -87,14 +94,6 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @state()
     activeMenuItem: MenuNames = null
-
-    @state()
-    showLocationTooltip: boolean = false
-
-    @state()
-    locationMapValue: any = []
-
-    #tooltipTimeout: number | null = null
 
     @query('#menu') menu: HTMLMenuElement
 
@@ -118,30 +117,6 @@ export default class TerraPlotToolbar extends TerraElement {
     }
     closeMenu() {
         this.activeMenuItem = null
-    }
-
-    #handleLocationMouseEnter() {
-        if (this.location && this.location.trim()) {
-            try {
-                this.locationMapValue = parseBoundingBox(this.location.trim())
-                // Add a small delay to prevent flickering
-                this.#tooltipTimeout = window.setTimeout(() => {
-                    this.showLocationTooltip = true
-                }, 150)
-            } catch (error) {
-                console.warn('Failed to parse location for tooltip:', error)
-                // Don't show tooltip if parsing fails
-                this.showLocationTooltip = false
-            }
-        }
-    }
-
-    #handleLocationMouseLeave() {
-        if (this.#tooltipTimeout) {
-            clearTimeout(this.#tooltipTimeout)
-            this.#tooltipTimeout = null
-        }
-        this.showLocationTooltip = false
     }
 
     #getLocationIcon() {
@@ -184,7 +159,7 @@ export default class TerraPlotToolbar extends TerraElement {
             this.catalogVariable.dataProductTimeInterval,
         ]
             .filter(Boolean)
-            .filter(value => value.toLowerCase() !== 'not applicable')
+            .filter((value) => value.toLowerCase() !== 'not applicable')
 
         return cache(
             !this.catalogVariable
@@ -196,9 +171,12 @@ export default class TerraPlotToolbar extends TerraElement {
                                   <h2 class="title" @click=${this.#toggleMobileTitle}>
                                       ${this.productLabel || ''}
                                       ${this.productLabel ? html`<br />` : ''}
-                                      ${!this.hideTitle
-                                          ? this.catalogVariable.dataFieldLongName
-                                          : ''}
+                                      ${
+                                          !this.hideTitle
+                                              ? this.catalogVariable
+                                                    .dataFieldLongName
+                                              : ''
+                                      }
                                   </h2>
                               </slot>
                               <slot name="subtitle" ?hidden=${this.hideTitle}>
@@ -206,33 +184,46 @@ export default class TerraPlotToolbar extends TerraElement {
                                       ${metadata.join(' • ')} •
                                       <a
                                           target="_blank"
-                                          href="${this.catalogVariable
-                                              .dataProductDescriptionUrl}"
-                                          >[${this.catalogVariable
-                                              .dataProductShortName}_${this
-                                              .catalogVariable.dataProductVersion}]</a
+                                          href="${
+                                              this.catalogVariable
+                                                  .dataProductDescriptionUrl
+                                          }"
+                                          >[${
+                                              this.catalogVariable
+                                                  .dataProductShortName
+                                          }_${
+                                              this.catalogVariable
+                                                  .dataProductVersion
+                                          }]</a
                                       >
-                                      ${this.showLocation
-                                          ? html`• ${this.#getLocationIcon()}
-                                                <span
-                                                    class="location-text"
-                                                    @mouseenter=${this
-                                                        .#handleLocationMouseEnter}
-                                                    @mouseleave=${this
-                                                        .#handleLocationMouseLeave}
-                                                    >${(this.location ?? '').replace(
-                                                        /,/g,
-                                                        ', '
-                                                    )}</span
-                                                >`
-                                          : ''}
-                                      ${this.showDateRange
-                                          ? html`• ${this.#getDateRangeIcon()}
+                                      ${
+                                          this.showLocation
+                                              ? html`• ${this.#getLocationIcon()}
+                                            <terra-dropdown hover placement="bottom-start" distance="10">
+                                                <span slot="trigger" class="location-text">
+                                                    ${(
+                                                        this.location ?? ''
+                                                    ).replace(/,/g, ', ')}
+                                                </span>
+                                                <terra-map
+                                                    .value=${this.location}
+                                                    .fitToValue=${true}
+                                                    .staticMode=${true}
+                                                    style="width: 300px; height: 200px;"
+                                                ></terra-map>
+                                            </terra-dropdown>
+                                            `
+                                              : ''
+                                      }
+                                      ${
+                                          this.showDateRange
+                                              ? html`• ${this.#getDateRangeIcon()}
                                                 <span
                                                     >${formatDate(this.startDate)} to
                                                     ${formatDate(this.endDate)}</span
                                                 >`
-                                          : ''}
+                                              : ''
+                                      }
                                   </h3>
                               </slot>
                           </div>
@@ -241,8 +232,9 @@ export default class TerraPlotToolbar extends TerraElement {
                               <terra-button
                                   circle
                                   outline
-                                  aria-expanded=${this.activeMenuItem ===
-                                  'information'}
+                                  aria-expanded=${
+                                      this.activeMenuItem === 'information'
+                                  }
                                   aria-controls="menu"
                                   aria-haspopup="true"
                                   class="toggle"
@@ -261,13 +253,16 @@ export default class TerraPlotToolbar extends TerraElement {
                                   ></terra-icon>
                               </terra-button>
 
-                              ${this.showCitation
-                                  ? html`
+                              ${
+                                  this.showCitation
+                                      ? html`
                                         <terra-button
                                             circle
                                             outline
-                                            aria-expanded=${this.activeMenuItem ===
-                                            'citation'}
+                                            aria-expanded=${
+                                                this.activeMenuItem ===
+                                                'citation'
+                                            }
                                             aria-controls="menu"
                                             aria-haspopup="true"
                                             class="toggle"
@@ -277,8 +272,10 @@ export default class TerraPlotToolbar extends TerraElement {
                                         >
                                             <span class="sr-only"
                                                 >Citation for
-                                                ${this.catalogVariable
-                                                    .dataFieldLongName}</span
+                                                ${
+                                                    this.catalogVariable
+                                                        .dataFieldLongName
+                                                }</span
                                             >
 
                                             <span
@@ -287,7 +284,8 @@ export default class TerraPlotToolbar extends TerraElement {
                                             >
                                         </terra-button>
                                     `
-                                  : nothing}
+                                      : nothing
+                              }
 
                               <terra-button
                                   circle
@@ -312,8 +310,9 @@ export default class TerraPlotToolbar extends TerraElement {
                                   ></terra-icon>
                               </terra-button>
 
-                              ${this.showHelp
-                                  ? html`
+                              ${
+                                  this.showHelp
+                                      ? html`
                                     <terra-button
                                         circle
                                         outline
@@ -336,7 +335,8 @@ export default class TerraPlotToolbar extends TerraElement {
                                         ></terra-icon>
                                     </terra-button>
                                     `
-                                  : nothing}
+                                      : nothing
+                              }
                               <terra-button
                                   outline
                                   aria-expanded=${this.activeMenuItem === 'jupyter'}
@@ -360,13 +360,16 @@ export default class TerraPlotToolbar extends TerraElement {
                                   ></terra-icon>
                               </terra-button>
 
-                              ${this.dataType == 'geotiff'
-                                  ? html`
+                              ${
+                                  this.dataType === 'geotiff'
+                                      ? html`
                                         <terra-button
                                             circle
                                             outline
-                                            aria-expanded=${this.activeMenuItem ===
-                                            'GeoTIFF'}
+                                            aria-expanded=${
+                                                this.activeMenuItem ===
+                                                'GeoTIFF'
+                                            }
                                             aria-controls="menu"
                                             aria-haspopup="true"
                                             class="toggle"
@@ -381,11 +384,13 @@ export default class TerraPlotToolbar extends TerraElement {
                                             ></terra-icon>
                                         </terra-button>
                                     `
-                                  : nothing}
+                                      : nothing
+                              }
                           </div>
 
-                          ${!this.mobileView
-                              ? html`
+                          ${
+                              !this.mobileView
+                                  ? html`
                                     <menu
                                         role="menu"
                                         id="menu"
@@ -395,24 +400,30 @@ export default class TerraPlotToolbar extends TerraElement {
                                     >
                                         <li
                                             role="menuitem"
-                                            ?hidden=${this.activeMenuItem !==
-                                            'information'}
+                                            ?hidden=${
+                                                this.activeMenuItem !==
+                                                'information'
+                                            }
                                         >
                                             ${this.#renderInfoPanel()}
                                         </li>
 
                                         <li
                                             role="menuitem"
-                                            ?hidden=${this.activeMenuItem !==
-                                            'citation'}
+                                            ?hidden=${
+                                                this.activeMenuItem !==
+                                                'citation'
+                                            }
                                         >
                                             ${this.#renderCitationPanel()}
                                         </li>
 
                                         <li
                                             role="menuitem"
-                                            ?hidden=${this.activeMenuItem !==
-                                            'download'}
+                                            ?hidden=${
+                                                this.activeMenuItem !==
+                                                'download'
+                                            }
                                         >
                                             ${this.#renderDownloadPanel()}
                                         </li>
@@ -426,51 +437,42 @@ export default class TerraPlotToolbar extends TerraElement {
 
                                         <li
                                             role="menuitem"
-                                            ?hidden=${this.activeMenuItem !==
-                                            'jupyter'}
+                                            ?hidden=${
+                                                this.activeMenuItem !==
+                                                'jupyter'
+                                            }
                                         >
                                             ${this.#renderJupyterNotebookPanel()}
                                         </li>
 
                                         <li
                                             role="menuitem"
-                                            ?hidden=${this.activeMenuItem !==
-                                            'GeoTIFF'}
+                                            ?hidden=${
+                                                this.activeMenuItem !==
+                                                'GeoTIFF'
+                                            }
                                         >
                                             ${this.#renderGeotiffPanel()}
                                         </li>
                                     </menu>
                                 `
-                              : nothing}
-                          ${this.showLocationTooltip
-                              ? html`
-                                    <div class="location-tooltip">
-                                        <terra-map
-                                            .value=${this.locationMapValue}
-                                            zoom="4"
-                                            has-navigation="false"
-                                            hide-bounding-box-selection="true"
-                                            hide-point-selection="true"
-                                            .staticMode=${true}
-                                            style="width: 300px; height: 200px;"
-                                        ></terra-map>
-                                    </div>
-                                `
-                              : ''}
+                                  : nothing
+                          }
                       </header>
 
-                      ${this.mobileView
-                          ? html` <div
+                      ${
+                          this.mobileView
+                              ? html` <div
                                     class="bottom-sheet-backdrop"
-                                    data-state=${this.activeMenuItem
-                                        ? 'open'
-                                        : 'close'}
+                                    data-state=${
+                                        this.activeMenuItem ? 'open' : 'close'
+                                    }
                                     @click=${this.#handleBottomSheetClose}
                                 ></div>
                                 <div
-                                    data-state=${this.activeMenuItem
-                                        ? 'open'
-                                        : 'close'}
+                                    data-state=${
+                                        this.activeMenuItem ? 'open' : 'close'
+                                    }
                                     class="bottom-sheet"
                                     @touchstart=${this.#onBottomSheetTouchStart}
                                     @touchmove=${this.#onBottomSheetTouchMove}
@@ -479,28 +481,42 @@ export default class TerraPlotToolbar extends TerraElement {
                                 >
                                     <div class="bottom-sheet-handle"></div>
                                     <div class="bottom-sheet-content">
-                                        ${this.activeMenuItem === 'information'
-                                            ? this.#renderMobileInfoPanel()
-                                            : ''}
-                                        ${this.activeMenuItem === 'citation'
-                                            ? this.#renderCitationPanel()
-                                            : ''}
-                                        ${this.activeMenuItem === 'download'
-                                            ? this.#renderDownloadPanel()
-                                            : ''}
-                                        ${this.activeMenuItem === 'help'
-                                            ? this.#renderHelpPanel()
-                                            : ''}
-                                        ${this.activeMenuItem === 'jupyter'
-                                            ? this.#renderJupyterNotebookPanel()
-                                            : ''}
-                                        ${this.activeMenuItem === 'GeoTIFF'
-                                            ? this.#renderGeotiffPanel()
-                                            : ''}
+                                        ${
+                                            this.activeMenuItem ===
+                                            'information'
+                                                ? this.#renderMobileInfoPanel()
+                                                : ''
+                                        }
+                                        ${
+                                            this.activeMenuItem === 'citation'
+                                                ? this.#renderCitationPanel()
+                                                : ''
+                                        }
+                                        ${
+                                            this.activeMenuItem === 'download'
+                                                ? this.#renderDownloadPanel()
+                                                : ''
+                                        }
+                                        ${
+                                            this.activeMenuItem === 'help'
+                                                ? this.#renderHelpPanel()
+                                                : ''
+                                        }
+                                        ${
+                                            this.activeMenuItem === 'jupyter'
+                                                ? this.#renderJupyterNotebookPanel()
+                                                : ''
+                                        }
+                                        ${
+                                            this.activeMenuItem === 'GeoTIFF'
+                                                ? this.#renderGeotiffPanel()
+                                                : ''
+                                        }
                                     </div>
                                 </div>`
-                          : nothing}
-                  `
+                              : nothing
+                      }
+                  `,
         )
     }
 
@@ -518,7 +534,8 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #onBottomSheetMouseDown(e: MouseEvent) {
         this.#handleBottomSheetStartDrag(e.clientY, e.target)
-        const move = (ev: MouseEvent) => this.#handleBottomSheetMoveDrag(ev.clientY)
+        const move = (ev: MouseEvent) =>
+            this.#handleBottomSheetMoveDrag(ev.clientY)
         const up = () => {
             this.#handleBottomSheetEndDrag()
             window.removeEventListener('mousemove', move)
@@ -534,7 +551,8 @@ export default class TerraPlotToolbar extends TerraElement {
         const content = this.bottomSheet.querySelector('.bottom-sheet-content')
 
         // Prevent bottom sheet from being dragged if the user is trying to scroll the content. Only allow dragging if the user is touching the handle or if the content is scrolled to the top
-        if (content && content.scrollTop > 0 && target !== this.bottomSheet) return
+        if (content && content.scrollTop > 0 && target !== this.bottomSheet)
+            return
 
         this.#isBottomSheetDragging = true
         this.#bottomSheetStartY = y
@@ -631,7 +649,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 detail: this.opacity,
                 bubbles: true,
                 composed: true,
-            })
+            }),
         )
     }
 
@@ -642,7 +660,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 detail: this.colorMapName,
                 bubbles: true,
                 composed: true,
-            })
+            }),
         )
     }
 
@@ -655,7 +673,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 detail: isChecked,
                 bubbles: true,
                 composed: true,
-            })
+            }),
         )
     }
 
@@ -663,8 +681,9 @@ export default class TerraPlotToolbar extends TerraElement {
         return html`
             <h3 class="sr-only">GeoTIFF Settings</h3>
 
-            ${this.dataType === 'geotiff'
-                ? html`
+            ${
+                this.dataType === 'geotiff'
+                    ? html`
                       <p>Select opacity,apply colormaps, and toggle draw profile</p>
 
                       <label>
@@ -687,13 +706,13 @@ export default class TerraPlotToolbar extends TerraElement {
                               @change=${this.#onColorMapChange}
                           >
                               ${this.colormaps.map(
-                                  cm =>
+                                  (cm) =>
                                       html` <option
                                           value="${cm}"
                                           ?selected=${cm === this.colorMapName}
                                       >
                                           ${cm}
-                                      </option>`
+                                      </option>`,
                               )}
                           </select>
                       </label>
@@ -705,7 +724,8 @@ export default class TerraPlotToolbar extends TerraElement {
                           <slot>Draw Profile</slot>
                       </label>
                   `
-                : nothing}
+                    : nothing
+            }
         `
     }
 
@@ -719,8 +739,10 @@ export default class TerraPlotToolbar extends TerraElement {
 
                 <dt>Variable Shortname</dt>
                 <dd>
-                    ${this.catalogVariable.dataFieldShortName ??
-                    this.catalogVariable.dataFieldAccessName}
+                    ${
+                        this.catalogVariable.dataFieldShortName ??
+                        this.catalogVariable.dataFieldAccessName
+                    }
                 </dd>
 
                 <dt>Units</dt>
@@ -772,26 +794,28 @@ export default class TerraPlotToolbar extends TerraElement {
         return html`
             <h3>Request</h3>
             <ul class="bottom-sheet-list">
-                ${isLatLon
-                    ? html` <li>
+                ${
+                    isLatLon
+                        ? html` <li>
                           <strong>Timestamp: </strong>${formatDate(
                               this.metadata.Request_time,
-                              'yyyy-MM-dd HH:mm'
+                              'yyyy-MM-dd HH:mm',
                           )}
                       </li>`
-                    : ''}
+                        : ''
+                }
                 <li>
                     <strong>Begin Datetime: </strong>${formatDate(
                         isBoundingBox
                             ? timeAvgMetadata.userStartDate
-                            : this.metadata.begin_time
+                            : this.metadata.begin_time,
                     )}
                 </li>
                 <li>
                     <strong>End Datetime: </strong>${formatDate(
                         isBoundingBox
                             ? timeAvgMetadata.userEndDate
-                            : this.metadata.end_time
+                            : this.metadata.end_time,
                     )}
                 </li>
                 <li>
@@ -802,27 +826,34 @@ export default class TerraPlotToolbar extends TerraElement {
                     <strong>${isBoundingBox ? 'South' : 'Lon'}: </strong
                     >${locationArr[1]}
                 </li>
-                ${isBoundingBox
-                    ? html`
+                ${
+                    isBoundingBox
+                        ? html`
                           <li><strong>East: </strong>${locationArr[2]}</li>
                           <li><strong>North: </strong>${locationArr[3]}</li>
                       `
-                    : ''}
+                        : ''
+                }
             </ul>
 
             <h3>Data Variable</h3>
             <ul class="bottom-sheet-list">
-                ${this.productLabel
-                    ? html`<li><strong>Label: </strong>${this.productLabel}</li>`
-                    : ''}
+                ${
+                    this.productLabel
+                        ? html`<li><strong>Label: </strong>${this.productLabel}</li>`
+                        : ''
+                }
                 <li>
-                    <strong>Longname: </strong>${this.catalogVariable
-                        .dataFieldLongName}
+                    <strong>Longname: </strong>${
+                        this.catalogVariable.dataFieldLongName
+                    }
                 </li>
                 <li>
                     <strong>Shortname: </strong>
-                    ${this.catalogVariable.dataFieldShortName ??
-                    this.catalogVariable.dataFieldAccessName}
+                    ${
+                        this.catalogVariable.dataFieldShortName ??
+                        this.catalogVariable.dataFieldAccessName
+                    }
                 </li>
                 <li>
                     <strong>Units: </strong>
@@ -835,21 +866,26 @@ export default class TerraPlotToolbar extends TerraElement {
 
                 <li>
                     <strong>Data Product Name: </strong>
-                    ${this.catalogVariable.dataProductShortName}.${this
-                        .catalogVariable.dataProductVersion}
+                    ${this.catalogVariable.dataProductShortName}.${
+                        this.catalogVariable.dataProductVersion
+                    }
                 </li>
-                ${isLatLon
-                    ? html`<li><strong>Mean Value: </strong>${this.metadata.mean}</li>
+                ${
+                    isLatLon
+                        ? html`<li><strong>Mean Value: </strong>${this.metadata.mean}</li>
                           <li>
-                              <strong>Lat. Resolution: </strong>${this.metadata
-                                  .lat_resolution}
+                              <strong>Lat. Resolution: </strong>${
+                                  this.metadata.lat_resolution
+                              }
                           </li>
                           <li>
-                              <strong>Lon. Resolution: </strong>${this.metadata
-                                  .lon_resolution}
+                              <strong>Lon. Resolution: </strong>${
+                                  this.metadata.lon_resolution
+                              }
                           </li>
                           <li><strong>DOI: </strong>${this.metadata.doi}</li>`
-                    : ''}
+                        : ''
+                }
                 <li>
                     <a
                         href=${this.catalogVariable.dataProductDescriptionUrl}
@@ -867,7 +903,8 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #renderCitationPanel() {
-        const citation = this.#controller.collectionCitation?.collectionCitations[0]
+        const citation =
+            this.#controller.collectionCitation?.collectionCitations[0]
 
         if (!citation) {
             return html`<div class="spacer"></div>`
@@ -876,13 +913,15 @@ export default class TerraPlotToolbar extends TerraElement {
         return html`
             <h3 class="sr-only">Citation</h3>
 
-            ${this.applicationCitation
-                ? html`
+            ${
+                this.applicationCitation
+                    ? html`
                       <p>
                           Please cite both the data used and the application itself.
                       </p>
                   `
-                : nothing}
+                    : nothing
+            }
 
             <p>
                 <strong>Data Citation</strong>
@@ -895,15 +934,17 @@ export default class TerraPlotToolbar extends TerraElement {
                 ${this.#controller.collectionCitation?.doi.doi}
             </p>
 
-            ${this.applicationCitation
-                ? html`
+            ${
+                this.applicationCitation
+                    ? html`
                       <p>
                           <strong>Application Citation</strong>
                       </p>
 
                       <p>${this.applicationCitation}</p>
                   `
-                : nothing}
+                    : nothing
+            }
         `
     }
 
@@ -911,8 +952,9 @@ export default class TerraPlotToolbar extends TerraElement {
         return html`
             <h3 class="sr-only">Download Options</h3>
 
-            ${this.dataType === 'geotiff'
-                ? html`
+            ${
+                this.dataType === 'geotiff'
+                    ? html`
                       <p>
                           This plot can be downloaded as a
                           <abbr title="Geotiff">GeoTIFF</abbr>, a
@@ -921,7 +963,7 @@ export default class TerraPlotToolbar extends TerraElement {
                           image
                       </p>
                   `
-                : html`
+                    : html`
                       <p>
                           This plot can be downloaded as a
                           <abbr title="Portable Network Graphic">PNG</abbr> or
@@ -930,9 +972,11 @@ export default class TerraPlotToolbar extends TerraElement {
                           <abbr title="Comma-Separated Value">CSV</abbr>
                           data.
                       </p>
-                  `}
-            ${this.dataType === 'geotiff'
-                ? html`
+                  `
+            }
+            ${
+                this.dataType === 'geotiff'
+                    ? html`
                       <terra-button
                           outline
                           variant="default"
@@ -949,7 +993,7 @@ export default class TerraPlotToolbar extends TerraElement {
                       </terra-button>
                       ${this.#renderImageDownloadButtons(true)}
                   `
-                : html`
+                    : html`
                       ${this.#renderImageDownloadButtons(false)}
                       <terra-button
                           outline
@@ -965,7 +1009,8 @@ export default class TerraPlotToolbar extends TerraElement {
                               font-size="1.5em"
                           ></terra-icon>
                       </terra-button>
-                  `}
+                  `
+            }
         `
     }
 
@@ -1041,7 +1086,8 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #handleJupyterNotebookClick() {
-        const jupyterLiteUrl = 'https://gesdisc.github.io/jupyterlite/lab/index.html'
+        const jupyterLiteUrl =
+            'https://gesdisc.github.io/jupyterlite/lab/index.html'
         const jupyterWindow = window.open(jupyterLiteUrl, '_blank')
 
         if (!jupyterWindow) {
@@ -1058,7 +1104,9 @@ export default class TerraPlotToolbar extends TerraElement {
             this.#sendDataToJupyterNotebook(jupyterWindow)
         }
 
-        window.addEventListener('message', handleMessage.bind(this), { once: true })
+        window.addEventListener('message', handleMessage.bind(this), {
+            once: true,
+        })
     }
 
     #sendDataToJupyterNotebook(jupyterWindow: Window) {
@@ -1075,8 +1123,8 @@ export default class TerraPlotToolbar extends TerraElement {
         // Fetch the time series data from IndexedDB
         getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            this.cacheKey
-        ).then(timeSeriesData => {
+            this.cacheKey,
+        ).then((timeSeriesData) => {
             // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
             setTimeout(() => {
                 const notebook = getTimeSeriesNotebook(this)
@@ -1091,7 +1139,7 @@ export default class TerraPlotToolbar extends TerraElement {
                         storeName: IndexedDbStores.TIME_SERIES,
                         bearerToken: this.bearerToken,
                     },
-                    '*'
+                    '*',
                 )
             }, 500)
         })
@@ -1101,27 +1149,28 @@ export default class TerraPlotToolbar extends TerraElement {
         console.log('Sending map data to JupyterLite...')
 
         // Fetch the time series data from IndexedDB
-        getDataByKey<Blob>(IndexedDbStores.TIME_AVERAGE_MAP, this.cacheKey).then(
-            blob => {
-                // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
-                setTimeout(() => {
-                    const notebook = getTimeAveragedMapNotebook(this)
+        getDataByKey<Blob>(
+            IndexedDbStores.TIME_AVERAGE_MAP,
+            this.cacheKey,
+        ).then((blob) => {
+            // we don't have an easy way of knowing when JupyterLite finishes loading, so we'll wait a bit and then post our notebook
+            setTimeout(() => {
+                const notebook = getTimeAveragedMapNotebook(this)
 
-                    jupyterWindow.postMessage(
-                        {
-                            type: 'load-notebook',
-                            filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}-map.ipynb`,
-                            notebook,
-                            blob,
-                            databaseName: DB_NAME,
-                            storeName: IndexedDbStores.TIME_AVERAGE_MAP,
-                            token: this.bearerToken,
-                        },
-                        '*'
-                    )
-                }, 500)
-            }
-        )
+                jupyterWindow.postMessage(
+                    {
+                        type: 'load-notebook',
+                        filename: `${encodeURIComponent(this.variableEntryId ?? 'plot')}-map.ipynb`,
+                        notebook,
+                        blob,
+                        databaseName: DB_NAME,
+                        storeName: IndexedDbStores.TIME_AVERAGE_MAP,
+                        token: this.bearerToken,
+                    },
+                    '*',
+                )
+            }, 500)
+        })
     }
 
     #downloadPNG(_event: Event) {
@@ -1156,7 +1205,7 @@ export default class TerraPlotToolbar extends TerraElement {
 
         // Return x and y values for every data point in each plot line
         const csvData = plotData
-            .map(trace => {
+            .map((trace) => {
                 return trace.x.map((x: any, i: number) => {
                     return {
                         x: x,
@@ -1174,7 +1223,8 @@ export default class TerraPlotToolbar extends TerraElement {
         link.setAttribute('href', url)
 
         // Create filename with variable, location, and date range
-        const variableName = this.catalogVariable?.dataFieldId || 'time-series-data'
+        const variableName =
+            this.catalogVariable?.dataFieldId || 'time-series-data'
         const locationStr = this.location
             ? `_${this.location.replace(/,/g, '_')}`
             : ''
@@ -1194,7 +1244,7 @@ export default class TerraPlotToolbar extends TerraElement {
 
     #convertToCSV(data: any[]): string {
         const header = Object.keys(data[0]).join(',') + '\n'
-        const rows = data.map(obj => Object.values(obj).join(',')).join('\n')
+        const rows = data.map((obj) => Object.values(obj).join(',')).join('\n')
         return header + rows
     }
 
@@ -1219,11 +1269,15 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #downloadMapPNG() {
-        this.emit('terra-plot-toolbar-export-image', { detail: { format: 'png' } })
+        this.emit('terra-plot-toolbar-export-image', {
+            detail: { format: 'png' },
+        })
     }
 
     #downloadMapJPG() {
-        this.emit('terra-plot-toolbar-export-image', { detail: { format: 'jpg' } })
+        this.emit('terra-plot-toolbar-export-image', {
+            detail: { format: 'jpg' },
+        })
     }
 
     /**

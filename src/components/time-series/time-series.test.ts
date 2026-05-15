@@ -25,4 +25,26 @@ describe('<terra-time-series>', () => {
 
         expect(el.variableEntryIds).to.deep.equal(['A_B_c', 'D_E_f'])
     })
+
+    it('should default cache to false', () => {
+        const el = document.createElement('terra-time-series') as any
+        expect(el.cache).to.equal(false)
+    })
+
+    it('should set cache to true via property', () => {
+        const el = document.createElement('terra-time-series') as any
+        el.cache = true
+        expect(el.cache).to.equal(true)
+    })
+
+    it('should default jobId to undefined', () => {
+        const el = document.createElement('terra-time-series') as any
+        expect(el.jobId).to.be.undefined
+    })
+
+    it('should set jobId via attribute', () => {
+        const el = document.createElement('terra-time-series') as any
+        el.setAttribute('job-id', 'abc-123')
+        expect(el.jobId).to.equal('abc-123')
+    })
 })

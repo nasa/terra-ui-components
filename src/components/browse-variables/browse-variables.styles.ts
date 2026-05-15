@@ -189,11 +189,15 @@ export default css`
     .variables-container main {
         grid-area: main;
         display: grid;
-        grid-template-columns: 1fr 400px; /* left flexible, right fixed */
+        grid-template-columns: 1fr;
         gap: 1rem;
         min-height: 100%;
         overflow-x: auto;
         padding: 15px;
+    }
+
+    .variables-container main:has(.right-column) {
+        grid-template-columns: 1fr 400px;
     }
 
     .facet {

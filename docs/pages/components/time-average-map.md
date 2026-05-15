@@ -45,3 +45,22 @@ layout: component
     })
 </script>
 ```
+
+## Disable Caching
+
+By default, the component caches results in IndexedDB and reuses them on subsequent renders with the same parameters. Use `no-cache` to disable all IndexedDB reads and writes. Harmony job history is still checked before a new request is created, so returning users benefit from previously-completed jobs without populating the local cache.
+
+This is useful for applications (such as Giovanni) that always want requests to go through the server.
+
+```html
+<terra-time-average-map
+    no-cache
+    collection="M2T1NXAER_5_12_4"
+    variable="BCCMASS"
+    start-date="01/01/2009"
+    end-date="01/05/2009"
+    location="62,5,95,40"
+></terra-time-average-map>
+```
+
+[component-metadata:terra-time-average-map]
