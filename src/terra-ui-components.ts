@@ -60,7 +60,9 @@ export { default as TerraStepperStep } from './components/stepper-step/stepper-s
 export { default as TerraCard } from './components/card/card.js'
 export { default as TerraDivider } from './components/divider/divider.js'
 export { default as TerraEarthdataLogin } from './components/earthdata-login/earthdata-login.js'
-export { default as TerraHarmonyHistory } from './components/harmony-history/harmony-history.js';
+export { default as TerraHarmonyHistory } from './components/harmony-history/harmony-history.js'
+export { default as TerraBanner } from './components/banner/banner.js'
+
 /* plop:component */
 
 // Utilities

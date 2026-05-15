@@ -87,6 +87,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     @property({ attribute: 'job-id' })
     jobId?: string
 
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
+        true
     @state() catalogVariable: Variable
     @state() pixelValue: string = 'N/A'
     @state() pixelCoordinates: string = 'N/A'
@@ -1321,6 +1323,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                               .colormaps=${this.colormaps}
                               .colorMapName=${this.colorMapName}
                               .opacity=${this.opacity}
+                              .showHelp=${this.showHelp}
                           ></terra-plot-toolbar>`
                         : html`<div class="spacer"></div>`,
                 )}

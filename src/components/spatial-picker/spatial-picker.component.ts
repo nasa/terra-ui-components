@@ -107,6 +107,12 @@ export default class TerraSpatialPicker extends TerraElement {
         false
     @property({ attribute: 'help-text' }) helpText = ''
 
+    /**
+     * Whether to show a close button in the dropdown header (only applies when inline is false)
+     */
+    @property({ attribute: 'closable', type: Boolean })
+    showClose: boolean = false
+
     /** The canonical serialized value passed down to terra-map. */
     @state() private mapValue: string | undefined
 
@@ -505,6 +511,24 @@ export default class TerraSpatialPicker extends TerraElement {
                         class="spatial-picker__map-container"
                         @click=${(e: Event) => e.stopPropagation()}
                     >
+                         ${
+                             this.showClose
+                                 ? html`
+                                     <div class="dropdown-header">
+                                        <button
+                                            class="spatial-picker__close-btn"
+                                            @click=${(e: Event) => {
+                                                e.stopPropagation()
+                                                this.close()
+                                            }}
+                                            aria-label="Close"
+                                         >
+                                         ✕
+                                         </button>
+                                    </div>
+                                    `
+                                 : nothing
+                         }
                         ${this.renderMap()}
                     </div>
                 </terra-dropdown>
