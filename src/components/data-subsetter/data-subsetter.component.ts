@@ -2001,7 +2001,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const variables = this.#collectionController.variables?.data
 
         if (!variables) {
-            console.log('no variables found, cannot determine dimensions')
             return []
         }
 

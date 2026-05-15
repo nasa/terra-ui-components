@@ -272,7 +272,6 @@ export default class TerraDataRods extends TerraElement {
     }
 
     #handleMapChange(event: TerraMapChangeEvent) {
-        console.log('map change event', event)
         if (event.detail.type === MapEventType.POINT) {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
