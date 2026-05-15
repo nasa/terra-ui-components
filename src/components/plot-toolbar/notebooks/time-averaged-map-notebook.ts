@@ -51,7 +51,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
             source: [
                 '### Access the map GeoTIFF bytes\n',
                 '\n',
-                'Once the map renders, you can access the GeoTIFF as bytes: `print(map.data)`',
+                'Wait for the map above to fully render before running the cell below. Once the map renders, you can access the GeoTIFF as bytes: `print(map.data)`\n',
                 '\n',
                 'Here is an example of loading the bytes into `rasterio` and plotting via `matplotlib`. Note: The bytes can be loaded into many other Python libraries:',
             ],
@@ -62,7 +62,7 @@ export function getTimeAveragedMapNotebook(host: TerraPlotToolbar) {
             id: '6b81a089-884d-4fd7-9d4e-c45a53307c20',
             metadata: {},
             outputs: [],
-            source: "import rasterio\nfrom rasterio.io import MemoryFile\nfrom io import BytesIO\nimport matplotlib.pyplot as plt\n\n# map.data contains the rendered GeoTIFF as bytes\nwith MemoryFile(map.data) as memfile:\n    with memfile.open() as dataset:\n        # You can now work with the dataset as if it were opened from a file\n        print(f\"Driver: {dataset.driver}\")\n        print(f\"CRS: {dataset.crs}\")\n        print(f\"Bounds: {dataset.bounds}\")\n        data = dataset.read(1)\n        print(f\"Data shape: {data.shape}\")\n\n        # Example of creating a figure and displaying the data\n        plt.figure(figsize=(10, 8))\n        plt.imshow(data, cmap='viridis')  # You can change the colormap\n        plt.colorbar(label='Values')\n        plt.title('GeoTIFF Visualization')\n        plt.xlabel('X')\n        plt.ylabel('Y')\n        plt.show()",
+            source: 'import rasterio\nfrom rasterio.io import MemoryFile\nfrom io import BytesIO\nimport matplotlib.pyplot as plt\n\n# map.data contains the rendered GeoTIFF as bytes\n# Ensure the map has rendered before accessing data\nif not map.data:\n    print("No data available. Please run the map cell above and wait for it to fully render before running this cell.")\nelse:\n    with MemoryFile(map.data) as memfile:\n        with memfile.open() as dataset:\n            # You can now work with the dataset as if it were opened from a file\n            print(f"Driver: {dataset.driver}")\n            print(f"CRS: {dataset.crs}")\n            print(f"Bounds: {dataset.bounds}")\n            data = dataset.read(1)\n            print(f"Data shape: {data.shape}")\n\n            # Example of creating a figure and displaying the data\n            plt.figure(figsize=(10, 8))\n            plt.imshow(data, cmap=\'viridis\')  # You can change the colormap\n            plt.colorbar(label=\'Values\')\n            plt.title(\'GeoTIFF Visualization\')\n            plt.xlabel(\'X\')\n            plt.ylabel(\'Y\')\n            plt.show()',
         },
     ]
 }
