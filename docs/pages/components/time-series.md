@@ -14,8 +14,8 @@ layout: component
     <terra-time-series slot="logged-in"
         collection="GPM_3IMERGHH_07"
         variable="precipitation"
-        start-date="01/01/2019"
-        end-date="03/01/2019"
+        start-date="2019-01-01T06:00:00Z"
+        end-date="2019-03-01T18:30:00Z"
         location="33.9375,-86.9375"
         cache
     ></terra-time-series>

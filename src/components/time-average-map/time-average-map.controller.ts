@@ -1,7 +1,6 @@
 import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
-import { format } from 'date-fns'
 import {
     type SubsetJobStatus,
     type SubsetJobError,
@@ -145,8 +144,8 @@ export class TimeAvgMapController {
                         `${this.#host.collection!}_${this.#host.variable}`,
                     )
                     .dateRange(
-                        format(new Date(startDate), "yyyy-MM-dd'T'00:00:00'Z'"),
-                        format(new Date(endDate), "yyyy-MM-dd'T'00:00:00'Z'"),
+                        new Date(startDate).toISOString(),
+                        new Date(endDate).toISOString(),
                     )
                     .format('image/tiff')
                     .average('time')

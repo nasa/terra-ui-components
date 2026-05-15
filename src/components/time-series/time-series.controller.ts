@@ -1,5 +1,4 @@
 import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
-import { format } from 'date-fns'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
@@ -206,8 +205,10 @@ export class TimeSeriesController {
             )
         }
 
+        const hasTimeComponent = (dateStr: string) =>
+            /T\d{2}:\d{2}/.test(dateStr)
         const startDate = getUTCDate(hostStartDate)
-        const endDate = getUTCDate(hostEndDate, true)
+        const endDate = getUTCDate(hostEndDate, !hasTimeComponent(hostEndDate))
         const cacheKey = this.getCacheKeyForVariable(catalogVariable)
         const variableEntryId = catalogVariable.dataFieldId
 
@@ -461,10 +462,7 @@ export class TimeSeriesController {
             location,
         })
             .variable(variableEntryId)
-            .dateRange(
-                format(startDate, "yyyy-MM-dd'T'00:00:00'Z'"),
-                format(endDate, "yyyy-MM-dd'T'23:59:59'Z'"),
-            )
+            .dateRange(startDate.toISOString(), endDate.toISOString())
             .format('text/csv')
             .label('terra-time-series')
 
