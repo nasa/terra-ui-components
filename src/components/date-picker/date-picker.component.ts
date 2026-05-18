@@ -82,7 +82,7 @@ export default class TerraDatePicker extends TerraElement {
     @property() clearAllLabel: string = 'Clear Dates'
     @property({ type: Boolean, attribute: 'use-end-of-day' }) useEndOfDay = true
     @property({ attribute: 'closable', type: Boolean })
-    showClose: boolean = false      
+    showClose: boolean = false
 
     @state() isOpen = false
     @state() leftMonth: Date = new Date()
@@ -728,7 +728,7 @@ export default class TerraDatePicker extends TerraElement {
                 const utcHours = date.getUTCHours()
                 const utcMinutes = date.getUTCMinutes()
                 const utcSeconds = date.getUTCSeconds()
-                return `${utcYear}-${String(utcMonth).padStart(2, '0')}-${String(utcDay).padStart(2, '0')}T${String(utcHours).padStart(2, '0')}:${String(utcMinutes).padStart(2, '0')}:${String(utcSeconds).padStart(2, '0')}`
+                return `${utcYear}-${String(utcMonth).padStart(2, '0')}-${String(utcDay).padStart(2, '0')} ${String(utcHours).padStart(2, '0')}:${String(utcMinutes).padStart(2, '0')}:${String(utcSeconds).padStart(2, '0')}`
             }
         } else {
             // Format to YYYY-MM-DD using the date's local components to avoid timezone issues
@@ -819,9 +819,10 @@ export default class TerraDatePicker extends TerraElement {
             let start: Date
             let end: Date
 
-            if (this.enableTime && startFormatted.includes('T')) {
+            if (this.enableTime && startFormatted.length > 10) {
                 // Full datetime entered for start - parse it and extract time
-                start = new Date(startFormatted)
+                // Normalize separator to T and append 'Z' to force UTC parsing
+                start = new Date(startFormatted.replace(' ', 'T') + 'Z')
                 this.initializeTimeFromDate(start, true)
             } else if (this.enableTime) {
                 // Date-only entered for start when time is enabled - parse date as UTC and apply current time picker values
@@ -840,9 +841,10 @@ export default class TerraDatePicker extends TerraElement {
                 start = this.parseLocalDate(startFormatted)
             }
 
-            if (this.enableTime && endFormatted.includes('T')) {
+            if (this.enableTime && endFormatted.length > 10) {
                 // Full datetime entered for end - parse it and extract time
-                end = new Date(endFormatted)
+                // Normalize separator to T and append 'Z' to force UTC parsing
+                end = new Date(endFormatted.replace(' ', 'T') + 'Z')
                 this.initializeTimeFromDate(end, false)
             } else if (this.enableTime) {
                 // Date-only entered for end when time is enabled - parse date as UTC and apply current time picker values
@@ -890,7 +892,7 @@ export default class TerraDatePicker extends TerraElement {
             this.selectedStart = finalStart
             this.selectedEnd = finalEnd
             this.updateMonthViews()
-            input.value = `${startFormatted} - ${endFormatted}`
+            input.value = `${startFormatted} – ${endFormatted}`
             input.setCustomValidity('')
             this.emitChange()
         } else {
@@ -903,9 +905,10 @@ export default class TerraDatePicker extends TerraElement {
 
             // When time is enabled, parse as full UTC date; otherwise just date portion
             let date: Date
-            if (this.enableTime && formatted.includes('T')) {
+            if (this.enableTime && formatted.length > 10) {
                 // Full datetime entered - parse it and extract time
-                date = new Date(formatted)
+                // Normalize separator to T and append 'Z' to force UTC parsing
+                date = new Date(formatted.replace(' ', 'T') + 'Z')
                 this.initializeTimeFromDate(date, true)
             } else if (this.enableTime) {
                 // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
@@ -972,9 +975,10 @@ export default class TerraDatePicker extends TerraElement {
 
         // When time is enabled, parse as full UTC date; otherwise just date portion
         let date: Date
-        if (this.enableTime && formatted.includes('T')) {
+        if (this.enableTime && formatted.length > 10) {
             // Full datetime entered - parse it and extract time
-            date = new Date(formatted)
+            // Normalize separator to T and append 'Z' to force UTC parsing
+            date = new Date(formatted.replace(' ', 'T') + 'Z')
             this.initializeTimeFromDate(date, true)
         } else if (this.enableTime) {
             // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
@@ -1046,9 +1050,10 @@ export default class TerraDatePicker extends TerraElement {
 
         // When time is enabled, parse as full UTC date; otherwise just date portion
         let date: Date
-        if (this.enableTime && formatted.includes('T')) {
+        if (this.enableTime && formatted.length > 10) {
             // Full datetime entered - parse it and extract time
-            date = new Date(formatted)
+            // Normalize separator to T and append 'Z' to force UTC parsing
+            date = new Date(formatted.replace(' ', 'T') + 'Z')
             this.initializeTimeFromDate(date, false)
         } else if (this.enableTime) {
             // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
@@ -2356,8 +2361,9 @@ export default class TerraDatePicker extends TerraElement {
     private renderCalendarContent() {
         return html`
             <div class="date-picker__dropdown" part="calendar">
-             ${this.showClose
-                                        ? html`
+             ${
+                 this.showClose
+                     ? html`
                                      <div class="dropdown-header">
                                         <button
                                             class="date-picker__close-btn"
@@ -2371,7 +2377,8 @@ export default class TerraDatePicker extends TerraElement {
                                          </button>
                                     </div>
                                     `
-                                    : nothing}
+                     : nothing
+             }
                 <div class="date-picker__content">
                     ${
                         this.showPresets && this.filteredPresets.length > 0
