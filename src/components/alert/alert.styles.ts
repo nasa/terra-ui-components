@@ -94,7 +94,7 @@ export default css`
     .alert--filled.alert--primary .alert__close-button {
         color: var(--terra-alert-filled-icon-color-primary, var(--terra-alert-filled-icon-color-information));
     }
-    
+
     .alert--filled.alert--information .alert__icon,
     .alert--filled.alert--information .alert__close-button {
         color: var(--terra-alert-filled-icon-color-information);

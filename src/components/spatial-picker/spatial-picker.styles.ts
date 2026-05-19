@@ -37,30 +37,6 @@ export default css`
         color: var(--terra-spatial-picker-icon-color-hover, #17171b);
     }
 
-    .spatial-picker__suffix-icons {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .spatial-picker__clear-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        color: var(--terra-color-neutral-500, #6b7280);
-        height: 1.4rem;
-        width: 1.4rem;
-        flex-shrink: 0;
-    }
-
-    .spatial-picker__clear-btn:hover {
-        color: var(--terra-color-neutral-700, #374151);
-    }
-
     .spatial-picker__clear-btn svg {
         height: 1.4rem;
         width: 1.4rem;

@@ -47,7 +47,7 @@ Alerts will not be visible if the open attribute is not present.
 Set the variant attribute to change the alert's variant.
 
 ```html:preview
-<terra-alert variant="primary" open>
+<terra-alert variant="information" open>
 <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
  <strong>This is super informative</strong><br />
   You can tell by how pretty the alert is.
@@ -131,9 +131,9 @@ Set the `appearance` attribute to control the alert's visual style. The default 
 #### Filled Appearance (Default)
 
 ```html:preview
-<terra-alert variant="primary" appearance="filled" open>
+<terra-alert variant="information" appearance="filled" open>
   <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
-  <strong>Primary</strong><br />
+  <strong>Information</strong><br />
   This is the HDS default style with a colored background.
 </terra-alert>
 <br />
@@ -215,12 +215,6 @@ const App = () => (
 #### Subtle Backgrounds with Colored Text
 
 ```html:preview
-<terra-alert variant="primary" appearance="subtle" open>
-  <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
-  <strong>Primary</strong><br />
-  This is the HDS default style with a colored background.
-</terra-alert>
-<br />
 <terra-alert variant="information" appearance="subtle" open>
   <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
   <strong>Information</strong><br />
@@ -299,9 +293,9 @@ const App = () => (
 #### White Appearance
 
 ```html:preview
-<terra-alert variant="primary" appearance="white" open>
+<terra-alert variant="information" appearance="white" open>
   <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
-  <strong>Primary</strong><br />
+  <strong>information</strong><br />
   This style uses a white background with a colored top border.
 </terra-alert>
 <br />

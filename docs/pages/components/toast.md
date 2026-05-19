@@ -34,7 +34,6 @@ Set the `variant` attribute to change the toast's variant.
 
 ```html:preview
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-  <terra-button id="toast-primary">Primary</terra-button>
   <terra-button id="toast-information">Information</terra-button>
   <terra-button id="toast-success">Success</terra-button>
   <terra-button id="toast-neutral">Neutral</terra-button>
@@ -42,7 +41,7 @@ Set the `variant` attribute to change the toast's variant.
   <terra-button id="toast-danger">Danger</terra-button>
 </div>
 
-<terra-toast id="toast-primary-toast" variant="primary" closable>
+<terra-toast id="toast-information-toast" variant="information" closable>
   <terra-icon slot="icon" name="solid-information-circle" library="heroicons"></terra-icon>
   <strong>This is super informative</strong><br />
   You can tell by how pretty the toast is.
@@ -82,7 +81,7 @@ Set the `variant` attribute to change the toast's variant.
   // Wait for custom elements to be defined
   await customElements.whenDefined('terra-toast');
 
-  ['primary', 'information', 'success', 'neutral', 'warning', 'danger'].forEach(async (variant) => {
+  ['information', 'success', 'neutral', 'warning', 'danger'].forEach(async (variant) => {
     const button = document.querySelector(`#toast-${variant}`);
     const toast = document.querySelector(`#toast-${variant}-toast`);
     button.addEventListener('click', async () => {

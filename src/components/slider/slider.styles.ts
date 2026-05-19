@@ -207,6 +207,10 @@ export default css`
         cursor: pointer;
     }
 
+    .noUi-handle:hover {
+        cursor: pointer;
+    }
+
     .noUi-active {
         background: var(--terra-slider-handle-background-color-active);
     }
