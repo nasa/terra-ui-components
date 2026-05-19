@@ -80,7 +80,7 @@ export default class TerraAlert extends TerraElement {
         | 'danger' = 'information'
 
     /**
-     * The alert's appearance style. "filled" uses a colored background with contrast approriate text (HDS default).
+     * The alert's appearance style. "filled" uses a colored background with contrast appropriate text (HDS default).
      * "white" uses a white background with a colored top border and dark text. "subtle" uses muted colored backgrounds
      * and matching colored text.
      */
