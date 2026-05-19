@@ -45,7 +45,7 @@ export default css`
 
     .badge--warning {
         background-color: var(--terra-badge-background-color-warning);
-        olor: var(--terra-badge-color-warning);
+        color: var(--terra-badge-color-warning);
     }
 
     .badge--danger {

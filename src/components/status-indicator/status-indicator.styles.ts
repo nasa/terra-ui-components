@@ -58,7 +58,7 @@ export default css`
     .status-indicator--future .status-indicator__dot {
         background-color: var(
             --terra-status-indicator-dot-color-future,
-            var--terra-color-bg-info-bold)
+            var(--terra-color-bg-info-bold)
         );
     }
 
