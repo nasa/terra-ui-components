@@ -416,12 +416,6 @@ export default css`
         display: none;
     }
 
-    .leaflet-mouse-position-container {
-        color: var(--terra-input-text-default);
-        padding: 5px;
-        background-color: var(--terra-input-background-default);
-    }
-
     .control-button {
         /* TODO: use a local spritesheet instead */
         background-image:

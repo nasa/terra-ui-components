@@ -90,14 +90,14 @@ export default css`
     }
 
     /* Icon and close button colors for filled variant */
-    .alert--filled.alert--information .alert__icon,
-    .alert--filled.alert--information .alert__close-button {
-        color: var(--terra-alert-filled-icon-color-information);
-    }
-
     .alert--filled.alert--primary .alert__icon,
     .alert--filled.alert--primary .alert__close-button {
         color: var(--terra-alert-filled-icon-color-primary, var(--terra-alert-filled-icon-color-information));
+    }
+
+    .alert--filled.alert--information .alert__icon,
+    .alert--filled.alert--information .alert__close-button {
+        color: var(--terra-alert-filled-icon-color-information);
     }
 
     .alert--filled.alert--success .alert__icon,

@@ -127,10 +127,6 @@
     /* color variables that are used in the design system. If the colors in the design system are updated, 
     /* the plugin needs to rerun, and the token values copied back into the horizon.scss file.  
     */
-    --terra-color-bg-surface-brand-selected-default: var(--terra-color-blue-500);
-    --terra-color-bg-surface-brand-selected-hover: var(--terra-color-blue-600);
-    --terra-color-bg-surface-brand-selected-active: var(--terra-color-blue-800);
-    --terra-color-bg-surface-brand-selected-disabled: var(--terra-color-blue-700);
 
     /* ============================================================================
      * Color Palette - Light Mode
@@ -1303,6 +1299,14 @@
     --terra-date-picker-day-in-range-color: var(--terra-text-brand-on-brand-inverse);
     --terra-date-picker-day-in-range-color-hover: var(--terra-menu-item-text-hover);
 
+    /* Data Subsetter Component */
+    --terra-data-subsetter-background-color: var(
+        --terra-color-bg-surface-neutral-base
+    );
+
+    /* Dialog Component */
+    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-base);
+
     /* Data Subsetter History Component 
     * Data subsetter history is a component that displays a user's history of data subsetter runs.
     */
@@ -1717,7 +1721,7 @@
     --terra-tooltip-font-family: var(--terra-font-family--public-sans);
     --terra-tooltip-font-weight: var(--terra-font-weight-normal);
     --terra-tooltip-font-size: var(--terra-font-size-small);
-    --terra-tooltip-line-height: var(--terra-line-height-looser);
+    --terra-tooltip-line-height: var(--terra-line-height-normal);
     --terra-tooltip-padding: var(--terra-spacing-2x-small)
         var(--terra-spacing-x-small);
     --terra-tooltip-arrow-size: 6px;
@@ -1736,7 +1740,7 @@
     --terra-popover-arrow-size: var(--terra-tooltip-arrow-size);
 
     /* Component Tokens ---------------------------------------------------------------- END */
-
+}
 
 /* ============================================================================
     * Dark Theme Overrides
@@ -1749,10 +1753,8 @@
     * The class-based approach takes precedence over system preference.
     */
 
-    /* Data Subsetter Component */
-    --terra-data-subsetter-background-color: var(
-        --terra-color-bg-surface-neutral-base
-    );
+@mixin terra-theme-dark {
+    color-scheme: dark;
 
     /* Figma Design System Tokens ------------------------------------------------- START */
     /* The Primitive, Foundation, and Semantic tokens below originate from the Figma Design System file. A custom Figma plugin called "Terra Color Exporter" generates the CSS tokens directly from the Figma color variables that are used in the design system. If the colors in the design system are updated, the plugin needs to rerun, and the token values copied back into the horizon.scss file.  */
@@ -1910,9 +1912,6 @@
         --terra-color-neutral-800
     );
     --terra-color-bg-surface-neutral-inverse-tertiary: var(--terra-color-neutral-700);
-
-    /* Dialog Component */
-    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-base);
 
     /* Neutral Surface Interactive colors
     */

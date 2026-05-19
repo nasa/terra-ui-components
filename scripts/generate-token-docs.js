@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import { se } from 'date-fns/locale'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -35,10 +34,8 @@ function slugify(str) {
 }
 
 function getTagValue(block, tag) {
-    const line = block.find(l => l.startsWith(tag + ' '))   // ensure we match the exact tag (e.g. @tokens not @tokens-subsection)
-    return line
-        ?.replace(tag + ' ', '')
-        .trim()
+    const line = block.find(l => l.startsWith(tag + ' ')) // ensure we match the exact tag (e.g. @tokens not @tokens-subsection)
+    return line?.replace(tag + ' ', '').trim()
 }
 
 function getDescription(block) {
@@ -108,7 +105,7 @@ function parseScss(content) {
 
     let buffer = ''
 
-    // Step 1: Extract comment blocks related to token documentation for reference in step 2. 
+    // Step 1: Extract comment blocks related to token documentation for reference in step 2.
     // These blocks will conntain directives like @token, @token-subsection, @toke-subgroup, @layout.
     const blocks = []
     let currentBlock = null
@@ -124,8 +121,8 @@ function parseScss(content) {
         }
     }
 
-    // Step 2: Iterate through SCSS lines again matching the token documentation block order to the extracted blocks 
-    // from step 1, then harvest the actual token names and values from the SCSS line and construction the 
+    // Step 2: Iterate through SCSS lines again matching the token documentation block order to the extracted blocks
+    // from step 1, then harvest the actual token names and values from the SCSS line and construction the
     // section/subsection/group hierarchy based on the directives found in the comment blocks.
 
     let blockIndex = 0
@@ -139,7 +136,7 @@ function parseScss(content) {
         if (line.startsWith('/**')) {
             const block = blocks[blockIndex++] || []
 
-            // skip if @tokens, @tokens-subsection, or @tokens-subgroup directive is not present at the start of the next line after the /**. 
+            // skip if @tokens, @tokens-subsection, or @tokens-subgroup directive is not present at the start of the next line after the /**.
             if (!isTokenBlock(block)) {
                 continue
             }
@@ -208,11 +205,11 @@ function parseScss(content) {
             continue
         }
 
-        // If SCSS line is a token definition and we have a current subgroup context, parse the token name 
+        // If SCSS line is a token definition and we have a current subgroup context, parse the token name
         // and value and add it to the current subgroup's tokens array.
-        // 
+        //
         // Token parsing (multi-line safe)
-        // 
+        //
         if (line.startsWith('--')) {
             buffer = line
         } else if (buffer) {
@@ -231,10 +228,10 @@ function parseScss(content) {
                     .trim()
 
                 // Find last subgroup
-                const last = getLastGroup(sections[currentSection]);
+                const last = getLastGroup(sections[currentSection])
 
                 if (last) {
-                    last.tokens.push({ name, value });
+                    last.tokens.push({ name, value })
                 }
             }
 
@@ -343,11 +340,11 @@ function renderSwatchGroup(subName, description, tokens) {
 
 function renderTableGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
-    
+
     if (description.length > 0) {
         md += `${description}\n\n`
     }
-    
+
     md += `| Token | Value |\n`
     md += `|-------|-------|\n`
 

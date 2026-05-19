@@ -30,7 +30,7 @@ To use the Horizon theme, import the CSS file in your HTML:
 ```html
 <link
     rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.scss"
+    href="https://cdn.jsdelivr.net/npm/@nasa-terra/components@%VERSION%/%CDNDIR%/themes/horizon.css"
 />
 ```
 
@@ -39,7 +39,7 @@ Or if you're using npm:
 ```html
 <link
     rel="stylesheet"
-    href="node_modules/@nasa-terra/components/%NPMDIR%/themes/horizon.scss"
+    href="node_modules/@nasa-terra/components/%NPMDIR%/themes/horizon.css"
 />
 ```
 
@@ -47,7 +47,7 @@ The theme is automatically applied to `:root`, so all CSS variables are availabl
 
 ### Dark Mode
 
-The `horizon.scss` theme file includes both light and dark themes. Dark mode can be enabled in two ways:
+The `horizon.css` theme file includes both light and dark themes. Dark mode can be enabled in two ways:
 
 **Automatic dark mode (requires opt-in):**
 
@@ -176,8 +176,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Elements
 
-| Component                                         | Status             | Notes                                                                                                     |
-| ------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
+| Component                                         | Status            | Notes                                                                                                     |
+| ------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
 | [Avatar](/components/avatar)                      | ✅ Fully Supported | Implements HDS avatar guidelines with image, initials, and icon support. Full dark mode support.          |
 | Badges                                            | ❌ Not Supported   | Not yet implemented.                                                                                      |
 | [Button](/components/button)                      | ✅ Fully Supported | Core HDS styles implemented. Some variants were modified to fit application UI better.                    |
@@ -200,8 +200,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Components
 
-| Component                          | Status             | Notes                                                                       |
-| ---------------------------------- | ------------------ | --------------------------------------------------------------------------- |
+| Component                          | Status            | Notes                                                                       |
+| ---------------------------------- | ----------------- | --------------------------------------------------------------------------- |
 | [Accordion](/components/accordion) | ✅ Fully Supported | Implements HDS accordion patterns with design tokens and dark mode support. |
 | Article Building Blocks            | ❌ Not Supported   | Not yet implemented.                                                        |
 | Audio Player                       | ❌ Not Supported   | Not yet implemented.                                                        |
@@ -230,8 +230,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Modules
 
-| Component                         | Status           | Notes                |
-| --------------------------------- | ---------------- | -------------------- |
+| Component                         | Status          | Notes                |
+| --------------------------------- | --------------- | -------------------- |
 | 3D Model Module                   | ❌ Not Supported | Not yet implemented. |
 | About the Author                  | ❌ Not Supported | Not yet implemented. |
 | Article Hero Image                | ❌ Not Supported | Not yet implemented. |
@@ -302,8 +302,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Templates
 
-| Component               | Status           | Notes                |
-| ----------------------- | ---------------- | -------------------- |
+| Component               | Status          | Notes                |
+| ----------------------- | --------------- | -------------------- |
 | 404 Page                | ❌ Not Supported | Not yet implemented. |
 | About                   | ❌ Not Supported | Not yet implemented. |
 | About NASA              | ❌ Not Supported | Not yet implemented. |
