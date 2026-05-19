@@ -460,7 +460,7 @@ pre > code {
 }
 
 pre .token.comment {
-    color: var(--terra-color-neutral-60);
+    color: var(--terra-color-neutral-600);
 }
 
 pre .token.prolog,
@@ -468,7 +468,7 @@ pre .token.doctype,
 pre .token.cdata,
 pre .token.operator,
 pre .token.punctuation {
-    color: var(--terra-color-neutral-70);
+    color: var(--terra-color-neutral-700);
 }
 
 .namespace {

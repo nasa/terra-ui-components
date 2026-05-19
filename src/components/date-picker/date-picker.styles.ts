@@ -170,11 +170,11 @@ export default css`
     }
 
     .date-picker__preset:hover {
-        background: var(--terra-data-picker-preset-background-hover);
+        background: var(--terra-date-picker-preset-background-hover);
     }
 
     .date-picker__preset:active {
-        background: var(--terra-data-picker-preset-background-active);
+        background: var(--terra-date-picker-preset-background-active);
     }
 
     .date-picker__preset:focus {

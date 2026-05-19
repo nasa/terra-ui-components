@@ -200,7 +200,7 @@ export default css`
         border: 1px solid var(--terra-slider-handle-border-color);
         border-radius: 99px;
         cursor: default;
-        box-shadow:;
+        box-shadow: none;
     }
 
     .noUi-handle:hover {

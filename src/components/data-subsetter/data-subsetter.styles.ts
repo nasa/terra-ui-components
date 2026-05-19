@@ -44,7 +44,7 @@ export default css`
         justify-content: space-between;
         margin-bottom: 30px;
         padding-bottom: 15px;
-        border-bottom: 1px solid var;
+        border-bottom: 1px solid var(--terra-border-neutral-default, #e9ecef);
     }
 
     .header h1 {
