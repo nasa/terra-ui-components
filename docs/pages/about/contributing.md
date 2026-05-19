@@ -50,7 +50,17 @@ We use GitHub Issues to track bugs, feature requests, and discussions. Before op
 
 ## Pull Requests
 
-We welcome pull requests! Here's how to get started:
+We welcome pull requests! 
+
+### Before opening a pull request
+
+Terra UI is a curated component library. To keep review load manageable and ensure changes align with the Horizon Design System, we require the following:
+
+* Open an issue first for anything beyond a trivial bug fix or typo. This includes new components, new design tokens, API changes, new properties or events on existing components, and refactors. A maintainer will respond to confirm whether the work is in scope before you invest time in a PR.
+* Wait for maintainer acknowledgment on the issue before opening a PR. PRs that introduce new components, tokens, or APIs without a prior approved issue will be closed without review.
+* One change per PR. Batched cosmetic changes, mass typo fixes across unrelated files, or PRs combining unrelated work will be closed.
+
+### Here's how to get started:
 
 1. **Fork the repository** and clone it locally
 2. **Create a feature branch** from `main`:
