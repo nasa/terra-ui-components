@@ -21,6 +21,7 @@ export default class TerraBadge extends TerraElement {
 
     /** The badge's theme variant. */
     @property({ reflect: true }) variant:
+        | 'primary'
         | 'information'
         | 'success'
         | 'neutral'
@@ -39,6 +40,7 @@ export default class TerraBadge extends TerraElement {
                 part="base"
                 class=${classMap({
                     badge: true,
+                    'badge--primary': this.variant === 'primary',
                     'badge--information': this.variant === 'information',
                     'badge--success': this.variant === 'success',
                     'badge--neutral': this.variant === 'neutral',

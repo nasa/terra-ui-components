@@ -35,16 +35,23 @@ export default class TerraAlert extends TerraElement {
     private autoHideTimeout: number
     private remainingTimeInterval: number
     private countdownAnimation?: Animation
-    private readonly hasSlotController = new HasSlotController(this, 'icon', 'suffix')
+    private readonly hasSlotController = new HasSlotController(
+        this,
+        'icon',
+        'suffix',
+    )
     //private readonly localize = new LocalizeController(this);
 
     private static currentToastStack: HTMLDivElement
 
     private static get toastStack() {
         if (!this.currentToastStack) {
-            this.currentToastStack = Object.assign(document.createElement('div'), {
-                className: 'terra-toast-stack',
-            })
+            this.currentToastStack = Object.assign(
+                document.createElement('div'),
+                {
+                    className: 'terra-toast-stack',
+                },
+            )
         }
         return this.currentToastStack
     }
@@ -64,15 +71,21 @@ export default class TerraAlert extends TerraElement {
 
     /** The alert's theme variant. */
     @property({ reflect: true })
-    variant: 'information' | 'success' | 'neutral' | 'warning' | 'danger' =
-        'information'
+    variant:
+        | 'primary'
+        | 'information'
+        | 'success'
+        | 'neutral'
+        | 'warning'
+        | 'danger' = 'information'
 
     /**
      * The alert's appearance style. "filled" uses a colored background with contrast approriate text (HDS default).
      * "white" uses a white background with a colored top border and dark text. "subtle" uses muted colored backgrounds
      * and matching colored text.
      */
-    @property({ reflect: true }) appearance: 'filled' | 'white' | 'subtle' = 'filled'
+    @property({ reflect: true }) appearance: 'filled' | 'white' | 'subtle' =
+        'filled'
 
     /**
      * The length of time, in milliseconds, the alert will show before closing itself. If the user interacts with
@@ -98,7 +111,10 @@ export default class TerraAlert extends TerraElement {
         clearTimeout(this.autoHideTimeout)
         clearInterval(this.remainingTimeInterval)
         if (this.open && this.duration < Infinity) {
-            this.autoHideTimeout = window.setTimeout(() => this.hide(), this.duration)
+            this.autoHideTimeout = window.setTimeout(
+                () => this.hide(),
+                this.duration,
+            )
             this.remainingTime = this.duration
             this.remainingTimeInterval = window.setInterval(() => {
                 this.remainingTime -= 100
@@ -116,7 +132,7 @@ export default class TerraAlert extends TerraElement {
         if (this.duration < Infinity) {
             this.autoHideTimeout = window.setTimeout(
                 () => this.hide(),
-                this.remainingTime
+                this.remainingTime,
             )
             this.remainingTimeInterval = window.setInterval(() => {
                 this.remainingTime -= 100
@@ -135,7 +151,7 @@ export default class TerraAlert extends TerraElement {
                 {
                     duration: this.duration,
                     easing: 'linear',
-                }
+                },
             )
         }
     }
@@ -199,7 +215,7 @@ export default class TerraAlert extends TerraElement {
      * calling this method again. The returned promise will resolve after the alert is hidden.
      */
     async toast() {
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve) => {
             this.handleCountdownChange()
             if (TerraAlert.toastStack.parentElement === null) {
                 document.body.append(TerraAlert.toastStack)
@@ -221,11 +237,14 @@ export default class TerraAlert extends TerraElement {
                     resolve()
 
                     // Remove the toast stack from the DOM when there are no more alerts
-                    if (TerraAlert.toastStack.querySelector('terra-alert') === null) {
+                    if (
+                        TerraAlert.toastStack.querySelector('terra-alert') ===
+                        null
+                    ) {
                         TerraAlert.toastStack.remove()
                     }
                 },
-                { once: true }
+                { once: true },
             )
         })
     }
@@ -241,6 +260,7 @@ export default class TerraAlert extends TerraElement {
                     'alert--has-countdown': !!this.countdown,
                     'alert--has-icon': this.hasSlotController.test('icon'),
                     'alert--information': this.variant === 'information',
+                    'alert--primary': this.variant === 'primary',
                     'alert--success': this.variant === 'success',
                     'alert--neutral': this.variant === 'neutral',
                     'alert--warning': this.variant === 'warning',
@@ -262,8 +282,9 @@ export default class TerraAlert extends TerraElement {
                     <slot></slot>
                 </div>
 
-                ${this.closable
-                    ? html`
+                ${
+                    this.closable
+                        ? html`
                           <terra-icon
                               class="alert__close-button"
                               name="solid-x-mark"
@@ -271,22 +292,26 @@ export default class TerraAlert extends TerraElement {
                               @click=${this.handleCloseClick}
                           ></terra-icon>
                       `
-                    : ''}
+                        : ''
+                }
 
                 <div role="timer" class="alert__timer">${this.remainingTime}</div>
 
-                ${this.countdown
-                    ? html`
+                ${
+                    this.countdown
+                        ? html`
                           <div
                               class=${classMap({
                                   alert__countdown: true,
-                                  'alert__countdown--ltr': this.countdown === 'ltr',
+                                  'alert__countdown--ltr':
+                                      this.countdown === 'ltr',
                               })}
                           >
                               <div class="alert__countdown-elapsed"></div>
                           </div>
                       `
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }

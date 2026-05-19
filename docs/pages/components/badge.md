@@ -22,6 +22,7 @@ const App = () => <TerraBadge>Badge</TerraBadge>;
 Set the `variant` attribute to change the badge's variant.
 
 ```html:preview
+<terra-badge variant="primary">Primary</terra-badge>
 <terra-badge variant="information">Information</terra-badge>
 <terra-badge variant="success">Success</terra-badge>
 <terra-badge variant="neutral">Neutral</terra-badge>
@@ -48,6 +49,7 @@ const App = () => (
 Use the `pill` attribute to give badges rounded edges.
 
 ```html:preview
+<terra-badge variant="primary" pill>Primary</terra-badge>
 <terra-badge variant="information" pill>Information</terra-badge>
 <terra-badge variant="success" pill>Success</terra-badge>
 <terra-badge variant="neutral" pill>Neutral</terra-badge>
@@ -85,6 +87,7 @@ Use the `pulse` attribute to draw attention to the badge with a subtle animation
 
 ```html:preview
 <div class="badge-pulse">
+  <terra-badge variant="primary" pill pulse>1</terra-badge>
   <terra-badge variant="information" pill pulse>1</terra-badge>
   <terra-badge variant="success" pill pulse>1</terra-badge>
   <terra-badge variant="neutral" pill pulse>1</terra-badge>

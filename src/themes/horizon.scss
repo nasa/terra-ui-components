@@ -1122,11 +1122,11 @@
 
     /* Data Subsetter Component */
     --terra-data-subsetter-background-color: var(
-        --terra-color-bg-surface-neutral-primary
+        --terra-color-bg-surface-neutral-base
     );
 
     /* Dialog Component */
-    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-primary);
+    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-base);
 
     /* Data Subsetter History Component 
     * Data subsetter history is a component that displays a user's history of data subsetter runs.

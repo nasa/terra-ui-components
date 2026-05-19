@@ -923,18 +923,18 @@ export default css`
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s;
-        background: var(--terra-color-bg-surface-neutral-secondary, #ffffff);
+        background: var(--terra-color-bg-surface-neutral-primary, #ffffff);
         position: relative;
     }
 
     .mode-option:hover {
-        border-color: var(--terra-border-brand-tertiary, #0066cc);
+        border-color: var(--terra-border-brand-selected-hover, #0066cc);
         box-shadow: 0 2px 8px rgba(0, 102, 204, 0.1);
     }
 
     .mode-option.selected {
-        border-color: var(--terra-border-info, #0066cc);
-        background: var(--terra-color-bg-info-subtle, #b4cee5);
+        border-color: var(--terra-border-brand-selected-active, #0066cc);
+        background: var(--terra-color-blue-50, #b4cee5);
         box-shadow: 0 2px 8px rgba(0, 102, 204, 0.15);
     }
 
@@ -962,7 +962,7 @@ export default css`
     }
 
     .mode-option.selected .mode-title {
-        color: var(--terra-text-primary, #f6f6f6);
+        color: var(--terra-border-brand-selected-active);
     }
 
     .mode-option.selected .mode-description {

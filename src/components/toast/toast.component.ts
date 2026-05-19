@@ -44,6 +44,7 @@ export default class TerraToast extends TerraElement {
 
     /** The toast's theme variant. */
     @property({ reflect: true }) variant:
+        | 'primary'
         | 'information'
         | 'success'
         | 'neutral'
@@ -71,11 +72,11 @@ export default class TerraToast extends TerraElement {
         if (alert) {
             alert.addEventListener('terra-show', () => this.emit('terra-show'))
             alert.addEventListener('terra-after-show', () =>
-                this.emit('terra-after-show')
+                this.emit('terra-after-show'),
             )
             alert.addEventListener('terra-hide', () => this.emit('terra-hide'))
             alert.addEventListener('terra-after-hide', () =>
-                this.emit('terra-after-hide')
+                this.emit('terra-after-hide'),
             )
         }
     }
@@ -86,7 +87,7 @@ export default class TerraToast extends TerraElement {
      * calling this method again. The returned promise will resolve after the toast is hidden.
      */
     async toast() {
-        return new Promise<void>(async resolve => {
+        return new Promise<void>(async (resolve) => {
             // Ensure the toast and alert are fully initialized
             await this.updateComplete
 
@@ -151,7 +152,7 @@ export default class TerraToast extends TerraElement {
                         toastStack.remove()
                     }
                 },
-                { once: true }
+                { once: true },
             )
         })
     }
@@ -191,13 +192,14 @@ export default class TerraToast extends TerraElement {
     static async notify(
         message: string,
         variant:
+            | 'primary'
             | 'information'
             | 'success'
             | 'neutral'
             | 'warning'
             | 'danger' = 'information',
         icon?: string,
-        duration = 3000
+        duration = 3000,
     ): Promise<void> {
         // Escape HTML for text arguments
         const escapeHtml = (html: string) => {
