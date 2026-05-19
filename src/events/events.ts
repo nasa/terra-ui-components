@@ -59,3 +59,4 @@ export type { TerraDateSelectionInvalidEvent } from './terra-date-selection-inva
 export type { TerraHarmonyJobStatusUpdateEvent } from './terra-harmony-job-status-update.js'
 export type { TerraHarmonyJobSelectEvent } from './terra-harmony-job-select.js'
 export type { TerraHarmonyJobDeleteEvent } from './terra-harmony-job-delete.js'
+export type { TerraColormapChangeEvent } from './terra-colormap-change.js'
