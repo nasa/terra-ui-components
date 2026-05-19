@@ -485,8 +485,12 @@ class HarmonyApi {
         // Collect all unique output formats from non-Giovanni services
         const formats = new Set<string>()
         nonGiovanniServices.forEach((service) => {
-            service.capabilities.outputFormats?.forEach((format) => {
-                formats.add(format)
+            service.capabilities.outputFormats?.forEach((format: any) => {
+                if (typeof format !== 'string' && 'mimeType' in format) {
+                    formats.add(format.mimeType)
+                } else {
+                    formats.add(format)
+                }
             })
         })
 

@@ -229,7 +229,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
-            this.#harmonyRequestController.startPollForJobStatus(this.jobId)
+            this.#harmonyRequestController.startPollForJobStatus(this.jobId, {
+                bearerToken: this.bearerToken,
+            })
             this.dataAccessMode = 'subset'
         }
     }
@@ -2635,20 +2637,20 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #numberOfFilesFoundEstimate() {
         return Math.floor(
-            (this.#harmonyRequestController.data!.numInputGranules *
-                this.#harmonyRequestController.progress) /
+            ((this.#harmonyRequestController.data?.numInputGranules ?? 0) *
+                (this.#harmonyRequestController.progress ?? 0)) /
                 100,
         )
     }
 
     #getDocumentationLinks() {
-        return this.#harmonyRequestController.data!.links.filter(
+        return (this.#harmonyRequestController.data?.links ?? []).filter(
             (link) => link.rel === 'stac-catalog-json',
         )
     }
 
     #getDataLinks() {
-        return this.#harmonyRequestController.data!.links.filter(
+        return (this.#harmonyRequestController.data?.links ?? []).filter(
             (link) => link.rel === 'data',
         )
     }
@@ -2676,6 +2678,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             Status.RUNNING_WITH_ERRORS,
         ]
         const errorStatuses = [Status.FAILED]
+
+        if (!this.#harmonyRequestController.data?.status) {
+            return nothing
+        }
 
         let type = 'normal'
         if (
