@@ -114,6 +114,13 @@ Button variants are supported through the button's `variant` attribute.
   <br /><br />
 
   <terra-button-group label="Alignment">
+    <terra-button variant="cta">Left</terra-button>
+    <terra-button variant="cta">Center</terra-button>
+    <terra-button variant="cta">Right</terra-button>
+  </terra-button-group>
+
+  <br /><br />
+  <terra-button-group label="Alignment">
     <terra-button variant="success">Left</terra-button>
     <terra-button variant="success">Center</terra-button>
     <terra-button variant="success">Right</terra-button>

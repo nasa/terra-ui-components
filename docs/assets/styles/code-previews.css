@@ -2,17 +2,17 @@
 .code-preview {
     position: relative;
     border-radius: 3px;
-    background-color: var(--terra-color-carbon-5);
+    background-color: var(--terra-color-bg-surface-neutral-primary);
     margin-bottom: 1.5rem;
 }
 
 .code-preview__preview {
     position: relative;
-    border: solid 1px var(--terra-color-carbon-20);
+    border: solid 1px var(--terra-border-neutral-default);
     border-bottom: none;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    background-color: var(--terra-color-carbon-5);
+    background-color: var(--terra-color-bg-surface-neutral-primary);
     min-width: 20rem;
     max-width: 100%;
     padding: 1.5rem 3.25rem 1.5rem 1.5rem;
@@ -40,11 +40,18 @@
     bottom: 0;
     width: 1.75rem;
     font-size: 20px;
-    color: var(--terra-color-carbon-60);
-    background-color: var(--terra-color-carbon-5);
-    border-left: solid 1px var(--terra-color-carbon-20);
+    color: var(--terra-color-text-secondary);
+    background-color: var(--terra-color-bg-surface-neutral-primary);
+    border-left: solid 1px var(--terra-border-neutral-default);
     border-top-right-radius: 3px;
     cursor: ew-resize;
+}
+
+/* Used when demonstrating components that have a inverse variant for use light-mode theme (Ex: Scroll Hint). This sets the background color of the preview block to the inverse theme
+ */
+.code-preview__preview .inverse {
+    background-color: var(--terra-color-bg-surface-neutral-inverse-primary);
+    color: var(--terra-text-primary-inverse);
 }
 
 @media screen and (max-width: 600px) {
@@ -58,7 +65,7 @@
 }
 
 .code-preview__source {
-    border: solid 1px var(--terra-color-carbon-20);
+    border: solid 1px var(--terra-border-neutral-default);
     border-bottom: none;
     border-radius: 0 !important;
     display: none;
@@ -74,7 +81,7 @@
 
 .code-preview__buttons {
     position: relative;
-    border: solid 1px var(--terra-color-carbon-20);
+    border: solid 1px var(--terra-border-neutral-default);
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
     display: flex;
@@ -86,18 +93,18 @@
     min-width: 2.5rem;
     border: none;
     border-radius: 0;
-    background: var(--terra-color-carbon-5);
+    background: var(--terra-color-bg-surface-neutral-primary);
     font: inherit;
     font-size: 0.7rem;
     font-weight: 500;
     text-transform: uppercase;
-    color: var(--terra-color-carbon-60);
+    color: var(--terra-color-text-secondary);
     padding: 0 1rem;
     cursor: pointer;
 }
 
 .code-preview__button:not(:last-of-type) {
-    border-right: solid 1px var(--terra-color-carbon-20);
+    border-right: solid 1px var(--terra-border-neutral-default);
 }
 
 .code-preview__button--html,
@@ -111,7 +118,7 @@
 
 .code-preview__button--selected {
     font-weight: 700;
-    color: var(--terra-color-primary-600);
+    color: var(--docs-color-primary-600);
 }
 
 .code-preview__button--codepen {
@@ -130,10 +137,10 @@
 
 .code-preview__button:hover,
 .code-preview__button:active {
-    box-shadow: 0 0 0 1px var(--terra-color-primary-400);
+    box-shadow: 0 0 0 1px var(--docs-color-primary-400);
     border-right-color: transparent;
-    background-color: var(--terra-color-primary-50);
-    color: var(--terra-color-primary-600);
+    background-color: var(--docs-color-primary-50);
+    color: var(--docs-color-primary-600);
     z-index: 1;
 }
 
@@ -150,7 +157,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    color: var(--terra-color-carbon-60);
+    color: var(--terra-color-text-secondary);
     cursor: pointer;
 }
 

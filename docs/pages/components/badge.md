@@ -23,10 +23,10 @@ Set the `variant` attribute to change the badge's variant.
 
 ```html:preview
 <terra-badge variant="primary">Primary</terra-badge>
+<terra-badge variant="information">Information</terra-badge>
 <terra-badge variant="success">Success</terra-badge>
 <terra-badge variant="neutral">Neutral</terra-badge>
 <terra-badge variant="warning">Warning</terra-badge>
-<terra-badge variant="info">Info</terra-badge>
 <terra-badge variant="danger">Danger</terra-badge>
 ```
 
@@ -35,11 +35,10 @@ import TerraBadge from '@nasa-terra/components/dist/react/badge';
 
 const App = () => (
   <>
-    <TerraBadge variant="primary">Primary</TerraBadge>
+    <TerraBadge variant="information">Information</TerraBadge>
     <TerraBadge variant="success">Success</TerraBadge>
     <TerraBadge variant="neutral">Neutral</TerraBadge>
     <TerraBadge variant="warning">Warning</TerraBadge>
-    <TerraBadge variant="info">Info</TerraBadge>
     <TerraBadge variant="danger">Danger</TerraBadge>
   </>
 );
@@ -51,10 +50,10 @@ Use the `pill` attribute to give badges rounded edges.
 
 ```html:preview
 <terra-badge variant="primary" pill>Primary</terra-badge>
+<terra-badge variant="information" pill>Information</terra-badge>
 <terra-badge variant="success" pill>Success</terra-badge>
 <terra-badge variant="neutral" pill>Neutral</terra-badge>
 <terra-badge variant="warning" pill>Warning</terra-badge>
-<terra-badge variant="info" pill>Info</terra-badge>
 <terra-badge variant="danger" pill>Danger</terra-badge>
 ```
 
@@ -63,8 +62,8 @@ import TerraBadge from '@nasa-terra/components/dist/react/badge';
 
 const App = () => (
   <>
-    <TerraBadge variant="primary" pill>
-      Primary
+    <TerraBadge variant="information" pill>
+      Information
     </TerraBadge>
     <TerraBadge variant="success" pill>
       Success
@@ -74,9 +73,6 @@ const App = () => (
     </TerraBadge>
     <TerraBadge variant="warning" pill>
       Warning
-    </TerraBadge>
-    <TerraBadge variant="info" pill>
-      Info
     </TerraBadge>
     <TerraBadge variant="danger" pill>
       Danger
@@ -92,10 +88,10 @@ Use the `pulse` attribute to draw attention to the badge with a subtle animation
 ```html:preview
 <div class="badge-pulse">
   <terra-badge variant="primary" pill pulse>1</terra-badge>
+  <terra-badge variant="information" pill pulse>1</terra-badge>
   <terra-badge variant="success" pill pulse>1</terra-badge>
   <terra-badge variant="neutral" pill pulse>1</terra-badge>
   <terra-badge variant="warning" pill pulse>1</terra-badge>
-  <terra-badge variant="info" pill pulse>1</terra-badge>
   <terra-badge variant="danger" pill pulse>1</terra-badge>
 </div>
 
@@ -118,7 +114,7 @@ const css = `
 const App = () => (
   <>
     <div className="badge-pulse">
-      <TerraBadge variant="primary" pill pulse>
+      <TerraBadge variant="information" pill pulse>
         1
       </TerraBadge>
       <TerraBadge variant="success" pill pulse>
@@ -128,9 +124,6 @@ const App = () => (
         1
       </TerraBadge>
       <TerraBadge variant="warning" pill pulse>
-        1
-      </TerraBadge>
-      <TerraBadge variant="info" pill pulse>
         1
       </TerraBadge>
       <TerraBadge variant="danger" pill pulse>
@@ -221,8 +214,6 @@ const App = () => (
   <TerraMenu
     style={{
       maxWidth: '240px',
-      border: 'solid 1px var(--terra-panel-border-color)',
-      borderRadius: 'var(--terra-border-radius-medium)'
     }}
   >
     <TerraMenuLabel>Messages</TerraMenuLabel>

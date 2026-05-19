@@ -447,7 +447,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 <terra-dialog id=${this.dialog} style="--title-font-size: 16px;">
                     <span
                         slot="label"
-                        style="display: flex; align-items: center; gap: 8px; color: #0066cc; font-weight: 600;"
+                        style="display: flex; align-items: center; gap: 8px; color: var(--terra-text-brand-on-secondary, #1c67e3); font-weight: 600;"
                     >
                         <svg
                             class="download-icon"
@@ -1290,9 +1290,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     ></terra-date-picker>
                 </div>
 
-                <div
-                    style="display: flex; gap: 16px; margin-top: 15px; color: #31708f;"
-                >
+                <div style="display: flex; gap: 16px; margin-top: 15px;">
                     <span
                         ><strong>Available Range:</strong> ${defaultStartDate} to
                         ${defaultEndDate}</span

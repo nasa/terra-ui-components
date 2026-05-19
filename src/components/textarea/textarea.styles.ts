@@ -36,9 +36,9 @@ export default css`
         position: relative;
         display: flex;
         width: 100%;
-        background: var(--terra-input-background-color);
+        background: var(--terra-input-background-default);
         border-width: var(--terra-input-border-width);
-        border-color: var(--terra-input-border-color);
+        border-color: var(--terra-input-border-default);
         border-style: solid;
         border-radius: var(--terra-input-border-radius);
         transition:
@@ -47,19 +47,19 @@ export default css`
     }
 
     .textarea:hover:not(.textarea--disabled) {
-        border-color: var(--terra-input-border-color-hover);
+        border-color: var(--terra-input-border-hover);
     }
 
     .textarea--focused:not(.textarea--disabled) {
         outline: none;
-        border-color: var(--terra-input-border-color-focus);
+        border-color: var(--terra-input-border-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
-            var(--terra-input-focus-ring-color);
+            var(--terra-input-border-focus);
     }
 
     .textarea--disabled {
-        background-color: var(--terra-input-background-color-disabled);
-        border-color: var(--terra-input-border-color-disabled);
+        background-color: var(--terra-input-background-disabled);
+        border-color: var(--terra-input-border-disabled);
         cursor: not-allowed;
     }
 
@@ -77,7 +77,7 @@ export default css`
         font-weight: var(--terra-input-font-weight);
         line-height: var(--terra-input-line-height);
         letter-spacing: var(--terra-input-letter-spacing);
-        color: var(--terra-input-color);
+        color: var(--terra-input-text-default);
         resize: vertical;
     }
 
@@ -98,24 +98,24 @@ export default css`
     }
 
     .textarea__control::placeholder {
-        color: var(--terra-input-placeholder-color);
+        color: var(--terra-input-placeholder-default);
     }
 
     .textarea__control:disabled {
-        color: var(--terra-input-color-disabled);
+        color: var(--terra-input-text-disabled);
         cursor: not-allowed;
     }
 
     .textarea__control:disabled::placeholder {
-        color: var(--terra-input-placeholder-color-disabled);
+        color: var(--terra-input-placeholder-disabled);
     }
 
     .textarea__control:hover:not(:disabled) {
-        color: var(--terra-input-color-hover);
+        color: var(--terra-input-text-hover);
     }
 
     .textarea__control:focus:not(:disabled) {
-        color: var(--terra-input-color-focus);
+        color: var(--terra-input-text-focus);
     }
 
     .textarea__control:read-only {
@@ -124,15 +124,21 @@ export default css`
 
     /* Error State - using data attributes from FormControlController */
     :host([data-user-invalid]) .textarea {
-        border-color: var(--terra-color-nasa-red);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
+        border-color: var(--terra-border-error-primary);
     }
 
     :host([data-user-invalid]) .textarea:hover:not(.textarea--disabled) {
-        border-color: var(--terra-color-nasa-red-shade);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
+        border-color: var(--terra-border-error-primary);
     }
 
     :host([data-user-invalid]) .textarea.textarea--focused:not(.textarea--disabled) {
-        border-color: var(--terra-color-nasa-red);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
+        border-color: var(--terra-border-error-primary);
         box-shadow: 0 0 0 var(--terra-focus-ring-width, 3px)
             var(--terra-color-nasa-red-tint);
     }

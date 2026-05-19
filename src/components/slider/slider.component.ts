@@ -22,9 +22,9 @@ import { mergeTooltips } from '../date-range-slider/noui-slider-utilities.js'
  * @cssproperty --terra-slider-track-color - Color of the slider track.
  * @cssproperty --terra-slider-handle-color - Color of the slider handles.
  * @cssproperty --terra-slider-connect-color - Color of the connected range.
- * @cssproperty --terra-input-border-color - Border color for input fields.
- * @cssproperty --terra-input-background-color - Background color for input fields.
- * @cssproperty --terra-input-color - Text color for input fields.
+ * @cssproperty --terra-input-border-default - Border color for input fields.
+ * @cssproperty --terra-input-background-default - Background color for input fields.
+ * @cssproperty --terra-input-text-default - Text color for input fields.
  *
  * @event terra-slider-change - Emitted when the slider value changes.
  * @eventDetail { value: number } - For single mode sliders.

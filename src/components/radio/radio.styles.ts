@@ -77,6 +77,12 @@ export default css`
         background-color: var(--terra-radio-background-color-hover);
     }
 
+    /* Active - unchecked */
+    .radio:not(.radio--checked):not(.radio--disabled) .radio__control:active {
+        border-color: var(--terra-radio-border-color-active);
+        background-color: var(--terra-radio-background-color-active);
+    }
+
     /* Checked */
     .radio--checked .radio__control {
         border-color: var(--terra-radio-border-color-checked);

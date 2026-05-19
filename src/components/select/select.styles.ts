@@ -54,7 +54,7 @@ export default css`
         font: inherit;
         border: none;
         background: none;
-        color: var(--terra-input-color);
+        color: var(--terra-input-text-default);
         cursor: inherit;
         overflow: hidden;
         padding: 0;
@@ -63,11 +63,11 @@ export default css`
     }
 
     .select__display-input::placeholder {
-        color: var(--terra-input-placeholder-color);
+        color: var(--terra-input-placeholder-default);
     }
 
     .select:not(.select--disabled):hover .select__display-input {
-        color: var(--terra-input-color-hover);
+        color: var(--terra-input-text-hover);
     }
 
     .select__display-input:focus {
@@ -116,14 +116,15 @@ export default css`
 
     /* Standard selects */
     .select--standard .select__combobox {
-        background-color: var(--terra-input-background-color);
-        border: solid var(--terra-input-border-width) var(--terra-input-border-color);
+        background-color: var(--terra-input-background-default);
+        border: solid var(--terra-input-border-width)
+            var(--terra-input-border-default);
     }
 
     .select--standard.select--disabled .select__combobox {
-        background-color: var(--terra-input-background-color-disabled);
-        border-color: var(--terra-input-border-color-disabled);
-        color: var(--terra-input-color-disabled);
+        background-color: var(--terra-input-background-disabled);
+        border-color: var(--terra-input-border-disabled);
+        color: var(--terra-input-text-disabled);
         opacity: 0.5;
         cursor: not-allowed;
         outline: none;
@@ -131,17 +132,17 @@ export default css`
 
     .select--standard:not(.select--disabled).select--open .select__combobox,
     .select--standard:not(.select--disabled).select--focused .select__combobox {
-        background-color: var(--terra-input-background-color-focus);
-        border-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-input-background-focus);
+        border-color: var(--terra-input-border-focus);
         box-shadow: 0 0 0 var(--terra-focus-ring-width)
-            var(--terra-input-focus-ring-color);
+            var(--terra-input-border-focus);
     }
 
     /* Filled selects */
     .select--filled .select__combobox {
         border: none;
         background-color: var(--terra-input-filled-background-color);
-        color: var(--terra-input-color);
+        color: var(--terra-input-filled-color);
     }
 
     .select--filled:hover:not(.select--disabled) .select__combobox {
@@ -274,7 +275,7 @@ export default css`
         flex: 0;
         display: inline-flex;
         align-items: center;
-        color: var(--terra-input-placeholder-color);
+        color: var(--terra-input-placeholder-default);
     }
 
     .select__suffix::slotted(*) {
@@ -287,7 +288,7 @@ export default css`
         align-items: center;
         justify-content: center;
         font-size: inherit;
-        color: var(--terra-input-icon-color);
+        color: var(--terra-input-icon-default);
         border: none;
         background: none;
         padding: 0;
@@ -296,7 +297,7 @@ export default css`
     }
 
     .select__clear:hover {
-        color: var(--terra-input-icon-color-hover);
+        color: var(--terra-input-icon-hover);
     }
 
     .select__clear:focus {
@@ -325,9 +326,10 @@ export default css`
         font-size: var(--terra-font-size-medium);
         font-weight: var(--terra-font-weight-normal);
         box-shadow: var(--terra-shadow-large);
-        background: var(--terra-panel-background-color);
-        border: solid var(--terra-panel-border-width) var(--terra-panel-border-color);
-        border-radius: var(--terra-border-radius-medium);
+        background: var(--terra-container-menu-bg);
+        border: solid var(--terra-container-menu-border-width)
+            var(--terra-container-menu-border);
+        border-radius: var(--terra-container-menu-border-radius);
         padding-block: var(--terra-spacing-x-small);
         padding-inline: 0;
         overflow: auto;

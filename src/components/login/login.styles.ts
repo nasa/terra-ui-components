@@ -3,13 +3,13 @@ import { css } from 'lit'
 export default css`
     :host {
         box-sizing: border-box;
-        color: #1b1b1b; /* HDS uses this color for body text but does not have a defined color in the HDS palette */
+        color: var(--terra-text-primary);
         display: block;
         font-family: var(--terra-font-family--public-sans);
     }
 
     .help-text {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-input-help-text-color);
         font-size: var(--terra-font-size-small);
         line-height: var(--terra-line-height-normal);
         margin-block: 0;

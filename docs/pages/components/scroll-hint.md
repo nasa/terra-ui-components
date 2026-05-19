@@ -33,31 +33,21 @@ const App = () => (
 
 ## Variants and Options
 
-Scroll hints come in 2 color schemes, so they can be used in light and dark modules and pages. The component automatically adapts to the current theme.
+The scroll hint automatically adapts to the current theme (light or dark mode), however if you need to use a scroll hint on a content panel that is the inverse of your theme, you can set the 'inverse' variant option to 'true'. For example if your theme is set to light mode and you have a dark panel that needs a scroll hint component.
 
-### Light Background
+### Inverse Background
+
+When placing the scroll hint on a dark or light background, use the `inverse` prop to force dark mode styles for better visibility:
 
 ```html:preview
-<div style="background-color: #f5f5f5; padding: 2rem;">
-    <h1>Light Background</h1>
-    <p>Scroll hint on light background</p>
-    <terra-scroll-hint inline></terra-scroll-hint>
+<div class="inverse" style="padding: 2rem;">
+    <h1>Inverse Background</h1>
+    <p>Scroll hint on and opposing background with inverse prop</p>
+    <terra-scroll-hint inline inverse></terra-scroll-hint>
 </div>
 ```
 
-### Dark Background
-
-When placing the scroll hint on a dark background, use the `dark` prop to force dark mode styles for better visibility:
-
-```html:preview
-<div style="background-color: #1a1a1a; padding: 2rem; color: white;">
-    <h1>Dark Background</h1>
-    <p>Scroll hint on dark background with dark prop</p>
-    <terra-scroll-hint inline dark></terra-scroll-hint>
-</div>
-```
-
-The `dark` prop forces dark mode styles regardless of system preference, making it perfect for dark background sections even when the user's system is in light mode.
+The `inverse` prop forces inverse mode styles regardless of the current theme, making it perfect for contrasting background sections.
 
 ## Behavior
 
@@ -112,15 +102,15 @@ By default, the scroll hint is positioned fixed in the bottom left corner of the
 
 ## Configuration
 
-### Dark Mode
+### Inverse Mode
 
-Use the `dark` prop to force dark mode styles when placing the scroll hint on a dark background, regardless of system preference:
+Use the `inverse` prop to force inverse mode styles when placing the scroll hint on a background that contrasts with the current theme:
 
 ```html:preview
 <div style="background-color: #1a1a1a; padding: 2rem; color: white;">
-    <h1>Forced Dark Mode</h1>
-    <p>This scroll hint uses dark mode styles even if your system is in light mode.</p>
-    <terra-scroll-hint inline dark></terra-scroll-hint>
+    <h1>Inverse Mode</h1>
+    <p>This scroll hint uses inverse mode styles for better visibility on contrasting backgrounds.</p>
+    <terra-scroll-hint inline inverse></terra-scroll-hint>
 </div>
 ```
 
@@ -131,7 +121,7 @@ import TerraScrollHint from '@nasa-terra/components/dist/react/scroll-hint';
 
 const App = () => (
     <div style={{ backgroundColor: '#1a1a1a', padding: '2rem', color: 'white' }}>
-        <TerraScrollHint inline dark />
+        <TerraScrollHint inline inverse />
     </div>
 );
 ```
@@ -182,12 +172,12 @@ terra-scroll-hint {
 
 The following design tokens are available for customization:
 
--   `--terra-scroll-hint-icon-background-color`: Background color of the icon circle (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in dark mode)
--   `--terra-scroll-hint-icon-color`: Color of the chevron icon (default: `--terra-color-spacesuit-white` in light mode, `--terra-color-carbon-black` in dark mode)
--   `--terra-scroll-hint-text-color`: Color of the "SCROLL TO CONTINUE" text (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in dark mode)
+-   `--terra-scroll-hint-icon-background-color`: Background color of the icon circle (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in inverse mode)
+-   `--terra-scroll-hint-icon-color`: Color of the chevron icon (default: `--terra-color-spacesuit-white` in light mode, `--terra-color-carbon-black` in inverse mode)
+-   `--terra-scroll-hint-text-color`: Color of the "SCROLL TO CONTINUE" text (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in inverse mode)
 -   `--terra-scroll-hint-ring-color`: Color of the pulsing ring (default: `--terra-color-nasa-red`)
 
-All tokens automatically adapt to dark mode when dark mode is active (via system preference or the `dark` prop).
+All tokens automatically adapt when inverse mode is active (via the `inverse` prop).
 
 ## Animation
 

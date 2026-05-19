@@ -75,6 +75,15 @@ export default css`
         background-color: var(--terra-checkbox-background-color-hover);
     }
 
+    /* active - unchecked */
+    .checkbox:not(.checkbox--checked):not(.checkbox--disabled):not(
+            .checkbox--indeterminate
+        )
+        .checkbox__control:active {
+        border-color: var(--terra-checkbox-border-color-active);
+        background-color: var(--terra-checkbox-background-color-active);
+    }
+
     /* Focus - unchecked */
     .checkbox:not(.checkbox--checked):not(.checkbox--disabled):not(
             .checkbox--indeterminate
