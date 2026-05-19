@@ -23,6 +23,11 @@ export default css`
     }
 
     /* Variant modifiers */
+    .badge--primary {
+        background-color: var(--terra-badge-background-color-primary, var(--terra-badge-background-color-information));
+        color: var(--terra-badge-color-primary, var(--terra-badge-color-information));
+    }
+    
     .badge--information {
         background-color: var(--terra-badge-background-color-information);
         color: var(--terra-badge-color-information);
@@ -40,7 +45,7 @@ export default css`
 
     .badge--warning {
         background-color: var(--terra-badge-background-color-warning);
-        olor: var(--terra-badge-color-warning);
+        color: var(--terra-badge-color-warning);
     }
 
     .badge--danger {
@@ -56,6 +61,10 @@ export default css`
     /* Pulse modifier */
     .badge--pulse {
         animation: pulse 1.5s infinite;
+    }
+
+    .badge--pulse.badge--primary {
+        --pulse-color: var(--terra-color-bg-info-bold);
     }
 
     .badge--pulse.badge--information {

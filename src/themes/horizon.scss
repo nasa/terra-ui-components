@@ -127,6 +127,10 @@
     /* color variables that are used in the design system. If the colors in the design system are updated, 
     /* the plugin needs to rerun, and the token values copied back into the horizon.scss file.  
     */
+    --terra-color-bg-surface-brand-selected-default: var(--terra-color-blue-500);
+    --terra-color-bg-surface-brand-selected-hover: var(--terra-color-blue-600);
+    --terra-color-bg-surface-brand-selected-active: var(--terra-color-blue-800);
+    --terra-color-bg-surface-brand-selected-disabled: var(--terra-color-blue-700);
 
     /* ============================================================================
      * Color Palette - Light Mode
@@ -1248,10 +1252,10 @@
 
     /* Date Picker Component */
     --terra-date-picker-sidebar-background-color: var(
-        --terra-color-bg-surface-neutral-secondary
+        --terra-color-bg-surface-neutral-primary
     );
     --terra-date-picker-time-panel-background-color: var(
-        --terra-color-bg-surface-neutral-secondary
+        --terra-color-bg-surface-neutral-primary
     );
     --terra-data-picker-preset-background-hover: var(
         --terra-menu-item-background-hover
@@ -1732,7 +1736,7 @@
     --terra-popover-arrow-size: var(--terra-tooltip-arrow-size);
 
     /* Component Tokens ---------------------------------------------------------------- END */
-}
+
 
 /* ============================================================================
     * Dark Theme Overrides
@@ -1745,8 +1749,10 @@
     * The class-based approach takes precedence over system preference.
     */
 
-@mixin terra-theme-dark {
-    color-scheme: dark;
+    /* Data Subsetter Component */
+    --terra-data-subsetter-background-color: var(
+        --terra-color-bg-surface-neutral-base
+    );
 
     /* Figma Design System Tokens ------------------------------------------------- START */
     /* The Primitive, Foundation, and Semantic tokens below originate from the Figma Design System file. A custom Figma plugin called "Terra Color Exporter" generates the CSS tokens directly from the Figma color variables that are used in the design system. If the colors in the design system are updated, the plugin needs to rerun, and the token values copied back into the horizon.scss file.  */
@@ -1904,6 +1910,9 @@
         --terra-color-neutral-800
     );
     --terra-color-bg-surface-neutral-inverse-tertiary: var(--terra-color-neutral-700);
+
+    /* Dialog Component */
+    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-base);
 
     /* Neutral Surface Interactive colors
     */

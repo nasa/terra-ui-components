@@ -4,16 +4,14 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './data-subsetter-history.styles.js'
 import type { CSSResultGroup } from 'lit'
-import { DataSubsetterHistoryController } from './data-subsetter-history.controller.js'
-import {
-    Status,
-    type SubsetJobs,
-    type SubsetJobStatus,
-} from '../../data-services/types.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import { queryHarmonyJobs } from '../../queries/harmony.queries.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraDataSubsetter from '../data-subsetter/data-subsetter.component.js'
 import TerraDialog from '../dialog/dialog.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
+import { Status, type SubsetJobStatus } from '../../apis/harmony.api.js'
 
 /**
  * @summary Shows a floating panel with a user's recent data subset requests and their status, with quick access to results and re-submission.
@@ -25,7 +23,9 @@ import { AuthController } from '../../auth/auth.controller.js'
  * @dependency terra-data-subsetter
  * @dependency terra-dialog
  */
-export default class TerraDataSubsetterHistory extends TerraElement {
+export default class TerraDataSubsetterHistory extends QueryClientMixin(
+    TerraElement,
+) {
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-icon': TerraIcon,
         'terra-data-subsetter': TerraDataSubsetter,
@@ -64,20 +64,17 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     @query('[part~="subsetter"]')
     subsetter: TerraDataSubsetter
 
-    #controller = new DataSubsetterHistoryController(this)
+    jobsQuery = new QueryController(this, () =>
+        queryHarmonyJobs({ page: 1 }, { bearerToken: this.bearerToken }),
+    )
     _authController = new AuthController(this)
-
-    connectedCallback(): void {
-        super.connectedCallback()
-        this.addController(this.#controller)
-    }
 
     private toggleCollapsed() {
         this.collapsed = !this.collapsed
     }
 
     render() {
-        const jobs = this.#controller.jobs
+        const jobs = this.jobsQuery.result?.data
         const hasJobs = jobs && jobs.jobs.length > 0
 
         if (!hasJobs) {
@@ -92,8 +89,9 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                 </div>
 
                 <div class="history-panel">
-                    ${hasJobs
-                        ? html`
+                    ${
+                        hasJobs
+                            ? html`
                               <div class="history-link-row">
                                   <label>
                                       <input
@@ -123,13 +121,15 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                                   </a>
                               </div>
                           `
-                        : nothing}
+                            : nothing
+                    }
 
                     <div class="history-list">
-                        ${jobs
-                            ? hasJobs
-                                ? this.#renderHistoryItems(jobs)
-                                : html`<div class="history-alert-message">
+                        ${
+                            jobs
+                                ? hasJobs
+                                    ? this.#renderHistoryItems(jobs)
+                                    : html`<div class="history-alert-message">
                                       You haven't made any requests yet.<br />
                                       Get started by
                                       <a
@@ -146,9 +146,10 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                                           creating your first request!</a
                                       >.
                                   </div>`
-                            : html`<div class="history-alert-message">
+                                : html`<div class="history-alert-message">
                                   Retrieving your requests....
-                              </div>`}
+                              </div>`
+                        }
                     </div>
                 </div>
             </div>
@@ -164,10 +165,10 @@ export default class TerraDataSubsetterHistory extends TerraElement {
         `
     }
 
-    #renderHistoryItems(subsetJobs: SubsetJobs) {
+    #renderHistoryItems(subsetJobs: { jobs: SubsetJobStatus[] }) {
         const filteredJobs = subsetJobs.jobs
             .slice()
-            .filter(job => {
+            .filter((job) => {
                 if (this.hideCancelled) {
                     return job.status !== Status.CANCELED
                 }
@@ -176,7 +177,8 @@ export default class TerraDataSubsetterHistory extends TerraElement {
             })
             .sort(
                 (a, b) =>
-                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
             )
 
         if (!filteredJobs.length) {
@@ -200,7 +202,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
             `
         }
 
-        return filteredJobs.map(job => {
+        return filteredJobs.map((job) => {
             let fillColor = '#0066cc'
             if (
                 job.status === Status.SUCCESSFUL ||
@@ -251,7 +253,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
 
     #renderSubsetterHistoryItem(
         job: SubsetJobStatus,
-        labels: Record<string, unknown>
+        labels: Record<string, unknown>,
     ) {
         return html`
             <div class="subsetter-history-item">
@@ -275,7 +277,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
     #parseLabelsAsJson(labels: string[]): { [k: string]: unknown } {
         try {
             return Object.fromEntries(
-                labels.map(line => {
+                labels.map((line) => {
                     const [key, ...rest] = line.split(':')
                     const valueRaw = rest.join(':').trim()
 
@@ -291,7 +293,7 @@ export default class TerraDataSubsetterHistory extends TerraElement {
                     }
 
                     return [key.trim(), value]
-                })
+                }),
             )
         } catch (e) {
             return {}

@@ -192,7 +192,7 @@ export default css`
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
         font-weight: var(--terra-input-font-weight);
-        color: var(--terra-input-background-defaul);
+        color: var(--terra-input-text-default);
         flex: 1;
     }
 

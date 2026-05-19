@@ -170,11 +170,11 @@ export default css`
     }
 
     .date-picker__preset:hover {
-        background: var(--terra-data-picker-preset-background-hover);
+        background: var(--terra-date-picker-preset-background-hover);
     }
 
     .date-picker__preset:active {
-        background: var(--terra-data-picker-preset-background-active);
+        background: var(--terra-date-picker-preset-background-active);
     }
 
     .date-picker__preset:focus {
@@ -645,5 +645,23 @@ export default css`
         .date-picker__time {
             flex-direction: column;
         }
+    }
+
+     .dropdown-header {
+        display: flex;
+        justify-content: flex-end;
+        padding: 4px 6px;
+    }
+
+    .date-picker__close-btn {
+     border: none;
+        background: transparent;
+        font-size: 18px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .date-picker__close-btn:hover {
+        opacity: 0.7;
     }
 `

@@ -250,7 +250,7 @@ export default css`
         position: absolute;
         bottom: 150px;
         left: 10px;
-        background: var(--terra-color-spacesuite-white);
+        background: var(--terra-color-spacesuit-white);
         padding: 8px 10px;
         border-radius: 4px;
         font-size: 12px;

@@ -128,6 +128,9 @@ export default class TerraSlider extends TerraElement {
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel: boolean = false
 
+    @property({ attribute: 'format-tooltip', type: Function })
+    formatTooltip?: (value: number) => string
+
     @state() private currentStartValue?: number
     @state() private currentEndValue?: number
     @state() private currentValue?: number
@@ -199,11 +202,13 @@ export default class TerraSlider extends TerraElement {
             start: startValues as any,
             step: this.step,
             connect: this.mode === 'range',
-            tooltips: this.hasTooltips
-                ? this.mode === 'range'
-                    ? [this.hasTooltips, this.hasTooltips]
-                    : this.hasTooltips
-                : false,
+
+            tooltips: this.formatTooltip
+                ? {
+                      to: (value: number) => this.formatTooltip?.(value) ?? value,
+                  }
+                : this.hasTooltips,
+
             behaviour: 'drag',
             format: this._getFormatter(),
             pips: this.hasPips

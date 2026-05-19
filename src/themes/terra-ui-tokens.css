@@ -172,7 +172,7 @@
     --terra-color-action-cta-disabled: var(--terra-color-chartreuse-100);
     --terra-color-action-success-default: var(--terra-color-green-500);
     --terra-color-action-success-hover: var(--terra-color-green-600);
-    --terra-color-action-success-disabed: var(--terra-color-green-100);
+    --terra-color-action-success-disabled: var(--terra-color-green-100);
     --terra-color-action-warning-default: var(--terra-color-orange-500);
     --terra-color-action-warning-hover: var(--terra-color-orange-600);
     --terra-color-action-warning-disabled: var(--terra-color-orange-100);
@@ -457,7 +457,7 @@
     --terra-color-action-cta-disabled: var(--terra-color-chartreuse-200);
     --terra-color-action-success-default: var(--terra-color-green-500);
     --terra-color-action-success-hover: var(--terra-color-green-600);
-    --terra-color-action-success-disabed: var(--terra-color-green-200);
+    --terra-color-action-success-disabled: var(--terra-color-green-200);
     --terra-color-action-warning-default: var(--terra-color-orange-500);
     --terra-color-action-warning-hover: var(--terra-color-orange-600);
     --terra-color-action-warning-disabled: var(--terra-color-orange-200);
@@ -561,7 +561,7 @@
     --terra-border-error-primary: var(--terra-color-red-100);
     --terra-border-info-primary: var(--terra-color-blue-100);
     --terra-border-info-default: var(--terra-color-blue-800);
-    --terra-border-error-defaut: var(--terra-color-red-800);
+    --terra-border-error-default: var(--terra-color-red-800);
 
     /* Border colors for action surfaces
     */

@@ -21,7 +21,8 @@ import {
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 
 const variableEntryIdsConverter = {
     fromAttribute: (value: string | null): string[] => {
@@ -33,7 +34,9 @@ const variableEntryIdsConverter = {
             const parsedValue = JSON.parse(value)
 
             if (Array.isArray(parsedValue)) {
-                return parsedValue.map(item => String(item).trim()).filter(Boolean)
+                return parsedValue
+                    .map((item) => String(item).trim())
+                    .filter(Boolean)
             }
         } catch {
             // fall back to comma-delimited parsing
@@ -41,7 +44,7 @@ const variableEntryIdsConverter = {
 
         return value
             .split(',')
-            .map(item => item.trim())
+            .map((item) => item.trim())
             .filter(Boolean)
     },
     toAttribute: (value: string[] | undefined): string | null => {
@@ -63,8 +66,9 @@ const variableEntryIdsConverter = {
  *
  * @event terra-date-range-change - Emitted whenever the date range is modified
  * @event terra-time-series-data-change - Emitted whenever time series data has been fetched from Giovanni
+ * @event terra-harmony-job-status-update - Emitted whenever the status of a Harmony job is updated
  */
-export default class TerraTimeSeries extends TerraElement {
+export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-plot': TerraPlot,
@@ -75,7 +79,7 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-plot-toolbar': TerraPlotToolbar,
     }
 
-    #timeSeriesController: TimeSeriesController
+    #timeSeriesController = new TimeSeriesController(this)
 
     /**
      * a variable entry ID (ex: GPM_3IMERGHH_06_precipitationCal)
@@ -134,8 +138,8 @@ export default class TerraTimeSeries extends TerraElement {
     })
     location?: string
 
-    @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
-        false
+    @property({ type: Boolean, attribute: 'show-citation' })
+    showCitation: boolean = false
 
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
         true
@@ -143,7 +147,8 @@ export default class TerraTimeSeries extends TerraElement {
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
-    @property({ attribute: 'application-citation' }) applicationCitation?: string
+    @property({ attribute: 'application-citation' })
+    applicationCitation?: string
 
     /**
      * When true, disables automatic data fetching when the user zooms, pans, or otherwise interacts with the plot.
@@ -179,6 +184,25 @@ export default class TerraTimeSeries extends TerraElement {
         reflect: true,
     })
     productLabel?: string
+
+    /**
+     * the application ID is used for tracking purposes and will be included in the labels of Harmony jobs created by this component
+     */
+    @property({ attribute: 'application-id' })
+    applicationId?: string
+
+    /**
+     * When true, enables IndexedDB caching — data will be read from and written to the local cache.
+     * Defaults to false, meaning no caching is performed.
+     */
+    @property({ type: Boolean })
+    cache = false
+
+    /**
+     * If provided, skips creating a new Harmony job and instead waits for this existing job ID to complete.
+     */
+    @property({ attribute: 'job-id' })
+    jobId?: string
 
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
@@ -222,11 +246,8 @@ export default class TerraTimeSeries extends TerraElement {
 
         this.addEventListener(
             'terra-time-series-error',
-            this.#handleQuotaError as EventListener
+            this.#handleQuotaError as EventListener,
         )
-
-        //* instantiate the time series contoller maybe with a token
-        this.#timeSeriesController = new TimeSeriesController(this)
     }
 
     updated(changedProps: Map<string, unknown>) {
@@ -264,7 +285,7 @@ export default class TerraTimeSeries extends TerraElement {
         super.disconnectedCallback()
         this.removeEventListener(
             'terra-time-series-error',
-            this.#handleQuotaError as EventListener
+            this.#handleQuotaError as EventListener,
         )
     }
 
@@ -313,8 +334,9 @@ export default class TerraTimeSeries extends TerraElement {
     render() {
         return html`
             <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
-                ${this.quotaExceededOpen
-                    ? html`
+                ${
+                    this.quotaExceededOpen
+                        ? html`
                           <terra-alert
                               variant="warning"
                               duration="10000"
@@ -336,16 +358,20 @@ export default class TerraTimeSeries extends TerraElement {
                               for further assistance.
                           </terra-alert>
                       `
-                    : ''}
-                ${!this.hideToolbar
-                    ? cache(
-                          this.catalogVariable
-                              ? html`<terra-plot-toolbar
+                        : ''
+                }
+                ${
+                    !this.hideToolbar
+                        ? cache(
+                              this.catalogVariable
+                                  ? html`<terra-plot-toolbar
                                     .catalogVariable=${this.catalogVariable}
                                     .plot=${this.plot}
-                                    .timeSeriesData=${this.#timeSeriesController
-                                        .lastTaskValue ??
-                                    this.#timeSeriesController.emptyPlotData}
+                                    .timeSeriesData=${
+                                        this.#timeSeriesController
+                                            .lastTaskValue ??
+                                        this.#timeSeriesController.emptyPlotData
+                                    }
                                     .location=${this.location}
                                     .startDate=${this.startDate}
                                     .endDate=${this.endDate}
@@ -355,14 +381,17 @@ export default class TerraTimeSeries extends TerraElement {
                                     .showHelp=${this.showHelp}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
+                                    show-location
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
                                 </terra-plot-toolbar>`
-                              : html`<div class="spacer"></div>`
-                      )
-                    : nothing}
-                ${this.#hasNoData()
-                    ? html`
+                                  : html`<div class="spacer"></div>`,
+                          )
+                        : nothing
+                }
+                ${
+                    this.#hasNoData()
+                        ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="warning"
@@ -379,9 +408,11 @@ export default class TerraTimeSeries extends TerraElement {
                               more results.
                           </terra-alert>
                       `
-                    : ''}
-                ${this.#isVariableNotFound()
-                    ? html`
+                        : ''
+                }
+                ${
+                    this.#isVariableNotFound()
+                        ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="danger"
@@ -396,9 +427,11 @@ export default class TerraTimeSeries extends TerraElement {
                               The selected variable was not found in the catalog
                           </terra-alert>
                       `
-                    : ''}
-                ${this.timeSeriesError
-                    ? html`
+                        : ''
+                }
+                ${
+                    this.timeSeriesError
+                        ? html`
                           <terra-alert
                               class="error-alert"
                               variant="danger"
@@ -414,12 +447,15 @@ export default class TerraTimeSeries extends TerraElement {
                               ${this.#getErrorMessage(this.timeSeriesError)}
                           </terra-alert>
                       `
-                    : ''}
+                        : ''
+                }
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
-                    .data=${this.#timeSeriesController.lastTaskValue ??
-                    this.#timeSeriesController.emptyPlotData}
+                    .data=${
+                        this.#timeSeriesController.lastTaskValue ??
+                        this.#timeSeriesController.emptyPlotData
+                    }
                     .layout="${{
                         xaxis: {
                             title: 'Time',
@@ -445,7 +481,11 @@ export default class TerraTimeSeries extends TerraElement {
                     .config=${{
                         displayModeBar: true,
                         displaylogo: false,
-                        modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
+                        modeBarButtonsToRemove: [
+                            'toImage',
+                            'zoom2d',
+                            'resetScale2d',
+                        ],
                         responsive: true,
                     }}
                     @terra-plot-relayout=${this.#handlePlotRelayout}
@@ -453,19 +493,26 @@ export default class TerraTimeSeries extends TerraElement {
             </div>
 
             <dialog
-                ?open=${this.#timeSeriesController.task.status ===
-                    TaskStatus.PENDING ||
-                this._fetchVariableTask.status === TaskStatus.PENDING}
+                ?open=${
+                    this.#timeSeriesController.task.status ===
+                        TaskStatus.PENDING ||
+                    this._fetchVariableTask.status === TaskStatus.PENDING
+                }
             >
                 <terra-loader indeterminate></terra-loader>
 
-                ${this.#timeSeriesController.task.status === TaskStatus.PENDING
-                    ? html`<p>
-                          ${this.catalogVariables.length > 1
-                              ? `Plotting ${this.catalogVariables.length} variables…`
-                              : `Plotting ${this.catalogVariable?.dataFieldId}…`}
+                ${
+                    this.#timeSeriesController.task.status ===
+                    TaskStatus.PENDING
+                        ? html`<p>
+                          ${
+                              this.catalogVariables.length > 1
+                                  ? `Plotting ${this.catalogVariables.length} variables…`
+                                  : `Plotting ${this.catalogVariable?.dataFieldId}…`
+                          }
                       </p>`
-                    : html`<p>Preparing plot&hellip;</p>`}
+                        : html`<p>Preparing plot&hellip;</p>`
+                }
 
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
@@ -507,7 +554,9 @@ export default class TerraTimeSeries extends TerraElement {
     #getYAxisLabel() {
         const units = (
             this.catalogVariables.length
-                ? this.catalogVariables.map(variable => variable.dataFieldUnits)
+                ? this.catalogVariables.map(
+                      (variable) => variable.dataFieldUnits,
+                  )
                 : [this.catalogVariable?.dataFieldUnits]
         ).filter(Boolean)
 
@@ -564,7 +613,7 @@ export default class TerraTimeSeries extends TerraElement {
         const hasVariableRequest = Boolean(
             this.variableEntryId ||
                 this.variableEntryIds.length ||
-                (this.collection && this.variable)
+                (this.collection && this.variable),
         )
 
         // If user requested a variable but catalogVariable is not set, variable was not found
@@ -575,7 +624,7 @@ export default class TerraTimeSeries extends TerraElement {
         code: string
         message?: string
         context?: string
-    }): any {
+    }) {
         return formatHarmonyErrorMessage(error)
     }
 
@@ -605,7 +654,7 @@ export default class TerraTimeSeries extends TerraElement {
                     },
                     bubbles: true,
                     composed: true,
-                })
+                }),
             )
         }
     }

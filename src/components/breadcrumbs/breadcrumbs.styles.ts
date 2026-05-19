@@ -4,7 +4,7 @@ export default css`
     :host {
         display: block;
         --terra-breadcrumbs-gap: 0.25rem;
-        color: var(--terra-breadcrumb-color, var(--terra-color-neutral-70));
+        color: var(--terra-breadcrumb-color, var(--terra-color-neutral-700));
     }
 
     .breadcrumbs {

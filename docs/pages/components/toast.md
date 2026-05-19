@@ -47,6 +47,12 @@ Set the `variant` attribute to change the toast's variant.
   You can tell by how pretty the toast is.
 </terra-toast>
 
+<terra-toast id="toast-information-toast" variant="information" closable>
+  <terra-icon slot="icon" name="solid-information-circle" library="heroicons"></terra-icon>
+  <strong>This is super informative</strong><br />
+  You can tell by how pretty the toast is.
+</terra-toast>
+
 <terra-toast id="toast-success-toast" variant="success" closable>
   <terra-icon slot="icon" name="solid-check-circle" library="heroicons"></terra-icon>
   <strong>Your changes have been saved</strong><br />

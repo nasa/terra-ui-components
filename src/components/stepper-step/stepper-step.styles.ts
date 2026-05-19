@@ -27,7 +27,7 @@ export default css`
         align-items: center;
         justify-content: center;
         min-height: 4px;
-        background-color: var(--terra-steper-background-color);
+        background-color: var(--terra-stepper-background-color);
         transition: background-color var(--terra-transition-medium);
     }
 

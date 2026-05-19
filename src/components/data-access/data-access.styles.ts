@@ -29,7 +29,7 @@ export default css`
         border: 1px solid var(--terra-input-border-default);
         border-radius: var(--terra-input-border-radius-medium);
         font-size: var(--terra-input-font-size-medium);
-        color: var(--terra-input-text-color);
+        color: var(--terra-input-text-default);
         background: var(--terra-input-background-default);
         outline: none;
         transition:
@@ -91,7 +91,7 @@ export default css`
         border: 1px solid var(--terra-border-action-secondary-default);
         border-radius: var(--terra-border-radius-circle);
         font-size: 18px;
-        color: var(--terra-button-color-default)
+        color: var(--terra-button-color-default);
         line-height: 1;
 
         cursor: pointer;
@@ -227,7 +227,7 @@ export default css`
 
     .jupyter-btn {
         background: var(--terra-color-action-secondary-default);
-        color: var(--terra-button-color-defaul);
+        color: var(--terra-button-color-default);
         border: 1px solid var(--terra-color-action-secondary);
         border-radius: 4px;
         padding: 6px 12px;
