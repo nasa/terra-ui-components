@@ -227,7 +227,7 @@ export default css`
 
     .jupyter-btn {
         background: var(--terra-color-action-secondary-default);
-        color: var(--terra-button-color-defaul);
+        color: var(--terra-button-color-default);
         border: 1px solid var(--terra-color-action-secondary);
         border-radius: 4px;
         padding: 6px 12px;
