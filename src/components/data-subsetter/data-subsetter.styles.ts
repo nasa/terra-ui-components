@@ -979,4 +979,8 @@ export default css`
             min-width: auto;
         }
     }
+
+    .dimension-slider {
+        padding: 0 30px;
+    }
 `

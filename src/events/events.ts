@@ -56,3 +56,6 @@ export type {
 } from './terra-data-grid.js'
 export type { TerraPlotOptionsChangeEvent } from './terra-plot-options-change.js'
 export type { TerraDateSelectionInvalidEvent } from './terra-date-selection-invalid.js'
+export type { TerraHarmonyJobStatusUpdateEvent } from './terra-harmony-job-status-update.js'
+export type { TerraHarmonyJobSelectEvent } from './terra-harmony-job-select.js'
+export type { TerraHarmonyJobDeleteEvent } from './terra-harmony-job-delete.js'
