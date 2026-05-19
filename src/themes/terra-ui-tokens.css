@@ -561,7 +561,7 @@
     --terra-border-error-primary: var(--terra-color-red-100);
     --terra-border-info-primary: var(--terra-color-blue-100);
     --terra-border-info-default: var(--terra-color-blue-800);
-    --terra-border-error-defaut: var(--terra-color-red-800);
+    --terra-border-error-default: var(--terra-color-red-800);
 
     /* Border colors for action surfaces
     */
