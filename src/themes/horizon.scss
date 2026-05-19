@@ -1069,10 +1069,10 @@
 
     /* Date Picker Component */
     --terra-date-picker-sidebar-background-color: var(
-        --terra-color-bg-surface-neutral-secondary
+        --terra-color-bg-surface-neutral-primary
     );
     --terra-date-picker-time-panel-background-color: var(
-        --terra-color-bg-surface-neutral-secondary
+        --terra-color-bg-surface-neutral-primary
     );
     --terra-data-picker-preset-background-hover: var(
         --terra-menu-item-background-hover
@@ -1119,6 +1119,14 @@
     );
     --terra-date-picker-day-in-range-color: var(--terra-text-brand-on-brand-inverse);
     --terra-date-picker-day-in-range-color-hover: var(--terra-menu-item-text-hover);
+
+    /* Data Subsetter Component */
+    --terra-data-subsetter-background-color: var(
+        --terra-color-bg-surface-neutral-primary
+    );
+
+    /* Dialog Component */
+    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-primary);
 
     /* Data Subsetter History Component 
     * Data subsetter history is a component that displays a user's history of data subsetter runs.
@@ -1534,7 +1542,7 @@
     --terra-tooltip-font-family: var(--terra-font-family--public-sans);
     --terra-tooltip-font-weight: var(--terra-font-weight-normal);
     --terra-tooltip-font-size: var(--terra-font-size-small);
-    --terra-tooltip-line-height: var(--terra-line-height-looser);
+    --terra-tooltip-line-height: var(--terra-line-height-normal);
     --terra-tooltip-padding: var(--terra-spacing-2x-small)
         var(--terra-spacing-x-small);
     --terra-tooltip-arrow-size: 6px;

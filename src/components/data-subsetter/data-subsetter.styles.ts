@@ -22,6 +22,7 @@ export default css`
     }
 
     :host .container {
+        background: var(--terra-data-subsetter-background-color);
         font-size: 16px;
         text-align: left;
         margin: 0 auto;

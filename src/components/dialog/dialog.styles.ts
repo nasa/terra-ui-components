@@ -33,7 +33,7 @@ export default css`
         min-width: var(--min-width);
         max-width: var(--max-width);
         max-height: var(--max-height);
-        background-color: var(--terra-panel-background-color);
+        background-color: var(--terra-dialog-background-color);
         border-radius: var(--terra-border-radius-medium);
         box-shadow: var(--terra-shadow-x-large);
     }
