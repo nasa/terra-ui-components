@@ -12,3 +12,4 @@ package-lock.json
 tsconfig.json
 cdn
 _site
+src/themes/Figma_Export_Variables.json
