@@ -9,7 +9,7 @@ import type { RequestOptions } from '../lib/api.client.js'
 import { ThumbnailService } from '../lib/thumbnails/thumbnail.service.js'
 
 const POLL_INTERVAL_MS = 3000
-const PAGE_1_POLL_INTERVAL_MS = 5000
+const PAGE_1_POLL_INTERVAL_MS = 10000
 
 const thumbnailService = new ThumbnailService()
 

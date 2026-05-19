@@ -85,15 +85,6 @@ export class TimeSeriesController {
             task: async (_args, { signal }) => {
                 const { jobId } = this.host
 
-                console.log(
-                    'Checking for jobId to hydrate host properties',
-                    jobId,
-                    this.host.startDate,
-                    this.host.endDate,
-                    this.host.location,
-                    this.host.bearerToken,
-                )
-
                 if (
                     !jobId ||
                     !this.host.bearerToken ||
@@ -138,12 +129,6 @@ export class TimeSeriesController {
                 if (variableId && !this.host.variableEntryId) {
                     this.host.variableEntryId = variableId
                 }
-
-                console.log('Hydrated host properties from job status', {
-                    startDate: this.host.startDate,
-                    endDate: this.host.endDate,
-                    location: this.host.location,
-                })
 
                 this.host.requestUpdate()
             },

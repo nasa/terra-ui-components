@@ -25,6 +25,25 @@ import { formatDate } from '../../utilities/date.js'
 /** Thumbnail width + gap (96px + 12px) */
 const STRIDE = 108
 
+/** Format a date string for tooltip display. Includes HH:mm UTC when the time is non-midnight UTC. */
+function formatDatetimeUtc(dateStr: string | undefined): string {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    const hasTime =
+        d.getUTCHours() !== 0 ||
+        d.getUTCMinutes() !== 0 ||
+        d.getUTCSeconds() !== 0
+    if (hasTime) {
+        const yyyy = d.getUTCFullYear()
+        const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+        const dd = String(d.getUTCDate()).padStart(2, '0')
+        const hh = String(d.getUTCHours()).padStart(2, '0')
+        const min = String(d.getUTCMinutes()).padStart(2, '0')
+        return `${yyyy}-${mm}-${dd} ${hh}:${min} UTC`
+    }
+    return formatDate(d, 'yyyy-MM-dd')
+}
+
 /**
  * @summary Displays a horizontal scrolling strip of a user's recent Harmony job requests,
  * fetching additional pages on demand as the user scrolls.
@@ -59,7 +78,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     override bearerToken?: string
 
     @property({ type: Number })
-    limit: number = 10
+    limit: number = 20
 
     @property({ attribute: 'filter-by-labels' })
     filterByLabels?: string
@@ -73,6 +92,13 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     @property({ type: Boolean, attribute: 'remove-labels-on-delete' })
     removeLabelsOnDelete = false
 
+    private _boundDataChangeHandler = () => {
+        clearTimeout(this._refreshPage1Timer)
+        this._refreshPage1Timer = window.setTimeout(() => {
+            this._refreshPage1()
+        }, 500)
+    }
+
     @state() private _scrollIndex = 0
     @state() private _totalCount = 0
     @state() private _loadedPages = new Map<number, SubsetJobStatus[]>()
@@ -83,6 +109,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
 
     private _hideTooltipTimer?: number
     private _showTooltipTimer?: number
+    private _refreshPage1Timer?: number
     private _resizeObserver?: ResizeObserver
 
     _authController = new AuthController(this)
@@ -128,6 +155,20 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         })
     }
 
+    override connectedCallback() {
+        super.connectedCallback()
+        if (typeof window !== 'undefined') {
+            window.addEventListener(
+                'terra-time-average-map-data-change',
+                this._boundDataChangeHandler,
+            )
+            window.addEventListener(
+                'terra-time-series-data-change',
+                this._boundDataChangeHandler,
+            )
+        }
+    }
+
     override firstUpdated() {
         if (this._viewportEl && typeof ResizeObserver !== 'undefined') {
             this._resizeObserver = new ResizeObserver(() => {
@@ -140,6 +181,16 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     override disconnectedCallback() {
         super.disconnectedCallback()
         this._resizeObserver?.disconnect()
+        if (typeof window !== 'undefined') {
+            window.removeEventListener(
+                'terra-time-average-map-data-change',
+                this._boundDataChangeHandler,
+            )
+            window.removeEventListener(
+                'terra-time-series-data-change',
+                this._boundDataChangeHandler,
+            )
+        }
     }
 
     override updated(changedProperties: Map<string | symbol, unknown>) {
@@ -156,6 +207,22 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
             this._loadedPages = newMap
             this._checkPagesInView()
         }
+    }
+
+    private async _refreshPage1() {
+        await this.queryClient.invalidateQueries({
+            queryKey: [
+                'harmony',
+                'jobs',
+                {
+                    page: 1,
+                    limit: this.limit,
+                    ...(this.filterByLabels
+                        ? { label: this.filterByLabels }
+                        : {}),
+                },
+            ],
+        })
     }
 
     private async _fetchPage(page: number) {
@@ -275,7 +342,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                         ? `
                     <div class="text-gray-300 tooltip-row">
                         <terra-icon library="heroicons" name="solid-calendar-date-range"></terra-icon> 
-                        ${formatDate(harmonyRequest.options.startDate)} to ${formatDate(harmonyRequest.options.endDate)}
+                        ${formatDatetimeUtc(harmonyRequest.options.startDate)} to ${formatDatetimeUtc(harmonyRequest.options.endDate)}
                     </div>
                 `
                         : ''
@@ -343,25 +410,37 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
             .map((l) => l.trim())
             .filter(Boolean)
 
+        // Optimistically remove the job from local state so it disappears immediately
+        // without blanking the entire strip while the refetch is in flight
+        this._optimisticallyRemoveJob(job.jobID)
+
         if (this.removeLabelsOnDelete && labels?.length) {
             await this._removeLabelsOnDeleteMutation.mutate({
                 jobIDs: [job.jobID],
                 labels,
                 options: { bearerToken: this.bearerToken },
             })
-            // Invalidate all harmony jobs queries so every page re-fetches
-            await this.queryClient.invalidateQueries({
-                queryKey: ['harmony', 'jobs'],
-            })
-            // Reset local page cache so stale data is not shown during re-fetch
-            this._loadedPages = new Map()
-            this._totalCount = 0
-            this._scrollIndex = 0
         } else {
             this.emit('terra-harmony-job-delete', {
                 detail: { jobId: job.jobID },
             })
         }
+
+        // Refresh page 1 from the server so the strip reflects accurate server state
+        await this._refreshPage1()
+    }
+
+    /** Removes a single job from the local page cache and decrements the total count. */
+    private _optimisticallyRemoveJob(jobID: string) {
+        const newMap = new Map(this._loadedPages)
+        for (const [page, jobs] of newMap) {
+            const filtered = jobs.filter((j) => j.jobID !== jobID)
+            if (filtered.length !== jobs.length) {
+                newMap.set(page, filtered)
+                this._totalCount = Math.max(0, this._totalCount - 1)
+            }
+        }
+        this._loadedPages = newMap
     }
 
     private _renderThumbnail(job: SubsetJobStatus | null) {
