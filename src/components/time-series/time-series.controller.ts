@@ -470,7 +470,10 @@ export class TimeSeriesController {
             data: allData,
         }
 
-        // Save the consolidated data to IndexedDB (including fill values to avoid unnecessary API requests)
+        // Save the consolidated data to IndexedDB (including fill values to avoid unnecessary API requests).
+        // Pass the requested start/end so that the stored range covers the full requested window even
+        // if Harmony returned data starting after the requested start (e.g. no data before Jan 15).
+        // Without this, every future request for the same range would detect a gap and fire a new job.
         // Only when cache mode is enabled
         if (this.host.cache) {
             await this.#cacheService.storeConsolidatedData({
@@ -479,6 +482,8 @@ export class TimeSeriesController {
                 environment: this.host.environment,
                 metadata: consolidatedResult.metadata,
                 data: allData,
+                requestedStartDate: startDate,
+                requestedEndDate: endDate,
             })
         }
 

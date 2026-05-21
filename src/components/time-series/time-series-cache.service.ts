@@ -120,10 +120,17 @@ export class TimeSeriesCacheService {
         environment?: string
         metadata: Partial<TimeSeriesMetadata>
         data: TimeSeriesDataRow[]
+        /** The originally-requested start date. When provided, the stored range covers at least
+         *  this date so that future requests for the same range don't detect a spurious gap
+         *  just because Harmony returned data starting later than the requested start. */
+        requestedStartDate?: Date
+        /** The originally-requested end date. Same rationale as requestedStartDate. */
+        requestedEndDate?: Date
     }): Promise<void> {
-        const { cacheKey, variableEntryId, environment, metadata, data } = options
+        const { cacheKey, variableEntryId, environment, metadata, data,
+                requestedStartDate, requestedEndDate } = options
 
-        if (!cacheKey || !data.length) {
+        if (!cacheKey) {
             return
         }
 
@@ -131,11 +138,25 @@ export class TimeSeriesCacheService {
             (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
         )
 
+        // Use the requested range as the stored range when it extends beyond the actual data.
+        // This prevents a cache-miss loop when the dataset simply has no data at the edges
+        // (e.g. requesting Jan 1 but the first available data point is Jan 15).
+        const storedStart = requestedStartDate && sortedData.length > 0
+            ? new Date(Math.min(requestedStartDate.getTime(), new Date(sortedData[0].timestamp).getTime())).toISOString()
+            : sortedData[0]?.timestamp
+        const storedEnd = requestedEndDate && sortedData.length > 0
+            ? new Date(Math.max(requestedEndDate.getTime(), new Date(sortedData[sortedData.length - 1].timestamp).getTime())).toISOString()
+            : sortedData[sortedData.length - 1]?.timestamp
+
+        if (!storedStart || !storedEnd) {
+            return
+        }
+
         await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
             variableEntryId,
             key: cacheKey,
-            startDate: sortedData[0].timestamp,
-            endDate: sortedData[sortedData.length - 1].timestamp,
+            startDate: storedStart,
+            endDate: storedEnd,
             metadata: metadata as TimeSeriesMetadata,
             data: sortedData,
             environment,
