@@ -364,6 +364,12 @@ class HarmonyApi {
         if (!url.startsWith('http')) {
             // if url is a relative path, prepend the base Harmony URL
             url = `${environmentUrl}/${url}`
+        } else if (!options?.bearerToken) {
+            // if url is an absolute Harmony URL but the user is anonymous (no bearer token),
+            // replace the Harmony base URL with the anonymous proxy so the request is routed correctly
+            url = url
+                .replace(HARMONY_URLS[Environments.PROD], HARMONY_URLS.ANONYMOUS_ACCESS)
+                .replace(HARMONY_URLS[Environments.UAT], HARMONY_URLS.ANONYMOUS_ACCESS)
         }
 
         const headers: HeadersInit = {

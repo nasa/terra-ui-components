@@ -121,8 +121,29 @@ describe('HarmonyAPI', () => {
             })
         })
 
+        it('should route createJob through the anonymous proxy when no bearer token is provided', async () => {
+            apiGetStub.resolves({ id: 'job-anon' })
+
+            await harmonyApi.createJob(
+                {
+                    hasShape: false,
+                    requestUrl:
+                        'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                } as any,
+            )
+
+            expect(apiGetStub.calledOnce).to.be.true
+            expect(apiGetStub.firstCall.args[0]).to.equal(
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+            )
+            expect(apiGetStub.firstCall.args[1]).to.deep.equal({
+                signal: undefined,
+                headers: {},
+            })
+        })
+
         it('should request job status from PROD URL when authenticated', async () => {
-            apiGetStub.resolves({ status: 'running' })
+            apiGetStub.resolves({ status: 'running', links: [] })
 
             await harmonyApi.getJobStatus('abc123', {
                 bearerToken: 'token',

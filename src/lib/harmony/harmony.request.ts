@@ -134,6 +134,7 @@ export class HarmonyRequest {
             average,
             anonymous,
             dimensions,
+            skipPreview,
         } = this.#options
 
         if (location instanceof LatLng) {
@@ -149,7 +150,6 @@ export class HarmonyRequest {
             )
         }
 
-        // TODO: implement polygon
         // TODO: implement circle
 
         if (startDate) {
@@ -184,6 +184,12 @@ export class HarmonyRequest {
 
         if (anonymous) {
             params.append('maxResults', '10')
+        }
+
+        if (typeof skipPreview === 'boolean' && !skipPreview) {
+            params.append('skipPreview', 'false')
+        } else {
+            params.append('skipPreview', 'true')
         }
 
         return params.toString()
