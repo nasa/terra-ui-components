@@ -48,26 +48,28 @@ Use help text to display the desired date formatting, in case visitors choose to
 
 ## Properties
 
-| Property        | Attribute        | Type            | Default                               | Description                                                                                   |
-| --------------- | ---------------- | --------------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `id`            | `id`             | `string`        | -                                     | The unique identifier for the date picker                                                     |
-| `range`         | `range`          | `boolean`       | `false`                               | Enables date range picking (two calendars)                                                    |
-| `minDate`       | `min-date`       | `string`        | -                                     | Minimum selectable date (YYYY-MM-DD)                                                          |
-| `maxDate`       | `max-date`       | `string`        | -                                     | Maximum selectable date (YYYY-MM-DD)                                                          |
-| `startDate`     | `start-date`     | `string`        | -                                     | Initial start/single date (ISO or YYYY-MM-DD)                                                 |
-| `endDate`       | `end-date`       | `string`        | -                                     | Initial end date (range mode; ISO or YYYY-MM-DD)                                              |
-| `label`         | `label`          | `string`        | `"Select Date"`                       | Input label text                                                                              |
-| `helpText`      | `help-text`      | `string`        | `''`                                  | Help text displayed below the input (e.g., "Format: YYYY-MM-DD")                              |
-| `startLabel`    | `start-label`    | `string`        | -                                     | Custom label for the start date input (only used when `split-inputs` and `range` are true)    |
-| `endLabel`      | `end-label`      | `string`        | -                                     | Custom label for the end date input (only used when `split-inputs` and `range` are true)      |
-| `hideLabel`     | `hide-label`     | `boolean`       | `false`                               | Visually hide the label while keeping it accessible                                           |
-| `enableTime`    | `enable-time`    | `boolean`       | `false`                               | Enables time selection UI with 24-hour UTC format including hours, minutes, and seconds       |
-| `displayFormat` | `display-format` | `string`        | `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss` | Display format for the input value                                                            |
-| `showPresets`   | `show-presets`   | `boolean`       | `false`                               | Shows a sidebar with preset ranges; shown if preset overlaps `min/max`. Hidden if none remain |
-| `presets`       | `presets`        | `PresetRange[]` | `[]` (auto-fill)                      | Custom preset ranges; when empty, a default set is provided                                   |
-| `inline`        | `inline`         | `boolean`       | `false`                               | Displays the calendar inline (always visible) instead of as a popover dropdown                |
-| `splitInputs`   | `split-inputs`   | `boolean`       | `false`                               | When `range` is true, displays two separate inputs side by side (one for start, one for end)  |
-| `showClose`     | `closable`       | `boolean`       | `false`                               | Optional close button to close date picker                                                    |
+| Property        | Attribute        | Type            | Default                               | Description                                                                                                |
+| --------------- | ---------------- | --------------- | ------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `id`            | `id`             | `string`        | -                                     | The unique identifier for the date picker                                                                  |
+| `range`         | `range`          | `boolean`       | `false`                               | Enables date range picking (two calendars)                                                                 |
+| `minDate`       | `min-date`       | `string`        | -                                     | Minimum selectable date (YYYY-MM-DD)                                                                       |
+| `maxDate`       | `max-date`       | `string`        | -                                     | Maximum selectable date (YYYY-MM-DD)                                                                       |
+| `startDate`     | `start-date`     | `string`        | -                                     | Initial start/single date (ISO or YYYY-MM-DD)                                                              |
+| `endDate`       | `end-date`       | `string`        | -                                     | Initial end date (range mode; ISO or YYYY-MM-DD)                                                           |
+| `label`         | `label`          | `string`        | `"Select Date"`                       | Input label text                                                                                           |
+| `helpText`      | `help-text`      | `string`        | `''`                                  | Help text displayed below the input (e.g., "Format: YYYY-MM-DD")                                           |
+| `startLabel`    | `start-label`    | `string`        | -                                     | Custom label for the start date input (only used when `split-inputs` and `range` are true)                 |
+| `endLabel`      | `end-label`      | `string`        | -                                     | Custom label for the end date input (only used when `split-inputs` and `range` are true)                   |
+| `hideLabel`     | `hide-label`     | `boolean`       | `false`                               | Visually hide the label while keeping it accessible                                                        |
+| `enableTime`    | `enable-time`    | `boolean`       | `false`                               | Enables time selection UI with 24-hour UTC format including hours, minutes, and seconds                    |
+| `displayFormat` | `display-format` | `string`        | `YYYY-MM-DD` or `YYYY-MM-DD HH:mm:ss` | Display format for the input value                                                                         |
+| `showPresets`   | `show-presets`   | `boolean`       | `false`                               | Shows a sidebar with preset ranges; shown if preset overlaps `min/max`. Hidden if none remain              |
+| `presets`       | `presets`        | `PresetRange[]` | `[]` (auto-fill)                      | Custom preset ranges; when empty, a default set is provided                                                |
+| `inline`        | `inline`         | `boolean`       | `false`                               | Displays the calendar inline (always visible) instead of as a popover dropdown                             |
+| `splitInputs`   | `split-inputs`   | `boolean`       | `false`                               | When `range` is true, displays two separate inputs side by side (one for start, one for end)               |
+| `showClose`     | `closable`       | `boolean`       | `false`                               | Optional close button to close date picker                                                                 |
+| `timezone`      | `timezone`       | `string`        | -                                     | IANA timezone identifier (e.g., `America/New_York`). Affects time display only; emitted values remain UTC. |
+| `twelveHour`    | `twelve-hour`    | `boolean`       | `false`                               | Display time in 12-hour format with AM/PM toggle. Requires `enable-time`. Emitted values remain UTC 24h.   |
 ## Events
 
 The component emits:
@@ -125,6 +127,44 @@ The component emits:
   range
   enable-time
   split-inputs
+></terra-date-picker>
+```
+
+### Timezone Display
+
+When `timezone` is set to a valid IANA identifier, times are displayed in that timezone in the input and time picker. Emitted `terra-date-range-change` values remain UTC.
+
+```html:preview
+<terra-date-picker
+  id="timezone-picker"
+  enable-time
+  timezone="America/New_York"
+  start-date="2024-03-20T15:00:00Z"
+></terra-date-picker>
+```
+
+### 12-Hour Format
+
+When `twelve-hour` is set, the time picker displays hours in 12-hour format (1–12) with an AM/PM toggle button. Requires `enable-time`. Emitted values remain UTC 24-hour.
+
+```html:preview
+<terra-date-picker
+  id="twelve-hour-picker"
+  enable-time
+  twelve-hour
+  start-date="2024-03-20T15:00:00Z"
+></terra-date-picker>
+```
+
+### Timezone with 12-Hour Format
+
+```html:preview
+<terra-date-picker
+  id="tz-12h-picker"
+  enable-time
+  timezone="America/New_York"
+  twelve-hour
+  start-date="2024-03-20T15:00:00Z"
 ></terra-date-picker>
 ```
 

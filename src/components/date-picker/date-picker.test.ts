@@ -1992,4 +1992,235 @@ describe('<terra-date-picker>', () => {
             })
         })
     })
+
+    describe('Timezone Display', () => {
+        it('should accept timezone property', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    timezone="America/New_York"
+                ></terra-date-picker>
+            `)
+            expect((el as any).timezone).to.equal('America/New_York')
+        })
+
+        it('should not break with an invalid timezone string', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="Not/AValid/Timezone"
+                    start-date="2024-03-20T15:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            // Component should still render; offset falls back to 0
+            expect(el).to.exist
+        })
+
+        it('should shift displayed time by timezone offset', async () => {
+            // UTC 15:00 → America/New_York EST = UTC-5 → 10:00
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-01-20T15:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const displayDate = (el as any).formatDisplayDate(
+                new Date('2024-01-20T15:00:00Z'),
+                true,
+            ) as string
+            // UTC 15:00 minus 5h = display 10:00 for EST
+            expect(displayDate).to.include('10:00:00')
+        })
+
+        it('should emit UTC value unchanged regardless of timezone', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-01-20T15:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const listener = oneEvent(el, 'terra-date-range-change')
+            ;(el as any).emitChange()
+            const { detail } = await listener
+            // Emitted ISO string should be UTC (ends with Z)
+            expect(detail.startDate).to.match(/Z$/)
+        })
+    })
+
+    describe('12-Hour Format', () => {
+        it('should accept twelve-hour attribute', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time twelve-hour></terra-date-picker>
+            `)
+            expect((el as any).twelveHour).to.be.true
+        })
+
+        it('should default twelveHour to false', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time></terra-date-picker>
+            `)
+            expect((el as any).twelveHour).to.be.false
+        })
+
+        it('should display AM period for hours 0-11', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    twelve-hour
+                    start-date="2024-03-20T09:30:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const displayDate = (el as any).formatDisplayDate(
+                new Date('2024-03-20T09:30:00Z'),
+                true,
+            ) as string
+            expect(displayDate).to.include('AM')
+            expect(displayDate).to.include('09:30:00')
+        })
+
+        it('should display PM period for hours 12-23', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    twelve-hour
+                    start-date="2024-03-20T15:30:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const displayDate = (el as any).formatDisplayDate(
+                new Date('2024-03-20T15:30:00Z'),
+                true,
+            ) as string
+            expect(displayDate).to.include('PM')
+            // 15:00 UTC → 03:30:00 in 12h display
+            expect(displayDate).to.include('03:30:00')
+        })
+
+        it('to12Hour converts midnight (0) to 12 AM', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time twelve-hour></terra-date-picker>
+            `)
+            const result = (el as any).to12Hour(0)
+            expect(result.hour).to.equal(12)
+            expect(result.period).to.equal('AM')
+        })
+
+        it('to12Hour converts noon (12) to 12 PM', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time twelve-hour></terra-date-picker>
+            `)
+            const result = (el as any).to12Hour(12)
+            expect(result.hour).to.equal(12)
+            expect(result.period).to.equal('PM')
+        })
+
+        it('to24Hour converts 12 AM to 0', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time twelve-hour></terra-date-picker>
+            `)
+            expect((el as any).to24Hour(12, 'AM')).to.equal(0)
+        })
+
+        it('to24Hour converts 12 PM to 12', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time twelve-hour></terra-date-picker>
+            `)
+            expect((el as any).to24Hour(12, 'PM')).to.equal(12)
+        })
+
+        it('togglePeriod flips start AM to PM and keeps UTC correct', async () => {
+            // UTC 09:00 → AM in 12h; toggle → PM → UTC 21:00
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    twelve-hour
+                    start-date="2024-03-20T09:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            ;(el as any).togglePeriod(true)
+            await elementUpdated(el)
+            expect((el as any).startHour).to.equal(21)
+        })
+
+        it('AM/PM button renders in time picker when twelve-hour is set', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker enable-time twelve-hour></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            // Open the picker
+            const trigger = el.shadowRoot?.querySelector<HTMLElement>(
+                '.date-picker__trigger',
+            )
+            trigger?.click()
+            await elementUpdated(el)
+            const periodBtn = el.shadowRoot?.querySelector(
+                '.date-picker__time-period',
+            )
+            expect(periodBtn).to.exist
+        })
+
+        it('emits UTC 24h value when twelve-hour mode is active', async () => {
+            // UTC 15:00 = 3 PM in 12h; emitted startDate should be UTC ISO with hour 15
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    twelve-hour
+                    start-date="2024-03-20T15:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const listener = oneEvent(el, 'terra-date-range-change')
+            ;(el as any).emitChange()
+            const { detail } = await listener
+            expect(detail.startDate).to.match(/T15:00:00\.000Z$/)
+        })
+    })
+
+    describe('Timezone + 12-Hour Combined', () => {
+        it('should apply timezone offset then format as 12h', async () => {
+            // UTC 00:30 → America/New_York EST = UTC-5 → 19:30 prev day (but same Date used)
+            // UTC 15:30 → EST = 10:30 AM
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    twelve-hour
+                    start-date="2024-01-20T15:30:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const displayDate = (el as any).formatDisplayDate(
+                new Date('2024-01-20T15:30:00Z'),
+                true,
+            ) as string
+            // UTC 15:30 minus 5h (EST) = 10:30 → 10:30:00 AM
+            expect(displayDate).to.include('10:30:00')
+            expect(displayDate).to.include('AM')
+        })
+
+        it('emits UTC regardless of timezone + twelve-hour combination', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    twelve-hour
+                    start-date="2024-01-20T15:30:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const listener = oneEvent(el, 'terra-date-range-change')
+            ;(el as any).emitChange()
+            const { detail } = await listener
+            expect(detail.startDate).to.match(/T15:30:00\.000Z$/)
+        })
+    })
 })
