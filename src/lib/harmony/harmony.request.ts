@@ -4,6 +4,7 @@ import { LatLng } from '../../components/map/models/LatLng.js'
 import { LatLngBounds } from '../../components/map/models/LatLngBounds.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import type { Variable } from '../../components/browse-variables/browse-variables.types.js'
+import { simplifyToPointLimit } from '../../utilities/harmony.js'
 
 export type HarmonyRequestOptions = {
     environment?: Environments
@@ -12,6 +13,8 @@ export type HarmonyRequestOptions = {
     /* supplying variables is optional, will append &variable=VARIABLE to the URL */
     variables?: Array<string>
     location: LatLng | LatLngBounds
+    /** GeoJSON object for shape/polygon subsetting via multipart POST */
+    shape?: object
     startDate?: string
     endDate?: string
     format?: string
@@ -55,6 +58,40 @@ export class HarmonyRequest {
 
     get requestUrl() {
         return `${this.baseUrl}?${this.params}`
+    }
+
+    get hasShape() {
+        return !!this.#options.shape
+    }
+
+    /**
+     * Builds a multipart FormData body for shape (polygon) subsetting.
+     * All request params are appended as form fields (no query string).
+     * The GeoJSON shape is appended as a `shapefile` file field.
+     * Per HARMONY-290, Harmony cannot accept both files and query params simultaneously.
+     */
+    buildFormData(): FormData {
+        const formData = new FormData()
+
+        const searchParams = new URLSearchParams(this.params)
+        searchParams.forEach((value, key) => {
+            formData.append(key, value)
+        })
+
+        const geoJson = this.#options.shape
+        if (!geoJson) {
+            throw new BadRequestException({
+                message: 'shape is required to build form data',
+            })
+        }
+        // Simplify the GeoJSON shape to ensure it has <= 5000 vertices, as Harmony rejects requests with more than 5000 vertices in a shape polygon
+        const simplifiedGeoJson = simplifyToPointLimit(geoJson, 5000)
+        const blob = new Blob([JSON.stringify(simplifiedGeoJson)], {
+            type: 'application/geo+json',
+        })
+        formData.append('shapefile', blob, 'shape.geojson')
+
+        return formData
     }
 
     get baseUrl() {
@@ -199,6 +236,10 @@ export class HarmonyRequest {
 
     location(location: HarmonyRequestOptions['location']) {
         return this.set({ location })
+    }
+
+    shape(shape: object) {
+        return this.set({ shape })
     }
 
     dateRange(startDate: string, endDate: string) {

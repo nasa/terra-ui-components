@@ -16,7 +16,12 @@ export type MapEventDetail = BaseMapEventDetail &
     (
         | { type: MapEventType.POINT; latLng: LatLng }
         | { type: MapEventType.BBOX; bounds: LatLngBounds }
-        | { type: MapEventType.POLYGON; latLngs: LatLng[] }
+        | {
+              type: MapEventType.POLYGON
+              latLngs: LatLng[]
+              geoJson?: object
+              label?: string
+          }
         | { type: MapEventType.CIRCLE; center: LatLng; radius: number }
         | { type?: undefined }
     )

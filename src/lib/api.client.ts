@@ -23,7 +23,12 @@ async function request<T>(
         const res = await fetch(url, {
             method,
             headers,
-            body: body ? JSON.stringify(body) : undefined,
+            body:
+                body instanceof FormData
+                    ? body
+                    : body
+                      ? JSON.stringify(body)
+                      : undefined,
             signal,
         })
 

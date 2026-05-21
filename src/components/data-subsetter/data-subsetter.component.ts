@@ -162,6 +162,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     spatialSelection?: LatLng | LatLngBounds
 
     @state()
+    shapeGeoJson?: object
+
+    @state()
+    spatialLabel?: string
+
+    @state()
     selectedDateRange: { startDate: string | null; endDate: string | null } = {
         startDate: null,
         endDate: null,
@@ -1386,9 +1392,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderSpatialSelection() {
         const showError =
-            this.touchedFields.has('spatial') && !this.spatialSelection
+            this.touchedFields.has('spatial') &&
+            !this.spatialSelection &&
+            !this.shapeGeoJson
         const spatialString =
-            this.spatialSelection?.toString() ?? this.spatialSelection
+            this.spatialLabel ?? this.spatialSelection?.toString() ?? undefined
+        // Only pass coordinate strings as initialValue — labels like "Polygon (N vertices)"
+        // would be put into the text input and fail coordinate validation on blur.
+        const spatialInitialValue =
+            this.spatialSelection?.toString() ?? undefined
 
         return html`
             <terra-accordion>
@@ -1424,7 +1436,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             this.#collectionController.spatialConstraints ||
                             '-180, -90, 180, 90'
                         }
-                        .initialValue=${spatialString}
+                        .initialValue=${spatialInitialValue}
+                        ?has-shape-selector=${
+                            this.collectionWithServices?.summary?.subsetting
+                                ?.shape ?? false
+                        }
+                        ?show-polygon-selection=${
+                            this.collectionWithServices?.summary?.subsetting
+                                ?.shape ?? false
+                        }
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
                     <div
@@ -1445,11 +1465,46 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.#markFieldTouched('spatial')
 
         if (e.detail.type === MapEventType.POINT) {
+            this.shapeGeoJson = undefined
+            this.spatialLabel = undefined
             this.spatialSelection = e.detail.latLng
         } else if (e.detail.type === MapEventType.BBOX) {
+            this.shapeGeoJson = undefined
+            this.spatialLabel = undefined
             this.spatialSelection = e.detail.bounds
+        } else if (e.detail.type === MapEventType.POLYGON) {
+            this.spatialSelection = undefined
+            if (e.detail.geoJson) {
+                // Shape loaded from the shape selector dropdown
+                this.shapeGeoJson = e.detail.geoJson
+                this.spatialLabel = e.detail.label ?? 'Shape selected'
+            } else if (e.detail.latLngs.length > 0) {
+                // Polygon drawn freehand on the map — convert to GeoJSON
+                const coords = e.detail.latLngs.map((ll) => [ll.lng, ll.lat])
+                // Close the ring
+                coords.push(coords[0])
+                this.shapeGeoJson = {
+                    type: 'FeatureCollection',
+                    features: [
+                        {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Polygon',
+                                coordinates: [coords],
+                            },
+                            properties: null,
+                        },
+                    ],
+                }
+                this.spatialLabel = `Polygon (${e.detail.latLngs.length} vertices)`
+            } else {
+                this.shapeGeoJson = undefined
+                this.spatialLabel = undefined
+            }
         } else {
             this.spatialSelection = undefined
+            this.shapeGeoJson = undefined
+            this.spatialLabel = undefined
         }
     }
 
@@ -1458,6 +1513,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
      */
     #resetSpatialSelection = () => {
         this.spatialSelection = undefined
+        this.shapeGeoJson = undefined
+        this.spatialLabel = undefined
         this.spatialPicker.clear()
 
         this.#markFieldTouched('spatial')
@@ -2556,6 +2613,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             location: this.spatialSelection,
         })
 
+        if (this.shapeGeoJson) {
+            harmonyRequest.shape(this.shapeGeoJson)
+        }
+
         if (
             this.collectionWithServices?.summary.subsetting.temporal &&
             this.selectedDateRange.startDate &&
@@ -2610,7 +2671,26 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         // add a label to identify the subsetter as the source
         harmonyRequest.label('terra-data-subsetter')
 
-        console.log('Creating Harmony job with request:', harmonyRequest)
+        // add metadata labels describing the request
+        const cwsShortName =
+            this.collectionWithServices?.shortName ??
+            this.collectionWithServices?.collection?.ShortName
+        const cwsVersion = this.collectionWithServices?.collection?.Version
+        const cwsEntryTitle =
+            this.collectionWithServices?.collection?.EntryTitle
+
+        if (cwsShortName && cwsVersion) {
+            harmonyRequest.label(
+                `collection-entry-id: ${cwsShortName}_${cwsVersion}`.toLowerCase(),
+            )
+        }
+        if (cwsEntryTitle) {
+            harmonyRequest.label(
+                `collection-entry-title: ${cwsEntryTitle.toLowerCase()}`,
+            )
+        }
+
+        console.log('Creating Harmony job with request:', harmonyRequest.params)
 
         const job = await this.#harmonyRequestController.startJob({
             harmonyRequest,

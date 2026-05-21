@@ -246,12 +246,21 @@ class HarmonyApi {
 
     /**
      * Create a subset job by sending a GET request to the Harmony OGC API endpoint.
-     * The harmonyRequest.requestUrl contains the full URL with all subset parameters.
+     * When the request includes a shape, sends a multipart POST with all params in the
+     * form body alongside the shapefile (per HARMONY-290, query params + file upload
+     * cannot be combined).
      */
     async createJob(
         harmonyRequest: HarmonyRequest,
         options?: SearchOptions,
     ): Promise<SubsetJobStatus> {
+        if (harmonyRequest.hasShape) {
+            return this.#request<SubsetJobStatus>(
+                harmonyRequest.baseUrl,
+                options,
+                harmonyRequest.buildFormData(),
+            )
+        }
         return this.#request<SubsetJobStatus>(
             harmonyRequest.requestUrl,
             options,
@@ -266,7 +275,35 @@ class HarmonyApi {
         jobId: string,
         options?: SearchOptions,
     ): Promise<SubsetJobStatus> {
-        return this.#request<SubsetJobStatus>(`jobs/${jobId}`, options)
+        const status = await this.#request<SubsetJobStatus>(
+            `jobs/${jobId}`,
+            options,
+        )
+        status.links = status.links.map((link) =>
+            HarmonyApi.normalizeJobLink(link),
+        )
+        return status
+    }
+
+    /**
+     * Normalizes a job link so that data links with a missing or generic title
+     * ("OPeNDAP Request URL") get a more informative title derived from the href.
+     * Everything after `/granules/` in the URL is used; if that segment is not
+     * present the full href is used as a fallback.
+     */
+    static normalizeJobLink(link: SubsetJobLink): SubsetJobLink {
+        const isFallbackTitle =
+            !link.title ||
+            link.title === 'OPeNDAP Request URL' ||
+            link.title === 'OPeNAP Request URL'
+        if (!isFallbackTitle || link.rel !== 'data') return link
+
+        const granulesIdx = link.href.indexOf('/granules/')
+        const title =
+            granulesIdx !== -1
+                ? link.href.slice(granulesIdx + '/granules/'.length)
+                : link.href
+        return { ...link, title }
     }
 
     /**
@@ -316,7 +353,7 @@ class HarmonyApi {
         return this.#request(relativeUrl, options)
     }
 
-    #request<T>(url: string, options?: SearchOptions) {
+    #request<T>(url: string, options?: SearchOptions, body?: FormData) {
         let environmentUrl = HARMONY_URLS[Environments.PROD] // TODO: support for UAT
 
         if (!options?.bearerToken) {
@@ -329,13 +366,22 @@ class HarmonyApi {
             url = `${environmentUrl}/${url}`
         }
 
+        const headers: HeadersInit = {
+            ...(options?.bearerToken && {
+                Authorization: `Bearer ${options.bearerToken}`,
+            }),
+        }
+
+        if (body) {
+            return apiClient.post<T>(url, body, {
+                signal: options?.signal,
+                headers,
+            })
+        }
+
         return apiClient.get<T>(url, {
             signal: options?.signal,
-            headers: {
-                ...(options?.bearerToken && {
-                    Authorization: `Bearer ${options.bearerToken}`,
-                }),
-            },
+            headers,
         })
     }
 
