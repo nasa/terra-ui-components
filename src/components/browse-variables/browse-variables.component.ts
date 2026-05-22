@@ -11,8 +11,8 @@ import { BrowseVariablesController } from './browse-variables.controller.js'
 import { getRandomIntInclusive } from '../../utilities/number.js'
 import { html, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
+import { TaskStatus } from '@lit/task'
 import { watch } from '../../internal/watch.js'
-import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import type { TerraVariableKeywordSearchChangeEvent } from '../../events/terra-variable-keyword-search-change.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { CSSResultGroup } from 'lit'
@@ -38,9 +38,7 @@ import { getSortLabel, SortOrder } from '../../utilities/sort.js'
  * @dependency terra-icon
  * @dependency terra-loader
  */
-export default class TerraBrowseVariables extends QueryClientMixin(
-    TerraElement,
-) {
+export default class TerraBrowseVariables extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-variable-keyword-search': TerraVariableKeywordSearch,
@@ -75,6 +73,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     @state()
     private activeIndex: number | undefined = undefined
+
+    @state()
+    private inMainPanel: boolean = false
 
     @state()
     private sortOrder: SortOrder | string = SortOrder.AtoZ
@@ -437,6 +438,26 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
         const browsingText = this.#getBrowsingText()
 
+        /* Respond to variable hover by setting the background color of the variable list item and the information panel (right-column) */
+        const setVariableStyle = (index?: number) => {
+            /* Using activeIndex to highlight variable even when hovering over parent container (main panel), so set to zero if there is no incoming value */
+            if (this.activeIndex === undefined) { this.activeIndex = 0 }
+            /* set most recently hovered variable back to default background color */
+            let variable = this.shadowRoot?.querySelector('#variable-'+this.activeIndex) as HTMLElement | undefined
+            variable?.classList.remove('variable-list-item-hover')
+            /* update the variable using the incoming index, setting that variable background to the highlight color */
+            variable = this.shadowRoot?.querySelector('#variable-'+index) as HTMLElement | undefined
+            variable?.classList.add('variable-list-item-hover')
+            /* set the active index */
+            this.activeIndex = index
+        }
+
+        /* Based on index, set the variable background color back to the default */
+        const setVariableDefaultStyle = (index?: number) => {
+            let variable = this.shadowRoot?.querySelector('#variable-'+index) as HTMLElement | undefined
+            variable?.classList.remove('variable-list-item-hover')
+        }
+
         return html`<div class="scrollable variables-container">
             <header>
                 <div>${browsingText}</div>
@@ -525,9 +546,41 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 )}
             </aside>
 
-            <main class="variable-layout">
+            <main class="variable-layout"
+                
+                    @mouseenter=${() => {
+                        /* inMainPanel is used to determine whether to show the variable details in the right column, 
+                        which should be true when hovering over either the variable list item or the right column, 
+                        since the user should be able to move their mouse from the variable list item to the right column 
+                        without the details disappearing */  
+                        this.inMainPanel = true
+                        /* Using activeIndex to highlight variable even when hovering over parent container (main panel), 
+                        so set to zero if there is no incoming value */
+                        if (this.activeIndex === undefined) { this.activeIndex = 0 }
+                        /* get right-column element and add the hover style to it */
+                        let rightColumn = this.shadowRoot?.getElementById('variable-browse-right-column') as HTMLElement | undefined
+                        rightColumn?.classList.add('right-column-hover')
+                        /* set the variable at the activeIndex to be highlighted since we are now hovering over the main panel */
+                        setVariableStyle(this.activeIndex)
+                    }}
+
+                    @mouseleave=${() => {
+                        /* get right-column element and remove the hover style from it */
+                        let rightColumn = this.shadowRoot?.getElementById('variable-browse-right-column') as HTMLElement | undefined
+                        rightColumn?.classList.remove('right-column-hover')
+                        /* reset the activeIndex variable to the default background color since we are no longer hovering over the main panel */
+                        setVariableDefaultStyle(this.activeIndex)
+                        /* set inMainPanel to false so that the details panel will no longer show variable details since we are no longer hovering 
+                        over the main panel */
+                        this.inMainPanel = false
+                    }}
+
+            >   
                 <!-- LEFT COLUMN -->
-                <section class="left-column">
+                <section class="left-column" id="variable-browse-left-column">
+                    <div class="variables-header">
+                        Variables
+                    </div>
                     <ul class="variable-list">
                         ${
                             !loading && !variables.length
@@ -543,13 +596,14 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         ${variables.map(
                             (variable, index) => html`
                                 <li
+                                    id="variable-${index}"
                                     aria-selected="false"
-                                    class="variable-list-item"
-                                    @mouseenter=${() => (this.activeIndex = index)}
-                                    @mouseleave=${() =>
-                                        (this.activeIndex = undefined)}
-                                    @focusin=${() => (this.activeIndex = index)}
-                                    @focusout=${() => (this.activeIndex = undefined)}
+                                    class="variable-list-item ${index === this.activeIndex ? 'variable-list-item-hover' : ''}"
+                                    @mouseenter=${() => {
+                                        //this.activeIndex = index
+                                        setVariableStyle(index)
+                                    }}
+
                                     @click=${(event: Event) => {
                                         const target =
                                             event.currentTarget as HTMLLIElement
@@ -606,11 +660,15 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                     !loading && !variables.length
                         ? nothing
                         : html`
-                <section class="right-column">
-                ${
-                    this.activeIndex !== undefined
-                        ? html`
-                              <div class="sticky-element">
+                <div class="right-column-header sticky-element">
+                    <div class="variables-header">
+                        ${this.inMainPanel && this.activeIndex !== undefined ? 'Details for ' + variables[this.activeIndex].dataFieldLongName : 'Details'}
+                    </div>
+                    <section class="right-column  right-column-hover" id="variable-browse-right-column">
+                    ${
+                        this.inMainPanel && this.activeIndex !== undefined
+                            ? html`
+                              <div>
                                   <p>
                                       <label
                                           ><strong>Name in Data File:</strong></label
@@ -655,22 +713,25 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                       }
                                   </p>
                                   <p>
-                                      <label><strong>Dataset:</strong></label>
-                                      ${
-                                          variables[this.activeIndex]
+                                    <label><strong>Dataset:</strong></label>
+                                    <a href="${variables[this.activeIndex].dataProductDescriptionUrl}" target="_blank" rel="noopener">
+                                        ${
+                                            variables[this.activeIndex]
                                               .dataProductShortName
-                                      }_${
-                                          variables[this.activeIndex]
+                                        }_${
+                                            variables[this.activeIndex]
                                               .dataProductVersion
-                                      }
+                                        }
+                                    </a>
                                   </p>
                               </div>
-                          `
+                            `
                         : html`<p class="placeholder">
                               Hover over a variable to see details
                           </p>`
-                }
-                </section>
+                    }
+                    </section>
+                </div>
                 `
                 }
             </main>
@@ -679,7 +740,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     render() {
         const showLoader =
-            this.#controller.isPending && // only show the loader when doing a fetch
+            this.#controller.task.status === TaskStatus.PENDING && // only show the loader when doing a fetch
             this.#controller.facetsByCategory // we won't show the loader initially, we'll show skeleton loading instead
 
         return html`
@@ -718,6 +779,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     }
 
     getVariable(variableEntryId: string) {
-        return this.#controller.getVariable(variableEntryId)
+        return this.#controller.catalog.getVariable(variableEntryId)
     }
 }

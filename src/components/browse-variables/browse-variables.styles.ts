@@ -2,7 +2,7 @@ import { css } from 'lit'
 
 export default css`
     :host {
-        background-color: var(--terra-color-bg-surface-neutral-primary);
+        background-color: var(--terra-color-carbon-5);
         display: block;
         padding-bottom: 55% !important;
         position: relative;
@@ -10,7 +10,7 @@ export default css`
     }
 
     h3 {
-        color: var(--terra-text-brand-on-primary);
+        color: var(--terra-color-nasa-blue-shade);
         margin-bottom: 1rem;
     }
 
@@ -42,7 +42,7 @@ export default css`
     }
 
     header.search {
-        border-bottom: 1px solid var(--terra-border-neutral-default, #e9ecef);
+        border-bottom: 1px solid var(--terra-color-carbon-30);
         grid-column: span 2;
         padding: 15px;
         padding-bottom: 25px;
@@ -111,17 +111,17 @@ export default css`
         margin-right: 10px;
         width: 1em;
         height: 1em;
-        border: 0.125em solid var(--terra-radio-border-color);
+        border: 0.125em solid var(--terra-color-carbon-40);
         border-radius: 50%;
-        background-color: var(--terra-radio-background-color);
+        background-color: var(--terra-color-spacesuit-white);
         cursor: pointer;
         position: relative; /* for the dot */
     }
 
     /* Selected state */
     input[type='radio']:checked {
-        border-color: var(--terra-radio-border-color-checked);
-        background-color: var(--terra-radio-background-color); /* keep white bg */
+        border-color: var(--terra-color-nasa-blue);
+        background-color: var(--terra-color-spacesuit-white); /* keep white bg */
     }
 
     /* Inner dot */
@@ -132,7 +132,7 @@ export default css`
         left: 50%;
         width: 0.5em; /* size of the dot */
         height: 0.5em;
-        background-color: var(--terra-radio-background-color-checked);
+        background-color: var(--terra-color-nasa-blue);
         border-radius: 50%; /* makes it circular */
         transform: translate(-50%, -50%); /* center it */
     }
@@ -182,7 +182,7 @@ export default css`
     }
 
     summary::marker {
-        color: var(--terra-text-brand-on-primary); /* changes the arrow color */
+        color: var(--terra-color-nasa-blue); /* changes the arrow color */
         cursor: pointer;
     }
 
@@ -200,6 +200,12 @@ export default css`
         grid-template-columns: 1fr 400px;
     }
 
+    .variables-header {
+        font-size: smaller;
+        color: var(--terra-color-carbon-50);
+        font-style: italic;
+    }
+
     .facet {
         margin-left: 10px;
     }
@@ -215,16 +221,16 @@ export default css`
         -moz-appearance: none; /* for Firefox */
         width: 1em;
         height: 1em;
-        border: 0.125em solid var(--terra-checkbox-border-color);
+        border: 0.125em solid var(--terra-color-carbon-40);
         border-radius: 0.25em;
-        background-color: var(--terra-checkbox-background-color);
+        background-color: var(--terra-color-spacesuit-white);
         cursor: pointer;
         position: relative;
     }
 
     .facet label input[type='checkbox']:checked {
-        background-color: var(--terra-checkbox-background-color-checked);
-        accent-color: var(--terra-checkbox-background-color-checked);
+        background-color: var(--terra-color-nasa-blue);
+        accent-color: var(--terra-color-nasa-blue);
     }
 
     /* Draw the checkmark */
@@ -233,7 +239,7 @@ export default css`
         content: '';
         position: absolute;
         height: 2px; /* thickness of the line */
-        background-color: var(--terra-checkbox-icon-color); /* checkmark color */
+        background-color: white; /* checkmark color */
         transform-origin: left center;
     }
 
@@ -262,21 +268,13 @@ export default css`
     .variable-list-item {
         /* border: 0.0625em var(--terra-color-nasa-blue-tint) solid; */
         border-radius: 0.25em;
-        background-color: var(--terra-color-bg-surface-neutral-secondary);
+        background-color: var(--terra-color-carbon-10);
         padding: 0.5em 1em;
-        margin-bottom: var(--terra-spacing-2x-small);
+        margin-bottom: 0.15em;
     }
 
-    .variable-list-item label {
-        color: var(--terra-text-secondary);
-    }
-
-    .variable-list-item:hover {
-        background-color: var(--terra-color-bg-info-subtle);
-    }
-
-    .variable-list-item:hover label {
-        color: var(--terra-text-secondary);
+    .variable-list-item-hover {
+        background-color: var(--terra-color-blue-light);
     }
 
     .variable-list-item::marker {
@@ -308,28 +306,45 @@ export default css`
         font-weight: 400;
     }
 
-    .left-column {
-        /* overflow-y: auto; */
+    .variable-layout {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* in this case, hover is triggered by mouseenter/mouseleave events in the component, not CSS hover */
+    .variable-layout-hover {
+        background-color: var(--terra-color-blue-light);     
+    }
+
+    .left-column-header {
+        flex: 50%;
     }
 
     /* Right column (details panel) */
     .right-column {
         display: flex;
         flex-direction: column;
-        background-color: var(--terra-color-bg-info-subtle);
-        color: var(--terra-text-secondary);
+        /* background-color: var(--terra-color-carbon-10); */
         /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
+        margin-left: -1.2em;
+        border-radius-top-left: 0;
+        border-radius-bottom-left: 0;
+    }
+
+    /* in this case, hover over the right-column is triggered by mouseenter/mouseleave events in the component, not CSS hover */
+    .right-column-hover {
+        background-color: var(--terra-color-blue-light);
+    }
+
+    .right-column-header {
+        flex: 50%;
     }
 
     .right-column h4 {
         margin-top: 0;
         margin-bottom: 1rem;
-    }
-
-    .right-column label {
-        color: var(--terra-text-primary);
     }
 
     .right-column p {
@@ -338,7 +353,7 @@ export default css`
     }
 
     .placeholder {
-        color: var(--terra-text-secondary);
+        color: var(--terra-color-carbon-50);
         font-style: italic;
     }
 
@@ -346,6 +361,7 @@ export default css`
         position: sticky;
         /* For older browsers, consider adding: */
         position: -webkit-sticky;
+        align-self: flex-start;
         top: 0; /* Sticks to the top of the viewport when scrolled to */
     }
 `
