@@ -218,8 +218,11 @@ Note: Presets are shown if any part of the preset range overlaps the `min-date`/
 <terra-date-picker
   id="preset-picker-with-time"
   range
+  split-inputs
   show-presets
   enable-time
+  timezone="America/New_York"
+  twelve-hour
 ></terra-date-picker>
 ```
 
