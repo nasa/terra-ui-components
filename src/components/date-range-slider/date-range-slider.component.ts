@@ -10,9 +10,8 @@ import noUiSlider, {
     type Options,
     type Formatter,
 } from 'nouislider'
-import { format } from 'date-fns'
 import { mergeTooltips } from './noui-slider-utilities.js'
-import { isValidDate } from '../../utilities/date.js'
+import { formatDate, isValidDate } from '../../utilities/date.js'
 import { watch } from '../../internal/watch.js'
 
 export type TimeScale = 'half-hourly' | 'hourly' | 'daily'
@@ -104,10 +103,10 @@ export default class TerraDateRangeSlider extends TerraElement {
         const minDate = new Date(this.minDate)
         const maxDate = new Date(this.maxDate)
         const startDate = new Date(
-            isValidDate(this.startDate) ? this.startDate : this.minDate
+            isValidDate(this.startDate) ? this.startDate : this.minDate,
         )
         const endDate = new Date(
-            isValidDate(this.endDate) ? this.endDate : this.maxDate
+            isValidDate(this.endDate) ? this.endDate : this.maxDate,
         )
 
         // adjust dates to be beginning and end of the day
@@ -141,7 +140,7 @@ export default class TerraDateRangeSlider extends TerraElement {
 
         mergeTooltips(this.slider)
 
-        this.slider.noUiSlider.on('change', (values: any) => {
+        this.slider.noUiSlider.on('change', (values: (string | number)[]) => {
             this.emit('terra-date-range-change', {
                 detail: {
                     startDate: this._formatDate(values[0]),
@@ -193,7 +192,7 @@ export default class TerraDateRangeSlider extends TerraElement {
     private _formatDate(date: string | number | Date) {
         const dateFormat =
             this.timeScale === 'daily' ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm'
-        return format(new Date(date).toUTCString(), dateFormat)
+        return formatDate(new Date(date), dateFormat)
     }
 
     render() {

@@ -7,6 +7,7 @@ import type {
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
+    VariableDbEntry,
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import { TimeInterval } from '../../types.js'
@@ -34,6 +35,7 @@ const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
 const HARMONY_STATUS_WAIT_INTERVAL_MS = 300
 const MAX_CONCEPT_ID_WAIT_MS = 10000
+const MAX_GAP_FILL_PASSES = 4
 
 export const plotlyDefaultData: Partial<PlotData> = {
     // holds the default Plotly configuration options.
@@ -67,6 +69,19 @@ export class TimeSeriesController {
     lastTaskValue: Partial<Data>[] | undefined
 
     metadata: TimeSeriesMetadata
+
+    #emitChunkProgress(currentChunk: number, totalChunks: number) {
+        this.host.dispatchEvent(
+            new CustomEvent('terra-time-series-chunk-progress-change', {
+                detail: {
+                    currentChunk,
+                    totalChunks,
+                },
+                bubbles: true,
+                composed: true,
+            }),
+        )
+    }
 
     constructor(
         host: ReactiveControllerHost & TerraTimeSeries & QueryClientHost,
@@ -417,53 +432,113 @@ export class TimeSeriesController {
             )
         }
 
-        // We have gaps, so we'll need to request new data
-        // We'll do this in chunks in case the number of data points exceeds the API-imposed limit
-        const detectedInterval = existingTerraData?.data
-            ? this.#detectTimeInterval(existingTerraData.data)
-            : null
-        const timeInterval =
-            detectedInterval ||
-            (catalogVariable.dataProductTimeInterval as TimeInterval) ||
-            TimeInterval.Daily
-
-        const allChunks: Array<{ start: Date; end: Date }> = []
-
-        for (const gap of dataGaps) {
-            const chunks = calculateDateChunks(timeInterval, gap.start, gap.end)
-            allChunks.push(...chunks)
-        }
-
-        // Request chunks in parallel
-        const chunkResults = await Promise.all(
-            allChunks.map(async (chunk) => {
-                const result = await this.#fetchTimeSeriesChunk(
-                    variableEntryId,
-                    chunk.start,
-                    chunk.end,
-                    signal,
-                    catalogVariable,
-                )
-
-                return result
-            }),
-        )
-
+        // We have gaps, so we'll need to request new data.
+        // Use iterative gap-fill passes so if an initial large request returns a
+        // truncated window, we continue fetching missing leading/trailing ranges.
         let allData: TimeSeriesDataRow[] = existingTerraData?.data || []
         let metadata: TimeSeriesMetadata = (existingTerraData?.metadata ||
             {}) as TimeSeriesMetadata
+        let pendingGaps = dataGaps
 
-        // Merge all the chunk results
-        for (const chunkResult of chunkResults) {
-            allData = [...allData, ...chunkResult.data]
-            metadata = {
-                ...metadata,
-                ...chunkResult.metadata,
-            } as TimeSeriesMetadata
+        for (
+            let pass = 0;
+            pass < MAX_GAP_FILL_PASSES && pendingGaps.length > 0;
+            pass++
+        ) {
+            const detectedInterval = allData.length
+                ? this.#detectTimeInterval(allData)
+                : existingTerraData?.data
+                  ? this.#detectTimeInterval(existingTerraData.data)
+                  : null
+            const timeInterval =
+                detectedInterval ||
+                (catalogVariable.dataProductTimeInterval as TimeInterval) ||
+                TimeInterval.Daily
+
+            const allChunks: Array<{ start: Date; end: Date }> = []
+            for (const gap of pendingGaps) {
+                const chunks = calculateDateChunks(
+                    timeInterval,
+                    gap.start,
+                    gap.end,
+                )
+                allChunks.push(...chunks)
+            }
+
+            const shouldReportChunkProgress = allChunks.length > 1
+            const previousDataLength = allData.length
+
+            try {
+                for (const [index, chunk] of allChunks.entries()) {
+                    if (shouldReportChunkProgress) {
+                        this.#emitChunkProgress(index + 1, allChunks.length)
+                    }
+
+                    const result = await this.#fetchTimeSeriesChunk(
+                        variableEntryId,
+                        chunk.start,
+                        chunk.end,
+                        signal,
+                        catalogVariable,
+                    )
+
+                    allData = [...allData, ...result.data]
+                    metadata = {
+                        ...metadata,
+                        ...result.metadata,
+                    } as TimeSeriesMetadata
+
+                    allData = this.#cacheService.deduplicateByTimestamp(allData)
+
+                    // Persist progressive chunk results so successful chunks are
+                    // retained even if a later chunk is cancelled or fails.
+                    if (this.host.cache) {
+                        await this.#cacheService.storeConsolidatedData({
+                            cacheKey,
+                            variableEntryId,
+                            environment: this.host.environment,
+                            metadata,
+                            data: allData,
+                        })
+                    }
+                }
+            } finally {
+                if (shouldReportChunkProgress) {
+                    this.#emitChunkProgress(0, 0)
+                }
+            }
+
+            // No progress means we've reached the available data limits.
+            if (allData.length === previousDataLength) {
+                break
+            }
+
+            const sortedData = [...allData].sort(
+                (a, b) =>
+                    new Date(a.timestamp).getTime() -
+                    new Date(b.timestamp).getTime(),
+            )
+
+            const synthesizedCoverage: VariableDbEntry | undefined =
+                sortedData.length > 0
+                    ? ({
+                          variableEntryId,
+                          key: cacheKey,
+                          startDate: sortedData[0].timestamp,
+                          endDate: sortedData[sortedData.length - 1].timestamp,
+                          cachedAt: Date.now(),
+                          metadata: metadata as TimeSeriesMetadata,
+                          data: sortedData,
+                          environment: this.host.environment,
+                      } as VariableDbEntry)
+                    : undefined
+
+            pendingGaps = this.#cacheService.calculateDataGaps(
+                startDate,
+                endDate,
+                synthesizedCoverage,
+            )
         }
-
-        // Deduplicate by timestamp to prevent duplicate entries
-        allData = this.#cacheService.deduplicateByTimestamp(allData)
 
         const consolidatedResult: TimeSeriesData = {
             metadata,

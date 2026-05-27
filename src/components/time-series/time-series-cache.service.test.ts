@@ -65,14 +65,40 @@ describe('TimeSeriesCacheService', () => {
         const gaps = service.calculateDataGaps(start, end, existing)
 
         expect(gaps).to.have.length(2)
-        expect(gaps[0].start.toISOString()).to.equal(
-            '2024-01-01T00:00:00.000Z',
-        )
-        expect(gaps[0].end.toISOString()).to.equal('2024-01-03T00:00:00.000Z')
-        expect(gaps[1].start.toISOString()).to.equal(
-            '2024-01-10T00:00:00.000Z',
-        )
-        expect(gaps[1].end.toISOString()).to.equal('2024-01-12T00:00:00.000Z')
+        expect(gaps[0].start.toISOString()).to.equal('2024-01-01T00:00:00.000Z')
+        expect(gaps[0].end.toISOString()).to.equal('2024-01-02T23:59:59.999Z')
+        expect(gaps[1].start.toISOString()).to.equal('2024-01-11T00:00:00.000Z')
+        expect(gaps[1].end.toISOString()).to.equal('2024-01-12T23:59:59.999Z')
+    })
+
+    it('returns only a trailing gap when extending an already cached range', () => {
+        const start = new Date('2024-01-01T00:00:00.000Z')
+        const end = new Date('2024-01-12T00:00:00.000Z')
+
+        const existing = toEntry({
+            startDate: '2024-01-01T00:00:00.000Z',
+            endDate: '2024-01-10T23:59:59.999Z',
+        })
+
+        const gaps = service.calculateDataGaps(start, end, existing)
+
+        expect(gaps).to.have.length(1)
+        expect(gaps[0].start.toISOString()).to.equal('2024-01-11T00:00:00.000Z')
+        expect(gaps[0].end.toISOString()).to.equal('2024-01-12T23:59:59.999Z')
+    })
+
+    it('returns no gaps when requested range is covered within the same UTC days', () => {
+        const start = new Date('2024-01-01T12:00:00.000Z')
+        const end = new Date('2024-01-10T06:00:00.000Z')
+
+        const existing = toEntry({
+            startDate: '2024-01-01T00:00:00.000Z',
+            endDate: '2024-01-10T23:59:59.999Z',
+        })
+
+        const gaps = service.calculateDataGaps(start, end, existing)
+
+        expect(gaps).to.have.length(0)
     })
 
     it('deduplicates rows by timestamp while preserving first occurrence', () => {
@@ -113,7 +139,7 @@ describe('TimeSeriesCacheService', () => {
             new Date('2024-01-10T23:59:59.999Z'),
         )
 
-        expect(result.data.map(row => row.value)).to.deep.equal(['1', '2'])
+        expect(result.data.map((row) => row.value)).to.deep.equal(['1', '2'])
     })
 
     it('treats missing cachedAt as invalid cache', () => {

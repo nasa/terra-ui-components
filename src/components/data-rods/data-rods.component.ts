@@ -100,6 +100,14 @@ export default class TerraDataRods extends TerraElement {
 
     @state() private lastChanged?: LastChanged
 
+    @state() private isDateSliderDisabled = false
+
+    @state()
+    private chunkProgress?: {
+        currentChunk: number
+        totalChunks: number
+    }
+
     /**
      * add a warning state
      */
@@ -213,6 +221,8 @@ export default class TerraDataRods extends TerraElement {
                 bearer-token=${this.bearerToken}
                 show-citation=${true}
                 cache
+                @terra-time-series-chunk-progress-change=${this.#handleChunkProgressChange}
+                @terra-time-series-loading-change=${this.#handleTimeSeriesLoadingChange}
                 @terra-date-range-change=${this.#handleTimeSeriesDateRangeChange}
             >
                 <li slot="help-links">
@@ -229,9 +239,18 @@ export default class TerraDataRods extends TerraElement {
                 max-date=${maxDate}
                 start-date=${this.startDate}
                 end-date=${this.endDate}
+                .disabled=${this.isDateSliderDisabled}
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
                 @terra-date-selection-invalid="${this.#handleInvalidDateSelection}"
             ></terra-date-range-slider>
+            ${
+                this.isDateSliderDisabled && this.chunkProgress
+                    ? html`<div class="chunk-progress" style="margin-top: 8px; color: #555; font-size: 0.95em;">
+                          Loading chunk ${this.chunkProgress.currentChunk} of
+                          ${this.chunkProgress.totalChunks}&hellip;
+                      </div>`
+                    : null
+            }
             ${
                 this.dateErrorMessage
                     ? html`<div class="date-error" style="color: red;">
@@ -246,8 +265,29 @@ export default class TerraDataRods extends TerraElement {
      * anytime the date range slider changes, update the start and end date
      */
     #handleDateRangeSliderChangeEvent(event: TerraDateRangeChangeEvent) {
+        // Lock slider immediately to avoid overlapping range requests.
+        this.isDateSliderDisabled = true
         this.startDate = event.detail.startDate
         this.endDate = event.detail.endDate
+    }
+
+    #handleTimeSeriesLoadingChange(event: CustomEvent<{ loading: boolean }>) {
+        this.isDateSliderDisabled = event.detail.loading
+
+        if (!event.detail.loading) {
+            this.chunkProgress = undefined
+        }
+    }
+
+    #handleChunkProgressChange(
+        event: CustomEvent<{ currentChunk: number; totalChunks: number }>,
+    ) {
+        const { currentChunk, totalChunks } = event.detail
+
+        this.chunkProgress =
+            currentChunk > 0 && totalChunks > 1
+                ? { currentChunk, totalChunks }
+                : undefined
     }
 
     /**
