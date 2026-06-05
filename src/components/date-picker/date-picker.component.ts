@@ -157,7 +157,8 @@ export default class TerraDatePicker extends TerraElement {
             // When time is enabled, parse date-only strings as UTC midnight
             // to match how datetime strings and min/max dates from APIs are handled
             if (this.enableTime) {
-                return new Date(Date.UTC(year, month - 1, day, 0, 0, 0))
+                //return new Date(Date.UTC(year, month - 1, day, 0, 0, 0))
+                return new Date(year, month - 1, day, 0, 0, 0)
             }
             // When time is not enabled, parse as local midnight
             return new Date(year, month - 1, day)
@@ -170,9 +171,9 @@ export default class TerraDatePicker extends TerraElement {
             const [year, month, day] = datePart.split('-').map(Number)
             const [hours, minutes, seconds] = timePart.split(':').map(Number)
             // When time is enabled, parse as UTC to match API's UTC min/max dates
-            return new Date(
-                Date.UTC(year, month - 1, day, hours, minutes, seconds),
-            )
+            return new Date(year, month - 1, day, hours, minutes, seconds)
+                //Date.UTC(year, month - 1, day, hours, minutes, seconds),
+            //)
         }
 
         // For ISO strings with time (including UTC 'Z' suffix), use standard Date parsing
@@ -185,8 +186,8 @@ export default class TerraDatePicker extends TerraElement {
     private isSameMonth(date1: Date, date2: Date): boolean {
         if (this.enableTime) {
             return (
-                date1.getUTCFullYear() === date2.getUTCFullYear() &&
-                date1.getUTCMonth() === date2.getUTCMonth()
+                date1.getFullYear() === date2.getFullYear() &&
+                date1.getMonth() === date2.getMonth()
             )
         }
         return (
@@ -201,8 +202,8 @@ export default class TerraDatePicker extends TerraElement {
     private isDateInMonth(date: Date, monthDate: Date): boolean {
         if (this.enableTime) {
             return (
-                date.getUTCFullYear() === monthDate.getUTCFullYear() &&
-                date.getUTCMonth() === monthDate.getUTCMonth()
+                date.getFullYear() === monthDate.getFullYear() &&
+                date.getMonth() === monthDate.getMonth()
             )
         }
         return (
@@ -614,13 +615,16 @@ export default class TerraDatePicker extends TerraElement {
 
         // When time is enabled, use UTC date components and time picker values
         if (this.enableTime) {
-            const year = date.getUTCFullYear()
-            const month = String(date.getUTCMonth() + 1).padStart(2, '0')
-            const day = String(date.getUTCDate()).padStart(2, '0')
+            console.log('Formatting date for display with time enabled: ', date)
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            console.log('Formatting day for display : ', day)
             // Use time picker state values instead of date object's time
             const hours = String(
                 isStart ? this.startHour : this.endHour,
             ).padStart(2, '0')
+            console.log('Formatting hour for display: ', hours)
             const minutes = String(
                 isStart ? this.startMinute : this.endMinute,
             ).padStart(2, '0')
@@ -650,6 +654,8 @@ export default class TerraDatePicker extends TerraElement {
 
     private getDisplayValue(): string {
         if (this.range) {
+            console.log('Selected start display value:', this.selectedStart)
+            console.log('Selected end display value:', this.selectedEnd)
             if (this.selectedStart && this.selectedEnd) {
                 return `${this.formatDisplayDate(this.selectedStart, true)} – ${this.formatDisplayDate(this.selectedEnd, false)}`
             } else if (this.selectedStart) {
@@ -677,6 +683,7 @@ export default class TerraDatePicker extends TerraElement {
 
     private parseAndFormatDate(dateStr: string): string | null {
         const trimmed = dateStr.trim()
+        console.log('Parsing date string:', trimmed)
         if (!trimmed) return null
 
         // Check if it's already in YYYY-MM-DD format - use parseLocalDate to avoid timezone issues
@@ -696,9 +703,9 @@ export default class TerraDatePicker extends TerraElement {
             const hours = timeComponents[0] || 0
             const minutes = timeComponents[1] || 0
             const seconds = timeComponents[2] || 0
-            date = new Date(
-                Date.UTC(year, month - 1, day, hours, minutes, seconds),
-            )
+            date = new Date(year, month - 1, day, hours, minutes, seconds)
+                //Date.UTC(year, month - 1, day, hours, minutes, seconds),
+           // )
         } else {
             // For other formats, try new Date() and validate
             date = new Date(trimmed)
@@ -722,12 +729,12 @@ export default class TerraDatePicker extends TerraElement {
                 return trimmed
             } else {
                 // User entered datetime - format as UTC
-                const utcYear = date.getUTCFullYear()
-                const utcMonth = date.getUTCMonth() + 1
-                const utcDay = date.getUTCDate()
-                const utcHours = date.getUTCHours()
-                const utcMinutes = date.getUTCMinutes()
-                const utcSeconds = date.getUTCSeconds()
+                const utcYear = date.getFullYear()
+                const utcMonth = date.getMonth() + 1
+                const utcDay = date.getDate()
+                const utcHours = date.getHours()
+                const utcMinutes = date.getMinutes()
+                const utcSeconds = date.getSeconds()
                 return `${utcYear}-${String(utcMonth).padStart(2, '0')}-${String(utcDay).padStart(2, '0')} ${String(utcHours).padStart(2, '0')}:${String(utcMinutes).padStart(2, '0')}:${String(utcSeconds).padStart(2, '0')}`
             }
         } else {
@@ -827,16 +834,16 @@ export default class TerraDatePicker extends TerraElement {
             } else if (this.enableTime) {
                 // Date-only entered for start when time is enabled - parse date as UTC and apply current time picker values
                 const [year, month, day] = startFormatted.split('-').map(Number)
-                start = new Date(
-                    Date.UTC(
-                        year,
-                        month - 1,
-                        day,
-                        this.startHour,
-                        this.startMinute,
-                        this.startSecond,
-                    ),
-                )
+                start = new Date(year, month - 1, day, this.startHour, this.startMinute, this.startSecond)
+                //    Date.UTC(
+                //        year,
+                //        month - 1,
+                //        day,
+                //        this.startHour,
+                //        this.startMinute,
+                //        this.startSecond,
+                //    ),
+                //)
             } else {
                 start = this.parseLocalDate(startFormatted)
             }
@@ -849,16 +856,16 @@ export default class TerraDatePicker extends TerraElement {
             } else if (this.enableTime) {
                 // Date-only entered for end when time is enabled - parse date as UTC and apply current time picker values
                 const [year, month, day] = endFormatted.split('-').map(Number)
-                end = new Date(
-                    Date.UTC(
-                        year,
-                        month - 1,
-                        day,
-                        this.endHour,
-                        this.endMinute,
-                        this.endSecond,
-                    ),
-                )
+                end = new Date(year, month - 1, day, this.endHour, this.endMinute, this.endSecond)
+                //    Date.UTC(
+                //        year,
+                //        month - 1,
+                //        day,
+                //        this.endHour,
+                //        this.endMinute,
+                //        this.endSecond,
+                //    ),
+                //)
             } else {
                 end = this.parseLocalDate(endFormatted)
             }
@@ -913,16 +920,16 @@ export default class TerraDatePicker extends TerraElement {
             } else if (this.enableTime) {
                 // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
                 const [year, month, day] = formatted.split('-').map(Number)
-                date = new Date(
-                    Date.UTC(
-                        year,
-                        month - 1,
-                        day,
-                        this.startHour,
-                        this.startMinute,
-                        this.startSecond,
-                    ),
-                )
+                date = new Date(year, month - 1, day, this.startHour, this.startMinute, this.startSecond)
+                //    Date.UTC(
+                //        year,
+                //        month - 1,
+                //        day,
+                //        this.startHour,
+                //        this.startMinute,
+                //        this.startSecond,
+                //    ),
+                //)
             } else {
                 // Time not enabled - just parse the date
                 date = this.parseLocalDate(formatted)
@@ -983,16 +990,16 @@ export default class TerraDatePicker extends TerraElement {
         } else if (this.enableTime) {
             // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
             const [year, month, day] = formatted.split('-').map(Number)
-            date = new Date(
-                Date.UTC(
-                    year,
-                    month - 1,
-                    day,
-                    this.startHour,
-                    this.startMinute,
-                    this.startSecond,
-                ),
-            )
+            date = new Date(year, month - 1, day, this.startHour, this.startMinute, this.startSecond)
+                //Date.UTC(
+                //    year,
+                //    month - 1,
+                //    day,
+                //    this.startHour,
+                //    this.startMinute,
+                //    this.startSecond,
+                //),
+            //)
         } else {
             // Time not enabled - just parse the date
             date = this.parseLocalDate(formatted)
@@ -1058,16 +1065,16 @@ export default class TerraDatePicker extends TerraElement {
         } else if (this.enableTime) {
             // Date-only entered when time is enabled - parse date as UTC and apply current time picker values
             const [year, month, day] = formatted.split('-').map(Number)
-            date = new Date(
-                Date.UTC(
-                    year,
-                    month - 1,
-                    day,
-                    this.endHour,
-                    this.endMinute,
-                    this.endSecond,
-                ),
-            )
+            date = new Date(year, month - 1, day, this.endHour, this.endMinute, this.endSecond)
+                //Date.UTC(
+                //    year,
+                //    month - 1,
+                //    day,
+                //    this.endHour,
+                //    this.endMinute,
+                //    this.endSecond,
+                //),
+            //)
         } else {
             // Time not enabled - just parse the date
             date = this.parseLocalDate(formatted)
@@ -1243,7 +1250,8 @@ export default class TerraDatePicker extends TerraElement {
         // When time is disabled, use local dates
         const createDate = (y: number, m: number, d: number) => {
             if (this.enableTime) {
-                return new Date(Date.UTC(y, m, d, 0, 0, 0))
+                //return new Date(Date.UTC(y, m, d, 0, 0, 0))
+                return new Date(y, m, d, 0, 0, 0)
             }
             return new Date(y, m, d)
         }
@@ -1255,7 +1263,7 @@ export default class TerraDatePicker extends TerraElement {
 
         // Add previous month's trailing days
         const firstDayOfWeek = this.enableTime
-            ? firstDay.getUTCDay()
+            ? firstDay.getDay()
             : firstDay.getDay()
         for (let i = firstDayOfWeek - 1; i >= 0; i--) {
             const day = createDate(year, month, -i)
@@ -1285,9 +1293,9 @@ export default class TerraDatePicker extends TerraElement {
         // When time is disabled, compare local date components
         if (this.enableTime) {
             return (
-                date1.getUTCFullYear() === date2.getUTCFullYear() &&
-                date1.getUTCMonth() === date2.getUTCMonth() &&
-                date1.getUTCDate() === date2.getUTCDate()
+                date1.getFullYear() === date2.getFullYear() &&
+                date1.getMonth() === date2.getMonth() &&
+                date1.getDate() === date2.getDate()
             )
         }
 
@@ -1331,39 +1339,39 @@ export default class TerraDatePicker extends TerraElement {
         if (this.minDate) {
             const min = this.parseLocalDate(this.minDate)
             // Use UTC for comparison to avoid timezone issues with API dates
-            const minMidnight = new Date(
-                Date.UTC(
-                    min.getUTCFullYear(),
-                    min.getUTCMonth(),
-                    min.getUTCDate(),
-                ),
-            )
-            const dateMidnight = new Date(
-                Date.UTC(
-                    date.getUTCFullYear(),
-                    date.getUTCMonth(),
-                    date.getUTCDate(),
-                ),
-            )
+            const minMidnight = new Date(min.getFullYear(), min.getMonth(), min.getDate())
+                //Date.UTC(
+                //    min.getUTCFullYear(),
+                //    min.getUTCMonth(),
+                //    min.getUTCDate(),
+                //),
+            //)
+            const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                //Date.UTC(
+                //    date.getUTCFullYear(),
+                //    date.getUTCMonth(),
+                //    date.getUTCDate(),
+                //),
+            //)
             if (dateMidnight < minMidnight) return true
         }
         if (this.maxDate) {
             const max = this.parseLocalDate(this.maxDate)
             // Use UTC for comparison to avoid timezone issues with API dates
-            const maxMidnight = new Date(
-                Date.UTC(
-                    max.getUTCFullYear(),
-                    max.getUTCMonth(),
-                    max.getUTCDate(),
-                ),
-            )
-            const dateMidnight = new Date(
-                Date.UTC(
-                    date.getUTCFullYear(),
-                    date.getUTCMonth(),
-                    date.getUTCDate(),
-                ),
-            )
+            const maxMidnight = new Date(max.getFullYear(), max.getMonth(), max.getDate())
+                //Date.UTC(
+                //    max.getUTCFullYear(),
+                //    max.getUTCMonth(),
+                //    max.getUTCDate(),
+                //),
+            //)
+            const dateMidnight = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+                //Date.UTC(
+                //    date.getUTCFullYear(),
+                //    date.getUTCMonth(),
+                //    date.getUTCDate(),
+                //),
+            //)
             if (dateMidnight > maxMidnight) return true
         }
         return false
@@ -1504,13 +1512,22 @@ export default class TerraDatePicker extends TerraElement {
         if (this.selectedStart) {
             if (this.enableTime) {
                 const startDate = new Date(this.selectedStart)
-                startDate.setUTCHours(
+                startDate.setHours(
                     this.startHour,
                     this.startMinute,
                     this.startSecond,
                     0,
                 )
-                startDateTime = startDate.toISOString()
+                //startDateTime = startDate.toISOString()
+                startDateTime = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(
+                    startDate.getDate(),
+                ).padStart(2, '0')} ${String(startDate.getHours()).padStart(
+                    2,
+                    '0',
+                )}:${String(startDate.getMinutes()).padStart(
+                    2,
+                    '0',
+                )}:${String(startDate.getSeconds()).padStart(2, '0')}`    
             } else {
                 // Format using local date components to avoid timezone conversion issues
                 const year = this.selectedStart.getFullYear()
@@ -1528,13 +1545,22 @@ export default class TerraDatePicker extends TerraElement {
         if (this.selectedEnd) {
             if (this.enableTime) {
                 const endDate = new Date(this.selectedEnd)
-                endDate.setUTCHours(
+                endDate.setHours(
                     this.endHour,
                     this.endMinute,
                     this.endSecond,
                     0,
                 )
-                endDateTime = endDate.toISOString()
+                //endDateTime = endDate.toISOString()
+                endDateTime = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(
+                    endDate.getDate(),
+                ).padStart(2, '0')} ${String(endDate.getHours()).padStart(
+                    2,
+                    '0',
+                )}:${String(endDate.getMinutes()).padStart(
+                    2,
+                    '0',
+                )}:${String(endDate.getSeconds()).padStart(2, '0')}`    
             } else {
                 // Format using local date components to avoid timezone conversion issues
                 const year = this.selectedEnd.getFullYear()
@@ -1556,9 +1582,9 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     private initializeTimeFromDate(date: Date, isStart: boolean) {
-        const hours = date.getUTCHours()
-        const minutes = date.getUTCMinutes()
-        const seconds = date.getUTCSeconds()
+        const hours = date.getHours()
+        const minutes = date.getMinutes()
+        const seconds = date.getSeconds()
 
         if (isStart) {
             this.startHour = hours
@@ -1846,10 +1872,10 @@ export default class TerraDatePicker extends TerraElement {
                     ${days.map((date) => {
                         // When time is enabled, use UTC components; otherwise use local
                         const dateMonth = this.enableTime
-                            ? date.getUTCMonth()
+                            ? date.getMonth()
                             : date.getMonth()
                         const dateDay = this.enableTime
-                            ? date.getUTCDate()
+                            ? date.getDate()
                             : date.getDate()
 
                         const isCurrentMonth = dateMonth === currentMonth
