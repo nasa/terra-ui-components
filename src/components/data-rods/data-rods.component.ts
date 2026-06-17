@@ -133,6 +133,8 @@ export default class TerraDataRods extends TerraElement {
     private compatibilityWarning() {
         this.spatialWarningMessage = undefined
 
+        console.log('checking compatibility, location is: ', this.location, ' and variable is: ', this.catalogVariable)
+
         if (!this.catalogVariable || !this.location) return
 
         const {
@@ -265,7 +267,7 @@ export default class TerraDataRods extends TerraElement {
         }
 
         this.variableEntryId = newEntryId
-        this.location = undefined
+        /* this.location = undefined - not sure why this is here; shouldn't zero location because of variable change*/
         this.lastChanged = 'variable'
 
         this.compatibilityWarning()
