@@ -133,8 +133,6 @@ export default class TerraDataRods extends TerraElement {
     private compatibilityWarning() {
         this.spatialWarningMessage = undefined
 
-        console.log('checking compatibility, location is: ', this.location, ' and variable is: ', this.catalogVariable)
-
         if (!this.catalogVariable || !this.location) return
 
         const {
