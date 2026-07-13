@@ -581,7 +581,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                                         input.checked,
                                                     )
                                                 }}
-                                                style="display: none;"
                                             />
                                             <strong
                                                 >${variable.dataFieldLongName}</strong
