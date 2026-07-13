@@ -59,3 +59,5 @@ export type { TerraDateSelectionInvalidEvent } from './terra-date-selection-inva
 export type { TerraHarmonyJobStatusUpdateEvent } from './terra-harmony-job-status-update.js'
 export type { TerraHarmonyJobSelectEvent } from './terra-harmony-job-select.js'
 export type { TerraHarmonyJobDeleteEvent } from './terra-harmony-job-delete.js'
+export type { TerraTimeSeriesLoadingChangeEvent } from './terra-time-series-loading-change.js'
+export type { TerraTimeSeriesChunkProgressChangeEvent } from './terra-time-series-chunk-progress-change.js'

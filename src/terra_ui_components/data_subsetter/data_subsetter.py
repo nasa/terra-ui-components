@@ -21,6 +21,8 @@ class TerraDataSubsetter(TerraBaseWidget):
          * model.get() pulls from the Jupyter notebooks state. We'll use the state to set the initial value for each property
          */
         component.collectionEntryId = model.get('collectionEntryId')
+        component.shortName = model.get('shortName')
+        component.version = model.get('version')
         component.showCollectionSearch = model.get('showCollectionSearch')
         component.jobId = model.get('jobId')
         component.bearerToken = model.get('bearerToken')
@@ -41,6 +43,12 @@ class TerraDataSubsetter(TerraBaseWidget):
          */
         model.on('change:collectionEntryId', () => {
             component.collectionEntryId = model.get('collectionEntryId')
+        })
+        model.on('change:shortName', () => {
+            component.shortName = model.get('shortName')
+        })
+        model.on('change:version', () => {
+            component.version = model.get('version')
         })
         model.on('change:showCollectionSearch', () => {
             component.showCollectionSearch = model.get('showCollectionSearch')
@@ -75,10 +83,15 @@ class TerraDataSubsetter(TerraBaseWidget):
     """
 
     # Component properties
-    # While we have properties in the component, we also need to tell Python about them as well. 
+    # While we have properties in the component, we also need to tell Python about them as well.
     # Again, you don't technically need all these. If Jupyter Notebooks don't need access to them, you can remove them from here
     collectionEntryId = traitlets.Unicode('').tag(sync=True)
+    shortName = traitlets.Unicode('').tag(sync=True)
+    version = traitlets.Unicode('').tag(sync=True)
     showCollectionSearch = traitlets.Unicode('').tag(sync=True)
+    showHistoryPanel = traitlets.Unicode('').tag(sync=True)
     jobId = traitlets.Unicode('').tag(sync=True)
     bearerToken = traitlets.Unicode('').tag(sync=True)
-    job = traitlets.Any(default_value={}).tag(sync=True)
+    features = traitlets.Unicode('').tag(sync=True)
+    dialog = traitlets.Unicode('').tag(sync=True)
+    isHistoryView = traitlets.Bool(False).tag(sync=True)

@@ -169,12 +169,12 @@ export class MapService {
             })
 
             // Emit the shape as a polygon draw event so listeners can react
-            // Note: if MapEventDetail is extended to include a geoJson field in future,
-            // pass shapeGeoJson here so consumers (e.g. data-access) can use it for bbox extraction
             this.#onDraw?.({
                 cause: 'draw',
                 type: MapEventType.POLYGON,
                 latLngs: [],
+                geoJson: shapeGeoJson as object,
+                label: select.options[select.selectedIndex]?.text,
             })
         } finally {
             this.#onShapeLoading?.(false)

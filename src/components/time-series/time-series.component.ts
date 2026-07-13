@@ -67,6 +67,8 @@ const variableEntryIdsConverter = {
  * @event terra-date-range-change - Emitted whenever the date range is modified
  * @event terra-time-series-data-change - Emitted whenever time series data has been fetched from Giovanni
  * @event terra-harmony-job-status-update - Emitted whenever the status of a Harmony job is updated
+ * @event terra-time-series-loading-change - Emitted whenever loading starts or ends
+ * @event terra-time-series-chunk-progress-change - Emitted whenever chunked Harmony requests advance
  */
 export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -143,7 +145,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
 
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
         true
-        
+
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
@@ -237,6 +239,14 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     @state()
     estimatedDataPoints = 0
 
+    @state()
+    private chunkProgress?: {
+        currentChunk: number
+        totalChunks: number
+    }
+
+    #isLoading = false
+
     _authController = new AuthController(this)
 
     _fetchVariableTask = getFetchVariableTask(this)
@@ -248,12 +258,33 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
             'terra-time-series-error',
             this.#handleQuotaError as EventListener,
         )
+        this.addEventListener(
+            'terra-time-series-chunk-progress-change',
+            this.#handleChunkProgress as EventListener,
+        )
     }
 
     updated(changedProps: Map<string, unknown>) {
         super.updated(changedProps)
 
         const taskStatus = this.#timeSeriesController.task.status
+        const isLoading =
+            taskStatus === TaskStatus.PENDING ||
+            this._fetchVariableTask.status === TaskStatus.PENDING
+
+        if (isLoading !== this.#isLoading) {
+            this.#isLoading = isLoading
+
+            this.dispatchEvent(
+                new CustomEvent('terra-time-series-loading-change', {
+                    detail: {
+                        loading: isLoading,
+                    },
+                    bubbles: true,
+                    composed: true,
+                }),
+            )
+        }
 
         // Clear error when a new request starts
         if (taskStatus === TaskStatus.PENDING && this.timeSeriesError) {
@@ -287,6 +318,10 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
             'terra-time-series-error',
             this.#handleQuotaError as EventListener,
         )
+        this.removeEventListener(
+            'terra-time-series-chunk-progress-change',
+            this.#handleChunkProgress as EventListener,
+        )
     }
 
     #handleQuotaError = (event: CustomEvent) => {
@@ -303,6 +338,17 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
         if (status === 429) {
             this.quotaExceededOpen = true
         }
+    }
+
+    #handleChunkProgress = (
+        event: CustomEvent<{ currentChunk: number; totalChunks: number }>,
+    ) => {
+        const { currentChunk, totalChunks } = event.detail
+
+        this.chunkProgress =
+            currentChunk > 0 && totalChunks > 1
+                ? { currentChunk, totalChunks }
+                : undefined
     }
 
     #confirmDataPointWarning() {
@@ -504,13 +550,24 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                 ${
                     this.#timeSeriesController.task.status ===
                     TaskStatus.PENDING
-                        ? html`<p>
+                        ? html`
+                          <p>
+                              ${
+                                  this.catalogVariables.length > 1
+                                      ? `Plotting ${this.catalogVariables.length} variables…`
+                                      : `Plotting ${this.catalogVariable?.dataFieldId}…`
+                              }
+                          </p>
                           ${
-                              this.catalogVariables.length > 1
-                                  ? `Plotting ${this.catalogVariables.length} variables…`
-                                  : `Plotting ${this.catalogVariable?.dataFieldId}…`
+                              this.chunkProgress
+                                  ? html`<p>
+                                        Fetching chunk
+                                        ${this.chunkProgress.currentChunk} of
+                                        ${this.chunkProgress.totalChunks}&hellip;
+                                    </p>`
+                                  : nothing
                           }
-                      </p>`
+                      `
                         : html`<p>Preparing plot&hellip;</p>`
                 }
 

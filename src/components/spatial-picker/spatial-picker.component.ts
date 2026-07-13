@@ -46,6 +46,13 @@ export default class TerraSpatialPicker extends TerraElement {
     showBoundingBoxSelection: boolean = true
 
     /**
+     * Whether polygon selection is allowed via the draw toolbar.
+     * Mirrors the terra-map attribute name for consistency.
+     */
+    @property({ attribute: 'show-polygon-selection', type: Boolean })
+    showPolygonSelection: boolean = false
+
+    /**
      * @deprecated Use show-bounding-box-selection instead.
      */
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
@@ -401,6 +408,7 @@ export default class TerraSpatialPicker extends TerraElement {
             ?has-navigation=${this.hasNavigation}
             ?has-shape-selector=${this.hasShapeSelector}
             ?show-bounding-box-selection=${this.showBoundingBoxSelection}
+            ?show-polygon-selection=${this.showPolygonSelection}
             ?show-point-selection=${this.showPointSelection}
             ?no-world-wrap=${!this.worldWrap}
             spatial-constraints=${this.spatialConstraints}

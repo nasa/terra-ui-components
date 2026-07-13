@@ -13,6 +13,26 @@ import type {
 
 export const TIME_SERIES_CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
+function getStartOfUtcDay(date: Date): Date {
+    return new Date(
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+    )
+}
+
+function getEndOfUtcDay(date: Date): Date {
+    return new Date(
+        Date.UTC(
+            date.getUTCFullYear(),
+            date.getUTCMonth(),
+            date.getUTCDate(),
+            23,
+            59,
+            59,
+            999,
+        ),
+    )
+}
+
 export class TimeSeriesCacheService {
     getCacheKeyForVariable(
         variableEntryId: string,
@@ -25,14 +45,16 @@ export class TimeSeriesCacheService {
 
         const normalizedCoordinates = location
             .split(',')
-            .map(coord => Number(coord).toFixed(2))
+            .map((coord) => Number(coord).toFixed(2))
         const normalizedLocation = normalizedCoordinates.join(',%20')
         const normalizedEnvironment = environment ?? 'prod'
 
         return `${variableEntryId}_${normalizedLocation}_${normalizedEnvironment}`
     }
 
-    async getValidCacheEntry(cacheKey: string): Promise<VariableDbEntry | undefined> {
+    async getValidCacheEntry(
+        cacheKey: string,
+    ): Promise<VariableDbEntry | undefined> {
         if (!cacheKey) {
             return undefined
         }
@@ -72,16 +94,28 @@ export class TimeSeriesCacheService {
             return [{ start, end }]
         }
 
-        const existingStartDate = new Date(existingData.startDate)
-        const existingEndDate = new Date(existingData.endDate)
+        const requestedStart = getStartOfUtcDay(start)
+        const requestedEnd = getEndOfUtcDay(end)
+        const existingStartDate = getStartOfUtcDay(
+            new Date(existingData.startDate),
+        )
+        const existingEndDate = getEndOfUtcDay(new Date(existingData.endDate))
         const gaps: Array<{ start: Date; end: Date }> = []
 
-        if (start < existingStartDate) {
-            gaps.push({ start, end: existingStartDate })
+        if (requestedStart < existingStartDate) {
+            const leadingGapEnd = new Date(existingStartDate.getTime() - 1)
+
+            if (requestedStart <= leadingGapEnd) {
+                gaps.push({ start: requestedStart, end: leadingGapEnd })
+            }
         }
 
-        if (end > existingEndDate) {
-            gaps.push({ start: existingEndDate, end })
+        if (requestedEnd > existingEndDate) {
+            const trailingGapStart = new Date(existingEndDate.getTime() + 1)
+
+            if (trailingGapStart <= requestedEnd) {
+                gaps.push({ start: trailingGapStart, end: requestedEnd })
+            }
         }
 
         return gaps
@@ -98,11 +132,15 @@ export class TimeSeriesCacheService {
         return Array.from(seen.values())
     }
 
-    getDataInRange(data: TimeSeriesData, startDate: Date, endDate: Date): TimeSeriesData {
+    getDataInRange(
+        data: TimeSeriesData,
+        startDate: Date,
+        endDate: Date,
+    ): TimeSeriesData {
         return {
             ...data,
             data: data.data
-                .filter(row => {
+                .filter((row) => {
                     const timestamp = new Date(row.timestamp)
                     return timestamp >= startDate && timestamp <= endDate
                 })
@@ -120,27 +158,75 @@ export class TimeSeriesCacheService {
         environment?: string
         metadata: Partial<TimeSeriesMetadata>
         data: TimeSeriesDataRow[]
+        /** The originally-requested start date. When provided, the stored range covers at least
+         *  this date so that future requests for the same range don't detect a spurious gap
+         *  just because Harmony returned data starting later than the requested start. */
+        requestedStartDate?: Date
+        /** The originally-requested end date. Same rationale as requestedStartDate. */
+        requestedEndDate?: Date
     }): Promise<void> {
-        const { cacheKey, variableEntryId, environment, metadata, data } = options
+        const {
+            cacheKey,
+            variableEntryId,
+            environment,
+            metadata,
+            data,
+            requestedStartDate,
+            requestedEndDate,
+        } = options
 
-        if (!cacheKey || !data.length) {
+        if (!cacheKey) {
             return
         }
 
         const sortedData = [...data].sort(
-            (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+            (a, b) =>
+                new Date(a.timestamp).getTime() -
+                new Date(b.timestamp).getTime(),
         )
 
-        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
-            variableEntryId,
-            key: cacheKey,
-            startDate: sortedData[0].timestamp,
-            endDate: sortedData[sortedData.length - 1].timestamp,
-            metadata: metadata as TimeSeriesMetadata,
-            data: sortedData,
-            environment,
-            cachedAt: Date.now(),
-        })
+        // Use the requested range as the stored range when it extends beyond the actual data.
+        // This prevents a cache-miss loop when the dataset simply has no data at the edges
+        // (e.g. requesting Jan 1 but the first available data point is Jan 15).
+        const storedStart =
+            requestedStartDate && sortedData.length > 0
+                ? new Date(
+                      Math.min(
+                          requestedStartDate.getTime(),
+                          new Date(sortedData[0].timestamp).getTime(),
+                      ),
+                  ).toISOString()
+                : sortedData[0]?.timestamp
+        const storedEnd =
+            requestedEndDate && sortedData.length > 0
+                ? new Date(
+                      Math.max(
+                          requestedEndDate.getTime(),
+                          new Date(
+                              sortedData[sortedData.length - 1].timestamp,
+                          ).getTime(),
+                      ),
+                  ).toISOString()
+                : sortedData[sortedData.length - 1]?.timestamp
+
+        if (!storedStart || !storedEnd) {
+            return
+        }
+
+        await storeDataByKey<VariableDbEntry>(
+            IndexedDbStores.TIME_SERIES,
+            cacheKey,
+            {
+                variableEntryId,
+                key: cacheKey,
+                startDate: storedStart,
+                endDate: storedEnd,
+                metadata: metadata as TimeSeriesMetadata,
+                data: sortedData,
+                environment,
+                cachedAt: Date.now(),
+            },
+        )
     }
 }
 

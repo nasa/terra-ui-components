@@ -1,5 +1,7 @@
 import { html } from 'lit'
 import type { TemplateResult } from 'lit'
+import type { AllGeoJSON } from '@turf/helpers'
+import { simplify, coordAll } from '@turf/turf'
 import type { SubsetJobError } from '../apis/harmony.api.js'
 
 export interface HarmonyErrorDetails {
@@ -190,4 +192,72 @@ export function formatHarmonyErrorMessage(error: HarmonyError): TemplateResult {
             >contact us using the Earthdata Forum</a
         >
     `
+}
+
+/**
+ * Simplifies a GeoJSON object using binary search over the Douglas-Peucker
+ * tolerance to find the finest tolerance that brings the vertex count to
+ * at or below maxPoints. This maximises shape fidelity rather than
+ * just getting under the limit by the smallest possible margin.
+ *
+ * @param geoJson - Any valid GeoJSON object
+ * @param maxPoints - Maximum number of vertices allowed
+ * @returns Simplified GeoJSON, or the original if it was already under the limit
+ */
+export function simplifyToPointLimit(
+    geoJson: object,
+    maxPoints: number,
+): object {
+    const asAllGeoJson = geoJson as AllGeoJSON
+
+    if (coordAll(asAllGeoJson).length <= maxPoints) {
+        return geoJson
+    }
+
+    // Phase 1: find an upper-bound tolerance that actually gets us under maxPoints
+    // by doubling from a fine starting point until it works.
+    let high = 0.001
+    while (
+        coordAll(
+            simplify(asAllGeoJson, {
+                tolerance: high,
+                highQuality: false,
+                mutate: false,
+            }),
+        ).length > maxPoints
+    ) {
+        high *= 2
+        if (high >= 1) break
+    }
+
+    // Phase 2: binary-search in [0, high] for the finest (lowest) tolerance
+    // that still satisfies the limit, maximising retained detail.
+    let low = 0
+    let best = simplify(asAllGeoJson, {
+        tolerance: high,
+        highQuality: false,
+        mutate: false,
+    })
+
+    for (let i = 0; i < 24; i++) {
+        const mid = (low + high) / 2
+        const candidate = simplify(asAllGeoJson, {
+            tolerance: mid,
+            highQuality: false,
+            mutate: false,
+        })
+
+        if (coordAll(candidate).length <= maxPoints) {
+            best = candidate
+            high = mid // can try finer
+        } else {
+            low = mid // too fine, need coarser
+        }
+    }
+
+    console.log(
+        `Simplified GeoJSON from ${coordAll(asAllGeoJson).length} to ${coordAll(best).length} vertices`,
+    )
+
+    return best
 }

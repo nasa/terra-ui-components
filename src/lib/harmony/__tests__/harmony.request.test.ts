@@ -735,4 +735,138 @@ describe('HarmonyRequest', () => {
             expect(roundtrippedParams).to.equal(originalParams)
         })
     })
+
+    describe('hasShape', () => {
+        it('returns false when no shape is set', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+            expect(request.hasShape).to.equal(false)
+        })
+
+        it('returns true when a shape is set via constructor', () => {
+            const geoJson = {
+                type: 'FeatureCollection',
+                features: [],
+            }
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: geoJson,
+            })
+            expect(request.hasShape).to.equal(true)
+        })
+
+        it('returns true when a shape is set via the shape() builder method', () => {
+            const geoJson = { type: 'FeatureCollection', features: [] }
+            const request = new HarmonyRequest()
+                .collection(COLLECTION_CONCEPT_ID)
+                .shape(geoJson)
+            expect(request.hasShape).to.equal(true)
+        })
+    })
+
+    describe('buildFormData', () => {
+        const SHAPE_GEOJSON = {
+            type: 'FeatureCollection',
+            features: [
+                {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Polygon',
+                        coordinates: [
+                            [
+                                [62.23, 5.29],
+                                [94.57, 5.29],
+                                [94.57, 37.49],
+                                [62.23, 37.49],
+                                [62.23, 5.29],
+                            ],
+                        ],
+                    },
+                    properties: null,
+                },
+            ],
+        }
+
+        it('returns a FormData instance', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+                format: 'application/x-netcdf4',
+            })
+            const formData = request.buildFormData()
+            expect(formData).to.be.instanceOf(FormData)
+        })
+
+        it('includes the shapefile field as a Blob', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+            })
+            const formData = request.buildFormData()
+            const shapefile = formData.get('shapefile')
+            expect(shapefile).to.be.instanceOf(Blob)
+        })
+
+        it('the shapefile blob contains valid GeoJSON', async () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+            })
+            const formData = request.buildFormData()
+            const blob = formData.get('shapefile') as Blob
+            const text = await blob.text()
+            const parsed = JSON.parse(text)
+            expect(parsed.type).to.equal('FeatureCollection')
+        })
+
+        it('includes format as a form field when set', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+                format: 'application/x-netcdf4',
+            })
+            const formData = request.buildFormData()
+            expect(formData.get('format')).to.equal('application/x-netcdf4')
+        })
+
+        it('includes variable as a form field when set', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+                variables: [VARIABLE_ENTRY_ID],
+            })
+            const formData = request.buildFormData()
+            expect(formData.get('variable')).to.equal(VARIABLE_ENTRY_ID)
+        })
+
+        it('includes time subset as a form field when dates are set', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+                startDate: START_DATE,
+                endDate: END_DATE,
+            })
+            const formData = request.buildFormData()
+            const subsets = formData.getAll('subset')
+            const timeSubset = subsets.find((s) =>
+                (s as string).startsWith('time('),
+            )
+            expect(timeSubset).to.exist
+        })
+
+        it('does not include spatial lat/lon subsets (shape replaces spatial)', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                shape: SHAPE_GEOJSON,
+            })
+            const formData = request.buildFormData()
+            const subsets = formData.getAll('subset') as string[]
+            const hasSpatialSubset = subsets.some(
+                (s) => s.startsWith('lat(') || s.startsWith('lon('),
+            )
+            expect(hasSpatialSubset).to.equal(false)
+        })
+    })
 })

@@ -53,6 +53,7 @@ import {
     type ConfiguredOutputFormat,
     type Variable,
 } from '../../apis/harmony.api.js'
+import { HttpException } from '../../exceptions/http.exception.js'
 
 const defaultOutputFormat: ConfiguredOutputFormat = {
     key: 'application/x-netcdf4',
@@ -162,6 +163,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     spatialSelection?: LatLng | LatLngBounds
 
     @state()
+    shapeGeoJson?: object
+
+    @state()
+    spatialLabel?: string
+
+    @state()
     selectedDateRange: { startDate: string | null; endDate: string | null } = {
         startDate: null,
         endDate: null,
@@ -202,6 +209,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @state()
     validationError?: string
+
+    @state()
+    harmonyRequestError?: string
 
     @state()
     granuleMinDate?: string
@@ -341,7 +351,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     render() {
         const showJobStatus =
-            this.#harmonyRequestController.jobId && !this.refineParameters
+            (this.#harmonyRequestController.jobId ||
+                this.harmonyRequestError) &&
+            !this.refineParameters
         const showMinimizeButton = showJobStatus && !!this.dialog
         const title =
             this.collectionWithServices?.collection?.EntryTitle ??
@@ -559,9 +571,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderFooterForDialog() {
         const showJobStatus =
-            this.#harmonyRequestController.jobId && !this.refineParameters
+            (this.#harmonyRequestController.jobId ||
+                this.harmonyRequestError) &&
+            !this.refineParameters
 
-        if (showJobStatus && this.#harmonyRequestController.jobId) {
+        if (showJobStatus) {
+            if (!this.#harmonyRequestController.jobId) {
+                return nothing
+            }
+
             // Job status footer - return the footer content with slot="footer"
             return html`
                 <div slot="footer" class="footer">
@@ -694,7 +712,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     </div>
                 </div>
             `
-        } else if (this.dataAccessMode === 'subset') {
+        }
+
+        if (this.dataAccessMode === 'subset') {
             // Get Data footer
             return html`
                 <div slot="footer" class="footer">
@@ -703,20 +723,18 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         <button class="btn btn-primary" @click=${this.#getData}>
                             Get Data
                         </button>
-                            ${
-                                this.jobId
-                                    ? html`
-                                          <terra-button
-                                              variant="default"
-                                              @click=${this.#viewRunningJob}
-                                          >
-                                              View Running Job
-                                          </terra-button>
-                                      `
-                                    : nothing
-                            }
-                            </div>
-                        </div>
+                        ${
+                            this.jobId
+                                ? html`
+                                      <terra-button
+                                          variant="default"
+                                          @click=${this.#viewRunningJob}
+                                      >
+                                          View Running Job
+                                      </terra-button>
+                                  `
+                                : nothing
+                        }
                     </div>
                 </div>
             `
@@ -888,12 +906,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                       <div class="footer">
                           <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
                           <div>
-                          <button
-                              class="btn btn-primary"
-                              @click=${this.#getData}
-                          >
-                              Get Data
-                          </button>
+                              <button
+                                  class="btn btn-primary"
+                                  @click=${this.#getData}
+                              >
+                                  Get Data
+                              </button>
                                   ${
                                       this.jobId
                                           ? html`
@@ -906,8 +924,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                             `
                                           : nothing
                                   }
-                              </div>
-                                </div>
                           </div>
                       </div>
                   `
@@ -1386,9 +1402,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderSpatialSelection() {
         const showError =
-            this.touchedFields.has('spatial') && !this.spatialSelection
+            this.touchedFields.has('spatial') &&
+            !this.spatialSelection &&
+            !this.shapeGeoJson
         const spatialString =
-            this.spatialSelection?.toString() ?? this.spatialSelection
+            this.spatialLabel ?? this.spatialSelection?.toString() ?? undefined
+        // Only pass coordinate strings as initialValue — labels like "Polygon (N vertices)"
+        // would be put into the text input and fail coordinate validation on blur.
+        const spatialInitialValue =
+            this.spatialSelection?.toString() ?? undefined
 
         return html`
             <terra-accordion>
@@ -1424,7 +1446,15 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             this.#collectionController.spatialConstraints ||
                             '-180, -90, 180, 90'
                         }
-                        .initialValue=${spatialString}
+                        .initialValue=${spatialInitialValue}
+                        ?has-shape-selector=${
+                            this.collectionWithServices?.summary?.subsetting
+                                ?.shape ?? false
+                        }
+                        ?show-polygon-selection=${
+                            this.collectionWithServices?.summary?.subsetting
+                                ?.shape ?? false
+                        }
                         @terra-map-change=${this.#handleSpatialChange}
                     ></terra-spatial-picker>
                     <div
@@ -1445,11 +1475,46 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.#markFieldTouched('spatial')
 
         if (e.detail.type === MapEventType.POINT) {
+            this.shapeGeoJson = undefined
+            this.spatialLabel = undefined
             this.spatialSelection = e.detail.latLng
         } else if (e.detail.type === MapEventType.BBOX) {
+            this.shapeGeoJson = undefined
+            this.spatialLabel = undefined
             this.spatialSelection = e.detail.bounds
+        } else if (e.detail.type === MapEventType.POLYGON) {
+            this.spatialSelection = undefined
+            if (e.detail.geoJson) {
+                // Shape loaded from the shape selector dropdown
+                this.shapeGeoJson = e.detail.geoJson
+                this.spatialLabel = e.detail.label ?? 'Shape selected'
+            } else if (e.detail.latLngs.length > 0) {
+                // Polygon drawn freehand on the map — convert to GeoJSON
+                const coords = e.detail.latLngs.map((ll) => [ll.lng, ll.lat])
+                // Close the ring
+                coords.push(coords[0])
+                this.shapeGeoJson = {
+                    type: 'FeatureCollection',
+                    features: [
+                        {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Polygon',
+                                coordinates: [coords],
+                            },
+                            properties: null,
+                        },
+                    ],
+                }
+                this.spatialLabel = `Polygon (${e.detail.latLngs.length} vertices)`
+            } else {
+                this.shapeGeoJson = undefined
+                this.spatialLabel = undefined
+            }
         } else {
             this.spatialSelection = undefined
+            this.shapeGeoJson = undefined
+            this.spatialLabel = undefined
         }
     }
 
@@ -1458,6 +1523,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
      */
     #resetSpatialSelection = () => {
         this.spatialSelection = undefined
+        this.shapeGeoJson = undefined
+        this.spatialLabel = undefined
         this.spatialPicker.clear()
 
         this.#markFieldTouched('spatial')
@@ -2102,17 +2169,30 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 </div>
 
                 <div class="progress-container">
-                    <div class="progress-text">
-                        <span class="spinner"></span>
-                        <span class="status-running">Searching for data...</span>
-                    </div>
+                ${
+                    this.harmonyRequestError
+                        ? html`
+                          <terra-alert open variant="danger" appearance="white">
+                              ${this.#renderHarmonyRequestError()}
+                          </terra-alert>
+                      `
+                        : html`
+                          <div class="progress-container">
+                              <div class="progress-text">
+                                  <span class="spinner"></span>
+                                  <span class="status-running"
+                                      >Searching for data...</span
+                                  >
+                              </div>
 
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 0%"></div>
-                    </div>
-                </div>
+                              <div class="progress-bar">
+                                  <div class="progress-fill" style="width: 0%"></div>
+                              </div>
+                          </div>
 
-                ${this.#renderJobMessage()}
+                          ${this.#renderJobMessage()}
+                      `
+                }
             </div>`
         }
 
@@ -2524,6 +2604,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     async #getData() {
+        this.harmonyRequestError = undefined
+
         // Validate before proceeding
         const validationError = this.#getGiovanniValidationError()
         if (validationError) {
@@ -2555,6 +2637,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             variables,
             location: this.spatialSelection,
         })
+
+        if (this.shapeGeoJson) {
+            harmonyRequest.shape(this.shapeGeoJson)
+        }
 
         if (
             this.collectionWithServices?.summary.subsetting.temporal &&
@@ -2610,14 +2696,40 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         // add a label to identify the subsetter as the source
         harmonyRequest.label('terra-data-subsetter')
 
-        console.log('Creating Harmony job with request:', harmonyRequest)
+        // add metadata labels describing the request
+        const cwsShortName =
+            this.collectionWithServices?.shortName ??
+            this.collectionWithServices?.collection?.ShortName
+        const cwsVersion = this.collectionWithServices?.collection?.Version
+        const cwsEntryTitle =
+            this.collectionWithServices?.collection?.EntryTitle
 
-        const job = await this.#harmonyRequestController.startJob({
-            harmonyRequest,
-            options: { bearerToken: this.bearerToken },
-        })
+        if (cwsShortName && cwsVersion) {
+            harmonyRequest.label(
+                `collection-entry-id: ${cwsShortName}_${cwsVersion}`.toLowerCase(),
+            )
+        }
+        if (cwsEntryTitle) {
+            harmonyRequest.label(
+                `collection-entry-title: ${cwsEntryTitle.toLowerCase()}`,
+            )
+        }
 
-        this.jobId = job.jobID
+        console.log('Creating Harmony job with request:', harmonyRequest.params)
+
+        try {
+            const job = await this.#harmonyRequestController.startJob({
+                harmonyRequest,
+                options: { bearerToken: this.bearerToken },
+            })
+
+            this.jobId = job.jobID
+        } catch (error) {
+            this.harmonyRequestError =
+                this.#getHarmonyRequestErrorMessage(error)
+            this.refineParameters = false
+            return
+        }
 
         // scroll the job-status-section into view
         setTimeout(() => {
@@ -2792,6 +2904,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #backToSubsetOptions() {
         this.refineParameters = true
+        this.harmonyRequestError = undefined
         // Scroll to the top of the component
         setTimeout(() => {
             const container = this.renderRoot.querySelector('.container')
@@ -3045,5 +3158,57 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         return null
+    }
+
+    #getHarmonyRequestErrorMessage(error: unknown): string {
+        if (error instanceof HttpException) {
+            const sanitizedMessage = error.message
+                ?.replace(/^Error:\s*/i, '')
+                .trim()
+
+            if (
+                sanitizedMessage
+                    ?.toLowerCase()
+                    .includes('no matching granules found')
+            ) {
+                return 'No matching granules were found for your subset request. Please try expanding your search'
+            }
+
+            if (sanitizedMessage) {
+                return sanitizedMessage
+            }
+        }
+
+        return 'Unable to create your subset request. Please try again.'
+    }
+
+    #renderHarmonyRequestError() {
+        if (!this.harmonyRequestError) {
+            return nothing
+        }
+
+        const noGranulesMessage =
+            'No matching granules were found for your subset request. Please try expanding your search'
+
+        if (this.harmonyRequestError === noGranulesMessage) {
+            return html`
+                No matching granules were found for your subset request. Please
+                try
+                <a
+                    href="#"
+                    @click=${this.#handleExpandSearchClick}
+                    style="color: inherit; text-decoration: underline; font-weight: 600;"
+                >
+                    expanding your search
+                </a>
+            `
+        }
+
+        return this.harmonyRequestError
+    }
+
+    #handleExpandSearchClick = (event: Event) => {
+        event.preventDefault()
+        this.#backToSubsetOptions()
     }
 }
