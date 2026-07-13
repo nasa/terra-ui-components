@@ -265,7 +265,7 @@ export default class TerraDataRods extends TerraElement {
         }
 
         this.variableEntryId = newEntryId
-        this.location = undefined
+        /* this.location = undefined - not sure why this is here; shouldn't zero location because of variable change*/
         this.lastChanged = 'variable'
 
         this.compatibilityWarning()
