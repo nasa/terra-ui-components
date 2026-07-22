@@ -48,6 +48,16 @@ import TerraLoader from '../loader/loader.component.js'
 /* grab polygons from file...use 'data-access' to grab hovered file? */
 /* do we have access to the openlayers map if we import the map component? */
 
+/**
+ * @summary A map component for visualizing file (granule) spatial boundaries.
+ * @documentation https://terra-ui.netlify.app/components/spatial-boundaries
+ * @status stable
+ * @since 1.0
+ * 
+ * @dependency terra-map
+ *
+ */
+
 export default class TerraSpatialBoundaries extends QueryClientMixin(
     TerraElement,
 ) {
