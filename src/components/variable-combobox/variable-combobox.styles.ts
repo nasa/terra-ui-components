@@ -304,39 +304,34 @@ export default css`
         border-radius: 50%;
     }
 
-    menu#variable-info-menu {
-        all: unset;
-        position: absolute;
-        top: 1.5rem;
-        z-index: 1000;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 0.5em;
+    terra-popup::part(popup) {
+        width: 380px;
+        max-width: min(380px, calc(100vw - 16px));
+    }
+
+    .variable-info-popup {
+        background: var(--terra-color-spacesuit-white);
+        border: 1px solid var(--terra-color-carbon-30);
+        border-radius: 0.5rem;
         box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
-        width: max-content;
-        min-width: 20ch;
-        max-width: 100%;
-        padding: 1em;
-        display: none;
-        margin-left: 0.5rem;
+        padding: 1rem;
     }
 
-    menu#variable-info-menu[data-expanded='true'] {
-        display: block;
-    }
-
-    menu#variable-info-menu [role='menuitem'] {
-        display: block;
-        list-style: none;
+    .variable-info-popup dl {
         margin: 0;
-        padding: 0.5em 0;
     }
 
-    menu#variable-info-menu dt {
+    .variable-info-popup dt {
         font-weight: var(--terra-font-weight-semibold);
+        margin-top: 0.75rem;
     }
 
-    menu#variable-info-menu dd {
+    .variable-info-popup dt:first-child {
+        margin-top: 0;
+    }
+
+    .variable-info-popup dd {
+        margin: 0.25rem 0 0.75rem;
         font-style: italic;
         text-wrap: balance;
     }

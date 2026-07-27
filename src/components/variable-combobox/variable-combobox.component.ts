@@ -20,6 +20,7 @@ import {
 import { FetchController } from './variable-combobox.controller.js'
 import styles from './variable-combobox.styles.js'
 import type { ListItem } from './variable-combobox.types.js'
+import TerraPopup from '../popup/popup.js'
 
 /**
  * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
@@ -43,6 +44,7 @@ export default class TerraVariableCombobox extends TerraElement {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
+        'terra-popup': TerraPopup,
     }
     static styles: CSSResultGroup = [componentStyles, styles]
     static shadowRootOptions = {
@@ -139,7 +141,7 @@ export default class TerraVariableCombobox extends TerraElement {
     #handleShowVariableInfo = (e: CustomEvent) => {
         e.stopPropagation()
         this.variableInfo = e.detail.collection
-        this.infoAnchor = e.target as HTMLElement
+        this.infoAnchor = e.currentTarget as HTMLElement
         this.menuOpen = true
         if (this.#hideTimeout) {
             clearTimeout(this.#hideTimeout)
@@ -472,37 +474,26 @@ export default class TerraVariableCombobox extends TerraElement {
     }
 
     #renderVariableInfoMenu() {
-        if (!this.variableInfo || !this.infoAnchor) return nothing
-
-        const rect = this.infoAnchor.getBoundingClientRect()
-        const menuWidth = 380
-        const spaceRight = window.innerWidth - rect.right
-
-        const shouldFlipLeft = spaceRight < menuWidth
-
-        const style = shouldFlipLeft
-            ? `
-            right: ${rect.width + 4}px;
-            left: auto;
-            position: absolute;
-        `
-            : `
-            left: ${rect.width + 4}px;
-            right: auto;
-            position: absolute;
-        `
+        if (!this.variableInfo || !this.infoAnchor) {
+            return nothing
+        }
 
         return html`
-            <menu
-                role="menu"
-                id="variable-info-menu"
-                data-expanded=${this.menuOpen}
-                style=${style}
+            <terra-popup
+                .anchor=${this.infoAnchor}
+                ?active=${this.menuOpen}
+                placement="right-start"
+                strategy="fixed"
+                flip
+                shift
+                distance="8"
                 @mouseenter=${this.#handleMenuEnter}
                 @mouseleave=${this.#handleMenuLeave}
             >
-                <li role="menuitem">${this.#renderInfoPanel(this.variableInfo)}</li>
-            </menu>
+                <div class="variable-info-popup">
+                    ${this.#renderInfoPanel(this.variableInfo)}
+                </div>
+            </terra-popup>
         `
     }
 
