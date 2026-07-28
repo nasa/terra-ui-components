@@ -75,6 +75,10 @@ export default class TerraFileUpload extends TerraElement {
             window.matchMedia('(max-width: 768px)').matches ||
             navigator.maxTouchPoints > 0;
 
+    connectedCallback() {
+        super.connectedCallback()
+    }
+
     firstUpdated() {
         this.setupDragAndDrop()
     }
@@ -224,7 +228,6 @@ export default class TerraFileUpload extends TerraElement {
     render() {
         const hasFiles = this.files.length > 0
         const fileCount = this.files.length
-        console.log('DEBUG: Rendering component', this.mobile)
         return html`
             <div class="file-upload-wrapper">
                 ${this.label
