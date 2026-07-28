@@ -71,9 +71,9 @@ export default class TerraFileUpload extends TerraElement {
     /** Maximum number of files allowed when multiple is enabled. */
     @property({ type: Number, attribute: 'max-files' }) maxFiles?: number
 
-    connectedCallback() {
-        super.connectedCallback()
-    }
+    @state() private mobile =
+            window.matchMedia('(max-width: 768px)').matches ||
+            navigator.maxTouchPoints > 0;
 
     firstUpdated() {
         this.setupDragAndDrop()
@@ -224,7 +224,7 @@ export default class TerraFileUpload extends TerraElement {
     render() {
         const hasFiles = this.files.length > 0
         const fileCount = this.files.length
-
+        console.log('DEBUG: Rendering component', this.mobile)
         return html`
             <div class="file-upload-wrapper">
                 ${this.label
@@ -339,7 +339,9 @@ export default class TerraFileUpload extends TerraElement {
                           >
                               <slot>
                                   <span class="file-upload__dropzone-text">
-                                      Drag files here or
+                                      ${this.mobile 
+                                        ? '' 
+                                        : 'Drag files here or'}
                                       <button
                                           type="button"
                                           class="file-upload__browse-link"
@@ -348,7 +350,9 @@ export default class TerraFileUpload extends TerraElement {
                                               this.handleClick()
                                           }}
                                       >
-                                          choose from folder
+                                          ${this.mobile 
+                                            ? 'Choose from folder'
+                                            : 'choose from folder'}
                                       </button>
                                   </span>
                               </slot>
