@@ -37,10 +37,19 @@
     *
     * @layout [Layout Type]
     *  - Defines the layout for how the tokens will be visually displayed in the documentation. 
-    *  - Options: swatch, table-swatch, table
+    *  - Options: swatch, table-swatch, table, table-radius, table-elevation
     *      - swatch: Displays tokens as an individual color swatches with the token name and value below it. Great for color palettes.
     *      - table-swatch: Displays tokens in a table format with a swatch of the color next to the token name and value. Great for functional tokens.
     *      - table (default): Displays tokens in a table format with columns for token name, value.
+    *      - table-radius: Displays tokens in a table format with columns for token name and a preview of the border-radius effect.
+    *      - table-elevation: Displays tokens in a table format with columns for token name and a preview of the elevation (box-shadow) effect.
+    *
+    * The token variables are defined within the @tokens-subgroup blocks and are standard CSS custom properties (variable name: value). 
+    * The token variableline MUST NOT include any in-line comments or additional text after the variable definition, as this will break the parsing of the token documentation.
+    *
+    * Example: --terra-spacing-3x-small: 0.125rem;
+    *
+    * rem values are automatically converted to pixel values in the generated documentation. The conversion is based on a base font size of 16px (1rem = 16px).
     */
 
 :root,
@@ -715,14 +724,16 @@
 
     /* Figma Design System Tokens ------------------------------------------------- END */
 
+
     /**
-     * @tokens Utility Tokens
+     * @tokens Border Radius Tokens
      * @description
-     * These tokens are used for utility classes that can be applied across components. They are not specific to any one component,
-     * but they provide common values for things like spacing, typography, etc.
+     * Border radius tokens are used to give sharp edges a more subtle, rounded effect. They use rem units so they scale with the base font size. The pixel values displayed are based on a 16px font size.
     */
 
-    /* Border radii
+    /** 
+     * @tokens-subgroup Border Radius
+     * @layout table-radius
     */
     --terra-border-radius-small: 0.125rem; /* 2px */
     --terra-border-radius-medium: 0.25rem; /* 4px */
@@ -730,7 +741,15 @@
     --terra-border-radius-x-large: 1rem; /* 16px */
     --terra-border-radius-circle: 50%;
 
-    /* Elevations
+    /**
+     * @tokens Elevation Tokens
+     * @description
+     * Elevation tokens are used to give elements the appearance of being raised off the page. Use them with the `box-shadow` property. These are especially useful for menus, popovers, and dialogs.
+    */
+
+    /** 
+     * @tokens-subgroup Elevation
+     * @layout table-elevation
     */
     --terra-shadow-x-small: 0 1px 2px hsl(240 3.8% 46.1% / 6%);
     --terra-shadow-small: 0 1px 2px hsl(240 3.8% 46.1% / 12%);
@@ -738,8 +757,36 @@
     --terra-shadow-large: 0 2px 8px hsl(240 3.8% 46.1% / 12%);
     --terra-shadow-x-large: 0 4px 16px hsl(240 3.8% 46.1% / 12%);
 
-    /* Spacings
+    /**
+    * @tokens Focus Ring Tokens
+    * @description
+    * Focus Ring Tokens are used to define the highlighted ring that surrounds interactive elements that have control focus. Focus ring tokens control the appearance of focus rings. Note that form inputs use [--terra-border-interactive-focus-ring](/tokens/generated/foundation-tokens/#border-colors-for-neutral-interactive-surfaces) tokens instead.
     */
+    /** 
+    * @tokens-subgroup Style and Layout
+    * @layout table
+    */
+        --terra-focus-ring-style: solid;
+        --terra-focus-ring-width: 3px;
+        --terra-focus-ring: var(--terra-focus-ring-style) var(--terra-focus-ring-width) var(--terra-focus-ring-color);
+        --terra-focus-ring-offset: 1px;
+    /** 
+        * @tokens-subgroup Color
+        * @layout table-swatch
+        */
+        --terra-focus-ring-color: var(--terra-border-interactive-focus-ring);
+
+    /** 
+     * @tokens Spacing Tokens
+     * @description
+     * Spacing tokens are used to create consistent spacing between elements. They use rem units so they scale with the base font size. The pixel values displayed are based on a 16px font size.
+    */
+
+    /** 
+     * @tokens-subgroup Spacing
+     * @layout table-spacing
+    */
+
     --terra-spacing-3x-small: 0.125rem; /* 2px */
     --terra-spacing-2x-small: 0.25rem; /* 4px */
     --terra-spacing-x-small: 0.5rem; /* 8px */
@@ -751,15 +798,45 @@
     --terra-spacing-3x-large: 3rem; /* 48px */
     --terra-spacing-4x-large: 4.5rem; /* 72px */
 
-    /* Transitions
+    /**
+     * @tokens Transition Tokens
+     * @description
+     * Transition tokens are used to create consistent transition durations for animations and interactions. They use milliseconds (ms) as the unit of time.
     */
+
+    /** 
+     * @tokens-subgroup Transition
+     * @layout table-transition
+    */
+
     --terra-transition-x-slow: 1000ms;
     --terra-transition-slow: 500ms;
     --terra-transition-medium: 250ms;
     --terra-transition-fast: 150ms;
     --terra-transition-x-fast: 50ms;
 
-    /* Typography
+    /**
+    * @tokens Z-index Tokens
+    * @description
+    * Z-index tokens are used to control the stacking order of elements on the page.
+    */
+    
+    /**
+    * @tokens-subgroup Z-index
+    * @layout table
+    */
+    
+    --terra-z-index-drawer: 700;
+    --terra-z-index-dialog: 1000;
+    --terra-z-index-dropdown: 900;
+    --terra-z-index-toast: 950;
+    --terra-z-index-tooltip: 1000;
+
+
+    /** 
+     * @tokens Typography Tokens
+     * @description
+     * Typography tokens are used to create consistent typography styles across the design system. They include font families, font sizes, font weights, letter spacings, and line heights. They use rem units
     */
 
     /* Fonts */
@@ -816,21 +893,6 @@
     --terra-line-height-loose: 2.2;
     --terra-line-height-looser: 2.6;
 
-    /* Focus rings */
-    --terra-focus-ring-color: var(--terra-border-interactive-focus-ring);
-    --terra-focus-ring-style: solid;
-    --terra-focus-ring-width: 3px;
-    --terra-focus-ring: var(--terra-focus-ring-style) var(--terra-focus-ring-width)
-        var(--terra-focus-ring-color);
-    --terra-focus-ring-offset: 1px;
-
-    /* Z-indexes
-    */
-    --terra-z-index-drawer: 700;
-    --terra-z-index-dialog: 1000;
-    --terra-z-index-dropdown: 900;
-    --terra-z-index-toast: 950;
-    --terra-z-index-tooltip: 1000;
 
     /* Utility Tokens ------------------------------------------------------------ END
 
@@ -851,25 +913,14 @@
     --terra-link-text-decoration-style: dotted;
     --terra-link-underline-offset: 2px;
 
-    /* Container common styles for components like dialogs, menus, and panels. These tokens provide a consistent style for these types of components across the design system. 
-    */
-    --terra-container-dialog-border-radius: var(--terra-border-radius-medium);
-    --terra-container-dialog-border-width: 1px;
-    --terra-container-dialog-header-border-color: var(--terra-border-neutral-default);
-    --terra-container-dialog-header-border-style: solid;
-    --terra-container-dialog-footer-border-color: var(--terra-border-neutral-default);
-    --terra-container-dialog-footer-border-style: none;
-    --terra-container-menu-border-radius: var(--terra-border-radius-medium);
-    --terra-container-menu-border-width: 1px;
-    --terra-container-panel-border-radius: var(--terra-border-radius-medium);
-    --terra-container-panel-border-width: 1px;
 
     /* Help text */
+    /* Help text tokens control the appearance of help text in form controls. */
     --terra-input-help-text-font-size-small: var(--terra-font-size-x-small);
     --terra-input-help-text-font-size-medium: var(--terra-font-size-small);
     --terra-input-help-text-font-size-large: var(--terra-font-size-medium);
     --terra-input-help-text-color: var(--terra-text-secondary);
-
+    
     /* Common Element Tokens ------------------------------------------------------------ END
 
 
@@ -879,9 +930,59 @@
     * These tokens are specific to individual components in the design system. They reference the foundation, semantic and utility tokens. 
     * All tokens are defined in horizon.scss and automatically adapt to dark mode when applicable.
     */
+    /**
+    * @tokens-subsection Accordion Tokens
+    * @description
+    * Accordion tokens define the visual appearance of accordion elements in the design system.
+    */
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @description
+    * Accordion layout tokens define the visual layout of accordion elements.
+    * @layout table
+    */
+    --terra-accordion-border-width: 1px;
+    --terra-accordion-border-radius: var(--terra-border-radius-large);
+    --terra-accordion-content-padding: var(--terra-spacing-medium);
+    --terra-accordion-summary-font-size: var(--terra-font-size-small);
+    --terra-accordion-summary-font-weight: var(--terra-font-weight-semibold);
+    --terra-accordion-summary-padding: var(--terra-spacing-small) var(--terra-spacing-medium);
 
-    /* Alert */
+    /**
+    * @tokens-subgroup Accordion Colors
+    * @description
+    * Accordion color tokens define the visual colors of accordion elements.
+    * @layout table-swatch
+    */
+    --terra-accordion-border-color: var(--terra-border-neutral-default);       
+    --terra-accordion-content-color: var(--terra-text-secondary);
+    --terra-accordion-background-color: var(--terra-container-menu-bg);
+    --terra-accordion-summary-background-color: var(--terra-color-bg-surface-neutral-primary);
+    --terra-accordion-summary-background-color-hover: var(--terra-color-bg-surface-neutral-secondary);
+    --terra-accordion-summary-border-color: var(--terra-border-neutral-default);
+    --terra-accordion-summary-color: var(--terra-text-primary);
+    --terra-accordion-transition: background-color var(--terra-transition-fast); 
+
+    /**
+    * @tokens-subsection Alerts Tokens
+    * @description
+    * Alert tokens define the visual appearance of alert elements and its variants in the design system.
+    */
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @description
+    * Alert layout tokens define the visual layout of alert elements.
+    * @layout table
+    */
     --terra-alert-line-height: var(--terra-line-height-normal);
+    
+    /**
+    * @tokens-subgroup Filled Alert Appearance
+    * @description
+    * Alert filled tokens define the visual appearance of filled alert elements in the design system.
+    * @layout table-swatch
+    */
+  
     --terra-alert-filled-background-color-information: var(
         --terra-color-bg-info-bold
     );
@@ -902,7 +1003,12 @@
     --terra-alert-filled-icon-color-warning: var(--terra-text-on-semantic-inverse);
     --terra-alert-filled-icon-color-danger: var(--terra-text-on-semantic);
 
-    /* Alert subtle appearance */
+    /**
+     * @tokens-subgroup Subtle Alert Appearance
+     * @description
+     * Alert subtle tokens define the visual appearance of alert elements lighter colored subtle backgrounds in the design system.
+     * @layout table-swatch
+    */
     --terra-alert-subtle-background-color-information: var(
         --terra-color-bg-info-subtle
     );
@@ -922,45 +1028,59 @@
     --terra-alert-subtle-color-warning: var(--terra-text-on-warning);
     --terra-alert-subtle-color-danger: var(--terra-text-on-error);
 
-    /* Alert white appearance colors */
+    /**
+     * @tokens-subgroup White Alert Appearance
+     * @description
+     * Alert white appearance tokens define the visual appearance of alert elements with white backgrounds and accent colors in the design system.
+     * @layout table-swatch
+    */
     --terra-alert-white-background-color: var(--terra-color-bg-surface-neutral-base);
     --terra-alert-white-color: var(--terra-text-secondary);
 
-    /* Accordion */
-    --terra-accordion-background-color: var(--terra-container-menu-bg);
-    --terra-accordion-border-color: var(--terra-border-neutral-default);
-    --terra-accordion-border-width: 1px;
-    --terra-accordion-border-radius: var(--terra-border-radius-large);
-    --terra-accordion-content-color: var(--terra-text-secondary);
-    --terra-accordion-summary-background-color: var(
-        --terra-color-bg-surface-neutral-primary
-    );
-    --terra-accordion-summary-background-color-hover: var(
-        --terra-color-bg-surface-neutral-secondary
-    );
-    --terra-accordion-summary-border-color: var(--terra-border-neutral-default);
-    --terra-accordion-summary-padding: var(--terra-spacing-small)
-        var(--terra-spacing-medium);
-    --terra-accordion-summary-font-size: var(--terra-font-size-small);
-    --terra-accordion-summary-font-weight: var(--terra-font-weight-semibold);
-    --terra-accordion-summary-color: var(--terra-text-primary);
-    --terra-accordion-content-padding: var(--terra-spacing-medium);
-    --terra-accordion-transition: background-color var(--terra-transition-fast);
+    /**
+    * @tokens-subsection Avatar
+    * @description
+    * Avatar tokens define the visual appearance of avatar elements in the design system.
+    */
 
-    /* Avatar sizes */
+    /**
+     * @tokens-subgroup Avatar Sizes
+     * @description
+     * Avatar size tokens define the visual size of avatar elements in the design system.
+     * @layout table
+    */
     --terra-avatar-size-small: 2rem; /* 32px */
     --terra-avatar-size-medium: 2.5rem; /* 40px */
     --terra-avatar-size-large: 3.5rem; /* 56px */
 
-    /* Avatar colors */
+    /**
+     * @tokens-subgroup Avatar Typography
+     * @description
+     * Avatar typography tokens define the visual typography of avatar elements in the design system.
+     * @layout table
+    */
+
+    --terra-avatar-font-family: var(--terra-font-family--inter);
+    --terra-avatar-font-weight: var(--terra-font-weight-normal);
+    /**
+     * @tokens-subgroup Avatar Colors
+     * @description
+     * Avatar color tokens define the visual colors of avatar elements in the design system.
+     * @layout table-swatch
+    */
     --terra-avatar-background-color: var(--terra-color-carbon-40);
     --terra-avatar-color: var(--terra-color-spacesuit-white);
 
-    /* Avatar typography */
-    --terra-avatar-font-family: var(--terra-font-family--inter);
-    --terra-avatar-font-weight: var(--terra-font-weight-normal);
-
-    /* Badge Component
+    /**
+     * @tokens-subsection Badge Component
+     * @description
+     * Badge tokens define the visual appearance of badge elements in the design system.
+    */
+    /**
+     * @tokens-subgroup Badge Colors
+     * @description
+     * Badge tokens that define background and text colors.
+     * @layout table-swatch
     */
     --terra-badge-background-color-information: var(--terra-color-bg-info-bold);
     --terra-badge-background-color-success: var(--terra-color-bg-success-bold);
@@ -974,10 +1094,25 @@
     --terra-badge-color-warning: var(--terra-text-on-semantic-inverse);
     --terra-badge-color-danger: var(--terra-text-on-semantic);
 
-    /* Banner */
+    /**
+     * @tokens-subsection Banner
+     * @description
+     * Banner tokens define the visual appearance of banner elements in the design system.
+    */
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @layout table
+    */
     --terra-banner-line-height: var(--terra-line-height-normal);
 
-    /* Button Component
+    /**
+    * @tokens-subsection Button Component
+    * @description
+    * Button tokens define the visual appearance of button elements and their variants in the design system.
+    */
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @layout table
     */
     --terra-button-border-width: 1px;
 
@@ -989,7 +1124,12 @@
     --terra-button-height-medium: 2.25rem; /* 36px */
     --terra-button-height-large: 3rem; /* 48px */
 
-    /* Button text color for filled buttons and outline buttons onHover */
+    /**
+    * @tokens-subgroup Text Colors for Standard and Outline Buttons
+    * @description
+    * Text colors used on Standard and Outline variant buttons.
+    * @layout table-swatch
+    */
     --terra-button-color-default: var(--terra-text-on-action-secondary);
     --terra-button-color-primary: var(--terra-text-on-action-primary);
     --terra-button-color-cta: var(--terra-text-on-action-cta);
@@ -999,7 +1139,12 @@
 
     --terra-button-outline-text-color: var(--terra-text-primary);
 
-    /* Button text color for text buttons */
+    /**
+    * @tokens-subgroup Text Colors for Text Buttons
+    * @description
+    * Text color states for Text variant buttons.
+    * @layout table-swatch
+    */
     --terra-button-text-text-color: var(--terra-text-link-default);
     --terra-button-text-text-color-hover: var(--terra-text-link-hover);
     --terra-button-text-text-color-active: var(--terra-text-link-default);
@@ -1008,32 +1153,70 @@
     );
     --terra-button-page-link-text-color: var(--terra-text-primary);
 
-    /*
-    * Caption Component
-    * Captions are small text blocks that describe photos, provide additional context and information,
-    * and give credit to photographers and other content owners and creators.
+    /**
+    * @tokens-subsection Caption
+    * @description
+    * Caption tokens define the visual appearance of caption elements.
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
     */
     --terra-caption-font-family: var(--terra-font-family--public-sans);
     --terra-caption-font-size: var(--terra-font-size-small);
     --terra-caption-font-weight: var(--terra-font-weight-normal);
     --terra-caption-line-height: var(--terra-line-height-normal);
+
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-caption-color: var(--terra-text-tertiary);
     --terra-caption-credit-color: var(--terra-text-secondary);
 
-    /* Card colors */
+    /**
+    * @tokens-subsection Card
+    * @description
+    * Card tokens define the visual appearance of card elements.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-card-background-color: var(--terra-container-panel-bg);
 
-    /*
-     * Checkbox Component
-     * Checkboxes are a form field used when there are multiple options to select from a list.
-     */
+    /**
+    * @tokens-subsection Checkbox
+    * @description
+    * Checkbox tokens define the visual appearance of checkbox elements.
+    */
+    /**
+    * @tokens-subgroup Border
+    * @layout table
+    */
+    --terra-checkbox-border-width: 1px;
+    --terra-checkbox-border-radius: 2px;
 
-    /* Checkbox sizes */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
+    --terra-checkbox-label-font-family: var(--terra-font-family--inter);
+    --terra-checkbox-label-font-size: var(--terra-font-size-small);
+    --terra-checkbox-label-font-weight: var(--terra-font-weight-normal);
+
+    /**
+    * @tokens-subgroup Checkbox Sizes
+    * @layout table
+    */
     --terra-checkbox-size-small: 0.875rem; /* 14px */
     --terra-checkbox-size-medium: 1.125rem; /* 18px */
     --terra-checkbox-size-large: 1.375rem; /* 22px */
 
-    /* Checkbox colors */
+    /**
+    * @tokens-subgroup Checkbox colors
+    * @layout table-swatch
+    */
     --terra-checkbox-background-color: var(--terra-control-bg-default);
     --terra-checkbox-background-color-hover: var(--terra-control-bg-hover);
     --terra-checkbox-background-color-active: var(--terra-control-bg-active);
@@ -1050,38 +1233,62 @@
         --terra-control-border-selected-hover
     );
     --terra-checkbox-border-color-disabled: var(--terra-control-border-disabled);
-    --terra-checkbox-border-width: 1px;
-    --terra-checkbox-border-radius: 2px;
+
     --terra-checkbox-icon-color: var(--terra-control-icon-selected);
     --terra-checkbox-label-color: var(--terra-text-secondary);
-    --terra-checkbox-label-font-family: var(--terra-font-family--inter);
-    --terra-checkbox-label-font-size: var(--terra-font-size-small);
-    --terra-checkbox-label-font-weight: var(--terra-font-weight-normal);
 
-    /* Checkbox focus */
+    /**
+    * @tokens-subgroup Checkbox Focus Ring 
+    * @layout table-swatch
+    */
     --terra-checkbox-focus-ring-color: var(--terra-focus-ring-color);
     --terra-checkbox-focus-ring-width: var(--terra-focus-ring-width);
     --terra-checkbox-focus-ring-offset: var(--terra-focus-ring-offset);
 
-    /* Chip sizes */
-    --terra-chip-height-small: 1.375rem;
-    --terra-chip-height-medium: 1.875rem;
-    --terra-chip-height-large: 2.5rem;
 
-    /* Chip spacing */
+    /**
+    * @tokens-subsection Chips
+    * @description
+    * Chip tokens define the visual appearance of chip elements.
+    */
+    /**
+    * @tokens-subgroup Chip Sizes
+    * @layout table
+    */
+    --terra-chip-height-small: 1.375rem; /* 22px */
+    --terra-chip-height-medium: 1.875rem; /* 30px */
+    --terra-chip-height-large: 2.5rem; /* 40px */
+
+    /**
+    * @tokens-subgroup Spacing
+    * @layout table
+    */
     --terra-chip-padding-small: var(--terra-spacing-x-small);
     --terra-chip-padding-medium: var(--terra-spacing-small);
     --terra-chip-padding-large: var(--terra-spacing-medium);
     --terra-chip-margin: var(--terra-spacing-2x-small);
 
-    /* Chip border */
+    /**
+    * @tokens-subgroup Border
+    * @layout table
+    */
     --terra-chip-border-width: 1.5px;
-
-    /* Chip typography */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
     --terra-chip-font-family: var(--terra-font-family--inter);
     --terra-chip-font-weight: var(--terra-font-weight-bold);
+    /**
+    * @tokens-subgroup Transition
+    * @layout table
+    */
+    --terra-chip-transition: fill var(--terra-transition-fast);
 
-    /* Chip colors */
+    /**
+    * @tokens-subgroup Chip Colors
+    * @layout table-swatch
+    */
     --terra-chip-background-color: var(--terra-color-neutral-0);
     --terra-chip-border-color: var(--terra-color-bg-info-bold);
     --terra-chip-color: var(--terra-text-secondary);
@@ -1089,22 +1296,112 @@
     --terra-chip-icon-color: var(--terra-text-secondary);
     --terra-chip-icon-color-hover: var(--terra-text-primary);
 
-    /* Chip transitions */
-    --terra-chip-transition: fill var(--terra-transition-fast);
+    /**
+    * @tokens-subsection Container
+    * @description
+    * Container tokens define the visual appearance of Container elements. Container common styles for components like dialogs, menus, and panels. These tokens provide a consistent style for these types of components across the design system.
+    */
+    /**
+    * @tokens-subgroup Container Border
+    * @layout table
+    */
+    --terra-container-dialog-border-radius: var(--terra-border-radius-medium);
+    --terra-container-dialog-border-width: 1px;
+    --terra-container-dialog-header-border-color: var(--terra-border-neutral-default);
+    /**
+    * @tokens-subgroup Container Header and Footer Border
+    * @layout table
+    */
+    --terra-container-dialog-header-border-style: solid;
+    --terra-container-dialog-footer-border-color: var(--terra-border-neutral-default);
+    --terra-container-dialog-footer-border-style: none;
+    /**
+    * @tokens-subgroup Container Menu Border
+    * @layout table
+    */
+    --terra-container-menu-border-radius: var(--terra-border-radius-medium);
+    --terra-container-menu-border-width: 1px;
+    /**
+    * @tokens-subgroup Container Panel Border
+    * @layout table
+    */
+    --terra-container-panel-border-radius: var(--terra-border-radius-medium);
+    --terra-container-panel-border-width: 1px;
 
-    /*
-     * Data Grid Component
-     * Data grid is built on AG Grid and uses Horizon Design System tokens.
-     */
+    /**
+    * @tokens-subsection Data Grid
+    * @description
+    * Data grid tokens define the visual appearance of data grid elements.
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
+    --terra-data-grid-font-family: var(--terra-font-family--inter);
+    --terra-data-grid-font-size: var(--terra-font-size-small);
+    --terra-data-grid-icon-font-family: agGridAlpine;
 
-    /* Data Grid - Colors - Primary */
+    /**
+    * @tokens-subgroup Spacing & Sizing
+    * @layout table
+    */
+    --terra-data-grid-height: 400px;
+    --terra-data-grid-grid-size: var(--terra-spacing-x-small);
+    --terra-data-grid-icon-size: var(--terra-icon-small);
+    --terra-data-grid-row-height: calc(var(--terra-data-grid-grid-size) * 7);
+    --terra-data-grid-header-height: calc(var(--terra-data-grid-grid-size) * 8);
+    --terra-data-grid-list-item-height: calc(var(--terra-data-grid-grid-size) * 4);
+    --terra-data-grid-cell-horizontal-padding: calc(var(--terra-data-grid-grid-size) * 3);
+    --terra-data-grid-cell-widget-spacing: calc(var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-widget-container-vertical-padding: calc(var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-widget-container-horizontal-padding: calc(var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-widget-vertical-spacing: calc(var(--terra-data-grid-grid-size) * 1.5);
+    --terra-data-grid-column-select-indent-size: var(--terra-data-grid-icon-size);
+    --terra-data-grid-set-filter-indent-size: var(--terra-data-grid-icon-size);
+    --terra-data-grid-advanced-filter-builder-indent-size: calc(var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-toggle-button-height: 18px;
+    --terra-data-grid-toggle-button-width: 28px;
+    --terra-data-grid-tab-min-width: 240px;
+    --terra-data-grid-side-bar-panel-width: 250px;
+
+    /**
+    * @tokens-subgroup Borders & Radius
+    * @layout table
+    */
+    --terra-data-grid-borders: solid 1px;
+    --terra-data-grid-border-radius: var(--terra-border-radius-medium);
+    --terra-data-grid-borders-side-button: none;
+    --terra-data-grid-side-button-selected-background-color: transparent;
+    --terra-data-grid-header-column-resize-handle-display: block;
+    --terra-data-grid-header-column-resize-handle-width: 2px;
+    --terra-data-grid-header-column-resize-handle-height: 30%;
+
+    /**
+    * @tokens-subgroup Shadows
+    * @layout table
+    */
+    --terra-data-grid-card-shadow: var(--terra-shadow-small);
+    --terra-data-grid-popup-shadow: var(--terra-shadow-small);
+
+    /**
+    * @tokens-subgroup Transitions
+    * @layout table
+    */
+    --terra-data-grid-selected-tab-underline-width: 2px;
+    --terra-data-grid-selected-tab-underline-transition-speed: var(--terra-transition-medium);
+    /**
+    * @tokens-subgroup Primary Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-active-color: var(--terra-color-nasa-blue);
     --terra-data-grid-background-color: var(--terra-input-background-default);
     --terra-data-grid-foreground-color: var(--terra-text-primary);
     --terra-data-grid-secondary-foreground-color: var(--terra-text-secondary);
     --terra-data-grid-disabled-foreground-color: var(--terra-text-on-action-disabled);
-
-    /* Data Grid - Colors - Borders */
+    /**
+    * @tokens-subgroup Border Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-border-color: var(--terra-border-neutral-default);
     --terra-data-grid-secondary-border-color: var(--terra-border-neutral-light);
     --terra-data-grid-input-border-color: var(--terra-border-neutral-default);
@@ -1113,7 +1410,10 @@
         --terra-border-action-disabled
     );
 
-    /* Data Grid - Colors - Backgrounds */
+    /**
+    * @tokens-subgroup Background Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-header-background-color: var(
         --terra-color-bg-surface-neutral-primary
     );
@@ -1141,7 +1441,10 @@
     );
     --terra-data-grid-chip-background-color: var(--terra-chip-background-color);
 
-    /* Data Grid - Colors - Interactive States */
+    /**
+    * @tokens-subgroup Interactive State Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-row-hover-color: var(--terra-color-bg-info-subtle);
     --terra-data-grid-column-hover-color: var(
         --terra-color-bg-surface-brand-tertiary
@@ -1154,12 +1457,18 @@
     --terra-data-grid-range-selection-border-color: var(--terra-color-nasa-blue);
     --terra-data-grid-input-focus-border-color: var(--terra-focus-ring-color);
 
-    /* Data Grid - Colors - Validation & Status */
+    /**
+    * @tokens-subgroup Validation & Status Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-invalid-color: var(--terra-color-nasa-red);
     --terra-data-grid-checkbox-unchecked-color: var(--terra-color-carbon-50);
     --terra-data-grid-checkbox-checked-color: var(--terra-color-nasa-blue);
 
-    /* Data Grid - Colors - Advanced Filters */
+    /**
+    * @tokens-subgroup Advanced Filters Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-advanced-filter-join-pill-color: var(
         --terra-color-nasa-red-tint
     );
@@ -1173,13 +1482,19 @@
         --terra-color-nasa-blue-tint
     );
 
-    /* Data Grid - Colors - Find/Search */
+    /**
+    * @tokens-subgroup Find/Search Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-find-match-color: var(--terra-color-carbon-90);
     --terra-data-grid-find-match-background-color: #ffff00;
     --terra-data-grid-find-active-match-color: var(--terra-color-carbon-90);
     --terra-data-grid-find-active-match-background-color: #ffa500;
 
-    /* Data Grid - Colors - Buttons & Actions */
+    /**
+    * @tokens-subgroup Buttons & Actions Colors
+    * @layout table-swatch
+    */
     --terra-data-grid-filter-panel-apply-button-color: var(
         --terra-text-on-action-primary
     );
@@ -1190,70 +1505,29 @@
         --terra-tab-indicator-selected
     );
 
-    /* Data Grid - Typography */
-    --terra-data-grid-font-family: var(--terra-font-family--inter);
-    --terra-data-grid-font-size: var(--terra-font-size-small);
-    --terra-data-grid-icon-font-family: agGridAlpine;
 
-    /* Data Grid - Spacing & Sizing */
-    --terra-data-grid-grid-size: var(--terra-spacing-x-small);
-    --terra-data-grid-icon-size: var(--terra-icon-small);
-    --terra-data-grid-row-height: calc(var(--terra-data-grid-grid-size) * 7);
-    --terra-data-grid-header-height: calc(var(--terra-data-grid-grid-size) * 8);
-    --terra-data-grid-list-item-height: calc(var(--terra-data-grid-grid-size) * 4);
-    --terra-data-grid-cell-horizontal-padding: calc(
-        var(--terra-data-grid-grid-size) * 3
-    );
-    --terra-data-grid-cell-widget-spacing: calc(var(--terra-data-grid-grid-size) * 2);
-    --terra-data-grid-widget-container-vertical-padding: calc(
-        var(--terra-data-grid-grid-size) * 2
-    );
-    --terra-data-grid-widget-container-horizontal-padding: calc(
-        var(--terra-data-grid-grid-size) * 2
-    );
-    --terra-data-grid-widget-vertical-spacing: calc(
-        var(--terra-data-grid-grid-size) * 1.5
-    );
-    --terra-data-grid-column-select-indent-size: var(--terra-data-grid-icon-size);
-    --terra-data-grid-set-filter-indent-size: var(--terra-data-grid-icon-size);
-    --terra-data-grid-advanced-filter-builder-indent-size: calc(
-        var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2
-    );
-    --terra-data-grid-toggle-button-height: 18px;
-    --terra-data-grid-toggle-button-width: 28px;
-    --terra-data-grid-tab-min-width: 240px;
-    --terra-data-grid-side-bar-panel-width: 250px;
+    /**
+    * @tokens-subsection Date Picker
+    * @description
+    * Date picker tokens define the visual appearance of date picker elements in the design system.
+    */
 
-    /* Data Grid - Borders & Radius */
-    --terra-data-grid-borders: solid 1px;
-    --terra-data-grid-border-radius: var(--terra-border-radius-medium);
-    --terra-data-grid-borders-side-button: none;
-    --terra-data-grid-side-button-selected-background-color: transparent;
-    --terra-data-grid-header-column-resize-handle-display: block;
-    --terra-data-grid-header-column-resize-handle-width: 2px;
-    --terra-data-grid-header-column-resize-handle-height: 30%;
-
-    /* Data Grid - Shadows */
-    --terra-data-grid-card-shadow: var(--terra-shadow-small);
-    --terra-data-grid-popup-shadow: var(--terra-shadow-small);
-
-    /* Data Grid - Transitions */
-    --terra-data-grid-selected-tab-underline-width: 2px;
-    --terra-data-grid-selected-tab-underline-transition-speed: var(
-        --terra-transition-medium
-    );
-
-    /* Data Grid - Height */
-    --terra-data-grid-height: 400px;
-
-    /* Date Picker Component */
+    /**
+    * @tokens-subgroup Panel Colors
+    * @layout table-swatch
+    */
     --terra-date-picker-sidebar-background-color: var(
         --terra-color-bg-surface-neutral-primary
     );
     --terra-date-picker-time-panel-background-color: var(
         --terra-color-bg-surface-neutral-primary
     );
-    --terra-data-picker-preset-background-hover: var(
+
+    /**
+    * @tokens-subgroup PresetColors
+    * @layout table-swatch
+    */
+    --terra-date-picker-preset-background-hover: var(
         --terra-menu-item-background-hover
     );
     --terra-date-picker-preset-background-focus: var(
@@ -1266,6 +1540,11 @@
     --terra-date-picker-preset-color-hover: var(--terra-menu-item-text-hover);
     --terra-date-picker-preset-color-focus: var(--terra-menu-item-text-active);
     --terra-date-picker-preset-color-selected: var(--terra-menu-item-text-selected);
+
+    /**
+    * @tokens-subgroup Spinner Colors
+    * @layout table-swatch
+    */
     --terra-date-picker-spinner-background-color: transparent;
     --terra-date-picker-spinner-background-color-hover: var(
         --terra-menu-item-background-hover
@@ -1275,7 +1554,13 @@
     );
     --terra-date-picker-spinner-color: var(--terra-menu-item-text);
     --terra-date-picker-spinner-color-hover: var(--terra-menu-item-text-hover);
+
+    /**
+    * @tokens-subgroup Interactive Colors
+    * @layout table-swatch
+    */
     --terra-date-picker-weekday-color: var(--terra-text-tertiary);
+
     --terra-date-picker-day-background-color-hover: var(
         --terra-menu-item-background-hover
     );
@@ -1299,16 +1584,28 @@
     --terra-date-picker-day-in-range-color: var(--terra-text-brand-on-brand-inverse);
     --terra-date-picker-day-in-range-color-hover: var(--terra-menu-item-text-hover);
 
-    /* Data Subsetter Component */
+    /**
+    * @tokens-subsection Date Subsetter
+    * @description
+    * Date Subsetter tokens define the visual appearance of Date Subsetter elements in the design system.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-data-subsetter-background-color: var(
         --terra-color-bg-surface-neutral-base
     );
 
-    /* Dialog Component */
-    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-base);
 
-    /* Data Subsetter History Component 
-    * Data subsetter history is a component that displays a user's history of data subsetter runs.
+    /**
+    * @tokens-subsection Data Subsetter History
+    * @description
+    * Data subsetter history token control the appearance of the Data Subsetter History. Data subsetter history is a component that displays a user's history of data subsetter runs.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-subsetter-history-header-background: var(--terra-color-nasa-blue-shade);
     --terra-subsetter-history-header-text: var(--terra-color-spacesuit-white);
@@ -1316,7 +1613,6 @@
         --terra-color-bg-surface-neutral-primary
     );
     --terra-subsetter-history-panel-border: var(--terra-border-neutral-default);
-    --terra-subsetter-history-panel-shadow: var(--terra-shadow-medium);
     --terra-history-item-background: var(--terra-color-bg-surface-neutral-secondary);
     --terra-history-item-border: var(--terra-border-neutral-default);
     --terra-history-item-text: var(--terra-text-secondary);
@@ -1324,8 +1620,21 @@
         --terra-color-bg-surface-neutral-inverse-tertiary
     );
     --terra-history-item-progress-bar-fill: var(--terra-color-bg-success-bold);
+    /**
+    * @tokens-subgroup Shadow
+    * @layout table
+    */  
+    --terra-subsetter-history-panel-shadow: var(--terra-shadow-medium);
 
-    /* File Upload Component */
+    /**
+    * @tokens-subsection File Upload
+    * @description
+    * File upload tokens define the visual appearance of file upload elements.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-file-upload-dropzone-background-color: var(
         --terra-input-background-default
     );
@@ -1340,46 +1649,90 @@
         --terra-input-border-disabled
     );
 
+    /**
+    * @tokens-subsection Dialog
+    * @description
+    * Dialog tokens define the visual appearance of Dialog elements in the design system.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
+    --terra-dialog-background-color: var(--terra-color-bg-surface-neutral-base);
+
+    /**
+    * @tokens-subsection Icon
+    * @description
+    * Icon tokens define the visual appearance of icon elements.
+    */
+    /**
+    * @tokens-subgroup Sizes
+    * @layout table
+    */
     /* Icon sizes */
     --terra-icon-small: 1.2rem; /* 19px */
     --terra-icon-medium: 1.75rem; /* 50px */
     --terra-icon-large: 2.2rem; /* 68px */
     --terra-icon-x-large: 3rem; /* 76px */
 
-    /* Inputs */
-    /* Input color tokens (background, border, text) are defined in the Figma Semantic tokens section above and in the Dark theme below. */
-
+    /**
+    * @tokens-subsection Input
+    * @description
+    * Input tokens define the visual appearance of input elements. Input color tokens (background, border, text) are defined in the Semantic tokens.
+    */
+    /**
+    * @tokens-subgroup Sizes
+    * @layout table
+    */
     --terra-input-height-small: 1.875rem; /* 30px */
     --terra-input-height-medium: 2.5rem; /* 40px */
     --terra-input-height-large: 3.125rem; /* 50px */
-
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
     --terra-input-font-family: var(--terra-font-family--public-sans);
     --terra-input-font-size: var(--terra-font-size-small);
     --terra-input-font-weight: var(--terra-font-weight-normal);
     --terra-input-line-height: var(--terra-line-height-denser);
-    --terra-input-border-width: 1px;
-    --terra-input-border-radius: var(--terra-border-radius-medium);
-
-    --terra-input-required-content: '*';
-    --terra-input-required-content-offset: -2px;
-    --terra-input-required-content-color: var(--terra-color-nasa-red);
-
-    --terra-input-border-radius-small: var(--terra-border-radius-medium);
-    --terra-input-border-radius-medium: var(--terra-border-radius-medium);
-    --terra-input-border-radius-large: var(--terra-border-radius-medium);
-
     --terra-input-font-weight: var(--terra-font-weight-normal);
     --terra-input-font-size-small: var(--terra-font-size-small);
     --terra-input-font-size-medium: var(--terra-font-size-medium);
     --terra-input-font-size-large: var(--terra-font-size-large);
     --terra-input-letter-spacing: var(--terra-letter-spacing-normal);
 
+    /**
+    * @tokens-subgroup Border and Radius
+    * @layout table
+    */
+    --terra-input-border-width: 1px;
+    --terra-input-border-radius: var(--terra-border-radius-medium);
+    --terra-input-border-radius-small: var(--terra-border-radius-medium);
+    --terra-input-border-radius-medium: var(--terra-border-radius-medium);
+    --terra-input-border-radius-large: var(--terra-border-radius-medium);
+
+    --terra-input-required-content: '*';
+    --terra-input-required-content-offset: -2px;
+    --terra-input-required-content-color: var(--terra-color-nasa-red);
+
+    /**
+    * @tokens-subgroup Spacing
+    * @layout table
+    */
     --terra-input-spacing-small: var(--terra-spacing-small);
     --terra-input-spacing-medium: var(--terra-spacing-medium);
     --terra-input-spacing-large: var(--terra-spacing-large);
 
+    /**
+    * @tokens-subgroup Focus Ring
+    * @layout table
+    */
     --terra-input-focus-ring-offset: 0;
 
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-input-filled-background-color: var(--terra-color-neutral-100);
     --terra-input-filled-background-color-hover: var(--terra-color-neutral-200);
     --terra-input-filled-background-color-focus: var(--terra-color-neutral-200);
@@ -1389,14 +1742,34 @@
     --terra-input-filled-color-focus: var(--terra-color-neutral-900);
     --terra-input-filled-color-disabled: var(--terra-color-neutral-400);
 
-    /* Labels */
+    /**
+    * @tokens-subgroup Label
+    * @description
+    * Label tokens define the visual appearance of Label elements.
+    * @layout table
+    */
     --terra-input-label-font-family: var(--terra-font-family--inter);
     --terra-input-label-font-size: var(--terra-font-size-small);
     --terra-input-label-color: var(--terra-text-primary);
     --terra-input-label-line-weight: var(--terra-font-weight-semibold);
     --terra-input-label-line-height: var(--terra-line-height-looser);
 
-    /* Loader sizes */
+    /**
+    * @tokens-subsection Loader
+    * @description
+    * Loader tokens define the visual appearance of Loader elements.
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
+    --terra-loader-text-letter-spacing: var(--terra-letter-spacing-loose);
+    --terra-loader-text-padding: var(--terra-spacing-2x-small);
+
+    /**
+    * @tokens-subgroup Sizes
+    * @layout table
+    */
     --terra-loader-size-small: 30px;
     --terra-loader-size-medium: 52px;
     --terra-loader-size-large: 100px;
@@ -1404,26 +1777,46 @@
     --terra-loader-stroke-width-medium: 3.5px;
     --terra-loader-stroke-width-large: 2.5px;
 
-    /* Loader colors */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-loader-track-color: var(--terra-color-neutral-300);
     --terra-loader-progress-color: var(--terra-color-nasa-blue);
     --terra-loader-planet-color: var(--terra-color-neutral-300);
     --terra-loader-moon-color: var(--terra-color-nasa-blue);
 
-    /* Loader typography */
-    --terra-loader-text-letter-spacing: var(--terra-letter-spacing-loose);
-    --terra-loader-text-padding: var(--terra-spacing-2x-small);
-
-    /* Map Component */
+    /**
+    * @tokens-subsection Map
+    * @description
+    * Map tokens define the visual appearance of Map elements.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-map-background-color: var(--terra-container-panel-bg);
     --terra-map-border-color: var(--terra-container-panel-border);
 
-    /* Menu Item Component */
-    /* menu color tokens (background, text) are defined in the Figma Semantic tokens section above and in the Dark theme below. */
+    /**
+    * @tokens-subsection Menu Item
+    * @description
+    * Menu Item tokens define the visual appearance of Menu Item elements. Menu color tokens (background, text) are defined in the [Semantic tokens section](/tokens/generated/semantic-tokens/#menu-item-color-tokens).
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
     --terra-menu-item-font-family: var(--terra-font-family--inter);
 
-    /* Options Component
-    * Options are used to present a list of choices to users.
+    /**
+    * @tokens-subsection Option
+    * @description
+    * Option tokens define the visual appearance of Option elements. Options are used to present a list of choices to users.
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table-swatch
     */
     --terra-options-item-text: var(--terra-menu-item-text);
     --terra-options-item-text-hover: var(--terra-menu-item-text-hover);
@@ -1433,21 +1826,37 @@
         --terra-menu-item-background-selected
     );
 
-    /* Overlays
+
+    /**
+    * @tokens-subsection Overlays
+    * @description
+    * Overlay tokens define the visual appearance of Overlay elements used in [dialog](/components/dialog), etc. Overlays are used primarily to mask content below dialogs.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-overlay-background-color: hsl(240 3.8% 46.1% / 33%);
 
-    /* Pagination Component
-     * Pagination is a navigational element that allows users to navigate between content or pages.
+    /**
+    * @tokens-subsection Pagination
+    * @description
+    * Pagination tokens define the visual appearance of Pagination elements. Pagination is a navigational element that allows users to navigate between content or pages
+    */
+    // TODO: Define Figma Design System tokens for pagination, export them to this file, assign them to pagination CSS styles. Remove tokens below.
 
-     * TODO: Define Figma Design System tokens for pagination, export them to this file, assign them to pagination CSS styles. Remove tokens below.
-
-    /* Pagination button text colors */
+    /**
+    * @tokens-subgroup Button TextColors
+    * @layout table-swatch
+    */
     --terra-pagination-button-color: var(--terra-text-primary);
     --terra-pagination-button-color-hover: var(--terra-text-secondary);
     --terra-pagination-button-color-current: var(--terra-color-neutral-950);
 
-    /* Pagination icon button colors (for circular prev/next buttons) */
+    /**
+    * @tokens-subgroup Icon Button Colors
+    * @layout table-swatch
+    */
     --terra-pagination-icon-button-background-color: transparent; /* var(--terra-color-neutral-950) if solid background is prefered */
     --terra-pagination-icon-button-border-color: var(--terra-border-neutral-default);
     --terra-pagination-icon-button-background-color-hover: var(
@@ -1464,7 +1873,45 @@
         --terra-text-on-action-disabled
     );
 
-    /* Popup */
+    /**
+    * @tokens-subsection Popover
+    * @description
+    * Popover tokens define the visual appearance of Popover elements. Popovers are card-like panels that appear when a user interacts with an element.
+    */
+    /**
+    * @tokens-subgroup Topography
+    * @layout table
+    */
+    --terra-popover-font-family: var(--terra-font-family--public-sans);
+    --terra-popover-font-weight: var(--terra-font-weight-normal);
+    --terra-popover-font-size: var(--terra-font-size-small);
+    --terra-popover-line-height: var(--terra-line-height-normal);
+
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @layout table
+    */
+    --terra-popover-border-radius: var(--terra-container-panel-border-radius);
+    --terra-popover-padding: var(--terra-spacing-medium);
+    --terra-popover-shadow: var(--terra-shadow-medium);
+    --terra-popover-arrow-size: var(--terra-tooltip-arrow-size);
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
+    --terra-popover-background-color: var(--terra-container-panel-bg);
+    --terra-popover-border-color: var(--terra-container-panel-border);
+    --terra-popover-color: var(--terra-text-secondary);
+
+    /**
+    * @tokens-subsection Popup
+    * @description
+    * Popup tokens define the visual appearance of Popup elements.
+    */
+    /**
+    * @tokens-subgroup Icon Button Colors
+    * @layout table-swatch
+    */
     --terra-popup-background-color: var(--terra-container-panel-bg);
     --terra-popup-border-color: var(--terra-container-panel-border);
     --terra-popup-color: var(--terra-text-primary);
@@ -1472,20 +1919,34 @@
     --terra-popup-arrow-color: var(--terra-container-panel-bg);
     --terra-popup-padding: var(--terra-spacing-medium);
 
-    /* Progress Bar */
+
+    /**
+    * @tokens-subsection Progress Bar
+    * @description
+    * Progress Bar tokens define the visual appearance of Progress Bar elements.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-progress-bar-background-color: var(--terra-color-neutral-200);
 
-    /*
-     * Radio Component
-     * Radio buttons are a form field used when only a single selection can be made from a list.
-     */
-
-    /* Radio sizes */
+    /**
+    * @tokens-subsection Radio
+    * @description
+    * Radio tokens define the visual appearance of Radio elements. Radio buttons are a form field used when only a single selection can be made from a list.
+    */
+    /**
+    * @tokens-subgroup Sizes
+    * @layout table
+    */
     --terra-radio-size-small: 0.875rem; /* 14px */
     --terra-radio-size-medium: 1.125rem; /* 18px */
     --terra-radio-size-large: 1.375rem; /* 22px */
-
-    /* Radio colors */
+    /**
+    * @tokens-subgroup Background Colors
+    * @layout table-swatch
+    */
     --terra-radio-background-color: var(--terra-control-bg-default);
     --terra-radio-background-color-hover: var(--terra-control-bg-hover);
     --terra-radio-background-color-active: var(--terra-control-bg-active);
@@ -1494,6 +1955,11 @@
         --terra-control-bg-selected-hover
     );
     --terra-radio-background-color-disabled: var(--terra-control-bg-disabled);
+
+    /**
+    * @tokens-subgroup Border Colors
+    * @layout table-swatch
+    */
     --terra-radio-border-color: var(--terra-control-border-default);
     --terra-radio-border-color-hover: var(--terra-control-border-hover);
     --terra-radio-border-color-active: var(--terra-control-border-active);
@@ -1502,21 +1968,44 @@
         --terra-control-border-selected-hover
     );
     --terra-radio-border-color-disabled: var(--terra-control-border-disabled);
+    /**
+    * @tokens-subgroup Border Width
+    * @layout table
+    */
     --terra-radio-border-width: 1px;
+    /**
+    * @tokens-subgroup Icon Colors
+    * @layout table-swatch
+    */
     --terra-radio-icon-color: var(--terra-control-icon-selected);
+    /**
+    * @tokens-subgroup Label Typography
+    * @layout table
+    */
     --terra-radio-label-color: var(--terra-text-secondary);
     --terra-radio-label-font-family: var(--terra-font-family--inter);
     --terra-radio-label-font-size: var(--terra-font-size-small);
     --terra-radio-label-font-weight: var(--terra-font-weight-normal);
-
-    /* Radio focus */
-    --terra-radio-focus-ring-color: var(--terra-color-nasa-blue);
+    /**
+    * @tokens-subgroup Focus Ring
+    * @layout table
+    */
     --terra-radio-focus-ring-width: var(--terra-focus-ring-width);
     --terra-radio-focus-ring-offset: var(--terra-focus-ring-offset);
+    /**
+    * @tokens-subgroup Focus Ring Color
+    * @layout table-swatch
+    */
+    --terra-radio-focus-ring-color: var(--terra-color-nasa-blue);
 
-    /*
-    * Scroll Hint Component
-    * Scroll hint is an animated button that prompts visitors to scroll.
+    /**
+    * @tokens-subsection Scroll Hint
+    * @description
+    * Scroll hint tokens define the visual appearance of Scroll Hint elements. Scroll hint is an animated button that prompts visitors to scroll.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-scroll-hint-ring-color: var(--terra-color-nasa-red);
     --terra-scroll-hint-icon-background-color: var(
@@ -1524,42 +2013,75 @@
     );
     --terra-scroll-hint-icon-color: var(--terra-text-primary-inverse);
     --terra-scroll-hint-text-color: var(--terra-text-primary);
-
-    /* scroll hint inverse variant colors */
+    /**
+    * @tokens-subgroup InverseColors
+    * @layout table-swatch
+    */
     --terra-scroll-hint-inverse-background-color: var(
         --terra-color-bg-surface-neutral-primary
     );
     --terra-scroll-hint-inverse-icon-color: var(--terra-text-primary);
     --terra-scroll-hint-inverse-text-color: var(--terra-text-primary-inverse);
 
-    /* Site Header Component 
-    *
+    /**
+    * @tokens-subsection Site Header
+    * @description
+    * Site Header tokens define the visual appearance of Site Header elements.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-site-header-background: var(--terra-color-carbon-black);
     --terra-site-header-text: var(--terra-color-spacesuit-white);
 
-    /* Site Navigation Component
+    /**
+    * @tokens-subsection Site Navigation
+    * @description
+    * Site Navigation tokens define the visual appearance of Site Navigation elements.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-site-navigation-background: var(--terra-color-carbon-black);
 
-    /* Skeleton */
-    --terra-skeleton-background-color: var(--terra-color-neutral-400);
-    --terra-skeleton-sheen-color: var(--terra-color-neutral-500);
+    /**
+    * @tokens-subsection Skeleton
+    * @description
+    * Skeleton tokens define the visual appearance of Skeleton elements.
+    */
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @layout table
+    */
     --terra-skeleton-border-radius: var(--terra-border-radius-medium);
     --terra-skeleton-margin-bottom: var(--terra-spacing-small);
     --terra-skeleton-min-height: var(--terra-spacing-medium);
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
+    --terra-skeleton-background-color: var(--terra-color-neutral-400);
+    --terra-skeleton-sheen-color: var(--terra-color-neutral-500);
 
-    /*
-     * Slider Component
-     * Sliders are form fields that allow for selection of a range of values.
-     */
-
-    /* Slider track */
+    /**
+    * @tokens-subsection Slider
+    * @description
+    * Slider tokens define the visual appearance of Slider elements. Sliders are form fields that allow for selection of a range of values.
+    */
+    /**
+    * @tokens-subgroup Slider Track Colors
+    * @layout table-swatch
+    */
     --terra-slider-track-background-color: var(--terra-control-bg-default);
     --terra-slider-track-border-color: var(--terra-control-border-default);
     --terra-slider-connect-color: var(--terra-control-bg-selected);
 
-    /* Slider handle */
+    /**
+    * @tokens-subgroup Slider Handle Colors
+    * @layout table-swatch
+    */
     --terra-slider-handle-background-color: var(--terra-control-icon-selected);
     --terra-slider-handle-background-color-hover: var(
         --terra-control-icon-selected-hover
@@ -1569,21 +2091,41 @@
     );
     --terra-slider-handle-border-color: var(--terra-control-border-selected);
 
-    /* Slider label */
+    /**
+    * @tokens-subgroup Slider Label Colors
+    * @layout table-swatch
+    */
     --terra-slider-label-color: var(--terra-text-secondary);
     --terra-slider-range-color: var(--terra-text-secondary);
 
-    /* Spatial Picker Component */
+    /**
+    * @tokens-subsection Spatial Picker
+    * @description
+    * Spatial Picker tokens define the visual appearance of Spatial Picker elements.
+    */
+    /**
+    * @tokens-subgroup Icon Colors
+    * @layout table-swatch
+    */
     --terra-spatial-picker-icon-color: var(--terra-input-icon-default);
     --terra-spatial-picker-icon-color-hover: var(--terra-input-icon-hover);
 
-    /*
-    * Status Indicator Component
-    * Status indicators are dynamic labels that indicate the current state of a mission or project.
+    /**
+    * @tokens-subsection Status Indicator
+    * @description
+    * Status Indicator tokens define the visual appearance of Status Indicator elements. Status indicators are dynamic labels that indicate the current state of a mission or project.
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
     */
     --terra-status-indicator-font-family: var(--terra-font-family--inter);
     --terra-status-indicator-font-size: var(--terra-font-size-small);
     --terra-status-indicator-font-weight: var(--terra-font-weight-normal);
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
     --terra-status-indicator-label-color: var(--terra-text-secondary);
     --terra-status-indicator-dot-color-active: var(--terra-color-active-green);
     --terra-status-indicator-dot-color-completed: var(--terra-color-carbon-40);
@@ -1592,57 +2134,85 @@
     );
     --terra-status-indicator-dot-color-future: var(--terra-color-nasa-blue);
 
-    /* Stepper Component
-    * Steppers are a type of form field that allow users to incrementally increase or decrease a value.
+    /**
+    * @tokens-subsection Stepper
+    * @description
+    * Stepper tokens define the visual appearance of Stepper elements. Steppers are a type of form field that allow users to incrementally increase or decrease a value.
+    */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-stepper-complete-color: var(--terra-color-blue-400);
     --terra-stepper-current-color: var(--terra-color-nasa-blue);
     --terra-stepper-upcoming-color: var(--terra-color-neutral-200);
     --terra-stepper-background-color: var(--terra-color-neutral-200);
 
-    /*
-     * Tab Component
-     * Tabs divide content into meaningful, related sections.
-     */
-
-    /* Tab typography */
+    /**
+    * @tokens-subsection Tabs
+    * @description
+    * Tabs tokens define the visual appearance of Tabs elements. Tabs divide content into meaningful, related sections. Tab color tokens (text and indicator) are defined in the [Semantic tokens section](/tokens/generated/semantic-tokens/#tab-color-tokens).
+    */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
     --terra-tab-font-family: var(--terra-font-family--inter);
     --terra-tab-font-size-large: var(--terra-font-size-medium);
     --terra-tab-font-size-small: var(--terra-font-size-small);
     --terra-tab-font-weight-normal: var(--terra-font-weight-normal);
     --terra-tab-font-weight-active: var(--terra-font-weight-bold);
 
-    /* Tab color tokens (text and indicator) are defined in the Figma Semantic tokens section above and in the Dark theme below. */
-
-    /* Tab padding */
+    /**
+    * @tokens-subgroup Spacing
+    * @layout table
+    */
     --terra-tab-padding-large: var(--terra-spacing-small) var(--terra-spacing-medium);
     --terra-tab-padding-small: var(--terra-spacing-2x-small)
         var(--terra-spacing-small);
     --terra-tab-padding-closable: var(--terra-spacing-2x-small);
 
-    /* Tab close button */
+    /**
+    * @tokens-subgroup Close Button
+    * @layout table
+    */
     --terra-tab-close-button-padding: var(--terra-spacing-2x-small);
     --terra-tab-close-button-margin: var(--terra-spacing-2x-small);
 
-    /* Tab states */
+    /**
+    * @tokens-subgroup States
+    * @layout table
+    */
     --terra-tab-opacity-disabled: 0.5;
 
-    /* Tab focus */
+    /**
+    * @tokens-subgroup Focus
+    * @layout table
+    */
     --terra-tab-focus-ring-offset: 2px;
 
-    /* Tabs indicator */
+    /**
+    * @tokens-subgroup Indicator
+    * @layout table
+    */
     --terra-tabs-indicator-width: 2px;
     --terra-tabs-track-width: 1px;
 
-    /* Tabs scroll controls */
+    /**
+    * @tokens-subgroup Scroll Button
+    * @layout table
+    */
     --terra-tabs-scroll-button-width: var(--terra-spacing-x-large);
 
-    /*
-    * Tag Component
-    * Tags are simple labels that help categorize items.
+    /**
+    * @tokens-subsection Tag
+    * @description
+    * Tag tokens define the visual appearance of Tag elements. Tags are simple labels that help categorize items.
     */
-
-    /* Tag typography */
+    /**
+    * @tokens-subgroup Typography
+    * @layout table
+    */
     --terra-tag-font-family: var(--terra-font-family--inter);
     --terra-tag-font-size-small: var(--terra-font-size-x-small);
     --terra-tag-font-size-medium: var(--terra-font-size-small);
@@ -1650,16 +2220,30 @@
     --terra-tag-font-weight: var(--terra-font-weight-normal);
     --terra-tag-font-weight-urgent: var(--terra-font-weight-bold, 700);
 
-    /* Tag icon sizes (content tags) */
-    --terra-tag-icon-size-small: 1.25rem;
-    --terra-tag-icon-size-medium: 1.5rem;
-    --terra-tag-icon-size-large: 1.75rem;
-    --terra-tag-icon-inner-size-small: 0.75rem;
-    --terra-tag-icon-inner-size-medium: 0.875rem;
-    --terra-tag-icon-inner-size-large: 1rem;
+    /**
+    * @tokens-subgroup Padding
+    * @layout table
+    */
+    --terra-tag-padding-small: 0.25rem 0.5rem;
+    --terra-tag-padding-medium: var(--terra-spacing-x-small, 0.5rem) var(--terra-spacing-small, 0.75rem);
+    --terra-tag-padding-large: 0.625rem 1rem;
+
+    /**
+    * @tokens-subgroup Icon Sizes
+    * @layout table
+    */
+    --terra-tag-icon-size-small: 1.25rem; /* 20px */
+    --terra-tag-icon-size-medium: 1.5rem; /* 24px */
+    --terra-tag-icon-size-large: 1.75rem; /* 28px */
+    --terra-tag-icon-inner-size-small: 0.75rem; /* 12px */
+    --terra-tag-icon-inner-size-medium: 0.875rem; /* 14px */
+    --terra-tag-icon-inner-size-large: 1rem; /* 16px */
     --terra-tag-icon-border-color: var(--terra-color-carbon-40);
 
-    /* Tag colors */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-tag-color: var(--terra-text-secondary);
     --terra-tag-background-color: transparent;
     --terra-tag-border-color: var(--terra-border-neutral-default);
@@ -1668,28 +2252,26 @@
         --terra-color-bg-surface-neutral-tertiary
     );
     --terra-tag-border-color-hover: var(--terra-border-neutral-strong);
-
-    /* Tag urgent variant colors */
     --terra-tag-urgent-color: var(--terra-color-spacesuit-white);
     --terra-tag-urgent-background-color: var(--terra-color-bg-error-bold);
 
-    /* Tag padding by size */
-    --terra-tag-padding-small: 0.25rem 0.5rem;
-    --terra-tag-padding-medium: var(--terra-spacing-x-small, 0.5rem)
-        var(--terra-spacing-small, 0.75rem);
-    --terra-tag-padding-large: 0.625rem 1rem;
-
-    /*
-     * Toggle Component
-     * Toggles allow the user to toggle an option on or off.
-     */
-
-    /* Toggle sizes */
+    /**
+    * @tokens-subsection Toggle
+    * @description
+    * Toggle tokens define the visual appearance of Toggle elements. Toggles are switches that allow the user to turn an option on or off.
+    */
+    /**
+    * @tokens-subgroup Sizes
+    * @layout table
+    */
     --terra-toggle-size-small: 0.875rem; /* 14px */
     --terra-toggle-size-medium: 1.125rem; /* 18px */
     --terra-toggle-size-large: 1.375rem; /* 22px */
 
-    /* Toggle colors */
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
     --terra-toggle-background-color-off: var(--terra-control-bg-active);
     --terra-toggle-background-color-on: var(--terra-control-bg-selected);
     --terra-toggle-border-color-off: var(--terra-control-border-default);
@@ -1706,38 +2288,44 @@
     );
     --terra-toggle-label-color: var(--terra-text-secondary);
 
-    /* Toggle focus */
+    /**
+    * @tokens-subgroup Focus Ring
+    * @layout table
+    */
     --terra-toggle-focus-ring-color: var(--terra-color-nasa-blue);
 
-    /* Tooltips & Popovers
+    /**
+    * @tokens-subsection Tooltips
+    * @description
+    * Tooltip tokens define the visual appearance of Tooltip elements. Tooltips are small popups that provide additional information when a user hovers over an element.
     */
-
-    /* Tooltip tokens (compact inline help) */
-    --terra-tooltip-border-radius: var(--terra-border-radius-medium);
-    --terra-tooltip-background-color: var(
-        --terra-color-bg-surface-neutral-inverse-primary
-    );
-    --terra-tooltip-color: var(--terra-text-primary-inverse);
+    /**
+    * @tokens-subgroup Topography
+    * @layout table
+    */    
     --terra-tooltip-font-family: var(--terra-font-family--public-sans);
     --terra-tooltip-font-weight: var(--terra-font-weight-normal);
     --terra-tooltip-font-size: var(--terra-font-size-small);
     --terra-tooltip-line-height: var(--terra-line-height-normal);
-    --terra-tooltip-padding: var(--terra-spacing-2x-small)
-        var(--terra-spacing-x-small);
-    --terra-tooltip-arrow-size: 6px;
 
-    /* Popover tokens (card-like panels attached to an anchor) */
-    --terra-popover-border-radius: var(--terra-container-panel-border-radius);
-    --terra-popover-background-color: var(--terra-container-panel-bg);
-    --terra-popover-border-color: var(--terra-container-panel-border);
-    --terra-popover-color: var(--terra-text-secondary);
-    --terra-popover-font-family: var(--terra-font-family--public-sans);
-    --terra-popover-font-weight: var(--terra-font-weight-normal);
-    --terra-popover-font-size: var(--terra-font-size-small);
-    --terra-popover-line-height: var(--terra-line-height-normal);
-    --terra-popover-padding: var(--terra-spacing-medium);
-    --terra-popover-shadow: var(--terra-shadow-medium);
-    --terra-popover-arrow-size: var(--terra-tooltip-arrow-size);
+    /**
+    * @tokens-subgroup Layout and Styling
+    * @layout table
+    */
+    --terra-tooltip-padding: var(--terra-spacing-2x-small)
+    var(--terra-spacing-x-small);
+    --terra-tooltip-arrow-size: 6px;
+    --terra-tooltip-border-radius: var(--terra-border-radius-medium);
+
+    /**
+    * @tokens-subgroup Colors
+    * @layout table-swatch
+    */
+    --terra-tooltip-background-color: var(
+        --terra-color-bg-surface-neutral-inverse-primary
+    );
+    --terra-tooltip-color: var(--terra-text-primary-inverse);
+
 
     /* Component Tokens ---------------------------------------------------------------- END */
 }
