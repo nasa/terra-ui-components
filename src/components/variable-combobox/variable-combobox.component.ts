@@ -20,6 +20,7 @@ import {
 import { FetchController } from './variable-combobox.controller.js'
 import styles from './variable-combobox.styles.js'
 import type { ListItem } from './variable-combobox.types.js'
+import TerraPopup from '../popup/popup.js'
 
 /**
  * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
@@ -43,6 +44,7 @@ export default class TerraVariableCombobox extends TerraElement {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
+        'terra-popup': TerraPopup,
     }
     static styles: CSSResultGroup = [componentStyles, styles]
     static shadowRootOptions = {
@@ -131,6 +133,39 @@ export default class TerraVariableCombobox extends TerraElement {
 
     @state()
     tagContainerWidth = 0
+    @state() menuOpen = false
+    @state() private infoAnchor: HTMLElement | null = null
+    @state() private variableInfo: any = null
+    #hideTimeout: number | null = null
+
+    #handleShowVariableInfo = (e: CustomEvent) => {
+        e.stopPropagation()
+        this.variableInfo = e.detail.collection
+        this.infoAnchor = e.currentTarget as HTMLElement
+        this.menuOpen = true
+        if (this.#hideTimeout) {
+            clearTimeout(this.#hideTimeout)
+            this.#hideTimeout = null
+        }
+    }
+
+    #handleIconLeave = () => {
+        // delay a bit to allow cursor to enter the menu
+        this.#hideTimeout = window.setTimeout(() => {
+            this.menuOpen = false
+        }, 200)
+    }
+
+    #handleMenuEnter = () => {
+        if (this.#hideTimeout) {
+            clearTimeout(this.#hideTimeout)
+            this.#hideTimeout = null
+        }
+    }
+
+    #handleMenuLeave = () => {
+        this.menuOpen = false
+    }
 
     /**
      * This component's value is read by other components.
@@ -177,12 +212,22 @@ export default class TerraVariableCombobox extends TerraElement {
 
         //* set a window-level event listener to detect clicks that should close the listbox
         globalThis.addEventListener('click', this.#manageListboxVisibility)
+        this.addEventListener(
+            'terra-show-variable-info',
+            this.#handleShowVariableInfo
+        )
+        this.addEventListener('mouseleave', this.#handleIconLeave)
     }
 
     disconnectedCallback() {
         super.disconnectedCallback()
 
         globalThis.removeEventListener('click', this.#manageListboxVisibility)
+        this.removeEventListener(
+            'terra-show-variable-info',
+            this.#handleShowVariableInfo
+        )
+        this.removeEventListener('mouseleave', this.#handleIconLeave)
     }
 
     clear() {
@@ -380,6 +425,78 @@ export default class TerraVariableCombobox extends TerraElement {
         `
     }
 
+    #renderInfoPanel(variable: any) {
+        return html`
+            <h3 class="sr-only">Information</h3>
+            <dl>
+                <dt>Variable Longname</dt>
+                <dd>${variable.dataFieldLongName}</dd>
+
+                <dt>Variable Shortname</dt>
+                <dd>
+                    ${variable.dataFieldShortName ?? variable.dataFieldAccessName}
+                </dd>
+
+                <dt>Units</dt>
+                <dd><code>${variable.dataFieldUnits}</code></dd>
+
+                <dt>Dataset Information</dt>
+                <dd>
+                    <a
+                        href=${variable.dataProductDescriptionUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        ${variable.dataProductLongName}
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </dd>
+
+                <dt>Variable Information</dt>
+                <dd>
+                    <a
+                        href=${variable.dataFieldDescriptionUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Variable Glossary
+                        <terra-icon
+                            name="outline-arrow-top-right-on-square"
+                            library="heroicons"
+                        ></terra-icon>
+                    </a>
+                </dd>
+            </dl>
+        `
+    }
+
+    #renderVariableInfoMenu() {
+        if (!this.variableInfo || !this.infoAnchor) {
+            return nothing
+        }
+
+        return html`
+            <terra-popup
+                .anchor=${this.infoAnchor}
+                ?active=${this.menuOpen}
+                placement="right-start"
+                strategy="fixed"
+                flip
+                shift
+                distance="8"
+                @mouseenter=${this.#handleMenuEnter}
+                @mouseleave=${this.#handleMenuLeave}
+            >
+                <div class="variable-info-popup">
+                    ${this.#renderInfoPanel(this.variableInfo)}
+                </div>
+            </terra-popup>
+        `
+    }
+
     render() {
         return html`<search part="base" title="Search through the list.">
             <label for="combobox" class=${this.hideLabel ? 'sr-only' : 'input-label'}
@@ -425,7 +542,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     aria-describedby=${this.useTags ? 'tag-container' : nothing}
                     placeholder=${this.useTags
                         ? nothing
-                        : this.placeholder ?? `${this.label}…`}
+                        : (this.placeholder ?? `${this.label}…`)}
                     .value=${this.useTags
                         ? TerraVariableCombobox.initialQuery
                         : this.query}
@@ -568,6 +685,7 @@ export default class TerraVariableCombobox extends TerraElement {
                         </li>`,
                 })}
             </ul>
+            ${this.#renderVariableInfoMenu()}
         </search>`
     }
 }

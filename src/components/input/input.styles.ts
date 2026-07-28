@@ -11,7 +11,6 @@ export default css`
 
     .input__label {
         display: block;
-        margin: 0 0 var(--terra-spacing-x-small, 0.5rem) 0;
         font-family: var(--terra-input-label-font-family);
         font-size: var(--terra-input-label-font-size);
         font-weight: var(--terra-input-label-line-weight);

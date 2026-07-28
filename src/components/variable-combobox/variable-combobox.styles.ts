@@ -246,6 +246,9 @@ export default css`
         font-family: var(--terra-font-family--inter);
         font-weight: 700;
         margin-block: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .listbox-option {
@@ -294,5 +297,56 @@ export default css`
             stroke-dasharray: 42 150;
             stroke-dashoffset: -59;
         }
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.4rem;
+        cursor: pointer;
+        color: var(--terra-color-primary, #0071bc);
+        line-height: 1;
+    }
+
+    .info-icon:hover {
+        color: var(--terra-color-primary-hover, #004f8c);
+    }
+
+    /* Optional: better accessibility feedback */
+    .info-icon:focus {
+        outline: 2px solid rgba(0, 113, 188, 0.4);
+        border-radius: 50%;
+    }
+
+    terra-popup::part(popup) {
+        width: 380px;
+        max-width: min(380px, calc(100vw - 16px));
+    }
+
+    .variable-info-popup {
+        background: var(--terra-color-spacesuit-white);
+        border: 1px solid var(--terra-color-carbon-30);
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+    }
+
+    .variable-info-popup dl {
+        margin: 0;
+    }
+
+    .variable-info-popup dt {
+        font-weight: var(--terra-font-weight-semibold);
+        margin-top: 0.75rem;
+    }
+
+    .variable-info-popup dt:first-child {
+        margin-top: 0;
+    }
+
+    .variable-info-popup dd {
+        margin: 0.25rem 0 0.75rem;
+        font-style: italic;
+        text-wrap: balance;
     }
 `
