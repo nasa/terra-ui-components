@@ -50,6 +50,7 @@ export default css`
         z-index: 1;
         right: 1em;
         top: 1em;
+        bottom: 1em;
         background-color: white;
         opacity: 1;
         padding: 0.5em;
@@ -61,9 +62,18 @@ export default css`
         flex-direction: column;
     }
 
-    .color-box {
+    .palette {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
         width: 3.5em;
-        height: 0.375em;
+    }
+
+    .color-box {
+        width: 100%;
+        flex: 1 1 0;
+        min-height: 0;
     }
 
     dialog {
@@ -417,7 +427,7 @@ export default css`
         }
 
         #settings {
-            bottom: 100px;
+            bottom: 5px;
             left: 5px;
             padding: 6px 8px;
             font-size: 11px;
@@ -434,7 +444,7 @@ export default css`
         }
 
         #settings {
-            bottom: 80px;
+            bottom: 5px;
             left: 5px;
             padding: 4px 6px;
             font-size: 10px;
