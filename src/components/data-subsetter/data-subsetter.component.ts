@@ -37,7 +37,7 @@ import TerraInput from '../input/input.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraLogin from '../login/login.component.js'
 import type { LatLng } from '../map/models/LatLng.js'
-import type { LatLngBounds } from '../map/models/LatLngBounds.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import { MapEventType } from '../map/type.js'
 import TerraMenu from '../menu/menu.component.js'
 import TerraMenuItem from '../menu-item/menu-item.component.js'
@@ -2674,7 +2674,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
         // Add Cloud Giovanni specific average parameters
         // TODO: is their better logic to how these average parameters are applied? I don't see it in the capabilities response
-        if (this.selectedFormat.key === 'text/csv') {
+        const isAreaSelection =
+            this.spatialSelection instanceof LatLngBounds ||
+            !!this.shapeGeoJson
+        if (this.selectedFormat.key === 'text/csv' && isAreaSelection) {
             harmonyRequest.average('area')
         }
         if (this.selectedFormat.key === 'image/tiff') {

@@ -7,7 +7,10 @@ import {
 } from '@open-wc/testing'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
+import { LatLng } from '../map/models/LatLng.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import './data-subsetter.js'
+import type { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 
 const getAccordionContent = (el: any) => {
     const accordions = Array.from(
@@ -375,5 +378,118 @@ describe('<terra-data-subsetter> harmony request errors', () => {
         } finally {
             HarmonyRequestController.prototype.startJob = originalStartJob
         }
+    })
+})
+
+describe('<terra-data-subsetter> average=area param', () => {
+    const collectionWithServices = {
+        conceptId: 'C123',
+        shortName: 'S1',
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: true,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        services: [{ name: 'harmony', href: '', capabilities: {} }],
+        variables: [
+            {
+                conceptId: 'V1',
+                name: 'Variable 1',
+                href: '',
+            },
+        ],
+        collection: {
+            EntryTitle: 'Test Collection',
+            ShortName: 'S1',
+            Version: '1',
+            TemporalExtents: [],
+            SpatialExtent: {},
+        },
+    }
+
+    const clickGetDataAndCaptureRequest = async (
+        el: any,
+    ): Promise<HarmonyRequest> => {
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+        let capturedRequest: HarmonyRequest | undefined
+
+        HarmonyRequestController.prototype.startJob = (async ({
+            harmonyRequest,
+        }: {
+            harmonyRequest: HarmonyRequest
+        }) => {
+            capturedRequest = harmonyRequest
+            return { jobID: 'job-1' }
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        try {
+            await elementUpdated(el)
+
+            const getDataButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? [],
+            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                | HTMLButtonElement
+                | undefined
+
+            expect(getDataButton).to.exist
+            getDataButton?.click()
+
+            await waitUntil(() => Boolean(capturedRequest))
+
+            return capturedRequest!
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+    }
+
+    it('omits average=area for a point-based (lat/lon) selection', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+
+        el.collectionWithServices = collectionWithServices
+        el.dataAccessMode = 'subset'
+        el.spatialSelection = new LatLng(38.9, -77.03)
+        el.selectedFormat = {
+            key: 'text/csv',
+            label: 'CSV',
+            description: 'Download data in CSV format',
+        }
+
+        const harmonyRequest = await clickGetDataAndCaptureRequest(el)
+
+        expect(harmonyRequest.params).to.include('point=')
+        expect(harmonyRequest.params).to.not.include('average=area')
+    })
+
+    it('includes average=area for a bounding-box selection', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+
+        el.collectionWithServices = collectionWithServices
+        el.dataAccessMode = 'subset'
+        el.spatialSelection = new LatLngBounds([-78, 38, -77, 39])
+        el.selectedFormat = {
+            key: 'text/csv',
+            label: 'CSV',
+            description: 'Download data in CSV format',
+        }
+
+        const harmonyRequest = await clickGetDataAndCaptureRequest(el)
+
+        expect(harmonyRequest.params).to.include('average=area')
     })
 })
