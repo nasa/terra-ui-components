@@ -42,10 +42,10 @@
     "url": "https://github.com/nasa/terra-ui-components/issues"
   },
   "scripts": {
-    "start": "npm run serve",
+    "start": "NODE_NO_WARNINGS=1 npm run serve",
     "start:python": "./.venv/bin/jupyter lab",
     "serve": "node scripts/build.js --serve",
-    "build": "node scripts/build.js",
+    "build": "NODE_NO_WARNINGS=1 node scripts/build.js",
     "prebuild": "npm run token-docs",
     "token-docs": "node scripts/generate-token-docs.js",
     "build:python": "hatch build",
@@ -68,7 +68,7 @@
     "update-dependencies": "npm-check-updates --peer -u && npm install"
   },
   "engines": {
-    "node": ">=14.17.0"
+    "node": ">=23.11.1"
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.4",
