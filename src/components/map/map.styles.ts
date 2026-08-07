@@ -497,4 +497,21 @@ export default css`
             transform: rotate(360deg);
         }
     }
+
+    #info {
+        position: absolute;
+        display: inline-block;
+        height: auto;
+        width: auto;
+        z-index: 100;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 4px;
+        padding: 5px;
+        left: 50%;
+        transform: translateX(3%);
+        visibility: hidden;
+        pointer-events: none;
+    }
 `
