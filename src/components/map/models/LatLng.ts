@@ -6,6 +6,12 @@ export class LatLng {
     ) {}
 
     toString() {
-        return `${this.lat.toFixed(2)}, ${this.lng.toFixed(2)}`
+        return [this.lat, this.lng].map(this.formatCoord).join(', ')
+    }
+
+    formatCoord(value: number) {
+        return value.toString().split('.')[1]?.length > 2
+            ? value.toFixed(2)
+            : value.toString()
     }
 }

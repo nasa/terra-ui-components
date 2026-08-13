@@ -1,4 +1,5 @@
 import { expect, fixture, html } from '@open-wc/testing'
+import { mockGiovanniQueries } from '../../test-helpers/mock-apis.js'
 import './data-rods.js'
 
 type TestDataRodsElement = HTMLElement & {
@@ -6,6 +7,8 @@ type TestDataRodsElement = HTMLElement & {
 }
 
 describe('<terra-data-rods>', () => {
+    mockGiovanniQueries()
+
     it('disables the date slider immediately on user range change', async () => {
         const el = await fixture<TestDataRodsElement>(
             html`<terra-data-rods></terra-data-rods>`,
@@ -94,7 +97,12 @@ describe('<terra-data-rods>', () => {
 
         await el.updateComplete
 
-        expect(el.shadowRoot?.textContent).to.include('Loading chunk 2 of 4')
+        const normalizeWhitespace = (text: string | null | undefined) =>
+            text?.replace(/\s+/g, ' ').trim()
+
+        expect(normalizeWhitespace(el.shadowRoot?.textContent)).to.include(
+            'Loading chunk 2 of 4',
+        )
 
         timeSeries?.dispatchEvent(
             new CustomEvent('terra-time-series-loading-change', {
@@ -106,7 +114,7 @@ describe('<terra-data-rods>', () => {
 
         await el.updateComplete
 
-        expect(el.shadowRoot?.textContent).to.not.include(
+        expect(normalizeWhitespace(el.shadowRoot?.textContent)).to.not.include(
             'Loading chunk 2 of 4',
         )
     })

@@ -7,6 +7,15 @@ import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
 import * as Plotly from 'plotly.js-dist-min'
 
+// plotly.js-dist-min ships as a UMD bundle. When bundled for production, esbuild's CJS
+// interop resolves `import * as Plotly` to the real module exports. When loaded unbundled
+// (the browser test runner, or any unbundled ESM consumer) the browser's module loader
+// finds no `export` statements in the UMD source, so that namespace comes back empty —
+// the UMD wrapper instead attaches the API to the global `self.Plotly` as a side effect.
+// Prefer whichever is actually populated so this works in both cases.
+const PlotlyLib: typeof Plotly =
+    (globalThis as unknown as { Plotly?: typeof Plotly }).Plotly ?? Plotly
+
 /**
  * @summary A web component for interactive graphs using Plotly.js.
  * @documentation https://terra-ui.netlify.app/components/plot
@@ -59,7 +68,7 @@ export default class TerraPlot extends TerraElement {
 
     firstUpdated(): void {
         this.#resizeObserver = new ResizeObserver(() => {
-            Plotly.Plots.resize(this.base)
+            PlotlyLib.Plots.resize(this.base)
         })
 
         this.#resizeObserver.observe(this.base)
@@ -99,7 +108,7 @@ export default class TerraPlot extends TerraElement {
             return trace
         })
 
-        Plotly.newPlot(
+        PlotlyLib.newPlot(
             this.base,
             coloredData as Plotly.Data[],
             {

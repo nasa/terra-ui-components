@@ -1,7 +1,10 @@
 import { expect, fixture, html } from '@open-wc/testing'
+import { mockGiovanniQueries } from '../../test-helpers/mock-apis.js'
 import './data-access.js'
 
 describe('<terra-data-access>', () => {
+    mockGiovanniQueries()
+
     it('should render a component', async () => {
         const el = await fixture(html`<terra-data-access></terra-data-access>`)
 

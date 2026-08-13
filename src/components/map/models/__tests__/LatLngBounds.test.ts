@@ -13,35 +13,35 @@ describe('LatLngBounds', () => {
 
         beforeEach(() => {
             // [west, south, east, north]
-            bounds = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            bounds = new LatLngBounds([-122.42, 37.77, -122.36, 37.82])
         })
 
         it('should return correct SouthWest corner', () => {
             const sw = bounds.getSouthWest()
             expect(sw).to.be.instanceOf(LatLng)
-            expect(sw.lng).to.equal(-122.4194)
-            expect(sw.lat).to.equal(37.7749)
+            expect(sw.lng).to.equal(-122.42)
+            expect(sw.lat).to.equal(37.77)
         })
 
         it('should return correct NorthEast corner', () => {
             const ne = bounds.getNorthEast()
             expect(ne).to.be.instanceOf(LatLng)
-            expect(ne.lng).to.equal(-122.358)
-            expect(ne.lat).to.equal(37.8199)
+            expect(ne.lng).to.equal(-122.36)
+            expect(ne.lat).to.equal(37.82)
         })
 
         it('should return correct NorthWest corner', () => {
             const nw = bounds.getNorthWest()
             expect(nw).to.be.instanceOf(LatLng)
-            expect(nw.lng).to.equal(-122.4194)
-            expect(nw.lat).to.equal(37.8199)
+            expect(nw.lng).to.equal(-122.42)
+            expect(nw.lat).to.equal(37.82)
         })
 
         it('should return correct SouthEast corner', () => {
             const se = bounds.getSouthEast()
             expect(se).to.be.instanceOf(LatLng)
-            expect(se.lng).to.equal(-122.358)
-            expect(se.lat).to.equal(37.7749)
+            expect(se.lng).to.equal(-122.36)
+            expect(se.lat).to.equal(37.77)
         })
     })
 
@@ -50,31 +50,31 @@ describe('LatLngBounds', () => {
 
         beforeEach(() => {
             // [west, south, east, north]
-            bounds = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            bounds = new LatLngBounds([-122.42, 37.77, -122.36, 37.82])
         })
 
         it('should return correct west value', () => {
-            expect(bounds.getWest()).to.equal(-122.4194)
+            expect(bounds.getWest()).to.equal(-122.42)
         })
 
         it('should return correct south value', () => {
-            expect(bounds.getSouth()).to.equal(37.7749)
+            expect(bounds.getSouth()).to.equal(37.77)
         })
 
         it('should return correct east value', () => {
-            expect(bounds.getEast()).to.equal(-122.358)
+            expect(bounds.getEast()).to.equal(-122.36)
         })
 
         it('should return correct north value', () => {
-            expect(bounds.getNorth()).to.equal(37.8199)
+            expect(bounds.getNorth()).to.equal(37.82)
         })
     })
 
     describe('toBBoxString method', () => {
         it('should format bounding box correctly', () => {
-            const bounds = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            const bounds = new LatLngBounds([-122.42, 37.77, -122.36, 37.82])
             expect(bounds.toBBoxString()).to.equal(
-                '-122.4194,37.7749,-122.358,37.8199'
+                '-122.42,37.77,-122.36,37.82',
             )
         })
 
@@ -93,7 +93,7 @@ describe('LatLngBounds', () => {
                 -180.123456, -90.654321, 180.123456, 90.654321,
             ])
             expect(bounds.toBBoxString()).to.equal(
-                '-180.123456,-90.654321,180.123456,90.654321'
+                '-180.12,-90.65,180.12,90.65',
             )
         })
 

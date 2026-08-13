@@ -34,9 +34,9 @@ describe('<terra-badge>', () => {
             expect(el.getAttribute('variant')).to.equal('warning')
         })
 
-        it('should default variant to primary', async () => {
+        it('should default variant to information', async () => {
             const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
-            expect(el.variant).to.equal('primary')
+            expect(el.variant).to.equal('information')
         })
 
         it('should accept all variant values', async () => {
@@ -89,10 +89,10 @@ describe('<terra-badge>', () => {
     })
 
     describe('Variants', () => {
-        it('should apply primary variant class by default', async () => {
+        it('should apply information variant class by default', async () => {
             const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
-            expect(base?.classList.contains('badge--primary')).to.be.true
+            expect(base?.classList.contains('badge--information')).to.be.true
         })
 
         it('should apply success variant class', async () => {

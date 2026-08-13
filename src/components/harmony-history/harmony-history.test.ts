@@ -392,21 +392,27 @@ describe('<terra-harmony-history>', () => {
             el._pendingPages = new Set([2])
             el._lastPage1Data = { count: 20, jobs: [], links: [] }
 
+            const queryClient = el.queryClient
+            const originalInvalidateQueries = queryClient.invalidateQueries
             let invalidateCalled = false
-            el.queryClient = {
-                invalidateQueries: async () => {
-                    invalidateCalled = true
-                },
+
+            queryClient.invalidateQueries = async (...args: unknown[]) => {
+                invalidateCalled = true
+                return originalInvalidateQueries.apply(queryClient, args)
             }
 
-            await el.refresh()
+            try {
+                await el.refresh()
 
-            expect(el._scrollIndex).to.equal(0)
-            expect(el._totalCount).to.equal(0)
-            expect(el._loadedPages.size).to.equal(0)
-            expect(el._pendingPages.size).to.equal(0)
-            expect(el._lastPage1Data).to.be.undefined
-            expect(invalidateCalled).to.be.true
+                expect(el._scrollIndex).to.equal(0)
+                expect(el._totalCount).to.equal(0)
+                expect(el._loadedPages.size).to.equal(0)
+                expect(el._pendingPages.size).to.equal(0)
+                expect(el._lastPage1Data).to.be.undefined
+                expect(invalidateCalled).to.be.true
+            } finally {
+                queryClient.invalidateQueries = originalInvalidateQueries
+            }
         })
     })
 
