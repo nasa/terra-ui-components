@@ -11,9 +11,9 @@ export function mockGiovanniQueries() {
         originalGetShapeFiles = giovanniApi.getShapeFiles
 
         giovanniApi.getConfiguredVariables =
-            (async () => []) as typeof giovanniApi.getConfiguredVariables
+            (async () => []) as unknown as typeof giovanniApi.getConfiguredVariables
         giovanniApi.getShapeFiles =
-            (async () => []) as typeof giovanniApi.getShapeFiles
+            (async () => []) as unknown as typeof giovanniApi.getShapeFiles
     })
 
     afterEach(() => {
@@ -37,30 +37,29 @@ export function mockCollectionQueries(options: {
     }
 
     cmrApi.getCollectionByEntryId = (async () =>
-        options.collection) as typeof cmrApi.getCollectionByEntryId
+        options.collection) as unknown as typeof cmrApi.getCollectionByEntryId
 
     harmonyApi.getCollectionCapabilities = (async () =>
-        options.capabilities) as typeof harmonyApi.getCollectionCapabilities
+        options.capabilities) as unknown as typeof harmonyApi.getCollectionCapabilities
 
     const ummVariables = options.ummVariables ?? []
     cmrApi.searchVariables = (async () => ({
         hits: ummVariables.length,
         items: ummVariables,
-    })) as typeof cmrApi.searchVariables
+    })) as unknown as typeof cmrApi.searchVariables
 
     cmrApi.getSamplingOfGranules = (async () =>
-        null) as typeof cmrApi.getSamplingOfGranules
+        null) as unknown as typeof cmrApi.getSamplingOfGranules
 
     giovanniApi.getConfiguredVariables =
-        (async () => []) as typeof giovanniApi.getConfiguredVariables
+        (async () => []) as unknown as typeof giovanniApi.getConfiguredVariables
 
     giovanniApi.getShapeFiles =
-        (async () => []) as typeof giovanniApi.getShapeFiles
+        (async () => []) as unknown as typeof giovanniApi.getShapeFiles
 
     return () => {
         cmrApi.getCollectionByEntryId = originals.getCollectionByEntryId
-        harmonyApi.getCollectionCapabilities =
-            originals.getCollectionCapabilities
+        harmonyApi.getCollectionCapabilities = originals.getCollectionCapabilities
         cmrApi.searchVariables = originals.searchVariables
         cmrApi.getSamplingOfGranules = originals.getSamplingOfGranules
         giovanniApi.getConfiguredVariables = originals.getConfiguredVariables
