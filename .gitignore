@@ -4,7 +4,9 @@ _site
 cdn
 dist
 node_modules
-src/react
+src/react/*
+!src/react/hooks/
+!src/react/hooks/**
 .venv
 __pycache__
 .ipynb_checkpoints

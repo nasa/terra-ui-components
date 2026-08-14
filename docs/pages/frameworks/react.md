@@ -142,6 +142,48 @@ function MyComponent() {
 export default MyComponent
 ```
 
+## Harmony React Hooks
+
+For applications integrating with NASA Harmony subsetting services, `@nasa-terra/components/react` provides React hooks: `useCreateHarmonyJob`, `usePollHarmonyJobStatus`, and `useHarmonyRequest`.
+
+### `useHarmonyRequest` (Unified Job Lifecycle)
+
+The `useHarmonyRequest` hook manages job creation, status polling, progress, and cancellation in a single API.
+
+```tsx
+import { useHarmonyRequest } from '@nasa-terra/components/%NPMDIR%/react/hooks'
+import { HarmonyRequest } from '@nasa-terra/components/%NPMDIR%/utilities/harmony'
+
+function HarmonyJobManager() {
+    const { startJob, cancelJob, status, progress, isCreating, isPolling, data, error } = useHarmonyRequest({
+        onSuccess: (job) => console.log('Job completed:', job),
+        onError: (err) => console.error('Job error:', err),
+    })
+
+    const handleCreate = async () => {
+        const req = new HarmonyRequest({ collectionId: 'C123456-GES_DISC' })
+        await startJob({ harmonyRequest: req, options: { bearerToken: 'my-token' } })
+    }
+
+    return (
+        <div>
+            <button onClick={handleCreate} disabled={isCreating}>
+                {isCreating ? 'Creating Job...' : 'Start Job'}
+            </button>
+
+            {status && <p>Status: {status} ({progress}%)</p>}
+            {isPolling && <button onClick={() => cancelJob()}>Cancel Job</button>}
+            {error && <p className="error">{error.message}</p>}
+        </div>
+    )
+}
+```
+
+### Low-Level Hooks
+
+- `useCreateHarmonyJob(options?)`: React hook for submitting subset jobs. Returns `{ mutate, isPending, isSuccess, isError, data, error, reset }`.
+- `usePollHarmonyJobStatus(jobId, searchOptions, options?)`: React hook for polling active job status until completion/failure/cancellation. Returns `{ data, status, progress, isPolling, cancelJob, refetch }`.
+
 ## Testing with Jest
 
 Testing with web components can be challenging if your test environment runs in a Node environment (i.e. it doesn't run in a real browser). Fortunately, [Jest](https://jestjs.io/) has made a number of strides to support web components and provide additional browser APIs. However, it's still not a complete replication of a browser environment.

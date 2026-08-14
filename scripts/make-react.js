@@ -11,7 +11,7 @@ const { outdir } = commandLineArgs({ name: 'outdir', type: String })
 const reactDir = path.join('./src/react')
 
 // Clear build directory
-deleteSync(reactDir)
+deleteSync(['src/react/*', '!src/react/hooks'])
 fs.mkdirSync(reactDir, { recursive: true })
 
 // Fetch component metadata
@@ -20,6 +20,10 @@ const metadata = JSON.parse(
 )
 const components = getAllComponents(metadata)
 const index = []
+
+if (fs.existsSync(path.join(reactDir, 'hooks/index.ts'))) {
+    index.push(`export * from './hooks/index.js';`)
+}
 
 for await (const component of components) {
     const tagWithoutPrefix = component.tagName.replace(/^terra-/, '')
