@@ -4,8 +4,6 @@ import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
 import TerraElement from '../../internal/terra-element.js'
-import TerraAlert from '../alert/alert.component.js'
-//import TerraEvent from '../../events/events.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
@@ -16,8 +14,11 @@ import {
     queryGiovanniShapeFiles,
     queryGiovanniGeoJsonShape,
 } from '../../queries/giovanni.queries.js'
-//import TerraToast from '../toast/toast.component.js'
-//import TerraToastClass from '../toast/toast.component.js'
+import { Stroke, Fill, Style } from 'ol/style.js'
+// for feature select handling
+import Select from 'ol/interaction/Select.js'
+// for pointer 'move' (drag, really) handling
+import { singleClick } from 'ol/events/condition.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -28,10 +29,6 @@ import {
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
-
-    static dependencies: Record<string, typeof TerraElement> = {
-        'terra-alert': TerraAlert,
-    }
 
     /**
      * Minimum zoom level of the map.
@@ -208,35 +205,6 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     }
 
     /**
-     * Add listener to file selections from the data-grid element. 
-     * This is how we find files and access file boundaries.
-     * Boundaries will only be acquired and the layer displayed if 'showBoundaries' 
-     * is true (see the handler function in MapService).
-     */
-    connectedCallback(): void {
-        super.connectedCallback()
-
-        this.addEventListener(
-            'terra-selection-changed',
-            this.#service?.handleBoundarySelect as EventListener,
-        )
-
-        const alert = document.querySelector('.alert-closable') as HTMLElement | null
-        if (alert) {
-            alert.addEventListener('terra-hide', () => {
-                setTimeout(() => {
-                    ;(alert as any).open = true
-                }, 2000)
-            })
-        }
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback?.()
-        this.removeEventListener('terra-selection-changed', this.#service?.handleBoundarySelect as EventListener)
-    }
-
-    /**
      * List of geojson shapes
      */
     shapesQuery = new QueryController(this, () => queryGiovanniShapeFiles())
@@ -266,19 +234,56 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             onShapeLoading: (loading) => {
                 this.shapeLoading = loading
             },
-            onPolySelect: (detail) => {
-                console.log("map, onPolySelect, detail: ", detail)
-                this.dispatchEvent(
-                    new CustomEvent('terra-poly-select', {
-                        bubbles: false,
-                        cancelable: false,
-                        composed: true,
-                        detail,
-                    }),
-                )
-                //this.displayPolyFeatureInfo(detail)
-            }
         })
+    }
+
+    /* Function used to set color style on map features */
+    colorStyle(style:any) {
+        return function (f:any) {
+            style.getFill().setColor(f.get('color') || 'rgba(255,0,0,0.3)');
+            return style;
+        };
+    }
+
+    /* Selected polygon style */
+    polySelectStyle = new Style({
+        fill: new Fill({
+            color: 'rgba(255,100,100,0.3)',
+        }),
+        stroke: new Stroke({
+            color: 'red',
+            width: 3,
+        }),
+    });
+
+    getMap() {
+        return this.#service?.getMap()
+    }
+
+    /* 
+     * Creates an ol Map selection interaction 
+     * that supports user selection of a polygon
+     * feature drawn on the map
+     */
+    initializePolygonSelection() {
+        const select = new Select({
+            condition: singleClick,
+            style: this.colorStyle(this.polySelectStyle),
+        });
+
+        if (this.showBoundaries) {
+            const map = this.#service?.getMap()
+            if (map) {
+                map.addInteraction(select);
+                select.on('select', function (e) {
+                    e.stopPropagation()
+                    if (e.selected.length > 0) {
+                        let props = e.selected[0].getProperties()
+                        this.#service?.displayPolyFeatureInfo(props)
+                    }
+                })
+            }
+        }
     }
 
     /*
@@ -287,9 +292,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      * This method delegates the handling of the event to the MapService.
      * @param event - The event containing the polygon data to be set on the map.
      */
-    setPolygons(event: Event): void {
-        console.log("map.setPolygons, event: ", event)
-        this.#service?.handleBoundarySelect(event)
+    setBoundaryPolygons(event: Event): void {
+        //console.log("map.setBoundaryPolygons, event: ", event)
+        this.#service?.buildPolygonFeatures(event)
     }
 
     selectTemplate() {
@@ -348,6 +353,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                       `
                         : nothing
                 }
+
             </div>
         `
     }

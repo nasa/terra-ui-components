@@ -86,7 +86,9 @@
     "lit": "^3.0.0",
     "nouislider": "^15.8.1",
     "ol": "^10.8.0",
-    "plotly.js-dist-min": "^2.30.1"
+    "plotly.js-dist-min": "^2.30.1",
+    "react-split-pane": "^3.2.0",
+    "turf": "^3.0.14"
   },
   "devDependencies": {
     "@11ty/eleventy": "^2.0.1",
@@ -155,5 +157,10 @@
     "*.{ts,js}": [
       "prettier --write"
     ]
+  },
+  "allowScripts": {
+    "@parcel/watcher@2.6.0": true,
+    "esbuild@0.17.19": true,
+    "esbuild@0.19.12": true
   }
 }

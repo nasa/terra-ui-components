@@ -1,8 +1,6 @@
-//import { html } from 'lit'
 import { Feature, Graticule, Map, View } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import {
-    //toLonLat,
     transform,
     transformExtent,
     type ProjectionLike,
@@ -20,22 +18,8 @@ import { LatLngBounds } from './models/LatLngBounds.js'
 import { LatLng } from './models/LatLng.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
-import TerraAlert from '../alert/alert.component.js'
-import type TerraElement from '../../internal/terra-element.js'
 import { isEmpty } from 'ol/extent.js'
-//import select from '../select/select.js'
-//import {fromExtent} from 'ol/geom/Polygon.js';
-//import { columnDropStyleBordered } from 'ag-grid-community'
-//import type { HorizontalResolutionScanDirectionType } from '../../../dist/apis/types/cmr/umm-c.js'
-// for feature select handling
-//import Select from 'ol/interaction/Select.js'
-// for pointer 'move' (drag, really) handling
-//import { pointerMove } from 'ol/events/condition.js'
-//import PointerInteraction from 'ol/interaction/Pointer.js';
-// for mouse position control
-//import MousePosition from 'ol/control/MousePosition.js';
-//import {defaults as defaultControls} from 'ol/control/defaults.js';
-//import {createStringXY} from 'ol/coordinate.js';
+import * as turf from '@turf/turf'
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -69,11 +53,6 @@ export class MapService {
     #onDraw: MapOptions['onDraw']
     #onShapeLoading: MapOptions['onShapeLoading']
     #onBoundaryLoading: MapOptions['onBoundaryLoading']
-    #onPolySelect: MapOptions['onPolySelect']
-
-    static dependencies: Record<string, typeof TerraElement> = {
-        'terra-alert': TerraAlert,
-    }
 
     constructor(el: HTMLElement, options: MapOptions) {
         this.#el = el
@@ -105,15 +84,6 @@ export class MapService {
         const location = this.parseLocationString(value)
 
         this.#drawToolbarControl.setValue(location, this.#options.fitToValue)
-    }
-
-    colorStyle(style:any) {
-        return function (f:any) {
-            console.log("colorStyle, f: ", f)
-            console.log("colorStyle, get style: ", style)
-            style.getFill().setColor(f.get('color') || 'rgba(255,0,0,0.3)');
-            return style;
-        };
     }
 
     /**
@@ -217,17 +187,19 @@ export class MapService {
         }
     }
 
-    async handleBoundarySelect(event: any) {
+    /*
+     * Build polygons in support of file boundary display
+     */    
+    async buildPolygonFeatures(event: any) {
 
-        if (!event) {console.log("handleBoundarySelect: no event"); return}
-        if (!event.detail.data) {console.log("handleBoundarySelect: no event data"); return}
-        if (!event.detail.data.umm) {console.log("handleBoundarySelect: no umm"); return}
-
-        console.log("map.service.handleBoundarySelect: ", event)
+        if (!event) {console.log("map.service.buildPolygonFeatures: no event"); return}
+        if (!event.detail.data) {console.log("map.service.buildPolygonFeatures: no event data"); return}
+        if (!event.detail.data.umm) {console.log("map.service.buildPolygonFeatures: no umm from event data"); return}
 
         const geom = event.detail.data.umm.SpatialExtent.HorizontalSpatialDomain.Geometry
         const meta = event.detail.data.meta
         const ummData = event.detail.data.umm
+        //const defaultExtent = [-180,-90,180,90]
 
         let boundaryGeoJson = {
                 "type": "FeatureCollection",
@@ -250,20 +222,14 @@ export class MapService {
                 }
             }
 
-        //console.log("map.service.handleBoundarySelect, fetching geometry: ", geom)
-
         if (geom && geom.GPolygons) {
             // GOT POLYGONS
-            console.log("map.services.handleBoundarySelect, got polygons")
             const pointsArray = event.detail.data.umm.SpatialExtent.HorizontalSpatialDomain.Geometry.GPolygons.map((gp:any) => {
                 return gp.Boundary.Points.map((pt:any) => {
-                    //console.log("point string: ", pt)
                     let ptArr = [ parseFloat(pt.Longitude), parseFloat(pt.Latitude) ]
-                    //console.log("point: ", ptArr)
                     return ptArr
                 })
             })
-            console.log("handleBoundarySelect, pointsArray: ", pointsArray)
 
             /* *
              * For every group of points in the zone, define a polygon feature.  If line segments 
@@ -277,11 +243,9 @@ export class MapService {
             if (!boundaryGeoJson.bbox) {
                 boundaryGeoJson.bbox = [-180,-90,180,90]  // set the bounding box to the world extent for now
             }
-            console.log("map.service.handleBoundarySelect, boundaryGeoJson string: ", JSON.stringify(boundaryGeoJson))
 
         } else if (geom && geom.BoundingRectangles) {
             // GOT RECTANGLE/BBOX
-            console.log("map.services.handleBoundarySelect, got rectangle(s): ", geom.BoundingRectangles)
             geom.BoundingRectangles.map((br:any) => {
 
                 let extentBbox = [
@@ -305,10 +269,7 @@ export class MapService {
                         "geometry": {
                             "type": "Polygon",
                             "coordinates": [
-                                [
                                     points
-                                ]
-                                
                             ]
                         },
                         "properties": {
@@ -325,11 +286,10 @@ export class MapService {
                     }
                 )
 
-                console.log("map.service.handleBoundarySelect, bbox boundaryGeoJson string: ", boundaryGeoJson)
             })
 
         } else {
-            console.log("map.service.handleBoundarySelect, can't find a geometry")
+            console.log("map.service.buildPolygonFeatures, can't find a geometry")
             return
         }
 
@@ -339,18 +299,13 @@ export class MapService {
         this.#onBoundaryLoading?.(true)
 
         try {
-            console.log("map.service.handleBoundarySelect, TRY boundaryGeoJson: ", boundaryGeoJson)
-
             // Parse the GeoJSON into OpenLayers features, reprojecting from WGS84 to the map projection
             const format = new GeoJSON()
-            console.log("map.service.handleBoundarySelect, geojson: ", boundaryGeoJson)
-
             const features = format.readFeatures(boundaryGeoJson, {
                 dataProjection: 'EPSG:4326',
                 featureProjection: 'EPSG:4326',
                 //extent: [-180,-90,180,90]
             })
-            console.log("map.service.handleBoundarySelect, TRY, features: ", features)
             const source = this.#boundaryLayer.getSource()!
             source.addFeatures(features)
 
@@ -360,14 +315,18 @@ export class MapService {
                 extent = boundaryGeoJson.bbox
                 if (!extent) {
                     extent = [-180, -90, 180, 90]  // set the bounding box to the world extent for now
+                } else if (extent && 
+                    extent[0] === Infinity && 
+                    extent[1] === Infinity && 
+                    extent[2] === -Infinity && 
+                    extent[3] === -Infinity) {
+                    extent = [-180, -90, 180, 90]
                 }
             }
-            console.log("map.service.handleBoundarySelect, extent: ", extent)
-            if (!extent) {
-                return
-            }
-
-            console.log("map view: ",this.#map.getView())
+            console.log("map.service.buildPolygonFeatures, extent: ", extent)
+           // if (!extent) {
+           //     return
+           // }
 
             this.#map.getView().fit(extent, {
                 // optional: add padding or duration as needed
@@ -376,17 +335,8 @@ export class MapService {
                 // use maxZoom instead of center/zoom which are not valid FitOptions
                 maxZoom: 2,
             })
-
-            // Emit the shape as a polygon draw event so listeners can react
-            //this.#onPolySelect?.({
-            //    cause: 'select',
-            //    type: MapEventType.POLYGON,
-            //    latLngs: [],
-            //    geoJson: boundaryGeoJson as object,
-                //label: select.options[select.selectedIndex]?.text,
-            //})
         } catch (err) {
-            console.log("handleBoundarySelect, error: ", err)
+            console.log("map.service.buildPolygonFeatures, error: ", err)
         } finally {
             this.#onBoundaryLoading?.(false)
         }
@@ -396,7 +346,7 @@ export class MapService {
         this.#onDraw = options.onDraw
         this.#onShapeLoading = options.onShapeLoading
         this.#onBoundaryLoading = options.onBoundaryLoading
-        this.#onPolySelect = options.onPolySelect
+        //this.#onPolySelect = options.onPolySelect
 
         const baseLayer = this.#createBaseLayer(options)
         const graticuleLayer = this.#createGraticuleLayer(options)
@@ -406,10 +356,8 @@ export class MapService {
 
         const projection = getProjection('EPSG:4326')
         const worldExtent = projection?.getExtent()
-        //console.log("map.service.handleBoundarySelect, world extent: ", worldExtent)
 
         const map = new Map({
-            //controls: defaultControls().extend([mousePositionControl]),
             target: this.#el,
             layers: [baseLayer, graticuleLayer, this.#shapeLayer, drawLayer, this.#boundaryLayer],
             view: new View({
@@ -422,55 +370,6 @@ export class MapService {
                 ...(options.noWorldWrap ? { extent: worldExtent } : {}),
             }),
         })
-
-        console.log("map.service.options: ", options)
-        if (options.showBoundaries) {
-            map.on('click', (evt:any) => {
-                let props
-                map.forEachFeatureAtPixel(evt.pixel,
-                    (feature:any) => {
-                        props = feature.getProperties()
-                        // Emit the shape as a polygon draw event so listeners can react
-                        console.log("map.service.handleBoundarySelect, feature clicked, props: ", props)
-                        this.#onPolySelect?.({
-                            cause: 'select',
-                            type: MapEventType.BOUNDARY_POLYGON,
-                            fileData: props,
-                            label: "selecting a boundary polygon",
-                        })
-                    }
-                )
-            })
-        }
-
-        /*
-        const polySelectStyle = new Style({
-            fill: new Fill({
-                color: 'rgba(0,255,100,0.3)',
-            }),
-            stroke: new Stroke({
-                color: 'blue',
-                width: 3,
-            }),
-        })
-        */
-
-        /*
-        const select = new Select({
-            condition: pointerMove,
-            style: this.colorStyle(polySelectStyle),
-        });
-        map.addInteraction(select);
-
-        select.on('select', function (e) {
-            if (e.selected.length > 0) {
-                console.log("SELECT: ", e.selected[0])
-                //polySelectStatus.innerHTML = e.selected[0]
-            } else {
-                //polySelectStatus.innerHTML = '&nbsp;'
-            }
-        })
-        */
 
         this.#drawToolbarControl = new DrawToolbarControl(drawLayer, {
             showBboxTool: options.showBoundingBoxSelection,
@@ -620,20 +519,6 @@ export class MapService {
             format: new GeoJSON(),
         })
 
-        /*
-        const style = new Style({
-            fill: new Fill({
-                color: 'rgba(0, 255, 0, 0.4)',
-            }),
-            stroke: new Stroke ({
-                color: 'red',
-                width: 2
-            })
-        })
-        */
-
-        //visible: options.showBoundaries ?? true,
-
         const polyStyle = 
             new Style ({
                 stroke: new Stroke({
@@ -647,14 +532,10 @@ export class MapService {
 
         const layer = new VectorLayer({
             source,
-            //style: this.colorStyle(polyStyle),
             style: polyStyle
         })
 
         layer.set('name', 'boundaries')
-
-        // render the polygon
-        //layer.setStyle(polyStyles);
 
         return layer
     }
@@ -665,7 +546,6 @@ export class MapService {
             const resizeObserver = new ResizeObserver(() => {
                 this.#map.updateSize()
             })
-
             resizeObserver.observe(this.#el)
         }
     }
@@ -677,21 +557,18 @@ export class MapService {
             .find((layer) => layer.get('name') === name)
     }
 
+    /* 
+     * From the points gathered from the selected file (granule), build the polygon featuress
+     * Make sure to split polygons that cross the antimeridian and properly cross the poles
+     */
     #fetchGeoJsonPolygons(boundaryPoints: Array<Array<[number,number]>>, options: Object): [Array<object>, Array<object>] {
-        //let zone1Points: Array<Array<[number, number]>> = [] // initial coordinate set (no zone switching)
-        //let zone2Points: Array<Array<[number, number]>> = [] // secondary coordinates (exists when there is crossing)
         let zone1PolyFeatures: Array<object> = []
         let zone2PolyFeatures: Array<object> = []
-
-        //let cp_arr = candidate_poly.split(" "); // get poly points
-        //console.log("candidate poly points count: " + cp_arr.length);
         let lat = 0; // lat to add to coordinates
         let lon = 0; // lon to add to coordinates
         let oldlat = 0; // keep track of the last added lat
         let oldlon = 0; // keep track of the last added lon
         let zoneToggle = false; // can toggle between two hemispheres (on either side of antimeridian)
-        //let clat = 0;
-        //let clon = 0;
 
         boundaryPoints.forEach((boundaryPoly) => {
             let zone1Poly: Array<[number, number]> = []
@@ -723,6 +600,30 @@ export class MapService {
                 oldlat = lat;
                 oldlon = lon;
            })
+
+            /* *
+             * Check the secondary set of coordinates
+             * for clockwise (CW) order.
+             * If this order is CW, the polygon probably encompasses a pole,
+             * and so we need to walk the antimeridian/90 degree border
+             * */
+            const isClockwise = (turf as any).booleanClockwise ?? ((ring: Array<[number, number]>) => {
+                const signedArea = ring.reduce((sum, [lon, lat], index) => {
+                    const [nextLon, nextLat] = ring[(index + 1) % ring.length]
+                    return sum + lon * nextLat - nextLon * lat
+                }, 0)
+
+                return signedArea < 0
+            })
+
+            if (zone2Poly.length >= 2 && isClockwise(zone2Poly)) {
+                  // use zone1 and zone2 points to walk the pole; results stored in primary
+                zone1Poly = this.wrapPole(zone1Poly, zone2Poly);
+                  // zero the secondary; just use the primary to represent the wrapped polygon
+                zone2Poly = [];
+            }
+
+
            if (zone1Poly.length > 2) {
               zone1PolyFeatures.push(this.getPolyFeature(zone1Poly, options))
            }
@@ -767,9 +668,8 @@ export class MapService {
         }
     }
 
-
+    /* Check if a line segment crosses the antimeridian */
     crossCheck(lat1: number, lon1: number, lat2: number, lon2: number) {
-        //console.log("CROSS CHECK, lon2: " + lon2 + ", lon1: " + lon1 + ", nominal dist: " + Math.abs(lon2 - lon1));
         var distance = Math.abs(lon1 - lon2);
         if (lat1 == 0 || lat2 == 0) { // artifact of loop processing; return false
           return false;
@@ -781,17 +681,17 @@ export class MapService {
      * Connect the coordinates between primary and secondary
      * to 'wrap' the pole
      * */
-    wrapPole(primary: Array<[number, number]>, secondary: Array<[number, number]>) {
-        var wrapped = primary.concat([]);
-        if (primary[primary.length - 1][1] < 0) {
+    wrapPole(zone1: Array<[number,number]>, zone2: Array<[number,number]>) {
+        var wrapped = zone1.concat([]);
+        if (zone1[zone1.length - 1][1] < 0) {
           wrapped.push([-179.5,-89.5]);
           wrapped.push([179.5,-89.5]);
         } else {
           wrapped.push([179.5,89.5]);
           wrapped.push([-179.5,89.5]);
         }
-        wrapped = wrapped.concat(secondary);
-        //console.log("     created pole wrapping merged primary: " + wrapped.join(", " ) + "\n\n");
+        wrapped = wrapped.concat(zone2);
+        //console.log("     created pole wrapping merged zone1: " + wrapped.join(", " ) + "\n\n");
         return wrapped;
     }
 
@@ -817,7 +717,5 @@ export class MapService {
             },
         }
     }
-
-
 
 }

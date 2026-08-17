@@ -1,5 +1,4 @@
 import { property, state, query } from 'lit/decorators.js'
-//import { useState } from 'lit/hooks.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
@@ -7,19 +6,14 @@ import styles from './data-access-spatial-boundaries.styles.js'
 import type { CSSResultGroup } from 'lit'
 import TerraLoader from '../loader/loader.component.js' 
 import TerraIcon from '../icon/icon.component.js'
-//import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
-//import type { MapEventDetail } from '../map/type.js'
-//import { MapEventType } from '../map/type.js'
-//import { createRef, ref } from 'lit/directives/ref.js'
 import TerraDataAccess from '../data-access/data-access.component.js'
+import TerraDataGrid from '../data-grid/data-grid.component.js'
 import TerraDialog from '../dialog/dialog.component.js'
 import TerraAlert from '../alert/alert.component.js'
 import TerraMap from '../map/map.component.js'
 import TerraDivider from '../divider/divider.component.js'
 import TerraTooltip from '../tooltip/tooltip.component.js'
-//import TerraToast from '../toast/toast.component.js'
-//import TerraToastClass from '../toast/toast.component.js'
-//import TerraSpatialBoundaries from '../spatial-boundaries/spatial-boundaries.component.js'
+import TerraToastClass from '../toast/toast.component.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import type {
@@ -29,8 +23,12 @@ import type {
 import { RelatedURLTypeEnum } from '../../apis/types/cmr/umm-g.js'
 import type { UmmResult } from '../../apis/cmr.api.js'
 import type { UmmG } from '../../apis/types/cmr/umm-g.js'
-//import { forEachCorner } from 'ol/extent.js'
-
+import { Stroke, Fill, Style } from 'ol/style.js'
+// for feature select handling
+import Select from 'ol/interaction/Select.js'
+// for pointer 'move' (drag, really) handling
+import { singleClick } from 'ol/events/condition.js'
+import { SplitPane, Pane } from 'react-split-pane';
 /*
  * build data access component
  * build spatial boundaries component
@@ -63,8 +61,6 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
         'terra-tooltip': TerraTooltip,
     }
 
-    //service = new DataAccessService()
-
     @property({ reflect: true, attribute: 'collection-entry-id' })
     collectionEntryId?: string
 
@@ -73,11 +69,6 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
 
     @property({ reflect: true, attribute: 'version' })
     version?: string
-
-    dataAccessRef = createRef<TerraDataAccess>()
-    mapRef = createRef<TerraMap>()
-
-    polyInfoRef = createRef<HTMLDivElement>()
 
     @state() private _dataAccessInitialized = false
     @state() private _mapInitialized = false
@@ -91,110 +82,276 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
     @property({ type: Boolean, reflect: true })
     dialog: boolean = true
 
+    @state() dataAccessRef = createRef<TerraDataAccess>()
+    @state() dataGridRef = createRef<TerraDataGrid<UmmResult<UmmG>>>()
+    @state() mapRef = createRef<TerraMap>()
+
+    polyInfoRef = createRef<HTMLDivElement>()
+
+    polyInfo: string | undefined = undefined
+
+    sp: SplitPane = undefined
+    pn: Pane = undefined
+
     showDialog() {
         this.dialogElement?.show()
     }
 
+    //#handleMapChange(event: TerraMapChangeEvent) {
+    //    console.log("dasb, handleMapChange: ", event.detail)
+    //}
 
-   // @property({ type: Object})
-   // boundaryContent: Record<string, unknown> = {}
+    /**
+     * Add listener to file selections from the data-grid element. 
+     * This is how we find files and access file boundaries.
+     * Boundaries will only be acquired and the layer displayed if 'showBoundaries' 
+     * is true (see the handler function in MapService).
+     */
+    /*
+    connectedCallback(): void {
+        super.connectedCallback()
 
-    async firstVisible(): Promise<void> {
-        this.#initializeDataAccess()
-        this.#initializeMap()
-        this.addEventListener('terra-poly-select', (event: CustomEvent) => {
-            this.displayPolyFeatureInfo(event.detail)
-        })
+        document.addEventListener(
+            'terra-map-change',
+            this.displayPolyFeatureInfo as EventListener,
+        )
     }
 
-    #initializeDataAccess() {
+    disconnectedCallback(): void {
+        super.disconnectedCallback?.()
+        document.removeEventListener('terra-map-change', this.displayPolyFeatureInfo as EventListener)
+    }
+    */
+
+    async firstVisible(): Promise<void> {
+        const dataGrid = this.dataAccessRef.value?.gridRef.value
+        this.#initializeDataAccess(dataGrid)
+        
+        //console.log("dasb, in 'firstVisible', after data access init")
+        if (dataGrid) {
+            console.log("dasb, dataGrid is defined")
+            //dataGrid.refresh()
+            this.dataAccessRef.value?.gridRef.value?.updateComplete.then((stateObj) => {
+                console.log("dasb, initializing map, da loading status:  ", stateObj)
+                this.#initializeMap()
+            })
+        }
+        //document.addEventListener('terra-map-change', (event: CustomEvent) => {
+        //    console.log("dasb, catching terra-map-change event for polygon select: ", event.detail)
+        //    this.displayPolyFeatureInfo(event.detail)
+        //})
+    }
+
+    #initializeDataAccess(dataGrid:any) {
         if (!this.dataAccessRef.value || this._dataAccessInitialized) {
             return
         }
-        console.log("data-access-spatial-boundaries:  initializing data access")
+        //console.log("data-access-spatial-boundaries:  initializing data access")
         this.dataAccessRef.value.shortName = this.shortName
         this.dataAccessRef.value.version = this.version
         this.dataAccessRef.value.collectionEntryId = this.collectionEntryId
 
-        const grid = this.dataAccessRef.value.gridRef.value
+        //let dataGrid = this.dataAccessRef.value?.gridRef.value
 
-        if (grid) {
 
-                const columnDefs: ColDef<UmmResult<UmmG>>[] = [
-                    {
-                        field: 'umm.GranuleUR',
-                        headerName: 'File',
-                        flex: 1,
-                        cellRenderer: (
-                            params: ICellRendererParams<UmmResult<UmmG>>,
-                        ) => {
-                            if (!params.data) {
-                                return ''
-                            }
-        
-                            const url = params.data.umm.RelatedUrls?.find(
-                                (relatedUrl) =>
-                                    relatedUrl.Type === RelatedURLTypeEnum.GetData,
-                            )?.URL
-        
-                            if (url) {
-                                const link = document.createElement('a')
-                                link.href = url
-                                link.target = '_blank'
-                                link.title = url
-                                link.textContent = params.data.umm.GranuleUR
-        
-                                return link
-                            }
-        
-                            const span = document.createElement('span')
-                            span.textContent = params.data.umm.GranuleUR
-                            return span
+        //console.log("dasb, initial grid options: ", dataGrid?.gridOptions)
+        //const testgrid = this.dataGridRef.value
+
+        if (dataGrid) {
+
+            const newColumnDefs: ColDef<UmmResult<UmmG>>[] = [
+                {
+                    field: 'umm.GranuleUR',
+                    headerName: 'File',
+                    flex: 5,
+                    cellRenderer: (
+                        params: ICellRendererParams<UmmResult<UmmG>>,
+                    ) => {
+                        if (!params.data) {
+                            return ''
                         }
-                    },
-                ]
-            
-            grid.columnDefs = columnDefs
-
-
-            console.log("setting grid options")
-            //const gridOpts = grid.gridOptions ??= {}
-
-            grid.gridOptions = {
-                defaultColDef: {
-                    flex: 1,
-                    minWidth: 100,
-                    sortable: true,
-                    resizable: true,
-                    sortingOrder: ['desc', 'asc', null],
+        
+                        const url = params.data.umm.RelatedUrls?.find(
+                            (relatedUrl) =>
+                                relatedUrl.Type === RelatedURLTypeEnum.GetData,
+                        )?.URL
+        
+                        if (url) {
+                            const link = document.createElement('a')
+                            link.href = url
+                            link.target = '_blank'
+                            link.title = url
+                            link.textContent = params.data.umm.GranuleUR
+        
+                            return link
+                        }
+        
+                        const span = document.createElement('span')
+                        span.textContent = params.data.umm.GranuleUR
+                        return span
+                    }
                 },
+                {
+                    headerName: '',
+                    flex: 1,
+                    sortable: false,
+                    filter: false,
+                    cellRenderer: () => {
+                        const span = document.createElement('span')
+                        span.title = 'Click or tap to view file boundary polygon and related info'
+                        span.innerHTML = this.getFileInfoIcon().strings[0]
+                        return span
+                    }
+                }
+            ]
+
+            dataGrid.columnDefs = newColumnDefs
+
+            //this.dataAccessRef.value?.gridRef.value?.requestUpdate()
+            const dataAccessObj = this.dataAccessRef.value?.gridRef
+            //dataAccessObj.updateComplete.then(() => {
+                console.log("dasb, data access object update complete: ", dataAccessObj)
+                console.log("dasb, dao children, ", dataAccessObj.value?.children)
+
+                const childElements = dataAccessObj?.value?.attributes
+
+                if (childElements) {
+                    for (const child of childElements) {
+                        console.log("dasb kids: ", child.nodeName) // Logs the tag names of child elements
+                    }
+                }
+
+                //const daoCols = dataAccessObj.value?
+                //console.log("cols from final object: ", daoCols)
+            //})
+
+            this.dataAccessRef.value?.gridRef.value?.updateComplete.then(() => {
+                const gridColumnCount = this.dataAccessRef.value?.gridRef.value?.columnDefs?.length ?? 0
+                //this.sleep(2000)
+                //const columns = this.dataAccessRef.value?.gridRef.value?.columnDefs
+                const curGrid = this.dataAccessRef.value?.gridRef.value
+                const test = curGrid?.shadowRoot?.querySelector('[part~="grid"]')
+                //const colCount = test?.shadowRoot?.querySelectorAll('[col-id~="umm.GranuleUR"]')
+                console.log("grid column count: ", gridColumnCount)
+                console.log("grid column html: ", test)
+                console.log("curGrid, ", curGrid)
+                if (gridColumnCount > 2) {
+                    console.log("dasb column count > 2")
+                    //dataGrid.columnDefs = newColumnDefs
+                    //this.dataAccessRef.value?.requestUpdate()
+                }
+
+                //const rowDataStuff = this.dataAccessRef.value?.gridRef.value?.rowData?.values
+                //this.dataAccessRef.value?.gridRef.value?.rowData?.values
+                //console.log("dasb, grid row data: ", rowDataStuff)
+
+                //const dasbHtml = this.dataAccessRef.value
+                //console.log("dasb html comp: ", dasbHtml)
+                //const cols = this.shadowRoot?.querySelector('ag-cell-value')
+                //console.log("dasb, cols: ", cols)
+                //console.log("dasb, data access ref after update: ", this.dataAccessRef)
+                //console.log("dasb, grid options after update: ", dataGrid)
+                //const gridOpts = dataGrid.gridOptions ??= {}
+                //dataGrid.gridOptions = {
+                //    ...gridOpts,
+                //    columnDefs: newColumnDefs
+                //}
+            })
+
+
+            //this.dataAccessRef.value?.updateComplete.then(() => {
+            //    console.log("dasb, grid options after: ", gridOpts)
+            //})
+            
+            //dataGrid.columnDefs = newColumnDefs
+
+            //this.dataAccessRef.value?.updateComplete.then(() => {
+
+            //console.log("dasb, grid options before: ", gridOpts)
+ 
+            //gridOpts.columnDefs = newColumnDefs
+
+            //console.log("dasb, grid options after: ", gridOpts)
+
+            //})
+
+            //console.log("dasb, data grid column definitions: ", dataGrid.columnDefs)
+
+            //dataGrid.gridOptions.columnsDefs = newColumnDefs
+
+
+
+            /*
+
+            dataGrid.gridOptions = {
+                ...gridOpts,
+                columnDefs: newColumnDefs
+            }
+                */
+            //dataGrid.updateComplete.then(() => {
+            //    dataGrid.refresh()
+            //})
+
+
+            /*
+            grid.gridOptions = {
+                newColumnDefs,
+                //defaultColDef: {
+                //    flex: 1,
+                //    minWidth: 100,
+                //    sortable: true,
+                //    resizable: true,
+                //    sortingOrder: ['desc', 'asc', null],
+                //},
                 rowBuffer: 25,
                 cacheBlockSize: 50,
                 maxConcurrentDatasourceRequests: 2,
                 infiniteInitialRowCount: 50,
             }
+                */
 
-            //const gridColDefs = grid.columnDefs
-            console.log("grid column defs: ", columnDefs)
             /*
+            const gridColDefs = grid.columnDefs
+
+            
             gridColDefs?.forEach((colDef) => {
                 if (colDef.headerName === 'Start Date') {
+                    console.log("hiding start date column")
                     colDef.hide = true
                 }
                 if (colDef.headerName === 'End Date') {
+                    console.log("hiding end date column")
+                    colDef.hide = true
+                }
+                if (colDef.headerName === 'Size (MB)') {
+                    console.log("hiding size column")
                     colDef.hide = true
                 }
                 if (colDef.headerName === 'Cloud Cover (%)') {
+                    console.log("hiding cloud cover column")
                     colDef.hide = true
                 }
             })
-            */
+                */
+            //grid.columnDefs = columnDefs
             //grid.requestUpdate()    
-            grid.refresh()    
+            //console.log("grid column defs: ", this.dataGrid.gridOptions?.columnDefs)
+            //dataGrid.refresh()    
         }
 
-        console.log("grid options should be set; data access initialized")
+        //console.log("dasb, grid options: ", this.dataGrid?.gridOptions)
         this._dataAccessInitialized = true
+    }
+
+    getFileInfoIcon(): any {
+        return html`
+            <terra-icon 
+                class='data-access-info-icon' 
+                name='outline-globe-alt' 
+                library='heroicons' 
+                aria-hidden='true'>
+            </terra-icon>
+        `
     }
 
     #initializeMap() {
@@ -205,8 +362,52 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
         this.mapRef.value.showGraticule = true
         this.mapRef.value.showBoundaries = true
         this.mapRef.value.showMouseCoordinates = true
+
+        this.initializePolygonSelection(this.mapRef)
+
         this._mapInitialized = true
+
         console.log("data-access-spatial-boundaries:  initializing map, map values: ", this.mapRef.value)
+    }
+
+    colorStyle(style:any) {
+        return function (f:any) {
+            //console.log("colorStyle, f: ", f)
+            //console.log("colorStyle, get style: ", style)
+            style.getFill().setColor(f.get('color') || 'rgba(255,0,0,0.3)');
+            return style;
+        };
+    }
+
+    polySelectStyle = new Style({
+        fill: new Fill({
+            color: 'rgba(255,100,100,0.3)',
+        }),
+        stroke: new Stroke({
+            color: 'red',
+            width: 3,
+        }),
+    });
+
+    initializePolygonSelection(mapRef:any) {
+        const select = new Select({
+            condition: singleClick,
+            style: this.colorStyle(this.polySelectStyle),
+        });
+
+        const dasbRef = this
+        if (mapRef) {
+            mapRef.value.getMap().addInteraction(select);        
+            select.on('select', function (e) {
+                if (e.selected.length > 0) {
+                    console.log("dasb for map, SELECT: ", e.selected[0])
+                    let props = e.selected[0].getProperties()      
+                    dasbRef.displayPolyFeatureInfo(props)
+                } else {
+                    console.log("dasb, select, no event selected obj")
+                }
+            })
+        }
     }
 
     /* 
@@ -214,10 +415,9 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
      * The event detail contains the file id and other metadata for the selected file.  
      * We use this information to display the spatial boundaries of the selected file in the map component. 
      * */
-    #handleRowClicked(event:any) {
-        //console.log("handling data grid row click: ",event)
+    #handleDataAccessTableRowClicked(event:any) {
         const mapElemRef = this.mapRef.value!
-        mapElemRef.setPolygons(event)
+        mapElemRef.setBoundaryPolygons(event)
     }
 
     displayPolyFeatureInfo(options:any): void {
@@ -228,15 +428,19 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
         }
         let optionsHtml = ''
         for (let key in options) {
-            //console.log("displayPolyFeatureInfo, key: ", key, " value: ", options[key])
-            //console.log("displayPolyFeatureInfo, options, fileData: ", options.fileData)
-            if (key === 'fileData') {
-                if (options[key] !== null && options[key] !== undefined) {
-                    Object.keys(options[key]).forEach((fileDataKey) => {
-                        if (fileDataKey !== 'geometry' && options[key][fileDataKey] !== null && options[key][fileDataKey] !== undefined) {
-                            optionsHtml += '<strong>' + fileDataKey + '</strong>:  ' + options[key][fileDataKey] + '<br/>'
-                        }
-                    }) 
+            //console.log("dasb, displayPolyFeatureInfo, key: ", key, " value: ", options[key])
+            //console.log("map.service.displayPolyFeatureInfo, options, fileData: ", options.fileData)
+            //if (key === 'fileData') {
+                if (options[key] !== null && options[key] !== undefined && key !== 'geometry') {
+                    optionsHtml += '<strong>' + key + '</strong>:  ' + options[key] + '<br/>'
+                    //Object.keys(options[key]).forEach((fileDataKey) => {
+                    //    console.log("key: ", fileDataKey)
+                    //    console.log("value: ", options[fileDataKey])
+                    //    if (fileDataKey !== 'geometry' && options[fileDataKey] !== null && options[fileDataKey] !== undefined) {
+                    //        optionsHtml += '<strong>' + fileDataKey + '</strong>:  ' + options[fileDataKey] + '<br/>'
+                    //    }
+                    //}) 
+                            //console.log("dasb, options HTML: ", optionsHtml)
                     //Object.keys(options[key]).forEach((fileDataKey) => {
                     //    if (fileDataKey === 'geometry' && options[key][fileDataKey] !== null && options[key][fileDataKey] !== undefined) {
                     //        //console.log("displayPolyFeatureInfo, fileDataKey: ", fileDataKey, " value: ", options[key][fileDataKey])
@@ -244,56 +448,60 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
                     //    }
                     //})
                 }
-            }
+            //}
             
         }
+
         var infoElement = this.polyInfoRef.value || document.getElementById('polygonFeatureInfo')
         if (infoElement) {
             infoElement.innerHTML = optionsHtml
+            this.polyInfo = optionsHtml
+            
         } else {
             console.warn("displayPolyFeatureInfo: could not find element with id 'polygonFeatureInfo'")
         }
 
-        //TerraToastClass.notify(
-        //    optionsHtml || 'No properties found for this polygon', 
-        //    'information', 
-        //    'solid-information-circle', 
-        //    20000,
-        //    false);
+    }
 
-        //return html`
-        //    <terra-alert variant="information" duration="3000" open closable onTerraAfterHide={() => setOpen(false)}>
-        //        <terra-icon
-        //            slot="icon"
-        //            name="outline-information-circle"
-        //            library="heroicons"
-        //        ></terra-icon>
-        //        ${optionsHtml}
-        //    </terra-alert>
-        //`
+    sleep(milliseconds:any) {
+        return new Promise(resolve => setTimeout(resolve, milliseconds));
+    }
+
+    getCopyAlert(): any {
+        return html`
+            <terra-alert id="copy-alert" variant="information" duration="3000" closable>
+                <terra-icon slot="icon" name="outline-information-circle" library="heroicons"></terra-icon>
+                Content copied
+            </terra-alert>
+        `
+    }
+
+    copyPolyInfoToClipboard() {
+        // Use writeText to avoid passing undefined or non-ClipboardItem types
+        const text = (this.polyInfo === undefined || this.polyInfo === null) ? 
+            '' : String(this.polyInfo).replaceAll('<br\/>','\n')
+        const regex = /(<([^>]+)>)/gi;
+        const result = text.replace(regex, "");
+        navigator.clipboard.writeText(result).catch((e) => console.error('Clipboard write failed', e))
+        TerraToastClass.notify(
+            'Boundary information copied', 
+            'information', 
+            'outline-information-circle', 
+            2000,
+            false);
     }
 
     render() {
         return html `
-        <div id="dasp-flex-container" style="display: flex; flex-direction: row; height: 100%;">
+            <div id="dasp-flex-container" style="display: flex; flex-direction: row; height: 100%;">
             <div class="data-access-container">
-                <terra-data-access
+                <terra-data-access id="file-access"
                     ${ref(this.dataAccessRef)}
-                     @terra-row-clicked="${this.#handleRowClicked}"
-                     @terra-row-hovered="${this.#handleRowClicked}">
+                    @terra-row-clicked="${this.#handleDataAccessTableRowClicked}">
                 </terra-data-access>
-
-                <script>
-                    //const grid = document.querySelector('#grid-event')
-                </script>
             </div>
-            <terra-divider 
-                orientation="vertical" 
-                style="--terra-divider-color: var(--terra-border-primary, #9e7440); --terra-divider-width: 3px; --terra-divider-margin: 3px;">
-            </terra-divider>
-            <div class="dasb-map-container" 
-                style="margin-left:1em; border: 1px solid var(--terra-border-primary, #9e7440); padding: 0.5em; border-radius: 4px; background-color: var(--terra-background-secondary, #ffffff);">
-                <div style="margin-left: 1em; margin-bottom: -1em;">SpatialBoundaries Map  
+            <div class="dasb-map-container">
+                <div class="dasb-map-header">Spatial Boundaries Map  
                     <terra-tooltip content="Click on a file row to show the spatial boundaries of that file.\n 
                         If no boundary is shown, the file has no spatial metadata.\n If a boundary is shown, 
                         click on it to see its coordinates and properties.">                                    
@@ -308,17 +516,24 @@ export default class TerraDataAccessSpatialBoundaries extends QueryClientMixin(T
                 </div>
                 <terra-map class="dasb-map" style="border: none;"
                     ${ref(this.mapRef)}
-                    show-boundaries
-                    @terra-map-change="${(event: CustomEvent) => {
-                        console.log("map change event: ", event)
-                    }}">
+                    show-boundaries>
                 </terra-map>
                 <div class="poly-feature-info-title">
                     Boundary Information
+                    <terra-button id="dasb-poly-feature-copy-button" variant="text"
+                        @click=${(e: Event) => {
+                            e.stopPropagation()
+                            this.copyPolyInfoToClipboard()
+                        }}>
+                        <terra-icon
+                            name="outline-clipboard-document"
+                            library="heroicons"
+                            font-size="18px"
+                        ></terra-icon>
+                    </terra-button>
                 </div>
                 <div ${ref(this.polyInfoRef)} id="polygonFeatureInfo" class="polygon-feature-info"
-                    style="width: 93%; height: calc(30vh - 2em); overflow-y: auto; border: 1px solid var(--terra-border-primary, #9e7440); margin-left: 1em;padding: 0.5em; border-radius: 4px; background-color: var(--terra-background-secondary, #f5f5f5);">
-                    <span style="font-style: italic; color: var(--terra-text-tertiary, #6b7280);">Polygon feature information will appear here when you click on a polygon in the map above.</span> 
+                    <span>Polygon feature information will appear here when you click on a polygon in the map above.</span> 
                 </div>
             </div>
         </div>

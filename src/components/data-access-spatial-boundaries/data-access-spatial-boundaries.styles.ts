@@ -5,36 +5,47 @@ export default css`
         display: block;
     }
 
+    .data-access-info-icon {
+        font-size: 16pt;
+        margin-top: 0.8em;
+    }
+
     .dasb-map-container {
         margin-left: 1em;
-        border: 1px solid var(--terra-border-primary, #9e7440);
+        border: solid 1px var(--terra-border-neutral-default);
         padding: 0.5em;
         border-radius: 4px;
-        background-color: var(--terra-background-secondary, #ffffff);
+        background-color: var( --terra-color-bg-surface-neutral-base);
+
+    }
+
+    .dasb-map-header {
+        margin-left: 1em;
+        margin-bottom: -0.4em;
+        color: var(--terra-color-neutral-600);
     }
 
     .dasb-map {
-        width: 100%;
+
         border: none;
     }
 
     .poly-feature-info-title {
         margin-left: 1em;
         margin-top: 0.5em;
-        font-style: italic;
-        color: var(--terra-text-tertiary, #6b7280);
+        color: var(--terra-color-neutral-600);
     }
 
     .polygon-feature-info {
         font-size: smaller;
-        max-width:30em;
         height: calc(30vh - 2em);
         overflow-y: auto;
-        border: 1px solid var(--terra-border-primary, #9e7440);
-        margin-left: 1em;
+        border: solid 1px var(--terra-border-neutral-default);
+        margin: 0em 1em 1em 1em;
         padding: 0.5em;
         border-radius: 4px;
-        background-color: var(--terra-background-secondary, #f5f5f5);
+        background-color: var(--terra-color-neutral-50);
+        width: 30em;
     }
 
 `
