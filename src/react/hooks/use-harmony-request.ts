@@ -1,6 +1,10 @@
 import * as React from 'react'
 import type { QueryClient } from '@tanstack/query-core'
-import { Status, type SearchOptions, type SubsetJobStatus } from '../../apis/harmony.api.js'
+import {
+    Status,
+    type SearchOptions,
+    type SubsetJobStatus,
+} from '../../apis/harmony.api.js'
 import type {
     CancelHarmonyJobVariables,
     CreateHarmonyJobVariables,
@@ -44,18 +48,20 @@ function getEmptyJob(): SubsetJobStatus {
 }
 
 export function useHarmonyRequest(
-    options?: UseHarmonyRequestOptions,
+    options?: UseHarmonyRequestOptions
 ): UseHarmonyRequestResult {
     const [jobId, setJobId] = React.useState<string | null>(null)
-    const [searchOptions, setSearchOptions] = React.useState<SearchOptions | undefined>(undefined)
+    const [searchOptions, setSearchOptions] = React.useState<
+        SearchOptions | undefined
+    >(undefined)
 
     const createJobMutation = useCreateHarmonyJob({
         queryClient: options?.queryClient,
-        onSuccess: (job) => {
+        onSuccess: job => {
             setJobId(job.jobID)
             options?.onSuccess?.(job)
         },
-        onError: (err) => {
+        onError: err => {
             setJobId(null)
             options?.onError?.(err)
         },
@@ -79,7 +85,7 @@ export function useHarmonyRequest(
                 throw err
             }
         },
-        [createJobMutation],
+        [createJobMutation]
     )
 
     const cancelJob = React.useCallback(
@@ -91,7 +97,7 @@ export function useHarmonyRequest(
             const opts = cancelVars?.options ?? searchOptions
             return statusPolling.cancelJob(opts)
         },
-        [jobId, searchOptions, statusPolling],
+        [jobId, searchOptions, statusPolling]
     )
 
     const startPollForJobStatus = React.useCallback(
@@ -99,7 +105,7 @@ export function useHarmonyRequest(
             setSearchOptions(opts)
             setJobId(id)
         },
-        [],
+        []
     )
 
     const reset = React.useCallback(() => {

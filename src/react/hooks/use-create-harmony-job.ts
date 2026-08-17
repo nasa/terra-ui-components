@@ -16,9 +16,7 @@ export interface UseCreateHarmonyJobOptions {
 
 export interface UseCreateHarmonyJobResult {
     mutate: (variables: CreateHarmonyJobVariables) => Promise<SubsetJobStatus>
-    mutateAsync: (
-        variables: CreateHarmonyJobVariables,
-    ) => Promise<SubsetJobStatus>
+    mutateAsync: (variables: CreateHarmonyJobVariables) => Promise<SubsetJobStatus>
     data: SubsetJobStatus | undefined
     error: Error | null
     isPending: boolean
@@ -29,23 +27,25 @@ export interface UseCreateHarmonyJobResult {
 }
 
 export function useCreateHarmonyJob(
-    options?: UseCreateHarmonyJobOptions,
+    options?: UseCreateHarmonyJobOptions
 ): UseCreateHarmonyJobResult {
     const client = options?.queryClient ?? sharedQueryClient
 
-    const observerRef = React.useRef<
-        MutationObserver<SubsetJobStatus, Error, CreateHarmonyJobVariables> | null
-    >(null)
+    const observerRef = React.useRef<MutationObserver<
+        SubsetJobStatus,
+        Error,
+        CreateHarmonyJobVariables
+    > | null>(null)
 
     if (!observerRef.current) {
         observerRef.current = new MutationObserver(
             client,
-            queryCreateHarmonySubsetJob(),
+            queryCreateHarmonySubsetJob()
         )
     }
 
     const [state, setState] = React.useState(() =>
-        observerRef.current!.getCurrentResult(),
+        observerRef.current!.getCurrentResult()
     )
 
     const callbacksRef = React.useRef(options)
@@ -53,7 +53,7 @@ export function useCreateHarmonyJob(
 
     React.useEffect(() => {
         const observer = observerRef.current!
-        const unsubscribe = observer.subscribe((result) => {
+        const unsubscribe = observer.subscribe(result => {
             setState(result)
             if (result.isSuccess && result.data) {
                 callbacksRef.current?.onSuccess?.(result.data)
@@ -68,7 +68,7 @@ export function useCreateHarmonyJob(
         async (variables: CreateHarmonyJobVariables): Promise<SubsetJobStatus> => {
             return observerRef.current!.mutate(variables)
         },
-        [],
+        []
     )
 
     const reset = React.useCallback(() => {

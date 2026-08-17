@@ -19,7 +19,6 @@ npm run create-boilerplate nextjs -- --output /path/to/output
 ## What it does
 
 1. Creates a Next.js app using `create-next-app@latest` with:
-
     - TypeScript
     - Tailwind CSS
     - ESLint
@@ -32,7 +31,6 @@ npm run create-boilerplate nextjs -- --output /path/to/output
 2. Installs `@nasa-terra/components`
 
 3. Configures `_app.tsx` with:
-
     - Terra UI theme CSS import
     - Base path configuration for CDN assets
 

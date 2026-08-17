@@ -155,9 +155,18 @@ import { useHarmonyRequest } from '@nasa-terra/components/%NPMDIR%/react/hooks'
 import { HarmonyRequest } from '@nasa-terra/components/%NPMDIR%/utilities/harmony'
 
 function HarmonyJobManager() {
-    const { startJob, cancelJob, status, progress, isCreating, isPolling, data, error } = useHarmonyRequest({
-        onSuccess: (job) => console.log('Job completed:', job),
-        onError: (err) => console.error('Job error:', err),
+    const {
+        startJob,
+        cancelJob,
+        status,
+        progress,
+        isCreating,
+        isPolling,
+        data,
+        error,
+    } = useHarmonyRequest({
+        onSuccess: job => console.log('Job completed:', job),
+        onError: err => console.error('Job error:', err),
     })
 
     const handleCreate = async () => {
@@ -171,7 +180,11 @@ function HarmonyJobManager() {
                 {isCreating ? 'Creating Job...' : 'Start Job'}
             </button>
 
-            {status && <p>Status: {status} ({progress}%)</p>}
+            {status && (
+                <p>
+                    Status: {status} ({progress}%)
+                </p>
+            )}
             {isPolling && <button onClick={() => cancelJob()}>Cancel Job</button>}
             {error && <p className="error">{error.message}</p>}
         </div>

@@ -192,11 +192,11 @@ The Textarea component provides a standardized multi-line text input field with 
 
 ## Accessibility
 
--   Label is automatically associated with the textarea via `for` attribute
--   Required fields show a visual indicator (red asterisk) and have the `required` attribute
--   Help text is associated with the textarea for screen readers
--   Disabled state is properly conveyed to assistive technologies
--   Hidden labels remain accessible to screen readers
--   Validation states are announced to screen readers
+- Label is automatically associated with the textarea via `for` attribute
+- Required fields show a visual indicator (red asterisk) and have the `required` attribute
+- Help text is associated with the textarea for screen readers
+- Disabled state is properly conveyed to assistive technologies
+- Hidden labels remain accessible to screen readers
+- Validation states are announced to screen readers
 
 [component-metadata:terra-textarea]

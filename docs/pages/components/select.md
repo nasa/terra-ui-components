@@ -148,22 +148,22 @@ Select fields are used in forms to choose one option from a list. Each field sho
 
 ## Best Practices
 
--   **Labels**: Always include a clear and concise label for each select field.
--   **Placeholder option**: Include a default option (e.g., "Choose an option") as the first option with an empty value to guide users, or use the `placeholder` attribute.
--   **Number of options**: For lists with less than 7 options, consider using Radio buttons instead of a Select Field for better usability.
--   **Required fields**: If only some fields in a form are required, indicate required select fields by adding "(required)" to the end of the field's label. If most fields in a form are required, indicate optional fields by adding "(optional)" to the end of the label.
--   **Help text**: Use the `help-text` attribute to provide additional guidance on what should be selected or any constraints.
--   **Multiple selection**: Use the `multiple` attribute sparingly, as it can be less intuitive for users. Consider using checkboxes for multiple selections instead.
--   **Clear button**: Use the `clearable` attribute when users may need to quickly reset their selection.
+- **Labels**: Always include a clear and concise label for each select field.
+- **Placeholder option**: Include a default option (e.g., "Choose an option") as the first option with an empty value to guide users, or use the `placeholder` attribute.
+- **Number of options**: For lists with less than 7 options, consider using Radio buttons instead of a Select Field for better usability.
+- **Required fields**: If only some fields in a form are required, indicate required select fields by adding "(required)" to the end of the field's label. If most fields in a form are required, indicate optional fields by adding "(optional)" to the end of the label.
+- **Help text**: Use the `help-text` attribute to provide additional guidance on what should be selected or any constraints.
+- **Multiple selection**: Use the `multiple` attribute sparingly, as it can be less intuitive for users. Consider using checkboxes for multiple selections instead.
+- **Clear button**: Use the `clearable` attribute when users may need to quickly reset their selection.
 
 ## Accessibility
 
--   The `terra-select` component is built with accessibility in mind, using proper ARIA attributes and keyboard navigation.
--   Labels are properly associated with the select control using `aria-labelledby`.
--   Required fields are indicated with an asterisk.
--   Help text is provided below the select field for additional context.
--   The component supports keyboard navigation (arrow keys, type-to-select, Enter/Space to select).
--   Focus states are clearly visible with a focus ring.
--   Screen readers are properly notified of value changes.
+- The `terra-select` component is built with accessibility in mind, using proper ARIA attributes and keyboard navigation.
+- Labels are properly associated with the select control using `aria-labelledby`.
+- Required fields are indicated with an asterisk.
+- Help text is provided below the select field for additional context.
+- The component supports keyboard navigation (arrow keys, type-to-select, Enter/Space to select).
+- Focus states are clearly visible with a focus ring.
+- Screen readers are properly notified of value changes.
 
 [component-metadata:terra-select]

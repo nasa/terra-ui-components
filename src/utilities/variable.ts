@@ -27,9 +27,7 @@ export function getVariableEntryId(host: HostWithMaybeProperties) {
 export function getVariableEntryIds(host: HostWithMaybeProperties): string[] {
     if (host.variableEntryIds?.length) {
         return [
-            ...new Set(
-                host.variableEntryIds.map((id) => id.trim()).filter(Boolean),
-            ),
+            ...new Set(host.variableEntryIds.map(id => id.trim()).filter(Boolean)),
         ]
     }
 

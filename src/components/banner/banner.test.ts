@@ -22,7 +22,9 @@ describe('<terra-banner>', () => {
         })
 
         it('should be hidden by default', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.hidden).to.be.true
         })
@@ -136,7 +138,9 @@ describe('<terra-banner>', () => {
 
     describe('Open/Close State', () => {
         it('should be closed by default', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             expect(el.open).to.be.false
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.hidden).to.be.true
@@ -152,7 +156,9 @@ describe('<terra-banner>', () => {
         })
 
         it('should update visibility when open property changes', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             expect(el.open).to.be.false
 
             el.open = true
@@ -165,7 +171,9 @@ describe('<terra-banner>', () => {
 
     describe('Methods', () => {
         it('should show alert when show() is called', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             expect(el.open).to.be.false
 
             const showPromise = el.show()
@@ -197,7 +205,9 @@ describe('<terra-banner>', () => {
         })
 
         it('should return undefined if hide() is called when already closed', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             const result = await el.hide()
             expect(result).to.be.undefined
         })
@@ -205,7 +215,9 @@ describe('<terra-banner>', () => {
 
     describe('Events', () => {
         it('should emit terra-show when opened', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             const eventPromise = oneEvent(el, 'terra-show')
             el.open = true
             await elementUpdated(el)
@@ -214,7 +226,9 @@ describe('<terra-banner>', () => {
         })
 
         it('should emit terra-after-show after opening', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             const eventPromise = oneEvent(el, 'terra-after-show')
             el.open = true
             await elementUpdated(el)
@@ -245,7 +259,9 @@ describe('<terra-banner>', () => {
         })
 
         it('should emit events when show() is called', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
             const showPromise = oneEvent(el, 'terra-show')
             const afterShowPromise = oneEvent(el, 'terra-after-show')
 
@@ -329,7 +345,9 @@ describe('<terra-banner>', () => {
         })
 
         it('should handle rapid open/close toggling', async () => {
-            const el: any = await fixture(html` <terra-banner>Content</terra-banner> `)
+            const el: any = await fixture(html`
+                <terra-banner>Content</terra-banner>
+            `)
 
             el.open = true
             await elementUpdated(el)

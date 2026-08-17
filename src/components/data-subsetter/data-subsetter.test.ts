@@ -1,10 +1,4 @@
-import {
-    elementUpdated,
-    expect,
-    fixture,
-    html,
-    waitUntil,
-} from '@open-wc/testing'
+import { elementUpdated, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
 import { mockCollectionQueries } from '../../test-helpers/mock-apis.js'
@@ -15,11 +9,11 @@ import type { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 
 const getAccordionContent = (el: any) => {
     const accordions = Array.from(
-        el.shadowRoot?.querySelectorAll('terra-accordion') ?? [],
+        el.shadowRoot?.querySelectorAll('terra-accordion') ?? []
     ) as Element[]
 
-    const dimensionsAccordion = accordions.find((acc) =>
-        acc.textContent?.includes('Select Dimensions:'),
+    const dimensionsAccordion = accordions.find(acc =>
+        acc.textContent?.includes('Select Dimensions:')
     )
 
     return dimensionsAccordion?.querySelector('.accordion-content')
@@ -29,7 +23,7 @@ const waitForCollectionLoaded = async (el: any, conceptId: string) => {
     await waitUntil(
         () => el.collectionWithServices?.conceptId === conceptId,
         'collection data did not load',
-        { timeout: 2000 },
+        { timeout: 2000 }
     )
 }
 
@@ -37,22 +31,22 @@ const waitForDimensionsAccordion = async (el: any) => {
     await waitUntil(
         () => Boolean(getAccordionContent(el)),
         'dimensions accordion did not render',
-        { timeout: 2000 },
+        { timeout: 2000 }
     )
 }
 
 const findGetDataButton = (el: any): HTMLButtonElement | undefined =>
     Array.from(el.shadowRoot?.querySelectorAll('button') ?? []).find(
-        (button: any) => button.textContent?.trim() === 'Get Data',
+        (button: any) => button.textContent?.trim() === 'Get Data'
     ) as HTMLButtonElement | undefined
 
 const waitForGetDataButton = async (
-    el: any,
+    el: any
 ): Promise<HTMLButtonElement | undefined> => {
     await waitUntil(
         () => Boolean(findGetDataButton(el)),
         'Get Data button did not render',
-        { timeout: 2000 },
+        { timeout: 2000 }
     )
     return findGetDataButton(el)
 }
@@ -144,7 +138,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -179,9 +173,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
                 {
                     umm: {
                         Name: 'var2',
-                        Dimensions: [
-                            { Name: 'DimA', Size: 4, Type: 'OTHER' },
-                        ],
+                        Dimensions: [{ Name: 'DimA', Size: 4, Type: 'OTHER' }],
                     },
                 },
             ],
@@ -189,7 +181,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -250,7 +242,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -339,7 +331,7 @@ describe('<terra-data-subsetter> harmony request errors', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -355,23 +347,23 @@ describe('<terra-data-subsetter> harmony request errors', () => {
             await elementUpdated(el)
 
             await waitUntil(() =>
-                Boolean(el.shadowRoot?.textContent?.includes('Results:')),
+                Boolean(el.shadowRoot?.textContent?.includes('Results:'))
             )
 
             const normalizeWhitespace = (text: string | null | undefined) =>
                 text?.replace(/\s+/g, ' ').trim()
 
             const errorAlert = Array.from(
-                el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
-            ).find((alert) =>
+                el.shadowRoot?.querySelectorAll('terra-alert') ?? []
+            ).find(alert =>
                 normalizeWhitespace(alert.textContent)?.includes(
-                    'No matching granules were found for your subset request. Please try expanding your search',
-                ),
+                    'No matching granules were found for your subset request. Please try expanding your search'
+                )
             )
 
             expect(errorAlert).to.exist
             expect(el.shadowRoot?.textContent).to.not.include(
-                'No matching granules found.',
+                'No matching granules found.'
             )
         } finally {
             HarmonyRequestController.prototype.startJob = originalStartJob
@@ -424,7 +416,7 @@ describe('<terra-data-subsetter> average=area param', () => {
     })
 
     const clickGetDataAndCaptureRequest = async (
-        el: any,
+        el: any
     ): Promise<HarmonyRequest> => {
         const originalStartJob = HarmonyRequestController.prototype.startJob
         let capturedRequest: HarmonyRequest | undefined
@@ -460,7 +452,7 @@ describe('<terra-data-subsetter> average=area param', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -491,7 +483,7 @@ describe('<terra-data-subsetter> average=area param', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'

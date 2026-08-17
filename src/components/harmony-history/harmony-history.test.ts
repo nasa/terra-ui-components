@@ -1,10 +1,4 @@
-import {
-    expect,
-    fixture,
-    html,
-    elementUpdated,
-    oneEvent,
-} from '@open-wc/testing'
+import { expect, fixture, html, elementUpdated, oneEvent } from '@open-wc/testing'
 import { Status } from '../../apis/harmony.api.js'
 import type { SubsetJobStatus } from '../../apis/harmony.api.js'
 import './harmony-history.js'
@@ -29,14 +23,14 @@ describe('<terra-harmony-history>', () => {
     describe('Basic Rendering', () => {
         it('should render a component', async () => {
             const el = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             expect(el).to.exist
         })
 
         it('should render left and right nav buttons', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const buttons = el.shadowRoot?.querySelectorAll('.nav-button')
             expect(buttons?.length).to.equal(2)
@@ -44,7 +38,7 @@ describe('<terra-harmony-history>', () => {
 
         it('should render a viewport and track', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             expect(el.shadowRoot?.querySelector('[part="viewport"]')).to.exist
             expect(el.shadowRoot?.querySelector('[part="track"]')).to.exist
@@ -52,7 +46,7 @@ describe('<terra-harmony-history>', () => {
 
         it('should show a loading state when query is pending and no jobs', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el.jobsQuery = { result: { status: 'pending', data: undefined } }
             await elementUpdated(el)
@@ -64,7 +58,7 @@ describe('<terra-harmony-history>', () => {
     describe('Thumbnails', () => {
         it('should render thumbnails equal to total count', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const jobs = [
                 makeJob({ jobID: 'a' }),
@@ -75,14 +69,13 @@ describe('<terra-harmony-history>', () => {
             el._loadedPages = new Map([[1, jobs]])
             await elementUpdated(el)
 
-            const thumbnails =
-                el.shadowRoot?.querySelectorAll('[part="thumbnail"]')
+            const thumbnails = el.shadowRoot?.querySelectorAll('[part="thumbnail"]')
             expect(thumbnails?.length).to.equal(3)
         })
 
         it('should render a loading overlay for null (unloaded) jobs', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             // 2 total, only page 1 partial load (1 job), second slot is null
             el._totalCount = 2
@@ -95,7 +88,7 @@ describe('<terra-harmony-history>', () => {
 
         it('should render a loading overlay for non-final job statuses', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const runningJob = makeJob({
                 jobID: 'running',
@@ -112,7 +105,7 @@ describe('<terra-harmony-history>', () => {
 
         it('should not render a loading overlay for final job statuses', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const successJob = makeJob({
                 jobID: 'done',
@@ -130,34 +123,32 @@ describe('<terra-harmony-history>', () => {
     describe('Navigation', () => {
         it('should have the left button disabled when at the start', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._scrollIndex = 0
             el._totalCount = 5
             await elementUpdated(el)
 
-            const leftBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll left"]',
-            )
+            const leftBtn = el.shadowRoot?.querySelector('[aria-label="Scroll left"]')
             expect(leftBtn?.disabled).to.be.true
         })
 
         it('should have the right button disabled when total count is 0', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._totalCount = 0
             await elementUpdated(el)
 
             const rightBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll right"]',
+                '[aria-label="Scroll right"]'
             )
             expect(rightBtn?.disabled).to.be.true
         })
 
         it('should increment scroll index when right arrow is clicked', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._scrollIndex = 0
             el._totalCount = 20
@@ -165,14 +156,14 @@ describe('<terra-harmony-history>', () => {
                 [
                     1,
                     Array.from({ length: 10 }, (_, i) =>
-                        makeJob({ jobID: `job-${i}` }),
+                        makeJob({ jobID: `job-${i}` })
                     ),
                 ],
             ])
             await elementUpdated(el)
 
             const rightBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll right"]',
+                '[aria-label="Scroll right"]'
             )
             rightBtn?.click()
             await elementUpdated(el)
@@ -182,15 +173,13 @@ describe('<terra-harmony-history>', () => {
 
         it('should decrement scroll index when left arrow is clicked', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._scrollIndex = 3
             el._totalCount = 20
             await elementUpdated(el)
 
-            const leftBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll left"]',
-            )
+            const leftBtn = el.shadowRoot?.querySelector('[aria-label="Scroll left"]')
             leftBtn?.click()
             await elementUpdated(el)
 
@@ -199,15 +188,13 @@ describe('<terra-harmony-history>', () => {
 
         it('should not scroll below index 0', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._scrollIndex = 0
             el._totalCount = 10
             await elementUpdated(el)
 
-            const leftBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll left"]',
-            )
+            const leftBtn = el.shadowRoot?.querySelector('[aria-label="Scroll left"]')
             leftBtn?.click()
             await elementUpdated(el)
 
@@ -218,7 +205,7 @@ describe('<terra-harmony-history>', () => {
     describe('Events', () => {
         it('should emit terra-harmony-job-select when a loaded thumbnail is clicked', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const job = makeJob({ jobID: 'clickable-job' })
             el._totalCount = 1
@@ -235,7 +222,7 @@ describe('<terra-harmony-history>', () => {
 
         it('should not emit terra-harmony-job-select for a null (unloaded) thumbnail', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             // 2 slots, only 1 loaded — index 1 is null
             el._totalCount = 2
@@ -247,17 +234,16 @@ describe('<terra-harmony-history>', () => {
                 eventFired = true
             })
 
-            const thumbnails =
-                el.shadowRoot?.querySelectorAll('[part="thumbnail"]')
+            const thumbnails = el.shadowRoot?.querySelectorAll('[part="thumbnail"]')
             thumbnails?.[1]?.click()
 
-            await new Promise<void>((r) => setTimeout(r, 50))
+            await new Promise<void>(r => setTimeout(r, 50))
             expect(eventFired).to.be.false
         })
 
         it('should emit terra-harmony-job-delete when the delete button is clicked (after confirmation)', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const job = makeJob({ jobID: 'deletable-job' })
             el._totalCount = 1
@@ -273,14 +259,12 @@ describe('<terra-harmony-history>', () => {
             const event = await eventPromise
 
             window.confirm = originalConfirm
-            expect((event as CustomEvent).detail.jobId).to.equal(
-                'deletable-job',
-            )
+            expect((event as CustomEvent).detail.jobId).to.equal('deletable-job')
         })
 
         it('should NOT emit terra-harmony-job-delete when user cancels the confirmation', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const job = makeJob({ jobID: 'cancelable-job' })
             el._totalCount = 1
@@ -298,7 +282,7 @@ describe('<terra-harmony-history>', () => {
             const deleteBtn = el.shadowRoot?.querySelector('.delete-button')
             deleteBtn?.click()
 
-            await new Promise<void>((r) => setTimeout(r, 50))
+            await new Promise<void>(r => setTimeout(r, 50))
             window.confirm = originalConfirm
             expect(eventFired).to.be.false
         })
@@ -307,14 +291,16 @@ describe('<terra-harmony-history>', () => {
     describe('removeLabelsOnDelete', () => {
         it('should have removeLabelsOnDelete default to false', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             expect(el.removeLabelsOnDelete).to.be.false
         })
 
         it('should accept remove-labels-on-delete attribute', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history remove-labels-on-delete></terra-harmony-history>`,
+                html`<terra-harmony-history
+                    remove-labels-on-delete
+                ></terra-harmony-history>`
             )
             expect(el.removeLabelsOnDelete).to.be.true
         })
@@ -324,7 +310,7 @@ describe('<terra-harmony-history>', () => {
                 html`<terra-harmony-history
                     filter-by-labels="my-label"
                     remove-labels-on-delete
-                ></terra-harmony-history>`,
+                ></terra-harmony-history>`
             )
             const job = makeJob({ jobID: 'label-job' })
             el._totalCount = 1
@@ -347,7 +333,7 @@ describe('<terra-harmony-history>', () => {
             const deleteBtn = el.shadowRoot?.querySelector('.delete-button')
             deleteBtn?.click()
 
-            await new Promise<void>((r) => setTimeout(r, 100))
+            await new Promise<void>(r => setTimeout(r, 100))
             window.confirm = originalConfirm
 
             expect(mutateCalledWith).to.deep.include({
@@ -361,7 +347,7 @@ describe('<terra-harmony-history>', () => {
             const el: any = await fixture(
                 html`<terra-harmony-history
                     remove-labels-on-delete
-                ></terra-harmony-history>`,
+                ></terra-harmony-history>`
             )
             const job = makeJob({ jobID: 'no-label-job' })
             el._totalCount = 1
@@ -384,7 +370,7 @@ describe('<terra-harmony-history>', () => {
     describe('refresh()', () => {
         it('should reset scroll index, loaded pages, pending pages, and total count', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._scrollIndex = 5
             el._totalCount = 20
@@ -419,27 +405,25 @@ describe('<terra-harmony-history>', () => {
     describe('Accessibility', () => {
         it('should have aria-label on the left nav button', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
-            const leftBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll left"]',
-            )
+            const leftBtn = el.shadowRoot?.querySelector('[aria-label="Scroll left"]')
             expect(leftBtn).to.exist
         })
 
         it('should have aria-label on the right nav button', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             const rightBtn = el.shadowRoot?.querySelector(
-                '[aria-label="Scroll right"]',
+                '[aria-label="Scroll right"]'
             )
             expect(rightBtn).to.exist
         })
 
         it('should have aria-label on delete buttons', async () => {
             const el: any = await fixture(
-                html`<terra-harmony-history></terra-harmony-history>`,
+                html`<terra-harmony-history></terra-harmony-history>`
             )
             el._totalCount = 1
             el._loadedPages = new Map([[1, [makeJob()]]])

@@ -23,8 +23,8 @@ describe('date utilities', () => {
                 requestedStart,
                 requestedEnd,
                 existingStart,
-                existingEnd,
-            ),
+                existingEnd
+            )
         ).to.equal(true)
     })
 })

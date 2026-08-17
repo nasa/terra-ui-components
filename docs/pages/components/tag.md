@@ -166,38 +166,38 @@ The following design tokens are available for customization:
 
 **Typography:**
 
--   `--terra-tag-font-family`: Font family (default: `--terra-font-family--inter`)
--   `--terra-tag-font-size-small`: Font size for small tags (default: `--terra-font-size-x-small`)
--   `--terra-tag-font-size-medium`: Font size for medium tags (default: `--terra-font-size-small`)
--   `--terra-tag-font-size-large`: Font size for large tags (default: `--terra-font-size-medium`)
--   `--terra-tag-font-weight`: Font weight (default: `--terra-font-weight-normal`)
--   `--terra-tag-font-weight-urgent`: Font weight for urgent tags (default: `--terra-font-weight-bold`)
+- `--terra-tag-font-family`: Font family (default: `--terra-font-family--inter`)
+- `--terra-tag-font-size-small`: Font size for small tags (default: `--terra-font-size-x-small`)
+- `--terra-tag-font-size-medium`: Font size for medium tags (default: `--terra-font-size-small`)
+- `--terra-tag-font-size-large`: Font size for large tags (default: `--terra-font-size-medium`)
+- `--terra-tag-font-weight`: Font weight (default: `--terra-font-weight-normal`)
+- `--terra-tag-font-weight-urgent`: Font weight for urgent tags (default: `--terra-font-weight-bold`)
 
 **Colors:**
 
--   `--terra-tag-color`: Text color (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-60` in dark mode)
--   `--terra-tag-background-color`: Background color (default: `transparent`)
--   `--terra-tag-border-color`: Border color for topic tags (default: `--terra-color-carbon-30` in light mode, `--terra-color-carbon-20` in dark mode)
--   `--terra-tag-border-color-hover`: Border color for topic tags on hover (default: `--terra-color-carbon-40` in light mode, `--terra-color-carbon-30` in dark mode)
--   `--terra-tag-background-color-hover`: Background color for topic tags on hover (default: `--terra-color-carbon-5` in light mode, `--terra-color-carbon-10` in dark mode)
--   `--terra-tag-icon-border-color`: Border color for content tag icons (default: `--terra-color-carbon-40` in light mode, `--terra-color-carbon-30` in dark mode)
--   `--terra-tag-urgent-color`: Text color for urgent tags (default: `--terra-color-spacesuit-white`)
--   `--terra-tag-urgent-background-color`: Background color for urgent tags (default: `--terra-color-nasa-red`)
+- `--terra-tag-color`: Text color (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-60` in dark mode)
+- `--terra-tag-background-color`: Background color (default: `transparent`)
+- `--terra-tag-border-color`: Border color for topic tags (default: `--terra-color-carbon-30` in light mode, `--terra-color-carbon-20` in dark mode)
+- `--terra-tag-border-color-hover`: Border color for topic tags on hover (default: `--terra-color-carbon-40` in light mode, `--terra-color-carbon-30` in dark mode)
+- `--terra-tag-background-color-hover`: Background color for topic tags on hover (default: `--terra-color-carbon-5` in light mode, `--terra-color-carbon-10` in dark mode)
+- `--terra-tag-icon-border-color`: Border color for content tag icons (default: `--terra-color-carbon-40` in light mode, `--terra-color-carbon-30` in dark mode)
+- `--terra-tag-urgent-color`: Text color for urgent tags (default: `--terra-color-spacesuit-white`)
+- `--terra-tag-urgent-background-color`: Background color for urgent tags (default: `--terra-color-nasa-red`)
 
 **Icon Sizes (Content Tags):**
 
--   `--terra-tag-icon-size-small`: Size of small content tag icon circles (default: `1.25rem`)
--   `--terra-tag-icon-size-medium`: Size of medium content tag icon circles (default: `1.5rem`)
--   `--terra-tag-icon-size-large`: Size of large content tag icon circles (default: `1.75rem`)
--   `--terra-tag-icon-inner-size-small`: Inner icon size for small content tags (default: `0.75rem`)
--   `--terra-tag-icon-inner-size-medium`: Inner icon size for medium content tags (default: `0.875rem`)
--   `--terra-tag-icon-inner-size-large`: Inner icon size for large content tags (default: `1rem`)
+- `--terra-tag-icon-size-small`: Size of small content tag icon circles (default: `1.25rem`)
+- `--terra-tag-icon-size-medium`: Size of medium content tag icon circles (default: `1.5rem`)
+- `--terra-tag-icon-size-large`: Size of large content tag icon circles (default: `1.75rem`)
+- `--terra-tag-icon-inner-size-small`: Inner icon size for small content tags (default: `0.75rem`)
+- `--terra-tag-icon-inner-size-medium`: Inner icon size for medium content tags (default: `0.875rem`)
+- `--terra-tag-icon-inner-size-large`: Inner icon size for large content tags (default: `1rem`)
 
 **Padding (Topic and Urgent Tags):**
 
--   `--terra-tag-padding-small`: Padding for small topic/urgent tags (default: `0.25rem 0.5rem`)
--   `--terra-tag-padding-medium`: Padding for medium topic/urgent tags (default: `var(--terra-spacing-x-small) var(--terra-spacing-small)`)
--   `--terra-tag-padding-large`: Padding for large topic/urgent tags (default: `0.625rem 1rem`)
+- `--terra-tag-padding-small`: Padding for small topic/urgent tags (default: `0.25rem 0.5rem`)
+- `--terra-tag-padding-medium`: Padding for medium topic/urgent tags (default: `var(--terra-spacing-x-small) var(--terra-spacing-small)`)
+- `--terra-tag-padding-large`: Padding for large topic/urgent tags (default: `0.625rem 1rem`)
 
 All tokens automatically adapt to dark mode when dark mode is active (via system preference or the `dark` prop).
 

@@ -63,21 +63,14 @@ export async function withDb<T>(callback: (db: IDBPDatabase) => Promise<T>) {
     }
 }
 
-export function getDataByKey<T>(
-    store: IndexedDbStores,
-    key: string,
-): Promise<T> {
-    return withDb(async (db) => {
+export function getDataByKey<T>(store: IndexedDbStores, key: string): Promise<T> {
+    return withDb(async db => {
         return await db.get(store, key)
     })
 }
 
-export function storeDataByKey<T>(
-    store: IndexedDbStores,
-    key: string,
-    data: T,
-) {
-    return withDb(async (db) => {
+export function storeDataByKey<T>(store: IndexedDbStores, key: string, data: T) {
+    return withDb(async db => {
         await db.put(store, {
             key,
             ...data,
@@ -86,7 +79,7 @@ export function storeDataByKey<T>(
 }
 
 export function deleteDataByKey(store: IndexedDbStores, key: string) {
-    return withDb(async (db) => {
+    return withDb(async db => {
         await db.delete(store, key)
     })
 }

@@ -59,7 +59,6 @@ export default css`
         flex: 1 1 auto;
         font-size: 1rem;
         padding-inline: 0.5rem;
-
     }
 
     .combobox::placeholder {

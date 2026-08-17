@@ -14,10 +14,10 @@ This section shows you how to use HDS design tokens, CSS variables, and themes t
 
 Horizon Design System is NASA's official design system that provides:
 
--   **Design Tokens**: Colors, typography, spacing, and other design values
--   **Components**: Reusable UI components following NASA design guidelines
--   **Accessibility**: Built-in accessibility standards and best practices
--   **Consistency**: Ensures visual and functional consistency across NASA applications
+- **Design Tokens**: Colors, typography, spacing, and other design values
+- **Components**: Reusable UI components following NASA design guidelines
+- **Accessibility**: Built-in accessibility standards and best practices
+- **Consistency**: Ensures visual and functional consistency across NASA applications
 
 ## Using the Horizon Theme
 
@@ -170,14 +170,14 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Status Legend
 
--   ✅ **Fully Supported** - Component fully implements HDS design tokens and guidelines
--   🟡 **In Progress** - Component partially implements HDS, with known gaps
--   ❌ **Not Supported** - Component not yet implemented or not planned
+- ✅ **Fully Supported** - Component fully implements HDS design tokens and guidelines
+- 🟡 **In Progress** - Component partially implements HDS, with known gaps
+- ❌ **Not Supported** - Component not yet implemented or not planned
 
 ### Elements
 
-| Component                                         | Status            | Notes                                                                                                     |
-| ------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| Component                                         | Status             | Notes                                                                                                     |
+| ------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
 | [Avatar](/components/avatar)                      | ✅ Fully Supported | Implements HDS avatar guidelines with image, initials, and icon support. Full dark mode support.          |
 | Badges                                            | ❌ Not Supported   | Not yet implemented.                                                                                      |
 | [Button](/components/button)                      | ✅ Fully Supported | Core HDS styles implemented. Some variants were modified to fit application UI better.                    |
@@ -200,8 +200,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Components
 
-| Component                          | Status            | Notes                                                                       |
-| ---------------------------------- | ----------------- | --------------------------------------------------------------------------- |
+| Component                          | Status             | Notes                                                                       |
+| ---------------------------------- | ------------------ | --------------------------------------------------------------------------- |
 | [Accordion](/components/accordion) | ✅ Fully Supported | Implements HDS accordion patterns with design tokens and dark mode support. |
 | Article Building Blocks            | ❌ Not Supported   | Not yet implemented.                                                        |
 | Audio Player                       | ❌ Not Supported   | Not yet implemented.                                                        |
@@ -230,8 +230,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Modules
 
-| Component                         | Status          | Notes                |
-| --------------------------------- | --------------- | -------------------- |
+| Component                         | Status           | Notes                |
+| --------------------------------- | ---------------- | -------------------- |
 | 3D Model Module                   | ❌ Not Supported | Not yet implemented. |
 | About the Author                  | ❌ Not Supported | Not yet implemented. |
 | Article Hero Image                | ❌ Not Supported | Not yet implemented. |
@@ -302,8 +302,8 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Templates
 
-| Component               | Status          | Notes                |
-| ----------------------- | --------------- | -------------------- |
+| Component               | Status           | Notes                |
+| ----------------------- | ---------------- | -------------------- |
 | 404 Page                | ❌ Not Supported | Not yet implemented. |
 | About                   | ❌ Not Supported | Not yet implemented. |
 | About NASA              | ❌ Not Supported | Not yet implemented. |
@@ -350,6 +350,6 @@ If you're working on implementing HDS support for a component, please:
 
 ## Next Steps
 
--   Explore [Design Tokens](/tokens/typography) to see all available CSS variables
--   Learn about [HDS Components](/components/avatar) in the component documentation
--   Visit the [official HDS website](https://website.nasa.gov/hds/) for more information
+- Explore [Design Tokens](/tokens/typography) to see all available CSS variables
+- Learn about [HDS Components](/components/avatar) in the component documentation
+- Visit the [official HDS website](https://website.nasa.gov/hds/) for more information

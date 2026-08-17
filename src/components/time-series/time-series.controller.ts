@@ -11,11 +11,7 @@ import type {
 } from './time-series.types.js'
 import type TerraTimeSeries from './time-series.component.js'
 import { TimeInterval } from '../../types.js'
-import {
-    formatDate,
-    getUTCDate,
-    isDateRangeContained,
-} from '../../utilities/date.js'
+import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import type { SubsetJobStatus, SubsetJobError } from '../../apis/harmony.api.js'
 import { extractHarmonyError } from '../../utilities/harmony.js'
@@ -79,13 +75,11 @@ export class TimeSeriesController {
                 },
                 bubbles: true,
                 composed: true,
-            }),
+            })
         )
     }
 
-    constructor(
-        host: ReactiveControllerHost & TerraTimeSeries & QueryClientHost,
-    ) {
+    constructor(host: ReactiveControllerHost & TerraTimeSeries & QueryClientHost) {
         this.host = host
         this.#collectionController = new CollectionController(this.host, {
             getCollectionEntryId: () => this.#getCollectionEntryId(),
@@ -103,9 +97,7 @@ export class TimeSeriesController {
                 if (
                     !jobId ||
                     !this.host.bearerToken ||
-                    (this.host.startDate &&
-                        this.host.endDate &&
-                        this.host.location)
+                    (this.host.startDate && this.host.endDate && this.host.location)
                 ) {
                     return
                 }
@@ -166,11 +158,9 @@ export class TimeSeriesController {
                     !this.host.endDate ||
                     !this.host.location
                 ) {
-                    console.log(
-                        'Requirements not met to fetch the time series data ',
-                    )
+                    console.log('Requirements not met to fetch the time series data ')
                     const currentVariableIds = this.#getRequestedVariables()
-                        .map((v) => v.dataFieldId)
+                        .map(v => v.dataFieldId)
                         .join('|')
                     if (currentVariableIds !== this.#lastFetchedVariableIds) {
                         this.lastTaskValue = undefined
@@ -182,16 +172,16 @@ export class TimeSeriesController {
 
                 // fetch each requested variable independently and render each as a separate trace
                 const seriesResults = await Promise.all(
-                    requestedVariables.map(async (variable) => {
+                    requestedVariables.map(async variable => {
                         const timeSeries = await this.#loadTimeSeries(
                             signal,
-                            variable,
+                            variable
                         )
 
                         // Filter out fill values from the data
                         const filteredData = this.#filterFillValues(
                             timeSeries.data,
-                            timeSeries.metadata?.undef,
+                            timeSeries.metadata?.undef
                         )
 
                         return {
@@ -199,12 +189,12 @@ export class TimeSeriesController {
                             timeSeries,
                             filteredData,
                         }
-                    }),
+                    })
                 )
 
                 this.metadata = seriesResults[0]?.timeSeries.metadata
                 this.#lastFetchedVariableIds = this.#getRequestedVariables()
-                    .map((v) => v.dataFieldId)
+                    .map(v => v.dataFieldId)
                     .join('|')
 
                 // map each variable result to its own Plotly trace
@@ -218,9 +208,9 @@ export class TimeSeriesController {
                         hovertemplate: variable.dataFieldUnits
                             ? `%{x}<br>%{y} ${variable.dataFieldUnits}<extra>%{fullData.name}</extra>`
                             : '%{x}<br>%{y}<extra>%{fullData.name}</extra>',
-                        x: filteredData.map((row) => row.timestamp),
-                        y: filteredData.map((row) => row.value),
-                    }),
+                        x: filteredData.map(row => row.timestamp),
+                        y: filteredData.map(row => row.value),
+                    })
                 )
 
                 const firstSeries = seriesResults[0]
@@ -232,12 +222,10 @@ export class TimeSeriesController {
                     detail: {
                         data: firstSeries.timeSeries,
                         variable: firstSeries.variable,
-                        series: seriesResults.map(
-                            ({ variable, timeSeries }) => ({
-                                variable,
-                                data: timeSeries,
-                            }),
-                        ),
+                        series: seriesResults.map(({ variable, timeSeries }) => ({
+                            variable,
+                            data: timeSeries,
+                        })),
                         startDate: formatDate(this.host.startDate),
                         endDate: formatDate(this.host.endDate),
                         location: this.host.location,
@@ -246,7 +234,7 @@ export class TimeSeriesController {
 
                 if (this.#lastHarmonyJobId) {
                     this.#capturePlotThumbnail(this.#lastHarmonyJobId).catch(
-                        console.error,
+                        console.error
                     )
                 }
 
@@ -280,12 +268,11 @@ export class TimeSeriesController {
 
         if (!hostStartDate || !hostEndDate) {
             throw new Error(
-                'Start and end date are required to fetch time series data',
+                'Start and end date are required to fetch time series data'
             )
         }
 
-        const hasTimeComponent = (dateStr: string) =>
-            /T\d{2}:\d{2}/.test(dateStr)
+        const hasTimeComponent = (dateStr: string) => /T\d{2}:\d{2}/.test(dateStr)
         const startDate = getUTCDate(hostStartDate)
         const endDate = getUTCDate(hostEndDate, !hasTimeComponent(hostEndDate))
         const cacheKey = this.getCacheKeyForVariable(catalogVariable)
@@ -296,15 +283,12 @@ export class TimeSeriesController {
             catalogVariable,
             this.host.startDate,
             this.host.endDate,
-            this.host.location,
+            this.host.location
         )
 
         // If a job ID is provided, skip cache/chunking and directly wait for that job
         if (this.host.jobId) {
-            const jobStatus = await this.#waitForHarmonyJob(
-                this.host.jobId,
-                signal,
-            )
+            const jobStatus = await this.#waitForHarmonyJob(this.host.jobId, signal)
 
             if (jobStatus.status === Status.FAILED) {
                 const errorMessage =
@@ -329,9 +313,7 @@ export class TimeSeriesController {
                 throw error
             }
 
-            const dataLink = jobStatus.links.find(
-                (link) => link.rel === 'data',
-            )?.href
+            const dataLink = jobStatus.links.find(link => link.rel === 'data')?.href
             if (!dataLink) {
                 const error = new Error('No data link found for Harmony job')
                 this.#handleHarmonyError(error, jobStatus.errors)
@@ -361,13 +343,13 @@ export class TimeSeriesController {
                       startDate,
                       endDate,
                       existingStartDate,
-                      existingEndDate,
+                      existingEndDate
                   )
-                : false,
+                : false
         )
         console.log(
             'Is cache valid?',
-            this.#cacheService.isCacheValid(existingTerraData),
+            this.#cacheService.isCacheValid(existingTerraData)
         )
 
         if (
@@ -378,20 +360,17 @@ export class TimeSeriesController {
                 startDate,
                 endDate,
                 existingStartDate,
-                existingEndDate,
+                existingEndDate
             ) &&
             this.#cacheService.isCacheValid(existingTerraData)
         ) {
-            console.log(
-                'Returning existing data from cache ',
-                this.getCacheKey(),
-            )
+            console.log('Returning existing data from cache ', this.getCacheKey())
 
             // Filter fill values from cached data (in case old cached data contains fill values)
             const fillValue = existingTerraData.metadata?.undef
             const filteredData = this.#filterFillValues(
                 existingTerraData.data,
-                fillValue,
+                fillValue
             )
             const filteredTimeSeries: TimeSeriesData = {
                 ...existingTerraData,
@@ -402,7 +381,7 @@ export class TimeSeriesController {
             return this.#cacheService.getDataInRange(
                 filteredTimeSeries,
                 startDate,
-                endDate,
+                endDate
             )
         }
 
@@ -410,14 +389,14 @@ export class TimeSeriesController {
         const dataGaps = this.#cacheService.calculateDataGaps(
             startDate,
             endDate,
-            existingTerraData,
+            existingTerraData
         )
 
         if (dataGaps.length === 0 && existingTerraData) {
             // Filter fill values from cached data (in case old cached data contains fill values)
             const filteredData = this.#filterFillValues(
                 existingTerraData.data,
-                existingTerraData.metadata?.undef,
+                existingTerraData.metadata?.undef
             )
             const filteredTimeSeries: TimeSeriesData = {
                 ...existingTerraData,
@@ -428,7 +407,7 @@ export class TimeSeriesController {
             return this.#cacheService.getDataInRange(
                 filteredTimeSeries,
                 startDate,
-                endDate,
+                endDate
             )
         }
 
@@ -457,11 +436,7 @@ export class TimeSeriesController {
 
             const allChunks: Array<{ start: Date; end: Date }> = []
             for (const gap of pendingGaps) {
-                const chunks = calculateDateChunks(
-                    timeInterval,
-                    gap.start,
-                    gap.end,
-                )
+                const chunks = calculateDateChunks(timeInterval, gap.start, gap.end)
                 allChunks.push(...chunks)
             }
 
@@ -479,7 +454,7 @@ export class TimeSeriesController {
                         chunk.start,
                         chunk.end,
                         signal,
-                        catalogVariable,
+                        catalogVariable
                     )
 
                     allData = [...allData, ...result.data]
@@ -515,8 +490,7 @@ export class TimeSeriesController {
 
             const sortedData = [...allData].sort(
                 (a, b) =>
-                    new Date(a.timestamp).getTime() -
-                    new Date(b.timestamp).getTime(),
+                    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
             )
 
             const synthesizedCoverage: VariableDbEntry | undefined =
@@ -536,7 +510,7 @@ export class TimeSeriesController {
             pendingGaps = this.#cacheService.calculateDataGaps(
                 startDate,
                 endDate,
-                synthesizedCoverage,
+                synthesizedCoverage
             )
         }
 
@@ -570,7 +544,7 @@ export class TimeSeriesController {
                 data: filteredData,
             },
             startDate,
-            endDate,
+            endDate
         )
     }
 
@@ -582,7 +556,7 @@ export class TimeSeriesController {
         startDate: Date,
         endDate: Date,
         signal: AbortSignal,
-        catalogVariable: Variable,
+        catalogVariable: Variable
     ): Promise<TimeSeriesData> {
         // Check if we need to warn the user about data point limits
         if (
@@ -598,8 +572,7 @@ export class TimeSeriesController {
 
         const location = this.#parseLocationInput()
         const isBoundingBoxLocation = location instanceof LatLngBounds
-        const collectionConceptId =
-            await this.#waitForCollectionConceptId(signal)
+        const collectionConceptId = await this.#waitForCollectionConceptId(signal)
 
         const harmonyRequest = new HarmonyRequest({
             collectionConceptId,
@@ -660,16 +633,13 @@ export class TimeSeriesController {
             jobStatus.errors.length > 0
         ) {
             const errorMessage =
-                jobStatus.errors[0].message ||
-                'The subset job completed with errors'
+                jobStatus.errors[0].message || 'The subset job completed with errors'
             const error = new Error(errorMessage)
             this.#handleHarmonyError(error, jobStatus.errors)
             throw error
         }
 
-        const dataLink = jobStatus.links.find(
-            (link) => link.rel === 'data',
-        )?.href
+        const dataLink = jobStatus.links.find(link => link.rel === 'data')?.href
 
         if (!dataLink) {
             const error = new Error('No data link found for Harmony job')
@@ -682,12 +652,9 @@ export class TimeSeriesController {
 
     async #fetchHarmonyDataLink(
         dataLink: string,
-        signal: AbortSignal,
+        signal: AbortSignal
     ): Promise<TimeSeriesData> {
-        const normalizedLink = dataLink.replace(
-            'proxy-timeseries',
-            'timeseries',
-        )
+        const normalizedLink = dataLink.replace('proxy-timeseries', 'timeseries')
         const proxyUrl = `${HARMONY_LINK_PROXY_URL}?url=${encodeURIComponent(normalizedLink)}`
 
         const response = await fetch(proxyUrl, {
@@ -701,7 +668,7 @@ export class TimeSeriesController {
 
         if (!response.ok) {
             const error = new Error(
-                `Failed to fetch subset job link contents: ${response.statusText}`,
+                `Failed to fetch subset job link contents: ${response.statusText}`
             )
             this.#handleHarmonyError(error)
             throw error
@@ -712,7 +679,7 @@ export class TimeSeriesController {
 
     async #waitForHarmonyJob(
         jobId: string,
-        signal: AbortSignal,
+        signal: AbortSignal
     ): Promise<SubsetJobStatus> {
         this.#harmonyRequestController.startPollForJobStatus(jobId, {
             bearerToken: this.host.bearerToken,
@@ -731,10 +698,7 @@ export class TimeSeriesController {
                 })
             }
 
-            if (
-                jobStatus?.jobID === jobId &&
-                FINAL_STATUSES.has(jobStatus.status)
-            ) {
+            if (jobStatus?.jobID === jobId && FINAL_STATUSES.has(jobStatus.status)) {
                 return jobStatus
             }
 
@@ -749,7 +713,7 @@ export class TimeSeriesController {
     #parseTimeSeriesCsv(text: string) {
         const lines = text
             .split('\n')
-            .map((line) => line.trim())
+            .map(line => line.trim())
             .filter(Boolean)
 
         const metadata: Partial<TimeSeriesMetadata> = {}
@@ -760,12 +724,9 @@ export class TimeSeriesController {
 
         for (const line of lines) {
             if (!inDataSection) {
-                if (
-                    line.startsWith('Timestamp (UTC)') ||
-                    line.startsWith('time,')
-                ) {
+                if (line.startsWith('Timestamp (UTC)') || line.startsWith('time,')) {
                     // This marks the beginning of the data section
-                    dataHeaders = line.split(',').map((h) => h.trim())
+                    dataHeaders = line.split(',').map(h => h.trim())
                     inDataSection = true
                     continue
                 }
@@ -830,13 +791,13 @@ export class TimeSeriesController {
      */
     #filterFillValues(
         data: TimeSeriesDataRow[],
-        fillValue: string | number | undefined,
+        fillValue: string | number | undefined
     ): TimeSeriesDataRow[] {
         if (!fillValue) {
             return data
         }
 
-        return data.filter((row) => {
+        return data.filter(row => {
             const rowValue = row.value.trim()
             const fillValueStr = String(fillValue).trim()
             // Compare as strings first (most common case)
@@ -876,7 +837,7 @@ export class TimeSeriesController {
         return this.#cacheService.getCacheKeyForVariable(
             catalogVariable.dataFieldId,
             this.host.location,
-            this.host.environment,
+            this.host.environment
         )
     }
 
@@ -884,15 +845,11 @@ export class TimeSeriesController {
      * Checks if the current date range will exceed data point limits
      * Returns true if it's safe to proceed, false if confirmation is needed
      */
-    #checkDataPointLimits(
-        catalogVariable: Variable,
-        startDate: Date,
-        endDate: Date,
-    ) {
+    #checkDataPointLimits(catalogVariable: Variable, startDate: Date, endDate: Date) {
         this.host.estimatedDataPoints = calculateDataPoints(
             catalogVariable.dataProductTimeInterval as TimeInterval,
             startDate,
-            endDate,
+            endDate
         )
 
         if (this.host.estimatedDataPoints < NUM_DATAPOINTS_TO_WARN_USER) {
@@ -927,8 +884,7 @@ export class TimeSeriesController {
         // Sort data by timestamp to ensure we're analyzing in order
         const sortedData = [...data].sort(
             (a, b) =>
-                new Date(a.timestamp).getTime() -
-                new Date(b.timestamp).getTime(),
+                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         )
 
         // Calculate time differences between consecutive points
@@ -948,7 +904,7 @@ export class TimeSeriesController {
 
         // Find the most common interval (mode)
         const intervalCounts = new Map<number, number>()
-        intervals.forEach((interval) => {
+        intervals.forEach(interval => {
             // Round to nearest minute to handle small variations
             const rounded = Math.round(interval / (1000 * 60)) * (1000 * 60)
             intervalCounts.set(rounded, (intervalCounts.get(rounded) || 0) + 1)
@@ -1008,7 +964,7 @@ export class TimeSeriesController {
         while (Date.now() - startedAt < MAX_CONCEPT_ID_WAIT_MS) {
             if (signal.aborted) {
                 throw new Error(
-                    'Request aborted while waiting for collection metadata',
+                    'Request aborted while waiting for collection metadata'
                 )
             }
 
@@ -1019,7 +975,7 @@ export class TimeSeriesController {
 
             if (this.#collectionController.collection?.isError) {
                 const error = new Error(
-                    'Unable to load collection metadata needed for Harmony requests',
+                    'Unable to load collection metadata needed for Harmony requests'
                 )
                 this.#handleHarmonyError(error)
                 throw error
@@ -1029,7 +985,7 @@ export class TimeSeriesController {
         }
 
         const error = new Error(
-            'Timed out waiting for collection metadata needed for Harmony requests',
+            'Timed out waiting for collection metadata needed for Harmony requests'
         )
         this.#handleHarmonyError(error)
         throw error
@@ -1037,17 +993,15 @@ export class TimeSeriesController {
 
     #parseLocationInput(): LatLng | LatLngBounds {
         const rawLocation = decodeURIComponent(this.host.location ?? '')
-        const rawCoordinates = rawLocation
-            .split(',')
-            .map((coord) => coord.trim())
-        const coordinates = rawCoordinates.map((coord) => Number(coord))
+        const rawCoordinates = rawLocation.split(',').map(coord => coord.trim())
+        const coordinates = rawCoordinates.map(coord => Number(coord))
         const hasInvalidCoordinates =
-            rawCoordinates.some((coord) => coord.length === 0) ||
-            coordinates.some((value) => Number.isNaN(value))
+            rawCoordinates.some(coord => coord.length === 0) ||
+            coordinates.some(value => Number.isNaN(value))
 
         if (hasInvalidCoordinates) {
             const error = new Error(
-                'Invalid location format. Expected "lat,lon" or "west,south,east,north".',
+                'Invalid location format. Expected "lat,lon" or "west,south,east,north".'
             )
 
             this.host.dispatchEvent(
@@ -1060,7 +1014,7 @@ export class TimeSeriesController {
                     },
                     bubbles: true,
                     composed: true,
-                }),
+                })
             )
 
             throw error
@@ -1075,7 +1029,7 @@ export class TimeSeriesController {
         }
 
         const error = new Error(
-            'Invalid location format. Expected "lat,lon" or "west,south,east,north".',
+            'Invalid location format. Expected "lat,lon" or "west,south,east,north".'
         )
 
         this.host.dispatchEvent(
@@ -1088,7 +1042,7 @@ export class TimeSeriesController {
                 },
                 bubbles: true,
                 composed: true,
-            }),
+            })
         )
 
         throw error
@@ -1098,7 +1052,7 @@ export class TimeSeriesController {
         harmonyJobId: string,
         delayMs = 1000,
         thumbWidth = 200,
-        thumbHeight = 200,
+        thumbHeight = 200
     ): Promise<void> {
         // Give Plotly time to finish rendering
         await this.#sleep(delayMs)
@@ -1109,14 +1063,11 @@ export class TimeSeriesController {
         }
 
         try {
-            const dataUrl = await Plotly.toImage(
-                plotEl as Plotly.PlotlyHTMLElement,
-                {
-                    format: 'jpeg',
-                    width: 500,
-                    height: 500,
-                },
-            )
+            const dataUrl = await Plotly.toImage(plotEl as Plotly.PlotlyHTMLElement, {
+                format: 'jpeg',
+                width: 500,
+                height: 500,
+            })
 
             const img = new Image()
             img.src = dataUrl
@@ -1131,11 +1082,10 @@ export class TimeSeriesController {
 
             const blob = await new Promise<Blob>((resolve, reject) =>
                 canvas.toBlob(
-                    (b) =>
-                        b ? resolve(b) : reject(new Error('toBlob failed')),
+                    b => (b ? resolve(b) : reject(new Error('toBlob failed'))),
                     'image/jpeg',
-                    0.8,
-                ),
+                    0.8
+                )
             )
 
             await this.#thumbnailService.store(harmonyJobId, blob)
@@ -1167,10 +1117,7 @@ export class TimeSeriesController {
     /**
      * Handles errors from Harmony GraphQL operations and dispatches them as events
      */
-    #handleHarmonyError(
-        error: unknown,
-        jobErrors?: Array<SubsetJobError>,
-    ): void {
+    #handleHarmonyError(error: unknown, jobErrors?: Array<SubsetJobError>): void {
         const errorDetails = extractHarmonyError(error, jobErrors)
 
         // Dispatch the error event
@@ -1179,7 +1126,7 @@ export class TimeSeriesController {
                 detail: errorDetails,
                 bubbles: true,
                 composed: true,
-            }),
+            })
         )
     }
 }

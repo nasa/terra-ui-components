@@ -43,9 +43,7 @@ import type DataTileSource from 'ol/source/DataTile.js'
 import type DataTile from 'ol/DataTile.js'
 import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 
-export default class TerraTimeAverageMap extends QueryClientMixin(
-    TerraElement,
-) {
+export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-button': TerraButton,
@@ -87,8 +85,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     @property({ attribute: 'job-id' })
     jobId?: string
 
-    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
-        true
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
     @state() catalogVariable: Variable
     @state() pixelValue: string = 'N/A'
     @state() pixelCoordinates: string = 'N/A'
@@ -204,12 +201,12 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
         this.addEventListener(
             'terra-time-average-map-error',
-            this.#handleMapError as EventListener,
+            this.#handleMapError as EventListener
         )
 
         this.addEventListener(
             'terra-plot-toolbar-export-image',
-            this.#handleExportImage as EventListener,
+            this.#handleExportImage as EventListener
         )
     }
 
@@ -254,11 +251,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         super.disconnectedCallback()
         this.removeEventListener(
             'terra-time-average-map-error',
-            this.#handleMapError as EventListener,
+            this.#handleMapError as EventListener
         )
         this.removeEventListener(
             'terra-plot-toolbar-export-image',
-            this.#handleExportImage as EventListener,
+            this.#handleExportImage as EventListener
         )
     }
 
@@ -273,9 +270,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         }
     }
 
-    #handleExportImage = async (
-        event: CustomEvent<{ format: 'png' | 'jpg' }>,
-    ) => {
+    #handleExportImage = async (event: CustomEvent<{ format: 'png' | 'jpg' }>) => {
         if (!this.#map) {
             console.warn('Map not initialized, cannot export image')
             return
@@ -285,7 +280,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
         try {
             // Wait for map to finish rendering
-            await new Promise<void>((resolve) => {
+            await new Promise<void>(resolve => {
                 this.#map!.once('rendercomplete', () => {
                     resolve()
                 })
@@ -308,12 +303,12 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             // Get all canvas elements (OpenLayers can have multiple canvases for different layers)
             // We need to get them in z-order (bottom to top)
             const allCanvases = Array.from(
-                mapElement.querySelectorAll('canvas'),
+                mapElement.querySelectorAll('canvas')
             ) as HTMLCanvasElement[]
 
             // Also get SVG elements (vector layers might be rendered as SVG)
             const svgs = Array.from(
-                mapElement.querySelectorAll('svg'),
+                mapElement.querySelectorAll('svg')
             ) as SVGElement[]
 
             if (allCanvases.length === 0 && svgs.length === 0) {
@@ -351,7 +346,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                     0,
                     textHeight,
                     mapWidth,
-                    mapHeight,
+                    mapHeight
                 )
             }
 
@@ -369,9 +364,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                         clonedSvg.setAttribute('height', String(mapHeight))
                     }
 
-                    const svgData = new XMLSerializer().serializeToString(
-                        clonedSvg,
-                    )
+                    const svgData = new XMLSerializer().serializeToString(clonedSvg)
                     const svgBlob = new Blob([svgData], {
                         type: 'image/svg+xml;charset=utf-8',
                     })
@@ -380,13 +373,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                     const img = new Image()
                     await new Promise<void>((resolve, reject) => {
                         img.onload = () => {
-                            ctx.drawImage(
-                                img,
-                                0,
-                                textHeight,
-                                mapWidth,
-                                mapHeight,
-                            )
+                            ctx.drawImage(img, 0, textHeight, mapWidth, mapHeight)
                             URL.revokeObjectURL(url)
                             resolve()
                         }
@@ -427,7 +414,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             const quality = format === 'jpg' ? 0.92 : undefined // JPG quality (0-1), PNG doesn't use quality
 
             finalCanvas.toBlob(
-                (blob) => {
+                blob => {
                     if (!blob) {
                         console.warn('Failed to create blob from canvas')
                         return
@@ -454,7 +441,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                     URL.revokeObjectURL(url)
                 },
                 mimeType,
-                quality,
+                quality
             )
         } catch (error) {
             console.error('Error exporting map as PNG:', error)
@@ -508,7 +495,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             ctx.fillText(
                 statsMax.textContent || '',
                 legendX + legendWidth / 2,
-                legendY + padding,
+                legendY + padding
             )
         }
 
@@ -522,7 +509,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
             // Get all color divs
             const colorDivs = Array.from(
-                palette.querySelectorAll('div'),
+                palette.querySelectorAll('div')
             ) as HTMLDivElement[]
 
             // Draw each color div
@@ -532,14 +519,14 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                 const divHeight = divRect.height
                 const style = div.getAttribute('style') || ''
                 const bgColorMatch = style.match(
-                    /background-color:\s*rgba?\(([^)]+)\)/,
+                    /background-color:\s*rgba?\(([^)]+)\)/
                 )
 
                 if (bgColorMatch) {
                     const colorStr = bgColorMatch[1]
                     const [r, g, b, a = 1] = colorStr
                         .split(',')
-                        .map((s) => parseFloat(s.trim()))
+                        .map(s => parseFloat(s.trim()))
 
                     ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
                     ctx.fillRect(paletteX, currentY, paletteWidth, divHeight)
@@ -559,7 +546,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             ctx.fillText(
                 statsMin.textContent || '',
                 legendX + legendWidth / 2,
-                legendY + legendHeight - padding,
+                legendY + legendHeight - padding
             )
         }
     }
@@ -621,7 +608,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         ctx: CanvasRenderingContext2D,
         text: string,
         maxWidth: number,
-        fontSize: number,
+        fontSize: number
     ): string[] {
         ctx.font = `bold ${fontSize}px Arial, sans-serif`
         const words = text.split(' ')
@@ -649,7 +636,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
      */
     async captureMapThumbnail(
         thumbWidth = 200,
-        thumbHeight = 200,
+        thumbHeight = 200
     ): Promise<Blob | undefined> {
         if (!this.#map) {
             return undefined
@@ -658,7 +645,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         const map = this.#map
 
         try {
-            await new Promise<void>((resolve) => {
+            await new Promise<void>(resolve => {
                 map.once('rendercomplete', () => resolve())
                 map.render()
             })
@@ -669,7 +656,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
             const [mapWidth, mapHeight] = mapSize
             const allCanvases = Array.from(
-                mapElement.querySelectorAll('canvas'),
+                mapElement.querySelectorAll('canvas')
             ) as HTMLCanvasElement[]
 
             if (allCanvases.length === 0) return undefined
@@ -695,11 +682,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
             return new Promise<Blob>((resolve, reject) =>
                 thumb.toBlob(
-                    (b) =>
-                        b ? resolve(b) : reject(new Error('toBlob failed')),
+                    b => (b ? resolve(b) : reject(new Error('toBlob failed'))),
                     'image/jpeg',
-                    0.8,
-                ),
+                    0.8
+                )
             )
         } catch (error) {
             console.error('Failed to capture map thumbnail', error)
@@ -755,7 +741,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                     const transformedExtent = transformExtent(
                         view!.extent!,
                         view!.projection!,
-                        this.#map!.getView().getProjection(),
+                        this.#map!.getView().getProjection()
                     )
 
                     // Now we can change the map view to fit the GeoTIFF
@@ -812,7 +798,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             return
         }
 
-        // Remove existing supporting layers if they exist 
+        // Remove existing supporting layers if they exist
         // (e.g. if user changes variable and we need to load a new GeoTIFF)
         if (this.#geoTiffGraticuleLayer) {
             this.#map.removeLayer(this.#geoTiffGraticuleLayer)
@@ -837,14 +823,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                 geoTiffExtent = transformExtent(
                     view.extent,
                     view.projection!,
-                    this.#map.getView().getProjection(),
+                    this.#map.getView().getProjection()
                 )
             }
         } catch (error) {
-            console.warn(
-                'Could not get GeoTIFF extent for border clipping:',
-                error,
-            )
+            console.warn('Could not get GeoTIFF extent for border clipping:', error)
         }
 
         // Add a graticule layer with the same extent as the GeoTIFF for better visualization
@@ -862,9 +845,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
         this.#map.addLayer(this.#geoTiffGraticuleLayer)
 
-        // Add a states vector layer with the same extent as the GeoTIFF to provide geographic 
-        // context. This is optional but can be helpful for users to orient themselves when looking 
-        // at the map. We use a GeoJSON source from Natural Earth, but this could be swapped out 
+        // Add a states vector layer with the same extent as the GeoTIFF to provide geographic
+        // context. This is optional but can be helpful for users to orient themselves when looking
+        // at the map. We use a GeoJSON source from Natural Earth, but this could be swapped out
         // for any vector source with appropriate styling.
         const statesVectorSource = new VectorSource({
             url: 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/10m/cultural/ne_10m_admin_1_states_provinces.json',
@@ -901,12 +884,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         })
 
         this.#map.addLayer(this.#bordersLayer)
-
-
     }
 
     async fetchGeotiffMetadata(
-        gtSource: GeoTIFF,
+        gtSource: GeoTIFF
     ): Promise<{ [key: string]: string }> {
         await gtSource.getView()
         const internal = gtSource as any
@@ -951,7 +932,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             }
 
             const val = data ? Number(data[0]).toExponential(3) : 'N/A'
-            const coordStr = coordinate.map((c) => c.toFixed(3)).join(', ')
+            const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
 
             this.pixelValue = val
             this.pixelCoordinates = coordStr
@@ -969,8 +950,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         gtSource.getView().then(() => {
             const gtImage = (gtSource as any).sourceImagery_[0][0] // TODO: fix type
             ndv = parseFloat(
-                gtImage.fileDirectory?.GDAL_NODATA ??
-                    this.noDataValue.toString(),
+                gtImage.fileDirectory?.GDAL_NODATA ?? this.noDataValue.toString()
             )
         })
 
@@ -1002,13 +982,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     }
 
     // Referencing workshop example from https://openlayers.org/workshop/en/cog/colormap.html
-    async getColorStops(
-        name: any,
-        min: any,
-        max: any,
-        steps: any,
-        reverse: any,
-    ) {
+    async getColorStops(name: any, min: any, max: any, steps: any, reverse: any) {
         const delta = (max - min) / (steps - 1)
         const stops = new Array(steps * 2)
 
@@ -1064,22 +1038,17 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         // Reapply the style with the new colormap to the layer
         if (this.#gtLayer && this.#gtLayer.getSource()) {
             this.colorMapName = selectedColormap
-            this.applyColorToLayer(
-                this.#gtLayer.getSource()!,
-                this.colorMapName,
-            )
+            this.applyColorToLayer(this.#gtLayer.getSource()!, this.colorMapName)
         }
     }
 
     #abortJobStatusTask() {
-        this.#controller.jobStatusTask?.abort(
-            'Cancelled time averaged map request',
-        )
+        this.#controller.jobStatusTask?.abort('Cancelled time averaged map request')
     }
 
     async applyColorToLayer(
         gtSource: DataTileSource<DataTile | ImageTile>,
-        color: String,
+        color: String
     ) {
         var { min, max } = await this.getMinMax(gtSource)
         let gtStyle = {
@@ -1229,26 +1198,24 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
                     // Create point features for each sampled location
                     const pointFeatures = coords.map(
-                        (coord) =>
+                        coord =>
                             new Feature({
                                 geometry: new Point(coord),
-                            }),
+                            })
                     )
                     this.#vectorSource?.addFeatures(pointFeatures) // Each point will show up in the UI
 
                     // Obtaining geotiff data values by using list of coordinates to grab the geotiff layers corresponding data value
-                    const rasterValues = coords.map((coord) =>
-                        this.#getRasterValueAtCoordinate(coord),
+                    const rasterValues = coords.map(coord =>
+                        this.#getRasterValueAtCoordinate(coord)
                     )
                     const xValues = coords.map((_, index) => index) //Mapping indexes to each coordinate for the x-axis of the scatter plot
 
                     // Returns a list for formatted lon,lat, and data value to be used by hover tool tip
-                    const lonLatCoords = coords.map((coord) => {
+                    const lonLatCoords = coords.map(coord => {
                         const [lon, lat] = toLonLat(coord)
                         const val = this.#getRasterValueAtCoordinate(coord)
-                        const rastervalue = !isNaN(val)
-                            ? val.toExponential(4)
-                            : 'N/A'
+                        const rastervalue = !isNaN(val) ? val.toExponential(4) : 'N/A'
                         return [
                             parseFloat(lon.toFixed(2)),
                             parseFloat(lat.toFixed(2)),
@@ -1316,9 +1283,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
     render() {
         return html`
-            ${
-                this.#isVariableNotFound()
-                    ? html`
+            ${this.#isVariableNotFound()
+                ? html`
                       <terra-alert
                           class="no-data-alert"
                           variant="danger"
@@ -1333,11 +1299,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                           The selected variable was not found in the catalog
                       </terra-alert>
                   `
-                    : ''
-            }
-            ${
-                this.timeAverageMapError
-                    ? html`
+                : ''}
+            ${this.timeAverageMapError
+                ? html`
                       <terra-alert
                           class="error-alert"
                           variant="danger"
@@ -1353,8 +1317,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                           ${this.#getErrorMessage(this.timeAverageMapError)}
                       </terra-alert>
                   `
-                    : ''
-            }
+                : ''}
             <div class="toolbar-container">
                 ${cache(
                     this.catalogVariable
@@ -1378,7 +1341,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                               .opacity=${this.opacity}
                               .showHelp=${this.showHelp}
                           ></terra-plot-toolbar>`
-                        : html`<div class="spacer"></div>`,
+                        : html`<div class="spacer"></div>`
                 )}
             </div>
 
@@ -1402,13 +1365,13 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                         <div class="stats" id="statsMax">${this.max}</div>
                         <div class="palette">
                             ${this.legendValues.map(
-                                (value) => html`
+                                value => html`
                                     <div
                                         class="color-box"
                                         style="background-color: rgba(${value.rgb})"
                                         title="${value.value}"
                                     ></div>
-                                `,
+                                `
                             )}
                         </div>
                         <div class="stats" id="statsMin">${this.min}</div>
@@ -1416,9 +1379,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                 </div>
             </div>
 
-            ${
-                this.harmonyJobId
-                    ? html`
+            ${this.harmonyJobId
+                ? html`
                       <div class="harmony-job-link">
                           <a
                               href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
@@ -1429,17 +1391,15 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                           </a>
                       </div>
                   `
-                    : nothing
-            }
+                : nothing}
 
             <!-- Floating Popover for Plot -->
-            ${
-                this.toggleState &&
-                this.plotData &&
-                Object.keys(this.plotData).length &&
-                this.layout &&
-                Object.keys(this.layout).length
-                    ? html`
+            ${this.toggleState &&
+            this.plotData &&
+            Object.keys(this.plotData).length &&
+            this.layout &&
+            Object.keys(this.layout).length
+                ? html`
                       <div class="plot-popover ${this.minimized ? 'minimized' : ''}">
                           <terra-plot
                               style="display: ${this.minimized ? 'none' : 'block'}"
@@ -1457,14 +1417,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                           </terra-button>
                       </div>
                   `
-                    : null
-            }
+                : null}
 
             <dialog
-                ?open=${
-                    this.#controller?.jobStatusTask?.status ===
-                    TaskStatus.PENDING
-                }
+                ?open=${this.#controller?.jobStatusTask?.status ===
+                TaskStatus.PENDING}
             >
                 <terra-loader indeterminate variant="orbit"></terra-loader>
                 <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>

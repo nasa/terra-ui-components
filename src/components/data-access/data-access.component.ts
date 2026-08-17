@@ -110,8 +110,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     cloudCoverSliderRef = createRef<TerraSlider>()
     gridRef = createRef<TerraDataGrid<UmmResult<UmmG>>>()
 
-    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null =
-        null
+    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
     #collectionController = new CollectionController(this, {
         getCollectionEntryId: () => this.collectionEntryId,
@@ -163,7 +162,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside,
+                this.#boundHandleCloudCoverClickOutside
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -182,7 +181,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside,
+                this.#boundHandleCloudCoverClickOutside
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -214,8 +213,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     sortDirection: params.sortModel?.[0]?.sort ?? 'asc',
                 })
 
-                const data =
-                    await this.queryClient.ensureQueryData(queryOptions)
+                const data = await this.queryClient.ensureQueryData(queryOptions)
 
                 this.loading = false
 
@@ -240,8 +238,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                           },
                       }
                     : undefined
-                const lastGranule = this.#collectionController.sampling?.data
-                    ?.maxDate
+                const lastGranule = this.#collectionController.sampling?.data?.maxDate
                     ? {
                           TemporalExtent: {
                               RangeDateTime: {
@@ -256,7 +253,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 this.estimatedSize = this.service.getEstimatedGranuleSize(
                     firstGranule as UmmG | undefined,
                     lastGranule as UmmG | undefined,
-                    this.totalGranules,
+                    this.totalGranules
                 )
 
                 const lastRow = data.hits <= params.endRow ? data.hits : -1
@@ -270,16 +267,13 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 field: 'umm.GranuleUR',
                 headerName: 'Title',
                 flex: 3,
-                cellRenderer: (
-                    params: ICellRendererParams<UmmResult<UmmG>>,
-                ) => {
+                cellRenderer: (params: ICellRendererParams<UmmResult<UmmG>>) => {
                     if (!params.data) {
                         return ''
                     }
 
                     const url = params.data.umm.RelatedUrls?.find(
-                        (relatedUrl) =>
-                            relatedUrl.Type === RelatedURLTypeEnum.GetData,
+                        relatedUrl => relatedUrl.Type === RelatedURLTypeEnum.GetData
                     )?.URL
 
                     if (url) {
@@ -300,7 +294,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             {
                 colId: 'umm.DataGranule.Size',
                 headerName: 'Size (MB)',
-                valueGetter: (g) => {
+                valueGetter: g => {
                     if (!g.data) {
                         return undefined
                     }
@@ -404,8 +398,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 this.searchParams.location.type === MapEventType.BBOX &&
                 this.searchParams.location.bounds
             ) {
-                const boundsStr =
-                    this.searchParams.location.bounds.toBBoxString()
+                const boundsStr = this.searchParams.location.bounds.toBBoxString()
                 const coords = boundsStr
                     .split(',')
                     .map((c: string) => parseFloat(c.trim()))
@@ -457,7 +450,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                         this.#handleCloudCoverClickOutside.bind(this)
                     document.addEventListener(
                         'click',
-                        this.#boundHandleCloudCoverClickOutside,
+                        this.#boundHandleCloudCoverClickOutside
                     )
                 }
             } else {
@@ -465,7 +458,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 if (this.#boundHandleCloudCoverClickOutside) {
                     document.removeEventListener(
                         'click',
-                        this.#boundHandleCloudCoverClickOutside,
+                        this.#boundHandleCloudCoverClickOutside
                     )
                     this.#boundHandleCloudCoverClickOutside = null
                 }
@@ -480,7 +473,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside,
+                this.#boundHandleCloudCoverClickOutside
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -511,12 +504,12 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         event.stopPropagation()
 
         const response = await fetch(
-            getBasePath('assets/data-access/download_files.py.txt'),
+            getBasePath('assets/data-access/download_files.py.txt')
         )
 
         if (!response.ok) {
             alert(
-                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime',
+                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime'
             )
         }
 
@@ -533,8 +526,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     this.searchParams.location.bounds
                 ) {
                     // toBBoxString returns west,south,east,north
-                    const boundsStr =
-                        this.searchParams.location.bounds.toBBoxString()
+                    const boundsStr = this.searchParams.location.bounds.toBBoxString()
                     // Remove spaces and split to verify format
                     const coords = boundsStr
                         .split(',')
@@ -569,20 +561,18 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             .replace(
                 /{{filter_temporal}}/gi,
                 this.searchParams.startDate && this.searchParams.endDate
-                    ? this.searchParams.startDate +
-                          ',' +
-                          this.searchParams.endDate
-                    : '',
+                    ? this.searchParams.startDate + ',' + this.searchParams.endDate
+                    : ''
             )
             .replace(/{{filter_bbox}}/gi, getBboxString())
             .replace(/{{filter_search}}/gi, this.searchParams.search ?? '')
             .replace(
                 /{{filter_cloud_cover_min}}/gi,
-                this.searchParams.cloudCover?.min?.toString() ?? '',
+                this.searchParams.cloudCover?.min?.toString() ?? ''
             )
             .replace(
                 /{{filter_cloud_cover_max}}/gi,
-                this.searchParams.cloudCover?.max?.toString() ?? '',
+                this.searchParams.cloudCover?.max?.toString() ?? ''
             )
 
         const blob = new Blob([content], { type: 'text/plain' })
@@ -649,7 +639,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                         .value=${this.searchParams.search ?? ''}
                         @input=${(event: Event) => {
                             this.handleSearch(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                             )
                         }}
                     />
@@ -659,12 +649,10 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     <terra-dropdown>
                         <button
                             slot="trigger"
-                            class="filter-btn ${
-                                this.searchParams.startDate &&
-                                this.searchParams.endDate
-                                    ? 'active'
-                                    : ''
-                            }"
+                            class="filter-btn ${this.searchParams.startDate &&
+                            this.searchParams.endDate
+                                ? 'active'
+                                : ''}"
                         >
                             <terra-icon
                                 name="outline-calendar"
@@ -672,10 +660,8 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 font-size="18px"
                             ></terra-icon>
                             <span>${this.#getDateRangeButtonText()}</span>
-                            ${
-                                this.searchParams.startDate &&
-                                this.searchParams.endDate
-                                    ? html`
+                            ${this.searchParams.startDate && this.searchParams.endDate
+                                ? html`
                                       <button
                                           class="clear-badge"
                                           @click=${(e: Event) => {
@@ -687,8 +673,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                           ×
                                       </button>
                                   `
-                                    : nothing
-                            }
+                                : nothing}
                         </button>
 
                         <div class="datepicker-container">
@@ -701,55 +686,44 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 inline
                                 .startDate=${this.searchParams.startDate}
                                 .endDate=${this.searchParams.endDate}
-                                .startPlaceholder=${
-                                    this.isSubDaily
-                                        ? 'YYYY-MM-DD HH:mm:ss'
-                                        : 'YYYY-MM-DD'
-                                }
-                                .endPlaceholder=${
-                                    this.isSubDaily
-                                        ? 'YYYY-MM-DD HH:mm:ss'
-                                        : 'YYYY-MM-DD'
-                                }
+                                .startPlaceholder=${this.isSubDaily
+                                    ? 'YYYY-MM-DD HH:mm:ss'
+                                    : 'YYYY-MM-DD'}
+                                .endPlaceholder=${this.isSubDaily
+                                    ? 'YYYY-MM-DD HH:mm:ss'
+                                    : 'YYYY-MM-DD'}
                                 .minDate=${this.granuleMinDate}
                                 .maxDate=${this.granuleMaxDate}
-                                @terra-date-range-change=${
-                                    this.#handleDateRangeChange
-                                }
+                                @terra-date-range-change=${this
+                                    .#handleDateRangeChange}
                             >
-                                ${
-                                    this.granuleMinDate && this.granuleMaxDate
-                                        ? html` <p
+                                ${this.granuleMinDate && this.granuleMaxDate
+                                    ? html` <p
                                           slot="additional-text"
                                           class="available-range"
                                       >
                                           <strong>Available Range:</strong>
                                           ${this.service.formatAvailableRangeDate(
                                               this.granuleMinDate,
-                                              this.isSubDaily,
+                                              this.isSubDaily
                                           )}
                                           -
                                           ${this.service.formatAvailableRangeDate(
                                               this.granuleMaxDate,
-                                              this.isSubDaily,
+                                              this.isSubDaily
                                           )}
                                       </p>`
-                                        : nothing
-                                }
+                                    : nothing}
                             </terra-date-picker>
                         </div>
                     </terra-dropdown>
 
-                    <terra-dropdown
-                        placement="bottom-start"
-                        distance="4"
-                        hoist
-                    >
+                    <terra-dropdown placement="bottom-start" distance="4" hoist>
                         <div slot="trigger" class="filter">
                             <button
-                                class="filter-btn ${
-                                    this.searchParams.location ? 'active' : ''
-                                }"
+                                class="filter-btn ${this.searchParams.location
+                                    ? 'active'
+                                    : ''}"
                             >
                                 <terra-icon
                                     name="outline-globe-alt"
@@ -757,9 +731,8 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                     font-size="18px"
                                 ></terra-icon>
                                 <span>${this.#getSpatialButtonText()}</span>
-                                ${
-                                    this.searchParams.location
-                                        ? html`
+                                ${this.searchParams.location
+                                    ? html`
                                           <button
                                               class="clear-badge"
                                               @click=${(e: Event) => {
@@ -771,8 +744,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                               ×
                                           </button>
                                       `
-                                        : nothing
-                                }
+                                    : nothing}
                             </button>
                         </div>
 
@@ -786,27 +758,22 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 @terra-map-change=${this.#handleMapChange}
                             >
                                 <p class="available-range" slot="additional-text">
-                                    <strong>Available range:</strong> ${
-                                        this.spatialConstraints
-                                    }
+                                    <strong>Available range:</strong> ${this
+                                        .spatialConstraints}
                                 </p>
                             </terra-spatial-picker>
                         </div>
                     </terra-dropdown>
 
-                    ${
-                        this.cloudCoverRange
-                            ? html`
+                    ${this.cloudCoverRange
+                        ? html`
                               <div class="filter">
                                   <button
-                                      class="filter-btn ${
-                                          this.searchParams.cloudCover?.min !==
-                                              undefined &&
-                                          this.searchParams.cloudCover?.max !==
-                                              undefined
-                                              ? 'active'
-                                              : ''
-                                      }"
+                                      class="filter-btn ${this.searchParams.cloudCover
+                                          ?.min !== undefined &&
+                                      this.searchParams.cloudCover?.max !== undefined
+                                          ? 'active'
+                                          : ''}"
                                       @click=${(e: Event) => {
                                           e.stopPropagation()
                                           this.#toggleCloudCoverPicker()
@@ -818,12 +785,10 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                           font-size="18px"
                                       ></terra-icon>
                                       <span>${this.#getCloudCoverButtonText()}</span>
-                                      ${
-                                          this.searchParams.cloudCover?.min !==
-                                              undefined &&
-                                          this.searchParams.cloudCover?.max !==
-                                              undefined
-                                              ? html`
+                                      ${this.searchParams.cloudCover?.min !==
+                                          undefined &&
+                                      this.searchParams.cloudCover?.max !== undefined
+                                          ? html`
                                                 <button
                                                     class="clear-badge"
                                                     @click=${(e: Event) => {
@@ -835,17 +800,15 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                                     ×
                                                 </button>
                                             `
-                                              : nothing
-                                      }
+                                          : nothing}
                                   </button>
 
                                   <!-- hidden slider to show when clicking the filter -->
                                   <div
-                                      class="cloud-cover-dropdown ${
-                                          this.cloudCoverPickerOpen
-                                              ? 'open'
-                                              : ''
-                                      }"
+                                      class="cloud-cover-dropdown ${this
+                                          .cloudCoverPickerOpen
+                                          ? 'open'
+                                          : ''}"
                                       @click=${(e: Event) => e.stopPropagation()}
                                   >
                                       <terra-slider
@@ -853,29 +816,21 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                           mode="range"
                                           min=${this.cloudCoverRange?.min}
                                           max=${this.cloudCoverRange?.max}
-                                          start-value=${
-                                              this.searchParams.cloudCover
-                                                  ?.min ??
-                                              this.cloudCoverRange?.min
-                                          }
-                                          end-value=${
-                                              this.searchParams.cloudCover
-                                                  ?.max ??
-                                              this.cloudCoverRange?.max
-                                          }
+                                          start-value=${this.searchParams.cloudCover
+                                              ?.min ?? this.cloudCoverRange?.min}
+                                          end-value=${this.searchParams.cloudCover
+                                              ?.max ?? this.cloudCoverRange?.max}
                                           step="0.1"
                                           hide-label
                                           label="Cloud Cover"
-                                          @terra-slider-change=${
-                                              this.#handleCloudCoverChange
-                                          }
+                                          @terra-slider-change=${this
+                                              .#handleCloudCoverChange}
                                           show-inputs
                                       ></terra-slider>
                                   </div>
                               </div>
                           `
-                            : nothing
-                    }
+                        : nothing}
                 </div>
 
                 <div class="results-info">
@@ -895,9 +850,8 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 ${this.loading ? this.#renderLoadingOverlay() : nothing}
             </div>
 
-            ${
-                this.footerSlot
-                    ? html`
+            ${this.footerSlot
+                ? html`
                       <div
                           slot="footer"
                           style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
@@ -952,7 +906,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                           </terra-dropdown>
                       </div>
                   `
-                    : html`
+                : html`
                       <div
                           style="margin-top: 15px; display: flex; align-items: center; gap: 8px;"
                       >
@@ -1005,8 +959,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                               </terra-menu>
                           </terra-dropdown>
                       </div>
-                  `
-            }
+                  `}
         `
     }
 

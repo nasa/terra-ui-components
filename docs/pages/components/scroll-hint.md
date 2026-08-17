@@ -57,23 +57,23 @@ The scroll hint behavior depends on whether it's inline or fixed:
 
 When the `inline` prop is set:
 
--   The scroll hint is **always visible** (no inactivity timer)
--   It remains visible regardless of user interaction
--   Scrolls the page down by one viewport height when clicked
--   Emits a `terra-scroll` event when clicked
+- The scroll hint is **always visible** (no inactivity timer)
+- It remains visible regardless of user interaction
+- Scrolls the page down by one viewport height when clicked
+- Emits a `terra-scroll` event when clicked
 
 ### Fixed Position (Default)
 
 When the `inline` prop is not set (default):
 
--   Appears after a configurable delay of user inactivity (defaults to 3 seconds)
--   Once shown, remains visible until the user:
-    -   Clicks on the scroll hint (triggers scroll)
-    -   Begins scrolling the page
-    -   Clicks anywhere else on the page
-    -   Scrolls to the bottom of the page (hint will not show again)
--   Scrolls the page down by one viewport height when clicked
--   Emits a `terra-scroll` event when clicked
+- Appears after a configurable delay of user inactivity (defaults to 3 seconds)
+- Once shown, remains visible until the user:
+    - Clicks on the scroll hint (triggers scroll)
+    - Begins scrolling the page
+    - Clicks anywhere else on the page
+    - Scrolls to the bottom of the page (hint will not show again)
+- Scrolls the page down by one viewport height when clicked
+- Emits a `terra-scroll` event when clicked
 
 ## Positioning
 
@@ -172,10 +172,10 @@ terra-scroll-hint {
 
 The following design tokens are available for customization:
 
--   `--terra-scroll-hint-icon-background-color`: Background color of the icon circle (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in inverse mode)
--   `--terra-scroll-hint-icon-color`: Color of the chevron icon (default: `--terra-color-spacesuit-white` in light mode, `--terra-color-carbon-black` in inverse mode)
--   `--terra-scroll-hint-text-color`: Color of the "SCROLL TO CONTINUE" text (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in inverse mode)
--   `--terra-scroll-hint-ring-color`: Color of the pulsing ring (default: `--terra-color-nasa-red`)
+- `--terra-scroll-hint-icon-background-color`: Background color of the icon circle (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in inverse mode)
+- `--terra-scroll-hint-icon-color`: Color of the chevron icon (default: `--terra-color-spacesuit-white` in light mode, `--terra-color-carbon-black` in inverse mode)
+- `--terra-scroll-hint-text-color`: Color of the "SCROLL TO CONTINUE" text (default: `--terra-color-carbon-black` in light mode, `--terra-color-spacesuit-white` in inverse mode)
+- `--terra-scroll-hint-ring-color`: Color of the pulsing ring (default: `--terra-color-nasa-red`)
 
 All tokens automatically adapt when inverse mode is active (via the `inverse` prop).
 

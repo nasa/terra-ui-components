@@ -12,18 +12,18 @@ Thank you for your interest in contributing to Terra UI Components! We welcome c
 
 Before you begin, please familiarize yourself with:
 
--   [Installation Guide](/getting-started/installation) - How to set up Terra UI locally
--   [Horizon Design System](https://website.nasa.gov/hds/) - NASA's design system guidelines
--   [Component Documentation](/components/avatar) - Examples of existing components
+- [Installation Guide](/getting-started/installation) - How to set up Terra UI locally
+- [Horizon Design System](https://website.nasa.gov/hds/) - NASA's design system guidelines
+- [Component Documentation](/components/avatar) - Examples of existing components
 
 ## Governance
 
 The NASA GES DISC team maintains Terra UI Components and has final decision-making authority on:
 
--   New design tokens and their values
--   New components and their APIs
--   Breaking changes and major version updates
--   Overall project direction and priorities
+- New design tokens and their values
+- New components and their APIs
+- Breaking changes and major version updates
+- Overall project direction and priorities
 
 We review all pull requests and provide feedback to help ensure contributions align with project goals and quality standards. Don't let this daunt you from submitting a PR — we're a friendly group and are happy to discuss any changes. When in doubt, feel free to open an issue to discuss your ideas before implementing them.
 
@@ -43,22 +43,22 @@ We use GitHub Issues to track bugs, feature requests, and discussions. Before op
 
 ### Issue Types
 
--   **Bug Report**: Something isn't working as expected
--   **Feature Request**: Suggest a new component, feature, or enhancement
--   **Question**: Ask for help or clarification
--   **Documentation**: Report documentation issues or suggest improvements
+- **Bug Report**: Something isn't working as expected
+- **Feature Request**: Suggest a new component, feature, or enhancement
+- **Question**: Ask for help or clarification
+- **Documentation**: Report documentation issues or suggest improvements
 
 ## Pull Requests
 
-We welcome pull requests! 
+We welcome pull requests!
 
 ### Before opening a pull request
 
 Terra UI is a curated component library. To keep review load manageable and ensure changes align with the Horizon Design System, we require the following:
 
-* Open an issue first for anything beyond a trivial bug fix or typo. This includes new components, new design tokens, API changes, new properties or events on existing components, and refactors. A maintainer will respond to confirm whether the work is in scope before you invest time in a PR.
-* Wait for maintainer acknowledgment on the issue before opening a PR. PRs that introduce new components, tokens, or APIs without a prior approved issue will be closed without review.
-* One change per PR. Batched cosmetic changes, mass typo fixes across unrelated files, or PRs combining unrelated work will be closed.
+- Open an issue first for anything beyond a trivial bug fix or typo. This includes new components, new design tokens, API changes, new properties or events on existing components, and refactors. A maintainer will respond to confirm whether the work is in scope before you invest time in a PR.
+- Wait for maintainer acknowledgment on the issue before opening a PR. PRs that introduce new components, tokens, or APIs without a prior approved issue will be closed without review.
+- One change per PR. Batched cosmetic changes, mass typo fixes across unrelated files, or PRs combining unrelated work will be closed.
 
 ### Here's how to get started:
 
@@ -74,11 +74,11 @@ Terra UI is a curated component library. To keep review load manageable and ensu
 
 ### Pull Request Guidelines
 
--   Keep PRs focused on a single feature or fix
--   Include tests for new features
--   Update documentation for API changes
--   Ensure all tests pass (`npm run test`)
--   Follow our code formatting standards (`npm run prettier`)
+- Keep PRs focused on a single feature or fix
+- Include tests for new features
+- Update documentation for API changes
+- Ensure all tests pass (`npm run test`)
+- Follow our code formatting standards (`npm run prettier`)
 
 ## Creating a New Component
 
@@ -90,11 +90,11 @@ npm run create
 
 You'll be prompted to enter the component tag name (e.g., `terra-my-component`). The generator will create:
 
--   Component TypeScript file (`*.component.ts`)
--   Component styles file (`*.styles.ts`)
--   Component test file (`*.test.ts`)
--   Component definition file (`*.ts`)
--   Documentation page template
+- Component TypeScript file (`*.component.ts`)
+- Component styles file (`*.styles.ts`)
+- Component test file (`*.test.ts`)
+- Component definition file (`*.ts`)
+- Documentation page template
 
 After running the generator, you'll need to:
 
@@ -108,12 +108,12 @@ After running the generator, you'll need to:
 
 All new components must:
 
--   **Be accessible**: Follow WCAG guidelines, support keyboard navigation, and work with screen readers
--   **Follow Horizon Design System**: Match HDS design patterns and guidelines
--   **Use CSS custom properties**: Use design tokens from `horizon.css` instead of hardcoded values
--   **Support dark mode**: Ensure components work in both light and dark themes
--   **Include proper documentation**: JSDoc comments for all public APIs
--   **Have tests**: Include unit tests covering the component's functionality
+- **Be accessible**: Follow WCAG guidelines, support keyboard navigation, and work with screen readers
+- **Follow Horizon Design System**: Match HDS design patterns and guidelines
+- **Use CSS custom properties**: Use design tokens from `horizon.css` instead of hardcoded values
+- **Support dark mode**: Ensure components work in both light and dark themes
+- **Include proper documentation**: JSDoc comments for all public APIs
+- **Have tests**: Include unit tests covering the component's functionality
 
 ## Python Widgets
 
@@ -215,12 +215,12 @@ Component documentation pages should include:
 
 All components must be accessible:
 
--   Use semantic HTML elements where possible
--   Support keyboard navigation
--   Include proper ARIA attributes (`aria-label`, `aria-describedby`, `role`, etc.)
--   Ensure sufficient color contrast (WCAG AA minimum)
--   Test with screen readers
--   Support focus management for interactive components
+- Use semantic HTML elements where possible
+- Support keyboard navigation
+- Include proper ARIA attributes (`aria-label`, `aria-describedby`, `role`, etc.)
+- Ensure sufficient color contrast (WCAG AA minimum)
+- Test with screen readers
+- Support focus management for interactive components
 
 Refer to the [WAI-ARIA Authoring Practices Guide](https://www.w3.org/WAI/ARIA/apg/) for guidance.
 
@@ -255,10 +255,10 @@ npm run prettier:check
 
 Components use Shadow DOM for style encapsulation. Follow these conventions:
 
--   Use BEM-like naming: `component-name__element-name--modifier`
--   Prefix classes with the component name to avoid collisions
--   Use CSS custom properties for values that should be customizable
--   Target internal elements using CSS parts (`::part()`) when exposing customization points
+- Use BEM-like naming: `component-name__element-name--modifier`
+- Prefix classes with the component name to avoid collisions
+- Use CSS custom properties for values that should be customizable
+- Target internal elements using CSS parts (`::part()`) when exposing customization points
 
 Example:
 
@@ -340,12 +340,12 @@ html`<svg viewBox="0 0 16 16">
 
 Write tests that cover:
 
--   Component rendering
--   Property changes
--   Event emission
--   User interactions (clicks, keyboard navigation)
--   Edge cases and error states
--   Accessibility features
+- Component rendering
+- Property changes
+- Event emission
+- User interactions (clicks, keyboard navigation)
+- Edge cases and error states
+- Accessibility features
 
 Use `@open-wc/testing` utilities:
 
@@ -372,8 +372,8 @@ it('should emit terra-change when value changes', async () => {
 
 If you have questions about contributing, please:
 
--   Open a [GitHub issue](https://github.com/nasa/terra-ui-components/issues) for discussion
--   Review existing component implementations for examples
--   Check the [Horizon Design System documentation](https://website.nasa.gov/hds/)
+- Open a [GitHub issue](https://github.com/nasa/terra-ui-components/issues) for discussion
+- Review existing component implementations for examples
+- Check the [Horizon Design System documentation](https://website.nasa.gov/hds/)
 
 We're here to help and appreciate your contributions!

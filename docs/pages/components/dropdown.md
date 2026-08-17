@@ -191,11 +191,11 @@ You can use checkbox menu items for multi-select scenarios.
 
 The dropdown component follows accessibility best practices:
 
--   Uses proper ARIA attributes (`aria-haspopup`, `aria-expanded`)
--   Supports keyboard navigation (Arrow keys, Home, End, Escape, Tab)
--   Focuses the trigger when the dropdown closes
--   Closes when clicking outside or pressing Escape
--   Works with screen readers
+- Uses proper ARIA attributes (`aria-haspopup`, `aria-expanded`)
+- Supports keyboard navigation (Arrow keys, Home, End, Escape, Tab)
+- Focuses the trigger when the dropdown closes
+- Closes when clicking outside or pressing Escape
+- Works with screen readers
 
 ## Keyboard Shortcuts
 

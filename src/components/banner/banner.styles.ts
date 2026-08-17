@@ -23,17 +23,17 @@ export default css`
         gap: var(--terra-spacing-medium);
     }
 
-     .banner--open {
+    .banner--open {
         display: flex;
     }
-  
+
     .banner--sticky {
         position: sticky;
         top: 0;
-        z-index: 1000; 
+        z-index: 1000;
     }
 
-   .banner__icon {
+    .banner__icon {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
@@ -45,7 +45,7 @@ export default css`
     .banner__message {
         flex: 1;
         align-items: center;
-        margin: 0 auto; 
+        margin: 0 auto;
     }
 
     .banner__message ::slotted(a) {
@@ -57,7 +57,7 @@ export default css`
         text-decoration: none !important;
     }
 
-   .banner--primary {
+    .banner--primary {
         background-color: var(--terra-color-nasa-blue-shade);
         color: white;
         padding-top: var(--terra-spacing-large);
@@ -68,13 +68,13 @@ export default css`
         background-color: var(--terra-color-carbon-60);
         color: white;
     }
-  
-   .banner--danger {
+
+    .banner--danger {
         background-color: var(--terra-color-nasa-red);
         color: white;
     }
 
-  .banner__close {
+    .banner__close {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
@@ -83,5 +83,4 @@ export default css`
         align-self: center;
         margin-left: auto;
     }
-
 `

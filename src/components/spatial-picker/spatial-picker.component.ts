@@ -58,7 +58,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            '"hide-bounding-box-selection" is deprecated. Use "show-bounding-box-selection" instead.',
+            '"hide-bounding-box-selection" is deprecated. Use "show-bounding-box-selection" instead.'
         )
         this.showBoundingBoxSelection = !value
     }
@@ -78,7 +78,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            '"hide-point-selection" is deprecated. Use "show-point-selection" instead.',
+            '"hide-point-selection" is deprecated. Use "show-point-selection" instead.'
         )
         this.showPointSelection = !value
     }
@@ -110,8 +110,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ type: Boolean }) inline: boolean = false
     @property({ attribute: 'show-map-on-focus', type: Boolean })
     showMapOnFocus: boolean = false
-    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean =
-        false
+    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean = false
     @property({ attribute: 'help-text' }) helpText = ''
 
     /**
@@ -142,8 +141,7 @@ export default class TerraSpatialPicker extends TerraElement {
     firstUpdated() {
         const urlParams = new URLSearchParams(window.location.search)
         const spatialParam = urlParams.get('spatial')
-        const seed =
-            this.urlState && spatialParam ? spatialParam : this.initialValue
+        const seed = this.urlState && spatialParam ? spatialParam : this.initialValue
 
         if (seed) {
             if (typeof seed === 'string') {
@@ -254,7 +252,7 @@ export default class TerraSpatialPicker extends TerraElement {
         // Validate against constraints before accepting the draw
         const constraintError = SpatialPickerService.validateConstraints(
             value,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
         if (constraintError) {
             this.error = constraintError
@@ -291,7 +289,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
 
         if (!result.ok) {
@@ -310,7 +308,7 @@ export default class TerraSpatialPicker extends TerraElement {
      */
     private _applyValue(
         raw: string | LatLng | LatLngBounds,
-        { emit }: { emit: boolean },
+        { emit }: { emit: boolean }
     ) {
         if (typeof raw !== 'string') {
             // Already a typed value — serialize and commit directly
@@ -325,7 +323,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
 
         if (!result.ok) {
@@ -438,9 +436,8 @@ export default class TerraSpatialPicker extends TerraElement {
             .helpText=${this.helpText}
         >
             <div slot="suffix" class="spatial-picker__suffix-icons">
-                ${
-                    this.mapValue
-                        ? html`<button
+                ${this.mapValue
+                    ? html`<button
                           type="button"
                           class="spatial-picker__clear-btn"
                           aria-label="Clear input"
@@ -462,8 +459,7 @@ export default class TerraSpatialPicker extends TerraElement {
                               />
                           </svg>
                       </button>`
-                        : nothing
-                }
+                    : nothing}
                 <svg
                     class="spatial-picker__input_icon"
                     xmlns="http://www.w3.org/2000/svg"
@@ -494,11 +490,9 @@ export default class TerraSpatialPicker extends TerraElement {
                     >
                         ${this.renderMap()}
                     </div>
-                    ${
-                        this.error
-                            ? html`<div class="spatial-picker__error">${this.error}</div>`
-                            : nothing
-                    }
+                    ${this.error
+                        ? html`<div class="spatial-picker__error">${this.error}</div>`
+                        : nothing}
                 </div>
             `
         }
@@ -519,32 +513,28 @@ export default class TerraSpatialPicker extends TerraElement {
                         class="spatial-picker__map-container"
                         @click=${(e: Event) => e.stopPropagation()}
                     >
-                         ${
-                             this.showClose
-                                 ? html`
-                                     <div class="dropdown-header">
-                                        <button
-                                            class="spatial-picker__close-btn"
-                                            @click=${(e: Event) => {
-                                                e.stopPropagation()
-                                                this.close()
-                                            }}
-                                            aria-label="Close"
-                                         >
-                                         ✕
-                                         </button>
-                                    </div>
-                                    `
-                                 : nothing
-                         }
+                        ${this.showClose
+                            ? html`
+                                  <div class="dropdown-header">
+                                      <button
+                                          class="spatial-picker__close-btn"
+                                          @click=${(e: Event) => {
+                                              e.stopPropagation()
+                                              this.close()
+                                          }}
+                                          aria-label="Close"
+                                      >
+                                          ✕
+                                      </button>
+                                  </div>
+                              `
+                            : nothing}
                         ${this.renderMap()}
                     </div>
                 </terra-dropdown>
-                ${
-                    this.error
-                        ? html`<div class="spatial-picker__error">${this.error}</div>`
-                        : nothing
-                }
+                ${this.error
+                    ? html`<div class="spatial-picker__error">${this.error}</div>`
+                    : nothing}
             </div>
         `
     }

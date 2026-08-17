@@ -1,7 +1,11 @@
 import { expect } from '@open-wc/testing'
 import sinon from 'sinon'
 import { QueryClient } from '@tanstack/query-core'
-import { harmonyApi, Status, type SubsetJobStatus } from '../../../apis/harmony.api.js'
+import {
+    harmonyApi,
+    Status,
+    type SubsetJobStatus,
+} from '../../../apis/harmony.api.js'
 import { HarmonyRequest } from '../../../lib/harmony/harmony.request.js'
 import { useCreateHarmonyJob } from '../use-create-harmony-job.js'
 import { usePollHarmonyJobStatus } from '../use-poll-harmony-job-status.js'
@@ -74,13 +78,19 @@ describe('Harmony React Hooks', () => {
         })
 
         it('should poll job status when valid jobId is provided', async () => {
-            const hook = usePollHarmonyJobStatus('job-123', undefined, { queryClient })
+            const hook = usePollHarmonyJobStatus('job-123', undefined, {
+                queryClient,
+            })
             await hook.refetch()
             expect(getJobStatusStub.called).to.be.true
         })
 
         it('should cancel job using cancelJob method', async () => {
-            const hook = usePollHarmonyJobStatus('job-123', { bearerToken: 'token' }, { queryClient })
+            const hook = usePollHarmonyJobStatus(
+                'job-123',
+                { bearerToken: 'token' },
+                { queryClient }
+            )
             const result = await hook.cancelJob()
             expect(cancelJobStub.calledOnce).to.be.true
             expect(result.status).to.equal(Status.CANCELED)

@@ -134,11 +134,11 @@ const App = () => (
 
 ## Usage Guidelines
 
--   **Step titles** should be as short as possible, preferably 1-2 words
--   The titles included in the stepper are not meant to serve as the main page header, which can appear below the stepper
--   The stepper is not meant to be interactive. Links or buttons to navigate between steps can be included separately if necessary
--   Consider another approach for long forms with conditional logic (if the number of steps might change due to user input), or experiences with nonlinear progression (where steps might be completed in any order)
--   If a form or process has fewer than three sections, don't use a stepper
--   The condensed stepper style is also the mobile version of the default stepper
+- **Step titles** should be as short as possible, preferably 1-2 words
+- The titles included in the stepper are not meant to serve as the main page header, which can appear below the stepper
+- The stepper is not meant to be interactive. Links or buttons to navigate between steps can be included separately if necessary
+- Consider another approach for long forms with conditional logic (if the number of steps might change due to user input), or experiences with nonlinear progression (where steps might be completed in any order)
+- If a form or process has fewer than three sections, don't use a stepper
+- The condensed stepper style is also the mobile version of the default stepper
 
 [component-metadata:terra-stepper]

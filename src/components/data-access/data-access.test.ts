@@ -12,17 +12,15 @@ describe('<terra-data-access>', () => {
     })
 
     it('should render core filter controls and results summary', async () => {
-        const el: any = await fixture(
-            html`<terra-data-access></terra-data-access>`,
-        )
+        const el: any = await fixture(html`<terra-data-access></terra-data-access>`)
 
         const searchInput = el.shadowRoot?.querySelector('.search-input')
         const spatialButton = Array.from(
-            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? [],
-        ).find((node) => node.textContent?.includes('Spatial Area'))
+            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? []
+        ).find(node => node.textContent?.includes('Spatial Area'))
         const dateButton = Array.from(
-            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? [],
-        ).find((node) => node.textContent?.includes('Date Range'))
+            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? []
+        ).find(node => node.textContent?.includes('Date Range'))
         const resultsInfo = el.shadowRoot?.querySelector('.results-info')
 
         expect(searchInput).to.exist
@@ -32,13 +30,11 @@ describe('<terra-data-access>', () => {
     })
 
     it('should not render cloud cover filter until cloudCoverRange exists', async () => {
-        const el: any = await fixture(
-            html`<terra-data-access></terra-data-access>`,
-        )
+        const el: any = await fixture(html`<terra-data-access></terra-data-access>`)
 
         const cloudLabelBefore = Array.from(
-            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? [],
-        ).find((node) => node.textContent?.includes('Cloud Cover'))
+            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? []
+        ).find(node => node.textContent?.includes('Cloud Cover'))
 
         expect(cloudLabelBefore).to.not.exist
 
@@ -47,16 +43,14 @@ describe('<terra-data-access>', () => {
         await el.updateComplete
 
         const cloudLabelAfter = Array.from(
-            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? [],
-        ).find((node) => node.textContent?.includes('Cloud Cover'))
+            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? []
+        ).find(node => node.textContent?.includes('Cloud Cover'))
 
         expect(cloudLabelAfter).to.exist
     })
 
     it('should render selected date range text and clear control when dates are set', async () => {
-        const el: any = await fixture(
-            html`<terra-data-access></terra-data-access>`,
-        )
+        const el: any = await fixture(html`<terra-data-access></terra-data-access>`)
 
         el.searchParams = {
             ...el.searchParams,
@@ -66,13 +60,13 @@ describe('<terra-data-access>', () => {
         await el.updateComplete
 
         const labels = Array.from(
-            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? [],
-        ).map((node) => node.textContent?.trim() ?? '')
+            el.shadowRoot?.querySelectorAll('.filter-btn span') ?? []
+        ).map(node => node.textContent?.trim() ?? '')
         const hasNonDefaultDateLabel = labels.some(
-            (text) => text !== 'Date Range' && text.includes('2024'),
+            text => text !== 'Date Range' && text.includes('2024')
         )
         const clearDateButton = el.shadowRoot?.querySelector(
-            'button[aria-label="Clear date range"]',
+            'button[aria-label="Clear date range"]'
         )
 
         expect(hasNonDefaultDateLabel).to.be.true
@@ -80,9 +74,7 @@ describe('<terra-data-access>', () => {
     })
 
     it('should render footer content in footer slot when footerSlot is enabled', async () => {
-        const el: any = await fixture(
-            html`<terra-data-access></terra-data-access>`,
-        )
+        const el: any = await fixture(html`<terra-data-access></terra-data-access>`)
 
         expect(el.shadowRoot?.querySelector('[slot="footer"]')).to.not.exist
 

@@ -669,8 +669,8 @@ export default css`
 
     :host(
             [data-terra-button-group__button--first]:not(
-                    [data-terra-button-group__button--last]
-                )
+                [data-terra-button-group__button--last]
+            )
         )
         .button {
         border-start-end-radius: 0;
@@ -683,8 +683,8 @@ export default css`
 
     :host(
             [data-terra-button-group__button--last]:not(
-                    [data-terra-button-group__button--first]
-                )
+                [data-terra-button-group__button--first]
+            )
         )
         .button {
         border-start-start-radius: 0;
@@ -693,10 +693,10 @@ export default css`
 
     /* All except the first */
     :host(
-            [data-terra-button-group__button]:not(
-                    [data-terra-button-group__button--first]
-                )
-        ) {
+        [data-terra-button-group__button]:not(
+            [data-terra-button-group__button--first]
+        )
+    ) {
         margin-inline-start: calc(-1 * var(--terra-input-border-width));
     }
 

@@ -165,7 +165,7 @@ npm install @nasa-terra/components
 
 Now it's time to configure your bundler. Configurations vary for each tool, but here are some examples to help you get started.
 
--   EXAMPLES TBD. Please open an issue if needed
+- EXAMPLES TBD. Please open an issue if needed
 
 Once your bundler is configured, you'll be able to import Terra components and utilities.
 
@@ -208,7 +208,7 @@ You'll notice that the CDN links all start with `/%CDNDIR%/<path>` and npm impor
 
 TL;DR:
 
--   `@nasa-terra/components/%CDNDIR%` is for CDN users
--   `@nasa-terra/components/%NPMDIR%` is for npm users
+- `@nasa-terra/components/%CDNDIR%` is for CDN users
+- `@nasa-terra/components/%NPMDIR%` is for npm users
 
 This change was introduced in `v2.5.0` to address issues around installations from npm loading multiple versions of libraries (such as the Lit) that Terra uses internally.

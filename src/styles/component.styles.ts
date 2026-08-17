@@ -262,7 +262,8 @@ export default css`
         font-weight: var(--terra-input-font-weight);
         line-height: var(--terra-input-line-height);
         background-color: var(--terra-input-background-default);
-        border: var(--terra-input-border-width) solid var(--terra-input-border-default);
+        border: var(--terra-input-border-width) solid
+            var(--terra-input-border-default);
         border-radius: var(--terra-input-border-radius);
     }
 

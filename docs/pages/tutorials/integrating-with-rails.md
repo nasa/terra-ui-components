@@ -16,9 +16,9 @@ This is a community-maintained document. Please [ask the community](/resources/c
 
 This integration has been tested with the following:
 
--   Rails >= 6
--   Node >= 12.10
--   Webpacker >= 5
+- Rails >= 6
+- Node >= 12.10
+- Webpacker >= 5
 
 ## Instructions
 

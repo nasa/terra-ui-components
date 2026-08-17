@@ -9,8 +9,8 @@ layout: component
 
 Tooltips display informative text when users hover or focus on an element. They are best suited for short, inline help in dense UIs.
 
--   The tooltip’s **target is its first child element**, so you should only wrap one element inside each tooltip. If you need a tooltip for multiple elements, wrap them in a container and apply the tooltip to that container.
--   `terra-tooltip` uses **`display: contents`**, so it won’t affect layout in flex or grid containers.
+- The tooltip’s **target is its first child element**, so you should only wrap one element inside each tooltip. If you need a tooltip for multiple elements, wrap them in a container and apply the tooltip to that container.
+- `terra-tooltip` uses **`display: contents`**, so it won’t affect layout in flex or grid containers.
 
 ```html:preview
 <terra-tooltip content="More information about this action">

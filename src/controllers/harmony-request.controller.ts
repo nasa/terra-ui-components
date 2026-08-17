@@ -20,36 +20,22 @@ export class HarmonyRequestController implements ReactiveController {
         // no-op, required to satisfy ReactiveController interface
     }
 
-    #createJob: MutationController<
-        SubsetJobStatus,
-        Error,
-        CreateHarmonyJobVariables
-    >
+    #createJob: MutationController<SubsetJobStatus, Error, CreateHarmonyJobVariables>
 
     #jobStatus: QueryController<SubsetJobStatus | null>
 
-    #cancelJob: MutationController<
-        SubsetJobStatus,
-        Error,
-        CancelHarmonyJobVariables
-    >
+    #cancelJob: MutationController<SubsetJobStatus, Error, CancelHarmonyJobVariables>
 
     constructor(private host: ReactiveControllerHost & QueryClientHost) {
         host.addController(this)
 
-        this.#createJob = new MutationController(
-            host,
-            queryCreateHarmonySubsetJob(),
-        )
+        this.#createJob = new MutationController(host, queryCreateHarmonySubsetJob())
 
         this.#jobStatus = new QueryController(host, () =>
-            queryHarmonyJobStatus(this.#jobId, this.#options),
+            queryHarmonyJobStatus(this.#jobId, this.#options)
         )
 
-        this.#cancelJob = new MutationController(
-            host,
-            queryCancelHarmonySubsetJob(),
-        )
+        this.#cancelJob = new MutationController(host, queryCancelHarmonySubsetJob())
     }
 
     async startJob(variables: CreateHarmonyJobVariables) {

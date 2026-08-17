@@ -32,7 +32,7 @@ export interface UsePollHarmonyJobStatusResult {
 export function usePollHarmonyJobStatus(
     jobId?: string | null,
     searchOptions?: SearchOptions,
-    options?: UsePollHarmonyJobStatusOptions,
+    options?: UsePollHarmonyJobStatusOptions
 ): UsePollHarmonyJobStatusResult {
     const client = options?.queryClient ?? sharedQueryClient
     const enabled = options?.enabled ?? true
@@ -42,9 +42,10 @@ export function usePollHarmonyJobStatus(
         queryOptions.enabled = false
     }
 
-    const observerRef = React.useRef<
-        QueryObserver<SubsetJobStatus | null, Error> | null
-    >(null)
+    const observerRef = React.useRef<QueryObserver<
+        SubsetJobStatus | null,
+        Error
+    > | null>(null)
 
     if (!observerRef.current) {
         const defaulted = client.defaultQueryOptions(queryOptions)
@@ -52,7 +53,7 @@ export function usePollHarmonyJobStatus(
     }
 
     const [state, setState] = React.useState(() =>
-        observerRef.current!.getCurrentResult(),
+        observerRef.current!.getCurrentResult()
     )
 
     const callbacksRef = React.useRef(options)
@@ -63,7 +64,7 @@ export function usePollHarmonyJobStatus(
         const defaulted = client.defaultQueryOptions(queryOptions)
         observer.setOptions(defaulted)
 
-        const unsubscribe = observer.subscribe((result) => {
+        const unsubscribe = observer.subscribe(result => {
             setState(result)
             if (result.isSuccess) {
                 callbacksRef.current?.onSuccess?.(result.data)
@@ -75,14 +76,16 @@ export function usePollHarmonyJobStatus(
         return () => unsubscribe()
     }, [client, jobId, searchOptions?.bearerToken, enabled])
 
-    const cancelMutationRef = React.useRef<
-        MutationObserver<SubsetJobStatus, Error, CancelHarmonyJobVariables> | null
-    >(null)
+    const cancelMutationRef = React.useRef<MutationObserver<
+        SubsetJobStatus,
+        Error,
+        CancelHarmonyJobVariables
+    > | null>(null)
 
     if (!cancelMutationRef.current) {
         cancelMutationRef.current = new MutationObserver(
             client,
-            queryCancelHarmonySubsetJob(),
+            queryCancelHarmonySubsetJob()
         )
     }
 
@@ -97,7 +100,7 @@ export function usePollHarmonyJobStatus(
                 options: opts,
             })
         },
-        [jobId, searchOptions],
+        [jobId, searchOptions]
     )
 
     const refetch = React.useCallback(async () => {

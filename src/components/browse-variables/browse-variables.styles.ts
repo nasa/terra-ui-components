@@ -310,7 +310,7 @@ export default css`
 
     .variable label input[type='checkbox'] {
         align-self: flex-start;
-        margin-top: 0.40em;
+        margin-top: 0.4em;
     }
 
     .left-column {

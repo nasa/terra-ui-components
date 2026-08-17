@@ -24,15 +24,15 @@ export type KnownFeatureFlag =
  */
 export function isFeatureEnabled(
     flag: string,
-    featuresAttr: string | undefined,
+    featuresAttr: string | undefined
 ): boolean {
     const urlFeatures = new URLSearchParams(window.location.search).get(
-        'terra-features',
+        'terra-features'
     )
     const allFeatures = [featuresAttr, urlFeatures].filter(Boolean).join(',')
 
     return allFeatures
         .split(',')
-        .map((f) => f.trim())
+        .map(f => f.trim())
         .includes(flag)
 }

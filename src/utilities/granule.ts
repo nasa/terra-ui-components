@@ -5,9 +5,7 @@ import type {
 } from '../apis/cmr.api.js'
 
 export function getGranuleUrl(granule: CmrGranule) {
-    const getDataUrl = granule.relatedUrls.find(
-        (url) => url.type === 'GET DATA',
-    )
+    const getDataUrl = granule.relatedUrls.find(url => url.type === 'GET DATA')
     return getDataUrl?.url
 }
 
@@ -29,15 +27,15 @@ export function formatGranuleSize(sizeInMB: number): string {
 }
 
 export function calculateMeanGranuleSize(
-    granules: { dataGranule: CmrGranuleDataGranule }[],
+    granules: { dataGranule: CmrGranuleDataGranule }[]
 ) {
-    const sizes = granules.map((granule) => calculateGranuleSize(granule, 'MB'))
+    const sizes = granules.map(granule => calculateGranuleSize(granule, 'MB'))
     return sizes.reduce((a, b) => a + b, 0) / sizes.length
 }
 
 export function calculateGranuleSize(
     granule: { dataGranule: CmrGranuleDataGranule },
-    unit: 'MB' | 'GB' | 'TB' | 'PB',
+    unit: 'MB' | 'GB' | 'TB' | 'PB'
 ) {
     const archiveInfo = granule.dataGranule.archiveAndDistributionInformation
 
