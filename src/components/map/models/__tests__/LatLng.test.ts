@@ -3,27 +3,27 @@ import { expect } from '@open-wc/testing'
 
 describe('LatLng', () => {
     it('should create a LatLng instance with lat and lng', () => {
-        const latLng = new LatLng(40.7128, -74.006)
-        expect(latLng.lat).to.equal(40.7128)
-        expect(latLng.lng).to.equal(-74.006)
+        const latLng = new LatLng(40.71, -74.01)
+        expect(latLng.lat).to.equal(40.71)
+        expect(latLng.lng).to.equal(-74.01)
     })
 
     it('should create a LatLng instance with lat, lng, and alt', () => {
-        const latLng = new LatLng(40.7128, -74.006, 10)
-        expect(latLng.lat).to.equal(40.7128)
-        expect(latLng.lng).to.equal(-74.006)
+        const latLng = new LatLng(40.71, -74.01, 10)
+        expect(latLng.lat).to.equal(40.71)
+        expect(latLng.lng).to.equal(-74.01)
         expect(latLng.alt).to.equal(10)
     })
 
     it('should create a LatLng instance without alt', () => {
-        const latLng = new LatLng(40.7128, -74.006)
+        const latLng = new LatLng(40.71, -74.01)
         expect(latLng.alt).to.be.undefined
     })
 
     it('should handle negative coordinates', () => {
-        const latLng = new LatLng(-33.8688, 151.2093)
-        expect(latLng.lat).to.equal(-33.8688)
-        expect(latLng.lng).to.equal(151.2093)
+        const latLng = new LatLng(-33.87, 151.21)
+        expect(latLng.lat).to.equal(-33.87)
+        expect(latLng.lng).to.equal(151.21)
     })
 
     it('should handle zero coordinates', () => {
@@ -33,9 +33,9 @@ describe('LatLng', () => {
     })
 
     it('should handle decimal coordinates', () => {
-        const latLng = new LatLng(40.712776, -74.005974)
-        expect(latLng.lat).to.equal(40.712776)
-        expect(latLng.lng).to.equal(-74.005974)
+        const latLng = new LatLng(40.71, -74.06)
+        expect(latLng.lat).to.equal(40.71)
+        expect(latLng.lng).to.equal(-74.06)
     })
 
     it('should handle extreme lat/lng values', () => {
@@ -55,13 +55,13 @@ describe('LatLng', () => {
     })
 
     it('should format toString() correctly', () => {
-        const latLng = new LatLng(40.7128, -74.006)
-        expect(latLng.toString()).to.equal('40.7128, -74.006')
+        const latLng = new LatLng(40.71, -74.01)
+        expect(latLng.toString()).to.equal('40.71, -74.01')
     })
 
     it('should format toString() with negative coordinates', () => {
-        const latLng = new LatLng(-33.8688, 151.2093)
-        expect(latLng.toString()).to.equal('-33.8688, 151.2093')
+        const latLng = new LatLng(-33.87, 151.21)
+        expect(latLng.toString()).to.equal('-33.87, 151.21')
     })
 
     it('should format toString() with zero coordinates', () => {
@@ -70,12 +70,12 @@ describe('LatLng', () => {
     })
 
     it('should not include altitude in toString()', () => {
-        const latLng = new LatLng(40.7128, -74.006, 10)
-        expect(latLng.toString()).to.equal('40.7128, -74.006')
+        const latLng = new LatLng(40.71, -74.01, 10)
+        expect(latLng.toString()).to.equal('40.71, -74.01')
     })
 
     it('should have independent instances', () => {
-        const latLng1 = new LatLng(40.7128, -74.006)
+        const latLng1 = new LatLng(40.71, -74.01)
         const latLng2 = new LatLng(51.5074, -0.1278)
 
         expect(latLng1.lat).to.not.equal(latLng2.lat)
@@ -84,12 +84,12 @@ describe('LatLng', () => {
     })
 
     it('should handle very large altitude values', () => {
-        const latLng = new LatLng(40.7128, -74.006, 400000)
+        const latLng = new LatLng(40.71, -74.01, 400000)
         expect(latLng.alt).to.equal(400000)
     })
 
     it('should handle negative altitude values', () => {
-        const latLng = new LatLng(40.7128, -74.006, -100)
+        const latLng = new LatLng(40.71, -74.01, -100)
         expect(latLng.alt).to.equal(-100)
     })
 })

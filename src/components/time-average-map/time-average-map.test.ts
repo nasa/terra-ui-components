@@ -1,7 +1,10 @@
 import { expect, fixture, html } from '@open-wc/testing'
+import { mockGiovanniQueries } from '../../test-helpers/mock-apis.js'
 import './time-average-map.js'
 
 describe('<terra-time-average-map>', () => {
+    mockGiovanniQueries()
+
     it('should render without errors', async () => {
         const el = await fixture(
             html`<terra-time-average-map></terra-time-average-map>`,

@@ -40,8 +40,33 @@ export default {
       <head></head>
       <body>
         <link rel="stylesheet" href="dist/themes/horizon.css">
+        <script data-terra-ui-components="/dist"></script>
         <script>
           window.process = {env: { NODE_ENV: "production" }}
+
+          // Blocks tests from using real network access to external APIs. 
+          // Any cross-origin request is a sign that a test forgot to mock the relevant API method, so we fail it instead of letting it hit a real server
+          const __realFetch = window.fetch.bind(window)
+          window.fetch = (input, init) => {
+            let url
+            try {
+              url = typeof input === 'string' || input instanceof URL
+                ? input.toString()
+                : input.url
+              const isSameOrigin = new URL(url, window.location.href).origin === window.location.origin
+              if (!isSameOrigin) {
+                return Promise.reject(
+                  new Error(
+                    'Blocked unmocked network request in test environment: ' + url +
+                    '. Stub the relevant API method (see mockCollectionQueries in data-subsetter.test.ts for an example) instead of hitting the network.'
+                  )
+                )
+              }
+            } catch (err) {
+              // if we can't even parse the URL, fall through and let the real fetch surface the error
+            }
+            return __realFetch(input, init)
+          }
         </script>
         <script type="module" src="${testFramework}"></script>
       </body>

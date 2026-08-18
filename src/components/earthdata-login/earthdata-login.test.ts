@@ -110,5 +110,20 @@ describe('<terra-earthdata-login>', () => {
                 )
             )
         ).to.be.true
+
+        // A successful login chains a follow-up getUserInfo() fetch that isn't awaited
+        // above. Wait for it to complete here so it happens while fetchStub is still
+        // installed, instead of racing against this test's afterEach (sinon.restore()).
+        await waitUntil(
+            () =>
+                fetchStub.calledWithMatch(
+                    sinon.match((arg: RequestInfo | URL) =>
+                        typeof arg === 'string'
+                            ? arg.includes('/user')
+                            : arg.toString().includes('/user')
+                    )
+                ),
+            'expected a follow-up request for user info after login'
+        )
     })
 })
