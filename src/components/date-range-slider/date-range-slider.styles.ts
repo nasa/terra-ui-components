@@ -5,6 +5,26 @@ export default css`
         display: block;
     }
 
+    .container {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-top: 40px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .container [part~='slider'] {
+        margin-inline: 48px;
+    }
+
+    @media (max-width: 600px) {
+        .container [part~='slider'] {
+        min-width: 520px;
+        }
+    }
+
     .hasPips {
         padding-bottom: 80px;
     }
