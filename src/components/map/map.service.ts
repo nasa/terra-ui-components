@@ -465,6 +465,10 @@ export class MapService {
         return map
     }
 
+    getMap() {
+        return this.#map
+    }
+
     #createBaseLayer(options: MapOptions) {
         return new WebGLTileLayer({
             source: new OSM({
