@@ -193,6 +193,7 @@ export default class TerraDataGrid<T = any> extends TerraElement {
 
         const originalOnSelectionChanged = options.onSelectionChanged
         options.onSelectionChanged = (params: SelectionChangedEvent<T>) => {
+            console.log("got row selection changed")
             this.emit('terra-selection-changed', { detail: params })
             if (originalOnSelectionChanged) {
                 originalOnSelectionChanged(params)

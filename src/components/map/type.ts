@@ -6,6 +6,7 @@ export enum MapEventType {
     BBOX = 'bbox',
     POLYGON = 'polygon',
     CIRCLE = 'circle',
+    BOUNDARY_POLYGON = 'boundary-polygon',
 }
 
 type BaseMapEventDetail = {
@@ -24,4 +25,9 @@ export type MapEventDetail = BaseMapEventDetail &
           }
         | { type: MapEventType.CIRCLE; center: LatLng; radius: number }
         | { type?: undefined }
+        | {
+              type: MapEventType.BOUNDARY_POLYGON
+              fileData: object
+              label?: string
+          }
     )

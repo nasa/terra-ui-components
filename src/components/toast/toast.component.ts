@@ -66,6 +66,12 @@ export default class TerraToast extends TerraElement {
      */
     @property({ type: String, reflect: true }) countdown?: 'rtl' | 'ltr'
 
+
+    /*
+     * If true, the toast will escape HTML in its content. This is useful for preventing XSS attacks when displaying 
+     */
+    @property({ type: Boolean, reflect: true }) shouldEscapeHtml = true
+
     firstUpdated() {
         // Forward events from the alert to the toast
         const alert = this.alert
@@ -200,6 +206,7 @@ export default class TerraToast extends TerraElement {
             | 'danger' = 'information',
         icon?: string,
         duration = 3000,
+        shouldEscapeHtml = false,
     ): Promise<void> {
         // Escape HTML for text arguments
         const escapeHtml = (html: string) => {
@@ -208,17 +215,20 @@ export default class TerraToast extends TerraElement {
             return div.innerHTML
         }
 
-        const toast = Object.assign(document.createElement('terra-toast'), {
+        const toast = document.createElement('terra-toast') as any
+
+        Object.assign(toast, {
             variant,
             duration,
             closable: true,
-            innerHTML: icon
-                ? `
-                    <terra-icon name="${icon}" slot="icon" library="heroicons"></terra-icon>
-                    ${escapeHtml(message)}
-                `
-                : escapeHtml(message),
         })
+
+        toast.innerHTML = icon
+            ? `
+                <terra-icon name="${icon}" slot="icon" library="heroicons"></terra-icon>
+                ${shouldEscapeHtml ? escapeHtml(message) : message}
+            `
+            : `${shouldEscapeHtml ? escapeHtml(message) : message}`
 
         document.body.append(toast)
         // Wait for the toast to be defined and initialized

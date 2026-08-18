@@ -323,6 +323,10 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 hide: true,
                 headerName: 'Cloud Cover (%)',
             },
+            {
+                headerName: 'Info',
+                hide: true,
+            }
         ]
 
         // Configure terra-data-grid component
@@ -340,6 +344,9 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             cacheBlockSize: 50,
             maxConcurrentDatasourceRequests: 2,
             infiniteInitialRowCount: 50,
+            //onRowClicked: event => {
+            //    console.log("from code, row clicked: ", event.data)
+            //}
         }
     }
 

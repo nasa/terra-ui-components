@@ -14,6 +14,11 @@ import {
     queryGiovanniShapeFiles,
     queryGiovanniGeoJsonShape,
 } from '../../queries/giovanni.queries.js'
+import { Stroke, Fill, Style } from 'ol/style.js'
+// for feature select handling
+import Select from 'ol/interaction/Select.js'
+// for pointer 'move' (drag, really) handling
+import { singleClick } from 'ol/events/condition.js'
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -125,6 +130,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'show-polygon-selection', type: Boolean })
     showPolygonSelection: boolean = false
 
+    @property({ attribute: 'boundary-options', type: Object })
+    boundaryOptions: Record<string, unknown> = {}
+
     @property({ attribute: 'show-circle-selection', type: Boolean })
     showCircleSelection: boolean = false
 
@@ -152,6 +160,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     @property({ type: Boolean, attribute: 'fit-to-feature' })
     fitToValue: boolean = false
+
+    /**
+     * if true, the map being used to display file (granule) spatial boundaries
+     */
+    @property({ type: Boolean, attribute: 'show-boundaries'})
+    showBoundaries: boolean = false
 
     // querySelector for the map element
     @query('[part="map"]')
@@ -185,6 +199,11 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         this.#service?.setValue(newValue)
     }
 
+    @watch('showBoundaries')
+    showBoundariesChanged() {
+        this.#service?.toggleLayerVisibility('boundaries', this.showBoundaries)
+    }
+
     /**
      * List of geojson shapes
      */
@@ -200,6 +219,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             showPointSelection: this.showPointSelection,
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
+            showBoundaries: this.showBoundaries,
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
@@ -215,6 +235,66 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 this.shapeLoading = loading
             },
         })
+    }
+
+    /* Function used to set color style on map features */
+    colorStyle(style:any) {
+        return function (f:any) {
+            style.getFill().setColor(f.get('color') || 'rgba(255,0,0,0.3)');
+            return style;
+        };
+    }
+
+    /* Selected polygon style */
+    polySelectStyle = new Style({
+        fill: new Fill({
+            color: 'rgba(255,100,100,0.3)',
+        }),
+        stroke: new Stroke({
+            color: 'red',
+            width: 3,
+        }),
+    });
+
+    getMap() {
+        return this.#service?.getMap()
+    }
+
+    /* 
+     * Creates an ol Map selection interaction 
+     * that supports user selection of a polygon
+     * feature drawn on the map
+     */
+    initializePolygonSelection() {
+        const select = new Select({
+            condition: singleClick,
+            style: this.colorStyle(this.polySelectStyle),
+        });
+
+        if (this.showBoundaries) {
+            const map = this.#service?.getMap()
+            if (map) {
+                map.addInteraction(select);
+                select.on('select', function (e) {
+                    e.stopPropagation()
+                    if (e.selected.length > 0) {
+                        let props = e.selected[0].getProperties()
+                        this.#service?.displayPolyFeatureInfo(props)
+                    }
+                })
+            }
+        }
+    }
+
+    /*
+     * Set file boundary polygons on the map.
+     * The event should contain the necessary information to identify and display the polygons.
+     * This method delegates the handling of the event to the MapService.
+     * @param event - The event containing the polygon data to be set on the map.
+     */
+    setBoundaryPolygons(event: Event): void {
+        //console.log("map.setBoundaryPolygons, event: ", event)
+        this.#service?.buildPolygonFeatures(event)
     }
 
     selectTemplate() {
@@ -273,7 +353,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                       `
                         : nothing
                 }
+
             </div>
         `
     }
+
 }
