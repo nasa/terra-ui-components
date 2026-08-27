@@ -51,6 +51,31 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         'terra-alert': TerraAlert,
     }
 
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state() 
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 600px)');
+    
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.isMobile = this.mediaQuery.matches;
+        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    }
+
+    disconnectedCallback() {
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+
+        super.disconnectedCallback();
+    }
+
+    private handleMediaChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches;
+    };
+
+
     /**
      * Allows the user to switch the catalog between different providers
      * TODO: add support for CMR catalog and make it the default
@@ -75,6 +100,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     @state()
     private activeIndex: number | undefined = undefined
+
+    @state()
+    private mobileDetailsIndex: number | undefined = undefined
 
     @state()
     private sortOrder: SortOrder | string = SortOrder.AtoZ
@@ -199,6 +227,30 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 (v) => v.dataFieldLongName !== variable.dataFieldLongName,
             )
         }
+    }
+
+    private handleMobileVariableClick(index: number) {
+        this.mobileDetailsIndex = index
+    }
+
+    private handleMobileBack() {
+        const index = this.mobileDetailsIndex
+        this.mobileDetailsIndex = undefined
+
+        if (index === undefined) {
+            return
+        }
+
+        requestAnimationFrame(() => {
+            const item = this.shadowRoot?.querySelector(
+                `[data-variable-index="${index}"]`,
+            )
+
+            item?.scrollIntoView({
+                behavior: 'instant',
+                block: 'center',
+            })
+        })
     }
 
     #handleSortChange(event: TerraSelectEvent) {
@@ -415,6 +467,64 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         </details>`
     }
 
+    #renderVariableDetails(index: number) {
+
+        const variables = this.#getSortedVariables()
+        const variable = variables[index]
+
+        return html`
+                <div class="sticky-element">
+                    <p>
+                        <label
+                            ><strong>Name in Data File:</strong></label
+                        >
+                        ${
+                            variable.dataFieldShortName
+                        }
+                    </p>
+                    <p>
+                        <label><strong>Units:</strong></label>
+                        ${variable.dataFieldUnits}
+                    </p>
+                    <p>
+                        <label
+                            ><strong>Temporal Coverage:</strong></label
+                        >
+                        ${
+                            variable.dataProductBeginDateTime
+                        }
+                        –
+                        ${
+                            variable.dataProductEndDateTime
+                        }
+                    </p>
+                    <p>
+                        <label><strong>Region Coverage:</strong></label>
+                        ${variable.dataProductWest},
+                        ${variable.dataProductSouth},
+                        ${variable.dataProductEast},
+                        ${variable.dataProductNorth}
+                    </p>
+                    <p>
+                        <label
+                            ><strong>Spatial Resolution:</strong></label
+                        >
+                        ${
+                            variable.dataProductSpatialResolution
+                        }
+                    </p>
+                    <p>
+                        <label><strong>Dataset:</strong></label>
+                        ${
+                            variable.dataProductShortName
+                        }_${
+                            variable.dataProductVersion
+                        }
+                    </p>
+                </div>
+            `
+    }
+
     #renderVariablesBrowse(loading?: boolean) {
         const facets: {
             title: string
@@ -433,13 +543,11 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             { title: 'Portal', facetKey: 'portals' },
         ]
 
-        const variables = this.#getSortedVariables()
-
         const browsingText = this.#getBrowsingText()
 
         return html`<div class="scrollable variables-container">
             <header>
-                <div>${browsingText}</div>
+                <div class="research-area">${browsingText}</div>
 
                 <menu>
                     <li>
@@ -525,155 +633,191 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 )}
             </aside>
 
-            <main class="variable-layout">
-                <!-- LEFT COLUMN -->
-                <section class="left-column">
-                    <ul class="variable-list">
-                        ${
-                            !loading && !variables.length
-                                ? html`
-                            <terra-alert variant="primary" appearance="white" open>
-                                <p>We didn't find any variables matching your search and filters.</p>
-                                <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
-                            </terra-alert>
-                        `
-                                : nothing
-                        }
+            <main>
 
-                        ${variables.map(
-                            (variable, index) => html`
-                                <li
-                                    aria-selected="false"
-                                    class="variable-list-item"
-                                    @mouseenter=${() => (this.activeIndex = index)}
-                                    @mouseleave=${() =>
-                                        (this.activeIndex = undefined)}
-                                    @focusin=${() => (this.activeIndex = index)}
-                                    @focusout=${() => (this.activeIndex = undefined)}
-                                    @click=${(event: Event) => {
-                                        const target =
-                                            event.currentTarget as HTMLLIElement
-                                        const targetCheckbox =
-                                            target.querySelector(
-                                                'input[type="checkbox"]',
-                                            ) as HTMLInputElement | null
-
-                                        if (!targetCheckbox) {
-                                            return
-                                        }
-
-                                        target?.setAttribute(
-                                            'aria-selected',
-                                            `${targetCheckbox.checked}`,
-                                        )
-                                    }}
-                                >
-                                    <div class="variable">
-                                        <label>
-                                            <input
-                                                data-variable=${variable}
-                                                type="checkbox"
-                                                @change=${(e: Event) => {
-                                                    const input =
-                                                        e.currentTarget as HTMLInputElement
-                                                    this.#handleVariableSelection(
-                                                        variable,
-                                                        input.checked,
-                                                    )
-                                                }}
-                                            />
-                                            <strong
-                                                >${variable.dataFieldLongName}</strong
-                                            >
-                                            <span
-                                                >${variable.dataProductShortName}_${variable.dataProductVersion}
-                                                &bull;
-                                                ${variable.dataProductTimeInterval}
-                                                &bull;
-                                                ${variable.dataProductSpatialResolution}</span
-                                            >
-                                        </label>
-                                    </div>
-                                </li>
-                            `,
-                        )}
-                    </ul>
-                </section>
-
-                <!-- RIGHT COLUMN -->
-                ${
-                    !loading && !variables.length
-                        ? nothing
-                        : html`
-                <section class="right-column">
-                ${
-                    this.activeIndex !== undefined
-                        ? html`
-                              <div class="sticky-element">
-                                  <p>
-                                      <label
-                                          ><strong>Name in Data File:</strong></label
-                                      >
-                                      ${
-                                          variables[this.activeIndex]
-                                              .dataFieldShortName
-                                      }
-                                  </p>
-                                  <p>
-                                      <label><strong>Units:</strong></label>
-                                      ${variables[this.activeIndex].dataFieldUnits}
-                                  </p>
-                                  <p>
-                                      <label
-                                          ><strong>Temporal Coverage:</strong></label
-                                      >
-                                      ${
-                                          variables[this.activeIndex]
-                                              .dataProductBeginDateTime
-                                      }
-                                      –
-                                      ${
-                                          variables[this.activeIndex]
-                                              .dataProductEndDateTime
-                                      }
-                                  </p>
-                                  <p>
-                                      <label><strong>Region Coverage:</strong></label>
-                                      ${variables[this.activeIndex].dataProductWest},
-                                      ${variables[this.activeIndex].dataProductSouth},
-                                      ${variables[this.activeIndex].dataProductEast},
-                                      ${variables[this.activeIndex].dataProductNorth}
-                                  </p>
-                                  <p>
-                                      <label
-                                          ><strong>Spatial Resolution:</strong></label
-                                      >
-                                      ${
-                                          variables[this.activeIndex]
-                                              .dataProductSpatialResolution
-                                      }
-                                  </p>
-                                  <p>
-                                      <label><strong>Dataset:</strong></label>
-                                      ${
-                                          variables[this.activeIndex]
-                                              .dataProductShortName
-                                      }_${
-                                          variables[this.activeIndex]
-                                              .dataProductVersion
-                                      }
-                                  </p>
-                              </div>
-                          `
-                        : html`<p class="placeholder">
-                              Hover over a variable to see details
-                          </p>`
+                ${ this.isMobile
+                    ? this.#renderMobileVariablesList(Boolean(loading))
+                    : this.#renderVariablesList(Boolean(loading))
                 }
-                </section>
-                `
-                }
+
             </main>
         </div> `
+    }
+
+    #renderVariablesList(loading?: boolean) {
+        const variables = this.#getSortedVariables()
+
+        return html`
+            <!-- LEFT COLUMN -->
+            <section class="left-column">
+                <ul class="variable-list">
+                    ${
+                        !loading && !variables.length
+                            ? html`
+                        <terra-alert variant="primary" appearance="white" open>
+                            <p>We didn't find any variables matching your search and filters.</p>
+                            <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
+                        </terra-alert>
+                    `
+                            : nothing
+                    }
+
+                    ${variables.map(
+                        (variable, index) => html`
+                            <li
+                                aria-selected="false"
+                                class="variable-list-item"
+                                @mouseenter=${() => (this.activeIndex = index)}
+                                @mouseleave=${() =>
+                                    (this.activeIndex = undefined)}
+                                @focusin=${() => (this.activeIndex = index)}
+                                @focusout=${() => (this.activeIndex = undefined)}
+                                @click=${(event: Event) => {
+                                    const target =
+                                        event.currentTarget as HTMLLIElement
+                                    const targetCheckbox =
+                                        target.querySelector(
+                                            'input[type="checkbox"]',
+                                        ) as HTMLInputElement | null
+
+                                    if (!targetCheckbox) {
+                                        return
+                                    }
+
+                                    target?.setAttribute(
+                                        'aria-selected',
+                                        `${targetCheckbox.checked}`,
+                                    )
+                                }}
+                            >
+                                <div class="variable">
+                                    <label>
+                                        <input
+                                            data-variable=${variable}
+                                            type="checkbox"
+                                            @change=${(e: Event) => {
+                                                const input =
+                                                    e.currentTarget as HTMLInputElement
+                                                this.#handleVariableSelection(
+                                                    variable,
+                                                    input.checked,
+                                                )
+                                            }}
+                                        />
+                                        <strong
+                                            >${variable.dataFieldLongName}</strong
+                                        >
+                                        <span
+                                            >${variable.dataProductShortName}_${variable.dataProductVersion}
+                                            &bull;
+                                            ${variable.dataProductTimeInterval}
+                                            &bull;
+                                            ${variable.dataProductSpatialResolution}</span
+                                        >
+                                    </label>
+                                </div>
+                            </li>
+                        `,
+                    )}
+                </ul>
+            </section>
+
+            <!-- RIGHT COLUMN -->
+            ${
+                !loading && !variables.length
+                    ? nothing
+                    : html`
+                        <section class="variable-details">
+                        ${
+                            this.activeIndex !== undefined
+                                ? this.#renderVariableDetails(this.activeIndex ?? 0)
+                                : html`<p class="placeholder">
+                                        Hover over a variable to see details
+                                    </p>`
+                        }
+                        </section>
+                    `
+            }
+        `
+    }
+
+    #renderMobileVariablesList(loading?: boolean) {
+
+        const variables = this.#getSortedVariables()
+
+        if (this.mobileDetailsIndex !== undefined) {
+            return html`
+                <section class="variable-details">
+                    <terra-button
+                        @click=${this.handleMobileBack}
+                    >
+                        ← Back to variables
+                    </terra-button>
+
+                    ${this.#renderVariableDetails(this.mobileDetailsIndex)}
+                </section>
+            `
+        }
+
+        return html`
+            <section>
+                <ul class="variable-list">
+                    ${
+                        !loading && !variables.length
+                            ? html`
+                        <terra-alert variant="primary" appearance="white" open>
+                            <p>We didn't find any variables matching your search and filters.</p>
+                            <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
+                        </terra-alert>
+                    `
+                        : nothing
+                    }
+
+                    ${variables.map(
+                        (variable, index) => html`
+                            <li
+                                data-variable-index=${index}
+                                class="variable-list-item"
+                                @click=${() =>
+                                    this.handleMobileVariableClick(index)}
+                            >
+                                <div class="variable">
+                                    <label>
+                                        <input
+                                            data-variable=${variable}
+                                            type="checkbox"
+                                            @click=${(event: Event) =>
+                                                event.stopPropagation()}
+                                            @change=${(e: Event) => {
+                                                const input =
+                                                    e.currentTarget as HTMLInputElement
+
+                                                this.#handleVariableSelection(
+                                                    variable,
+                                                    input.checked,
+                                                )
+                                            }}
+                                        />
+
+                                        <strong>
+                                            ${variable.dataFieldLongName}
+                                        </strong>
+
+                                        <span>
+                                            ${variable.dataProductShortName}_${variable.dataProductVersion}
+                                            &bull;
+                                            ${variable.dataProductTimeInterval}
+                                            &bull;
+                                            ${variable.dataProductSpatialResolution}
+                                        </span>
+                                    </label>
+                                </div>
+                            </li>
+                        `,
+                    )}
+                </ul>
+            </section>
+        `
     }
 
     render() {
@@ -702,6 +846,12 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         @terra-search=${this.handleSearch}
                     ></terra-variable-keyword-search>
                 </header>
+
+                ${
+                    this.isMobile
+                        ? console.log('Mobile view')
+                        : console.log('Desktop view')
+                }
 
                 ${
                     this.showVariablesBrowse

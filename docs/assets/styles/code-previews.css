@@ -54,16 +54,6 @@
     color: var(--terra-text-primary-inverse);
 }
 
-@media screen and (max-width: 600px) {
-    .code-preview__preview {
-        padding-right: 1.5rem;
-    }
-
-    .code-preview__resizer {
-        display: none;
-    }
-}
-
 .code-preview__source {
     border: solid 1px var(--terra-border-neutral-default);
     border-bottom: none;
@@ -187,6 +177,15 @@
 /* Preview content switching */
 .code-preview__preview-content {
     width: 100%;
+}
+
+@media (max-width: 600px) {
+    .code-preview__preview-content {
+        height: 844px;
+        border: 2px, solid, white;
+        border-radius: 30px;
+        overflow-y: scroll;    
+    }
 }
 
 .code-preview__preview-content:not([data-flavor='html']):not(
