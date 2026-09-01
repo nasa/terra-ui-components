@@ -1,5 +1,7 @@
 import componentStyles from '../../styles/component.styles.js'
 import styles from './browse-variables.styles.js'
+import TerraAccordion from '../accordion/accordion.component.js'
+import TerraDivider from '../divider/divider.component.js'
 import TerraButton from '../button/button.component.js'
 import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
@@ -37,6 +39,8 @@ import { getSortLabel, SortOrder } from '../../utilities/sort.js'
  * @dependency terra-skeleton
  * @dependency terra-icon
  * @dependency terra-loader
+ * @dependency terra-divider
+ * @dependency terra-accordion
  */
 export default class TerraBrowseVariables extends QueryClientMixin(
     TerraElement,
@@ -49,6 +53,8 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         'terra-icon': TerraIcon,
         'terra-loader': TerraLoader,
         'terra-alert': TerraAlert,
+        'terra-accordion': TerraAccordion,
+        'terra-divider': TerraDivider,
     }
 
     /** Screen size detection use to determine layout for mobile devices */
@@ -230,27 +236,20 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     }
 
     private handleMobileVariableClick(index: number) {
-        this.mobileDetailsIndex = index
+        if (this.mobileDetailsIndex === index) {    // Close the details panel if it's already open for this variable
+            this.mobileDetailsIndex = undefined
+            return
+        }
+        this.mobileDetailsIndex = index             // Open the details panel for this variable
     }
 
-    private handleMobileBack() {
+    private handleDetailClose() {
         const index = this.mobileDetailsIndex
         this.mobileDetailsIndex = undefined
 
         if (index === undefined) {
             return
         }
-
-        requestAnimationFrame(() => {
-            const item = this.shadowRoot?.querySelector(
-                `[data-variable-index="${index}"]`,
-            )
-
-            item?.scrollIntoView({
-                behavior: 'instant',
-                block: 'center',
-            })
-        })
     }
 
     #handleSortChange(event: TerraSelectEvent) {
@@ -620,27 +619,43 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 </menu>
             </header>
 
-            <aside>
-                <h3>Filter</h3>
+            ${this.isMobile
+                ? html `
+                    <aside>
+                        <terra-accordion summary="Filter Results">
+                            ${facets.map((facet) =>
+                                this.#renderFacet(
+                                    facet.facetKey,
+                                    facet.title,
+                                    this.#controller.facetsByCategory?.[facet.facetKey],
+                                    facet.open,
+                                ),
+                            )}
+                        </terra-accordion>
+                    </aside>
 
-                ${facets.map((facet) =>
-                    this.#renderFacet(
-                        facet.facetKey,
-                        facet.title,
-                        this.#controller.facetsByCategory?.[facet.facetKey],
-                        facet.open,
-                    ),
-                )}
-            </aside>
+                    <main>
+                        ${this.#renderMobileVariablesList(Boolean(loading))}
+                    </main>`
+                : html `
+                    <aside>
+                        <h3>Filter</h3>
 
-            <main>
+                        ${facets.map((facet) =>
+                            this.#renderFacet(
+                                facet.facetKey,
+                                facet.title,
+                                this.#controller.facetsByCategory?.[facet.facetKey],
+                                facet.open,
+                            ),
+                        )}
+                    </aside>
 
-                ${ this.isMobile
-                    ? this.#renderMobileVariablesList(Boolean(loading))
-                    : this.#renderVariablesList(Boolean(loading))
+                    <main>
+                        ${this.#renderVariablesList(Boolean(loading))}
+                    </main>`
                 }
 
-            </main>
         </div> `
     }
 
@@ -745,20 +760,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
         const variables = this.#getSortedVariables()
 
-        if (this.mobileDetailsIndex !== undefined) {
-            return html`
-                <section class="variable-details">
-                    <terra-button
-                        @click=${this.handleMobileBack}
-                    >
-                        ← Back to variables
-                    </terra-button>
-
-                    ${this.#renderVariableDetails(this.mobileDetailsIndex)}
-                </section>
-            `
-        }
-
         return html`
             <section>
                 <ul class="variable-list">
@@ -778,40 +779,65 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                             <li
                                 data-variable-index=${index}
                                 class="variable-list-item"
-                                @click=${() =>
-                                    this.handleMobileVariableClick(index)}
                             >
                                 <div class="variable">
-                                    <label>
-                                        <input
-                                            data-variable=${variable}
-                                            type="checkbox"
-                                            @click=${(event: Event) =>
-                                                event.stopPropagation()}
-                                            @change=${(e: Event) => {
-                                                const input =
-                                                    e.currentTarget as HTMLInputElement
+                                    <input
+                                        data-variable=${variable}
+                                        type="checkbox"
+                                        @click=${(event: Event) =>
+                                            event.stopPropagation()}
+                                        @change=${(e: Event) => {
+                                            const input =
+                                                e.currentTarget as HTMLInputElement
 
-                                                this.#handleVariableSelection(
-                                                    variable,
-                                                    input.checked,
-                                                )
-                                            }}
-                                        />
-
+                                            this.#handleVariableSelection(
+                                                variable,
+                                                input.checked,
+                                            )
+                                        }}
+                                    />
+                                    <label 
+                                        @click=${() =>
+                                            this.handleMobileVariableClick(index)}
+                                    >
                                         <strong>
                                             ${variable.dataFieldLongName}
                                         </strong>
-
                                         <span>
                                             ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                            &bull;
-                                            ${variable.dataProductTimeInterval}
-                                            &bull;
-                                            ${variable.dataProductSpatialResolution}
+                                            <ul class="resolution-info">
+                                                <li>
+                                                    ${variable.dataProductTimeInterval}
+                                                </li>
+                                                <li>
+                                                    ${variable.dataProductSpatialResolution}
+                                                </li>
+                                            </ul>
                                         </span>
                                     </label>
                                 </div>
+                                ${
+                                    this.mobileDetailsIndex === index
+                                        ? html`
+                                            <div class="variable-details">
+                                                <span>
+                                                    <terra-divider></terra-divider>
+                                                    <terra-button outline circle size="small"
+                                                        @click=${(event: Event) =>
+                                                            {
+                                                                event.stopPropagation()
+                                                                this.handleDetailClose()
+                                                            }}
+                                                    >
+                                                    <slot name="label">
+                                                        <terra-icon name="outline-x-mark" library="heroicons" font-size="1.5em"></terra-icon>
+                                                    </slot>
+                                                    </terra-button>                                                </span>
+                                                ${this.#renderVariableDetails(index)}
+                                            </div>
+                                        `
+                                        : nothing
+                                }
                             </li>
                         `,
                     )}

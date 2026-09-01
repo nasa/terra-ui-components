@@ -242,7 +242,7 @@ export default css`
 
     .variables-container aside {
         grid-area: aside;
-        padding: 15px;
+        padding: 8px 15px 5px;
         overflow-y: auto;
         height: max-content;
     }
@@ -299,6 +299,7 @@ export default css`
             min-height: 0;
             width: 100%;
             height: min-content;
+            padding: 5px 15px;
             box-sizing: border-box;
             overflow-x: hidden;
         }
@@ -396,8 +397,9 @@ export default css`
     }
 
     .variable input[type='checkbox'] {
-        margin-block: 0.25em;
+        margin-block: 0.5em;
         margin-inline: 0 0.5em;
+        align-self: flex-start;
     }
 
     .variable {
@@ -421,6 +423,10 @@ export default css`
         margin-top: 0.40em;
     }
 
+    .resolution-info {
+        padding-inline-start: 16px;
+    }
+    
     .left-column {
         /* overflow-y: auto; */
     }
@@ -428,11 +434,22 @@ export default css`
     .variable-details {
         display: flex;
         flex-direction: column;
-        background-color: var(--terra-color-bg-info-subtle);
         color: var(--terra-text-secondary);
         /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
+    }
+
+    @media (max-width: 600px) {
+        .variable-details {
+            padding: 0.5em 0.0em
+        }
+        .variable-details span {
+            display: grid;
+            grid-template-columns: 1fr 25px;
+            align-items: center;
+            gap: 0.5em;
+        }
     }
 
     .variable-details h4 {
