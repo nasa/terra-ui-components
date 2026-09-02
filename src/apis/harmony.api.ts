@@ -206,6 +206,8 @@ class HarmonyApi {
             options,
         )
 
+        console.log('capabilities ', capabilities)
+
         // the variables returned from the Harmony capabilities endpoint don't include the concept ID
         // but we can extract it from the href property and add it to each variable for easier reference later
         capabilities.variables = this.addConceptIdToVariables(
@@ -216,6 +218,12 @@ class HarmonyApi {
         // including labels and descriptions
         capabilities.configuredOutputFormats =
             this.getOutputFormatOptions(capabilities)
+
+        //! Requested 9/02/2026 to always show temporal selections in the subsetter.
+        //! For services with no temporal subsetting, Harmony will fetch ALL granules.
+        //! By setting temporal and bbox to true, Harmony will query CMR for a subset of granules instead, much more performant
+        capabilities.summary.subsetting.temporal = true
+        capabilities.summary.subsetting.bbox = true
 
         return capabilities
     }
@@ -368,8 +376,14 @@ class HarmonyApi {
             // if url is an absolute Harmony URL but the user is anonymous (no bearer token),
             // replace the Harmony base URL with the anonymous proxy so the request is routed correctly
             url = url
-                .replace(HARMONY_URLS[Environments.PROD], HARMONY_URLS.ANONYMOUS_ACCESS)
-                .replace(HARMONY_URLS[Environments.UAT], HARMONY_URLS.ANONYMOUS_ACCESS)
+                .replace(
+                    HARMONY_URLS[Environments.PROD],
+                    HARMONY_URLS.ANONYMOUS_ACCESS,
+                )
+                .replace(
+                    HARMONY_URLS[Environments.UAT],
+                    HARMONY_URLS.ANONYMOUS_ACCESS,
+                )
         }
 
         const headers: HeadersInit = {

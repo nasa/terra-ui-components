@@ -63,7 +63,7 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 ### Support granule date filtering for collections with temporal subsetting turned off
 
 ```html:preview
-<terra-data-subsetter collection-entry-id="OCO2_L2_Lite_FP_11.2r" dialog="my-dialog"></terra-data-subsetter>
+<terra-data-subsetter collection-entry-id="OCO2_L2_Lite_FP_11.2r"></terra-data-subsetter>
 ```
 
 ### No collection (enables Collection search)

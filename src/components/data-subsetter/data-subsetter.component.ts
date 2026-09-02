@@ -846,7 +846,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 date/time range selection, and variable selection.
                             </p>
 
-                            ${this.#renderDateRangeSelection()}
+                            ${
+                                this.collectionWithServices?.summary.subsetting
+                                    .temporal
+                                    ? this.#renderDateRangeSelection()
+                                    : nothing
+                            }
+
                             ${
                                 this.#hasSpatialSubset()
                                     ? this.#renderSpatialSelection()
@@ -872,7 +878,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     `
                       : html`
                         ${
-                            showTemporalSection
+                            showTemporalSection &&
+                            !this.collectionWithServices?.summary.subsetting
+                                .temporal
                                 ? this.#renderAvailableTemporalRangeSection()
                                 : nothing
                         }
