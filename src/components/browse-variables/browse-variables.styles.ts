@@ -392,6 +392,20 @@ export default css`
         font-size: 0;
     }
 
+    @media (max-width: 600px) {
+        .variable-list {
+            width: 100%;
+            min-width: 0;
+        }
+        .variable-list-item {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+        }
+    }
+
     .variable[open] .details-panel {
         height: max-content;
     }
@@ -407,6 +421,12 @@ export default css`
         justify-content: space-between;
     }
 
+    @media (max-width: 600px) {
+        .variable {
+            justify-content: flex-start;
+        }
+    }
+
     .variable a {
         color: white;
     }
@@ -416,6 +436,13 @@ export default css`
         display: flex;
         flex-direction: row;
         font-weight: 400;
+    }
+
+    @media (max-width: 600px) {
+        .variable label {
+            flex-direction: column;
+            justify-content: flex-start;
+        }
     }
 
     .variable label input[type='checkbox'] {
@@ -442,11 +469,16 @@ export default css`
 
     @media (max-width: 600px) {
         .variable-details {
-            padding: 0.5em 0.0em
+            width: 100%;
+            min-width: 0;
+            padding: 0.5em 0.0em;
+            box-sizing: border-box;
+            overflow: hidden;
+            overflow-wrap: anywhere;
         }
         .variable-details span {
             display: grid;
-            grid-template-columns: 1fr 25px;
+            grid-template-columns: 1fr 30px;
             align-items: center;
             gap: 0.5em;
         }
