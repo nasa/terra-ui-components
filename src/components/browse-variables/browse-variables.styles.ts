@@ -461,8 +461,8 @@ export default css`
     .variable-details {
         display: flex;
         flex-direction: column;
+        background-color: var(--terra-color-bg-info-subtle);
         color: var(--terra-text-secondary);
-        /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
     }
@@ -475,6 +475,7 @@ export default css`
             box-sizing: border-box;
             overflow: hidden;
             overflow-wrap: anywhere;
+            background-color: none;
         }
         .variable-details span {
             display: grid;
