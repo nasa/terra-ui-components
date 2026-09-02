@@ -245,10 +245,13 @@ export default class TerraDataRods extends TerraElement {
             ></terra-date-range-slider>
             ${
                 this.isDateSliderDisabled && this.chunkProgress
-                    ? html`<div class="chunk-progress" style="margin-top: 8px; color: #555; font-size: 0.95em;">
-                          Loading chunk ${this.chunkProgress.currentChunk} of
-                          ${this.chunkProgress.totalChunks}&hellip;
-                      </div>`
+                    ? html`<div
+                          class="chunk-progress"
+                          style="margin-top: 8px; color: #555; font-size: 0.95em;"
+                          >Loading chunk ${this.chunkProgress
+                              .currentChunk} of ${this.chunkProgress
+                              .totalChunks}&hellip;</div
+                      >`
                     : null
             }
             ${
