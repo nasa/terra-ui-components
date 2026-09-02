@@ -33,7 +33,7 @@ export default css`
         grid-template-rows: auto 1fr;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .container {
             position: relative;
             top: auto;
@@ -112,7 +112,7 @@ export default css`
     .browse-by-category terra-button::part(base) {
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .browse-by-category {
             grid-template-areas:
                 'aside'
@@ -216,7 +216,7 @@ export default css`
         font-size: 0;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .variables-container header {
             display: flex;
             flex-wrap: wrap;
@@ -270,7 +270,7 @@ export default css`
         grid-template-columns: 1fr 400px;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .variables-container {
             grid-template-areas:
                 'header'
@@ -392,7 +392,7 @@ export default css`
         font-size: 0;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .variable-list {
             width: 100%;
             min-width: 0;
@@ -421,7 +421,7 @@ export default css`
         justify-content: space-between;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .variable {
             justify-content: flex-start;
         }
@@ -438,7 +438,7 @@ export default css`
         font-weight: 400;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .variable label {
             flex-direction: column;
             justify-content: flex-start;
@@ -467,7 +467,7 @@ export default css`
         padding: 0.5em 1em;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         .variable-details {
             width: 100%;
             min-width: 0;
