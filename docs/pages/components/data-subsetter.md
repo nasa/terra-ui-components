@@ -60,6 +60,12 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 <terra-data-subsetter short-name="XAERDT_L2_MODIS_Aqua" version="1"></terra-data-subsetter>
 ```
 
+### Support granule date filtering for collections with temporal subsetting turned off
+
+```html:preview
+<terra-data-subsetter collection-entry-id="OCO2_L2_Lite_FP_11.2r" dialog="my-dialog"></terra-data-subsetter>
+```
+
 ### No collection (enables Collection search)
 
 ```html:preview

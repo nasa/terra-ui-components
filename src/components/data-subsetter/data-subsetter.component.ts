@@ -718,7 +718,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             // Get Data footer
             return html`
                 <div slot="footer" class="footer">
-                    <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
+                    <button
+                        class="btn btn-secondary"
+                        @click=${this.#resetAllParameters}
+                    >
+                        Reset All
+                    </button>
                     <div>
                         <button class="btn btn-primary" @click=${this.#getData}>
                             Get Data
@@ -726,13 +731,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ${
                             this.jobId
                                 ? html`
-                                      <terra-button
-                                          variant="default"
-                                          @click=${this.#viewRunningJob}
-                                      >
-                                          View Running Job
-                                      </terra-button>
-                                  `
+                                  <terra-button
+                                      variant="default"
+                                      @click=${this.#viewRunningJob}
+                                  >
+                                      View Running Job
+                                  </terra-button>
+                              `
                                 : nothing
                         }
                     </div>
@@ -841,12 +846,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 date/time range selection, and variable selection.
                             </p>
 
-                            ${
-                                this.collectionWithServices?.summary.subsetting
-                                    .temporal
-                                    ? this.#renderDateRangeSelection()
-                                    : nothing
-                            }
+                            ${this.#renderDateRangeSelection()}
                             ${
                                 this.#hasSpatialSubset()
                                     ? this.#renderSpatialSelection()
@@ -872,9 +872,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     `
                       : html`
                         ${
-                            showTemporalSection &&
-                            !this.collectionWithServices?.summary.subsetting
-                                .temporal
+                            showTemporalSection
                                 ? this.#renderAvailableTemporalRangeSection()
                                 : nothing
                         }
@@ -904,26 +902,28 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 this.dataAccessMode === 'subset' && !this.dialog
                     ? html`
                       <div class="footer">
-                          <button class="btn btn-secondary" @click=${this.#resetAllParameters}>Reset All</button>
+                          <button
+                              class="btn btn-secondary"
+                              @click=${this.#resetAllParameters}
+                          >
+                              Reset All
+                          </button>
                           <div>
-                              <button
-                                  class="btn btn-primary"
-                                  @click=${this.#getData}
-                              >
+                              <button class="btn btn-primary" @click=${this.#getData}>
                                   Get Data
                               </button>
-                                  ${
-                                      this.jobId
-                                          ? html`
-                                                <terra-button
-                                                    variant="default"
-                                                    @click=${this.#viewRunningJob}
-                                                >
-                                                    View Running Job
-                                                </terra-button>
-                                            `
-                                          : nothing
-                                  }
+                              ${
+                                  this.jobId
+                                      ? html`
+                                        <terra-button
+                                            variant="default"
+                                            @click=${this.#viewRunningJob}
+                                        >
+                                            View Running Job
+                                        </terra-button>
+                                    `
+                                      : nothing
+                              }
                           </div>
                       </div>
                   `
@@ -1339,7 +1339,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #resetFormatSelection = () => {
         // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.configuredOutputFormats.length) {
+        if (this.collectionWithServices?.configuredOutputFormats?.length) {
             const netcdfFormat =
                 this.collectionWithServices.configuredOutputFormats.find(
                     (f) =>
@@ -2169,30 +2169,34 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 </div>
 
                 <div class="progress-container">
-                ${
-                    this.harmonyRequestError
-                        ? html`
-                          <terra-alert open variant="danger" appearance="white">
-                              ${this.#renderHarmonyRequestError()}
-                          </terra-alert>
-                      `
-                        : html`
-                          <div class="progress-container">
-                              <div class="progress-text">
-                                  <span class="spinner"></span>
-                                  <span class="status-running"
-                                      >Searching for data...</span
-                                  >
+                    ${
+                        this.harmonyRequestError
+                            ? html`
+                              <terra-alert open variant="danger" appearance="white">
+                                  ${this.#renderHarmonyRequestError()}
+                              </terra-alert>
+                          `
+                            : html`
+                              <div class="progress-container">
+                                  <div class="progress-text">
+                                      <span class="spinner"></span>
+                                      <span class="status-running"
+                                          >Searching for data...</span
+                                      >
+                                  </div>
+
+                                  <div class="progress-bar">
+                                      <div
+                                          class="progress-fill"
+                                          style="width: 0%"
+                                      ></div>
+                                  </div>
                               </div>
 
-                              <div class="progress-bar">
-                                  <div class="progress-fill" style="width: 0%"></div>
-                              </div>
-                          </div>
-
-                          ${this.#renderJobMessage()}
-                      `
-                }
+                              ${this.#renderJobMessage()}
+                          `
+                    }
+                </div>
             </div>`
         }
 
@@ -2243,7 +2247,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           </div>
 
                           <div class="progress-bar">
-                              <div class="progress-fill"
+                              <div
+                                  class="progress-fill"
                                   style="width: ${
                                       this.#harmonyRequestController.progress
                                   }%"
@@ -2517,7 +2522,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                                     .jobId
                                             }"
                                             target="_blank"
-                                            >${this.#harmonyRequestController.jobId}</a
+                                            >${
+                                                this.#harmonyRequestController
+                                                    .jobId
+                                            }</a
                                         >`
                                           : this.#harmonyRequestController.jobId
                                   }
@@ -2643,7 +2651,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
 
         if (
-            this.collectionWithServices?.summary.subsetting.temporal &&
             this.selectedDateRange.startDate &&
             this.selectedDateRange.endDate
         ) {
@@ -3192,8 +3199,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
         if (this.harmonyRequestError === noGranulesMessage) {
             return html`
-                No matching granules were found for your subset request. Please
-                try
+                No matching granules were found for your subset request. Please try
                 <a
                     href="#"
                     @click=${this.#handleExpandSearchClick}
