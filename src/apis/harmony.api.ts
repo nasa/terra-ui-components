@@ -206,8 +206,6 @@ class HarmonyApi {
             options,
         )
 
-        console.log('capabilities ', capabilities)
-
         // the variables returned from the Harmony capabilities endpoint don't include the concept ID
         // but we can extract it from the href property and add it to each variable for easier reference later
         capabilities.variables = this.addConceptIdToVariables(
