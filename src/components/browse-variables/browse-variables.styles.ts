@@ -149,7 +149,7 @@ export default css`
     .variables-container header {
         grid-area: header;
         padding: 15px;
-        padding-bottom: 0;
+        padding-bottom: 15px;
         display: flex;
         justify-content: space-between;
     }
@@ -173,8 +173,10 @@ export default css`
 
     .variables-container aside {
         grid-area: aside;
-        padding: 15px;
+        /* padding: 15px; */
         overflow-y: auto;
+        margin-top: -1.5em;
+        margin-left: 1.0em;
     }
 
     .variables-container aside details {
@@ -193,11 +195,19 @@ export default css`
         gap: 1rem;
         min-height: 100%;
         overflow-x: auto;
-        padding: 15px;
+        /* padding: 15px; */
+        margin-left: 0.5em;
     }
 
     .variables-container main:has(.right-column) {
         grid-template-columns: 1fr 400px;
+    }
+
+    .variables-header {
+        font-size: smaller;
+        color: var(--terra-color-carbon-50);
+        background-color: var(--terra-color-bg-surface-neutral-primary);
+        font-style: italic;
     }
 
     .facet {
@@ -271,9 +281,11 @@ export default css`
         color: var(--terra-text-secondary);
     }
 
+    /*
     .variable-list-item:hover {
         background-color: var(--terra-color-bg-info-subtle);
     }
+    */
 
     .variable-list-item:hover label {
         color: var(--terra-text-secondary);
@@ -321,11 +333,14 @@ export default css`
     .right-column {
         display: flex;
         flex-direction: column;
-        background-color: var(--terra-color-bg-info-subtle);
+        /* background-color: var(--terra-color-bg-info-subtle); */
         color: var(--terra-text-secondary);
         /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
+        margin-left: -1.2em;
+        border-radius-top-left: 0;
+        border-radius-bottom-left: 0;
     }
 
     .right-column h4 {
@@ -351,6 +366,14 @@ export default css`
         position: sticky;
         /* For older browsers, consider adding: */
         position: -webkit-sticky;
+        align-self: flex-start;
         top: 0; /* Sticks to the top of the viewport when scrolled to */
+    }
+
+    /* in this case, hover over the right-column is triggered by mouseenter/mouseleave events in the component, not CSS hover */
+    .element-hover {
+        /* background-color: var(--terra-color-blue-light); */
+        background-color: var(--terra-color-bg-info-subtle);
+        color: var(--terra-text-primary);
     }
 `
