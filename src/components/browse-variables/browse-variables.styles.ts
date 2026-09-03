@@ -33,6 +33,19 @@ export default css`
         grid-template-rows: auto 1fr;
     }
 
+    @media (max-width: 768px) {
+        .container {
+            position: relative;
+            top: auto;
+            right: auto;
+            bottom: auto;
+            left: auto;
+            height: auto;
+            min-height: 0;
+
+            grid-template-rows: auto auto;
+        }
+    }
     .scrollable {
         overflow-y: auto;
         display: grid;
@@ -99,6 +112,38 @@ export default css`
     .browse-by-category terra-button::part(base) {
     }
 
+    @media (max-width: 768px) {
+        .browse-by-category {
+            grid-template-areas:
+                'aside'
+                'main';
+            grid-template-columns: 1fr;
+        }
+
+        .browse-by-category main {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            min-width: 0;
+            padding: 0 15px;
+            margin-top: 10px;
+        }
+
+        .browse-by-category h3 {
+            margin: 5px 0;
+        }
+
+        .browse-by-category ul {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .browse-by-category li {
+            padding: 0px;
+            margin-bottom: 2px;
+            margin-left: 5px;
+        }
+    }
+
     label {
         display: flex;
         line-height: var(--terra-line-height-normal);
@@ -154,16 +199,40 @@ export default css`
         justify-content: space-between;
     }
 
+    .variables-container header .research-area {
+        display: flex;
+        justify-content: flex-start;
+    }
+
     .variables-container header menu {
         display: inline-flex;
         padding: 0;
         margin: 0;
-        min-width: 24em;
+        /* min-width: 24em; */
         justify-content: flex-end;
     }
 
     .variables-container header menu ::marker {
         font-size: 0;
+    }
+
+    @media (max-width: 768px) {
+        .variables-container header {
+            display: flex;
+            flex-wrap: wrap;
+            row-gap: 0.5rem;
+        }
+
+        .variables-container header .research-area {
+            flex: 0 1 auto;
+            min-width: 0;
+            white-space: wrap;
+        }
+
+        .variables-container header menu {
+            flex: 0 0 auto;
+            white-space: nowrap;
+        }
     }
 
     .list-menu-dropdown terra-button::part(base) {
@@ -173,8 +242,9 @@ export default css`
 
     .variables-container aside {
         grid-area: aside;
-        padding: 15px;
+        padding: 8px 15px 5px;
         overflow-y: auto;
+        height: max-content;
     }
 
     .variables-container aside details {
@@ -196,9 +266,48 @@ export default css`
         padding: 15px;
     }
 
-    .variables-container main:has(.right-column) {
+    .variables-container main:has(.variable-details) {
         grid-template-columns: 1fr 400px;
     }
+
+    @media (max-width: 768px) {
+        .variables-container {
+            grid-template-areas:
+                'header'
+                'aside'
+                'main';
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto 1fr;
+        }
+
+        .variables-container > header,
+        .variables-container > aside,
+        .variables-container > main {
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+
+        .variables-container aside {
+            height: min-content;
+        } 
+
+        .variables-container main {
+            grid-template-columns: minmax(0, 1fr);
+            min-width: 0;
+            min-height: 0;
+            width: 100%;
+            height: min-content;
+            padding: 5px 15px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        .variables-container main:has(.variable-details) {
+            grid-template-columns: 1fr;
+        }
+    }  
 
     .facet {
         margin-left: 10px;
@@ -283,18 +392,38 @@ export default css`
         font-size: 0;
     }
 
-    .variable[open] .details-panel {
-        height: max-content;
-    }
-
-    .variable input[type='checkbox'] {
-        margin-block: 0.25em;
-        margin-inline: 0 0.5em;
+    @media (max-width: 768px) {
+        .variable-list {
+            width: 100%;
+            min-width: 0;
+        }
+        .variable-list-item {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+        }
     }
 
     .variable {
         display: flex;
         justify-content: space-between;
+    }
+
+    @media (max-width: 768px) {
+        .variable {
+            justify-content: flex-start;
+        }
+    }
+    .variable[open] .details-panel {
+        height: max-content;
+    }
+
+    .variable input[type='checkbox'] {
+        margin-block: 0.5em;
+        margin-inline: 0 0.5em;
+        align-self: flex-start;
     }
 
     .variable a {
@@ -308,36 +437,76 @@ export default css`
         font-weight: 400;
     }
 
+    @media (max-width: 768px) {
+        .variable label {
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+    }
+
     .variable label input[type='checkbox'] {
         align-self: flex-start;
         margin-top: 0.40em;
     }
 
+    .resolution-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        padding-inline-start: 16px;
+    }
+    
     .left-column {
         /* overflow-y: auto; */
     }
 
-    /* Right column (details panel) */
-    .right-column {
+    .variable-details {
         display: flex;
         flex-direction: column;
         background-color: var(--terra-color-bg-info-subtle);
         color: var(--terra-text-secondary);
-        /* border: 0.0625em solid var(--terra-color-nasa-blue-tint); */
         border-radius: 0.25em;
         padding: 0.5em 1em;
     }
 
-    .right-column h4 {
+    @media (max-width: 768px) {
+        .variable-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            width: 100%;
+            min-width: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            overflow-wrap: anywhere;
+            background-color: none;
+            transition:
+                max-height 0.3s ease,
+                opacity 0.2s ease;
+        }
+        .variable-details.is-open {
+            max-height: 1000px;
+            opacity: 1;
+        }
+        .variable-details span {
+            display: grid;
+            grid-template-columns: 1fr 30px;
+            align-items: center;
+            gap: 0.5em;
+        }
+    }
+
+    .variable-details h4 {
         margin-top: 0;
         margin-bottom: 1rem;
     }
 
-    .right-column label {
+    .variable-details label {
         color: var(--terra-text-primary);
     }
 
-    .right-column p {
+    .variable-details p {
         margin: 0.5rem 0;
         line-height: 1.4;
     }
