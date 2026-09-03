@@ -41,6 +41,13 @@ export default css`
         z-index: 2;
     }
 
+    @media (max-width: 768px) {
+        #mouse-info {
+            bottom: 5px;
+            left: 5px;
+        }
+    }
+
     .ol-tooltip {
         position: absolute;
         background: rgba(0, 0, 0, 0.75);

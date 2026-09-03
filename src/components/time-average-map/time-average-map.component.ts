@@ -933,7 +933,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     }
 
     renderPixelValues(map: Map, gtLayer: WebGLTileLayer) {
-        map.on('pointermove', (event: MapBrowserEvent) => {
+        const updatePixelValue = (event: MapBrowserEvent) => {
             let data = gtLayer.getData(event.pixel)
             const coordinate = toLonLat(event.coordinate)
 
@@ -955,7 +955,16 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
             this.pixelValue = val
             this.pixelCoordinates = coordStr
-        })
+        }
+
+        // desktop: read the value continuously as the mouse hovers
+        map.on('pointermove', updatePixelValue)
+
+        // touch devices have no hover state, so `pointermove` only fires while
+        // actively dragging a finger. `singleclick` fires on tap-release and is
+        // only triggered when the pointer didn't move beyond OL's click
+        // tolerance, so it won't fire during a pan/drag gesture.
+        map.on('singleclick', updatePixelValue)
     }
 
     // Get the fill value from the GeoTIFF file
@@ -1398,21 +1407,31 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                         </div>
                     </div>
 
-                    <div id="legend">
-                        <div class="stats" id="statsMax">${this.max}</div>
-                        <div class="palette">
-                            ${this.legendValues.map(
-                                (value) => html`
-                                    <div
-                                        class="color-box"
-                                        style="background-color: rgba(${value.rgb})"
-                                        title="${value.value}"
-                                    ></div>
-                                `,
-                            )}
-                        </div>
-                        <div class="stats" id="statsMin">${this.min}</div>
-                    </div>
+                    ${
+                        this.legendValues.length > 0
+                            ? html`
+                              <div id="legend">
+                                  <div class="stats" id="statsMax">
+                                      ${this.max}
+                                  </div>
+                                  <div class="palette">
+                                      ${this.legendValues.map(
+                                          (value) => html`
+                                              <div
+                                                  class="color-box"
+                                                  style="background-color: rgba(${value.rgb})"
+                                                  title="${value.value}"
+                                              ></div>
+                                          `,
+                                      )}
+                                  </div>
+                                  <div class="stats" id="statsMin">
+                                      ${this.min}
+                                  </div>
+                              </div>
+                          `
+                            : nothing
+                    }
                 </div>
             </div>
 
