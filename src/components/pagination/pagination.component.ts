@@ -55,9 +55,12 @@ export default class TerraPagination extends TerraElement {
     /** Whether the pagination is centered. */
     @property({ type: Boolean }) centered = false
 
+    /** Number of page buttons shown on each side of the current page in the full variant. */
+    @property({ attribute: 'sibling-count', type: Number }) siblingCount = 1
+
     @state() private _visiblePages: number[] = []
 
-    @watch(['current', 'total', 'variant'])
+    @watch(['current', 'total', 'variant', 'siblingCount'])
     handlePropsChange() {
         this._updateVisiblePages()
     }
@@ -67,78 +70,145 @@ export default class TerraPagination extends TerraElement {
         this._updateVisiblePages()
     }
 
-    private _updateVisiblePages() {
-        const pages: number[] = []
-        const total = Math.max(1, this.total)
-        const current = Math.max(1, Math.min(this.current, total))
+    private _normalizeTotal() {
+        if (!Number.isFinite(this.total)) {
+            return 1
+        }
 
+        return Math.max(1, Math.trunc(this.total))
+    }
+
+    private _normalizeCurrent(total: number) {
+        if (!Number.isFinite(this.current)) {
+            return 1
+        }
+
+        return Math.max(1, Math.min(Math.trunc(this.current), total))
+    }
+
+    private _normalizeSiblingCount() {
+        if (!Number.isFinite(this.siblingCount)) {
+            return 1
+        }
+
+        return Math.max(0, Math.trunc(this.siblingCount))
+    }
+
+    private _createRange(start: number, end: number) {
+        const pages: number[] = []
+
+        for (let page = start; page <= end; page++) {
+            pages.push(page)
+        }
+
+        return pages
+    }
+
+    private _buildVisiblePages(current: number, total: number, siblingCount: number) {
+        const boundaryCount = 1
+        const totalPageNumbers = siblingCount * 2 + boundaryCount * 2 + 3
+
+        if (total <= totalPageNumbers) {
+            return this._createRange(1, total)
+        }
+
+        const startPages = this._createRange(1, boundaryCount)
+        const endPages = this._createRange(total - boundaryCount + 1, total)
+
+        const siblingsStart = Math.max(
+            Math.min(
+                current - siblingCount,
+                total - boundaryCount - siblingCount * 2 - 1
+            ),
+            boundaryCount + 2
+        )
+
+        const siblingsEnd = Math.min(
+            Math.max(current + siblingCount, boundaryCount + siblingCount * 2 + 2),
+            endPages[0] - 2
+        )
+
+        const pages: number[] = [...startPages]
+
+        if (siblingsStart > boundaryCount + 2) {
+            pages.push(-1)
+        } else if (boundaryCount + 1 < total - boundaryCount + 1) {
+            pages.push(boundaryCount + 1)
+        }
+
+        pages.push(...this._createRange(siblingsStart, siblingsEnd))
+
+        if (siblingsEnd < total - boundaryCount - 1) {
+            pages.push(-1)
+        } else if (total - boundaryCount > boundaryCount) {
+            pages.push(total - boundaryCount)
+        }
+
+        pages.push(...endPages)
+        return pages
+    }
+
+    private _updateVisiblePages() {
         if (this.variant === 'simple') {
             // Prev/Next only - no page numbers
             this._visiblePages = []
             return
         }
 
-        if (total <= 7) {
-            // Show all pages if 7 or fewer
-            for (let i = 1; i <= total; i++) {
-                pages.push(i)
-            }
-        } else {
-            // Always show first page
-            pages.push(1)
-
-            if (current <= 4) {
-                // Near the beginning
-                for (let i = 2; i <= 5; i++) {
-                    pages.push(i)
-                }
-                pages.push(-1) // Ellipsis
-                pages.push(total)
-            } else if (current >= total - 3) {
-                // Near the end
-                pages.push(-1) // Ellipsis
-                for (let i = total - 4; i <= total; i++) {
-                    pages.push(i)
-                }
-            } else {
-                // In the middle
-                pages.push(-1) // Ellipsis
-                for (let i = current - 1; i <= current + 1; i++) {
-                    pages.push(i)
-                }
-                pages.push(-1) // Ellipsis
-                pages.push(total)
-            }
-        }
-
-        this._visiblePages = pages
+        const total = this._normalizeTotal()
+        const current = this._normalizeCurrent(total)
+        const siblingCount = this._normalizeSiblingCount()
+        this._visiblePages = this._buildVisiblePages(current, total, siblingCount)
     }
 
     private _handlePageClick(page: number) {
-        if (page === this.current || page < 1 || page > this.total) {
+        const total = this._normalizeTotal()
+        const current = this._normalizeCurrent(total)
+        const nextPage = Math.max(1, Math.min(Math.trunc(page), total))
+
+        if (nextPage === current) {
             return
         }
 
-        this.current = page
-        this._updateVisiblePages()
-        this.emit('terra-page-change', { detail: { page } })
+        this.current = nextPage
+        this.emit('terra-page-change', { detail: { page: nextPage } })
     }
 
     private _handlePrevClick() {
-        if (this.current > 1) {
-            this._handlePageClick(this.current - 1)
+        const total = this._normalizeTotal()
+        const current = this._normalizeCurrent(total)
+
+        if (current > 1) {
+            this._handlePageClick(current - 1)
         }
     }
 
     private _handleNextClick() {
-        if (this.current < this.total) {
-            this._handlePageClick(this.current + 1)
+        const total = this._normalizeTotal()
+        const current = this._normalizeCurrent(total)
+
+        if (current < total) {
+            this._handlePageClick(current + 1)
         }
     }
 
+    private _handleVisiblePageClick(event: Event) {
+        const target = event.currentTarget as HTMLButtonElement | null
+        if (!target) {
+            return
+        }
+
+        const page = Number(target.dataset.page)
+        if (!Number.isFinite(page)) {
+            return
+        }
+
+        this._handlePageClick(page)
+    }
+
     render() {
-        const total = Math.max(1, this.total)
-        const current = Math.max(1, Math.min(this.current, total))
+        const total = this._normalizeTotal()
+        const current = this._normalizeCurrent(total)
         const isPrevDisabled = current === 1
         const isNextDisabled = current === total
         const showNumbers = this.variant === 'full'
@@ -205,8 +275,9 @@ export default class TerraPagination extends TerraElement {
                                               'pagination__button--current':
                                                   isCurrent,
                                           })}
+                                          data-page=${String(page)}
                                           ?disabled=${isCurrent}
-                                          @click=${() => this._handlePageClick(page)}
+                                          @click=${this._handleVisiblePageClick}
                                           aria-label=${`Page ${page}`}
                                           aria-current=${isCurrent
                                               ? 'page'
