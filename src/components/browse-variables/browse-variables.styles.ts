@@ -406,16 +406,6 @@ export default css`
         }
     }
 
-    .variable[open] .details-panel {
-        height: max-content;
-    }
-
-    .variable input[type='checkbox'] {
-        margin-block: 0.5em;
-        margin-inline: 0 0.5em;
-        align-self: flex-start;
-    }
-
     .variable {
         display: flex;
         justify-content: space-between;
@@ -425,6 +415,15 @@ export default css`
         .variable {
             justify-content: flex-start;
         }
+    }
+    .variable[open] .details-panel {
+        height: max-content;
+    }
+
+    .variable input[type='checkbox'] {
+        margin-block: 0.5em;
+        margin-inline: 0 0.5em;
+        align-self: flex-start;
     }
 
     .variable a {
@@ -451,6 +450,9 @@ export default css`
     }
 
     .resolution-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
         padding-inline-start: 16px;
     }
     
@@ -469,13 +471,23 @@ export default css`
 
     @media (max-width: 768px) {
         .variable-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
             width: 100%;
             min-width: 0;
-            padding: 0.5em 0.0em;
+            padding: 0;
             box-sizing: border-box;
             overflow: hidden;
             overflow-wrap: anywhere;
             background-color: none;
+            transition:
+                max-height 0.3s ease,
+                opacity 0.2s ease;
+        }
+        .variable-details.is-open {
+            max-height: 1000px;
+            opacity: 1;
         }
         .variable-details span {
             display: grid;

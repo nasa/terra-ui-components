@@ -719,16 +719,16 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                                 )
                                             }}
                                         />
-                                        <strong
-                                            >${variable.dataFieldLongName}</strong
-                                        >
-                                        <span
-                                            >${variable.dataProductShortName}_${variable.dataProductVersion}
+                                        <strong>
+                                            ${variable.dataFieldLongName}
+                                        </strong>
+                                        <span style="margin-left: 1em;">
+                                            ${variable.dataProductShortName}_${variable.dataProductVersion}
                                             &bull;
                                             ${variable.dataProductTimeInterval}
                                             &bull;
-                                            ${variable.dataProductSpatialResolution}</span
-                                        >
+                                            ${variable.dataProductSpatialResolution}
+                                        </span>
                                     </label>
                                 </div>
                             </li>
@@ -816,28 +816,22 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                         </span>
                                     </label>
                                 </div>
-                                ${
-                                    this.mobileDetailsIndex === index
-                                        ? html`
-                                            <div class="variable-details">
-                                                <span>
-                                                    <terra-divider></terra-divider>
-                                                    <terra-button outline circle size="small"
-                                                        @click=${(event: Event) =>
-                                                            {
-                                                                event.stopPropagation()
-                                                                this.handleDetailClose()
-                                                            }}
-                                                    >
-                                                    <slot name="label">
-                                                        <terra-icon name="outline-x-mark" library="heroicons" font-size="1.5em"></terra-icon>
-                                                    </slot>
-                                                    </terra-button>                                                </span>
-                                                ${this.#renderVariableDetails(index)}
-                                            </div>
-                                        `
-                                        : nothing
-                                }
+                                <div class="variable-details ${this.mobileDetailsIndex === index ? 'is-open' : ''}">
+                                    <span>
+                                        <terra-divider></terra-divider>
+                                        <terra-button outline circle size="small"
+                                            @click=${(event: Event) =>
+                                                {
+                                                    event.stopPropagation()
+                                                    this.handleDetailClose()
+                                                }}
+                                        >
+                                        <slot name="label">
+                                            <terra-icon name="outline-x-mark" library="heroicons" font-size="1.5em"></terra-icon>
+                                        </slot>
+                                        </terra-button>                                                </span>
+                                    ${this.#renderVariableDetails(index)}
+                                </div>
                             </li>
                         `,
                     )}
