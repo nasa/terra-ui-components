@@ -92,6 +92,19 @@ function cleanLine(line) {
         .trim()
 }
 
+function isRemValue(tokenValue, baseFontSize = 16) {
+  // Match values like: 1rem, 0.5rem, .75rem, -2rem and convert to pixels based on the base font size (default 16px)
+  const remMatch = tokenValue.match(/^(-?\d*\.?\d+)rem$/)
+
+  if (remMatch) {
+    const remValue = parseFloat(remMatch[1])
+    const pxValue = remValue * baseFontSize
+    return pxValue
+  } else {
+    return null  // Not a rem value
+  }
+}
+
 // ===== STEP 1–2: PARSE SCSS THEME FILE =====
 
 function parseScss(content) {
@@ -102,7 +115,7 @@ function parseScss(content) {
     let currentSection = null
     let currentSubsection = null
     let currentSubgroup = null
-
+    let parsingTokens = false;
     let buffer = ''
 
     // Step 1: Extract comment blocks related to token documentation for reference in step 2.
@@ -138,8 +151,12 @@ function parseScss(content) {
 
             // skip if @tokens, @tokens-subsection, or @tokens-subgroup directive is not present at the start of the next line after the /**.
             if (!isTokenBlock(block)) {
+                parsingTokens = false;
+                currentSubgroup = null;
                 continue
             }
+
+            parsingTokens = true;
 
             // Extract metadata from previously extracted block
             const sectionName = getTagValue(block, '@tokens')
@@ -147,10 +164,6 @@ function parseScss(content) {
             const subgroupName = getTagValue(block, '@tokens-subgroup')
             const layout = getTagValue(block, '@layout') || 'table'
             const description = getDescription(block)
-
-            // Debugging
-            //console.log('BLOCK:', block)
-            //console.log('DESCRIPTION:', description)
 
             // Build section/subsection/subgroup hierarchy based on block metadata
 
@@ -210,14 +223,30 @@ function parseScss(content) {
         //
         // Token parsing (multi-line safe)
         //
-        if (line.startsWith('--')) {
-            buffer = line
-        } else if (buffer) {
-            buffer += ' ' + line
+        const trimmed = line
+            .replace(/\/\*.*?\*\//g, '') // Remove inline /* ... */ comments
+            .trim()
+        
+        // If we've reached a new selector, the previous documented token block is over.
+        if (parsingTokens && /^[.#:[a-zA-Z]/.test(trimmed)) {
+            parsingTokens = false
+            currentSubgroup = null
+            buffer = ''
         }
 
-        if (buffer && buffer.endsWith(';')) {
-            const match = buffer.match(/^(--[\w-]+):\s*(.+);$/)
+        if (parsingTokens) {
+            if (!buffer && trimmed.startsWith('--')) {
+                // Starting a new token
+                buffer = trimmed
+            }
+            else if (buffer) {
+                // Continue the current multi-line token
+                buffer += ' ' + trimmed
+            }
+        }
+
+        if (parsingTokens && buffer && /;\s*$/.test(buffer)) {
+            const match = buffer.match(/^(--[\w-]+)\s*:\s*([\s\S]*?)\s*;\s*$/)
 
             if (match && currentSubgroup) {
                 const name = match[1]
@@ -302,13 +331,21 @@ function renderChildren(children, depth = 2) {
                 md += renderSwatchGroup(item.name, item.description, item.tokens)
             } else if (item.layout === 'table-swatch') {
                 md += renderTableSwatchGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-radius') {
+                md += renderTableRadiusGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-elevation') {
+                md += renderTableElevationGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-spacing') {
+                md += renderTableSpacingGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-transition') {
+                md += renderTableTransitionGroup(item.name, item.description, item.tokens)
             } else {
                 md += renderTableGroup(item.name, item.description, item.tokens)
             }
         }
     }
 
-    return md
+    return md   
 }
 
 function renderSwatchGroup(subName, description, tokens) {
@@ -349,7 +386,8 @@ function renderTableGroup(subName, description, tokens) {
     md += `|-------|-------|\n`
 
     for (const token of tokens) {
-        md += `| \`${token.name}\` | \`${token.value}\` |\n`
+        const pxValue = isRemValue(token.value)
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } |\n`
     }
 
     md += `\n`
@@ -376,6 +414,86 @@ function renderTableSwatchGroup(subName, description, tokens) {
     return md
 }
 
+
+function renderTableRadiusGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description.join(' ') + '\n\n'
+    }
+
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+
+    for (const token of tokens) {
+        const pxValue = isRemValue(token.value)
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="border-radius-demo" style="border-radius: ${token.value};"></div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableElevationGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description.join(' ') + '\n\n'
+    }
+
+    md += `| Token | Preview |\n`
+    md += `|-------|---------|\n`
+
+    for (const token of tokens) {
+        const pxValue = isRemValue(token.value)
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="elevation-demo" style="box-shadow: ${token.value};"></div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableSpacingGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description.join(' ') + '\n\n'
+    }
+
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+
+    for (const token of tokens) {
+        const pxValue = isRemValue(token.value)
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="spacing-demo" style="width: ${token.value}; height: ${token.value};"></div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableTransitionGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description.join(' ') + '\n\n'
+    }
+
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+
+    for (const token of tokens) {
+        md += `| \`${token.name}\` | \`${token.value}\` | <div class="transition-demo" style="transition-duration: ${token.value};"></div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
 // ===== MAIN =====
 
 function main() {
@@ -387,7 +505,6 @@ function main() {
     const content = fs.readFileSync(INPUT, 'utf-8')
 
     const sections = parseScss(content)
-
     writeFiles(sections, OUTPUT_DIR)
 
     console.log('✅ Token docs generated successfully')
