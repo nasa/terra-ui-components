@@ -376,96 +376,101 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             this.collectionWithServices?.collection?.EntryTitle ??
             'Download Data'
 
-        if (!this.collectionWithServices) {
-            if (this.#collectionController.hasCapabilitiesError) {
-                return html`
-                    <terra-alert open variant="danger" appearance="white">
-                        Failed to find the requested collection.
-                    </terra-alert>
-                `
-            }
-        }
+        const hasCapabilitiesError =
+            !this.collectionWithServices &&
+            this.#collectionController.hasCapabilitiesError
 
         const content = html`
             <div class="container">
                 ${
-                    !this.dialog
+                    hasCapabilitiesError
                         ? html`
-                          <div class="header">
-                              <h1>
-                                  <svg
-                                      class="download-icon"
-                                      viewBox="0 0 24 24"
-                                      fill="currentColor"
-                                  >
-                                      <path
-                                          d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
-                                      />
-                                  </svg>
-                                  ${title}
-                              </h1>
-
+                              <terra-alert open variant="danger" appearance="white">
+                                  Failed to find the requested collection.
+                              </terra-alert>
+                          `
+                        : html`
                               ${
-                                  showMinimizeButton
-                                      ? html`<button
-                                        class="minimize-btn"
-                                        @click=${() => this.minimizeDialog()}
-                                    >
-                                        -
-                                    </button>`
+                                  !this.dialog
+                                      ? html`
+                                        <div class="header">
+                                            <h1>
+                                                <svg
+                                                    class="download-icon"
+                                                    viewBox="0 0 24 24"
+                                                    fill="currentColor"
+                                                >
+                                                    <path
+                                                        d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"
+                                                    />
+                                                </svg>
+                                                ${title}
+                                            </h1>
+
+                                            ${
+                                                showMinimizeButton
+                                                    ? html`<button
+                                              class="minimize-btn"
+                                              @click=${() =>
+                                                  this.minimizeDialog()}
+                                          >
+                                              -
+                                          </button>`
+                                                    : nothing
+                                            }
+                                        </div>
+                                    `
                                       : nothing
                               }
-                          </div>
-                      `
-                        : nothing
-                }
-                ${
-                    !this.isHistoryView &&
-                    this.collectionWithServices?.services?.length
-                        ? html`
-                          <div class="section">
-                              ${this.#renderDataAccessModeSelection()}
-                          </div>
-                      `
-                        : nothing
-                }
-                ${
-                    this.dataAccessMode === 'original'
-                        ? html`
-                          <div class="section">
-                              <terra-data-access
-                                  short-name=${
-                                      this.shortName ??
-                                      this.collectionWithServices?.collection
-                                          ?.ShortName
-                                  }
-                                  version=${
-                                      this.version ??
-                                      this.collectionWithServices?.collection
-                                          ?.Version
-                                  }
-                                  ?footer-slot=${!!this.dialog}
-                              >
-                                  ${
-                                      this.dialog
-                                          ? html`
-                                            <div
-                                                slot="footer"
-                                                style="margin-top: 15px;"
+                              ${
+                                  !this.isHistoryView &&
+                                  this.collectionWithServices?.services?.length
+                                      ? html`
+                                        <div class="section">
+                                            ${this.#renderDataAccessModeSelection()}
+                                        </div>
+                                    `
+                                      : nothing
+                              }
+                              ${
+                                  this.dataAccessMode === 'original'
+                                      ? html`
+                                        <div class="section">
+                                            <terra-data-access
+                                                short-name=${
+                                                    this.shortName ??
+                                                    this.collectionWithServices
+                                                        ?.collection?.ShortName
+                                                }
+                                                version=${
+                                                    this.version ??
+                                                    this.collectionWithServices
+                                                        ?.collection?.Version
+                                                }
+                                                ?footer-slot=${!!this.dialog}
                                             >
-                                                <slot
-                                                    name="data-access-footer"
-                                                ></slot>
-                                            </div>
-                                        `
-                                          : nothing
-                                  }
-                              </terra-data-access>
-                          </div>
-                      `
-                        : showJobStatus
-                          ? this.#renderJobStatus()
-                          : this.#renderSubsetOptions()
+                                                ${
+                                                    this.dialog
+                                                        ? html`
+                                                  <div
+                                                      slot="footer"
+                                                      style="margin-top: 15px;"
+                                                  >
+                                                      <slot
+                                                          name="data-access-footer"
+                                                      ></slot>
+                                                  </div>
+                                              `
+                                                        : nothing
+                                                }
+                                            </terra-data-access>
+                                        </div>
+                                    `
+                                      : showJobStatus
+                                        ? this.#renderJobStatus()
+                                        : this.#renderSubsetOptions()
+                              }
+                          `
                 }
             </div>
         `
@@ -535,52 +540,62 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     }
                 </div>
                 ${
-                    !this.isHistoryView &&
-                    this.collectionWithServices?.services?.length
+                    hasCapabilitiesError
                         ? html`
-                          <div class="section">
-                              ${this.#renderDataAccessModeSelection()}
-                          </div>
-                      `
-                        : nothing
-                }
-                ${
-                    this.dataAccessMode === 'original'
-                        ? html`
-                          <div class="section">
-                              <terra-data-access
-                                  short-name=${
-                                      this.shortName ??
-                                      this.collectionWithServices?.collection
-                                          ?.ShortName
-                                  }
-                                  version=${
-                                      this.version ??
-                                      this.collectionWithServices?.collection
-                                          ?.Version
-                                  }
-                                  ?footer-slot=${!!this.dialog}
-                              >
-                                  ${
-                                      this.dialog
-                                          ? html`
-                                            <div
-                                                slot="footer"
-                                                style="margin-top: 15px;"
+                              <terra-alert open variant="danger" appearance="white">
+                                  Failed to find the requested collection.
+                              </terra-alert>
+                          `
+                        : html`
+                              ${
+                                  !this.isHistoryView &&
+                                  this.collectionWithServices?.services?.length
+                                      ? html`
+                                        <div class="section">
+                                            ${this.#renderDataAccessModeSelection()}
+                                        </div>
+                                    `
+                                      : nothing
+                              }
+                              ${
+                                  this.dataAccessMode === 'original'
+                                      ? html`
+                                        <div class="section">
+                                            <terra-data-access
+                                                short-name=${
+                                                    this.shortName ??
+                                                    this.collectionWithServices
+                                                        ?.collection?.ShortName
+                                                }
+                                                version=${
+                                                    this.version ??
+                                                    this.collectionWithServices
+                                                        ?.collection?.Version
+                                                }
+                                                ?footer-slot=${!!this.dialog}
                                             >
-                                                <slot
-                                                    name="data-access-footer"
-                                                ></slot>
-                                            </div>
-                                        `
-                                          : nothing
-                                  }
-                              </terra-data-access>
-                          </div>
-                      `
-                        : showJobStatus
-                          ? this.#renderJobStatus()
-                          : this.#renderSubsetOptions()
+                                                ${
+                                                    this.dialog
+                                                        ? html`
+                                                  <div
+                                                      slot="footer"
+                                                      style="margin-top: 15px;"
+                                                  >
+                                                      <slot
+                                                          name="data-access-footer"
+                                                      ></slot>
+                                                  </div>
+                                              `
+                                                        : nothing
+                                                }
+                                            </terra-data-access>
+                                        </div>
+                                    `
+                                      : showJobStatus
+                                        ? this.#renderJobStatus()
+                                        : this.#renderSubsetOptions()
+                              }
+                          `
                 }
             </div>
         `
