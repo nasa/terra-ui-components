@@ -1,6 +1,6 @@
 import { classMap } from 'lit/directives/class-map.js'
 import { html } from 'lit'
-import { property, query } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './stepper.styles.js'
@@ -19,6 +19,53 @@ import type { CSSResultGroup } from 'lit'
 export default class TerraStepper extends TerraElement {
     static styles: CSSResultGroup = [componentStyles, styles]
 
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state() 
+    isMobile = false
+
+    @state()
+    private steps: Element[] = []
+
+    private mediaQuery = window.matchMedia('(max-width: 600px)');
+    
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.isMobile = this.mediaQuery.matches;
+        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    }
+
+    disconnectedCallback() {
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+
+        super.disconnectedCallback();
+    }
+
+    private handleMediaChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches;
+    };
+
+    private getStepProgress(): {
+        current: number
+        total: number
+        title?: string
+        content?: string
+    } {
+        const currentIndex = this.steps.findIndex(
+            (step) => step.getAttribute('state') === 'current'
+        )
+
+        const currentStep = this.steps[currentIndex]
+
+        return {
+            current: currentIndex + 1,
+            total: this.steps.length,
+            title: currentStep?.getAttribute('title') ?? undefined,
+            content: currentStep?.textContent?.trim() || undefined,
+        }
+    }
+
     @query('slot') defaultSlot: HTMLSlotElement
 
     /**
@@ -27,10 +74,18 @@ export default class TerraStepper extends TerraElement {
      */
     @property({ reflect: true }) variant: 'default' | 'condensed' = 'default'
 
-    private handleSlotChange() {
+    private handleSlotChange(event: Event) {
         const slottedElements = [
             ...this.defaultSlot.assignedElements({ flatten: true }),
         ] as HTMLElement[]
+
+        const slot = event.target as HTMLSlotElement
+
+        this.steps = slot.assignedElements().filter(
+            (element) =>
+                element.tagName.toLowerCase() === 'terra-stepper-step'
+        )
+
 
         slottedElements.forEach((el, index) => {
             const step = findStep(el)
@@ -47,16 +102,34 @@ export default class TerraStepper extends TerraElement {
     }
 
     render() {
+        const { current, total, title, content } = this.getStepProgress()
+
         return html`
             <div
                 part="base"
                 class=${classMap({
                     stepper: true,
-                    'stepper--default': this.variant === 'default',
-                    'stepper--condensed': this.variant === 'condensed',
+                    'stepper--default':
+                        this.variant === 'default' && !this.isMobile,
+                    'stepper--condensed':
+                        this.variant === 'condensed' || this.isMobile,
                 })}
             >
                 <slot @slotchange=${this.handleSlotChange}></slot>
+                ${this.variant === 'condensed' || this.isMobile
+                    ? html `
+                        <div class="stepper-step__title">
+                            ${title}
+                        </div>
+                        <div class="stepper-step__caption">
+                            ${content}
+                        </div>
+                        <div class="step-progress">
+                            Step ${current} of ${total}
+                        </div>                   
+                    `
+                    : ''}
+
             </div>
         `
     }
