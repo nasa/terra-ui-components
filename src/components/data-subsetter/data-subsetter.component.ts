@@ -11,7 +11,9 @@ import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import { debounce } from '../../internal/debounce.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import type { CmrSearchResult } from '../../apis/cmr.api.js'
@@ -94,13 +96,25 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         'terra-slider': TerraSlider,
     }
 
-    @property({ reflect: true, attribute: 'collection-entry-id' })
+    @property({
+        reflect: true,
+        attribute: 'collection-entry-id',
+        converter: undefinedStringConverter,
+    })
     collectionEntryId?: string
 
-    @property({ reflect: true, attribute: 'short-name' })
+    @property({
+        reflect: true,
+        attribute: 'short-name',
+        converter: undefinedStringConverter,
+    })
     shortName?: string
 
-    @property({ reflect: true, attribute: 'version' })
+    @property({
+        reflect: true,
+        attribute: 'version',
+        converter: undefinedStringConverter,
+    })
     version?: string
 
     @property({
@@ -116,7 +130,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
 
-    @property({ attribute: 'bearer-token' })
+    @property({
+        attribute: 'bearer-token',
+        converter: undefinedStringConverter,
+    })
     bearerToken?: string
 
     /**

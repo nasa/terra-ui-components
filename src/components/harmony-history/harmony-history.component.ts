@@ -3,7 +3,9 @@ import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { MutationController } from '../../controllers/mutation.controller.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     mutationRemoveHarmonyJobLabels,
@@ -74,7 +76,10 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         'terra-icon': TerraIcon,
     }
 
-    @property({ attribute: 'bearer-token' })
+    @property({
+        attribute: 'bearer-token',
+        converter: undefinedStringConverter,
+    })
     override bearerToken?: string
 
     @property({ type: Number })

@@ -2,7 +2,9 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
 import TerraAlert from '../alert/alert.component.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
@@ -164,7 +166,11 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
      */
-    @property({ attribute: 'bearer-token', reflect: false })
+    @property({
+        attribute: 'bearer-token',
+        reflect: false,
+        converter: undefinedStringConverter,
+    })
     bearerToken?: string
 
     @property({
