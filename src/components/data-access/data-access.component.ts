@@ -1,7 +1,9 @@
 import { property, state } from 'lit/decorators.js'
 import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import styles from './data-access.styles.js'
 import type { CSSResultGroup } from 'lit'
 import TerraLoader from '../loader/loader.component.js'
@@ -73,13 +75,25 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
 
     service = new DataAccessService()
 
-    @property({ reflect: true, attribute: 'collection-entry-id' })
+    @property({
+        reflect: true,
+        attribute: 'collection-entry-id',
+        converter: undefinedStringConverter,
+    })
     collectionEntryId?: string
 
-    @property({ reflect: true, attribute: 'short-name' })
+    @property({
+        reflect: true,
+        attribute: 'short-name',
+        converter: undefinedStringConverter,
+    })
     shortName?: string
 
-    @property({ reflect: true, attribute: 'version' })
+    @property({
+        reflect: true,
+        attribute: 'version',
+        converter: undefinedStringConverter,
+    })
     version?: string
 
     /**
@@ -203,65 +217,61 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             rowCount: undefined, // behave as infinite scroll
 
             getRows: async (params: IGetRowsParams) => {
-                this.loading = true
-
-                const queryOptions = queryCmrGranules({
-                    collectionEntryId: this.collectionEntryId,
-                    ...this.searchParams,
-                    pageSize: params.endRow - params.startRow,
-                    offset: params.startRow,
-                    sortBy: params.sortModel?.[0]?.colId ?? 'title',
-                    sortDirection: params.sortModel?.[0]?.sort ?? 'asc',
-                })
-
-                const data =
-                    await this.queryClient.ensureQueryData(queryOptions)
-
-                this.loading = false
-
-                if (data?.hits === undefined || !data?.items) {
-                    // TODO: handle this case, show an error? likely means the request failed because CMR is down
-                    params.failCallback()
+                if (
+                    !this.collectionEntryId &&
+                    !this.searchParams.collectionConceptId
+                ) {
+                    // Collection fetch hasn't resolved yet
+                    params.successCallback([], 0)
                     return
                 }
 
-                this.totalGranules = data.hits
+                this.loading = true
 
-                // Use collection controller's first/last granule data for size estimation
-                const firstGranule = this.#collectionController.sampling?.data
-                    ?.minDate
-                    ? {
-                          TemporalExtent: {
-                              RangeDateTime: {
-                                  BeginningDateTime:
-                                      this.#collectionController.sampling.data
-                                          .minDate,
-                              },
-                          },
-                      }
-                    : undefined
-                const lastGranule = this.#collectionController.sampling?.data
-                    ?.maxDate
-                    ? {
-                          TemporalExtent: {
-                              RangeDateTime: {
-                                  EndingDateTime:
-                                      this.#collectionController.sampling.data
-                                          .maxDate,
-                              },
-                          },
-                      }
-                    : undefined
+                try {
+                    const queryOptions = queryCmrGranules({
+                        collectionEntryId: this.collectionEntryId,
+                        ...this.searchParams,
+                        pageSize: params.endRow - params.startRow,
+                        offset: params.startRow,
+                        sortBy: params.sortModel?.[0]?.colId ?? 'title',
+                        sortDirection: params.sortModel?.[0]?.sort ?? 'asc',
+                    })
 
-                this.estimatedSize = this.service.getEstimatedGranuleSize(
-                    firstGranule as UmmG | undefined,
-                    lastGranule as UmmG | undefined,
-                    this.totalGranules,
-                )
+                    const data =
+                        await this.queryClient.ensureQueryData(queryOptions)
 
-                const lastRow = data.hits <= params.endRow ? data.hits : -1
+                    if (data?.hits === undefined || !data?.items) {
+                        // TODO: handle this case, show an error? likely means the request failed because CMR is down
+                        params.failCallback()
+                        return
+                    }
 
-                params.successCallback(data.items, lastRow)
+                    this.totalGranules = data.hits
+
+                    // Use collection controller's first/last sampled granules for size estimation
+                    const firstGranule =
+                        this.#collectionController.sampling?.data?.firstGranule
+                    const lastGranule =
+                        this.#collectionController.sampling?.data?.lastGranule
+
+                    this.estimatedSize = this.service.getEstimatedGranuleSize(
+                        firstGranule,
+                        lastGranule,
+                        this.totalGranules,
+                    )
+
+                    const lastRow = data.hits <= params.endRow ? data.hits : -1
+
+                    params.successCallback(data.items, lastRow)
+                } catch {
+                    // The granule search failed (e.g. CMR is unavailable, or
+                    // collectionEntryId/collectionConceptId weren't ready yet).
+                    // Always resolve the row block so the grid doesn't spin forever.
+                    params.failCallback()
+                } finally {
+                    this.loading = false
+                }
             },
         }
 
@@ -740,11 +750,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                         </div>
                     </terra-dropdown>
 
-                    <terra-dropdown
-                        placement="bottom-start"
-                        distance="4"
-                        hoist
-                    >
+                    <terra-dropdown placement="bottom-start" distance="4" hoist>
                         <div slot="trigger" class="filter">
                             <button
                                 class="filter-btn ${

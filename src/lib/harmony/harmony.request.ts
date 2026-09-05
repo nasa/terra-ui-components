@@ -192,6 +192,9 @@ export class HarmonyRequest {
             params.append('skipPreview', 'true')
         }
 
+        //! force async responses. We ALWAYS want a job returned, never a redirect
+        params.append('forceAsync', 'true')
+
         return params.toString()
     }
 

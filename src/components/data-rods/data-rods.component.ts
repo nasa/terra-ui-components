@@ -1,7 +1,9 @@
 import { property, state } from 'lit/decorators.js'
 import { html } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import styles from './data-rods.styles.js'
 import type { CSSResultGroup } from 'lit'
 import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
@@ -88,7 +90,11 @@ export default class TerraDataRods extends TerraElement {
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
      */
-    @property({ attribute: 'bearer-token', reflect: false })
+    @property({
+        attribute: 'bearer-token',
+        reflect: false,
+        converter: undefinedStringConverter,
+    })
     bearerToken: string
 
     @state() catalogVariable: Variable
@@ -245,10 +251,13 @@ export default class TerraDataRods extends TerraElement {
             ></terra-date-range-slider>
             ${
                 this.isDateSliderDisabled && this.chunkProgress
-                    ? html`<div class="chunk-progress" style="margin-top: 8px; color: #555; font-size: 0.95em;">
-                          Loading chunk ${this.chunkProgress.currentChunk} of
-                          ${this.chunkProgress.totalChunks}&hellip;
-                      </div>`
+                    ? html`<div
+                          class="chunk-progress"
+                          style="margin-top: 8px; color: #555; font-size: 0.95em;"
+                          >Loading chunk ${
+                              this.chunkProgress.currentChunk
+                          } of ${this.chunkProgress.totalChunks}&hellip;</div
+                      >`
                     : null
             }
             ${

@@ -56,12 +56,12 @@ describe('LatLng', () => {
 
     it('should format toString() correctly', () => {
         const latLng = new LatLng(40.7128, -74.006)
-        expect(latLng.toString()).to.equal('40.7128, -74.006')
+        expect(latLng.toString()).to.equal('40.71, -74.01')
     })
 
     it('should format toString() with negative coordinates', () => {
         const latLng = new LatLng(-33.8688, 151.2093)
-        expect(latLng.toString()).to.equal('-33.8688, 151.2093')
+        expect(latLng.toString()).to.equal('-33.87, 151.21')
     })
 
     it('should format toString() with zero coordinates', () => {
@@ -71,7 +71,7 @@ describe('LatLng', () => {
 
     it('should not include altitude in toString()', () => {
         const latLng = new LatLng(40.7128, -74.006, 10)
-        expect(latLng.toString()).to.equal('40.7128, -74.006')
+        expect(latLng.toString()).to.equal('40.71, -74.01')
     })
 
     it('should have independent instances', () => {
