@@ -136,6 +136,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     })
     bearerToken?: string
 
+    @property({ attribute: false })
+    onLoginClick?: () => void
+
     /**
      * Comma-separated list of feature flags to enable.
      * Features can also be enabled via the `?terra-features=flag1,flag2` URL parameter.
@@ -791,7 +794,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         ) {
             return html`
                 <div class="size-info warning">
-                    <terra-login>
+                    <terra-login .onLoginClick=${this.onLoginClick}>
                         <h2 slot="logged-out">Limited access as a guest.</h2>
 
                         <p slot="logged-out">
