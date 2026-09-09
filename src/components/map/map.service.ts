@@ -1,5 +1,4 @@
 import { Feature, Graticule, Map, MapBrowserEvent, View } from 'ol'
-import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import {
     toLonLat,
     transform,
@@ -7,7 +6,6 @@ import {
     type ProjectionLike,
     get as getProjection,
 } from 'ol/proj.js'
-import OSM from 'ol/source/OSM.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
 import VectorSource, { VectorSourceEvent } from 'ol/source/Vector.js'
@@ -19,6 +17,7 @@ import { LatLngBounds } from './models/LatLngBounds.js'
 import { LatLng } from './models/LatLng.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
+import { BaseLayer } from './layers/base.layer.js'
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -185,7 +184,7 @@ export class MapService {
         this.#onDraw = options.onDraw
         this.#onShapeLoading = options.onShapeLoading
 
-        const baseLayer = this.#createBaseLayer(options)
+        const baseLayer = new BaseLayer(options)
         const graticuleLayer = this.#createGraticuleLayer(options)
         const drawLayer = this.#createDrawLayer()
         this.#shapeLayer = this.#createShapeLayer()
@@ -303,14 +302,6 @@ export class MapService {
             })
 
         return map
-    }
-
-    #createBaseLayer(options: MapOptions) {
-        return new WebGLTileLayer({
-            source: new OSM({
-                ...(options.noWorldWrap ? { wrapX: false } : {}),
-            }) as any,
-        })
     }
 
     #createGraticuleLayer(options: MapOptions) {
