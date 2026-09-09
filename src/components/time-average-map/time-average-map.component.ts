@@ -13,7 +13,9 @@ import Draw from 'ol/interaction/Draw.js'
 import Point from 'ol/geom/Point.js'
 import { getLength } from 'ol/sphere.js'
 import Feature from 'ol/Feature.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -61,7 +63,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     @property({ attribute: 'start-date', reflect: true }) startDate?: string
     @property({ attribute: 'end-date', reflect: true }) endDate?: string
     @property({ reflect: true }) location?: string
-    @property({ attribute: 'bearer-token', reflect: false })
+    @property({
+        attribute: 'bearer-token',
+        reflect: false,
+        converter: undefinedStringConverter,
+    })
     bearerToken: string
     @property({ type: String }) long_name = ''
     @property({ type: String, attribute: 'color-map-name', reflect: true })
@@ -812,7 +818,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             return
         }
 
-        // Remove existing supporting layers if they exist 
+        // Remove existing supporting layers if they exist
         // (e.g. if user changes variable and we need to load a new GeoTIFF)
         if (this.#geoTiffGraticuleLayer) {
             this.#map.removeLayer(this.#geoTiffGraticuleLayer)
@@ -862,9 +868,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
         this.#map.addLayer(this.#geoTiffGraticuleLayer)
 
-        // Add a states vector layer with the same extent as the GeoTIFF to provide geographic 
-        // context. This is optional but can be helpful for users to orient themselves when looking 
-        // at the map. We use a GeoJSON source from Natural Earth, but this could be swapped out 
+        // Add a states vector layer with the same extent as the GeoTIFF to provide geographic
+        // context. This is optional but can be helpful for users to orient themselves when looking
+        // at the map. We use a GeoJSON source from Natural Earth, but this could be swapped out
         // for any vector source with appropriate styling.
         const statesVectorSource = new VectorSource({
             url: 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/10m/cultural/ne_10m_admin_1_states_provinces.json',
@@ -901,8 +907,6 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         })
 
         this.#map.addLayer(this.#bordersLayer)
-
-
     }
 
     async fetchGeotiffMetadata(

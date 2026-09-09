@@ -1,7 +1,9 @@
 import { property, query, state } from 'lit/decorators.js'
 import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import styles from './data-subsetter-history.styles.js'
 import type { CSSResultGroup } from 'lit'
 import { QueryController } from '../../controllers/query.controller.js'
@@ -36,7 +38,10 @@ export default class TerraDataSubsetterHistory extends QueryClientMixin(
     @property()
     label: string = 'History'
 
-    @property({ attribute: 'bearer-token' })
+    @property({
+        attribute: 'bearer-token',
+        converter: undefinedStringConverter,
+    })
     bearerToken: string
 
     /**

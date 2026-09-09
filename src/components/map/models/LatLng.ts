@@ -1,3 +1,5 @@
+import { formatCoord } from '../../../utilities/number.js'
+
 export class LatLng {
     constructor(
         public lat: number,
@@ -6,6 +8,6 @@ export class LatLng {
     ) {}
 
     toString() {
-        return `${this.lat.toFixed(2)}, ${this.lng.toFixed(2)}`
+        return `${formatCoord(this.lat)}, ${formatCoord(this.lng)}`
     }
 }

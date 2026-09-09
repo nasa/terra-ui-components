@@ -5,7 +5,16 @@ import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './plot.styles.js'
 import type { CSSResultGroup } from 'lit'
-import * as Plotly from 'plotly.js-dist-min'
+import type * as PlotlyTypes from 'plotly.js-dist-min'
+import * as PlotlyModule from 'plotly.js-dist-min'
+
+// `plotly.js-dist-min` ships as a UMD bundle. Our production build fully bundles it, so the
+// namespace import exposes its API directly. When served unbundled (dev server, tests) the UMD
+// wrapper instead assigns itself to the global scope, so fall back to that.
+const Plotly: typeof PlotlyTypes =
+    typeof (PlotlyModule as unknown as { newPlot?: unknown }).newPlot === 'function'
+        ? (PlotlyModule as unknown as typeof PlotlyTypes)
+        : (globalThis as unknown as { Plotly: typeof PlotlyTypes }).Plotly
 
 /**
  * @summary A web component for interactive graphs using Plotly.js.
@@ -21,19 +30,19 @@ export default class TerraPlot extends TerraElement {
     #resizeObserver: ResizeObserver
 
     @query('[part="base"]')
-    base: Plotly.PlotlyHTMLElement
+    base: PlotlyTypes.PlotlyHTMLElement
 
     @property()
     plotTitle?: string
 
     @property()
-    layout?: Partial<Plotly.Layout> = {}
+    layout?: Partial<PlotlyTypes.Layout> = {}
 
     @property()
-    config?: Partial<Plotly.Config> = {}
+    config?: Partial<PlotlyTypes.Config> = {}
 
     @property({ type: Array })
-    data: Array<Partial<Plotly.Data>> = []
+    data: Array<Partial<PlotlyTypes.Data>> = []
 
     /**
      * Optional: Colors to assign to each time series line
@@ -84,7 +93,7 @@ export default class TerraPlot extends TerraElement {
             const color = this.colors[index % this.colors.length]
 
             if (!trace.type || trace.type === 'scatter') {
-                const scatterTrace = trace as Partial<Plotly.ScatterData>
+                const scatterTrace = trace as Partial<PlotlyTypes.ScatterData>
 
                 return {
                     type: 'scatter',
@@ -101,7 +110,7 @@ export default class TerraPlot extends TerraElement {
 
         Plotly.newPlot(
             this.base,
-            coloredData as Plotly.Data[],
+            coloredData as PlotlyTypes.Data[],
             {
                 title: {
                     text: this.plotTitle, // support for adding a title directly
@@ -123,7 +132,7 @@ export default class TerraPlot extends TerraElement {
         this.shadowRoot?.querySelector('.gtitle')?.part.add('plot-title')
     }
 
-    #handlePlotlyRelayout(e: Plotly.PlotRelayoutEvent) {
+    #handlePlotlyRelayout(e: PlotlyTypes.PlotRelayoutEvent) {
         const detail = {
             ...(e['xaxis.range[0]'] && { xAxisMin: e['xaxis.range[0]'] }),
             ...(e['xaxis.range[1]'] && { xAxisMax: e['xaxis.range[1]'] }),

@@ -1,3 +1,4 @@
+import { formatCoord } from '../../../utilities/number.js'
 import { LatLng } from './LatLng.js'
 
 export class LatLngBounds {
@@ -37,7 +38,7 @@ export class LatLngBounds {
     }
 
     toBBoxString() {
-        return `${this.getWest().toFixed(2)},${this.getSouth().toFixed(2)},${this.getEast().toFixed(2)},${this.getNorth().toFixed(2)}`
+        return `${formatCoord(this.getWest())},${formatCoord(this.getSouth())},${formatCoord(this.getEast())},${formatCoord(this.getNorth())}`
     }
 
     toString() {

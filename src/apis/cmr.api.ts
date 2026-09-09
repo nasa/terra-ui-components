@@ -180,6 +180,8 @@ class CmrApi {
         maxDate?: string
         isSubDaily: boolean
         hasGranules: boolean
+        firstGranule?: UmmG
+        lastGranule?: UmmG
     }> {
         const [first, last] = await Promise.all([
             this.searchGranules(
@@ -203,6 +205,7 @@ class CmrApi {
         ])
 
         const firstGranule = first.items[0]?.umm
+        const lastGranule = last.items[0]?.umm
         const firstExtent = firstGranule?.TemporalExtent?.RangeDateTime
         const isSubDaily =
             firstExtent?.BeginningDateTime != null &&
@@ -216,9 +219,11 @@ class CmrApi {
         return {
             minDate: firstExtent?.BeginningDateTime?.toString(),
             maxDate:
-                last.items[0]?.umm.TemporalExtent?.RangeDateTime?.BeginningDateTime?.toString(),
+                lastGranule?.TemporalExtent?.RangeDateTime?.BeginningDateTime?.toString(),
             isSubDaily,
             hasGranules: first.hits > 0,
+            firstGranule,
+            lastGranule,
         }
     }
 
