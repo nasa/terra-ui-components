@@ -1,6 +1,6 @@
 import { classMap } from 'lit/directives/class-map.js'
 import { html } from 'lit'
-import { property } from 'lit/decorators.js'
+import { property, state } from 'lit/decorators.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
 import styles from './stepper-step.styles.js'
@@ -27,6 +27,32 @@ export default class TerraStepperStep extends TerraElement {
     static dependencies = {
         'terra-icon': TerraIcon,
     }
+
+
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state() 
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 600px)');
+    
+    connectedCallback() {
+        super.connectedCallback();
+
+        this.isMobile = this.mediaQuery.matches;
+        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    }
+
+    disconnectedCallback() {
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+
+        super.disconnectedCallback();
+    }
+
+    private handleMediaChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches;
+    };
+
 
     /**
      * The step's state. "completed" shows a checkmark, "current" highlights the step as active,
@@ -61,15 +87,15 @@ export default class TerraStepperStep extends TerraElement {
                 part="base"
                 class=${classMap({
                     'stepper-step': true,
-                    'stepper-step--default': !isCondensed,
-                    'stepper-step--condensed': isCondensed,
+                    'stepper-step--default': !isCondensed && !this.isMobile,
+                    'stepper-step--condensed': isCondensed || this.isMobile,
                     'stepper-step--completed': isCompleted,
                     'stepper-step--current': isCurrent,
                     'stepper-step--upcoming': this.state === 'upcoming',
                 })}
             >
                 <div part="bar" class="stepper-step__bar"></div>
-                ${!isCondensed
+                ${!isCondensed && !this.isMobile
                     ? html`
                           <div part="content" class="stepper-step__content">
                               <div part="title" class="stepper-step__title">
