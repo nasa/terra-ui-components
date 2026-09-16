@@ -11,7 +11,8 @@ export class BaseLayer extends TileLayer {
             source: new ImageTile({
                 url:
                     'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                    'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+                    'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                attributions: ['Esri', 'Vantor', 'Earthstar Geographics'],
                 ...(options.noWorldWrap ? { wrapX: false } : {}),
             }),
         })

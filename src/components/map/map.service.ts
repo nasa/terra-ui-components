@@ -18,6 +18,8 @@ import { LatLng } from './models/LatLng.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
 import { BaseLayer } from './layers/base.layer.js'
+import { BordersLayer } from './layers/borders.layer.js'
+import { LabelsLayer } from './layers/labels.layer.js'
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -185,6 +187,8 @@ export class MapService {
         this.#onShapeLoading = options.onShapeLoading
 
         const baseLayer = new BaseLayer(options)
+        const bordersLayer = new BordersLayer(options)
+        const labelsLayer = new LabelsLayer(options)
         const graticuleLayer = this.#createGraticuleLayer(options)
         const drawLayer = this.#createDrawLayer()
         this.#shapeLayer = this.#createShapeLayer()
@@ -194,7 +198,14 @@ export class MapService {
 
         const map = new Map({
             target: this.#el,
-            layers: [baseLayer, graticuleLayer, this.#shapeLayer, drawLayer],
+            layers: [
+                baseLayer,
+                bordersLayer,
+                labelsLayer,
+                graticuleLayer,
+                this.#shapeLayer,
+                drawLayer,
+            ],
             view: new View({
                 center: [0, 0],
                 zoom: options.zoom,
