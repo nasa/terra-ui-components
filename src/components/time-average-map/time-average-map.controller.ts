@@ -34,9 +34,7 @@ export class TimeAvgMapController {
 
     blobUrl: Blob | undefined
 
-    constructor(
-        host: ReactiveControllerHost & TerraTimeAvgMap & QueryClientHost,
-    ) {
+    constructor(host: ReactiveControllerHost & TerraTimeAvgMap & QueryClientHost) {
         this.#host = host
 
         this.#collectionController = new CollectionController(this.#host, {
@@ -44,9 +42,7 @@ export class TimeAvgMapController {
             getBearerToken: () => this.#host.bearerToken,
         })
 
-        this.#harmonyRequestController = new HarmonyRequestController(
-            this.#host,
-        )
+        this.#harmonyRequestController = new HarmonyRequestController(this.#host)
 
         this.jobStatusTask = new Task(host, {
             task: async ([], { signal }) => {
@@ -63,16 +59,16 @@ export class TimeAvgMapController {
                 this.#harmonyRequestController.reset()
                 this.#host.harmonyJobId = undefined
 
-                // Try cache first (only when cache is enabled)
+                // Try cache first (skip when caching is disabled)
                 const cacheKey = this.getCacheKey()
-                if (this.#host.cache) {
+                if (!this.#host.noCache) {
                     const existing =
                         await this.#cacheService.getValidCacheEntry(cacheKey)
 
                     if (existing) {
                         console.log(
                             'Returning existing map blob from cache',
-                            cacheKey,
+                            cacheKey
                         )
                         this.#host.harmonyJobId = existing.harmonyJobId
                         this.#updateGeoTIFFLayer(existing.blob)
@@ -82,12 +78,10 @@ export class TimeAvgMapController {
 
                 // If a specific jobId is provided, skip request building and poll directly
                 if (this.#host.jobId) {
-                    console.log(
-                        'Using provided jobId, waiting for harmony job...',
-                    )
+                    console.log('Using provided jobId, waiting for harmony job...')
                     const jobStatus = await this.#waitForHarmonyJob(
                         this.#host.jobId,
-                        signal,
+                        signal
                     )
 
                     if (jobStatus.status === Status.FAILED) {
@@ -115,7 +109,7 @@ export class TimeAvgMapController {
 
                     const blob = await this.#fetchJobBlob(jobStatus, signal)
 
-                    if (this.#host.cache) {
+                    if (!this.#host.noCache) {
                         await this.#cacheService.storeEntry(cacheKey, {
                             blob,
                             environment: this.#host.environment,
@@ -140,12 +134,10 @@ export class TimeAvgMapController {
                     location: locationBounds,
                     environment: this.#host.environment as any,
                 })
-                    .variable(
-                        `${this.#host.collection!}_${this.#host.variable}`,
-                    )
+                    .variable(`${this.#host.collection!}_${this.#host.variable}`)
                     .dateRange(
                         new Date(startDate).toISOString(),
-                        new Date(endDate).toISOString(),
+                        new Date(endDate).toISOString()
                     )
                     .format('image/tiff')
                     .average('time')
@@ -210,8 +202,8 @@ export class TimeAvgMapController {
                 // Fetch the blob output
                 const blob = await this.#fetchJobBlob(jobStatus, signal)
 
-                // Store in cache (only when cache is enabled)
-                if (this.#host.cache) {
+                // Store in cache (skip when caching is disabled)
+                if (!this.#host.noCache) {
                     await this.#cacheService.storeEntry(cacheKey, {
                         blob,
                         environment: this.#host.environment,
@@ -234,6 +226,27 @@ export class TimeAvgMapController {
         return this.jobStatusTask.render(renderFunctions)
     }
 
+    /**
+     * Cancels the in-flight Harmony job server-side (best-effort) and aborts
+     * the local job status task.
+     */
+    async cancelJob(): Promise<void> {
+        const jobId = this.#harmonyRequestController.jobId
+
+        if (jobId && jobId !== 'new') {
+            try {
+                await this.#harmonyRequestController.cancelJob({
+                    jobId,
+                    options: { bearerToken: this.#host.bearerToken },
+                })
+            } catch (error) {
+                console.warn('Failed to cancel Harmony job', error)
+            }
+        }
+
+        this.jobStatusTask.abort('Cancelled time averaged map request')
+    }
+
     getCacheKey(): string {
         const collection = this.#host.collection ?? ''
         const variable = this.#host.variable ?? ''
@@ -247,7 +260,7 @@ export class TimeAvgMapController {
             start,
             end,
             location,
-            environment,
+            environment
         )
     }
 
@@ -265,9 +278,7 @@ export class TimeAvgMapController {
 
         while (true) {
             if (signal.aborted) {
-                throw new Error(
-                    'Aborted while waiting for collection concept ID',
-                )
+                throw new Error('Aborted while waiting for collection concept ID')
             }
 
             const conceptId = this.#collectionController.conceptId
@@ -285,7 +296,7 @@ export class TimeAvgMapController {
 
     async #waitForHarmonyJob(
         jobId: string,
-        signal: AbortSignal,
+        signal: AbortSignal
     ): Promise<SubsetJobStatus> {
         this.#harmonyRequestController.startPollForJobStatus(jobId, {
             bearerToken: this.#host.bearerToken,
@@ -304,10 +315,7 @@ export class TimeAvgMapController {
                 })
             }
 
-            if (
-                jobStatus?.jobID === jobId &&
-                FINAL_STATUSES.has(jobStatus.status)
-            ) {
+            if (jobStatus?.jobID === jobId && FINAL_STATUSES.has(jobStatus.status)) {
                 return jobStatus
             }
 
@@ -317,11 +325,9 @@ export class TimeAvgMapController {
 
     async #fetchJobBlob(
         jobStatus: SubsetJobStatus,
-        signal: AbortSignal,
+        signal: AbortSignal
     ): Promise<Blob> {
-        const dataLink = jobStatus.links.find(
-            (link) => link.rel === 'data',
-        )?.href
+        const dataLink = jobStatus.links.find(link => link.rel === 'data')?.href
 
         if (!dataLink) {
             throw new Error('No data link found for Harmony job')
@@ -339,9 +345,7 @@ export class TimeAvgMapController {
         })
 
         if (!response.ok) {
-            throw new Error(
-                `Failed to fetch subset job data: ${response.statusText}`,
-            )
+            throw new Error(`Failed to fetch subset job data: ${response.statusText}`)
         }
 
         return response.blob()
@@ -370,12 +374,9 @@ export class TimeAvgMapController {
         }
     }
 
-    async #captureThumbnail(
-        harmonyJobId: string,
-        delayMs = 1500,
-    ): Promise<void> {
+    async #captureThumbnail(harmonyJobId: string, delayMs = 1500): Promise<void> {
         // Wait for OpenLayers to finish rendering the GeoTIFF layer
-        await new Promise<void>((resolve) => setTimeout(resolve, delayMs))
+        await new Promise<void>(resolve => setTimeout(resolve, delayMs))
 
         const blob = await this.#host.captureMapThumbnail()
         if (blob) {
@@ -383,10 +384,7 @@ export class TimeAvgMapController {
         }
     }
 
-    #handleHarmonyError(
-        error: unknown,
-        jobErrors?: Array<SubsetJobError>,
-    ): void {
+    #handleHarmonyError(error: unknown, jobErrors?: Array<SubsetJobError>): void {
         const errorDetails = extractHarmonyError(error, jobErrors)
 
         this.#host.dispatchEvent(
@@ -394,7 +392,7 @@ export class TimeAvgMapController {
                 detail: errorDetails,
                 bubbles: true,
                 composed: true,
-            }),
+            })
         )
     }
 

@@ -20,8 +20,8 @@ export default css`
         aspect-ratio: 100 / 52;
     }
 
-    #map {
-        position: relative;
+    .map-container terra-map {
+        display: block;
         width: 100%;
         height: 100%;
     }
@@ -412,10 +412,6 @@ export default css`
             min-height: 300px;
         }
 
-        #map {
-            min-height: 300px;
-        }
-
         #settings {
             bottom: 100px;
             left: 5px;
@@ -426,10 +422,6 @@ export default css`
 
     @media (max-width: 480px) {
         .map-container {
-            min-height: 250px;
-        }
-
-        #map {
             min-height: 250px;
         }
 

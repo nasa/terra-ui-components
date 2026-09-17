@@ -4,7 +4,10 @@ export type { TerraDateRangeChangeEvent } from './terra-date-range-change.js'
 export type { TerraErrorEvent } from './terra-error.js'
 export type { TerraVariableKeywordSearchChangeEvent } from './terra-variable-keyword-search-change.js'
 export type { TerraLoadEvent } from './terra-load.js'
-export type { TerraMapChangeEvent } from './terra-map-change.js'
+export type {
+    TerraMapChangeEvent,
+    TerraMapPointerMoveEvent,
+} from './terra-map-change.js'
 export type { TerraRemoveEvent } from './terra-remove.js'
 export type { TerraSearchEvent } from './terra-search.js'
 export type { TerraLoginEvent } from './terra-login.ts'
