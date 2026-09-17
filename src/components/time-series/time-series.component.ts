@@ -36,9 +36,7 @@ const variableEntryIdsConverter = {
             const parsedValue = JSON.parse(value)
 
             if (Array.isArray(parsedValue)) {
-                return parsedValue
-                    .map((item) => String(item).trim())
-                    .filter(Boolean)
+                return parsedValue.map(item => String(item).trim()).filter(Boolean)
             }
         } catch {
             // fall back to comma-delimited parsing
@@ -46,7 +44,7 @@ const variableEntryIdsConverter = {
 
         return value
             .split(',')
-            .map((item) => item.trim())
+            .map(item => item.trim())
             .filter(Boolean)
     },
     toAttribute: (value: string[] | undefined): string | null => {
@@ -145,8 +143,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     @property({ type: Boolean, attribute: 'show-citation' })
     showCitation: boolean = false
 
-    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
-        true
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
 
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
@@ -262,11 +259,11 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
 
         this.addEventListener(
             'terra-time-series-error',
-            this.#handleQuotaError as EventListener,
+            this.#handleQuotaError as EventListener
         )
         this.addEventListener(
             'terra-time-series-chunk-progress-change',
-            this.#handleChunkProgress as EventListener,
+            this.#handleChunkProgress as EventListener
         )
     }
 
@@ -288,7 +285,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                     },
                     bubbles: true,
                     composed: true,
-                }),
+                })
             )
         }
 
@@ -322,11 +319,11 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
         super.disconnectedCallback()
         this.removeEventListener(
             'terra-time-series-error',
-            this.#handleQuotaError as EventListener,
+            this.#handleQuotaError as EventListener
         )
         this.removeEventListener(
             'terra-time-series-chunk-progress-change',
-            this.#handleChunkProgress as EventListener,
+            this.#handleChunkProgress as EventListener
         )
     }
 
@@ -347,7 +344,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     }
 
     #handleChunkProgress = (
-        event: CustomEvent<{ currentChunk: number; totalChunks: number }>,
+        event: CustomEvent<{ currentChunk: number; totalChunks: number }>
     ) => {
         const { currentChunk, totalChunks } = event.detail
 
@@ -367,11 +364,10 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     }
 
     /**
-     * aborts the underlying data loading task, which cancels the network request
+     * cancels the in-flight Harmony job and aborts the underlying data loading task
      */
     #abortDataLoad() {
-        console.log('Aborting data load')
-        this.#timeSeriesController.task?.abort('Cancelled time series request')
+        this.#timeSeriesController.cancelJob()
     }
 
     #handleComponentLeave(event: MouseEvent) {
@@ -386,9 +382,8 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     render() {
         return html`
             <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
-                ${
-                    this.quotaExceededOpen
-                        ? html`
+                ${this.quotaExceededOpen
+                    ? html`
                           <terra-alert
                               variant="warning"
                               duration="10000"
@@ -410,20 +405,16 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                               for further assistance.
                           </terra-alert>
                       `
-                        : ''
-                }
-                ${
-                    !this.hideToolbar
-                        ? cache(
-                              this.catalogVariable
-                                  ? html`<terra-plot-toolbar
+                    : ''}
+                ${!this.hideToolbar
+                    ? cache(
+                          this.catalogVariable
+                              ? html`<terra-plot-toolbar
                                     .catalogVariable=${this.catalogVariable}
                                     .plot=${this.plot}
-                                    .timeSeriesData=${
-                                        this.#timeSeriesController
-                                            .lastTaskValue ??
-                                        this.#timeSeriesController.emptyPlotData
-                                    }
+                                    .timeSeriesData=${this.#timeSeriesController
+                                        .lastTaskValue ??
+                                    this.#timeSeriesController.emptyPlotData}
                                     .location=${this.location}
                                     .startDate=${this.startDate}
                                     .endDate=${this.endDate}
@@ -437,13 +428,11 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
                                 </terra-plot-toolbar>`
-                                  : html`<div class="spacer"></div>`,
-                          )
-                        : nothing
-                }
-                ${
-                    this.#hasNoData()
-                        ? html`
+                              : html`<div class="spacer"></div>`
+                      )
+                    : nothing}
+                ${this.#hasNoData()
+                    ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="warning"
@@ -460,11 +449,9 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                               more results.
                           </terra-alert>
                       `
-                        : ''
-                }
-                ${
-                    this.#isVariableNotFound()
-                        ? html`
+                    : ''}
+                ${this.#isVariableNotFound()
+                    ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="danger"
@@ -479,11 +466,9 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                               The selected variable was not found in the catalog
                           </terra-alert>
                       `
-                        : ''
-                }
-                ${
-                    this.timeSeriesError
-                        ? html`
+                    : ''}
+                ${this.timeSeriesError
+                    ? html`
                           <terra-alert
                               class="error-alert"
                               variant="danger"
@@ -499,15 +484,12 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                               ${this.#getErrorMessage(this.timeSeriesError)}
                           </terra-alert>
                       `
-                        : ''
-                }
+                    : ''}
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
-                    .data=${
-                        this.#timeSeriesController.lastTaskValue ??
-                        this.#timeSeriesController.emptyPlotData
-                    }
+                    .data=${this.#timeSeriesController.lastTaskValue ??
+                    this.#timeSeriesController.emptyPlotData}
                     .layout="${{
                         xaxis: {
                             title: 'Time',
@@ -533,11 +515,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                     .config=${{
                         displayModeBar: true,
                         displaylogo: false,
-                        modeBarButtonsToRemove: [
-                            'toImage',
-                            'zoom2d',
-                            'resetScale2d',
-                        ],
+                        modeBarButtonsToRemove: ['toImage', 'zoom2d', 'resetScale2d'],
                         responsive: true,
                     }}
                     @terra-plot-relayout=${this.#handlePlotRelayout}
@@ -545,37 +523,27 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
             </div>
 
             <dialog
-                ?open=${
-                    this.#timeSeriesController.task.status ===
-                        TaskStatus.PENDING ||
-                    this._fetchVariableTask.status === TaskStatus.PENDING
-                }
+                ?open=${this.#timeSeriesController.task.status ===
+                    TaskStatus.PENDING ||
+                this._fetchVariableTask.status === TaskStatus.PENDING}
             >
                 <terra-loader indeterminate></terra-loader>
 
-                ${
-                    this.#timeSeriesController.task.status ===
-                    TaskStatus.PENDING
-                        ? html`
+                ${this.#timeSeriesController.task.status === TaskStatus.PENDING
+                    ? html`
                           <p>
-                              ${
-                                  this.catalogVariables.length > 1
-                                      ? `Plotting ${this.catalogVariables.length} variables…`
-                                      : `Plotting ${this.catalogVariable?.dataFieldId}…`
-                              }
+                              ${this.catalogVariables.length > 1
+                                  ? `Plotting ${this.catalogVariables.length} variables…`
+                                  : `Plotting ${this.catalogVariable?.dataFieldId}…`}
                           </p>
-                          ${
-                              this.chunkProgress
-                                  ? html`<p>
-                                        Fetching chunk
-                                        ${this.chunkProgress.currentChunk} of
-                                        ${this.chunkProgress.totalChunks}&hellip;
-                                    </p>`
-                                  : nothing
-                          }
+                          ${this.chunkProgress
+                              ? html`<p>
+                                    Fetching chunk ${this.chunkProgress.currentChunk}
+                                    of ${this.chunkProgress.totalChunks}&hellip;
+                                </p>`
+                              : nothing}
                       `
-                        : html`<p>Preparing plot&hellip;</p>`
-                }
+                    : html`<p>Preparing plot&hellip;</p>`}
 
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
@@ -617,9 +585,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     #getYAxisLabel() {
         const units = (
             this.catalogVariables.length
-                ? this.catalogVariables.map(
-                      (variable) => variable.dataFieldUnits,
-                  )
+                ? this.catalogVariables.map(variable => variable.dataFieldUnits)
                 : [this.catalogVariable?.dataFieldUnits]
         ).filter(Boolean)
 
@@ -675,19 +641,15 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
         // Check if user has provided variable information
         const hasVariableRequest = Boolean(
             this.variableEntryId ||
-                this.variableEntryIds.length ||
-                (this.collection && this.variable),
+            this.variableEntryIds.length ||
+            (this.collection && this.variable)
         )
 
         // If user requested a variable but catalogVariable is not set, variable was not found
         return hasVariableRequest && !this.catalogVariable
     }
 
-    #getErrorMessage(error: {
-        code: string
-        message?: string
-        context?: string
-    }) {
+    #getErrorMessage(error: { code: string; message?: string; context?: string }) {
         return formatHarmonyErrorMessage(error)
     }
 
@@ -717,7 +679,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                     },
                     bubbles: true,
                     composed: true,
-                }),
+                })
             )
         }
     }

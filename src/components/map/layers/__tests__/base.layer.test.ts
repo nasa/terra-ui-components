@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing'
-import { ImageTile } from 'ol/source.js'
+import ImageTile from 'ol/source/ImageTile.js'
 import { BaseLayer } from '../base.layer.js'
 
 describe('BaseLayer', () => {

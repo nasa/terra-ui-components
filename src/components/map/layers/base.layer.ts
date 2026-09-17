@@ -1,5 +1,5 @@
 import TileLayer from 'ol/layer/Tile.js'
-import { ImageTile } from 'ol/source.js'
+import ImageTile from 'ol/source/ImageTile.js'
 
 export type Options = {
     noWorldWrap?: boolean

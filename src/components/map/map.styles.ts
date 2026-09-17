@@ -9,6 +9,14 @@ export default css`
         border-radius: var(--terra-border-radius-medium);
     }
 
+    :host([fill]) {
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        width: 100%;
+        height: 100%;
+    }
+
     :root,
     :host {
         --ol-background-color: white;
@@ -34,7 +42,8 @@ export default css`
         left: 10px;
         border-radius: 4px;
         padding: 5px;
-        background-color: var(--terra-input-background-color);
+        background-color: var(--terra-input-background-default, #ffffff);
+        color: var(--terra-input-text-default, #333333);
         box-shadow: none;
         border: 2px solid rgba(0, 0, 0, 0.2);
         background-clip: padding-box;
@@ -410,6 +419,13 @@ export default css`
     .map {
         aspect-ratio: 4 / 3;
         border: solid 1px var(--terra-map-border-color);
+    }
+
+    .map.fill {
+        aspect-ratio: unset;
+        width: 100%;
+        height: 100%;
+        border: none;
     }
 
     .map.static .ol-control {

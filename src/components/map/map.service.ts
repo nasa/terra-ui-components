@@ -6,6 +6,10 @@ import {
     type ProjectionLike,
     get as getProjection,
 } from 'ol/proj.js'
+import type { Extent } from 'ol/extent.js'
+import type BaseLayerType from 'ol/layer/Base.js'
+import type Interaction from 'ol/interaction/Interaction.js'
+import type { FitOptions } from 'ol/View.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
 import VectorSource, { VectorSourceEvent } from 'ol/source/Vector.js'
@@ -20,6 +24,15 @@ import GeoJSON from 'ol/format/GeoJSON.js'
 import { BaseLayer } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
 import { LabelsLayer } from './layers/labels.layer.js'
+
+export type AddLayerOptions = {
+    name?: string
+    position?: 'below-borders' | 'top'
+}
+
+export type FitToExtentOptions = {
+    projection?: ProjectionLike
+} & FitOptions
 
 type MapOptions = {
     projection?: ProjectionLike
@@ -36,7 +49,7 @@ type MapOptions = {
     fitToValue?: boolean
     getGeoJson?: (shapeId: string) => Promise<unknown>
     onShapeLoading?: (loading: boolean) => void
-    onMouseMove?: (coordinate: [number, number]) => void
+    onMouseMove?: (coordinate: [number, number], pixel: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
 }
 
@@ -66,6 +79,104 @@ export class MapService {
         }
     }
 
+    /**
+     * Adds a custom layer to the map.
+     *
+     * By default the layer is inserted directly above the base imagery layer
+     * and below the borders/labels layers, so borders/labels continue to
+     * render on top of any data layers. Use `position: 'top'` to instead
+     * place the layer above everything else (e.g. an interactive drawing
+     * layer).
+     */
+    addLayer(layer: BaseLayerType, options: AddLayerOptions = {}) {
+        if (options.name) {
+            layer.set('name', options.name)
+        }
+
+        if (options.position === 'top') {
+            this.#map.addLayer(layer)
+            return
+        }
+
+        const bordersLayer = this.#getLayerByName('borders')
+        const layers = this.#map.getLayers()
+        const index = bordersLayer
+            ? layers.getArray().indexOf(bordersLayer)
+            : layers.getLength()
+
+        layers.insertAt(index, layer)
+    }
+
+    removeLayer(name: string) {
+        const layer = this.#getLayerByName(name)
+
+        if (layer) {
+            this.#map.removeLayer(layer)
+        }
+    }
+
+    getLayer(name: string) {
+        return this.#getLayerByName(name)
+    }
+
+    /**
+     * Fits the map's view to the given extent, reprojecting from
+     * `options.projection` to the map's view projection if provided.
+     */
+    fitToExtent(extent: Extent, options: FitToExtentOptions = {}) {
+        const { projection, ...fitOptions } = options
+
+        const targetExtent = projection
+            ? transformExtent(extent, projection, this.#map.getView().getProjection())
+            : extent
+
+        this.#map.getView().fit(targetExtent, fitOptions)
+    }
+
+    addInteraction(interaction: Interaction) {
+        this.#map.addInteraction(interaction)
+    }
+
+    removeInteraction(interaction: Interaction) {
+        this.#map.removeInteraction(interaction)
+    }
+
+    /**
+     * Returns the map's rendered canvas/svg elements, in z-order, for
+     * consumers that need to composite the rendered map (e.g. exporting an
+     * image or capturing a thumbnail) without reaching into the map's DOM.
+     */
+    getCanvasElements() {
+        const viewport = this.#map.getViewport()
+
+        return {
+            canvases: Array.from(
+                viewport.querySelectorAll('canvas')
+            ) as HTMLCanvasElement[],
+            svgs: Array.from(viewport.querySelectorAll('svg')) as SVGElement[],
+        }
+    }
+
+    getSize() {
+        return this.#map.getSize()
+    }
+
+    /**
+     * Converts a map coordinate (in the view's projection) into a pixel
+     * position, for consumers that need to sample a layer's raster data at a
+     * given coordinate (e.g. reading GeoTIFF values along a drawn line).
+     */
+    getPixelFromCoordinate(coordinate: [number, number]) {
+        return this.#map.getPixelFromCoordinate(coordinate)
+    }
+
+    renderComplete(): Promise<void> {
+        return new Promise(resolve => {
+            this.#map.once('rendercomplete', () => resolve())
+            this.#map.render()
+        })
+    }
+
     setZoom(zoom: number) {
         this.#map.getView().setZoom(zoom)
     }
@@ -89,7 +200,7 @@ export class MapService {
         try {
             const locationParts = location
                 .split(',')
-                .map((part) => parseFloat(part.trim()))
+                .map(part => parseFloat(part.trim()))
 
             // handle lat/lng points
             if (locationParts.length === 2) {
@@ -107,7 +218,7 @@ export class MapService {
             }
 
             throw new Error(
-                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`,
+                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`
             )
         } catch (e) {
             throw new BadRequestException({
@@ -187,8 +298,14 @@ export class MapService {
         this.#onShapeLoading = options.onShapeLoading
 
         const baseLayer = new BaseLayer(options)
+        baseLayer.set('name', 'base')
+
         const bordersLayer = new BordersLayer(options)
+        bordersLayer.set('name', 'borders')
+
         const labelsLayer = new LabelsLayer(options)
+        labelsLayer.set('name', 'labels')
+
         const graticuleLayer = this.#createGraticuleLayer(options)
         const drawLayer = this.#createDrawLayer()
         this.#shapeLayer = this.#createShapeLayer()
@@ -218,7 +335,10 @@ export class MapService {
 
         map.on('pointermove', (event: MapBrowserEvent) => {
             const coordinate = toLonLat(event.coordinate)
-            options.onMouseMove?.(coordinate as [number, number])
+            options.onMouseMove?.(
+                coordinate as [number, number],
+                event.pixel as [number, number]
+            )
         })
 
         this.#drawToolbarControl = new DrawToolbarControl(drawLayer, {
@@ -250,11 +370,7 @@ export class MapService {
                 if (drawtool === 'bbox') {
                     // transform the extent into lat/lng bounds
                     const extent = event.feature!.getGeometry()!.getExtent()!
-                    const bbox4326 = transformExtent(
-                        extent,
-                        'EPSG:3857',
-                        'EPSG:4326',
-                    )
+                    const bbox4326 = transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -262,16 +378,10 @@ export class MapService {
                         bounds: new LatLngBounds(bbox4326),
                     })
                 } else if (geometry instanceof Polygon) {
-                    const coordinates = geometry
-                        .getCoordinates()[0]
-                        .slice(0, -1) // remove last point (duplicate of first)
+                    const coordinates = geometry.getCoordinates()[0].slice(0, -1) // remove last point (duplicate of first)
 
                     const latLngs = coordinates.map(([x, y]) => {
-                        const [lng, lat] = transform(
-                            [x, y],
-                            'EPSG:3857',
-                            'EPSG:4326',
-                        )
+                        const [lng, lat] = transform([x, y], 'EPSG:3857', 'EPSG:4326')
                         return new LatLng(lat, lng)
                     })
 
@@ -282,11 +392,7 @@ export class MapService {
                     })
                 } else if (geometry instanceof Point) {
                     const coords = geometry.getCoordinates()
-                    const [lng, lat] = transform(
-                        coords,
-                        'EPSG:3857',
-                        'EPSG:4326',
-                    )
+                    const [lng, lat] = transform(coords, 'EPSG:3857', 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -298,7 +404,7 @@ export class MapService {
                     const [lng, lat] = transform(
                         geometry.getCenter(),
                         'EPSG:3857',
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
@@ -369,6 +475,6 @@ export class MapService {
         return this.#map
             .getLayers()
             .getArray()
-            .find((layer) => layer.get('name') === name)
+            .find(layer => layer.get('name') === name)
     }
 }
