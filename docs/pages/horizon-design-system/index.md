@@ -14,10 +14,10 @@ This section shows you how to use HDS design tokens, CSS variables, and themes t
 
 Horizon Design System is NASA's official design system that provides:
 
--   **Design Tokens**: Colors, typography, spacing, and other design values
--   **Components**: Reusable UI components following NASA design guidelines
--   **Accessibility**: Built-in accessibility standards and best practices
--   **Consistency**: Ensures visual and functional consistency across NASA applications
+- **Design Tokens**: Colors, typography, spacing, and other design values
+- **Components**: Reusable UI components following NASA design guidelines
+- **Accessibility**: Built-in accessibility standards and best practices
+- **Consistency**: Ensures visual and functional consistency across NASA applications
 
 ## Using the Horizon Theme
 
@@ -170,16 +170,16 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Status Legend
 
--   ✅ **Fully Supported** - Component fully implements HDS design tokens and guidelines
--   🟡 **In Progress** - Component partially implements HDS, with known gaps
--   ❌ **Not Supported** - Component not yet implemented or not planned
+- ✅ **Fully Supported** - Component fully implements HDS design tokens and guidelines
+- 🟡 **In Progress** - Component partially implements HDS, with known gaps
+- ❌ **Not Supported** - Component not yet implemented or not planned
 
 ### Elements
 
-| Component                                         | Status            | Notes                                                                                                     |
-| ------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| Component                                         | Status             | Notes                                                                                                     |
+| ------------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
 | [Avatar](/components/avatar)                      | ✅ Fully Supported | Implements HDS avatar guidelines with image, initials, and icon support. Full dark mode support.          |
-| Badges                                            | ❌ Not Supported   | Not yet implemented.                                                                                      |
+| [Badges](/components/badge)                       | ✅ Fully Supported | Implements HDS badge guidelines with design tokens and full dark mode support.                            |
 | [Button](/components/button)                      | ✅ Fully Supported | Core HDS styles implemented. Some variants were modified to fit application UI better.                    |
 | [Caption](/components/caption)                    | ✅ Fully Supported | CSS-only component for displaying captions with support for credits. Full dark mode support.              |
 | [Checkbox](/components/checkbox)                  | ✅ Fully Supported | Implements HDS checkbox guidelines with design tokens, form integration, and full dark mode support.      |
@@ -200,110 +200,110 @@ This page tracks the progress of Terra UI Components in adopting the Horizon Des
 
 ### Components
 
-| Component                          | Status            | Notes                                                                       |
-| ---------------------------------- | ----------------- | --------------------------------------------------------------------------- |
-| [Accordion](/components/accordion) | ✅ Fully Supported | Implements HDS accordion patterns with design tokens and dark mode support. |
-| Article Building Blocks            | ❌ Not Supported   | Not yet implemented.                                                        |
-| Audio Player                       | ❌ Not Supported   | Not yet implemented.                                                        |
-| Blockquote                         | ❌ Not Supported   | Not yet implemented.                                                        |
-| Breadcrumbs                        | ❌ Not Supported   | Not yet implemented.                                                        |
-| Cards                              | ❌ Not Supported   | Not yet implemented.                                                        |
-| Carousel Thumbnails                | ❌ Not Supported   | Not yet implemented.                                                        |
-| Countdown                          | ❌ Not Supported   | Not yet implemented.                                                        |
-| [Dialog](/components/dialog)       | ✅ Fully Supported | Implements HDS modal patterns with design tokens. Dialogs & Modals.         |
-| [Dropdown](/components/dropdown)   | ✅ Fully Supported | Uses HDS design tokens. Dropdown Menus.                                     |
-| Filter & Sorts                     | ❌ Not Supported   | Not yet implemented.                                                        |
-| Gallery Thumbnails                 | ❌ Not Supported   | Not yet implemented.                                                        |
-| Image with Caption                 | ❌ Not Supported   | Not yet implemented.                                                        |
-| List                               | ❌ Not Supported   | Not yet implemented.                                                        |
-| Live Event Ticker                  | ❌ Not Supported   | Not yet implemented.                                                        |
-| Quick Facts Carousel               | ❌ Not Supported   | Not yet implemented.                                                        |
-| Search Fields                      | ❌ Not Supported   | Not yet implemented.                                                        |
-| Sign Up                            | ❌ Not Supported   | Not yet implemented.                                                        |
-| Social Media Share                 | ❌ Not Supported   | Not yet implemented.                                                        |
-| Stepper                            | ❌ Not Supported   | Not yet implemented.                                                        |
-| Table of Contents                  | ❌ Not Supported   | Not yet implemented.                                                        |
-| Tabs                               | ❌ Not Supported   | Not yet implemented.                                                        |
-| [Popup](/components/popup)         | ✅ Fully Supported | Implements HDS popup patterns. Tooltips and Popovers.                       |
-| Video Player                       | ❌ Not Supported   | Not yet implemented.                                                        |
-| Vitals                             | ❌ Not Supported   | Not yet implemented.                                                        |
+| Component                              | Status             | Notes                                                                        |
+| -------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
+| [Accordion](/components/accordion)     | ✅ Fully Supported | Implements HDS accordion patterns with design tokens and dark mode support.  |
+| Article Building Blocks                | ❌ Not Supported   | Not yet implemented.                                                         |
+| Audio Player                           | ❌ Not Supported   | Not yet implemented.                                                         |
+| Blockquote                             | ❌ Not Supported   | Not yet implemented.                                                         |
+| [Breadcrumbs](/components/breadcrumbs) | ✅ Fully Supported | Implements HDS breadcrumb patterns with design tokens and dark mode support. |
+| [Cards](/components/card)              | ✅ Fully Supported | Implements HDS card patterns with design tokens and dark mode support.       |
+| Carousel Thumbnails                    | ❌ Not Supported   | Not yet implemented.                                                         |
+| Countdown                              | ❌ Not Supported   | Not yet implemented.                                                         |
+| [Dialog](/components/dialog)           | ✅ Fully Supported | Implements HDS modal patterns with design tokens. Dialogs & Modals.          |
+| [Dropdown](/components/dropdown)       | ✅ Fully Supported | Uses HDS design tokens. Dropdown Menus.                                      |
+| Filter & Sorts                         | ❌ Not Supported   | Not yet implemented.                                                         |
+| Gallery Thumbnails                     | ❌ Not Supported   | Not yet implemented.                                                         |
+| Image with Caption                     | ❌ Not Supported   | Not yet implemented.                                                         |
+| List                                   | ❌ Not Supported   | Not yet implemented.                                                         |
+| Live Event Ticker                      | ❌ Not Supported   | Not yet implemented.                                                         |
+| Quick Facts Carousel                   | ❌ Not Supported   | Not yet implemented.                                                         |
+| Search Fields                          | ❌ Not Supported   | Not yet implemented.                                                         |
+| Sign Up                                | ❌ Not Supported   | Not yet implemented.                                                         |
+| Social Media Share                     | ❌ Not Supported   | Not yet implemented.                                                         |
+| [Stepper](/components/stepper)         | ✅ Fully Supported | Implements HDS stepper patterns with design tokens and dark mode support.    |
+| Table of Contents                      | ❌ Not Supported   | Not yet implemented.                                                         |
+| [Tabs](/components/tabs)               | ✅ Fully Supported | Implements HDS tabs patterns with design tokens and dark mode support.       |
+| [Popup](/components/popup)             | ✅ Fully Supported | Implements HDS popup patterns. Tooltips and Popovers.                        |
+| Video Player                           | ❌ Not Supported   | Not yet implemented.                                                         |
+| Vitals                                 | ❌ Not Supported   | Not yet implemented.                                                         |
 
 ### Modules
 
-| Component                         | Status          | Notes                |
-| --------------------------------- | --------------- | -------------------- |
-| 3D Model Module                   | ❌ Not Supported | Not yet implemented. |
-| About the Author                  | ❌ Not Supported | Not yet implemented. |
-| Article Hero Image                | ❌ Not Supported | Not yet implemented. |
-| Ask NASA                          | ❌ Not Supported | Not yet implemented. |
-| Banners                           | ❌ Not Supported | Not yet implemented. |
-| Callout                           | ❌ Not Supported | Not yet implemented. |
-| Card Carousel                     | ❌ Not Supported | Not yet implemented. |
-| Card Grid                         | ❌ Not Supported | Not yet implemented. |
-| Centers & Facilities              | ❌ Not Supported | Not yet implemented. |
-| Contingency Homepage              | ❌ Not Supported | Not yet implemented. |
-| Credits & Resources               | ❌ Not Supported | Not yet implemented. |
-| Event List                        | ❌ Not Supported | Not yet implemented. |
-| Eyes on the Solar System Embed    | ❌ Not Supported | Not yet implemented. |
-| Feature 50/50                     | ❌ Not Supported | Not yet implemented. |
-| Feature/Chapter Divider           | ❌ Not Supported | Not yet implemented. |
-| Feature/Feature Nav               | ❌ Not Supported | Not yet implemented. |
-| Feature/Fullscreen Carousel       | ❌ Not Supported | Not yet implemented. |
-| Feature/Hero Numbers              | ❌ Not Supported | Not yet implemented. |
-| Feature/Hero Quote                | ❌ Not Supported | Not yet implemented. |
-| Feature/Intro                     | ❌ Not Supported | Not yet implemented. |
-| Feature/Oversized Text            | ❌ Not Supported | Not yet implemented. |
-| Feature/Scrapbook Gallery         | ❌ Not Supported | Not yet implemented. |
-| Featured Image                    | ❌ Not Supported | Not yet implemented. |
-| Featured Link                     | ❌ Not Supported | Not yet implemented. |
-| Featured Link List                | ❌ Not Supported | Not yet implemented. |
-| Featured Mission                  | ❌ Not Supported | Not yet implemented. |
-| Featured Podcast                  | ❌ Not Supported | Not yet implemented. |
-| Featured Story                    | ❌ Not Supported | Not yet implemented. |
-| Featured Video                    | ❌ Not Supported | Not yet implemented. |
-| Featured/Content Banner           | ❌ Not Supported | Not yet implemented. |
-| File List                         | ❌ Not Supported | Not yet implemented. |
-| Forms Embed                       | ❌ Not Supported | Not yet implemented. |
-| Gallery Hero                      | ❌ Not Supported | Not yet implemented. |
-| Gallery Preview                   | ❌ Not Supported | Not yet implemented. |
-| Hero Numbers                      | ❌ Not Supported | Not yet implemented. |
-| Iframe Embeds                     | ❌ Not Supported | Not yet implemented. |
-| Image Before/After                | ❌ Not Supported | Not yet implemented. |
-| Image Carousel and Image Timeline | ❌ Not Supported | Not yet implemented. |
-| Image Detail Modal                | ❌ Not Supported | Not yet implemented. |
-| Inline Case Study                 | ❌ Not Supported | Not yet implemented. |
-| Interactive Exhibit               | ❌ Not Supported | Not yet implemented. |
-| Listicle                          | ❌ Not Supported | Not yet implemented. |
-| Map                               | ❌ Not Supported | Not yet implemented. |
-| Math Equations                    | ❌ Not Supported | Not yet implemented. |
-| Meet the…                         | ❌ Not Supported | Not yet implemented. |
-| Mission Hero                      | ❌ Not Supported | Not yet implemented. |
-| NASA Live                         | ❌ Not Supported | Not yet implemented. |
-| NASA Mag                          | ❌ Not Supported | Not yet implemented. |
-| Navigation                        | ❌ Not Supported | Not yet implemented. |
-| News Modules                      | ❌ Not Supported | Not yet implemented. |
-| Page Intro                        | ❌ Not Supported | Not yet implemented. |
-| Parallax Image                    | ❌ Not Supported | Not yet implemented. |
-| Planet Hero                       | ❌ Not Supported | Not yet implemented. |
-| Q&A                               | ❌ Not Supported | Not yet implemented. |
-| Quiz                              | ❌ Not Supported | Not yet implemented. |
-| Related Articles                  | ❌ Not Supported | Not yet implemented. |
-| Slideshow                         | ❌ Not Supported | Not yet implemented. |
-| Social Media Feed                 | ❌ Not Supported | Not yet implemented. |
-| Story Block                       | ❌ Not Supported | Not yet implemented. |
-| Subscription Banner               | ❌ Not Supported | Not yet implemented. |
-| Tabbed Section                    | ❌ Not Supported | Not yet implemented. |
-| Tables                            | ❌ Not Supported | Not yet implemented. |
-| Team Member Spotlight             | ❌ Not Supported | Not yet implemented. |
-| Timeline                          | ❌ Not Supported | Not yet implemented. |
-| Topic Cards                       | ❌ Not Supported | Not yet implemented. |
-| Topic Hero                        | ❌ Not Supported | Not yet implemented. |
-| Topic Spotlight                   | ❌ Not Supported | Not yet implemented. |
+| Component                         | Status             | Notes                                                                                                                                                                                                                                                |
+| --------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3D Model Module                   | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| About the Author                  | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Article Hero Image                | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Ask NASA                          | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| [Banners](/components/banner)     | ✅ Fully Supported | Implements HDS banner patterns with design tokens and dark mode support.                                                                                                                                                                             |
+| Callout                           | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Card Carousel                     | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Card Grid                         | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Centers & Facilities              | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Contingency Homepage              | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Credits & Resources               | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Event List                        | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Eyes on the Solar System Embed    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature 50/50                     | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Chapter Divider           | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Feature Nav               | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Fullscreen Carousel       | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Hero Numbers              | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Hero Quote                | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Intro                     | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Oversized Text            | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Feature/Scrapbook Gallery         | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Image                    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Link                     | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Link List                | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Mission                  | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Podcast                  | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Story                    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured Video                    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Featured/Content Banner           | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| File List                         | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Forms Embed                       | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Gallery Hero                      | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Gallery Preview                   | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Hero Numbers                      | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Iframe Embeds                     | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Image Before/After                | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Image Carousel and Image Timeline | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Image Detail Modal                | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Inline Case Study                 | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Interactive Exhibit               | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Listicle                          | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Map                               | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Math Equations                    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Meet the…                         | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Mission Hero                      | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| NASA Live                         | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| NASA Mag                          | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Navigation                        | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| News Modules                      | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Page Intro                        | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Parallax Image                    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Planet Hero                       | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Q&A                               | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Quiz                              | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Related Articles                  | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Slideshow                         | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Social Media Feed                 | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Story Block                       | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Subscription Banner               | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Tabbed Section                    | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Tables                            | 🟡 In Progress     | [Data Grid](/components/data-grid) covers tabular data display, but it's built for scientific/tabular data exploration (sorting, filtering, pagination, virtualized rows) rather than the simpler content tables described by the HDS Tables module. |
+| Team Member Spotlight             | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Timeline                          | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Topic Cards                       | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Topic Hero                        | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
+| Topic Spotlight                   | ❌ Not Supported   | Not yet implemented.                                                                                                                                                                                                                                 |
 
 ### Templates
 
-| Component               | Status          | Notes                |
-| ----------------------- | --------------- | -------------------- |
+| Component               | Status           | Notes                |
+| ----------------------- | ---------------- | -------------------- |
 | 404 Page                | ❌ Not Supported | Not yet implemented. |
 | About                   | ❌ Not Supported | Not yet implemented. |
 | About NASA              | ❌ Not Supported | Not yet implemented. |
@@ -350,6 +350,6 @@ If you're working on implementing HDS support for a component, please:
 
 ## Next Steps
 
--   Explore [Design Tokens](/tokens/typography) to see all available CSS variables
--   Learn about [HDS Components](/components/avatar) in the component documentation
--   Visit the [official HDS website](https://website.nasa.gov/hds/) for more information
+- Explore [Design Tokens](/tokens/typography) to see all available CSS variables
+- Learn about [HDS Components](/components/avatar) in the component documentation
+- Visit the [official HDS website](https://website.nasa.gov/hds/) for more information
