@@ -1,7 +1,10 @@
+import asyncio
 import importlib.metadata
-import traitlets
-from ..base import TerraBaseWidget
 import os
+
+import traitlets
+
+from ..base import TerraBaseWidget
 
 # Optional imports - check availability before using
 try:
@@ -110,6 +113,7 @@ class TerraEarthdataLogin(TerraBaseWidget):
     password = traitlets.Unicode().tag(sync=True)
     credentialsError = traitlets.Unicode('').tag(sync=True)
     autoLogin = traitlets.Bool(True).tag(sync=True)
+    authStatus = traitlets.Unicode("pending").tag(sync=True)
 
     def _check_dependencies(self):
         """
@@ -153,13 +157,46 @@ class TerraEarthdataLogin(TerraBaseWidget):
         """
         Whenever the bearer token changes, we want to login to earthaccess with the new token
         """
-        if change["new"]:
-            if not EARTHACCESS_AVAILABLE:
-                raise ImportError(
-                    "earthaccess is not installed. Please install it using: pip install earthaccess"
-                )
+
+        if not change["new"]:
+            return
+        
+        self.authStatus = "pending"
+     
+        if not EARTHACCESS_AVAILABLE:
+            raise ImportError(
+                "earthaccess is not installed. Please install it using: pip install earthaccess"
+            )
+        
+        try:
             os.environ["EARTHDATA_TOKEN"] = change["new"]
-            earthaccess.login(strategy='environment')
+            auth = earthaccess.login(strategy="environment")
+
+            if auth.authenticated:
+                self.authStatus = "authenticated"
+            else:
+                self.authStatus = "error"
+
+        except Exception:
+            self.authStatus = "error"
+            raise
+
+    async def wait_for_authentication(self):
+        print("Initial:", self.authStatus)
+
+        while self.authStatus == "pending":
+            await asyncio.sleep(0.5)
+            print("Current:", self.authStatus)
+
+        if self.authStatus == "authenticated":
+            return True
+
+        if self.authStatus == "error":
+            raise RuntimeError("Earthdata authentication failed")
+
+        raise RuntimeError(
+            f"Unexpected authentication status: {self.authStatus}"
+        )
 
     def _get_default_credentials(self):
         """

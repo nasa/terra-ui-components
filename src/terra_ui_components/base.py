@@ -1,5 +1,7 @@
 import anywidget
+from importlib.metadata import version
 
+PACKAGE_VERSION = version("terra_ui_components")
 
 class TerraBaseWidget(anywidget.AnyWidget):
     # if set to true, we'll load the components library from a local `dist` folder
@@ -13,16 +15,31 @@ class TerraBaseWidget(anywidget.AnyWidget):
 
     @classmethod
     def get_autoloader(cls):
+
+        # Allows you to develop the Python widgets against a local JavaScript build.
+
+        if cls.use_local:
+            styles_url = "http://localhost:4000/dist/themes/horizon.css"
+            autoloader_url = "http://localhost:4000/dist/terra-ui-components-autoloader.js"
+        else:
+            styles_url = (
+                "https://cdn.jsdelivr.net/npm/"
+                "@nasa-terra/components@0.0.198/cdn/themes/horizon.css"
+            )
+        autoloader_url = (
+            f"https://cdn.jsdelivr.net/npm/"
+            f"@nasa-terra/components@{PACKAGE_VERSION}/"
+            f"cdn/terra-ui-components-autoloader.js"
+        )
+
         return f"""
         const terraStyles = document.createElement('link')
         terraStyles.rel = 'stylesheet'
-        terraStyles.href = 'https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.198/cdn/themes/horizon.css'
-        //terraStyles.href = "http://localhost:4000/dist/themes/horizon.css"
+        terraStyles.href = '{styles_url}'
         document.head.appendChild(terraStyles)
 
         const terraAutoloader = document.createElement('script')
-        terraAutoloader.src = "https://cdn.jsdelivr.net/npm/@nasa-terra/components@0.0.198/cdn/terra-ui-components-autoloader.js"
-        //terraAutoloader.src = "http://localhost:4000/dist/terra-ui-components-autoloader.js"
+        terraAutoloader.src = '{autoloader_url}'
         terraAutoloader.type = 'module'
         document.head.appendChild(terraAutoloader)
         """
