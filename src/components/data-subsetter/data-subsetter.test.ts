@@ -582,3 +582,273 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
         expect(harmonyRequest.params).to.not.include('maxResults')
     })
 })
+
+describe('<terra-data-subsetter> duplicate submission prevention', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const caps = {
+        conceptId: 'C123',
+        shortName: 'S1',
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: true,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        services: [{ name: 'harmony', href: '', capabilities: {} }],
+        variables: [
+            {
+                conceptId: 'V1',
+                name: 'Variable 1',
+                href: '',
+            },
+        ],
+    }
+
+    const collectionUmm = {
+        EntryTitle: 'Test Collection',
+        ShortName: 'S1',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    it('ignores rapid duplicate clicks on "Get Data" while a request is in flight', async () => {
+        let startJobCallCount = 0
+        let resolveStartJob: (job: { jobID: string }) => void = () => {}
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+
+        HarmonyRequestController.prototype.startJob = (async () => {
+            startJobCallCount++
+            return new Promise((resolve) => {
+                resolveStartJob = resolve
+            })
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        stubCollectionFetch({
+            collectionEntryId: 'S4_1',
+            caps,
+            collectionUmm,
+        })
+
+        try {
+            const el: any = await fixture(
+                html`<terra-data-subsetter></terra-data-subsetter>`,
+            )
+
+            el.dataAccessMode = 'subset'
+            el.collectionEntryId = 'S4_1'
+
+            await waitUntil(
+                () => Boolean(el.collectionWithServices),
+                'expected collectionWithServices to be populated by CollectionController',
+                { timeout: 3000 },
+            )
+            await elementUpdated(el)
+
+            const getDataButton = () =>
+                Array.from(
+                    el.shadowRoot?.querySelectorAll('button') ?? [],
+                ).find((button: any) =>
+                    button.textContent?.trim().startsWith('Get Data'),
+                ) as HTMLButtonElement | undefined
+
+            const button = getDataButton()
+            expect(button).to.exist
+
+            // simulate a rapid succession of clicks (e.g. an impatient double-click)
+            // before the first request has a chance to resolve
+            button?.click()
+            button?.click()
+            button?.click()
+
+            await waitUntil(() => startJobCallCount > 0)
+
+            expect(startJobCallCount).to.equal(1)
+            expect(el.isSubmittingRequest).to.be.true
+
+            resolveStartJob({ jobID: 'job-1' })
+
+            await waitUntil(() => !el.isSubmittingRequest)
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+    })
+})
+
+describe('<terra-data-subsetter> recent date range default', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const caps = {
+        conceptId: 'C123',
+        shortName: 'S1',
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: true,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        services: [{ name: 'harmony', href: '', capabilities: {} }],
+        variables: [
+            {
+                conceptId: 'V1',
+                name: 'Variable 1',
+                href: '',
+            },
+        ],
+    }
+
+    const collectionUmm = {
+        EntryTitle: 'Test Collection',
+        ShortName: 'S1',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    const firstGranuleDate = '2000-01-01T00:00:00.000Z'
+    const lastGranuleDate = '2020-01-01T00:00:00.000Z'
+
+    // Like stubCollectionFetch, but also backs the granule sampling query with a
+    // controllable first/last granule date and puts `granuleCount` on the CMR
+    // collection meta, since both drive #getDefaultRecentDateRange's cadence math.
+    function stubCollectionFetchWithGranules(granuleCount: number) {
+        const cmrCollectionResponse = {
+            hits: 1,
+            items: [
+                {
+                    meta: {
+                        'concept-id': caps.conceptId,
+                        'native-id': 'S4_1',
+                        'provider-id': 'TEST_PROVIDER',
+                        'granule-count': granuleCount,
+                    },
+                    umm: collectionUmm,
+                },
+            ],
+        }
+
+        const granuleResponse = (date: string) => ({
+            hits: granuleCount,
+            items: [
+                {
+                    umm: {
+                        TemporalExtent: {
+                            RangeDateTime: { BeginningDateTime: date },
+                        },
+                    },
+                },
+            ],
+        })
+
+        return sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string'
+                    ? input
+                    : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                return okJson(cmrCollectionResponse)
+            }
+            if (url.includes('variables.umm_json')) {
+                return okJson({ hits: 0, items: [] })
+            }
+            if (url.includes('granules.umm_json')) {
+                // ascending sort_key ("+startDate", percent-encoded as %2BstartDate)
+                // fetches the first/earliest granule; descending ("-startDate")
+                // fetches the last/latest granule
+                const isDescending = url.includes('-startDate')
+                return okJson(
+                    granuleResponse(
+                        isDescending ? lastGranuleDate : firstGranuleDate,
+                    ),
+                )
+            }
+            if (url.includes('/capabilities')) {
+                return okJson(caps)
+            }
+            if (url.includes('configured-variables')) {
+                return okJson({ configured_variables: [] })
+            }
+
+            return okJson({})
+        })
+    }
+
+    async function loadWithGranuleCount(granuleCount: number) {
+        stubCollectionFetchWithGranules(granuleCount)
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+        el.dataAccessMode = 'subset'
+        el.collectionEntryId = 'S4_1'
+
+        await waitUntil(
+            () => Boolean(el.granuleMinDate) && Boolean(el.granuleMaxDate),
+            'expected granule sampling dates to be populated',
+            { timeout: 3000 },
+        )
+        await elementUpdated(el)
+
+        return el
+    }
+
+    it('defaults to a ~30-day recent window for a high-cadence (daily) collection', async () => {
+        // one granule per day across the full 2000-01-01..2020-01-01 range
+        const el = await loadWithGranuleCount(7306)
+
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+        expect(el.selectedDateRange.startDate).to.equal('2019-12-03')
+    })
+
+    it('widens the default window for a low-cadence (monthly) collection so it covers multiple granules', async () => {
+        // ~monthly cadence across the same 20-year range
+        const el = await loadWithGranuleCount(240)
+
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+
+        const days =
+            (new Date(el.selectedDateRange.endDate).getTime() -
+                new Date(el.selectedDateRange.startDate).getTime()) /
+            (1000 * 60 * 60 * 24)
+
+        // should be noticeably wider than the 30-day floor (a few months, to
+        // cover several granules) but much narrower than the full 20-year range
+        expect(days).to.be.greaterThan(60)
+        expect(days).to.be.lessThan(150)
+    })
+
+    it('falls back to the full range when the collection has no usable granule count', async () => {
+        const el = await loadWithGranuleCount(0)
+
+        expect(el.selectedDateRange.startDate).to.equal('2000-01-01')
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+    })
+})

@@ -48,7 +48,7 @@ import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import styles from './data-subsetter.styles.js'
 import { getNotebook } from './notebooks/subsetter-notebook.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
-import { getUTCDate } from '../../utilities/date.js'
+import { getUTCDate, formatDate } from '../../utilities/date.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import {
     Status,
@@ -62,6 +62,12 @@ const defaultOutputFormat: ConfiguredOutputFormat = {
     label: 'NetCDF',
     description: 'Download data in NetCDF format',
 }
+
+// Default "recent" date range window: at least this many days, or enough
+// days to cover DEFAULT_DATE_RANGE_MIN_GRANULES granules at the collection's
+// average cadence, whichever is larger.
+const DEFAULT_DATE_RANGE_MIN_DAYS = 30
+const DEFAULT_DATE_RANGE_MIN_GRANULES = 3
 
 /**
  * @summary Easily allow users to select, subset, and download NASA Earth science data collections with spatial, temporal, and variable filters.
@@ -201,6 +207,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     cancelingGetData: boolean = false
 
     @state()
+    isSubmittingRequest: boolean = false
+
+    @state()
     selectedTab: 'web-links' | 'selected-params' = 'web-links'
 
     @state()
@@ -330,7 +339,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @watch(['collectionWithServices'])
     collectionChanged() {
-        const { startDate, endDate } = this.#getCollectionDateRange()
+        const { startDate, endDate } = this.#getDefaultRecentDateRange()
         this.selectedDateRange = { startDate, endDate }
 
         this.#resetFormatSelection()
@@ -341,17 +350,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @watch(['granuleMinDate', 'granuleMaxDate'])
     granuleDatesChanged() {
-        const newRange = {
-            ...(this.granuleMinDate && { startDate: this.granuleMinDate }),
-            ...(this.granuleMaxDate && { endDate: this.granuleMaxDate }),
-        }
+        if (!this.granuleMinDate && !this.granuleMaxDate) return
 
-        if (Object.keys(newRange).length > 0) {
-            this.selectedDateRange = {
-                ...this.selectedDateRange,
-                ...newRange,
-            }
-        }
+        const { startDate, endDate } = this.#getDefaultRecentDateRange()
+        this.selectedDateRange = { startDate, endDate }
     }
 
     @watch('selectedFormat')
@@ -760,8 +762,14 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         Reset All
                     </button>
                     <div>
-                        <button class="btn btn-primary" @click=${this.#getData}>
-                            Get Data
+                        <button
+                            class="btn btn-primary"
+                            ?disabled=${this.isSubmittingRequest}
+                            @click=${this.#getData}
+                        >
+                            ${this.isSubmittingRequest
+                                ? 'Getting Data...'
+                                : 'Get Data'}
                         </button>
                         ${
                             this.jobId
@@ -952,8 +960,14 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                               Reset All
                           </button>
                           <div>
-                              <button class="btn btn-primary" @click=${this.#getData}>
-                                  Get Data
+                              <button
+                                  class="btn btn-primary"
+                                  ?disabled=${this.isSubmittingRequest}
+                                  @click=${this.#getData}
+                              >
+                                  ${this.isSubmittingRequest
+                                      ? 'Getting Data...'
+                                      : 'Get Data'}
                               </button>
                               ${
                                   this.jobId
@@ -1440,6 +1454,56 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         return {
             startDate: minStart ? minStart.toISOString().slice(0, 10) : null,
             endDate: maxEnd ? maxEnd.toISOString().slice(0, 10) : null,
+        }
+    }
+
+    /**
+     * Computes a "recent" default date range instead of the full collection
+     * extent, sized to the collection's average granule cadence so
+     * low-frequency collections (e.g. monthly) still default to a window
+     * covering a handful of granules rather than just one.
+     */
+    #getDefaultRecentDateRange() {
+        const range = this.#getCollectionDateRange()
+        const granuleCount = this.collectionWithServices?.granuleCount
+
+        if (!range.startDate || !range.endDate || !granuleCount || granuleCount <= 1) {
+            return range
+        }
+
+        const msPerDay = 1000 * 60 * 60 * 24
+        const fullStart = new Date(range.startDate)
+        const fullEnd = new Date(range.endDate)
+        const totalDays =
+            Math.floor((fullEnd.getTime() - fullStart.getTime()) / msPerDay) + 1
+
+        if (totalDays <= 0) {
+            return range
+        }
+
+        const avgCadenceDays = totalDays / granuleCount
+        const windowDays = Math.min(
+            totalDays,
+            Math.max(
+                DEFAULT_DATE_RANGE_MIN_DAYS,
+                avgCadenceDays * DEFAULT_DATE_RANGE_MIN_GRANULES,
+            ),
+        )
+
+        if (windowDays >= totalDays) {
+            return range
+        }
+
+        const recentStart = new Date(
+            fullEnd.getTime() - (windowDays - 1) * msPerDay,
+        )
+
+        return {
+            startDate:
+                recentStart > fullStart
+                    ? formatDate(recentStart)
+                    : range.startDate,
+            endDate: range.endDate,
         }
     }
 
@@ -2655,6 +2719,22 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     async #getData() {
+        // Guard against duplicate submissions from rapid/double clicks on "Get Data"
+        // while a previous request is still in flight.
+        if (this.isSubmittingRequest) {
+            return
+        }
+
+        this.isSubmittingRequest = true
+
+        try {
+            await this.#submitDataRequest()
+        } finally {
+            this.isSubmittingRequest = false
+        }
+    }
+
+    async #submitDataRequest() {
         this.harmonyRequestError = undefined
 
         // Validate before proceeding
