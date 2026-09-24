@@ -2687,6 +2687,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             collectionConceptId: this.collectionWithServices!.conceptId,
             variables,
             location: this.spatialSelection,
+            anonymous: !this.#authController.state.user,
         })
 
         if (this.shapeGeoJson) {

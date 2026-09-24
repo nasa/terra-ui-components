@@ -6,6 +6,7 @@ import {
     waitUntil,
 } from '@open-wc/testing'
 import sinon from 'sinon'
+import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
 import './data-subsetter.js'
@@ -460,5 +461,124 @@ describe('<terra-data-subsetter> harmony request errors', () => {
         } finally {
             HarmonyRequestController.prototype.startJob = originalStartJob
         }
+    })
+})
+
+describe('<terra-data-subsetter> anonymous access limiting', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const caps = {
+        conceptId: 'C123',
+        shortName: 'S1',
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: true,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        services: [{ name: 'harmony', href: '', capabilities: {} }],
+        variables: [
+            {
+                conceptId: 'V1',
+                name: 'Variable 1',
+                href: '',
+            },
+        ],
+    }
+
+    const collectionUmm = {
+        EntryTitle: 'Test Collection',
+        ShortName: 'S1',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    async function submitAndCaptureRequest() {
+        let capturedHarmonyRequest: any
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+
+        HarmonyRequestController.prototype.startJob = (async (
+            variables: any,
+        ) => {
+            capturedHarmonyRequest = variables.harmonyRequest
+            throw new HttpException({ status: 400, message: 'stop' })
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        stubCollectionFetch({
+            collectionEntryId: 'S4_1',
+            caps,
+            collectionUmm,
+        })
+
+        try {
+            const el: any = await fixture(
+                html`<terra-data-subsetter></terra-data-subsetter>`,
+            )
+
+            el.dataAccessMode = 'subset'
+            el.collectionEntryId = 'S4_1'
+
+            await waitUntil(
+                () => Boolean(el.collectionWithServices),
+                'expected collectionWithServices to be populated by CollectionController',
+                { timeout: 3000 },
+            )
+            await elementUpdated(el)
+
+            const getDataButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? [],
+            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                | HTMLButtonElement
+                | undefined
+
+            expect(getDataButton).to.exist
+            getDataButton?.click()
+
+            await waitUntil(() => Boolean(capturedHarmonyRequest))
+
+            return capturedHarmonyRequest
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+    }
+
+    it('caps results at 10 links (maxResults=10) when the user is logged out', async () => {
+        sinon.stub(authService, 'getState').returns({
+            user: null,
+            token: null,
+            isLoading: false,
+            error: null,
+        })
+
+        const harmonyRequest = await submitAndCaptureRequest()
+
+        expect(harmonyRequest.params).to.include('maxResults=10')
+    })
+
+    it('does not cap results when the user is logged in', async () => {
+        sinon.stub(authService, 'getState').returns({
+            user: { uid: 'test-user', first_name: 'Test', last_name: 'User' },
+            token: 'test-token',
+            isLoading: false,
+            error: null,
+        })
+
+        const harmonyRequest = await submitAndCaptureRequest()
+
+        expect(harmonyRequest.params).to.not.include('maxResults')
     })
 })
