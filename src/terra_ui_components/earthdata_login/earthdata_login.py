@@ -56,6 +56,17 @@ class TerraEarthdataLogin(TerraBaseWidget):
         component.password = model.get('password')
         component.autoLogin = model.get('autoLogin')
 
+        // listen for terra-login event and update the bearer token in the model
+        component.addEventListener('terra-login', (e) => {
+
+            //console.log('ESM RECEIVED terra-login:', e.detail)
+
+            model.set('bearerToken', e.detail.token || '')
+            //console.log('ESM bearerToken after model.set:', model.get('bearerToken'))
+
+            model.save_changes()
+        })
+
         /**
          * add the component to the cell
          * it should now be visible in the notebook!
@@ -92,11 +103,6 @@ class TerraEarthdataLogin(TerraBaseWidget):
             console.log('credentialsError: ', model.get('credentialsError'))
         })
 
-        // listen for terra-login event and update the bearer token in the model
-        component.addEventListener('terra-login', (e) => {
-            model.set('bearerToken', e.detail.token || '')
-            model.save_changes()
-        })
     }
 
     export default { render };
@@ -113,7 +119,7 @@ class TerraEarthdataLogin(TerraBaseWidget):
     password = traitlets.Unicode().tag(sync=True)
     credentialsError = traitlets.Unicode('').tag(sync=True)
     autoLogin = traitlets.Bool(True).tag(sync=True)
-    authStatus = traitlets.Unicode("pending").tag(sync=True)
+    authStatus = traitlets.Unicode("").tag(sync=True)
 
     def _check_dependencies(self):
         """
@@ -152,24 +158,17 @@ class TerraEarthdataLogin(TerraBaseWidget):
             return password
         return ''
 
-    @traitlets.observe("bearerToken")
-    def _observe_bearer_token(self, change):
-        """
-        Whenever the bearer token changes, we want to login to earthaccess with the new token
-        """
-
-        if not change["new"]:
-            return
-        
+    def _authenticate(self, token):
         self.authStatus = "pending"
-     
+
         if not EARTHACCESS_AVAILABLE:
+            self.authStatus = "error"
             raise ImportError(
                 "earthaccess is not installed. Please install it using: pip install earthaccess"
             )
-        
+
         try:
-            os.environ["EARTHDATA_TOKEN"] = change["new"]
+            os.environ["EARTHDATA_TOKEN"] = token
             auth = earthaccess.login(strategy="environment")
 
             if auth.authenticated:
@@ -181,12 +180,42 @@ class TerraEarthdataLogin(TerraBaseWidget):
             self.authStatus = "error"
             raise
 
-    async def wait_for_authentication(self):
-        print("Initial:", self.authStatus)
+    @traitlets.observe("bearerToken")
+    def _observe_bearer_token(self, change):
+        """
+        Whenever the bearer token changes, we want to login to earthaccess with the new token
+        """
+        print("PYTHON bearerToken observer:", repr(change["new"]))
 
-        while self.authStatus == "pending":
+        if not change["new"]:
+            return
+        
+        self._authenticate(change["new"])
+
+    async def wait_for_authentication(self):
+        # # If authentication has already completed, return immediately.
+        # if self.authStatus == "authenticated":
+        #     print("Authentication completed successfully.")
+        #     return True
+
+        # # If we have a token but authentication hasn't been performed yet,
+        # # authenticate it now. This handles the cached-token case.
+        # if self.bearerToken and self.authStatus == "":
+        #     self._authenticate(self.bearerToken)
+        print(
+            "WAIT START:",
+            "bearerToken =", repr(self.bearerToken),
+            "authStatus =", repr(self.authStatus),
+        )
+
+        # Wait for the browser authentication state to reach a terminal state.
+        while self.authStatus in ("", "pending"):
             await asyncio.sleep(0.5)
-            print("Current:", self.authStatus)
+            print(
+                "WAIT:",
+                "bearerToken =", repr(self.bearerToken),
+                "authStatus =", repr(self.authStatus),
+            )
 
         if self.authStatus == "authenticated":
             return True

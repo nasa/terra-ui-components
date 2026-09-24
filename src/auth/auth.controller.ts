@@ -17,11 +17,14 @@ export class AuthController<C> {
             task: async ([]) => {
                 this.unsubscribe = authService.subscribe(
                     state => {
+                        console.log('AUTH CONTROLLER subscription:', state)
                         if (state.token) {
+                            console.log('AUTH CONTROLLER setting bearerToken:', state.token)
                             // @ts-expect-error - we can't guarantee the host has a bearerToken property
                             this.#host.bearerToken = state.token
                         }
 
+                        console.log('AUTH CONTROLLER emitting terra-login')
                         // @ts-expect-error - we can't guarantee the host has a emit property
                         this.#host.emit('terra-login', {
                             detail: state,
@@ -38,6 +41,8 @@ export class AuthController<C> {
                 this.#host.emit('terra-login', {
                     detail: authService.getState(),
                 })
+
+                console.log('AUTH CONTROLLER subscribed')
 
                 // Return current state
                 return authService.getState()
