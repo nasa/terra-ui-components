@@ -56,6 +56,8 @@ import {
     type Variable,
 } from '../../apis/harmony.api.js'
 import { HttpException } from '../../exceptions/http.exception.js'
+// For reading from URL
+//import { useSearchParams } from 'react-router-dom'
 
 const defaultOutputFormat: ConfiguredOutputFormat = {
     key: 'application/x-netcdf4',
@@ -123,6 +125,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         attribute: 'show-collection-search',
     })
     showCollectionSearch?: boolean = true
+
+    @property({ reflect: true, type: Boolean, attribute: 'read-constraints-from-url' })
+    readConstraintsFromUrl?: boolean = false
 
     @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
     showHistoryPanel?: boolean = true
@@ -282,6 +287,19 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         }
     }
 
+    @watch('readConstraintsFromUrl')
+    readConstraintsFromUrlChanged() {
+        if (this.readConstraintsFromUrl) {
+            // get shortname and version from URL params and set collectionEntryId
+            const urlParams = new URLSearchParams(window.location.search)
+            const rawShortName = urlParams.get('shortname') ?? undefined
+            const rawVersion = urlParams.get('version') ?? undefined
+            this.shortName = rawShortName ? rawShortName.length < 64 ? rawShortName.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            this.version = rawVersion ? rawVersion.length < 8 ? rawVersion.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            this.shortNameAndVersionChanged()
+        }
+    }
+
     firstUpdated() {
         if (this.collectionEntryId) {
             this.showCollectionSearch = false
@@ -293,6 +311,14 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             })
             this.dataAccessMode = 'subset'
         }
+/*
+        if (this.readConstraintsFromUrl) { 
+            console.log("reading from url")
+            this.showCollectionSearch = false
+            // get shortname and version from URL params and set collectionEntryId
+            this.readConstraintsFromUrlChanged() 
+        }
+*/
 
         this.renderHistoryPanel()
     }
