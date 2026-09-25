@@ -288,12 +288,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @watch('readConstraintsFromUrl')
     readConstraintsFromUrlChanged() {
         if (this.readConstraintsFromUrl) {
-            // get shortname and version from URL params and set collectionEntryId
+            // get shortname and version from URL params
             const urlParams = new URLSearchParams(window.location.search)
             const rawShortName = urlParams.get('shortname') ?? undefined
             const rawVersion = urlParams.get('version') ?? undefined
             this.shortName = rawShortName ? rawShortName.length < 64 ? rawShortName.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
             this.version = rawVersion ? rawVersion.length < 8 ? rawVersion.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            // make sure the properties are updated
             this.shortNameAndVersionChanged()
         }
     }
@@ -309,14 +310,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             })
             this.dataAccessMode = 'subset'
         }
-/*
-        if (this.readConstraintsFromUrl) { 
-            console.log("reading from url")
-            this.showCollectionSearch = false
-            // get shortname and version from URL params and set collectionEntryId
-            this.readConstraintsFromUrlChanged() 
-        }
-*/
 
         this.renderHistoryPanel()
     }
