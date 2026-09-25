@@ -56,8 +56,6 @@ import {
     type Variable,
 } from '../../apis/harmony.api.js'
 import { HttpException } from '../../exceptions/http.exception.js'
-// For reading from URL
-//import { useSearchParams } from 'react-router-dom'
 
 const defaultOutputFormat: ConfiguredOutputFormat = {
     key: 'application/x-netcdf4',
