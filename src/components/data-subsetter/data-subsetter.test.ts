@@ -9,6 +9,8 @@ import sinon from 'sinon'
 import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
+import { LatLng } from '../map/models/LatLng.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import './data-subsetter.js'
 
 const getAccordionContent = (el: any) => {
@@ -507,7 +509,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
         SpatialExtent: {},
     }
 
-    async function submitAndCaptureRequest() {
+    async function submitAndCaptureRequest(setup?: (el: any) => void) {
         let capturedHarmonyRequest: any
         const originalStartJob = HarmonyRequestController.prototype.startJob
 
@@ -537,6 +539,8 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
                 'expected collectionWithServices to be populated by CollectionController',
                 { timeout: 3000 },
             )
+
+            setup?.(el)
             await elementUpdated(el)
 
             const getDataButton = Array.from(
@@ -580,6 +584,40 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
         const harmonyRequest = await submitAndCaptureRequest()
 
         expect(harmonyRequest.params).to.not.include('maxResults')
+    })
+
+    it('omits average=area for a text/csv request when the spatial selection is a point', async () => {
+        sinon.stub(authService, 'getState').returns({
+            user: null,
+            token: null,
+            isLoading: false,
+            error: null,
+        })
+
+        const harmonyRequest = await submitAndCaptureRequest((el) => {
+            el.selectedFormat = { key: 'text/csv', isGiovanniFormat: true }
+            el.selectedVariables = [{ conceptId: 'V1', name: 'Variable 1' }]
+            el.spatialSelection = new LatLng(10, 20)
+        })
+
+        expect(harmonyRequest.params).to.not.include('average')
+    })
+
+    it('adds average=area for a text/csv request when the spatial selection is an area', async () => {
+        sinon.stub(authService, 'getState').returns({
+            user: null,
+            token: null,
+            isLoading: false,
+            error: null,
+        })
+
+        const harmonyRequest = await submitAndCaptureRequest((el) => {
+            el.selectedFormat = { key: 'text/csv', isGiovanniFormat: true }
+            el.selectedVariables = [{ conceptId: 'V1', name: 'Variable 1' }]
+            el.spatialSelection = new LatLngBounds([-10, -10, 10, 10])
+        })
+
+        expect(harmonyRequest.params).to.include('average=area')
     })
 })
 
