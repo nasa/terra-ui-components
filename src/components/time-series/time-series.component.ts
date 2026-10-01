@@ -254,6 +254,11 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
 
     _fetchVariableTask = getFetchVariableTask(this)
 
+    /**
+     * Show or hide the Jupyter notebook button in the plot toolbar.
+     */
+    showJupyter?: boolean;
+
     connectedCallback(): void {
         super.connectedCallback()
 
@@ -261,6 +266,13 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
             'terra-time-series-error',
             this.#handleQuotaError as EventListener
         )
+
+        //* Detect if time series component is running in a Jupyter notebook.
+        if (this.showJupyter === undefined) {
+            this.showJupyter = !this.#isNotebookEnv();
+        }
+        //* instantiate the time series contoller maybe with a token
+        this.#timeSeriesController = new TimeSeriesController(this)
         this.addEventListener(
             'terra-time-series-chunk-progress-change',
             this.#handleChunkProgress as EventListener
@@ -325,6 +337,19 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
             'terra-time-series-chunk-progress-change',
             this.#handleChunkProgress as EventListener
         )
+    }
+
+    #isNotebookEnv(): boolean {
+        const w = window as any;
+
+        return (
+            typeof w.Jupyter !== "undefined" ||
+            typeof w.IPython !== "undefined" ||
+            typeof w.google?.colab !== "undefined" ||
+            typeof w.__jupyterlab !== "undefined" ||
+            document.querySelector(".jp-Notebook") !== null ||
+            document.querySelector(".jupyter-widgets") !== null
+        );
     }
 
     #handleQuotaError = (event: CustomEvent) => {
@@ -421,6 +446,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                                     .cacheKey=${this.#timeSeriesController.getCacheKey()}
                                     .variableEntryId=${this.variableEntryId}
                                     .showCitation=${this.showCitation}
+                                    .showJupyter=${this.showJupyter}
                                     .showHelp=${this.showHelp}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
@@ -485,7 +511,6 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                           </terra-alert>
                       `
                     : ''}
-
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
                     .data=${this.#timeSeriesController.lastTaskValue ??

@@ -231,7 +231,21 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         )
     }
 
+    /**
+     * Show or hide the Jupyter notebook button in the plot toolbar.
+     */
+    showJupyter?: boolean;
+
     async firstUpdated() {
+
+        //* Detect if time avg map component is running in a Jupyter notebook.
+        if (this.showJupyter === undefined) {
+            this.showJupyter = !this.#isNotebookEnv();
+        }
+
+        this.#controller = new TimeAvgMapController(this)
+        // Initialize the base layer open street map
+        this.intializeMap()
         this._fetchVariableTask.run()
     }
 
@@ -280,6 +294,19 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
             'terra-map-pointer-move',
             this.#handlePointerMove as EventListener
         )
+    }
+
+    #isNotebookEnv(): boolean {
+        const w = window as any;
+
+        return (
+            typeof w.Jupyter !== "undefined" ||
+            typeof w.IPython !== "undefined" ||
+            typeof w.google?.colab !== "undefined" ||
+            typeof w.__jupyterlab !== "undefined" ||
+            document.querySelector(".jp-Notebook") !== null ||
+            document.querySelector(".jupyter-widgets") !== null
+        );
     }
 
     #handleMapError = (event: CustomEvent) => {
@@ -1203,6 +1230,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                               @show-opacity-value=${this.#handleOpacityChange}
                               @show-color-map=${this.#handleColorMapChange}
                               @show-check-box-toggle=${this.#handleCheckBoxToggle}
+                              .showJupyter=${this.showJupyter}
                               .pixelValue=${this.pixelValue}
                               .pixelCoordinates=${this.pixelCoordinates}
                               show-date-range
