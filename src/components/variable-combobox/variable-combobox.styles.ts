@@ -8,7 +8,7 @@ export default css`
 
         block-size: var(--terra-block-size, 2.1875rem);
         box-sizing: border-box;
-        color: #1b1b1b; /* HDS uses this color for body text but does not have a defined color in the HDS palette */
+        color: var(--terra-input-text-default);
         contain: layout size style;
         contain-intrinsic-size: var(--terra-inline-size, 100%)
             calc(33vh + var(--terra-block-size, 2.1875rem));
@@ -42,12 +42,6 @@ export default css`
 
     * {
         box-sizing: inherit;
-    }
-
-    .search-input-group {
-        block-size: 100%;
-        display: flex;
-        flex-wrap: wrap;
     }
 
     .tag-container {
@@ -124,12 +118,23 @@ export default css`
             border-color 0.2s ease;
     }
 
-    .combobox::part(input)::placeholder {
-        color: var(--terra-color-carbon-60);
+    .combobox::placeholder {
+        color: var(--terra-input-text-placeholder);
     }
 
-    .search-input-group:has(.combobox:not(:focus-within)) + .search-results[open] {
-        border-color: var(--terra-color-carbon-30);
+    .combobox:focus {
+        border-color: var(--terra-input-border-focus);
+        outline: 0;
+    }
+
+    .search-input-group {
+        block-size: 100%;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
+        border-color: var(--terra-input-border-default);
     }
 
     .combobox-button {
@@ -170,9 +175,9 @@ export default css`
     }
 
     .search-help {
-        color: var(--terra-color-carbon-60);
+        color: var(--terra-input-help-text-color);
         flex: 1 1 100%;
-        font-size: var(--terra-font-size-small);
+        font-size: var(--terra-input-help-text-font-size-medium);
         line-height: var(--terra-line-height-normal);
         margin-block: 0;
         position: absolute;
@@ -185,7 +190,7 @@ export default css`
     }
 
     .search-results {
-        background-color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-input-background-default);
         block-size: calc(33vh - var(--terra-block-size, 2.1875rem));
         border-block-end: 2px solid transparent;
         border-inline: 2px solid transparent;
@@ -211,7 +216,8 @@ export default css`
     }
 
     .search-results[open] {
-        border-color: var(--terra-color-carbon-40);
+        border-color: var(--terra-container-panel-border);
+        border-radius: var(--terra-container-panel-border-radius);
         content-visibility: auto;
         max-height: calc(33vh - var(--terra-block-size, 2.1875rem));
         opacity: 1;
@@ -225,7 +231,8 @@ export default css`
     }
 
     .search-results .error {
-        color: var(--terra-color-nasa-red);
+        color: var(--terra-text-on-error);
+        background-color: var(--terra-color-bg-error-subtle);
         font-family: var(--terra-font-family--dm-mono);
         padding-block: 2rem;
     }
@@ -239,6 +246,9 @@ export default css`
         font-family: var(--terra-font-family--inter);
         font-weight: 700;
         margin-block: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .listbox-option {
@@ -287,5 +297,56 @@ export default css`
             stroke-dasharray: 42 150;
             stroke-dashoffset: -59;
         }
+    }
+
+    .info-icon {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 0.4rem;
+        cursor: pointer;
+        color: var(--terra-text-link-default);
+        line-height: 1;
+    }
+
+    .info-icon:hover {
+        color: var(--terra-text-link-hover);
+    }
+
+    /* Optional: better accessibility feedback */
+    .info-icon:focus {
+        outline: 2px solid rgba(0, 113, 188, 0.4);
+        border-radius: 50%;
+    }
+
+    terra-popup::part(popup) {
+        width: 380px;
+        max-width: min(380px, calc(100vw - 16px));
+    }
+
+    .variable-info-popup {
+        background: var(--terra-container-panel-bg);
+        border: 1px solid var(--terra-container-panel-border);
+        border-radius: var(--terra-container-panel-border-radius: 0.5rem);
+        box-shadow: var(--terra-shadow-medium);
+        padding: 1rem;
+    }
+
+    .variable-info-popup dl {
+        margin: 0;
+    }
+
+    .variable-info-popup dt {
+        font-weight: var(--terra-font-weight-semibold);
+        margin-top: 0.75rem;
+    }
+
+    .variable-info-popup dt:first-child {
+        margin-top: 0;
+    }
+
+    .variable-info-popup dd {
+        margin: 0.25rem 0 0.75rem;
+        font-style: italic;
+        text-wrap: balance;
     }
 `

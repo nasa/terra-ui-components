@@ -29,15 +29,21 @@ export default css`
         height: 1.4rem;
         width: 1.4rem;
         cursor: pointer;
-        color: var(--terra-color-neutral-500, #6b7280);
+        color: var(--terra-spatial-picker-icon-color, #444447);
         flex-shrink: 0;
     }
 
     :host .spatial-picker__input_icon:hover {
-        color: var(--terra-color-neutral-700, #374151);
+        color: var(--terra-spatial-picker-icon-color-hover, #17171b);
+    }
+
+    .spatial-picker__clear-btn svg {
+        height: 1.4rem;
+        width: 1.4rem;
     }
 
     .spatial-picker__map-container {
+        position: relative;
         width: 100%;
         max-width: min(600px, calc(100vw - 2rem));
         min-width: min(600px, 100vw);
@@ -80,8 +86,26 @@ export default css`
     }
 
     .spatial-picker__error {
-        color: #a94442;
+        color: var(--terra-color-nasa-red, #f64137);
         font-size: 0.8rem;
         padding: 10px;
+    }
+
+      .dropdown-header {
+        display: flex;
+        justify-content: flex-end;
+        padding: 4px 6px;
+    }
+
+    .spatial-picker__close-btn {
+     border: none;
+        background: transparent;
+        font-size: 18px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .spatial-picker__close-btn:hover {
+        opacity: 0.7;
     }
 `

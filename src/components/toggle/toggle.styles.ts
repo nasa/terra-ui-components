@@ -73,6 +73,10 @@ export default css`
             var(--terra-transition-fast) box-shadow;
     }
 
+    .toggle__control .toggle__thumb:hover {
+        background-color: var(--terra-toggle-thumb-background-color-hover);
+    }
+
     .toggle__input {
         position: absolute;
         opacity: 0;
@@ -90,7 +94,14 @@ export default css`
     .toggle:not(.toggle--checked):not(.toggle--disabled)
         .toggle__control:hover
         .toggle__thumb {
-        background-color: var(--terra-toggle-thumb-background-color);
+        background-color: var(--terra-toggle-thumb-background-color-hover);
+        border-color: var(--terra-toggle-thumb-border-color-off);
+    }
+
+    .toggle:not(.toggle--checked):not(.toggle--disabled)
+        .toggle__control:hover
+        .toggle__thumb:active {
+        background-color: var(--terra-toggle-thumb-background-color-active);
         border-color: var(--terra-toggle-thumb-border-color-off);
     }
 
@@ -133,7 +144,15 @@ export default css`
     .toggle.toggle--checked:not(.toggle--disabled)
         .toggle__control:hover
         .toggle__thumb {
-        background-color: var(--terra-toggle-thumb-background-color);
+        background-color: var(--terra-toggle-thumb-background-color-hover);
+        border-color: var(--terra-toggle-thumb-border-color-on);
+    }
+
+    /* Checked + active */
+    .toggle.toggle--checked:not(.toggle--disabled)
+        .toggle__control:hover
+        .toggle__thumb:active {
+        background-color: var(--terra-toggle-thumb-background-color-active);
         border-color: var(--terra-toggle-thumb-border-color-on);
     }
 

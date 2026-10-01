@@ -22,9 +22,9 @@ import { mergeTooltips } from '../date-range-slider/noui-slider-utilities.js'
  * @cssproperty --terra-slider-track-color - Color of the slider track.
  * @cssproperty --terra-slider-handle-color - Color of the slider handles.
  * @cssproperty --terra-slider-connect-color - Color of the connected range.
- * @cssproperty --terra-input-border-color - Border color for input fields.
- * @cssproperty --terra-input-background-color - Background color for input fields.
- * @cssproperty --terra-input-color - Text color for input fields.
+ * @cssproperty --terra-input-border-default - Border color for input fields.
+ * @cssproperty --terra-input-background-default - Background color for input fields.
+ * @cssproperty --terra-input-text-default - Text color for input fields.
  *
  * @event terra-slider-change - Emitted when the slider value changes.
  * @eventDetail { value: number } - For single mode sliders.
@@ -128,6 +128,9 @@ export default class TerraSlider extends TerraElement {
     @property({ attribute: 'hide-label', type: Boolean })
     hideLabel: boolean = false
 
+    @property({ attribute: 'format-tooltip', type: Function })
+    formatTooltip?: (value: number) => string
+
     @state() private currentStartValue?: number
     @state() private currentEndValue?: number
     @state() private currentValue?: number
@@ -199,11 +202,13 @@ export default class TerraSlider extends TerraElement {
             start: startValues as any,
             step: this.step,
             connect: this.mode === 'range',
-            tooltips: this.hasTooltips
-                ? this.mode === 'range'
-                    ? [this.hasTooltips, this.hasTooltips]
-                    : this.hasTooltips
-                : false,
+
+            tooltips: this.formatTooltip
+                ? {
+                      to: (value: number) => this.formatTooltip?.(value) ?? value,
+                  }
+                : this.hasTooltips,
+
             behaviour: 'drag',
             format: this._getFormatter(),
             pips: this.hasPips

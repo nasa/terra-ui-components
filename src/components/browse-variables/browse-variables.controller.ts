@@ -1,101 +1,193 @@
-import { GiovanniVariableCatalog } from '../../metadata-catalog/giovanni-variable-catalog.js'
-import { Task } from '@lit/task'
-import type { StatusRenderer } from '@lit/task'
-import type { ReactiveControllerHost } from 'lit'
-import type {
-    FacetsByCategory,
-    SearchResponse,
-    Variable,
-} from './browse-variables.types.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
+import giovanniApi from '../../apis/giovanni.api.js'
+import { queryGiovanniVariables } from '../../queries/giovanni.queries.js'
+import type { ReactiveController, ReactiveControllerHost } from 'lit'
+import { getUTCDate } from '../../utilities/date.js'
+import type { FacetsByCategory, Variable } from './browse-variables.types.js'
 import type TerraBrowseVariables from './browse-variables.component.js'
+import type { GiovanniVariable } from '../../apis/giovanni.api.js'
 
-export class BrowseVariablesController {
-    task: Task<[string | undefined], SearchResponse>
+type SearchVariablesResult = Awaited<
+    ReturnType<typeof giovanniApi.searchVariables>
+>
 
-    #host: ReactiveControllerHost & TerraBrowseVariables
-    #catalog: any // TODO: fix this type, it should be VariableCatalogInterface
+export class BrowseVariablesController implements ReactiveController {
+    #query: QueryController<SearchVariablesResult | null>
 
-    constructor(host: ReactiveControllerHost & TerraBrowseVariables) {
+    #host: ReactiveControllerHost & QueryClientHost & TerraBrowseVariables
+
+    #hasAutoSelectedVariables = false
+
+    constructor(
+        host: ReactiveControllerHost & QueryClientHost & TerraBrowseVariables,
+    ) {
         this.#host = host
-        this.#catalog = this.#getCatalogRepository()
+        host.addController(this)
 
-        this.task = new Task(host, {
-            task: async ([searchQuery, selectedFacets], { signal }) => {
-                const searchResponse = await this.#catalog.searchVariablesAndFacets(
-                    searchQuery,
-                    selectedFacets,
-                    {
-                        signal,
-                    }
-                )
-
-                this.#selectVariables(searchResponse)
-
-                return searchResponse
-            },
-            args: (): any => [this.#host.searchQuery, this.#host.selectedFacets],
+        this.#query = new QueryController(host, () => {
+            const { q, filter } = this.#buildSearchParams()
+            return queryGiovanniVariables({ q, filter })
         })
     }
 
+    hostConnected() {}
+
+    hostDisconnected() {}
+
+    async hostUpdated() {
+        const data = this.#query.result?.data
+        if (!data || this.#hasAutoSelectedVariables) return
+        await this.#selectVariables(data)
+    }
+
     get facetsByCategory(): FacetsByCategory | undefined {
-        return this.task.value?.facetsByCategory
+        const data = this.#query.result?.data
+        if (!data) return undefined
+
+        const facetsByCategory: FacetsByCategory = {
+            depths: [],
+            disciplines: [],
+            measurements: [],
+            observations: [],
+            platformInstruments: [],
+            portals: [],
+            spatialResolutions: [],
+            specialFeatures: [],
+            temporalResolutions: [],
+            wavelengths: [],
+        }
+
+        for (const facet of data.facets) {
+            const category = facet.category as keyof FacetsByCategory
+            if (category in facetsByCategory) {
+                facetsByCategory[category] = facet.values
+            }
+        }
+
+        return facetsByCategory
     }
 
     get variables(): Variable[] {
-        return this.task.value?.variables ?? []
+        const data = this.#query.result?.data
+        return data ? this.#adaptVariables(data.variables) : []
     }
 
     get total(): number {
-        return this.task.value?.total ?? 0
+        return this.#query.result?.data?.total ?? 0
     }
 
-    get catalog(): GiovanniVariableCatalog {
-        return this.#catalog
+    get isPending(): boolean {
+        return this.#query.result?.isFetching ?? false
     }
 
-    render(renderFunctions: StatusRenderer<any>) {
-        return this.task.render(renderFunctions)
+    async getVariable(variableEntryId: string): Promise<Variable | null> {
+        const variable = await giovanniApi.getVariable(variableEntryId)
+        return variable ? this.#adaptVariables([variable])[0] : null
     }
 
-    /**
-     * Selects variables from the search response that are in the selectedVariableEntryIds list
-     */
-    async #selectVariables(searchResponse: SearchResponse) {
+    async #selectVariables(data: SearchVariablesResult) {
         if (
             !this.#host.selectedVariableEntryIds ||
             this.#host.selectedVariables.length > 0
         ) {
-            // we only want to select variables if the user has passed any in AND we haven't already made any selections
             return
         }
 
+        this.#hasAutoSelectedVariables = true
+
+        const adaptedVariables = this.#adaptVariables(data.variables)
         const variableEntryIds = this.#host.selectedVariableEntryIds.split(',')
 
-        const variables = searchResponse.variables.filter(variable => {
-            return (
+        const variables = adaptedVariables.filter(
+            (variable) =>
                 variableEntryIds.includes(variable.dataFieldId) ||
                 variableEntryIds.includes(
-                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldAccessName}`
-                )
-            )
-        })
+                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldAccessName}`,
+                ),
+        )
 
         const missingVariableIds = variableEntryIds.filter(
-            id => !variables.some(variable => variable.dataFieldId === id)
+            (id) => !variables.some((v) => v.dataFieldId === id),
         )
 
-        const missingVariables = await Promise.all(
-            missingVariableIds.map(id => this.#catalog.getVariable(id))
-        )
+        const missingVariables = (
+            await Promise.all(
+                missingVariableIds.map((id) => this.getVariable(id)),
+            )
+        ).filter(Boolean) as Variable[]
 
         this.#host.selectedVariables = [...variables, ...missingVariables]
     }
 
-    #getCatalogRepository() {
-        if (this.#host.catalog === 'giovanni') {
-            return new GiovanniVariableCatalog()
+    #buildSearchParams() {
+        const { searchQuery: query, selectedFacets } = this.#host
+
+        // Handle Giovanni catalog inconsistency: "Aerosols" query returns no results
+        // without being remapped to the disciplines facet
+        if (
+            (query === 'Aerosols' || query === 'aerosols') &&
+            !selectedFacets?.observations?.includes('Aerosols')
+        ) {
+            return {
+                q: undefined as string | undefined,
+                filter: {
+                    ...selectedFacets,
+                    disciplines: [
+                        ...(selectedFacets?.disciplines ?? []),
+                        'Aerosols',
+                    ],
+                } as Record<string, string[]>,
+            }
         }
 
-        throw new Error(`Invalid catalog: ${this.#host.catalog}`)
+        return {
+            q: query as string | undefined,
+            filter: selectedFacets as Record<string, string[]>,
+        }
+    }
+
+    #adaptVariables(variables: GiovanniVariable[]): Variable[] {
+        return variables.map((variable) => {
+            const exampleInitialDates =
+                this.#getReasonableInitialDates(variable)
+
+            return {
+                ...variable,
+                exampleInitialStartDate:
+                    exampleInitialDates?.exampleInitialStartDate,
+                exampleInitialEndDate:
+                    exampleInitialDates?.exampleInitialEndDate,
+                dataFieldShortName:
+                    !variable.dataFieldShortName ||
+                    variable.dataFieldShortName === ''
+                        ? variable.dataFieldAccessName
+                        : variable.dataFieldShortName,
+            }
+        })
+    }
+
+    #getReasonableInitialDates(variable: GiovanniVariable) {
+        if (
+            !variable?.dataProductBeginDateTime ||
+            !variable?.dataProductEndDateTime
+        ) {
+            return undefined
+        }
+
+        const diff = Math.abs(
+            new Date(variable.dataProductEndDateTime).getTime() -
+                new Date(variable.dataProductBeginDateTime).getTime(),
+        )
+        const threeQuarterRange = Math.floor(diff * 0.75)
+        const startDate = Math.abs(
+            new Date(variable.dataProductBeginDateTime).getTime() +
+                threeQuarterRange,
+        )
+
+        return {
+            exampleInitialStartDate: getUTCDate(startDate),
+            exampleInitialEndDate: getUTCDate(variable.dataProductEndDateTime),
+        }
     }
 }

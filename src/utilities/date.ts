@@ -1,10 +1,12 @@
-import { isValid, format } from 'date-fns'
+import { isValid } from 'date-fns'
 
 type MaybeDate = string | number | Date
 
-export function isValidDate(date: any): boolean {
-    const parsedDate = Date.parse(date)
-    return !isNaN(parsedDate) && isValid(parsedDate)
+export function isValidDate(date: string | number | Date): boolean {
+    const parsedDate =
+        date instanceof Date ? date.getTime() : Date.parse(String(date))
+
+    return !Number.isNaN(parsedDate) && isValid(parsedDate)
 }
 
 export function getUTCDate(date: MaybeDate, endOfDay: boolean = false) {
@@ -20,15 +22,31 @@ export function getUTCDate(date: MaybeDate, endOfDay: boolean = false) {
         utcDate = new Date()
     }
 
-    // Convert to UTC by adjusting for timezone offset
-    const offset = utcDate.getTimezoneOffset()
-    utcDate = new Date(utcDate.getTime() + offset * 60000)
-
     if (endOfDay) {
         utcDate.setUTCHours(23, 59, 59, 999)
     }
 
     return utcDate
+}
+
+function pad2(value: number): string {
+    return String(value).padStart(2, '0')
+}
+
+function pad4(value: number): string {
+    return String(value).padStart(4, '0')
+}
+
+function formatUtcWithPattern(date: Date, pattern: string): string {
+    const replacements: Record<string, string> = {
+        yyyy: pad4(date.getUTCFullYear()),
+        MM: pad2(date.getUTCMonth() + 1),
+        dd: pad2(date.getUTCDate()),
+        HH: pad2(date.getUTCHours()),
+        mm: pad2(date.getUTCMinutes()),
+    }
+
+    return pattern.replace(/yyyy|MM|dd|HH|mm/g, (token) => replacements[token])
 }
 
 /**
@@ -50,7 +68,7 @@ export function formatDate(date: MaybeDate, formatString?: string) {
 
     // Default format if none provided
     const defaultFormat = 'yyyy-MM-dd'
-    return format(dateObj, formatString || defaultFormat)
+    return formatUtcWithPattern(dateObj, formatString || defaultFormat)
 }
 
 /**
@@ -61,36 +79,44 @@ export function isDateRangeContained(
     start1: Date,
     end1: Date,
     start2: Date,
-    end2: Date
+    end2: Date,
 ): boolean {
     const startOfDay1 = new Date(
-        start1.getFullYear(),
-        start1.getMonth(),
-        start1.getDate()
+        Date.UTC(
+            start1.getUTCFullYear(),
+            start1.getUTCMonth(),
+            start1.getUTCDate(),
+        ),
     )
     const startOfDay2 = new Date(
-        start2.getFullYear(),
-        start2.getMonth(),
-        start2.getDate()
+        Date.UTC(
+            start2.getUTCFullYear(),
+            start2.getUTCMonth(),
+            start2.getUTCDate(),
+        ),
     )
 
     const endOfDay1 = new Date(
-        end1.getFullYear(),
-        end1.getMonth(),
-        end1.getDate(),
-        23,
-        59,
-        59,
-        999
+        Date.UTC(
+            end1.getUTCFullYear(),
+            end1.getUTCMonth(),
+            end1.getUTCDate(),
+            23,
+            59,
+            59,
+            999,
+        ),
     )
     const endOfDay2 = new Date(
-        end2.getFullYear(),
-        end2.getMonth(),
-        end2.getDate(),
-        23,
-        59,
-        59,
-        999
+        Date.UTC(
+            end2.getUTCFullYear(),
+            end2.getUTCMonth(),
+            end2.getUTCDate(),
+            23,
+            59,
+            59,
+            999,
+        ),
     )
 
     return startOfDay1 >= startOfDay2 && endOfDay1 <= endOfDay2

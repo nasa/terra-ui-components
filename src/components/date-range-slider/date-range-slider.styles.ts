@@ -5,6 +5,26 @@ export default css`
         display: block;
     }
 
+    .container {
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-top: 40px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .container [part~='slider'] {
+        margin-inline: 48px;
+    }
+
+    @media (max-width: 600px) {
+        .container [part~='slider'] {
+        min-width: 520px;
+        }
+    }
+
     .hasPips {
         padding-bottom: 80px;
     }
@@ -65,7 +85,7 @@ export default css`
     /* Offset direction
  */
     .noUi-txt-dir-rtl.noUi-horizontal .noUi-origin {
-        border: 1px solid var(--terra-input-border-color);
+        border: 1px solid var(--terra-input-border-default);
         left: 0;
         right: auto;
     }
@@ -84,6 +104,11 @@ export default css`
         backface-visibility: hidden;
         position: absolute;
     }
+
+    .noUi-handle:hover {
+        cursor: pointer;
+    }
+
     .noUi-touch-area {
         height: 100%;
         width: 100%;
@@ -99,14 +124,14 @@ export default css`
     /* Slider size and handle placement;
  */
     .noUi-horizontal {
-        height: 18px;
+        height: 10px;
     }
 
     .noUi-horizontal .noUi-handle {
         width: 30px;
         height: 30px;
         right: -15px;
-        top: -7px;
+        top: -9px;
     }
     .noUi-vertical {
         width: 18px;
@@ -125,18 +150,15 @@ export default css`
  * Giving the connect element a border radius causes issues with using transform: scale
  */
     .noUi-target {
-        background: #fafafa;
-        border-radius: 4px;
-        border: 1px solid var(--terra-input-border-color);
-        box-shadow:
-            inset 0 1px 1px #f0f0f0,
-            0 3px 6px -5px #bbb;
+        background: var(--terra-slider-track-background-color);
+        border-radius: 2px;
+        border: 1px solid var(--terra-slider-track-border-color);
     }
     .noUi-connects {
         border-radius: 3px;
     }
     .noUi-connect {
-        background: rgb(119, 164, 238);
+        background: var(--terra-slider-connect-color);
     }
     /* Handles and cursors;
  */
@@ -147,17 +169,14 @@ export default css`
         cursor: ns-resize;
     }
     .noUi-handle {
-        background: #1c67e3;
-        border: 1px solid rgb(119, 164, 238);
+        background: var(--terra-slider-handle-background-color);
+        border: 1px solid var(--terra-slider-handle-border-color);
         border-radius: 99px;
         cursor: default;
         box-shadow:;
     }
     .noUi-active {
-        box-shadow:
-            inset 0 0 1px #fff,
-            inset 0 1px 7px #ddd,
-            0 3px 6px -3px #bbb;
+        background: var(--terra-slider-handle-background-color-active);
     }
     /* Handle stripes;
  */
@@ -296,10 +315,11 @@ export default css`
         position: absolute;
         font-family: var(--terra-input-font-family);
         font-size: var(--terra-input-font-size);
-        color: var(--terra-input-color);
-        border: var(--terra-input-border-width) solid var(--terra-input-border-color);
+        color: var(--terra-input-text-default);
+        border: var(--terra-input-border-width) solid
+            var(--terra-input-border-default);
         border-radius: var(--terra-input-border-radius);
-        background: var(--terra-input-background-color);
+        background: var(--terra-input-background-default);
         padding: 5px 10px;
         text-align: center;
         white-space: nowrap;

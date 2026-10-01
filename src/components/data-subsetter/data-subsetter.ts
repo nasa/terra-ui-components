@@ -6,7 +6,7 @@ export default TerraDataSubsetter
 TerraDataSubsetter.define('terra-data-subsetter')
 
 declare global {
-    interface HTMLElementTagNameMap {
-        'terra-data-subsetter': TerraDataSubsetter
-    }
+	interface HTMLElementTagNameMap {
+		'terra-data-subsetter': TerraDataSubsetter
+	}
 }

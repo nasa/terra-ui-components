@@ -12,3 +12,6 @@ package-lock.json
 tsconfig.json
 cdn
 _site
+src/themes/Figma_Export_Variables.json
+src/components/map/layers/labelsStyleConfig.ts
+src/components/map/layers/bordersStyleConfig.ts

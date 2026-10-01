@@ -40,6 +40,7 @@ export default css`
         max-width: var(--max-width);
         border-radius: var(--terra-tooltip-border-radius);
         background-color: var(--terra-tooltip-background-color);
+        box-shadow: var(--terra-popover-shadow);
         font-family: var(--terra-tooltip-font-family);
         font-size: var(--terra-tooltip-font-size);
         font-weight: var(--terra-tooltip-font-weight);
@@ -51,6 +52,12 @@ export default css`
         pointer-events: none;
         user-select: none;
         -webkit-user-select: none;
+    }
+
+    :host([interactive]) .tooltip__body {
+        pointer-events: auto;
+        user-select: text;
+        -webkit-user-select: text;
     }
 
     .tooltip__image {

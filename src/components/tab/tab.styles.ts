@@ -11,7 +11,7 @@ export default css`
         font-family: var(--terra-tab-font-family);
         font-size: var(--terra-tab-font-size-large);
         font-weight: var(--terra-tab-font-weight-normal);
-        color: var(--terra-tab-color);
+        color: var(--terra-tab-text-default);
         padding: var(--terra-tab-padding-large);
         white-space: nowrap;
         user-select: none;
@@ -27,7 +27,7 @@ export default css`
     }
 
     .tab:hover:not(.tab--disabled) {
-        color: var(--terra-tab-color-hover);
+        color: var(--terra-tab-text-default-hover);
     }
 
     :host(:focus) {
@@ -40,7 +40,7 @@ export default css`
     }
 
     .tab.tab--active:not(.tab--disabled) {
-        color: var(--terra-tab-color-active);
+        color: var(--terra-tab-text-selected);
         font-weight: var(--terra-tab-font-weight-active);
     }
 

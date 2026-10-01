@@ -79,13 +79,19 @@ describe('<terra-alert>', () => {
             expect(el.variant).to.equal('success')
         })
 
-        it('should default variant to primary', async () => {
+        it('should default variant to information', async () => {
             const el: any = await fixture(html` <terra-alert></terra-alert> `)
-            expect(el.variant).to.equal('primary')
+            expect(el.variant).to.equal('information')
         })
 
         it('should accept all variant values', async () => {
-            const variants = ['primary', 'success', 'neutral', 'warning', 'danger']
+            const variants = [
+                'information',
+                'success',
+                'neutral',
+                'warning',
+                'danger',
+            ]
             for (const variant of variants) {
                 const el: any = await fixture(html`
                     <terra-alert variant=${variant}></terra-alert>
@@ -334,12 +340,12 @@ describe('<terra-alert>', () => {
     })
 
     describe('Variants', () => {
-        it('should apply primary variant class', async () => {
+        it('should apply information variant class', async () => {
             const el: any = await fixture(html`
-                <terra-alert variant="primary" open></terra-alert>
+                <terra-alert variant="information" open></terra-alert>
             `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
-            expect(base?.classList.contains('alert--primary')).to.be.true
+            expect(base?.classList.contains('alert--information')).to.be.true
         })
 
         it('should apply success variant class', async () => {

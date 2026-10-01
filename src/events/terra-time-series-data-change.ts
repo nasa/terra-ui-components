@@ -5,6 +5,10 @@ export interface TerraTimeSeriesDataChangeEvent extends CustomEvent {
     detail: {
         data: TimeSeriesData
         variable: Variable
+        series?: Array<{
+            variable: Variable
+            data: TimeSeriesData
+        }>
         startDate: string
         endDate: string
         location: string

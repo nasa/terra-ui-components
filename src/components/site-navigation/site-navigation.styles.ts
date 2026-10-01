@@ -7,7 +7,7 @@ export default css`
 
     /* Navbar container */
     .navbar {
-        background-color: #333;
+        background-color: var(--terra-site-navigation-background);
         font-family: Arial, sans-serif;
     }
 

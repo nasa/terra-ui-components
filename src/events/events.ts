@@ -4,7 +4,10 @@ export type { TerraDateRangeChangeEvent } from './terra-date-range-change.js'
 export type { TerraErrorEvent } from './terra-error.js'
 export type { TerraVariableKeywordSearchChangeEvent } from './terra-variable-keyword-search-change.js'
 export type { TerraLoadEvent } from './terra-load.js'
-export type { TerraMapChangeEvent } from './terra-map-change.js'
+export type {
+    TerraMapChangeEvent,
+    TerraMapPointerMoveEvent,
+} from './terra-map-change.js'
 export type { TerraRemoveEvent } from './terra-remove.js'
 export type { TerraSearchEvent } from './terra-search.js'
 export type { TerraLoginEvent } from './terra-login.ts'
@@ -56,3 +59,8 @@ export type {
 } from './terra-data-grid.js'
 export type { TerraPlotOptionsChangeEvent } from './terra-plot-options-change.js'
 export type { TerraDateSelectionInvalidEvent } from './terra-date-selection-invalid.js'
+export type { TerraHarmonyJobStatusUpdateEvent } from './terra-harmony-job-status-update.js'
+export type { TerraHarmonyJobSelectEvent } from './terra-harmony-job-select.js'
+export type { TerraHarmonyJobDeleteEvent } from './terra-harmony-job-delete.js'
+export type { TerraTimeSeriesLoadingChangeEvent } from './terra-time-series-loading-change.js'
+export type { TerraTimeSeriesChunkProgressChangeEvent } from './terra-time-series-chunk-progress-change.js'

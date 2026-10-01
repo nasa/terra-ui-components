@@ -20,7 +20,7 @@ export default css`
         font-weight: var(--terra-font-weight-normal);
         line-height: var(--terra-line-height-normal);
         letter-spacing: var(--terra-letter-spacing-normal);
-        color: var(--terra-color-carbon-70);
+        color: var(--terra-menu-item-text);
         padding: var(--terra-spacing-x-small) var(--terra-spacing-medium)
             var(--terra-spacing-x-small) var(--terra-spacing-x-small);
         transition: var(--terra-transition-fast) fill;
@@ -28,14 +28,14 @@ export default css`
     }
 
     .option--hover:not(.option--current):not(.option--disabled) {
-        background-color: var(--terra-color-carbon-10);
-        color: var(--terra-color-carbon-90);
+        background-color: var(--terra-options-item-background-hover);
+        color: var(--terra-options-item-text-hover);
     }
 
     .option--current,
     .option--current.option--disabled {
-        background-color: var(--terra-color-nasa-blue);
-        color: var(--terra-color-spacesuit-white);
+        background-color: var(--terra-options-item-background-selected);
+        color: var(--terra-options-item-text-selected);
         opacity: 1;
     }
 

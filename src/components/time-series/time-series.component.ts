@@ -2,7 +2,9 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
 import TerraAlert from '../alert/alert.component.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
@@ -21,7 +23,38 @@ import {
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import { cache } from 'lit/directives/cache.js'
-import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+
+const variableEntryIdsConverter = {
+    fromAttribute: (value: string | null): string[] => {
+        if (!value) {
+            return []
+        }
+
+        try {
+            const parsedValue = JSON.parse(value)
+
+            if (Array.isArray(parsedValue)) {
+                return parsedValue.map(item => String(item).trim()).filter(Boolean)
+            }
+        } catch {
+            // fall back to comma-delimited parsing
+        }
+
+        return value
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean)
+    },
+    toAttribute: (value: string[] | undefined): string | null => {
+        if (!value?.length) {
+            return null
+        }
+
+        return JSON.stringify(value)
+    },
+}
 
 /**
  * @summary A component for visualizing time series data using the GES DISC Giovanni API.
@@ -33,8 +66,11 @@ import { getFetchVariableTask } from '../../metadata-catalog/tasks.js'
  *
  * @event terra-date-range-change - Emitted whenever the date range is modified
  * @event terra-time-series-data-change - Emitted whenever time series data has been fetched from Giovanni
+ * @event terra-harmony-job-status-update - Emitted whenever the status of a Harmony job is updated
+ * @event terra-time-series-loading-change - Emitted whenever loading starts or ends
+ * @event terra-time-series-chunk-progress-change - Emitted whenever chunked Harmony requests advance
  */
-export default class TerraTimeSeries extends TerraElement {
+export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-plot': TerraPlot,
@@ -45,13 +81,23 @@ export default class TerraTimeSeries extends TerraElement {
         'terra-plot-toolbar': TerraPlotToolbar,
     }
 
-    #timeSeriesController: TimeSeriesController
+    #timeSeriesController = new TimeSeriesController(this)
 
     /**
      * a variable entry ID (ex: GPM_3IMERGHH_06_precipitationCal)
      */
     @property({ attribute: 'variable-entry-id', reflect: true })
     variableEntryId?: string
+
+    /**
+     * variable entry IDs for multi-variable time series plotting
+     * (ex: ["GPM_3IMERGHH_06_precipitationCal", "GPM_3IMERGHH_06_probLiquidPrecipitation"])
+     */
+    @property({
+        attribute: 'variable-entry-ids',
+        converter: variableEntryIdsConverter,
+    })
+    variableEntryIds: string[] = []
 
     /**
      * a collection entry id (ex: GPM_3IMERGHH_06)
@@ -94,13 +140,16 @@ export default class TerraTimeSeries extends TerraElement {
     })
     location?: string
 
-    @property({ type: Boolean, attribute: 'show-citation' }) showCitation: boolean =
-        false
+    @property({ type: Boolean, attribute: 'show-citation' })
+    showCitation: boolean = false
+
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
 
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
      */
-    @property({ attribute: 'application-citation' }) applicationCitation?: string
+    @property({ attribute: 'application-citation' })
+    applicationCitation?: string
 
     /**
      * When true, disables automatic data fetching when the user zooms, pans, or otherwise interacts with the plot.
@@ -114,7 +163,11 @@ export default class TerraTimeSeries extends TerraElement {
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
      */
-    @property({ attribute: 'bearer-token', reflect: false })
+    @property({
+        attribute: 'bearer-token',
+        reflect: false,
+        converter: undefinedStringConverter,
+    })
     bearerToken?: string
 
     @property({
@@ -137,10 +190,31 @@ export default class TerraTimeSeries extends TerraElement {
     })
     productLabel?: string
 
+    /**
+     * the application ID is used for tracking purposes and will be included in the labels of Harmony jobs created by this component
+     */
+    @property({ attribute: 'application-id' })
+    applicationId?: string
+
+    /**
+     * When true, enables IndexedDB caching — data will be read from and written to the local cache.
+     * Defaults to false, meaning no caching is performed.
+     */
+    @property({ type: Boolean })
+    cache = false
+
+    /**
+     * If provided, skips creating a new Harmony job and instead waits for this existing job ID to complete.
+     */
+    @property({ attribute: 'job-id' })
+    jobId?: string
+
     @query('terra-plot') plot: TerraPlot
     @query('terra-plot-toolbar') plotToolbar: TerraPlotToolbar
 
     @state() catalogVariable: Variable
+
+    @state() catalogVariables: Variable[] = []
 
     /**
      * user quota reached maximum request
@@ -168,6 +242,14 @@ export default class TerraTimeSeries extends TerraElement {
     @state()
     estimatedDataPoints = 0
 
+    @state()
+    private chunkProgress?: {
+        currentChunk: number
+        totalChunks: number
+    }
+
+    #isLoading = false
+
     _authController = new AuthController(this)
 
     _fetchVariableTask = getFetchVariableTask(this)
@@ -191,12 +273,33 @@ export default class TerraTimeSeries extends TerraElement {
         }
         //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this)
+        this.addEventListener(
+            'terra-time-series-chunk-progress-change',
+            this.#handleChunkProgress as EventListener
+        )
     }
 
     updated(changedProps: Map<string, unknown>) {
         super.updated(changedProps)
 
         const taskStatus = this.#timeSeriesController.task.status
+        const isLoading =
+            taskStatus === TaskStatus.PENDING ||
+            this._fetchVariableTask.status === TaskStatus.PENDING
+
+        if (isLoading !== this.#isLoading) {
+            this.#isLoading = isLoading
+
+            this.dispatchEvent(
+                new CustomEvent('terra-time-series-loading-change', {
+                    detail: {
+                        loading: isLoading,
+                    },
+                    bubbles: true,
+                    composed: true,
+                })
+            )
+        }
 
         // Clear error when a new request starts
         if (taskStatus === TaskStatus.PENDING && this.timeSeriesError) {
@@ -230,6 +333,10 @@ export default class TerraTimeSeries extends TerraElement {
             'terra-time-series-error',
             this.#handleQuotaError as EventListener
         )
+        this.removeEventListener(
+            'terra-time-series-chunk-progress-change',
+            this.#handleChunkProgress as EventListener
+        )
     }
 
     #isNotebookEnv(): boolean {
@@ -261,6 +368,17 @@ export default class TerraTimeSeries extends TerraElement {
         }
     }
 
+    #handleChunkProgress = (
+        event: CustomEvent<{ currentChunk: number; totalChunks: number }>
+    ) => {
+        const { currentChunk, totalChunks } = event.detail
+
+        this.chunkProgress =
+            currentChunk > 0 && totalChunks > 1
+                ? { currentChunk, totalChunks }
+                : undefined
+    }
+
     #confirmDataPointWarning() {
         this.#timeSeriesController.confirmDataPointWarning()
         this.#timeSeriesController.task.run()
@@ -271,11 +389,10 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     /**
-     * aborts the underlying data loading task, which cancels the network request
+     * cancels the in-flight Harmony job and aborts the underlying data loading task
      */
     #abortDataLoad() {
-        console.log('Aborting data load')
-        this.#timeSeriesController.task?.abort('Cancelled time series request')
+        this.#timeSeriesController.cancelJob()
     }
 
     #handleComponentLeave(event: MouseEvent) {
@@ -330,8 +447,10 @@ export default class TerraTimeSeries extends TerraElement {
                                     .variableEntryId=${this.variableEntryId}
                                     .showCitation=${this.showCitation}
                                     .showJupyter=${this.showJupyter}
+                                    .showHelp=${this.showHelp}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
+                                    show-location
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
                                 </terra-plot-toolbar>`
@@ -414,7 +533,7 @@ export default class TerraTimeSeries extends TerraElement {
                         title: {
                             text:
                                 this.catalogVariable && this.location
-                                    ? `${this.catalogVariable.dataProductShortName} @ ${this.location}`
+                                    ? `${this.catalogVariable.dataProductShortName}${this.catalogVariables.length > 1 ? ` (${this.catalogVariables.length} variables)` : ''} @ ${this.location}`
                                     : null,
                         },
                     }}"
@@ -436,9 +555,19 @@ export default class TerraTimeSeries extends TerraElement {
                 <terra-loader indeterminate></terra-loader>
 
                 ${this.#timeSeriesController.task.status === TaskStatus.PENDING
-                    ? html`<p>
-                          Plotting ${this.catalogVariable?.dataFieldId}&hellip;
-                      </p>`
+                    ? html`
+                          <p>
+                              ${this.catalogVariables.length > 1
+                                  ? `Plotting ${this.catalogVariables.length} variables…`
+                                  : `Plotting ${this.catalogVariable?.dataFieldId}…`}
+                          </p>
+                          ${this.chunkProgress
+                              ? html`<p>
+                                    Fetching chunk ${this.chunkProgress.currentChunk}
+                                    of ${this.chunkProgress.totalChunks}&hellip;
+                                </p>`
+                              : nothing}
+                      `
                     : html`<p>Preparing plot&hellip;</p>`}
 
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
@@ -479,11 +608,19 @@ export default class TerraTimeSeries extends TerraElement {
     }
 
     #getYAxisLabel() {
-        if (!this.catalogVariable) {
+        const units = (
+            this.catalogVariables.length
+                ? this.catalogVariables.map(variable => variable.dataFieldUnits)
+                : [this.catalogVariable?.dataFieldUnits]
+        ).filter(Boolean)
+
+        const uniqueUnits = [...new Set(units)]
+
+        if (!uniqueUnits.length) {
             return
         }
 
-        return [this.catalogVariable.dataFieldUnits].filter(Boolean).join(', ')
+        return uniqueUnits.join(', ')
     }
 
     #hasNoData(): boolean {
@@ -528,18 +665,16 @@ export default class TerraTimeSeries extends TerraElement {
 
         // Check if user has provided variable information
         const hasVariableRequest = Boolean(
-            this.variableEntryId || (this.collection && this.variable)
+            this.variableEntryId ||
+            this.variableEntryIds.length ||
+            (this.collection && this.variable)
         )
 
         // If user requested a variable but catalogVariable is not set, variable was not found
         return hasVariableRequest && !this.catalogVariable
     }
 
-    #getErrorMessage(error: {
-        code: string
-        message?: string
-        context?: string
-    }): any {
+    #getErrorMessage(error: { code: string; message?: string; context?: string }) {
         return formatHarmonyErrorMessage(error)
     }
 

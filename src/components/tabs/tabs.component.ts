@@ -35,8 +35,8 @@ import type TerraTabPanel from '../tab-panel/tab-panel.js'
  * @csspart scroll-button--start - The starting scroll button.
  * @csspart scroll-button--end - The ending scroll button.
  *
- * @cssproperty --terra-tabs-indicator-color - The color of the active tab indicator.
- * @cssproperty --terra-tabs-track-color - The color of the indicator's track (the line that separates tabs from panels).
+ * @cssproperty --terra-tab-indicator-selected - The color of the active tab indicator.
+ * @cssproperty --terra-tab-track-color - The color of the indicator's track (the line that separates tabs from panels).
  * @cssproperty --terra-tabs-track-width - The width of the indicator's track (the line that separates tabs from panels).
  */
 export default class TerraTabs extends TerraElement {
@@ -89,6 +89,17 @@ export default class TerraTabs extends TerraElement {
         ])
 
         super.connectedCallback()
+
+        // Sync size to slotted tabs immediately, before they've upgraded and reflected
+        // their own default `size` value. Waiting until `updateComplete` (as the rest of
+        // `syncTabsAndPanels` does) is too late: by then, a tab that never set `size` in
+        // markup already has the attribute reflected from its own default, making it
+        // indistinguishable from a tab that explicitly opted out of the host's size.
+        this.querySelectorAll<TerraTab>('[slot="nav"]').forEach(tab => {
+            if (!tab.hasAttribute('size')) {
+                tab.size = this.size
+            }
+        })
 
         this.resizeObserver = new ResizeObserver(() => {
             this.repositionIndicator()

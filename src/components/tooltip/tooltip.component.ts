@@ -1,4 +1,8 @@
-import { animateTo, parseDuration, stopAnimations } from '../../internal/animate.js'
+import {
+    animateTo,
+    parseDuration,
+    stopAnimations,
+} from '../../internal/animate.js'
 import { classMap } from 'lit/directives/class-map.js'
 import {
     getAnimation,
@@ -107,6 +111,12 @@ export default class TerraTooltip extends TerraElement {
      */
     @property({ type: Boolean }) hoist = false
 
+    /**
+     * Allows text inside the tooltip to be selected and copied. Also enables pointer events on the tooltip body
+     * so the user can interact with its content.
+     */
+    @property({ type: Boolean, reflect: true }) interactive = false
+
     constructor() {
         super()
         this.addEventListener('blur', this.handleBlur, true)
@@ -166,17 +176,27 @@ export default class TerraTooltip extends TerraElement {
     private handleMouseOver = () => {
         if (this.hasTrigger('hover')) {
             const delay = parseDuration(
-                getComputedStyle(this).getPropertyValue('--show-delay')
+                getComputedStyle(this).getPropertyValue('--show-delay'),
             )
             clearTimeout(this.hoverTimeout)
             this.hoverTimeout = window.setTimeout(() => this.show(), delay)
         }
     }
 
-    private handleMouseOut = () => {
+    private handleMouseOut = (event: MouseEvent) => {
         if (this.hasTrigger('hover')) {
+            const relatedTarget = event.relatedTarget as Element | null
+            // If the mouse moved to somewhere still inside this component (e.g. from the
+            // anchor into the popup body in shadow DOM), don't start the hide timer.
+            // Shadow DOM retargets relatedTarget to the host when it crosses the boundary.
+            if (
+                relatedTarget &&
+                (relatedTarget === this || this.contains(relatedTarget))
+            ) {
+                return
+            }
             const delay = parseDuration(
-                getComputedStyle(this).getPropertyValue('--hide-delay')
+                getComputedStyle(this).getPropertyValue('--hide-delay'),
             )
             clearTimeout(this.hoverTimeout)
             this.hoverTimeout = window.setTimeout(() => this.hide(), delay)
