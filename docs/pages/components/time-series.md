@@ -86,6 +86,24 @@ Use `variable-entry-ids` to request and render multiple variables in one chart. 
 
     <p slot="logged-out">Please login to view this plot</p>
 </terra-login>
+<br/>
+<hr>
+<br/>
+<terra-login style="width: 100%">
+    <span slot="loading">Loading...please wait</span>
+
+    <terra-time-series
+        slot="logged-in"
+        variable-entry-ids='["GPM_3IMERGDF_07_precipitation", "GPCPDAY_3_3_precip", "SMERGE_RZSM0_40CM_2_0_CCI_ano"]'
+        start-date="01/01/2019"
+        end-date="03/01/2019"
+        location="-95,5,-62,40"
+        cache
+    ></terra-time-series>
+
+    <p slot="logged-out">Please login to view this plot</p>
+</terra-login>
+
 ```
 
 ```jsx:react
