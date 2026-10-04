@@ -19,6 +19,7 @@ import type {
     VariableDbEntry,
     TimeSeriesMetadata,
 } from '../time-series/time-series.types.js'
+import TerraAccordion from '../accordion/accordion.component.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
@@ -53,9 +54,11 @@ export default class TerraPlotToolbar extends TerraElement {
         'terra-button': TerraButton,
         'terra-map': TerraMap,
         'terra-dropdown': TerraDropdown,
+        'terra-accordion': TerraAccordion,
     }
 
     @property() catalogVariable: Variable
+    @property() catalogVariables: Variable[] = []
     @property() variableEntryId: string
     @property() plot?: TerraPlot
     @property() timeSeriesData?: Partial<Plotly.Data>[] | Blob
@@ -148,18 +151,62 @@ export default class TerraPlotToolbar extends TerraElement {
         this.hideTitle = !this.hideTitle
     }
 
+    #getTitle() {
+        let title = ''
+        if (this.catalogVariables && this.catalogVariables.length > 1) {
+            title = "Multi-Parameter Time Series"
+            //this.catalogVariables.forEach((item, index) => {
+            //    //param = item.dataFieldShortName
+            //    if (index < this.catalogVariables.length - 1) {
+            //        title += '(' + item.dataProductInstrumentShortName + ') ' + item.dataFieldShortName + ' & '
+            //    } else {
+            //        title += item.dataFieldShortName
+            //    }
+            //})
+        } else {
+            title = this.catalogVariable.dataFieldLongName
+        }
+        return title
+    }
+
+    #getSubTitle() {
+        if (this.catalogVariables && this.catalogVariables.length <= 1) {
+            const metadata = [
+                this.catalogVariable.dataProductInstrumentShortName,
+                this.catalogVariable.dataProductTimeInterval,
+            ]
+            .filter(Boolean)
+            .filter((value) => value.toLowerCase() !== 'not applicable')
+            return html`
+                ${metadata.join(' • ')} •
+                <a  target="_blank"
+                    href="${this.catalogVariable.dataProductDescriptionUrl}">
+                    [
+                        ${this.catalogVariable.dataProductShortName
+                        }_${
+                        this.catalogVariable.dataProductVersion
+                        }
+                    ]
+                </a>
+            `
+        } else {
+            return html`<a target="_blank" href="">Data Products</a>`
+        }
+    }
+    
+
     firstUpdated() {
         // Title should be hidden by default if mobileView is true and product label has a value
         this.hideTitle = !!(this.mobileView && this.productLabel)
     }
 
     render() {
-        const metadata = [
-            this.catalogVariable.dataProductInstrumentShortName,
-            this.catalogVariable.dataProductTimeInterval,
-        ]
-            .filter(Boolean)
-            .filter((value) => value.toLowerCase() !== 'not applicable')
+        //const metadata = [
+        //    this.catalogVariable.dataProductInstrumentShortName,
+        //    this.catalogVariable.dataProductTimeInterval,
+        //]
+        //    .filter(Boolean)
+        //    .filter((value) => value.toLowerCase() !== 'not applicable')
 
         return cache(
             !this.catalogVariable
@@ -173,29 +220,13 @@ export default class TerraPlotToolbar extends TerraElement {
                                       ${this.productLabel ? html`<br />` : ''}
                                       ${
                                           !this.hideTitle
-                                              ? this.catalogVariable
-                                                    .dataFieldLongName
-                                              : ''
+                                              ? html`<span style="text-transform: capitalize;">${this.#getTitle()}</span>`                                              : ''
                                       }
                                   </h2>
                               </slot>
                               <slot name="subtitle" ?hidden=${this.hideTitle}>
                                   <h3 class="subtitle">
-                                      ${metadata.join(' • ')} •
-                                      <a
-                                          target="_blank"
-                                          href="${
-                                              this.catalogVariable
-                                                  .dataProductDescriptionUrl
-                                          }"
-                                          >[${
-                                              this.catalogVariable
-                                                  .dataProductShortName
-                                          }_${
-                                              this.catalogVariable
-                                                  .dataProductVersion
-                                          }]</a
-                                      >
+                                      ${this.#getSubTitle()}
                                       ${
                                           this.showLocation
                                               ? html`• ${this.#getLocationIcon()}
@@ -732,58 +763,74 @@ export default class TerraPlotToolbar extends TerraElement {
         `
     }
 
+    #getInfoPanelContent(variable: Variable) {
+        return html `
+                <dl>
+                    <dt>Longname</dt>
+                    <dd>${variable.dataFieldLongName}</dd>
+
+                    <dt>Shortname</dt>
+                    <dd>
+                        ${
+                            variable.dataFieldShortName ??
+                            variable.dataFieldAccessName
+                        }
+                    </dd>
+
+                    <dt>Units</dt>
+                    <dd>
+                        <code>${variable.dataFieldUnits}</code>
+                    </dd>
+                    <dt>Description</dt>
+                    <dd>
+                        <a href=${variable.dataFieldDescriptionUrl}
+                            rel="noopener noreffer"
+                            target="_blank"
+                        >
+                            Variable Glossary
+                            <terra-icon
+                                name="outline-arrow-top-right-on-square"
+                                library="heroicons"
+                            ></terra-icon>
+                        </a>
+                    </dd>
+                    <dt>Data Product</dt>
+                    <dd>
+                        <a
+                            href=${variable.dataProductDescriptionUrl}
+                            rel="noopener noreffer"
+                            target="_blank"
+                        >${variable.dataProductLongName}
+                            <terra-icon
+                                name="outline-arrow-top-right-on-square"
+                                library="heroicons"
+                            ></terra-icon>
+                        </a>
+                    </dd>
+                </dl>
+            `
+    }
+
     #renderInfoPanel() {
-        return html`
-            <h3 class="sr-only">Information</h3>
-
-            <dl>
-                <dt>Variable Longname</dt>
-                <dd>${this.catalogVariable.dataFieldLongName}</dd>
-
-                <dt>Variable Shortname</dt>
-                <dd>
-                    ${
-                        this.catalogVariable.dataFieldShortName ??
-                        this.catalogVariable.dataFieldAccessName
-                    }
-                </dd>
-
-                <dt>Units</dt>
-                <dd>
-                    <code>${this.catalogVariable.dataFieldUnits}</code>
-                </dd>
-
-                <dt>Dataset Information</dt>
-                <dd>
-                    <a
-                        href=${this.catalogVariable.dataProductDescriptionUrl}
-                        rel="noopener noreffer"
-                        target="_blank"
-                        >${this.catalogVariable.dataProductLongName}
-
-                        <terra-icon
-                            name="outline-arrow-top-right-on-square"
-                            library="heroicons"
-                        ></terra-icon>
-                    </a>
-                </dd>
-
-                <dt>Variable Information</dt>
-                <dd>
-                    <a
-                        href=${this.catalogVariable.dataFieldDescriptionUrl}
-                        rel="noopener noreffer"
-                        target="_blank"
-                        >Variable Glossary
-
-                        <terra-icon
-                            name="outline-arrow-top-right-on-square"
-                            library="heroicons"
-                        ></terra-icon>
-                    </a>
-                </dd>
-            </dl>
-        `
+        if (!this.catalogVariables || this.catalogVariables.length === 0) {
+            return html`<p>No variables available.</p>`
+        } else if (this.catalogVariables.length > 1) {
+            const template = []
+            template.push( html`<h3 style="margin-top:-0.5em;">Parameter Information</h3>` )
+            for (const variable of this.catalogVariables) {
+                template.push( html`
+                    <terra-accordion summary="${variable.dataFieldShortName || variable.dataFieldAccessName} [${variable.dataProductShortName}]">
+                        ${this.#getInfoPanelContent(variable)}
+                    </terra-accordion>
+                `)
+            }
+            return template
+        } else {
+            const template = []
+            template.push( html`<h3 style="margin-top:-0.5em;">Parameter Information</h3>` )
+            template.push( this.#getInfoPanelContent(this.catalogVariable) )
+            return template
+        }
     }
 
     #renderMobileInfoPanel() {
