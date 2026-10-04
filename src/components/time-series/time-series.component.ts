@@ -354,6 +354,10 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                 : undefined
     }
 
+    #hasMultipleVariables = () => {
+        return this.variableEntryIds.length > 1
+    }
+
     #confirmDataPointWarning() {
         this.#timeSeriesController.confirmDataPointWarning()
         this.#timeSeriesController.task.run()
@@ -411,6 +415,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                           this.catalogVariable
                               ? html`<terra-plot-toolbar
                                     .catalogVariable=${this.catalogVariable}
+                                    .catalogVariables=${this.catalogVariables}
                                     .plot=${this.plot}
                                     .timeSeriesData=${this.#timeSeriesController
                                         .lastTaskValue ??
@@ -427,7 +432,8 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                                     show-location
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
-                                </terra-plot-toolbar>`
+                                </terra-plot-toolbar>
+                                `
                               : html`<div class="spacer"></div>`
                       )
                     : nothing}
@@ -510,6 +516,13 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
                                 this.catalogVariable && this.location
                                     ? `${this.catalogVariable.dataProductShortName}${this.catalogVariables.length > 1 ? ` (${this.catalogVariables.length} variables)` : ''} @ ${this.location}`
                                     : null,
+                        },
+                        showlegend: this.#hasMultipleVariables(),
+                        legend: {
+                            xanchor: 'left',
+                            yanchor: 'top',
+                            x: 0,
+                            y: 4
                         },
                     }}"
                     .config=${{
