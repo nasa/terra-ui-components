@@ -198,20 +198,34 @@ export class TimeSeriesController {
                     .join('|')
 
                 // map each variable result to its own Plotly trace
-                this.lastTaskValue = seriesResults.map(
-                    ({ variable, filteredData }) => ({
-                        ...plotlyDefaultData,
-                        name:
-                            variable.dataFieldLongName ??
-                            variable.dataFieldShortName ??
-                            variable.dataFieldId,
-                        hovertemplate: variable.dataFieldUnits
-                            ? `%{x}<br>%{y} ${variable.dataFieldUnits}<extra>%{fullData.name}</extra>`
-                            : '%{x}<br>%{y}<extra>%{fullData.name}</extra>',
-                        x: filteredData.map(row => row.timestamp),
-                        y: filteredData.map(row => row.value),
-                    })
-                )
+                this.lastTaskValue = seriesResults.map(({ variable, filteredData }) => {
+                    const fallbackVariableName =
+                        variable.dataFieldShortName ??
+                        variable.dataFieldId ??
+                        variable.dataFieldLongName
+                    if (host.variableEntryIds.length > 1) {
+                        return {
+                            ...plotlyDefaultData,
+                            name: `${fallbackVariableName} [${variable.dataProductShortName}]`,
+                            hovertemplate: variable.dataFieldUnits
+                                ? `%{x}<br>%{y} ${variable.dataFieldUnits} <extra></extra>`
+                                : '%{x}<br>%{y} <extra></extra>',
+                            x: filteredData.map(row => row.timestamp),
+                            y: filteredData.map(row => row.value),
+                        }
+                    } else { // single variable, no need to show the name in the legend
+                        return {
+                            ...plotlyDefaultData,
+                            name: ``,
+                            hovertemplate: variable.dataFieldUnits
+                                ? `%{x}<br>%{y} ${variable.dataFieldUnits}`
+                                : '%{x}<br>%{y}',
+                            x: filteredData.map(row => row.timestamp),
+                            y: filteredData.map(row => row.value),
+                        }
+
+                    }
+                })
 
                 const firstSeries = seriesResults[0]
                 if (!firstSeries) {
