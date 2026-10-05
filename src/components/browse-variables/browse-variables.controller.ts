@@ -8,9 +8,7 @@ import type { FacetsByCategory, Variable } from './browse-variables.types.js'
 import type TerraBrowseVariables from './browse-variables.component.js'
 import type { GiovanniVariable } from '../../apis/giovanni.api.js'
 
-type SearchVariablesResult = Awaited<
-    ReturnType<typeof giovanniApi.searchVariables>
->
+type SearchVariablesResult = Awaited<ReturnType<typeof giovanniApi.searchVariables>>
 
 export class BrowseVariablesController implements ReactiveController {
     #query: QueryController<SearchVariablesResult | null>
@@ -20,7 +18,7 @@ export class BrowseVariablesController implements ReactiveController {
     #hasAutoSelectedVariables = false
 
     constructor(
-        host: ReactiveControllerHost & QueryClientHost & TerraBrowseVariables,
+        host: ReactiveControllerHost & QueryClientHost & TerraBrowseVariables
     ) {
         this.#host = host
         host.addController(this)
@@ -100,21 +98,19 @@ export class BrowseVariablesController implements ReactiveController {
         const variableEntryIds = this.#host.selectedVariableEntryIds.split(',')
 
         const variables = adaptedVariables.filter(
-            (variable) =>
+            variable =>
                 variableEntryIds.includes(variable.dataFieldId) ||
                 variableEntryIds.includes(
-                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldAccessName}`,
-                ),
+                    `${variable.dataProductShortName}_${variable.dataProductVersion}_${variable.dataFieldAccessName}`
+                )
         )
 
         const missingVariableIds = variableEntryIds.filter(
-            (id) => !variables.some((v) => v.dataFieldId === id),
+            id => !variables.some(v => v.dataFieldId === id)
         )
 
         const missingVariables = (
-            await Promise.all(
-                missingVariableIds.map((id) => this.getVariable(id)),
-            )
+            await Promise.all(missingVariableIds.map(id => this.getVariable(id)))
         ).filter(Boolean) as Variable[]
 
         this.#host.selectedVariables = [...variables, ...missingVariables]
@@ -133,10 +129,7 @@ export class BrowseVariablesController implements ReactiveController {
                 q: undefined as string | undefined,
                 filter: {
                     ...selectedFacets,
-                    disciplines: [
-                        ...(selectedFacets?.disciplines ?? []),
-                        'Aerosols',
-                    ],
+                    disciplines: [...(selectedFacets?.disciplines ?? []), 'Aerosols'],
                 } as Record<string, string[]>,
             }
         }
@@ -148,19 +141,15 @@ export class BrowseVariablesController implements ReactiveController {
     }
 
     #adaptVariables(variables: GiovanniVariable[]): Variable[] {
-        return variables.map((variable) => {
-            const exampleInitialDates =
-                this.#getReasonableInitialDates(variable)
+        return variables.map(variable => {
+            const exampleInitialDates = this.#getReasonableInitialDates(variable)
 
             return {
                 ...variable,
-                exampleInitialStartDate:
-                    exampleInitialDates?.exampleInitialStartDate,
-                exampleInitialEndDate:
-                    exampleInitialDates?.exampleInitialEndDate,
+                exampleInitialStartDate: exampleInitialDates?.exampleInitialStartDate,
+                exampleInitialEndDate: exampleInitialDates?.exampleInitialEndDate,
                 dataFieldShortName:
-                    !variable.dataFieldShortName ||
-                    variable.dataFieldShortName === ''
+                    !variable.dataFieldShortName || variable.dataFieldShortName === ''
                         ? variable.dataFieldAccessName
                         : variable.dataFieldShortName,
             }
@@ -177,12 +166,11 @@ export class BrowseVariablesController implements ReactiveController {
 
         const diff = Math.abs(
             new Date(variable.dataProductEndDateTime).getTime() -
-                new Date(variable.dataProductBeginDateTime).getTime(),
+                new Date(variable.dataProductBeginDateTime).getTime()
         )
         const threeQuarterRange = Math.floor(diff * 0.75)
         const startDate = Math.abs(
-            new Date(variable.dataProductBeginDateTime).getTime() +
-                threeQuarterRange,
+            new Date(variable.dataProductBeginDateTime).getTime() + threeQuarterRange
         )
 
         return {

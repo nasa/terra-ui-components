@@ -19,7 +19,7 @@ function isFetchableHarmonyJobId(jobID?: string | null): jobID is string {
 
 export function queryHarmonyCapabilities(
     collectionConceptId?: string,
-    options?: RequestOptions,
+    options?: RequestOptions
 ): QueryObserverOptions<Awaited<
     ReturnType<typeof harmonyApi.getCollectionCapabilities>
 > | null> {
@@ -48,7 +48,7 @@ export function queryHarmonyCapabilities(
  */
 export function queryHarmonyJobs(
     params?: Parameters<typeof harmonyApi.getJobs>[0],
-    options?: Parameters<typeof harmonyApi.getJobs>[1],
+    options?: Parameters<typeof harmonyApi.getJobs>[1]
 ): QueryObserverOptions<Awaited<ReturnType<typeof harmonyApi.getJobs>>> {
     return {
         queryKey: ['harmony', 'jobs', params],
@@ -58,10 +58,10 @@ export function queryHarmonyJobs(
                 signal,
             })
             const enrichedJobs = await Promise.all(
-                result.jobs.map(async (job) => {
+                result.jobs.map(async job => {
                     const blob = await thumbnailService.get(job.jobID)
                     return blob ? { ...job, thumbnailBlob: blob } : job
-                }),
+                })
             )
             return { ...result, jobs: enrichedJobs }
         },
@@ -90,7 +90,7 @@ export function queryHarmonyJobs(
  */
 export function queryHarmonyJobStatus(
     jobID?: string | null,
-    options?: SearchOptions,
+    options?: SearchOptions
 ): QueryObserverOptions<SubsetJobStatus | null> {
     return {
         queryKey: ['harmony', 'jobs', jobID],
@@ -100,7 +100,7 @@ export function queryHarmonyJobStatus(
         },
         enabled: isFetchableHarmonyJobId(jobID),
         // Poll until the job reaches a final state
-        refetchInterval: (query) => {
+        refetchInterval: query => {
             const status = query.state.data?.status
 
             if (status && FINAL_STATUSES.has(status)) {
@@ -150,8 +150,7 @@ export function queryCancelHarmonySubsetJob(): MutationObserverOptions<
     CancelHarmonyJobVariables
 > {
     return {
-        mutationFn: ({ jobId, options }) =>
-            harmonyApi.cancelJob(jobId, options),
+        mutationFn: ({ jobId, options }) => harmonyApi.cancelJob(jobId, options),
     }
 }
 

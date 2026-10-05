@@ -72,12 +72,8 @@ describe('LatLngBounds', () => {
 
     describe('toBBoxString method', () => {
         it('should format bounding box correctly', () => {
-            const bounds = new LatLngBounds([
-                -122.4194, 37.7749, -122.358, 37.8199,
-            ])
-            expect(bounds.toBBoxString()).to.equal(
-                '-122.42,37.77,-122.36,37.82',
-            )
+            const bounds = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            expect(bounds.toBBoxString()).to.equal('-122.42,37.77,-122.36,37.82')
         })
 
         it('should format bounding box with positive coordinates', () => {
@@ -94,9 +90,7 @@ describe('LatLngBounds', () => {
             const bounds = new LatLngBounds([
                 -180.123456, -90.654321, 180.123456, 90.654321,
             ])
-            expect(bounds.toBBoxString()).to.equal(
-                '-180.12,-90.65,180.12,90.65',
-            )
+            expect(bounds.toBBoxString()).to.equal('-180.12,-90.65,180.12,90.65')
         })
 
         it('should format bounding box with mixed sign coordinates', () => {

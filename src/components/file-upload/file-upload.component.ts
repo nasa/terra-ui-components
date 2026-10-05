@@ -72,8 +72,8 @@ export default class TerraFileUpload extends TerraElement {
     @property({ type: Number, attribute: 'max-files' }) maxFiles?: number
 
     @state() private mobile =
-            window.matchMedia('(max-width: 768px)').matches ||
-            navigator.maxTouchPoints > 0;
+        window.matchMedia('(max-width: 768px)').matches ||
+        navigator.maxTouchPoints > 0
 
     connectedCallback() {
         super.connectedCallback()
@@ -342,9 +342,7 @@ export default class TerraFileUpload extends TerraElement {
                           >
                               <slot>
                                   <span class="file-upload__dropzone-text">
-                                      ${this.mobile 
-                                        ? '' 
-                                        : 'Drag files here or'}
+                                      ${this.mobile ? '' : 'Drag files here or'}
                                       <button
                                           type="button"
                                           class="file-upload__browse-link"
@@ -353,9 +351,9 @@ export default class TerraFileUpload extends TerraElement {
                                               this.handleClick()
                                           }}
                                       >
-                                          ${this.mobile 
-                                            ? 'Choose from folder'
-                                            : 'choose from folder'}
+                                          ${this.mobile
+                                              ? 'Choose from folder'
+                                              : 'choose from folder'}
                                       </button>
                                   </span>
                               </slot>

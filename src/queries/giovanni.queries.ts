@@ -28,10 +28,8 @@ export function queryGiovanniShapeFiles(): QueryObserverOptions<Awaited<
 }
 
 export function queryGiovanniGeoJsonShape(
-    shapeFileId: string,
-): QueryObserverOptions<Awaited<
-    ReturnType<typeof giovanniApi.getGeoJson>
-> | null> {
+    shapeFileId: string
+): QueryObserverOptions<Awaited<ReturnType<typeof giovanniApi.getGeoJson>> | null> {
     return {
         queryKey: ['giovanni', 'geoJsonShape', shapeFileId],
         queryFn: async ({ signal }) => {
@@ -43,7 +41,7 @@ export function queryGiovanniGeoJsonShape(
 }
 
 export function queryGiovanniVariables(
-    params?: Parameters<typeof giovanniApi.searchVariables>[0],
+    params?: Parameters<typeof giovanniApi.searchVariables>[0]
 ): QueryObserverOptions<Awaited<
     ReturnType<typeof giovanniApi.searchVariables>
 > | null> {
@@ -52,15 +50,13 @@ export function queryGiovanniVariables(
         queryFn: async ({ signal }) => {
             return giovanniApi.searchVariables(params, { signal })
         },
-        placeholderData: (previousData) => previousData,
+        placeholderData: previousData => previousData,
     }
 }
 
 export function queryGiovanniVariable(
-    variableEntryId: string,
-): QueryObserverOptions<Awaited<
-    ReturnType<typeof giovanniApi.getVariable>
-> | null> {
+    variableEntryId: string
+): QueryObserverOptions<Awaited<ReturnType<typeof giovanniApi.getVariable>> | null> {
     return {
         queryKey: ['giovanni', 'variable', variableEntryId],
         queryFn: async ({ signal }) => {

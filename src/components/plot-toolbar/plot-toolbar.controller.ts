@@ -6,10 +6,7 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import type { ReactiveControllerHost } from 'lit'
 
 export class PlotToolbarController {
-    #fetchCollectionTask: Task<
-        [Variable],
-        CmrCollectionCitationItem | undefined
-    >
+    #fetchCollectionTask: Task<[Variable], CmrCollectionCitationItem | undefined>
 
     #host: ReactiveControllerHost & TerraPlotToolbar
 
@@ -20,7 +17,7 @@ export class PlotToolbarController {
             task: async ([catalogVariable], { signal }) => {
                 return cmrApi.getCollectionCitation(
                     `${catalogVariable.dataProductShortName}_${catalogVariable.dataProductVersion}`,
-                    { signal },
+                    { signal }
                 )
             },
             args: (): [Variable] => [this.#host.catalogVariable],

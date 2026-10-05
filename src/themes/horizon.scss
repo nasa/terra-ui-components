@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
 
-    /**
+/**
     * IMPORTANT NOTE ON DOCUMENTATION SYNTAX:
     *
     * This theme file uses a DocJS-like syntax to document the design tokens defined in this file. The tags are parsed at build time by a 
@@ -281,7 +281,6 @@
     --terra-color-blue-functional-link-on-tertiary-hover: hsla(218, 79%, 34%, 1);
     --terra-color-blue-functional-link-inverse-hover: hsla(219, 100%, 68%, 1);
 
-
     /**
      * @tokens Foundation Tokens
      * @description
@@ -291,7 +290,7 @@
      * The Foundation tokens reference the <a href="/tokens/generated/primitive-tokens">Primitives tokens</a> directly, which allows for easy updates 
      * to the color palettes without having to update every single token in the system. The <a href="/tokens/generated/semantic-tokens">Semantic</a> level UI role tokens are build on the  
      * Foundation-level tokens (rather than primitives) for the most-part so that changes to the theme Foundation are reflected in the <a href="/tokens/generated/semantic-tokens">Semantic tokens</a>. 
-     */ 
+     */
 
     /**
      * @tokens-subsection Surface Color Tokens
@@ -573,7 +572,6 @@
     --terra-border-action-info-hover: var(--terra-color-action-info-hover);
     --terra-border-action-info-active: var(--terra-color-action-info-active);
     --terra-border-action-info-disabled: var(--terra-color-action-info-disabled);
-
 
     /**
      * @tokens Semantic Tokens

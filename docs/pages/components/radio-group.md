@@ -105,20 +105,20 @@ Radio groups work seamlessly with native HTML forms.
 
 ## Best Practices
 
--   **Always include labels**: Radio groups should always have a clear, descriptive label that explains what the selection is for.
--   **Default selection**: Any list of radio buttons should appear with a default selection already made (set the `value` attribute).
--   **Use for single selection**: Radio groups allow users to select only one option from a list. For multiple selections, use Checkboxes instead.
--   **Limit options**: When there are 7 or more options to choose from, use a Select Field instead of radio buttons.
--   **Group related options**: Use a fieldset and legend (or radio-group with label) to group related radio buttons, especially in forms.
--   **Provide help text when needed**: Use help text to clarify what selecting an option will do, especially for filtering or settings.
+- **Always include labels**: Radio groups should always have a clear, descriptive label that explains what the selection is for.
+- **Default selection**: Any list of radio buttons should appear with a default selection already made (set the `value` attribute).
+- **Use for single selection**: Radio groups allow users to select only one option from a list. For multiple selections, use Checkboxes instead.
+- **Limit options**: When there are 7 or more options to choose from, use a Select Field instead of radio buttons.
+- **Group related options**: Use a fieldset and legend (or radio-group with label) to group related radio buttons, especially in forms.
+- **Provide help text when needed**: Use help text to clarify what selecting an option will do, especially for filtering or settings.
 
 ## Accessibility
 
--   Radio groups are keyboard accessible and support arrow key navigation between options
--   The component properly associates labels with the radio group using `aria-labelledby`
--   Focus states are clearly visible with a focus ring
--   Required fields are indicated with an asterisk
--   Help text is properly associated with the radio group using `aria-describedby`
--   Radio groups use `role="radiogroup"` for proper ARIA semantics
+- Radio groups are keyboard accessible and support arrow key navigation between options
+- The component properly associates labels with the radio group using `aria-labelledby`
+- Focus states are clearly visible with a focus ring
+- Required fields are indicated with an asterisk
+- Help text is properly associated with the radio group using `aria-describedby`
+- Radio groups use `role="radiogroup"` for proper ARIA semantics
 
 [component-metadata:terra-radio-group]

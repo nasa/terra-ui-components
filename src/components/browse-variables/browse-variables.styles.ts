@@ -291,7 +291,7 @@ export default css`
 
         .variables-container aside {
             height: min-content;
-        } 
+        }
 
         .variables-container main {
             grid-template-columns: minmax(0, 1fr);
@@ -307,7 +307,7 @@ export default css`
         .variables-container main:has(.variable-details) {
             grid-template-columns: 1fr;
         }
-    }  
+    }
 
     .facet {
         margin-left: 10px;
@@ -446,7 +446,7 @@ export default css`
 
     .variable label input[type='checkbox'] {
         align-self: flex-start;
-        margin-top: 0.40em;
+        margin-top: 0.4em;
     }
 
     .resolution-info {
@@ -455,7 +455,7 @@ export default css`
         gap: 2rem;
         padding-inline-start: 16px;
     }
-    
+
     .left-column {
         /* overflow-y: auto; */
     }

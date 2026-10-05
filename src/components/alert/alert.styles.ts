@@ -29,8 +29,14 @@ export default css`
     }
 
     .alert--filled.alert--primary {
-        background-color: var(--terra-alert-filled-background-color-primary, var(--terra-alert-filled-background-color-information));
-        color: var(--terra-alert-filled-color-primary, var(--terra-alert-filled-color-information));
+        background-color: var(
+            --terra-alert-filled-background-color-primary,
+            var(--terra-alert-filled-background-color-information)
+        );
+        color: var(
+            --terra-alert-filled-color-primary,
+            var(--terra-alert-filled-color-information)
+        );
     }
 
     .alert--filled.alert--information {
@@ -60,10 +66,16 @@ export default css`
 
     /* Subtle alter variant - lighter background with colored text */
     .alert--subtle.alert--primary {
-        background-color: var(--terra-alert-subtle-background-color-primary, var(--terra-alert-subtle-background-color-information));
-        color: var(--terra-alert-subtle-color-primary, var(--terra-alert-subtle-color-information));
+        background-color: var(
+            --terra-alert-subtle-background-color-primary,
+            var(--terra-alert-subtle-background-color-information)
+        );
+        color: var(
+            --terra-alert-subtle-color-primary,
+            var(--terra-alert-subtle-color-information)
+        );
     }
-    
+
     .alert--subtle.alert--information {
         background-color: var(--terra-alert-subtle-background-color-information);
         color: var(--terra-alert-subtle-color-information);
@@ -92,7 +104,10 @@ export default css`
     /* Icon and close button colors for filled variant */
     .alert--filled.alert--primary .alert__icon,
     .alert--filled.alert--primary .alert__close-button {
-        color: var(--terra-alert-filled-icon-color-primary, var(--terra-alert-filled-icon-color-information));
+        color: var(
+            --terra-alert-filled-icon-color-primary,
+            var(--terra-alert-filled-icon-color-information)
+        );
     }
 
     .alert--filled.alert--information .alert__icon,
@@ -162,7 +177,7 @@ export default css`
     .alert--white.alert--primary .alert__icon {
         color: var(--terra-color-bg-info-bold);
     }
-    
+
     .alert--white.alert--information {
         border-top-color: var(--terra-color-bg-info-bold);
     }

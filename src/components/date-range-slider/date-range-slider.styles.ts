@@ -21,7 +21,7 @@ export default css`
 
     @media (max-width: 600px) {
         .container [part~='slider'] {
-        min-width: 520px;
+            min-width: 520px;
         }
     }
 

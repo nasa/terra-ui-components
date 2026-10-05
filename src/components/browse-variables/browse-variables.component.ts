@@ -42,9 +42,7 @@ import { getSortLabel, SortOrder } from '../../utilities/sort.js'
  * @dependency terra-divider
  * @dependency terra-accordion
  */
-export default class TerraBrowseVariables extends QueryClientMixin(
-    TerraElement,
-) {
+export default class TerraBrowseVariables extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-variable-keyword-search': TerraVariableKeywordSearch,
@@ -59,28 +57,27 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     /** Screen size detection use to determine layout for mobile devices */
 
-    @state() 
+    @state()
     isMobile = false
 
-    private mediaQuery = window.matchMedia('(max-width: 600px)');
-    
-    connectedCallback() {
-        super.connectedCallback();
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
 
-        this.isMobile = this.mediaQuery.matches;
-        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
     }
 
     disconnectedCallback() {
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
 
-        super.disconnectedCallback();
+        super.disconnectedCallback()
     }
 
     private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches;
-    };
-
+        this.isMobile = event.matches
+    }
 
     /**
      * Allows the user to switch the catalog between different providers
@@ -134,7 +131,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     handleObservationChange() {
         const selectedObservation =
             this.shadowRoot?.querySelector<HTMLInputElement>(
-                'input[name="observation"]:checked',
+                'input[name="observation"]:checked'
             )?.value ?? 'All'
 
         if (selectedObservation === 'All') {
@@ -171,7 +168,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     #selectFacetField(
         facet: string,
         field: string,
-        selectOneFieldAtATime: boolean = false,
+        selectOneFieldAtATime: boolean = false
     ) {
         const existingFields = this.selectedFacets[facet] || []
 
@@ -183,9 +180,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
         this.selectedFacets = {
             ...this.selectedFacets,
-            [facet]: selectOneFieldAtATime
-                ? [field]
-                : [...existingFields, field],
+            [facet]: selectOneFieldAtATime ? [field] : [...existingFields, field],
         }
     }
 
@@ -200,9 +195,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             return // facet has no fields that have been selected
         }
 
-        const filteredFields = this.selectedFacets[facet].filter(
-            (f) => f !== field,
-        ) // remove the given field
+        const filteredFields = this.selectedFacets[facet].filter(f => f !== field) // remove the given field
 
         if (!filteredFields.length) {
             // no fields left, just clear the facet
@@ -218,29 +211,30 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     #handleVariableSelection(variable: Variable, checked: Boolean) {
         const variableIsSelected = this.selectedVariables.find(
-            (v) => v.dataFieldLongName === variable.dataFieldLongName,
+            v => v.dataFieldLongName === variable.dataFieldLongName
         )
 
         if (checked && !variableIsSelected) {
             // need to add variable to list of selected variables
             this.selectedVariables = ([] as Variable[]).concat(
                 this.selectedVariables,
-                variable,
+                variable
             )
         } else if (!checked && variableIsSelected) {
             // need to remove variable from list of selected variables
             this.selectedVariables = this.selectedVariables.filter(
-                (v) => v.dataFieldLongName !== variable.dataFieldLongName,
+                v => v.dataFieldLongName !== variable.dataFieldLongName
             )
         }
     }
 
     private handleMobileVariableClick(index: number) {
-        if (this.mobileDetailsIndex === index) {    // Close the details panel if it's already open for this variable
+        if (this.mobileDetailsIndex === index) {
+            // Close the details panel if it's already open for this variable
             this.mobileDetailsIndex = undefined
             return
         }
-        this.mobileDetailsIndex = index             // Open the details panel for this variable
+        this.mobileDetailsIndex = index // Open the details panel for this variable
     }
 
     private handleDetailClose() {
@@ -262,7 +256,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             requestAnimationFrame(() => {
                 const menu = event.target as HTMLElement
                 const allItems = menu.querySelectorAll('terra-menu-item')
-                allItems.forEach((item) => {
+                allItems.forEach(item => {
                     const itemValue = item.value
                     if (itemValue === this.sortOrder) {
                         item.checked = true
@@ -291,7 +285,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     #getBrowsingText(): string {
         // Collect all selected facet field names
         const selectedFacetNames: string[] = []
-        Object.values(this.selectedFacets).forEach((fields) => {
+        Object.values(this.selectedFacets).forEach(fields => {
             selectedFacetNames.push(...fields)
         })
 
@@ -346,9 +340,8 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 <aside>
                     <h3>Observations</h3>
 
-                    ${
-                        this.#controller.facetsByCategory?.observations.length
-                            ? html`
+                    ${this.#controller.facetsByCategory?.observations.length
+                        ? html`
                               <label>
                                   <input
                                       type="radio"
@@ -361,7 +354,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                               >
 
                               ${this.#controller.facetsByCategory?.observations.map(
-                                  (field) =>
+                                  field =>
                                       html`<label>
                                           <input
                                               type="radio"
@@ -370,14 +363,13 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                               @change=${this.handleObservationChange}
                                           />
                                           ${field.name}
-                                      </label>`,
+                                      </label>`
                               )}
                           `
-                            : html`<terra-skeleton
+                        : html`<terra-skeleton
                               rows="4"
                               variableWidths
-                          ></terra-skeleton>`
-                    }
+                          ></terra-skeleton>`}
 
                     <terra-button
                         variant="text"
@@ -389,18 +381,17 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
                 <main>
                     ${columns.map(
-                        (column) => html`
+                        column => html`
                             <div class="column">
                                 <h3>${column.title}</h3>
                                 <ul role="list">
-                                    ${
-                                        this.#controller.facetsByCategory?.[
-                                            column.facetKey
-                                        ]
-                                            ?.filter((field) => field.count > 0)
-                                            .map(
-                                                (field) =>
-                                                    html`<li
+                                    ${this.#controller.facetsByCategory?.[
+                                        column.facetKey
+                                    ]
+                                        ?.filter(field => field.count > 0)
+                                        .map(
+                                            field =>
+                                                html`<li
                                                     role="button"
                                                     tabindex="0"
                                                     aria-selected="false"
@@ -408,16 +399,15 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                                     @click=${this.toggleFacetSelect}
                                                 >
                                                     ${field.name}
-                                                </li>`,
-                                            ) ??
-                                        html`<terra-skeleton
+                                                </li>`
+                                        ) ??
+                                    html`<terra-skeleton
                                         rows=${getRandomIntInclusive(8, 12)}
                                         variableWidths
-                                    ></terra-skeleton>`
-                                    }
+                                    ></terra-skeleton>`}
                                 </ul>
                             </div>
-                        `,
+                        `
                     )}
                 </main>
             </div>
@@ -428,10 +418,10 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         facetKey: string,
         title: string,
         fields?: FacetField[],
-        open?: boolean,
+        open?: boolean
     ) {
         // Check if there are any fields with count > 0
-        const hasValidFields = (fields ?? []).some((field) => field.count > 0)
+        const hasValidFields = (fields ?? []).some(field => field.count > 0)
 
         if (!hasValidFields) {
             return nothing
@@ -440,7 +430,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         return html`<details ?open=${open}>
             <summary>${title}</summary>
 
-            ${(fields ?? []).map((field) =>
+            ${(fields ?? []).map(field =>
                 field.count > 0
                     ? html`
                           <div class="facet">
@@ -450,7 +440,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                       @change=${() =>
                                           this.#selectFacetField(
                                               facetKey,
-                                              field.name,
+                                              field.name
                                           )}
                                       ?checked=${this.selectedFacets[
                                           facetKey
@@ -461,67 +451,45 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                               >
                           </div>
                       `
-                    : nothing,
+                    : nothing
             )}
         </details>`
     }
 
     #renderVariableDetails(index: number) {
-
         const variables = this.#getSortedVariables()
         const variable = variables[index]
 
         return html`
-                <div class="sticky-element">
-                    <p>
-                        <label
-                            ><strong>Name in Data File:</strong></label
-                        >
-                        ${
-                            variable.dataFieldShortName
-                        }
-                    </p>
-                    <p>
-                        <label><strong>Units:</strong></label>
-                        ${variable.dataFieldUnits}
-                    </p>
-                    <p>
-                        <label
-                            ><strong>Temporal Coverage:</strong></label
-                        >
-                        ${
-                            variable.dataProductBeginDateTime
-                        }
-                        –
-                        ${
-                            variable.dataProductEndDateTime
-                        }
-                    </p>
-                    <p>
-                        <label><strong>Region Coverage:</strong></label>
-                        ${variable.dataProductWest},
-                        ${variable.dataProductSouth},
-                        ${variable.dataProductEast},
-                        ${variable.dataProductNorth}
-                    </p>
-                    <p>
-                        <label
-                            ><strong>Spatial Resolution:</strong></label
-                        >
-                        ${
-                            variable.dataProductSpatialResolution
-                        }
-                    </p>
-                    <p>
-                        <label><strong>Dataset:</strong></label>
-                        ${
-                            variable.dataProductShortName
-                        }_${
-                            variable.dataProductVersion
-                        }
-                    </p>
-                </div>
-            `
+            <div class="sticky-element">
+                <p>
+                    <label><strong>Name in Data File:</strong></label>
+                    ${variable.dataFieldShortName}
+                </p>
+                <p>
+                    <label><strong>Units:</strong></label>
+                    ${variable.dataFieldUnits}
+                </p>
+                <p>
+                    <label><strong>Temporal Coverage:</strong></label>
+                    ${variable.dataProductBeginDateTime} –
+                    ${variable.dataProductEndDateTime}
+                </p>
+                <p>
+                    <label><strong>Region Coverage:</strong></label>
+                    ${variable.dataProductWest}, ${variable.dataProductSouth},
+                    ${variable.dataProductEast}, ${variable.dataProductNorth}
+                </p>
+                <p>
+                    <label><strong>Spatial Resolution:</strong></label>
+                    ${variable.dataProductSpatialResolution}
+                </p>
+                <p>
+                    <label><strong>Dataset:</strong></label>
+                    ${variable.dataProductShortName}_${variable.dataProductVersion}
+                </p>
+            </div>
+        `
     }
 
     #renderVariablesBrowse(loading?: boolean) {
@@ -620,42 +588,38 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             </header>
 
             ${this.isMobile
-                ? html `
-                    <aside>
-                        <terra-accordion summary="Filter Results">
-                            ${facets.map((facet) =>
-                                this.#renderFacet(
-                                    facet.facetKey,
-                                    facet.title,
-                                    this.#controller.facetsByCategory?.[facet.facetKey],
-                                    facet.open,
-                                ),
-                            )}
-                        </terra-accordion>
-                    </aside>
+                ? html` <aside>
+                          <terra-accordion summary="Filter Results">
+                              ${facets.map(facet =>
+                                  this.#renderFacet(
+                                      facet.facetKey,
+                                      facet.title,
+                                      this.#controller.facetsByCategory?.[
+                                          facet.facetKey
+                                      ],
+                                      facet.open
+                                  )
+                              )}
+                          </terra-accordion>
+                      </aside>
 
-                    <main>
-                        ${this.#renderMobileVariablesList(Boolean(loading))}
-                    </main>`
-                : html `
-                    <aside>
-                        <h3>Filter</h3>
+                      <main>
+                          ${this.#renderMobileVariablesList(Boolean(loading))}
+                      </main>`
+                : html` <aside>
+                          <h3>Filter</h3>
 
-                        ${facets.map((facet) =>
-                            this.#renderFacet(
-                                facet.facetKey,
-                                facet.title,
-                                this.#controller.facetsByCategory?.[facet.facetKey],
-                                facet.open,
-                            ),
-                        )}
-                    </aside>
+                          ${facets.map(facet =>
+                              this.#renderFacet(
+                                  facet.facetKey,
+                                  facet.title,
+                                  this.#controller.facetsByCategory?.[facet.facetKey],
+                                  facet.open
+                              )
+                          )}
+                      </aside>
 
-                    <main>
-                        ${this.#renderVariablesList(Boolean(loading))}
-                    </main>`
-                }
-
+                      <main>${this.#renderVariablesList(Boolean(loading))}</main>`}
         </div> `
     }
 
@@ -666,34 +630,38 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             <!-- LEFT COLUMN -->
             <section class="left-column">
                 <ul class="variable-list">
-                    ${
-                        !loading && !variables.length
-                            ? html`
-                        <terra-alert variant="primary" appearance="white" open>
-                            <p>We didn't find any variables matching your search and filters.</p>
-                            <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
-                        </terra-alert>
-                    `
-                            : nothing
-                    }
-
+                    ${!loading && !variables.length
+                        ? html`
+                              <terra-alert variant="primary" appearance="white" open>
+                                  <p>
+                                      We didn't find any variables matching your
+                                      search and filters.
+                                  </p>
+                                  <p>
+                                      Please note: This is a beta release and may not
+                                      have the full Giovanni catalog available yet. We
+                                      are working on adding more variables and
+                                      improving the search and filter capabilities, so
+                                      please check back soon!
+                                  </p>
+                              </terra-alert>
+                          `
+                        : nothing}
                     ${variables.map(
                         (variable, index) => html`
                             <li
                                 aria-selected="false"
                                 class="variable-list-item"
                                 @mouseenter=${() => (this.activeIndex = index)}
-                                @mouseleave=${() =>
-                                    (this.activeIndex = undefined)}
+                                @mouseleave=${() => (this.activeIndex = undefined)}
                                 @focusin=${() => (this.activeIndex = index)}
                                 @focusout=${() => (this.activeIndex = undefined)}
                                 @click=${(event: Event) => {
                                     const target =
                                         event.currentTarget as HTMLLIElement
-                                    const targetCheckbox =
-                                        target.querySelector(
-                                            'input[type="checkbox"]',
-                                        ) as HTMLInputElement | null
+                                    const targetCheckbox = target.querySelector(
+                                        'input[type="checkbox"]'
+                                    ) as HTMLInputElement | null
 
                                     if (!targetCheckbox) {
                                         return
@@ -701,7 +669,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
                                     target?.setAttribute(
                                         'aria-selected',
-                                        `${targetCheckbox.checked}`,
+                                        `${targetCheckbox.checked}`
                                     )
                                 }}
                             >
@@ -715,7 +683,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                                     e.currentTarget as HTMLInputElement
                                                 this.#handleVariableSelection(
                                                     variable,
-                                                    input.checked,
+                                                    input.checked
                                                 )
                                             }}
                                         />
@@ -724,56 +692,56 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                         </strong>
                                         <span style="margin-left: 1em;">
                                             ${variable.dataProductShortName}_${variable.dataProductVersion}
-                                            &bull;
-                                            ${variable.dataProductTimeInterval}
+                                            &bull; ${variable.dataProductTimeInterval}
                                             &bull;
                                             ${variable.dataProductSpatialResolution}
                                         </span>
                                     </label>
                                 </div>
                             </li>
-                        `,
+                        `
                     )}
                 </ul>
             </section>
 
             <!-- RIGHT COLUMN -->
-            ${
-                !loading && !variables.length
-                    ? nothing
-                    : html`
-                        <section class="variable-details">
-                        ${
-                            this.activeIndex !== undefined
-                                ? this.#renderVariableDetails(this.activeIndex ?? 0)
-                                : html`<p class="placeholder">
-                                        Hover over a variable to see details
-                                    </p>`
-                        }
-                        </section>
-                    `
-            }
+            ${!loading && !variables.length
+                ? nothing
+                : html`
+                      <section class="variable-details">
+                          ${this.activeIndex !== undefined
+                              ? this.#renderVariableDetails(this.activeIndex ?? 0)
+                              : html`<p class="placeholder">
+                                    Hover over a variable to see details
+                                </p>`}
+                      </section>
+                  `}
         `
     }
 
     #renderMobileVariablesList(loading?: boolean) {
-
         const variables = this.#getSortedVariables()
 
         return html`
             <section>
                 <ul class="variable-list">
-                    ${
-                        !loading && !variables.length
-                            ? html`
-                        <terra-alert variant="primary" appearance="white" open>
-                            <p>We didn't find any variables matching your search and filters.</p>
-                            <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
-                        </terra-alert>
-                    `
-                        : nothing
-                    }
-
+                    ${!loading && !variables.length
+                        ? html`
+                              <terra-alert variant="primary" appearance="white" open>
+                                  <p>
+                                      We didn't find any variables matching your
+                                      search and filters.
+                                  </p>
+                                  <p>
+                                      Please note: This is a beta release and may not
+                                      have the full Giovanni catalog available yet. We
+                                      are working on adding more variables and
+                                      improving the search and filter capabilities, so
+                                      please check back soon!
+                                  </p>
+                              </terra-alert>
+                          `
+                        : nothing}
                     ${variables.map(
                         (variable, index) => html`
                             <li
@@ -792,11 +760,11 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
                                             this.#handleVariableSelection(
                                                 variable,
-                                                input.checked,
+                                                input.checked
                                             )
                                         }}
                                     />
-                                    <label 
+                                    <label
                                         @click=${() =>
                                             this.handleMobileVariableClick(index)}
                                     >
@@ -816,24 +784,36 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                         </span>
                                     </label>
                                 </div>
-                                <div class="variable-details ${this.mobileDetailsIndex === index ? 'is-open' : ''}">
+                                <div
+                                    class="variable-details ${this
+                                        .mobileDetailsIndex === index
+                                        ? 'is-open'
+                                        : ''}"
+                                >
                                     <span>
                                         <terra-divider></terra-divider>
-                                        <terra-button outline circle size="small"
-                                            @click=${(event: Event) =>
-                                                {
-                                                    event.stopPropagation()
-                                                    this.handleDetailClose()
-                                                }}
+                                        <terra-button
+                                            outline
+                                            circle
+                                            size="small"
+                                            @click=${(event: Event) => {
+                                                event.stopPropagation()
+                                                this.handleDetailClose()
+                                            }}
                                         >
-                                        <slot name="label">
-                                            <terra-icon name="outline-x-mark" library="heroicons" font-size="1.5em"></terra-icon>
-                                        </slot>
-                                        </terra-button>                                                </span>
+                                            <slot name="label">
+                                                <terra-icon
+                                                    name="outline-x-mark"
+                                                    library="heroicons"
+                                                    font-size="1.5em"
+                                                ></terra-icon>
+                                            </slot>
+                                        </terra-button>
+                                    </span>
                                     ${this.#renderVariableDetails(index)}
                                 </div>
                             </li>
-                        `,
+                        `
                     )}
                 </ul>
             </section>
@@ -848,9 +828,8 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         return html`
             <div class="container">
                 <header class="search">
-                    ${
-                        this.showVariablesBrowse
-                            ? html`
+                    ${this.showVariablesBrowse
+                        ? html`
                               <terra-button @click=${this.reset}>
                                   <terra-icon
                                       name="solid-chevron-left"
@@ -859,25 +838,19 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                   ></terra-icon>
                               </terra-button>
                           `
-                            : nothing
-                    }
+                        : nothing}
 
                     <terra-variable-keyword-search
                         @terra-search=${this.handleSearch}
                     ></terra-variable-keyword-search>
                 </header>
 
-                ${
-                    this.isMobile
-                        ? console.log('Mobile view')
-                        : console.log('Desktop view')
-                }
-
-                ${
-                    this.showVariablesBrowse
-                        ? this.#renderVariablesBrowse(Boolean(showLoader))
-                        : this.#renderCategorySelect()
-                }
+                ${this.isMobile
+                    ? console.log('Mobile view')
+                    : console.log('Desktop view')}
+                ${this.showVariablesBrowse
+                    ? this.#renderVariablesBrowse(Boolean(showLoader))
+                    : this.#renderCategorySelect()}
 
                 <dialog ?open=${showLoader}>
                     <terra-loader indeterminate></terra-loader>

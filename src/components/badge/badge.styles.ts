@@ -24,10 +24,13 @@ export default css`
 
     /* Variant modifiers */
     .badge--primary {
-        background-color: var(--terra-badge-background-color-primary, var(--terra-badge-background-color-information));
+        background-color: var(
+            --terra-badge-background-color-primary,
+            var(--terra-badge-background-color-information)
+        );
         color: var(--terra-badge-color-primary, var(--terra-badge-color-information));
     }
-    
+
     .badge--information {
         background-color: var(--terra-badge-background-color-information);
         color: var(--terra-badge-color-information);

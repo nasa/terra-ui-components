@@ -191,10 +191,7 @@ class HarmonyApi {
      * Returns collection capabilities including available services, output formats, subsetting options, etc.
      * from the Harmony /capabilities endpoint
      */
-    async getCollectionCapabilities(
-        conceptId?: string,
-        options?: RequestOptions,
-    ) {
+    async getCollectionCapabilities(conceptId?: string, options?: RequestOptions) {
         if (!conceptId) {
             throw new BadRequestException({
                 message: '`collectionConceptId` is required',
@@ -203,14 +200,12 @@ class HarmonyApi {
 
         const capabilities = await this.#request<HarmonyCapabilitiesResponse>(
             `capabilities?collectionId=${conceptId}&version=${API_VERSION}`,
-            options,
+            options
         )
 
         // the variables returned from the Harmony capabilities endpoint don't include the concept ID
         // but we can extract it from the href property and add it to each variable for easier reference later
-        capabilities.variables = this.addConceptIdToVariables(
-            capabilities.variables,
-        )
+        capabilities.variables = this.addConceptIdToVariables(capabilities.variables)
 
         // add a custom property to the capabilities response that provides a better list of output formats to present to the user
         // including labels and descriptions
@@ -236,7 +231,7 @@ class HarmonyApi {
             // Filters jobs to those which include at least one of the labels specified. Multiple labels can be specified using a comma-separated list.
             label?: string
         },
-        options?: SearchOptions,
+        options?: SearchOptions
     ) {
         const queryParams = new URLSearchParams()
         if (params?.page) queryParams.append('page', params.page.toString())
@@ -258,19 +253,16 @@ class HarmonyApi {
      */
     async createJob(
         harmonyRequest: HarmonyRequest,
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<SubsetJobStatus> {
         if (harmonyRequest.hasShape) {
             return this.#request<SubsetJobStatus>(
                 harmonyRequest.baseUrl,
                 options,
-                harmonyRequest.buildFormData(),
+                harmonyRequest.buildFormData()
             )
         }
-        return this.#request<SubsetJobStatus>(
-            harmonyRequest.requestUrl,
-            options,
-        )
+        return this.#request<SubsetJobStatus>(harmonyRequest.requestUrl, options)
     }
 
     /**
@@ -279,15 +271,10 @@ class HarmonyApi {
      */
     async getJobStatus(
         jobId: string,
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<SubsetJobStatus> {
-        const status = await this.#request<SubsetJobStatus>(
-            `jobs/${jobId}`,
-            options,
-        )
-        status.links = status.links.map((link) =>
-            HarmonyApi.normalizeJobLink(link),
-        )
+        const status = await this.#request<SubsetJobStatus>(`jobs/${jobId}`, options)
+        status.links = status.links.map(link => HarmonyApi.normalizeJobLink(link))
         return status
     }
 
@@ -321,7 +308,7 @@ class HarmonyApi {
      */
     async removeJobLabels(
         params: { jobIDs: string[]; labels: string[] },
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<void> {
         const url = `${HARMONY_URLS[Environments.PROD]}/labels`
         return apiClient.delete<void>(url, {
@@ -342,7 +329,7 @@ class HarmonyApi {
      */
     async cancelJob(
         jobId: string,
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<SubsetJobStatus> {
         return this.#request<SubsetJobStatus>(`jobs/${jobId}/cancel`, options)
     }
@@ -376,11 +363,11 @@ class HarmonyApi {
             url = url
                 .replace(
                     HARMONY_URLS[Environments.PROD],
-                    HARMONY_URLS.ANONYMOUS_ACCESS,
+                    HARMONY_URLS.ANONYMOUS_ACCESS
                 )
                 .replace(
                     HARMONY_URLS[Environments.UAT],
-                    HARMONY_URLS.ANONYMOUS_ACCESS,
+                    HARMONY_URLS.ANONYMOUS_ACCESS
                 )
         }
 
@@ -407,7 +394,7 @@ class HarmonyApi {
      * Extracts the variable concept ID from the variable's href and adds it as a property on the variable object.
      */
     addConceptIdToVariables(variables: Variable[]) {
-        return variables.map((v) => {
+        return variables.map(v => {
             const match = v.href.match(/\/concepts\/(V\d+-\w+)$/)
             if (match) {
                 v.conceptId = match[1]
@@ -423,8 +410,7 @@ class HarmonyApi {
      * If Giovanni is not present, return only non-Giovanni formats.
      */
     getOutputFormatOptions(capabilities: HarmonyCapabilitiesResponse) {
-        const hasNonGiovanniServices =
-            this.#hasNonGiovanniServices(capabilities)
+        const hasNonGiovanniServices = this.#hasNonGiovanniServices(capabilities)
         const hasGiovanniServices = this.#hasGiovanniServices(capabilities)
         const giovanniFormats = hasGiovanniServices
             ? this.#getGiovanniFormats(capabilities)
@@ -441,7 +427,7 @@ class HarmonyApi {
         const nonGiovanniFormats = this.#getNonGiovanniFormats(capabilities)
 
         // Process non-Giovanni output formats
-        nonGiovanniFormats.forEach((format) => {
+        nonGiovanniFormats.forEach(format => {
             let label = format
             let description = `Download data in ${format} format`
 
@@ -460,8 +446,7 @@ class HarmonyApi {
 
                 case 'application/x-netcdf4;profile=opendap_url':
                     label = 'OPeNDAP URL (x-netcdf4)'
-                    description =
-                        'Download data in OPeNDAP URL (x-netcdf4) format'
+                    description = 'Download data in OPeNDAP URL (x-netcdf4) format'
                     break
 
                 case 'text/csv':
@@ -519,36 +504,32 @@ class HarmonyApi {
 
     #hasGiovanniServices(capabilities: HarmonyCapabilitiesResponse): boolean {
         return (
-            capabilities?.services?.some((service) =>
-                service.name.toLowerCase().includes('giovanni'),
+            capabilities?.services?.some(service =>
+                service.name.toLowerCase().includes('giovanni')
             ) ?? false
         )
     }
 
-    #hasNonGiovanniServices(
-        capabilities: HarmonyCapabilitiesResponse,
-    ): boolean {
+    #hasNonGiovanniServices(capabilities: HarmonyCapabilitiesResponse): boolean {
         return (
             capabilities?.services?.some(
-                (service) => !service.name.toLowerCase().includes('giovanni'),
+                service => !service.name.toLowerCase().includes('giovanni')
             ) ?? false
         )
     }
 
-    #getNonGiovanniFormats(
-        capabilities: HarmonyCapabilitiesResponse,
-    ): string[] {
+    #getNonGiovanniFormats(capabilities: HarmonyCapabilitiesResponse): string[] {
         if (!capabilities?.services) {
             return []
         }
 
         const nonGiovanniServices = capabilities.services.filter(
-            (service) => !service.name.toLowerCase().includes('giovanni'),
+            service => !service.name.toLowerCase().includes('giovanni')
         )
 
         // Collect all unique output formats from non-Giovanni services
         const formats = new Set<string>()
-        nonGiovanniServices.forEach((service) => {
+        nonGiovanniServices.forEach(service => {
             service.capabilities.outputFormats?.forEach((format: any) => {
                 if (typeof format !== 'string' && 'mimeType' in format) {
                     formats.add(format.mimeType)
@@ -566,20 +547,18 @@ class HarmonyApi {
             formatArray.includes('application/netcdf') &&
             formatArray.includes('application/x-netcdf4')
         ) {
-            return formatArray.filter(
-                (format) => format !== 'application/netcdf',
-            )
+            return formatArray.filter(format => format !== 'application/netcdf')
         }
 
         return formatArray
     }
 
     #getGiovanniFormats(
-        capabilities: HarmonyCapabilitiesResponse,
+        capabilities: HarmonyCapabilitiesResponse
     ): ConfiguredOutputFormat[] {
         const giovanniFormats: ConfiguredOutputFormat[] = []
 
-        capabilities.services.forEach((service) => {
+        capabilities.services.forEach(service => {
             const serviceName = service.name.toLowerCase()
 
             if (serviceName.includes('giovanni-time-series')) {
@@ -604,16 +583,15 @@ class HarmonyApi {
                         label: 'CSV (area-averaged time series; one file)',
                         description: 'Area averaged data over time',
                         isGiovanniFormat: true,
-                    },
+                    }
                 )
             }
         })
 
         return giovanniFormats.filter(
             (format, index, formats) =>
-                formats.findIndex(
-                    (existing) => existing.label === format.label,
-                ) === index,
+                formats.findIndex(existing => existing.label === format.label) ===
+                index
         )
     }
 }

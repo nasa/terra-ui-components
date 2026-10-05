@@ -183,7 +183,7 @@ export default css`
     }
 
     .download-btn:hover {
-        background: var(--terra-color-action-primary-hover);;
+        background: var(--terra-color-action-primary-hover);
     }
 
     .download-icon-small {
@@ -203,7 +203,8 @@ export default css`
         left: 0;
         right: 0;
         background: var(--terra-container-menu-bg);
-        border: var(--terra-container-menu-border-width) solid var(--terra-container-menu-border-width);
+        border: var(--terra-container-menu-border-width) solid
+            var(--terra-container-menu-border-width);
         border-radius: var(--terra-container-menu-border-radius);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         z-index: 801;
@@ -328,9 +329,9 @@ export default css`
     }
 
     .dropdown-header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 4px 6px;
+        display: flex;
+        justify-content: flex-end;
+        padding: 4px 6px;
     }
 
     .panel-close {

@@ -647,14 +647,14 @@ export default css`
         }
     }
 
-     .dropdown-header {
+    .dropdown-header {
         display: flex;
         justify-content: flex-end;
         padding: 4px 6px;
     }
 
     .date-picker__close-btn {
-     border: none;
+        border: none;
         background: transparent;
         font-size: 18px;
         cursor: pointer;

@@ -109,11 +109,7 @@ describe('calculateDataPoints', () => {
 
     it('should throw an error for unsupported time interval', () => {
         expect(() => {
-            calculateDataPoints(
-                'unsupported' as TimeInterval,
-                new Date(),
-                new Date(),
-            )
+            calculateDataPoints('unsupported' as TimeInterval, new Date(), new Date())
         }).to.throw('Unsupported time interval')
     })
 })
@@ -139,7 +135,7 @@ describe('calculateDateChunks', () => {
         expect(chunks.length).to.be.greaterThan(1)
         expect(chunks[0].start.toISOString()).to.equal(start.toISOString())
         expect(chunks[chunks.length - 1].end.toISOString()).to.equal(
-            end.toISOString(),
+            end.toISOString()
         )
 
         for (let i = 0; i < chunks.length; i++) {
@@ -147,14 +143,14 @@ describe('calculateDateChunks', () => {
             const points = calculateDataPoints(
                 TimeInterval.Hourly,
                 chunk.start,
-                chunk.end,
+                chunk.end
             )
 
             expect(points).to.be.at.most(200000)
 
             if (i > 0) {
                 expect(chunk.start.getTime()).to.be.greaterThan(
-                    chunks[i - 1].end.getTime(),
+                    chunks[i - 1].end.getTime()
                 )
             }
         }
@@ -175,7 +171,7 @@ describe('calculateDateChunks', () => {
             // Each chunk should advance by one full interval, never re-requesting
             // the prior chunk's end timestamp.
             expect(currentChunk.start.getTime()).to.equal(
-                previousChunk.end.getTime() + 60 * 60 * 1000,
+                previousChunk.end.getTime() + 60 * 60 * 1000
             )
         }
 
