@@ -1,5 +1,6 @@
 import { property, query, state } from 'lit/decorators.js'
 import { html } from 'lit'
+import { repeat } from 'lit/directives/repeat.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraElement from '../../internal/terra-element.js'
@@ -23,6 +24,7 @@ import TerraAccordion from '../accordion/accordion.component.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
+import TerraMenu from '../menu/menu.component.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
@@ -55,6 +57,7 @@ export default class TerraPlotToolbar extends TerraElement {
         'terra-map': TerraMap,
         'terra-dropdown': TerraDropdown,
         'terra-accordion': TerraAccordion,
+        'terra-menu': TerraMenu,
     }
 
     @property() catalogVariable: Variable
@@ -155,18 +158,43 @@ export default class TerraPlotToolbar extends TerraElement {
         let title = ''
         if (this.catalogVariables && this.catalogVariables.length > 1) {
             title = "Multi-Parameter Time Series"
-            //this.catalogVariables.forEach((item, index) => {
-            //    //param = item.dataFieldShortName
-            //    if (index < this.catalogVariables.length - 1) {
-            //        title += '(' + item.dataProductInstrumentShortName + ') ' + item.dataFieldShortName + ' & '
-            //    } else {
-            //        title += item.dataFieldShortName
-            //    }
-            //})
         } else {
             title = this.catalogVariable.dataFieldLongName
         }
         return title
+    }
+
+    #getDataProductLinks(variables: Variable[]) {
+        return html`
+            <terra-dropdown hover close-on-select placement="bottom-start" distance="10">
+                <span slot="trigger" style="cursor: pointer; font-weight: 500;">
+                    Data Products
+                    <terra-icon
+                        name="outline-chevron-down"
+                        library="heroicons"
+                        font-size="0.75em"
+                    ></terra-icon>
+                </span>
+                <terra-menu>
+                    ${repeat(
+                        variables,
+                        (variable) => variable.dataFieldId, // Unique key function
+                        (variable) => html`
+                            <terra-menu-item>
+                                <a
+                                    target="_blank"
+                                    href="${variable.dataProductDescriptionUrl}"
+                                >
+                                    ${variable.dataProductShortName} 
+                                    ${variable.dataProductVersion}
+                                </a>
+                            </terra-menu-item>
+                            ` // Template function
+                    )}
+                </terra-menu>
+            </terra-dropdown>
+        `
+
     }
 
     #getSubTitle() {
@@ -190,7 +218,7 @@ export default class TerraPlotToolbar extends TerraElement {
                 </a>
             `
         } else {
-            return html`<a target="_blank" href="">Data Products</a>`
+            return this.#getDataProductLinks(this.catalogVariables)
         }
     }
     
@@ -201,12 +229,6 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     render() {
-        //const metadata = [
-        //    this.catalogVariable.dataProductInstrumentShortName,
-        //    this.catalogVariable.dataProductTimeInterval,
-        //]
-        //    .filter(Boolean)
-        //    .filter((value) => value.toLowerCase() !== 'not applicable')
 
         return cache(
             !this.catalogVariable
