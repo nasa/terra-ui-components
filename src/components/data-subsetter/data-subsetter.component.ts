@@ -312,6 +312,21 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     updated(changedProps: Map<string, unknown>) {
         super.updated(changedProps)
 
+        // The resume mutation resolves before the next status poll catches up, so
+        // keep showing "Resuming..." until the job's status actually leaves PAUSED.
+        if (
+            this.resumingJob &&
+            this.#harmonyRequestController.status !== Status.PAUSED
+        ) {
+            this.resumingJob = false
+        }
+
+        // Same idea for cancel - keep showing "Canceling..." until the job's status
+        // actually leaves the cancelable set (running/previewing/paused).
+        if (this.cancelingGetData && !this.#canCancelJob()) {
+            this.cancelingGetData = false
+        }
+
         // Sync collection data from CollectionController into @state properties so
         // existing @watch decorators fire as before.
         const newCollectionInfo = this.#collectionController.collectionInfo
@@ -2708,7 +2723,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 jobId: this.jobId,
                 options: { bearerToken: this.bearerToken },
             })
-        } finally {
+            // Keep cancelingGetData true after the mutation resolves - the job status
+            // still reports a cancelable state until the next poll catches up.
+            // `updated()` clears the flag once the status actually leaves that state.
+        } catch {
+            // the cancel request itself failed, let the user try again right away
             this.cancelingGetData = false
         }
     }
@@ -2726,9 +2745,27 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 jobId: this.jobId,
                 options: { bearerToken: this.bearerToken },
             })
-        } finally {
+            // Keep resumingJob true after the mutation resolves - the job status
+            // still reports PAUSED until the next poll catches up. `updated()`
+            // clears the flag once the status actually moves off PAUSED.
+        } catch {
+            // the resume request itself failed, let the user try again right away
             this.resumingJob = false
         }
+    }
+
+    /**
+     * A paused, running, or previewing job can be canceled. Used both to decide whether to
+     * render the Cancel request button and to know when a pending cancel has actually taken
+     * effect (the job status leaves this set).
+     */
+    #canCancelJob() {
+        const status = this.#harmonyRequestController.status
+        return (
+            status === Status.RUNNING ||
+            status === Status.PREVIEWING ||
+            status === Status.PAUSED
+        )
     }
 
     /**
@@ -2737,10 +2774,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
      */
     #renderJobActionButtons() {
         const status = this.#harmonyRequestController.status
-        const canCancel =
-            status === Status.RUNNING ||
-            status === Status.PREVIEWING ||
-            status === Status.PAUSED
 
         return html`
             <div>
@@ -2756,7 +2789,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         : nothing
                 }
                 ${
-                    canCancel
+                    this.#canCancelJob()
                         ? html`<button
                             class="btn btn-success"
                             @click=${this.#cancelJob}
@@ -2970,7 +3003,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderPausedMessage() {
-        if (this.#harmonyRequestController.status !== Status.PAUSED) {
+        if (
+            this.#harmonyRequestController.status !== Status.PAUSED ||
+            this.resumingJob
+        ) {
             return nothing
         }
 
