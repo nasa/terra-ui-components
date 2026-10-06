@@ -27,6 +27,15 @@ export default css`
         box-shadow: var(--terra-shadow-large);
     }
 
+    @media (max-width: 768px) {
+        .popup {
+            max-width: calc(100vw - 1rem);
+            max-height: calc(100vh - 1rem);
+            overflow: auto;
+            box-sizing: border-box;
+        }
+    }
+
     .popup--fixed {
         position: fixed;
     }
