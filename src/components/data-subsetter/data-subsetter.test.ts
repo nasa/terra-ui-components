@@ -55,11 +55,14 @@ function stubCollectionFetch({
     caps,
     collectionUmm,
     cmrVariables = { hits: 0, items: [] },
+    jobStatuses = {},
 }: {
     collectionEntryId: string
     caps: Record<string, unknown> & { conceptId: string }
     collectionUmm: Record<string, unknown>
     cmrVariables?: { hits: number; items: unknown[] }
+    /** Keyed by jobID, used to stub Harmony's `jobs/{jobID}` status-polling endpoint */
+    jobStatuses?: Record<string, Record<string, unknown>>
 }) {
     const cmrCollectionResponse = {
         hits: 1,
@@ -92,6 +95,10 @@ function stubCollectionFetch({
         }
         if (url.includes('/capabilities')) {
             return okJson(caps)
+        }
+        const jobsMatch = url.match(/\/jobs\/([^/?]+)/)
+        if (jobsMatch && jobStatuses[jobsMatch[1]]) {
+            return okJson(jobStatuses[jobsMatch[1]])
         }
         if (url.includes('configured-variables')) {
             // Giovanni's configured-variables query is always enabled regardless of
@@ -888,5 +895,169 @@ describe('<terra-data-subsetter> recent date range default', () => {
 
         expect(el.selectedDateRange.startDate).to.equal('2000-01-01')
         expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+    })
+})
+
+describe('<terra-data-subsetter> paused job handling', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const caps = {
+        conceptId: 'C123',
+        shortName: 'S1',
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: true,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        services: [{ name: 'harmony', href: '', capabilities: {} }],
+        variables: [
+            {
+                conceptId: 'V1',
+                name: 'Variable 1',
+                href: '',
+            },
+        ],
+    }
+
+    const collectionUmm = {
+        EntryTitle: 'Test Collection',
+        ShortName: 'S1',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    const pausedJobStatus = {
+        jobID: 'job-paused',
+        status: 'paused',
+        message: 'The job is paused and may be resumed using the provided link.',
+        progress: 15,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        dataExpiration: '',
+        request: '',
+        numInputGranules: 100,
+        links: [],
+    }
+
+    async function startPausedJob() {
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+
+        HarmonyRequestController.prototype.startJob = (async () => {
+            return { jobID: 'job-paused' } as any
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        stubCollectionFetch({
+            collectionEntryId: 'S4_1',
+            caps,
+            collectionUmm,
+            jobStatuses: { 'job-paused': pausedJobStatus },
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+
+        try {
+            el.dataAccessMode = 'subset'
+            el.collectionEntryId = 'S4_1'
+
+            await waitUntil(
+                () => Boolean(el.collectionWithServices),
+                'expected collectionWithServices to be populated by CollectionController',
+                { timeout: 3000 },
+            )
+            await elementUpdated(el)
+
+            const getDataButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? [],
+            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                | HTMLButtonElement
+                | undefined
+
+            expect(getDataButton).to.exist
+            getDataButton?.click()
+
+            await waitUntil(
+                () => el.shadowRoot?.textContent?.includes('Paused for review'),
+                'expected the job status section to show the paused status',
+                { timeout: 3000 },
+            )
+            await elementUpdated(el)
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+
+        return el
+    }
+
+    it('shows the paused message and Resume Job / Cancel request buttons when a job is paused', async () => {
+        const el = await startPausedJob()
+
+        const alertText = Array.from(
+            el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
+        )
+            .map((alert: any) => alert.textContent)
+            .join(' ')
+
+        expect(alertText).to.include('This job is paused for review')
+
+        const buttons = Array.from(
+            el.shadowRoot?.querySelectorAll('button') ?? [],
+        ) as HTMLButtonElement[]
+
+        expect(
+            buttons.some((button) => button.textContent?.trim() === 'Resume Job'),
+        ).to.be.true
+        expect(
+            buttons.some(
+                (button) => button.textContent?.trim() === 'Cancel request',
+            ),
+        ).to.be.true
+    })
+
+    it('calls HarmonyRequestController.resumeJob with the job ID when Resume Job is clicked', async () => {
+        const el = await startPausedJob()
+
+        const originalResumeJob = HarmonyRequestController.prototype.resumeJob
+        let resumeJobArgs: any
+
+        HarmonyRequestController.prototype.resumeJob = (async (
+            options: any,
+        ) => {
+            resumeJobArgs = options
+            return pausedJobStatus
+        }) as typeof HarmonyRequestController.prototype.resumeJob
+
+        try {
+            const resumeButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? [],
+            ).find(
+                (button) => button.textContent?.trim() === 'Resume Job',
+            ) as HTMLButtonElement | undefined
+
+            expect(resumeButton).to.exist
+            resumeButton?.click()
+
+            await waitUntil(() => Boolean(resumeJobArgs))
+
+            expect(resumeJobArgs.jobId).to.equal('job-paused')
+        } finally {
+            HarmonyRequestController.prototype.resumeJob = originalResumeJob
+        }
     })
 })

@@ -171,7 +171,7 @@ export class DrawToolbarControl extends Control {
                 `show${tool.charAt(0).toUpperCase() + tool.slice(1)}Tool` as keyof Options
             ] ?? false
 
-        const btn = this.element.querySelector(
+        const btn = this.element?.querySelector(
             `button:nth-child(${this.#getButtonIndex(tool)})`,
         ) as HTMLButtonElement
 
@@ -241,7 +241,7 @@ export class DrawToolbarControl extends Control {
                 ...base,
                 type: 'Circle',
                 geometryFunction: createBox(),
-                freehand: true
+                freehand: true,
             }
         }
 
@@ -249,7 +249,7 @@ export class DrawToolbarControl extends Control {
             return {
                 ...base,
                 type: 'Circle',
-                freehand: true
+                freehand: true,
             }
         }
 
@@ -277,7 +277,11 @@ export class DrawToolbarControl extends Control {
 
         this.vectorLayer.getSource()?.clear()
 
-        map.getViewport().style.cursor = 'crosshair'
+        const viewport = map.getViewport()
+
+        if (viewport) {
+            viewport.style.cursor = 'crosshair'
+        }
 
         const drawOptions = this.#getDrawOptions(tool)
         // @ts-expect-error - TypeScript is confused about the dynamic nature of the options
@@ -330,9 +334,14 @@ export class DrawToolbarControl extends Control {
         const map = this.getMap()
 
         if (map && this.#draw) {
+            const viewport = map.getViewport()
+
             map.removeInteraction(this.#draw)
             map.un('pointermove', this.#boundMoveHandler)
-            map.getViewport().style.cursor = ''
+
+            if (viewport) {
+                viewport.style.cursor = ''
+            }
         }
 
         this.#draw = undefined

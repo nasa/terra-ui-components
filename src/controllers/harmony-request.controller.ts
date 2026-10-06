@@ -6,8 +6,10 @@ import {
     queryCancelHarmonySubsetJob,
     queryCreateHarmonySubsetJob,
     queryHarmonyJobStatus,
+    queryResumeHarmonySubsetJob,
     type CancelHarmonyJobVariables,
     type CreateHarmonyJobVariables,
+    type ResumeHarmonyJobVariables,
 } from '../queries/harmony.queries.js'
 import { MutationController } from './mutation.controller.js'
 import { QueryController } from './query.controller.js'
@@ -34,6 +36,12 @@ export class HarmonyRequestController implements ReactiveController {
         CancelHarmonyJobVariables
     >
 
+    #resumeJob: MutationController<
+        SubsetJobStatus,
+        Error,
+        ResumeHarmonyJobVariables
+    >
+
     constructor(private host: ReactiveControllerHost & QueryClientHost) {
         host.addController(this)
 
@@ -49,6 +57,11 @@ export class HarmonyRequestController implements ReactiveController {
         this.#cancelJob = new MutationController(
             host,
             queryCancelHarmonySubsetJob(),
+        )
+
+        this.#resumeJob = new MutationController(
+            host,
+            queryResumeHarmonySubsetJob(),
         )
     }
 
@@ -74,6 +87,10 @@ export class HarmonyRequestController implements ReactiveController {
 
     async cancelJob(options: CancelHarmonyJobVariables) {
         return this.#cancelJob.mutate(options)
+    }
+
+    async resumeJob(options: ResumeHarmonyJobVariables) {
+        return this.#resumeJob.mutate(options)
     }
 
     startPollForJobStatus(jobId: string, options?: SearchOptions) {

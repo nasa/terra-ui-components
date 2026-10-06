@@ -246,6 +246,17 @@ describe('HarmonyRequest', () => {
             })
             expect(request.params).to.not.include('subset=lev')
         })
+
+        it('always appends forceAsync and never appends skipPreview', () => {
+            // Preview should never be skipped — jobs are always allowed to
+            // start in the PREVIEWING state so large requests can pause for review.
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+            expect(request.params).to.include('forceAsync=true')
+            expect(request.params).to.not.include('skipPreview')
+        })
     })
 
     describe('requestUrl', () => {

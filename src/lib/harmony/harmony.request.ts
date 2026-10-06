@@ -20,7 +20,6 @@ export type HarmonyRequestOptions = {
     format?: string
     average?: string
     labels?: Array<string>
-    skipPreview?: boolean
     anonymous?: boolean
     dimensions?: Array<RangeDimension>
 }
@@ -134,7 +133,6 @@ export class HarmonyRequest {
             average,
             anonymous,
             dimensions,
-            skipPreview,
         } = this.#options
 
         if (location instanceof LatLng) {
@@ -184,12 +182,6 @@ export class HarmonyRequest {
 
         if (anonymous) {
             params.append('maxResults', '10')
-        }
-
-        if (typeof skipPreview === 'boolean' && !skipPreview) {
-            params.append('skipPreview', 'false')
-        } else {
-            params.append('skipPreview', 'true')
         }
 
         //! force async responses. We ALWAYS want a job returned, never a redirect
@@ -300,10 +292,6 @@ export class HarmonyRequest {
         return this.set({
             dimensions: [...(this.#options.dimensions ?? []), dimension],
         })
-    }
-
-    skipPreview(skipPreview: boolean) {
-        return this.set({ skipPreview })
     }
 
     isVariableConceptId(value: string) {

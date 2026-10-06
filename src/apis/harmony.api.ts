@@ -1,6 +1,7 @@
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import { BadRequestException } from '../exceptions/http.exception.js'
+import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
+import { authService } from '../auth/auth.service.js'
 
 const API_VERSION = '3'
 
@@ -261,16 +262,83 @@ class HarmonyApi {
         options?: SearchOptions,
     ): Promise<SubsetJobStatus> {
         if (harmonyRequest.hasShape) {
-            return this.#request<SubsetJobStatus>(
+            return this.#createJobRequest(
                 harmonyRequest.baseUrl,
                 options,
                 harmonyRequest.buildFormData(),
             )
         }
-        return this.#request<SubsetJobStatus>(
-            harmonyRequest.requestUrl,
-            options,
-        )
+        return this.#createJobRequest(harmonyRequest.requestUrl, options)
+    }
+
+    /**
+     * Sends the actual job-creation request to Harmony. Normally Harmony responds with
+     * the new job's JSON body directly, but it will sometimes instead respond with a
+     * 3xx redirect pointing at the job it just created (observed once preview was
+     * re-enabled via `skipPreview` removal — see UXD-220). Since that behavior is
+     * specific to job creation, we fetch directly here (rather than going through
+     * `#request`/`apiClient`) so we can inspect the raw response for a redirect before
+     * deciding how to handle it: if it points at a job, fetch that job's status and
+     * return it as if it had been returned directly; otherwise fall back to the same
+     * response handling `apiClient` would normally provide.
+     */
+    async #createJobRequest(
+        url: string,
+        options?: SearchOptions,
+        body?: FormData,
+    ): Promise<SubsetJobStatus> {
+        const { url: resolvedUrl, headers } = this.#resolveRequest(url, options)
+
+        const res = await fetch(resolvedUrl, {
+            method: body ? 'POST' : 'GET',
+            headers,
+            body,
+            signal: options?.signal,
+        })
+
+        if (res.status >= 300 && res.status < 400) {
+            const jobId = this.#extractJobIdFromLocation(
+                res.headers.get('Location'),
+            )
+            if (jobId) {
+                return this.getJobStatus(jobId, options)
+            }
+        }
+
+        if (!res.ok) {
+            if (res.status === 401) {
+                authService.logout() // clear any existing auth state since our token is no longer valid
+            }
+
+            if (!res.headers.get('Content-Type')?.includes('json')) {
+                const text = await res.text()
+                throw new HttpException({
+                    status: res.status,
+                    message: text || `HTTP ${res.status}`,
+                })
+            }
+
+            const json = await res.json()
+            throw new HttpException({
+                status: res.status,
+                message:
+                    json.message ??
+                    json.description ??
+                    json.errors?.[0] ??
+                    `HTTP ${res.status}`,
+            })
+        }
+
+        return res.json() as Promise<SubsetJobStatus>
+    }
+
+    /**
+     * Extracts a Harmony job ID from a redirect's `Location` header, if it points at
+     * a job (e.g. `https://harmony.earthdata.nasa.gov/jobs/{jobId}`). Returns
+     * `undefined` for any other redirect target.
+     */
+    #extractJobIdFromLocation(location: string | null): string | undefined {
+        return location?.match(/\/jobs\/([^/?]+)/)?.[1]
     }
 
     /**
@@ -348,6 +416,18 @@ class HarmonyApi {
     }
 
     /**
+     * Given a jobId for a job that's paused for preview, send a resume request to the
+     * Harmony API so it continues processing the remainder of the job.
+     * Returns the updated job status after resuming.
+     */
+    async resumeJob(
+        jobId: string,
+        options?: SearchOptions,
+    ): Promise<SubsetJobStatus> {
+        return this.#request<SubsetJobStatus>(`jobs/${jobId}/resume`, options)
+    }
+
+    /**
      * When a Harmony job finishes, it provides URLs for downloading the results. This method can be used to fetch the results from those URLs, which may require authentication if the data is not public.
      */
     async fetchUrl(url: string, options?: SearchOptions) {
@@ -359,7 +439,12 @@ class HarmonyApi {
         return this.#request(relativeUrl, options)
     }
 
-    #request<T>(url: string, options?: SearchOptions, body?: FormData) {
+    /**
+     * Resolves the final request URL (substituting in the anonymous proxy when no
+     * bearer token is present) and the auth headers for a Harmony request. Shared by
+     * `#request` and `#createJobRequest` so both route through the proxy consistently.
+     */
+    #resolveRequest(url: string, options?: SearchOptions) {
         let environmentUrl = HARMONY_URLS[Environments.PROD] // TODO: support for UAT
 
         if (!options?.bearerToken) {
@@ -390,14 +475,20 @@ class HarmonyApi {
             }),
         }
 
+        return { url, headers }
+    }
+
+    #request<T>(url: string, options?: SearchOptions, body?: FormData) {
+        const { url: resolvedUrl, headers } = this.#resolveRequest(url, options)
+
         if (body) {
-            return apiClient.post<T>(url, body, {
+            return apiClient.post<T>(resolvedUrl, body, {
                 signal: options?.signal,
                 headers,
             })
         }
 
-        return apiClient.get<T>(url, {
+        return apiClient.get<T>(resolvedUrl, {
             signal: options?.signal,
             headers,
         })

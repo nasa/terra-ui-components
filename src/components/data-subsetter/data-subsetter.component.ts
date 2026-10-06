@@ -207,6 +207,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     cancelingGetData: boolean = false
 
     @state()
+    resumingJob: boolean = false
+
+    @state()
     isSubmittingRequest: boolean = false
 
     @state()
@@ -714,21 +717,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                           `
                             : nothing
                     }
-                    ${
-                        this.#harmonyRequestController.status === Status.RUNNING
-                            ? html`<button
-                              class="btn btn-success"
-                              @click=${this.#cancelJob}
-                              ?disabled=${this.cancelingGetData}
-                          >
-                              ${
-                                  this.cancelingGetData
-                                      ? 'Canceling...'
-                                      : 'Cancel request'
-                              }
-                          </button>`
-                            : nothing
-                    }
+                    ${this.#renderJobActionButtons()}
 
                     <div class="job-info">
                         Job ID:
@@ -767,9 +756,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             ?disabled=${this.isSubmittingRequest}
                             @click=${this.#getData}
                         >
-                            ${this.isSubmittingRequest
-                                ? 'Getting Data...'
-                                : 'Get Data'}
+                            ${
+                                this.isSubmittingRequest
+                                    ? 'Getting Data...'
+                                    : 'Get Data'
+                            }
                         </button>
                         ${
                             this.jobId
@@ -965,9 +956,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                   ?disabled=${this.isSubmittingRequest}
                                   @click=${this.#getData}
                               >
-                                  ${this.isSubmittingRequest
-                                      ? 'Getting Data...'
-                                      : 'Get Data'}
+                                  ${
+                                      this.isSubmittingRequest
+                                          ? 'Getting Data...'
+                                          : 'Get Data'
+                                  }
                               </button>
                               ${
                                   this.jobId
@@ -1467,7 +1460,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         const range = this.#getCollectionDateRange()
         const granuleCount = this.collectionWithServices?.granuleCount
 
-        if (!range.startDate || !range.endDate || !granuleCount || granuleCount <= 1) {
+        if (
+            !range.startDate ||
+            !range.endDate ||
+            !granuleCount ||
+            granuleCount <= 1
+        ) {
             return range
         }
 
@@ -2334,22 +2332,34 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                         ? html` <div class="progress-container">
                           <div class="progress-text">
                               ${
-                                  this.#harmonyRequestController.progress >= 100
+                                  this.#harmonyRequestController.status ===
+                                  Status.PAUSED
                                       ? html`
-                                        <span class="status-complete"
-                                            >✓ Search complete</span
-                                        >
-                                    `
-                                      : html`
-                                        <span class="spinner"></span>
-                                        <span class="status-running"
-                                            >Searching for data...
+                                        <span class="status-paused"
+                                            >⏸ Paused for review
                                             (${
                                                 this.#harmonyRequestController
                                                     .progress
                                             }%)</span
                                         >
                                     `
+                                      : this.#harmonyRequestController
+                                              .progress >= 100
+                                        ? html`
+                                          <span class="status-complete"
+                                              >✓ Search complete</span
+                                          >
+                                      `
+                                        : html`
+                                          <span class="spinner"></span>
+                                          <span class="status-running"
+                                              >Searching for data...
+                                              (${
+                                                  this.#harmonyRequestController
+                                                      .progress
+                                              }%)</span
+                                          >
+                                      `
                               }
                           </div>
 
@@ -2375,7 +2385,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     >
                 </div>
 
-                ${this.#renderJobMessage()}
+                ${this.#renderPausedMessage()} ${this.#renderJobMessage()}
                 ${
                     this.#harmonyRequestController.data?.errors?.length
                         ? html`
@@ -2601,22 +2611,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                 `
                                   : nothing
                           }
-                          ${
-                              this.#harmonyRequestController.status ===
-                              Status.RUNNING
-                                  ? html`<button
-                                    class="btn btn-success"
-                                    @click=${this.#cancelJob}
-                                    ?disabled=${this.cancelingGetData}
-                                >
-                                    ${
-                                        this.cancelingGetData
-                                            ? 'Canceling...'
-                                            : 'Cancel request'
-                                    }
-                                </button>`
-                                  : nothing
-                          }
+                          ${this.#renderJobActionButtons()}
 
                           <div class="job-info">
                               Job ID:
@@ -2716,6 +2711,67 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         } finally {
             this.cancelingGetData = false
         }
+    }
+
+    async #resumeJob() {
+        if (!this.jobId) {
+            // no job id, can't resume
+            return
+        }
+
+        this.resumingJob = true
+
+        try {
+            await this.#harmonyRequestController.resumeJob({
+                jobId: this.jobId,
+                options: { bearerToken: this.bearerToken },
+            })
+        } finally {
+            this.resumingJob = false
+        }
+    }
+
+    /**
+     * Renders the Resume Job / Cancel request footer buttons based on the job's current status.
+     * A paused job can be resumed or canceled; a running (or previewing) job can only be canceled.
+     */
+    #renderJobActionButtons() {
+        const status = this.#harmonyRequestController.status
+        const canCancel =
+            status === Status.RUNNING ||
+            status === Status.PREVIEWING ||
+            status === Status.PAUSED
+
+        return html`
+            <div>
+                ${
+                    status === Status.PAUSED
+                        ? html`<button
+                            class="btn btn-primary"
+                            @click=${this.#resumeJob}
+                            ?disabled=${this.resumingJob}
+                        >
+                            ${this.resumingJob ? 'Resuming...' : 'Resume Job'}
+                        </button>`
+                        : nothing
+                }
+                ${
+                    canCancel
+                        ? html`<button
+                            class="btn btn-success"
+                            @click=${this.#cancelJob}
+                            ?disabled=${this.cancelingGetData}
+                        >
+                            ${
+                                this.cancelingGetData
+                                    ? 'Canceling...'
+                                    : 'Cancel request'
+                            }
+                        </button>`
+                        : nothing
+                }
+            </div>
+        `
     }
 
     async #getData() {
@@ -2913,6 +2969,42 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         )
     }
 
+    #renderPausedMessage() {
+        if (this.#harmonyRequestController.status !== Status.PAUSED) {
+            return nothing
+        }
+
+        return html`
+            <terra-alert open variant="warning" appearance="white">
+                <p>This is a large request, so processing paused after the first few files so you can review the results.</p>
+                <p>
+                    If everything looks correct, select
+                    <a
+                        href="#"
+                        class="action-link"
+                        @click=${(e: Event) => {
+                            e.preventDefault()
+                            this.#resumeJob()
+                        }}
+                        >Resume Job</a
+                    >
+                    to continue. Otherwise, select
+                    <a
+                        href="#"
+                        class="action-link"
+                        @click=${(e: Event) => {
+                            e.preventDefault()
+                            this.#cancelJob()
+                        }}
+                        >Cancel Job</a
+                    >
+                    and adjust your request.
+                </p>
+                <p>Large jobs may take some time to complete. You can leave this page and check progress later from the History tab in the bottom-right corner of the page.</p>
+            </terra-alert>
+        `
+    }
+
     #renderJobMessage() {
         const warningStatuses = [
             Status.CANCELED,
@@ -2921,7 +3013,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         ]
         const errorStatuses = [Status.FAILED]
 
-        if (!this.#harmonyRequestController.data?.status) {
+        if (
+            !this.#harmonyRequestController.data?.status ||
+            this.#harmonyRequestController.status === Status.PAUSED
+        ) {
             return nothing
         }
 
