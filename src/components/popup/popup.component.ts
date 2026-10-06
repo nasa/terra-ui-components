@@ -342,8 +342,6 @@ export default class TerraPopup extends TerraElement {
             offset({ mainAxis: this.distance, crossAxis: this.skidding }),
         ]
 
-        //const shiftPadding = this.isMobile ? 8 : this.shift
-
         // First we sync width/height
         if (this.sync) {
             middleware.push(
