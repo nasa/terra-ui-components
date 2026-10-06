@@ -78,7 +78,7 @@ Terra UI is a curated component library. To keep review load manageable and ensu
 -   Include tests for new features
 -   Update documentation for API changes
 -   Ensure all tests pass (`npm run test`)
--   Follow our code formatting standards (`npm run prettier`)
+-   Follow our code formatting standards (`npm run format`)
 
 ## Creating a New Component
 
@@ -242,13 +242,13 @@ We use [Prettier](https://prettier.io/) for code formatting. The project include
 To format all files:
 
 ```bash
-npm run prettier
+npm run format
 ```
 
 To check formatting without making changes:
 
 ```bash
-npm run prettier:check
+npm run format:check
 ```
 
 ### Class Names and Shadow DOM

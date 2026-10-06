@@ -110,7 +110,10 @@ export default class Modal {
         if (tabbableElements.length === 0) {
             event.preventDefault()
             // W3C recommends that the modal itself should be focused if there are no tabbable elements inside of it.
-            this.element.focus({ focusVisible: false, preventScroll: true})
+            this.element.focus({
+                focusVisible: false,
+                preventScroll: true,
+            } as FocusOptions)
 
             return
         }
