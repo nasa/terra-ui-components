@@ -130,6 +130,9 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     })
     showCollectionSearch?: boolean = true
 
+    @property({ reflect: true, type: Boolean, attribute: 'read-constraints-from-url' })
+    readConstraintsFromUrl?: boolean = false
+
     @property({ reflect: true, type: Boolean, attribute: 'show-history-panel' })
     showHistoryPanel?: boolean = true
 
@@ -288,6 +291,25 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             this.showCollectionSearch = false
         } else {
             this.showCollectionSearch = true
+        }
+    }
+
+    @watch('readConstraintsFromUrl')
+    readConstraintsFromUrlChanged() {
+        if (this.readConstraintsFromUrl) {
+            // get shortname and version from URL params
+            const urlParams = new URLSearchParams(window.location.search)
+            const rawShortName = urlParams.get('shortname') ?? undefined
+            const rawVersion = urlParams.get('version') ?? undefined
+            this.shortName = rawShortName ? rawShortName.length <= 85 ? rawShortName.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            this.version = rawVersion ? rawVersion.length <= 8 ? rawVersion.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            // make sure the properties are updated
+            if (this.shortName && this.version) {
+                this.shortNameAndVersionChanged()
+            } else {
+                this.collectionEntryId = undefined
+                console.warn('Invalid shortname or version in URL parameters. Collection entry ID will not be set.')
+            }
         }
     }
 
