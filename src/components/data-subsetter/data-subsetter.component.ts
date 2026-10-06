@@ -292,8 +292,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             const urlParams = new URLSearchParams(window.location.search)
             const rawShortName = urlParams.get('shortname') ?? undefined
             const rawVersion = urlParams.get('version') ?? undefined
-            this.shortName = rawShortName ? rawShortName.length < 64 ? rawShortName.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
-            this.version = rawVersion ? rawVersion.length < 8 ? rawVersion.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            this.shortName = rawShortName ? rawShortName.length <= 85 ? rawShortName.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
+            this.version = rawVersion ? rawVersion.length <= 8 ? rawVersion.replace(/[^a-zA-Z0-9._]/g, '') : undefined : undefined
             // make sure the properties are updated
             if (this.shortName && this.version) {
                 this.shortNameAndVersionChanged()
