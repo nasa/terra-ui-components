@@ -2817,7 +2817,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             @click=${this.#resumeJob}
                             ?disabled=${this.resumingJob}
                         >
-                            ${this.resumingJob ? 'Resuming...' : 'Resume Job'}
+                            ${this.resumingJob ? 'Resuming...' : 'Resume'}
                         </button>`
                         : nothing
                 }
@@ -2828,11 +2828,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             @click=${this.#cancelJob}
                             ?disabled=${this.cancelingGetData}
                         >
-                            ${
-                                this.cancelingGetData
-                                    ? 'Canceling...'
-                                    : 'Cancel request'
-                            }
+                            ${this.cancelingGetData ? 'Canceling...' : 'Cancel'}
                         </button>`
                         : nothing
                 }
@@ -3055,7 +3051,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             e.preventDefault()
                             this.#resumeJob()
                         }}
-                        >Resume Job</a
+                        >Resume</a
                     >
                     to continue. Otherwise, select
                     <a
@@ -3065,7 +3061,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             e.preventDefault()
                             this.#cancelJob()
                         }}
-                        >Cancel Job</a
+                        >Cancel</a
                     >
                     and adjust your request.
                 </p>

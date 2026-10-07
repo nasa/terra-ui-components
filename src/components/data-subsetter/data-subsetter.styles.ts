@@ -417,7 +417,7 @@ export default css`
     }
 
     .status-paused {
-        color: #856404;
+        color: var(--terra-text-on-warning, #856404);
         font-weight: 500;
     }
 

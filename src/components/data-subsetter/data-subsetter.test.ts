@@ -1068,7 +1068,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
         return el
     }
 
-    it('shows the paused message and Resume Job / Cancel request buttons when a job is paused', async () => {
+    it('shows the paused message and Resume / Cancel buttons when a job is paused', async () => {
         const el = await startPausedJob()
 
         const alertText = Array.from(
@@ -1086,14 +1086,10 @@ describe('<terra-data-subsetter> paused job handling', () => {
         ) as HTMLButtonElement[]
 
         expect(
-            buttons.some(
-                (button) => button.textContent?.trim() === 'Resume Job',
-            ),
+            buttons.some((button) => button.textContent?.trim() === 'Resume'),
         ).to.be.true
         expect(
-            buttons.some(
-                (button) => button.textContent?.trim() === 'Cancel request',
-            ),
+            buttons.some((button) => button.textContent?.trim() === 'Cancel'),
         ).to.be.true
     })
 
@@ -1113,7 +1109,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
         try {
             const resumeButton = Array.from(
                 el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Resume Job') as
+            ).find((button) => button.textContent?.trim() === 'Resume') as
                 | HTMLButtonElement
                 | undefined
 
