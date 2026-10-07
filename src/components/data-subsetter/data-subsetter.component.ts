@@ -1006,11 +1006,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             this.#resetSpatialSelection()
         }
 
-        // Reset date range
-        this.selectedDateRange = {
-            startDate: null,
-            endDate: null,
-        }
+        // Reset date range back to the default recent window (not the full collection extent)
+        this.selectedDateRange = this.#getDefaultRecentDateRange()
 
         // Clear validation state
         this.touchedFields = new Set()
@@ -1399,7 +1396,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #resetDateRangeSelection = () => {
-        this.selectedDateRange = { startDate: null, endDate: null }
+        this.selectedDateRange = this.#getDefaultRecentDateRange()
     }
 
     #resetFormatSelection = () => {

@@ -896,6 +896,51 @@ describe('<terra-data-subsetter> recent date range default', () => {
         expect(el.selectedDateRange.startDate).to.equal('2000-01-01')
         expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
     })
+
+    it('restores the recent default window (not the full range) when the date range Reset button is clicked', async () => {
+        const el = await loadWithGranuleCount(7306)
+
+        // simulate the user having changed the date range away from the default
+        el.selectedDateRange = { startDate: '2005-06-01', endDate: '2005-06-15' }
+        await elementUpdated(el)
+
+        const dateRangeResetButton = Array.from(
+            el.shadowRoot?.querySelectorAll('.reset-btn') ?? [],
+        ).find((button: any) =>
+            button
+                .closest('terra-accordion')
+                ?.textContent?.includes('Refine Date Range'),
+        ) as HTMLButtonElement | undefined
+
+        expect(dateRangeResetButton).to.exist
+        dateRangeResetButton?.click()
+        await elementUpdated(el)
+
+        // should go back to the ~30-day recent default, not the full
+        // 2000-01-01..2020-01-01 collection extent
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+        expect(el.selectedDateRange.startDate).to.equal('2019-12-03')
+    })
+
+    it('restores the recent default window when "Reset All" is clicked', async () => {
+        const el = await loadWithGranuleCount(7306)
+
+        el.selectedDateRange = { startDate: '2005-06-01', endDate: '2005-06-15' }
+        await elementUpdated(el)
+
+        const resetAllButton = Array.from(
+            el.shadowRoot?.querySelectorAll('button') ?? [],
+        ).find(
+            (button) => button.textContent?.trim() === 'Reset All',
+        ) as HTMLButtonElement | undefined
+
+        expect(resetAllButton).to.exist
+        resetAllButton?.click()
+        await elementUpdated(el)
+
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+        expect(el.selectedDateRange.startDate).to.equal('2019-12-03')
+    })
 })
 
 describe('<terra-data-subsetter> paused job handling', () => {
