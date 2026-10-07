@@ -901,7 +901,10 @@ describe('<terra-data-subsetter> recent date range default', () => {
         const el = await loadWithGranuleCount(7306)
 
         // simulate the user having changed the date range away from the default
-        el.selectedDateRange = { startDate: '2005-06-01', endDate: '2005-06-15' }
+        el.selectedDateRange = {
+            startDate: '2005-06-01',
+            endDate: '2005-06-15',
+        }
         await elementUpdated(el)
 
         const dateRangeResetButton = Array.from(
@@ -925,14 +928,17 @@ describe('<terra-data-subsetter> recent date range default', () => {
     it('restores the recent default window when "Reset All" is clicked', async () => {
         const el = await loadWithGranuleCount(7306)
 
-        el.selectedDateRange = { startDate: '2005-06-01', endDate: '2005-06-15' }
+        el.selectedDateRange = {
+            startDate: '2005-06-01',
+            endDate: '2005-06-15',
+        }
         await elementUpdated(el)
 
         const resetAllButton = Array.from(
             el.shadowRoot?.querySelectorAll('button') ?? [],
-        ).find(
-            (button) => button.textContent?.trim() === 'Reset All',
-        ) as HTMLButtonElement | undefined
+        ).find((button) => button.textContent?.trim() === 'Reset All') as
+            | HTMLButtonElement
+            | undefined
 
         expect(resetAllButton).to.exist
         resetAllButton?.click()
@@ -989,7 +995,8 @@ describe('<terra-data-subsetter> paused job handling', () => {
     const pausedJobStatus = {
         jobID: 'job-paused',
         status: 'paused',
-        message: 'The job is paused and may be resumed using the provided link.',
+        message:
+            'The job is paused and may be resumed using the provided link.',
         progress: 15,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -1068,7 +1075,9 @@ describe('<terra-data-subsetter> paused job handling', () => {
         ) as HTMLButtonElement[]
 
         expect(
-            buttons.some((button) => button.textContent?.trim() === 'Resume Job'),
+            buttons.some(
+                (button) => button.textContent?.trim() === 'Resume Job',
+            ),
         ).to.be.true
         expect(
             buttons.some(
@@ -1093,9 +1102,9 @@ describe('<terra-data-subsetter> paused job handling', () => {
         try {
             const resumeButton = Array.from(
                 el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find(
-                (button) => button.textContent?.trim() === 'Resume Job',
-            ) as HTMLButtonElement | undefined
+            ).find((button) => button.textContent?.trim() === 'Resume Job') as
+                | HTMLButtonElement
+                | undefined
 
             expect(resumeButton).to.exist
             resumeButton?.click()

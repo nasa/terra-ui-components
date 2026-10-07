@@ -1021,9 +1021,10 @@ main {
     margin-bottom: 0;
 }
 
-@media screen and (max-width: 900px) {
+@media screen and (max-width: 600px) {
     main {
         margin-left: 0;
+        padding: 0;
     }
 }
 
