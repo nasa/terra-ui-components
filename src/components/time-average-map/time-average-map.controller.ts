@@ -142,6 +142,8 @@ export class TimeAvgMapController {
                     .format('image/tiff')
                     .average('time')
                     .label('terra-time-average-map')
+                    // time average map always needs the final data, so never let Harmony pause the job in a PREVIEWING state
+                    .skipPreview(true)
 
                 if (this.#host.applicationId) {
                     harmonyRequest.label(this.#host.applicationId)

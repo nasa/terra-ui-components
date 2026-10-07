@@ -25,6 +25,7 @@ export default {
         esbuildPlugin({
             ts: true,
             target: 'es2020',
+            tsconfig: './tsconfig.json',
             define: {
                 __COMPONENTS_VERSION__: JSON.stringify(componentsVersion),
             },
