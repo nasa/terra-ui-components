@@ -20,15 +20,54 @@ export type HarmonyRequestOptions = {
     format?: string
     average?: string
     labels?: Array<string>
-    skipPreview?: boolean
     anonymous?: boolean
     dimensions?: Array<RangeDimension>
+    /** When explicitly set, forces Harmony to skip (or not skip) the PREVIEWING state for this job. Left unset by default so Harmony's preview/resume flow is used. */
+    skipPreview?: boolean
 }
 
 export type RangeDimension = {
     name: string
     min: number
     max: number
+}
+
+/** Order-independent equality check for two optional string arrays. */
+function sameStringSet(a?: Array<string>, b?: Array<string>): boolean {
+    const aList = a ?? []
+    const bList = b ?? []
+    if (aList.length !== bList.length) return false
+    const sortedA = [...aList].sort()
+    const sortedB = [...bList].sort()
+    return sortedA.every((value, index) => value === sortedB[index])
+}
+
+/** Order-independent equality check for two optional RangeDimension arrays. */
+function sameDimensions(
+    a?: Array<RangeDimension>,
+    b?: Array<RangeDimension>,
+): boolean {
+    const aList = a ?? []
+    const bList = b ?? []
+    if (aList.length !== bList.length) return false
+    const key = (dimension: RangeDimension) =>
+        `${dimension.name}:${dimension.min}:${dimension.max}`
+    const sortedA = aList.map(key).sort()
+    const sortedB = bList.map(key).sort()
+    return sortedA.every((value, index) => value === sortedB[index])
+}
+
+/** Equality check for two optional locations, which may be a LatLng, a LatLngBounds, or undefined. */
+function sameLocation(
+    a?: LatLng | LatLngBounds,
+    b?: LatLng | LatLngBounds,
+): boolean {
+    if (!a && !b) return true
+    if (!a || !b) return false
+    if (a instanceof LatLng && b instanceof LatLng) return a.equals(b)
+    if (a instanceof LatLngBounds && b instanceof LatLngBounds)
+        return a.equals(b)
+    return false
 }
 
 /**
@@ -186,10 +225,10 @@ export class HarmonyRequest {
             params.append('maxResults', '10')
         }
 
-        if (typeof skipPreview === 'boolean' && !skipPreview) {
-            params.append('skipPreview', 'false')
-        } else {
-            params.append('skipPreview', 'true')
+        // left unset by default so Harmony's preview/resume flow (PREVIEWING state) is used;
+        // only forced when a caller explicitly opts in/out via .skipPreview()
+        if (typeof skipPreview === 'boolean') {
+            params.append('skipPreview', skipPreview ? 'true' : 'false')
         }
 
         //! force async responses. We ALWAYS want a job returned, never a redirect
@@ -304,6 +343,37 @@ export class HarmonyRequest {
 
     skipPreview(skipPreview: boolean) {
         return this.set({ skipPreview })
+    }
+
+    /**
+     * Compares this request against another for semantic equivalence — i.e. whether they'd
+     * produce the same Harmony subset job.
+     *
+     * Only compares fields that `fromUrl` can actually recover from a request URL. `labels`,
+     * `skipPreview`, `shape`, and `forceAsync` are intentionally excluded — they don't affect
+     * the resulting data, and/or don't round-trip through a request URL.
+     */
+    isEquivalentTo(other: HarmonyRequest): boolean {
+        const a = this.#options
+        const b = other.#options
+
+        const environmentsMatch =
+            (a.environment ?? Environments.PROD) ===
+            (b.environment ?? Environments.PROD)
+
+        return (
+            environmentsMatch &&
+            a.collectionConceptId === b.collectionConceptId &&
+            a.format === b.format &&
+            a.average === b.average &&
+            a.startDate === b.startDate &&
+            a.endDate === b.endDate &&
+            !!a.anonymous === !!b.anonymous &&
+            sameStringSet(a.variableConceptIds, b.variableConceptIds) &&
+            sameStringSet(a.variables, b.variables) &&
+            sameDimensions(a.dimensions, b.dimensions) &&
+            sameLocation(a.location, b.location)
+        )
     }
 
     isVariableConceptId(value: string) {

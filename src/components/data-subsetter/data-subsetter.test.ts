@@ -9,6 +9,7 @@ import sinon from 'sinon'
 import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
+import { sharedQueryClient } from '../../mixins/query-client.mixin.js'
 import { LatLng } from '../map/models/LatLng.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import './data-subsetter.js'
@@ -55,11 +56,14 @@ function stubCollectionFetch({
     caps,
     collectionUmm,
     cmrVariables = { hits: 0, items: [] },
+    jobStatuses = {},
 }: {
     collectionEntryId: string
     caps: Record<string, unknown> & { conceptId: string }
     collectionUmm: Record<string, unknown>
     cmrVariables?: { hits: number; items: unknown[] }
+    /** Keyed by jobID, used to stub Harmony's `jobs/{jobID}` status-polling endpoint */
+    jobStatuses?: Record<string, Record<string, unknown>>
 }) {
     const cmrCollectionResponse = {
         hits: 1,
@@ -92,6 +96,10 @@ function stubCollectionFetch({
         }
         if (url.includes('/capabilities')) {
             return okJson(caps)
+        }
+        const jobsMatch = url.match(/\/jobs\/([^/?]+)/)
+        if (jobsMatch && jobStatuses[jobsMatch[1]]) {
+            return okJson(jobStatuses[jobsMatch[1]])
         }
         if (url.includes('configured-variables')) {
             // Giovanni's configured-variables query is always enabled regardless of
@@ -728,6 +736,10 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
 })
 
 describe('<terra-data-subsetter> recent date range default', () => {
+    beforeEach(() => {
+        sharedQueryClient.clear()
+    })
+
     afterEach(() => {
         sinon.restore()
     })
@@ -773,17 +785,22 @@ describe('<terra-data-subsetter> recent date range default', () => {
     const firstGranuleDate = '2000-01-01T00:00:00.000Z'
     const lastGranuleDate = '2020-01-01T00:00:00.000Z'
 
+    let uniqueIdCounter = 0
+
     // Like stubCollectionFetch, but also backs the granule sampling query with a
     // controllable first/last granule date and puts `granuleCount` on the CMR
     // collection meta, since both drive #getDefaultRecentDateRange's cadence math.
-    function stubCollectionFetchWithGranules(granuleCount: number) {
+    function stubCollectionFetchWithGranules(
+        granuleCount: number,
+        collectionEntryId: string,
+    ) {
         const cmrCollectionResponse = {
             hits: 1,
             items: [
                 {
                     meta: {
                         'concept-id': caps.conceptId,
-                        'native-id': 'S4_1',
+                        'native-id': collectionEntryId,
                         'provider-id': 'TEST_PROVIDER',
                         'granule-count': granuleCount,
                     },
@@ -840,13 +857,14 @@ describe('<terra-data-subsetter> recent date range default', () => {
     }
 
     async function loadWithGranuleCount(granuleCount: number) {
-        stubCollectionFetchWithGranules(granuleCount)
+        const collectionEntryId = `S4_1_${uniqueIdCounter++}`
+        stubCollectionFetchWithGranules(granuleCount, collectionEntryId)
 
         const el: any = await fixture(
             html`<terra-data-subsetter></terra-data-subsetter>`,
         )
         el.dataAccessMode = 'subset'
-        el.collectionEntryId = 'S4_1'
+        el.collectionEntryId = collectionEntryId
 
         await waitUntil(
             () => Boolean(el.granuleMinDate) && Boolean(el.granuleMaxDate),
@@ -888,5 +906,221 @@ describe('<terra-data-subsetter> recent date range default', () => {
 
         expect(el.selectedDateRange.startDate).to.equal('2000-01-01')
         expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+    })
+
+    it('restores the recent default window (not the full range) when the date range Reset button is clicked', async () => {
+        const el = await loadWithGranuleCount(7306)
+
+        // simulate the user having changed the date range away from the default
+        el.selectedDateRange = {
+            startDate: '2005-06-01',
+            endDate: '2005-06-15',
+        }
+        await elementUpdated(el)
+
+        const dateRangeResetButton = Array.from(
+            el.shadowRoot?.querySelectorAll('.reset-btn') ?? [],
+        ).find((button: any) =>
+            button
+                .closest('terra-accordion')
+                ?.textContent?.includes('Refine Date Range'),
+        ) as HTMLButtonElement | undefined
+
+        expect(dateRangeResetButton).to.exist
+        dateRangeResetButton?.click()
+        await elementUpdated(el)
+
+        // should go back to the ~30-day recent default, not the full
+        // 2000-01-01..2020-01-01 collection extent
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+        expect(el.selectedDateRange.startDate).to.equal('2019-12-03')
+    })
+
+    it('restores the recent default window when "Reset All" is clicked', async () => {
+        const el = await loadWithGranuleCount(7306)
+
+        el.selectedDateRange = {
+            startDate: '2005-06-01',
+            endDate: '2005-06-15',
+        }
+        await elementUpdated(el)
+
+        const resetAllButton = Array.from(
+            el.shadowRoot?.querySelectorAll('button') ?? [],
+        ).find((button) => button.textContent?.trim() === 'Reset All') as
+            | HTMLButtonElement
+            | undefined
+
+        expect(resetAllButton).to.exist
+        resetAllButton?.click()
+        await elementUpdated(el)
+
+        expect(el.selectedDateRange.endDate).to.equal('2020-01-01')
+        expect(el.selectedDateRange.startDate).to.equal('2019-12-03')
+    })
+})
+
+describe('<terra-data-subsetter> paused job handling', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const caps = {
+        conceptId: 'C123',
+        shortName: 'S1',
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: true,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        services: [{ name: 'harmony', href: '', capabilities: {} }],
+        variables: [
+            {
+                conceptId: 'V1',
+                name: 'Variable 1',
+                href: '',
+            },
+        ],
+    }
+
+    const collectionUmm = {
+        EntryTitle: 'Test Collection',
+        ShortName: 'S1',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    const pausedJobStatus = {
+        jobID: 'job-paused',
+        status: 'paused',
+        message:
+            'The job is paused and may be resumed using the provided link.',
+        progress: 15,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        dataExpiration: '',
+        request: '',
+        numInputGranules: 100,
+        links: [],
+    }
+
+    async function startPausedJob() {
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+
+        HarmonyRequestController.prototype.startJob = (async () => {
+            return { jobID: 'job-paused' } as any
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        stubCollectionFetch({
+            collectionEntryId: 'S4_1',
+            caps,
+            collectionUmm,
+            jobStatuses: { 'job-paused': pausedJobStatus },
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+
+        try {
+            el.dataAccessMode = 'subset'
+            el.collectionEntryId = 'S4_1'
+
+            await waitUntil(
+                () => Boolean(el.collectionWithServices),
+                'expected collectionWithServices to be populated by CollectionController',
+                { timeout: 3000 },
+            )
+            await elementUpdated(el)
+
+            const getDataButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? [],
+            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                | HTMLButtonElement
+                | undefined
+
+            expect(getDataButton).to.exist
+            getDataButton?.click()
+
+            await waitUntil(
+                () => el.shadowRoot?.textContent?.includes('Paused for review'),
+                'expected the job status section to show the paused status',
+                { timeout: 3000 },
+            )
+            await elementUpdated(el)
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+
+        return el
+    }
+
+    it('shows the paused message and Resume / Cancel buttons when a job is paused', async () => {
+        const el = await startPausedJob()
+
+        const alertText = Array.from(
+            el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
+        )
+            .map((alert: any) => alert.textContent)
+            .join(' ')
+
+        expect(alertText).to.include(
+            'This is a large request, so processing paused after the first few files so you can review the results.',
+        )
+
+        const buttons = Array.from(
+            el.shadowRoot?.querySelectorAll('button') ?? [],
+        ) as HTMLButtonElement[]
+
+        expect(
+            buttons.some((button) => button.textContent?.trim() === 'Resume'),
+        ).to.be.true
+        expect(
+            buttons.some((button) => button.textContent?.trim() === 'Cancel'),
+        ).to.be.true
+    })
+
+    it('calls HarmonyRequestController.resumeJob with the job ID when Resume Job is clicked', async () => {
+        const el = await startPausedJob()
+
+        const originalResumeJob = HarmonyRequestController.prototype.resumeJob
+        let resumeJobArgs: any
+
+        HarmonyRequestController.prototype.resumeJob = (async (
+            options: any,
+        ) => {
+            resumeJobArgs = options
+            return pausedJobStatus
+        }) as typeof HarmonyRequestController.prototype.resumeJob
+
+        try {
+            const resumeButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? [],
+            ).find((button) => button.textContent?.trim() === 'Resume') as
+                | HTMLButtonElement
+                | undefined
+
+            expect(resumeButton).to.exist
+            resumeButton?.click()
+
+            await waitUntil(() => Boolean(resumeJobArgs))
+
+            expect(resumeJobArgs.jobId).to.equal('job-paused')
+        } finally {
+            HarmonyRequestController.prototype.resumeJob = originalResumeJob
+        }
     })
 })

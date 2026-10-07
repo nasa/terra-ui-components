@@ -246,6 +246,35 @@ describe('HarmonyRequest', () => {
             })
             expect(request.params).to.not.include('subset=lev')
         })
+
+        it('always appends forceAsync and does not append skipPreview by default', () => {
+            // Preview should not be skipped by default — jobs are allowed to
+            // start in the PREVIEWING state so large requests can pause for review.
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+            expect(request.params).to.include('forceAsync=true')
+            expect(request.params).to.not.include('skipPreview')
+        })
+
+        it('appends skipPreview=true when explicitly requested via .skipPreview(true)', () => {
+            // time-series and time-average-map opt into this so Harmony never
+            // pauses their jobs in a PREVIEWING state.
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            }).skipPreview(true)
+            expect(request.params).to.include('skipPreview=true')
+        })
+
+        it('appends skipPreview=false when explicitly requested via .skipPreview(false)', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            }).skipPreview(false)
+            expect(request.params).to.include('skipPreview=false')
+        })
     })
 
     describe('requestUrl', () => {
@@ -867,6 +896,211 @@ describe('HarmonyRequest', () => {
                 (s) => s.startsWith('lat(') || s.startsWith('lon('),
             )
             expect(hasSpatialSubset).to.equal(false)
+        })
+    })
+
+    describe('isEquivalentTo', () => {
+        const baseOptions = {
+            collectionConceptId: COLLECTION_CONCEPT_ID,
+            location: BBOX,
+            startDate: START_DATE,
+            endDate: END_DATE,
+            format: 'application/x-netcdf4',
+            average: 'time',
+            variables: [VARIABLE_ENTRY_ID],
+        }
+
+        it('returns true for identical requests', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({ ...baseOptions })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('ignores labels', () => {
+            const a = new HarmonyRequest({ ...baseOptions }).label('one')
+            const b = new HarmonyRequest({ ...baseOptions }).label('two')
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('ignores skipPreview', () => {
+            const a = new HarmonyRequest({ ...baseOptions }).skipPreview(true)
+            const b = new HarmonyRequest({ ...baseOptions })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when collectionConceptId differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                collectionConceptId: 'C9999999999-GES_DISC',
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when environment differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                environment: Environments.UAT,
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when format differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({ ...baseOptions, format: 'image/tiff' })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when average differs (including unset vs set)', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({ ...baseOptions, average: undefined })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when startDate or endDate differ', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                endDate: '2026-02-01T00:00:00.000Z',
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('treats anonymous undefined and false as equivalent', () => {
+            const a = new HarmonyRequest({ ...baseOptions, anonymous: false })
+            const b = new HarmonyRequest({ ...baseOptions, anonymous: undefined })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when anonymous differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions, anonymous: true })
+            const b = new HarmonyRequest({ ...baseOptions, anonymous: false })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('treats variables as order-independent', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                variables: ['foo', 'bar'],
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                variables: ['bar', 'foo'],
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when variables differ', () => {
+            const a = new HarmonyRequest({ ...baseOptions, variables: ['foo'] })
+            const b = new HarmonyRequest({ ...baseOptions, variables: ['bar'] })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('treats variableConceptIds as order-independent', () => {
+            const a = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+                .variable(VARIABLE_CONCEPT_ID)
+                .variable('V0000000001-GES_DISC')
+            const b = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+                .variable('V0000000001-GES_DISC')
+                .variable(VARIABLE_CONCEPT_ID)
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('treats dimensions as order-independent', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+                .dimension({ name: 'lev', min: 0, max: 10 })
+                .dimension({ name: 'time', min: 1, max: 2 })
+            const b = new HarmonyRequest({ ...baseOptions })
+                .dimension({ name: 'time', min: 1, max: 2 })
+                .dimension({ name: 'lev', min: 0, max: 10 })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when dimensions differ', () => {
+            const a = new HarmonyRequest({ ...baseOptions }).dimension({
+                name: 'lev',
+                min: 0,
+                max: 10,
+            })
+            const b = new HarmonyRequest({ ...baseOptions }).dimension({
+                name: 'lev',
+                min: 0,
+                max: 20,
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns true for equal LatLngBounds locations', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false for different LatLngBounds locations', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([0, 0, 10, 10]),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns true for equal LatLng point locations', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLng(10, 20),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLng(10, 20),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when location types differ (point vs bounds)', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLng(10, 20),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns true when both locations are undefined', () => {
+            const a = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+            })
+            const b = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('round-trips through requestUrl/fromUrl and still matches', () => {
+            const original = new HarmonyRequest({ ...baseOptions }).label(
+                'terra-time-average-map',
+            )
+            const roundtripped = HarmonyRequest.fromUrl(original.requestUrl)
+            expect(original.isEquivalentTo(roundtripped)).to.equal(true)
         })
     })
 })
