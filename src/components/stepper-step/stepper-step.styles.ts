@@ -39,6 +39,7 @@ export default css`
     .stepper-step--condensed .stepper-step__bar {
         flex: 1;
         height: 4px;
+        margin-bottom: var(--terra-spacing-2x-small);
     }
 
     /* Completed state */
@@ -82,7 +83,7 @@ export default css`
         font-size: var(--terra-font-size-small);
         font-weight: var(--terra-font-weight-semibold);
         line-height: var(--terra-line-height-normal);
-        color: var(--terra-color-carbon-90);
+        color: var(--terra-text-primary);
         transition: color var(--terra-transition-medium);
     }
 
