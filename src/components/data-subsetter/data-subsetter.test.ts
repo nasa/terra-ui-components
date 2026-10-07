@@ -1059,7 +1059,9 @@ describe('<terra-data-subsetter> paused job handling', () => {
             .map((alert: any) => alert.textContent)
             .join(' ')
 
-        expect(alertText).to.include('This job is paused for review')
+        expect(alertText).to.include(
+            'This is a large request, so processing paused after the first few files so you can review the results.',
+        )
 
         const buttons = Array.from(
             el.shadowRoot?.querySelectorAll('button') ?? [],
