@@ -1,0 +1,50 @@
+name: Code Standards
+
+on:
+    pull_request:
+        branches:
+            - main
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    lint-and-format:
+        name: Format, Lint, Test, and Typecheck (Blocking)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: 'npm'
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run Verify
+              id: verify
+              run: npm run verify
+
+
+    security-audit:
+        name: Dependency Audit (Advisory)
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+                  cache: 'npm'
+
+            - name: Run npm audit (Non-blocking)
+              id: audit
+              continue-on-error: true
+              run: npm audit
