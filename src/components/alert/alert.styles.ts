@@ -23,20 +23,21 @@ export default css`
 
     /* Toast component uses Alert component but positioning needs to be always on-screen */ 
     .toast {
-        position: fixed;
+        position: relative;
         top: 1rem;
         z-index: 1000; 
     }
 
     /* Toast for mobile devices */
     @media (max-width: 768px) {
-    .toast {
-        left: 1rem;
-        top: 1rem;
-        width: auto;
-        max-width: none;
+        .toast {
+            left: 1rem;
+            top: 1rem;
+            width: auto;
+            max-width: none;
+        }
     }
-}
+
     /* Filled appearance (HDS default) - colored background with white text */
     .alert--filled {
         background-color: var(--terra-alert-filled-background-color-information);
