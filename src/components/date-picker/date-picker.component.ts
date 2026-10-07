@@ -1720,6 +1720,7 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
+        // Ensure that the time components are set correctly when a preset is selected
         if (this.enableTime) {
             if (startDate) {
                 const localStart = new Date(startDate);
