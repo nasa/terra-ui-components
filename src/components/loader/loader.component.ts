@@ -62,19 +62,22 @@ export default class TerraLoader extends TerraElement {
                 .role=${this.role}
                 tabindex="-1"
             >
-                ${this.variant === 'large' || this.variant === 'orbit'
-                    ? html`
+                ${
+                    this.variant === 'large' || this.variant === 'orbit'
+                        ? html`
                           <div
-                              class="percent ${this.variant == 'orbit'
-                                  ? 'number-14'
-                                  : 'number-11'}"
+                              class="percent ${
+                                  this.variant == 'orbit' ? 'number-14' : 'number-11'
+                              }"
                           >
                               ${this.formatPercent(this.percent)}
                           </div>
                       `
-                    : nothing}
-                ${this.variant === 'orbit'
-                    ? html`
+                        : nothing
+                }
+                ${
+                    this.variant === 'orbit'
+                        ? html`
                           <svg viewBox="0 0 160 160">
                               <circle class="planet" />
 
@@ -112,24 +115,27 @@ export default class TerraLoader extends TerraElement {
                               />
                           </svg>
                       `
-                    : nothing}
-                ${this.variant === 'small' || this.variant === 'large'
-                    ? html`
+                        : nothing
+                }
+                ${
+                    this.variant === 'small' || this.variant === 'large'
+                        ? html`
                           <svg
-                              viewBox=${this.variant == 'small'
-                                  ? '0 0 30 30'
-                                  : '0 0 52 52'}
+                              viewBox=${
+                                  this.variant == 'small' ? '0 0 30 30' : '0 0 52 52'
+                              }
                               aria-hidden="true"
                               style="--progress: ${this.percent}"
-                              class="circular-progress ${this.indeterminate
-                                  ? 'indeterminate'
-                                  : ''}"
+                              class="circular-progress ${
+                                  this.indeterminate ? 'indeterminate' : ''
+                              }"
                           >
                               <circle class="bg"></circle>
                               <circle class="fg"></circle>
                           </svg>
                       `
-                    : nothing}
+                        : nothing
+                }
             </div>
         `
     }

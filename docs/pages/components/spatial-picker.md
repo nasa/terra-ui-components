@@ -22,6 +22,7 @@ layout: component
 <terra-spatial-picker has-navigation has-shape-selector has-coord-tracker></terra-spatial-picker>
 </div>
 ```
+
 ### Closable Spatial Picker
 
 ```html:preview
@@ -29,6 +30,7 @@ layout: component
     <terra-spatial-picker initial-value="-100, -50, 30, 50" closable></terra-spatial-picker>
 </div>
 ```
+
 ### Spatial Picker with No World Wrap
 
 This example disables infinite horizontal scrolling on the map.

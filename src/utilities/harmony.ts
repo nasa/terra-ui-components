@@ -80,7 +80,7 @@ export function isCancellationError(error: unknown): boolean {
  */
 export function extractHarmonyError(
     error: unknown,
-    jobErrors?: Array<SubsetJobError>,
+    jobErrors?: Array<SubsetJobError>
 ): HarmonyErrorDetails {
     let errorCode = '400' // Default to 400 for GraphQL errors (usually client errors)
     let errorMessage = 'An error occurred'
@@ -117,7 +117,7 @@ export function extractHarmonyError(
 
         // Try to extract a more specific message from known error formats
         const errorMatch = errorMessage.match(
-            /Failed to (?:create|fetch|cancel) subset job:\s*(.+)/i,
+            /Failed to (?:create|fetch|cancel) subset job:\s*(.+)/i
         )
         if (errorMatch) {
             errorContext = errorMatch[1]
@@ -172,8 +172,7 @@ export function formatHarmonyErrorMessage(error: HarmonyError): TemplateResult {
 
     // Handle 400 - Bad request, show the error message from the API
     if (errorCode === '400') {
-        const errorText =
-            error.context || error.message || 'Bad or missing input'
+        const errorText = error.context || error.message || 'Bad or missing input'
         return html`${errorText}`
     }
 
@@ -205,10 +204,7 @@ export function formatHarmonyErrorMessage(error: HarmonyError): TemplateResult {
  * @param maxPoints - Maximum number of vertices allowed
  * @returns Simplified GeoJSON, or the original if it was already under the limit
  */
-export function simplifyToPointLimit(
-    geoJson: object,
-    maxPoints: number,
-): object {
+export function simplifyToPointLimit(geoJson: object, maxPoints: number): object {
     const asAllGeoJson = geoJson as AllGeoJSON
 
     if (coordAll(asAllGeoJson).length <= maxPoints) {
@@ -224,7 +220,7 @@ export function simplifyToPointLimit(
                 tolerance: high,
                 highQuality: false,
                 mutate: false,
-            }),
+            })
         ).length > maxPoints
     ) {
         high *= 2
@@ -257,7 +253,7 @@ export function simplifyToPointLimit(
     }
 
     console.log(
-        `Simplified GeoJSON from ${coordAll(asAllGeoJson).length} to ${coordAll(best).length} vertices`,
+        `Simplified GeoJSON from ${coordAll(asAllGeoJson).length} to ${coordAll(best).length} vertices`
     )
 
     return best

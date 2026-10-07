@@ -60,9 +60,7 @@ export interface QueryClientHost {
     queryClient: QueryClient
 }
 
-export const QueryClientMixin = <T extends Constructor<LitElement>>(
-    Base: T,
-) => {
+export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => {
     class WithQueryClient extends Base implements QueryClientHost {
         queryClient: QueryClient = sharedQueryClient
 

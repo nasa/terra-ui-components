@@ -916,28 +916,33 @@ export default class TerraSelect extends TerraElement implements TerraFormContro
                                 @blur=${this.handleBlur}
                             />
 
-                            ${this.multiple
-                                ? html`<div part="tags" class="select__tags">
+                            ${
+                                this.multiple
+                                    ? html`<div part="tags" class="select__tags">
                                       ${this.tags}
                                   </div>`
-                                : ''}
+                                    : ''
+                            }
 
                             <input
                                 class="select__value-input"
                                 type="text"
                                 ?disabled=${this.disabled}
                                 ?required=${this.required}
-                                .value=${Array.isArray(this.value)
-                                    ? this.value.join(', ')
-                                    : this.value}
+                                .value=${
+                                    Array.isArray(this.value)
+                                        ? this.value.join(', ')
+                                        : this.value
+                                }
                                 tabindex="-1"
                                 aria-hidden="true"
                                 @focus=${() => this.focus()}
                                 @invalid=${this.handleInvalid}
                             />
 
-                            ${hasClearIcon
-                                ? html`
+                            ${
+                                hasClearIcon
+                                    ? html`
                                       <button
                                           part="clear-button"
                                           class="select__clear"
@@ -955,7 +960,8 @@ export default class TerraSelect extends TerraElement implements TerraFormContro
                                           </slot>
                                       </button>
                                   `
-                                : ''}
+                                    : ''
+                            }
 
                             <slot
                                 name="suffix"

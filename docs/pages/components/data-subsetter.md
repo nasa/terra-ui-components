@@ -73,7 +73,9 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 ```
 
 ### No collection in attributes, but reads from URL
+
 ##### Example: Add "?shortname=TEMPO_NO2_L2&version=V04" to the test URL
+
 ```html:preview
 <terra-data-subsetter read-constraints-from-url="true"></terra-data-subsetter>
 ```
@@ -93,16 +95,16 @@ The `<terra-data-subsetter>` component provides a complete UI for subsetting and
 
 ## Best Practices
 
--   Use `collection-entry-id` to pre-select a collection and skip the search UI for a streamlined experience.
--   Use `bearer-token` for authenticated users.
--   Place the component inside a dialog for a focused, modal workflow.
--   Listen for the `terra-subset-job-complete` event to trigger downstream actions (e.g., notifications, analytics).
--   For variable subsetting, choose one or more variables and then optionally refine by common dimensions. The component now displays a second accordion when selected variables have shared, non-spatial/non-temporal dimensions.
+- Use `collection-entry-id` to pre-select a collection and skip the search UI for a streamlined experience.
+- Use `bearer-token` for authenticated users.
+- Place the component inside a dialog for a focused, modal workflow.
+- Listen for the `terra-subset-job-complete` event to trigger downstream actions (e.g., notifications, analytics).
+- For variable subsetting, choose one or more variables and then optionally refine by common dimensions. The component now displays a second accordion when selected variables have shared, non-spatial/non-temporal dimensions.
 
 ## Accessibility
 
--   All form controls and buttons are keyboard accessible.
--   Uses ARIA roles and labels for screen readers.
--   Visual focus indicators are present for all interactive elements.
+- All form controls and buttons are keyboard accessible.
+- Uses ARIA roles and labels for screen readers.
+- Visual focus indicators are present for all interactive elements.
 
 [component-metadata:terra-data-subsetter]

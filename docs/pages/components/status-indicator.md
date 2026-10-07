@@ -119,13 +119,13 @@ terra-status-indicator {
 
 The following design tokens are available for customization:
 
--   `--terra-status-indicator-font-family`: Font family (default: `--terra-font-family--inter`)
--   `--terra-status-indicator-font-size`: Font size (default: `--terra-font-size-small`)
--   `--terra-status-indicator-font-weight`: Font weight (default: `--terra-font-weight-normal`)
--   `--terra-status-indicator-label-color`: Text color (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-60` in dark mode)
--   `--terra-status-indicator-dot-color-active`: Dot color for active variant (default: `--terra-color-active-green`)
--   `--terra-status-indicator-dot-color-completed`: Dot color for completed variant (default: `--terra-color-carbon-40`)
--   `--terra-status-indicator-dot-color-testing`: Dot color for testing variant (default: `--terra-color-international-orange`)
--   `--terra-status-indicator-dot-color-future`: Dot color for future variant (default: `--terra-color-nasa-blue`)
+- `--terra-status-indicator-font-family`: Font family (default: `--terra-font-family--inter`)
+- `--terra-status-indicator-font-size`: Font size (default: `--terra-font-size-small`)
+- `--terra-status-indicator-font-weight`: Font weight (default: `--terra-font-weight-normal`)
+- `--terra-status-indicator-label-color`: Text color (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-60` in dark mode)
+- `--terra-status-indicator-dot-color-active`: Dot color for active variant (default: `--terra-color-active-green`)
+- `--terra-status-indicator-dot-color-completed`: Dot color for completed variant (default: `--terra-color-carbon-40`)
+- `--terra-status-indicator-dot-color-testing`: Dot color for testing variant (default: `--terra-color-international-orange`)
+- `--terra-status-indicator-dot-color-future`: Dot color for future variant (default: `--terra-color-nasa-blue`)
 
 All tokens automatically adapt to dark mode when dark mode is active (via system preference or the `dark` prop).
