@@ -129,7 +129,7 @@ Then open `notebooks/playground.ipynb` to test components in Jupyter.
 
 -   **Formatting**
     -   **MUST use Prettier** with the shared config `@gesdisc/prettier-config`.
-    -   **MUST run `npm run format`** or rely on `lint-staged` hooks for staged `.ts` and `.js` files.
+    -   **MUST run `npm run prettier`** or rely on `lint-staged` hooks for staged `.ts` and `.js` files.
 -   **Languages & frameworks**
     -   Core components are **Lit 3** web components in TypeScript (`lit` package).
     -   Data-heavy UI uses utilities such as `leaflet`, `ol`, `plotly.js-dist-min`, `ag-grid-community`, etc. **MUST extend existing patterns rather than inventing new ones.**
@@ -180,14 +180,14 @@ npm run test:component <name>   # test specific component in watch mode (e.g., n
 -   **Static checks**
 
 ```bash
-npm run format:check
+npm run prettier:check
 npm run spellcheck
 ```
 
 -   **Verification before publish (for maintainers)**
 
 ```bash
-npm run verify      # format + build (placeholder for full test suite)
+npm run verify      # prettier + build (placeholder for full test suite)
 ```
 
 **REQUIRED:** If you introduce or modify tests, **MUST keep them aligned with web-test-runner** and **MUST follow existing test patterns** in the repo.
