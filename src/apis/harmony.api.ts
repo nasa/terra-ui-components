@@ -1,6 +1,9 @@
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
+import {
+    BadRequestException,
+    HttpException,
+} from '../exceptions/http.exception.js'
 import { authService } from '../auth/auth.service.js'
 
 const API_VERSION = '3'
@@ -45,6 +48,14 @@ export const FINAL_STATUSES = new Set<Status>([
     Status.FAILED,
     Status.CANCELED,
     Status.COMPLETE_WITH_ERRORS,
+])
+
+// Jobs in these statuses are still working toward a result
+export const IN_FLIGHT_STATUSES = new Set<Status>([
+    Status.PREVIEWING,
+    Status.RUNNING,
+    Status.RUNNING_WITH_ERRORS,
+    Status.PAUSED,
 ])
 
 export const OUTPUT_FORMATS = {

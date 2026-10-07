@@ -1,6 +1,12 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
-import { Status, type SubsetJobStatus } from '../apis/harmony.api.js'
+import {
+    harmonyApi,
+    IN_FLIGHT_STATUSES,
+    Status,
+    type SubsetJobStatus,
+} from '../apis/harmony.api.js'
 import type { SearchOptions } from '../apis/harmony.api.js'
+import { HarmonyRequest } from '../lib/harmony/harmony.request.js'
 import type { QueryClientHost } from '../mixins/query-client.mixin.js'
 import {
     queryCancelHarmonySubsetJob,
@@ -13,6 +19,41 @@ import {
 } from '../queries/harmony.queries.js'
 import { MutationController } from './mutation.controller.js'
 import { QueryController } from './query.controller.js'
+
+// How many of the user's most recent jobs to search when looking for an existing job to
+// reuse before creating a new one.
+const DEDUPE_SEARCH_LIMIT = 50
+
+/**
+ * Whether a job in this status is eligible to be reused for a dedup match: jobs still
+ * working toward a result are always reusable, and completed jobs are reusable only while
+ * their output is still downloadable.
+ */
+function isReusableJobStatus(job: SubsetJobStatus): boolean {
+    if (IN_FLIGHT_STATUSES.has(job.status)) return true
+
+    if (
+        job.status === Status.SUCCESSFUL ||
+        job.status === Status.COMPLETE_WITH_ERRORS
+    ) {
+        return new Date(job.dataExpiration).getTime() > Date.now()
+    }
+
+    return false
+}
+
+/**
+ * Parses a job's `request` URL back into a HarmonyRequest for comparison, tolerating
+ * malformed/legacy URLs that can't be parsed (treated as simply not matching, rather than
+ * failing the whole dedup lookup over one bad record).
+ */
+function safeParseRequest(request: string): HarmonyRequest | null {
+    try {
+        return HarmonyRequest.fromUrl(request)
+    } catch {
+        return null
+    }
+}
 
 export class HarmonyRequestController implements ReactiveController {
     #jobId: string | null = null
@@ -71,6 +112,13 @@ export class HarmonyRequestController implements ReactiveController {
         this.#jobId = 'new'
 
         try {
+            const existingJob = await this.#findReusableJob(variables)
+
+            if (existingJob) {
+                this.#jobId = existingJob.jobID
+                return existingJob
+            }
+
             const result = await this.#createJob.mutate(variables)
 
             this.#jobId = result.jobID
@@ -82,6 +130,58 @@ export class HarmonyRequestController implements ReactiveController {
             throw error
         } finally {
             this.host.requestUpdate()
+        }
+    }
+
+    /**
+     * Looks for an existing job of the user's that's equivalent to the one we're about to
+     * create, so we can reuse it instead. (de-dupe)
+     *
+     * Skipped entirely for anonymous requests (no bearer token) — there's no durable
+     * per-user job list to search through the anonymous proxy.
+     */
+    async #findReusableJob(
+        variables: CreateHarmonyJobVariables,
+    ): Promise<SubsetJobStatus | null> {
+        if (!variables.options?.bearerToken) return null
+
+        try {
+            const { jobs } = await harmonyApi.getJobs(
+                { limit: DEDUPE_SEARCH_LIMIT },
+                variables.options,
+            )
+
+            const candidates = jobs
+                .filter(isReusableJobStatus)
+                .map((job) => ({
+                    job,
+                    parsedRequest: safeParseRequest(job.request),
+                }))
+                .filter(
+                    (
+                        candidate,
+                    ): candidate is {
+                        job: SubsetJobStatus
+                        parsedRequest: HarmonyRequest
+                    } =>
+                        candidate.parsedRequest !== null &&
+                        candidate.parsedRequest.isEquivalentTo(
+                            variables.harmonyRequest,
+                        ),
+                )
+                .sort(
+                    (a, b) =>
+                        new Date(b.job.createdAt).getTime() -
+                        new Date(a.job.createdAt).getTime(),
+                )
+
+            return candidates[0]?.job ?? null
+        } catch (error) {
+            console.warn(
+                'Failed to look up existing Harmony jobs for dedup, falling back to creating a new job',
+                error,
+            )
+            return null
         }
     }
 

@@ -9,6 +9,7 @@ import sinon from 'sinon'
 import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
+import { sharedQueryClient } from '../../mixins/query-client.mixin.js'
 import { LatLng } from '../map/models/LatLng.js'
 import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import './data-subsetter.js'
@@ -735,6 +736,10 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
 })
 
 describe('<terra-data-subsetter> recent date range default', () => {
+    beforeEach(() => {
+        sharedQueryClient.clear()
+    })
+
     afterEach(() => {
         sinon.restore()
     })

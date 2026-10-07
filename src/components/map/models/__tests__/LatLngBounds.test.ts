@@ -179,4 +179,40 @@ describe('LatLngBounds', () => {
             expect(sw1.lng).to.equal(sw2.lng)
         })
     })
+
+    describe('equals', () => {
+        it('should return true for identical bounds', () => {
+            const a = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            const b = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            expect(a.equals(b)).to.be.true
+        })
+
+        it('should return true for bounds within the default epsilon', () => {
+            const a = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            const b = new LatLngBounds([
+                -122.4194 + 1e-10,
+                37.7749,
+                -122.358,
+                37.8199 - 1e-10,
+            ])
+            expect(a.equals(b)).to.be.true
+        })
+
+        it('should return false when any side differs', () => {
+            const a = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            expect(a.equals(new LatLngBounds([-122.0, 37.7749, -122.358, 37.8199]))).to
+                .be.false
+            expect(a.equals(new LatLngBounds([-122.4194, 37.0, -122.358, 37.8199]))).to
+                .be.false
+            expect(a.equals(new LatLngBounds([-122.4194, 37.7749, -122.0, 37.8199]))).to
+                .be.false
+            expect(a.equals(new LatLngBounds([-122.4194, 37.7749, -122.358, 37.0]))).to
+                .be.false
+        })
+
+        it('should return false when compared against undefined', () => {
+            const a = new LatLngBounds([-122.4194, 37.7749, -122.358, 37.8199])
+            expect(a.equals(undefined)).to.be.false
+        })
+    })
 })

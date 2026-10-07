@@ -610,6 +610,8 @@ export class TimeSeriesController {
             .dateRange(startDate.toISOString(), endDate.toISOString())
             .format('text/csv')
             .label('terra-time-series')
+            // time series always needs the final data, so never let Harmony pause the job in a PREVIEWING state
+            .skipPreview(true)
 
         if (this.host.applicationId) {
             harmonyRequest.label(this.host.applicationId)

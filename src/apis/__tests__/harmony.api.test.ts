@@ -137,13 +137,11 @@ describe('HarmonyAPI', () => {
         it('should route createJob through the anonymous proxy when no bearer token is provided', async () => {
             const fetchStub = stubFetchJson({ id: 'job-anon' })
 
-            await harmonyApi.createJob(
-                {
-                    hasShape: false,
-                    requestUrl:
-                        'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
-                } as any,
-            )
+            await harmonyApi.createJob({
+                hasShape: false,
+                requestUrl:
+                    'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+            } as any)
 
             expect(fetchStub.calledOnce).to.be.true
             expect(fetchStub.firstCall.args[0]).to.equal(
@@ -205,13 +203,11 @@ describe('HarmonyAPI', () => {
             )
 
             try {
-                await harmonyApi.createJob(
-                    {
-                        hasShape: false,
-                        requestUrl:
-                            'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
-                    } as any,
-                )
+                await harmonyApi.createJob({
+                    hasShape: false,
+                    requestUrl:
+                        'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                } as any)
                 expect.fail('Expected createJob to throw')
             } catch (err: any) {
                 expect(err.status).to.equal(303)
@@ -221,7 +217,9 @@ describe('HarmonyAPI', () => {
         it('throws an HttpException with the server message for a non-redirect error response', async () => {
             sinon.stub(globalThis, 'fetch').resolves(
                 new Response(
-                    JSON.stringify({ description: 'No matching granules found.' }),
+                    JSON.stringify({
+                        description: 'No matching granules found.',
+                    }),
                     {
                         status: 400,
                         headers: { 'Content-Type': 'application/json' },
@@ -230,13 +228,11 @@ describe('HarmonyAPI', () => {
             )
 
             try {
-                await harmonyApi.createJob(
-                    {
-                        hasShape: false,
-                        requestUrl:
-                            'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
-                    } as any,
-                )
+                await harmonyApi.createJob({
+                    hasShape: false,
+                    requestUrl:
+                        'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                } as any)
                 expect.fail('Expected createJob to throw')
             } catch (err: any) {
                 expect(err.status).to.equal(400)
@@ -288,6 +284,44 @@ describe('HarmonyAPI', () => {
             expect(apiGetStub.firstCall.args[0]).to.equal(
                 'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/resume',
             )
+        })
+
+        describe('getJobs', () => {
+            it('should request the jobs endpoint with no query params by default', async () => {
+                apiGetStub.resolves({ count: 0, jobs: [], links: [] })
+
+                await harmonyApi.getJobs(undefined, { bearerToken: 'token' })
+
+                expect(apiGetStub.calledOnce).to.be.true
+                expect(apiGetStub.firstCall.args[0]).to.equal(
+                    'https://harmony.earthdata.nasa.gov/jobs?',
+                )
+            })
+
+            it('should include page, limit, and label query params when provided', async () => {
+                apiGetStub.resolves({ count: 0, jobs: [], links: [] })
+
+                await harmonyApi.getJobs(
+                    { page: 2, limit: 50, label: 'terra-time-average-map' },
+                    { bearerToken: 'token' },
+                )
+
+                expect(apiGetStub.calledOnce).to.be.true
+                expect(apiGetStub.firstCall.args[0]).to.equal(
+                    'https://harmony.earthdata.nasa.gov/jobs?page=2&limit=50&label=terra-time-average-map',
+                )
+            })
+
+            it('should route through the anonymous proxy when no bearer token is provided', async () => {
+                apiGetStub.resolves({ count: 0, jobs: [], links: [] })
+
+                await harmonyApi.getJobs({ limit: 10 })
+
+                expect(apiGetStub.calledOnce).to.be.true
+                expect(apiGetStub.firstCall.args[0]).to.equal(
+                    'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs?limit=10',
+                )
+            })
         })
     })
 
