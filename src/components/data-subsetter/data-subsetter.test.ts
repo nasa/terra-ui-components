@@ -785,17 +785,22 @@ describe('<terra-data-subsetter> recent date range default', () => {
     const firstGranuleDate = '2000-01-01T00:00:00.000Z'
     const lastGranuleDate = '2020-01-01T00:00:00.000Z'
 
+    let uniqueIdCounter = 0
+
     // Like stubCollectionFetch, but also backs the granule sampling query with a
     // controllable first/last granule date and puts `granuleCount` on the CMR
     // collection meta, since both drive #getDefaultRecentDateRange's cadence math.
-    function stubCollectionFetchWithGranules(granuleCount: number) {
+    function stubCollectionFetchWithGranules(
+        granuleCount: number,
+        collectionEntryId: string,
+    ) {
         const cmrCollectionResponse = {
             hits: 1,
             items: [
                 {
                     meta: {
                         'concept-id': caps.conceptId,
-                        'native-id': 'S4_1',
+                        'native-id': collectionEntryId,
                         'provider-id': 'TEST_PROVIDER',
                         'granule-count': granuleCount,
                     },
@@ -852,13 +857,14 @@ describe('<terra-data-subsetter> recent date range default', () => {
     }
 
     async function loadWithGranuleCount(granuleCount: number) {
-        stubCollectionFetchWithGranules(granuleCount)
+        const collectionEntryId = `S4_1_${uniqueIdCounter++}`
+        stubCollectionFetchWithGranules(granuleCount, collectionEntryId)
 
         const el: any = await fixture(
             html`<terra-data-subsetter></terra-data-subsetter>`,
         )
         el.dataAccessMode = 'subset'
-        el.collectionEntryId = 'S4_1'
+        el.collectionEntryId = collectionEntryId
 
         await waitUntil(
             () => Boolean(el.granuleMinDate) && Boolean(el.granuleMaxDate),
