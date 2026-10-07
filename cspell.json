@@ -182,6 +182,7 @@
   "ignorePaths": [
     "package.json",
     "package-lock.json",
+    "biome.json",
     "docs/assets/examples/include.html",
     ".vscode/**",
     "src/translations/!(en).ts",
