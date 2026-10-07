@@ -890,6 +890,41 @@ describe('<terra-date-picker>', () => {
                 expect(event.detail.endDate).to.not.be.empty
             }
         })
+
+        it('should correctly set UTC start and end times to local 12:00 AM and 11:59 PM when a preset is selected', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker enable-time show-presets inline range></terra-date-picker>
+            `)
+            
+            const now = new Date()
+            const testPreset = {
+                label: 'Test Preset',
+                getValue: () => ({
+                    startDate: now,
+                    endDate: now
+                })
+            }
+            
+            el.presets = [testPreset]
+            await elementUpdated(el)
+
+            el.selectPreset(testPreset)
+            await elementUpdated(el)
+
+            const expectedLocalStart = new Date(now)
+            expectedLocalStart.setHours(0, 0, 0, 0)
+
+            expect(el.startHour).to.equal(expectedLocalStart.getUTCHours())
+            expect(el.startMinute).to.equal(expectedLocalStart.getUTCMinutes())
+            expect(el.startSecond).to.equal(expectedLocalStart.getUTCSeconds())
+            
+            const expectedLocalEnd = new Date(now)
+            expectedLocalEnd.setHours(23, 59, 59, 0)
+            
+            expect(el.endHour).to.equal(expectedLocalEnd.getUTCHours())
+            expect(el.endMinute).to.equal(expectedLocalEnd.getUTCMinutes())
+            expect(el.endSecond).to.equal(expectedLocalEnd.getUTCSeconds())
+        })
     })
 
     describe('Time Selection', () => {

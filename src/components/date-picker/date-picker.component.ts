@@ -1720,6 +1720,24 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
+        if (this.enableTime) {
+            if (startDate) {
+                const localStart = new Date(startDate);
+                localStart.setHours(0, 0, 0, 0); 
+                this.startHour = localStart.getUTCHours();
+                this.startMinute = localStart.getUTCMinutes();
+                this.startSecond = localStart.getUTCSeconds();
+            }
+    
+            if (endDate) {
+                const localEnd = new Date(endDate);
+                localEnd.setHours(23, 59, 59, 0); 
+                this.endHour = localEnd.getUTCHours();
+                this.endMinute = localEnd.getUTCMinutes();
+                this.endSecond = localEnd.getUTCSeconds();
+            }
+        }
+
         this.emitChange()
         if (!this.range && !this.inline) {
             this.isOpen = false
