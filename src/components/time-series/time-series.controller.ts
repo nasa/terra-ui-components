@@ -2,7 +2,10 @@ import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
+<<<<<<< HEAD
 // @ts-ignore
+=======
+>>>>>>> af0c1ea (Remove ts-expect-error)
 import type { Data, PlotData } from 'plotly.js-dist-min'
 import type {
     TimeSeriesData,
