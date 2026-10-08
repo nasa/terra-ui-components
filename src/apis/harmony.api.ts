@@ -335,15 +335,6 @@ class HarmonyApi {
     }
 
     /**
-     * Extracts a Harmony job ID from a redirect's `Location` header, if it points at
-     * a job (e.g. `https://harmony.earthdata.nasa.gov/jobs/{jobId}`). Returns
-     * `undefined` for any other redirect target.
-     */
-    #extractJobIdFromLocation(location: string | null): string | undefined {
-        return location?.match(/\/jobs\/([^/?]+)/)?.[1]
-    }
-
-    /**
      * Get the current status of an existing subset job.
      * Intended for polling until the job reaches a final state.
      */
