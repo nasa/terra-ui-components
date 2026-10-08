@@ -230,6 +230,7 @@ export default class TerraToast extends TerraElement {
     render() {
         return html`
             <terra-alert
+                isToast=true
                 part="base"
                 exportparts="base:base__base, icon:base__icon, message:base__message"
                 variant=${this.variant}
