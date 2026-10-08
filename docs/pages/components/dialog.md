@@ -5,8 +5,6 @@ meta:
 layout: component
 ---
 
-<!-- cspell:dictionaries lorem-ipsum -->
-
 ```html:preview
 <terra-dialog label="Dialog" class="dialog-overview">
   Lorem ipsum dolor sit amet, consectetur adipiscing elit.

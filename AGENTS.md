@@ -182,7 +182,6 @@ npm run test:component <name>   # test specific component in watch mode (e.g., n
 ```bash
 npm run format:check
 npm run lint
-npm run spellcheck
 ```
 
 - **Verification before publish (for maintainers)**
