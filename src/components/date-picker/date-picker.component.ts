@@ -1723,19 +1723,17 @@ export default class TerraDatePicker extends TerraElement {
         // Ensure that the time components are set correctly when a preset is selected
         if (this.enableTime) {
             if (startDate) {
-                const localStart = new Date(startDate);
-                localStart.setHours(0, 0, 0, 0); 
-                this.startHour = localStart.getUTCHours();
-                this.startMinute = localStart.getUTCMinutes();
-                this.startSecond = localStart.getUTCSeconds();
+                const startUtc = this.getUtcTimeFromDisplay(0, 0, 0, startDate)
+                this.startHour = startUtc.hour
+                this.startMinute = startUtc.minute
+                this.startSecond = startUtc.second
             }
     
             if (endDate) {
-                const localEnd = new Date(endDate);
-                localEnd.setHours(23, 59, 59, 0); 
-                this.endHour = localEnd.getUTCHours();
-                this.endMinute = localEnd.getUTCMinutes();
-                this.endSecond = localEnd.getUTCSeconds();
+                const endUtc = this.getUtcTimeFromDisplay(23, 59, 59, endDate)
+                this.endHour = endUtc.hour
+                this.endMinute = endUtc.minute
+                this.endSecond = endUtc.second
             }
         }
 

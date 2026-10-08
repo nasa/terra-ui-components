@@ -891,39 +891,38 @@ describe('<terra-date-picker>', () => {
             }
         })
 
-        it('should correctly set UTC start and end times to local 12:00 AM and 11:59 PM when a preset is selected', async () => {
-            const el: any = await fixture(html`
-                <terra-date-picker enable-time show-presets inline range></terra-date-picker>
-            `)
-            
-            const now = new Date()
-            const testPreset = {
-                label: 'Test Preset',
-                getValue: () => ({
-                    startDate: now,
-                    endDate: now
+        describe('Presets with Time and Timezone', () => {
+            it('should correctly set UTC start/end times based on the configured timezone (e.g., America/New_York) when any preset is selected', async () => {
+                const el: any = await fixture(html`
+                    <terra-date-picker enable-time show-presets range timezone="America/New_York"></terra-date-picker>
+                `)
+                await elementUpdated(el)
+    
+                const todayPreset = el.presets.find(
+                    (preset: any) => preset.label === 'Today'
+                )
+                expect(todayPreset).to.exist
+    
+                // Using fixed date in January to guarantee non-Daylight Savings Time date
+                const mockDate = new Date('2024-01-15T12:00:00Z')
+                todayPreset.getValue = () => ({
+                    startDate: mockDate,
+                    endDate: mockDate
                 })
-            }
-            
-            el.presets = [testPreset]
-            await elementUpdated(el)
-
-            el.selectPreset(testPreset)
-            await elementUpdated(el)
-
-            const expectedLocalStart = new Date(now)
-            expectedLocalStart.setHours(0, 0, 0, 0)
-
-            expect(el.startHour).to.equal(expectedLocalStart.getUTCHours())
-            expect(el.startMinute).to.equal(expectedLocalStart.getUTCMinutes())
-            expect(el.startSecond).to.equal(expectedLocalStart.getUTCSeconds())
-            
-            const expectedLocalEnd = new Date(now)
-            expectedLocalEnd.setHours(23, 59, 59, 0)
-            
-            expect(el.endHour).to.equal(expectedLocalEnd.getUTCHours())
-            expect(el.endMinute).to.equal(expectedLocalEnd.getUTCMinutes())
-            expect(el.endSecond).to.equal(expectedLocalEnd.getUTCSeconds())
+    
+                el.selectPreset(todayPreset)
+                await elementUpdated(el)
+    
+                // Check start date's time (00:00:00 New York display time is 05:00:00 UTC)
+                expect(el.startHour).to.equal(5)
+                expect(el.startMinute).to.equal(0)
+                expect(el.startSecond).to.equal(0)
+    
+                // Check end date's time (23:59:59 New York display time is 04:59:59 UTC the NEXT day)
+                expect(el.endHour).to.equal(4)
+                expect(el.endMinute).to.equal(59)
+                expect(el.endSecond).to.equal(59)
+            })
         })
     })
 
