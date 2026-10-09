@@ -1,8 +1,4 @@
-import {
-    animateTo,
-    parseDuration,
-    stopAnimations,
-} from '../../internal/animate.js'
+import { animateTo, parseDuration, stopAnimations } from '../../internal/animate.js'
 import { classMap } from 'lit/directives/class-map.js'
 import {
     getAnimation,
@@ -176,7 +172,7 @@ export default class TerraTooltip extends TerraElement {
     private handleMouseOver = () => {
         if (this.hasTrigger('hover')) {
             const delay = parseDuration(
-                getComputedStyle(this).getPropertyValue('--show-delay'),
+                getComputedStyle(this).getPropertyValue('--show-delay')
             )
             clearTimeout(this.hoverTimeout)
             this.hoverTimeout = window.setTimeout(() => this.show(), delay)
@@ -196,7 +192,7 @@ export default class TerraTooltip extends TerraElement {
                 return
             }
             const delay = parseDuration(
-                getComputedStyle(this).getPropertyValue('--hide-delay'),
+                getComputedStyle(this).getPropertyValue('--hide-delay')
             )
             clearTimeout(this.hoverTimeout)
             this.hoverTimeout = window.setTimeout(() => this.hide(), delay)

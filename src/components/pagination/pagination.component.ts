@@ -161,8 +161,9 @@ export default class TerraPagination extends TerraElement {
                         @click=${this._handlePrevClick}
                         aria-label="Previous page"
                     >
-                        ${this.variant === 'simple'
-                            ? html`
+                        ${
+                            this.variant === 'simple'
+                                ? html`
                                   <terra-icon
                                       name="chevron-left"
                                       library="default"
@@ -171,16 +172,18 @@ export default class TerraPagination extends TerraElement {
                                       >Previous</span
                                   >
                               `
-                            : html`
+                                : html`
                                   <terra-icon
                                       name="chevron-left"
                                       library="default"
                                   ></terra-icon>
-                              `}
+                              `
+                        }
                     </button>
 
-                    ${showNumbers
-                        ? html`
+                    ${
+                        showNumbers
+                            ? html`
                               ${this._visiblePages.map(page => {
                                   if (page === -1) {
                                       return html`
@@ -196,9 +199,11 @@ export default class TerraPagination extends TerraElement {
                                   const isCurrent = page === current
                                   return html`
                                       <button
-                                          part=${isCurrent
-                                              ? 'button-current button'
-                                              : 'button'}
+                                          part=${
+                                              isCurrent
+                                                  ? 'button-current button'
+                                                  : 'button'
+                                          }
                                           class=${classMap({
                                               pagination__button: true,
                                               'pagination__button--page': true,
@@ -208,16 +213,17 @@ export default class TerraPagination extends TerraElement {
                                           ?disabled=${isCurrent}
                                           @click=${() => this._handlePageClick(page)}
                                           aria-label=${`Page ${page}`}
-                                          aria-current=${isCurrent
-                                              ? 'page'
-                                              : undefined}
+                                          aria-current=${
+                                              isCurrent ? 'page' : undefined
+                                          }
                                       >
                                           ${page}
                                       </button>
                                   `
                               })}
                           `
-                        : ''}
+                            : ''
+                    }
 
                     <button
                         part="next"
@@ -226,30 +232,34 @@ export default class TerraPagination extends TerraElement {
                         @click=${this._handleNextClick}
                         aria-label="Next page"
                     >
-                        ${this.variant === 'simple'
-                            ? html`
+                        ${
+                            this.variant === 'simple'
+                                ? html`
                                   <span class="pagination__button-text">Next</span>
                                   <terra-icon
                                       name="chevron-right"
                                       library="default"
                                   ></terra-icon>
                               `
-                            : html`
+                                : html`
                                   <terra-icon
                                       name="chevron-right"
                                       library="default"
                                   ></terra-icon>
-                              `}
+                              `
+                        }
                     </button>
                 </nav>
 
-                ${this.variant === 'full' && !this.centered
-                    ? html`
+                ${
+                    this.variant === 'full' && !this.centered
+                        ? html`
                           <div part="slot" class="pagination__slot">
                               <slot></slot>
                           </div>
                       `
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }

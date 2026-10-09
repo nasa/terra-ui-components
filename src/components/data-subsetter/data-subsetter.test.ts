@@ -1,10 +1,4 @@
-import {
-    elementUpdated,
-    expect,
-    fixture,
-    html,
-    waitUntil,
-} from '@open-wc/testing'
+import { elementUpdated, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import sinon from 'sinon'
 import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
@@ -16,11 +10,11 @@ import './data-subsetter.js'
 
 const getAccordionContent = (el: any) => {
     const accordions = Array.from(
-        el.shadowRoot?.querySelectorAll('terra-accordion') ?? [],
+        el.shadowRoot?.querySelectorAll('terra-accordion') ?? []
     ) as Element[]
 
-    const dimensionsAccordion = accordions.find((acc) =>
-        acc.textContent?.includes('Select Dimensions:'),
+    const dimensionsAccordion = accordions.find(acc =>
+        acc.textContent?.includes('Select Dimensions:')
     )
 
     return dimensionsAccordion?.querySelector('.accordion-content')
@@ -33,7 +27,7 @@ function okJson(body: unknown) {
         new Response(JSON.stringify(body), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-        }),
+        })
     )
 }
 
@@ -80,8 +74,7 @@ function stubCollectionFetch({
     }
 
     return sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
-        const url =
-            typeof input === 'string' ? input : (input?.url ?? String(input))
+        const url = typeof input === 'string' ? input : (input?.url ?? String(input))
 
         if (url.includes('collections.umm_json')) {
             return okJson(cmrCollectionResponse)
@@ -201,7 +194,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         el.dataAccessMode = 'subset'
@@ -211,13 +204,12 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         await waitUntil(
             () => Boolean(el.collectionWithServices),
             'expected collectionWithServices to be populated by CollectionController',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
         await waitUntil(
-            () =>
-                Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
+            () => Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
             'expected the dimensions accordion to render',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         const accordionContent = getAccordionContent(el)
@@ -245,9 +237,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
                     {
                         umm: {
                             Name: 'var2',
-                            Dimensions: [
-                                { Name: 'DimA', Size: 4, Type: 'OTHER' },
-                            ],
+                            Dimensions: [{ Name: 'DimA', Size: 4, Type: 'OTHER' }],
                         },
                     },
                 ],
@@ -255,7 +245,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         el.dataAccessMode = 'subset'
@@ -265,7 +255,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         await waitUntil(
             () => Boolean(el.collectionWithServices),
             'expected collectionWithServices to be populated by CollectionController',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         el.selectedVariables = [
@@ -274,10 +264,9 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         ]
 
         await waitUntil(
-            () =>
-                Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
+            () => Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
             'expected the dimensions accordion to render',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         const accordionContent = getAccordionContent(el)
@@ -325,7 +314,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         el.dataAccessMode = 'subset'
@@ -335,7 +324,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         await waitUntil(
             () => Boolean(el.collectionWithServices),
             'expected collectionWithServices to be populated by CollectionController',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         el.selectedVariables = [
@@ -344,10 +333,9 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         ]
 
         await waitUntil(
-            () =>
-                Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
+            () => Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
             'expected the dimensions accordion to render',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         const accordionContent = getAccordionContent(el)
@@ -421,7 +409,7 @@ describe('<terra-data-subsetter> harmony request errors', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -430,13 +418,13 @@ describe('<terra-data-subsetter> harmony request errors', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
 
             const getDataButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
                 | HTMLButtonElement
                 | undefined
 
@@ -447,7 +435,7 @@ describe('<terra-data-subsetter> harmony request errors', () => {
             await elementUpdated(el)
 
             await waitUntil(() =>
-                Boolean(el.shadowRoot?.textContent?.includes('Results:')),
+                Boolean(el.shadowRoot?.textContent?.includes('Results:'))
             )
 
             // the error message is rendered across multiple text nodes (it wraps a
@@ -457,16 +445,16 @@ describe('<terra-data-subsetter> harmony request errors', () => {
                 (text ?? '').replace(/\s+/g, ' ').trim()
 
             const errorAlert = Array.from(
-                el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
+                el.shadowRoot?.querySelectorAll('terra-alert') ?? []
             ).find((alert: any) =>
                 normalizeWhitespace(alert.textContent).includes(
-                    'No matching granules were found for your subset request. Please try expanding your search',
-                ),
+                    'No matching granules were found for your subset request. Please try expanding your search'
+                )
             )
 
             expect(errorAlert).to.exist
             expect(el.shadowRoot?.textContent).to.not.include(
-                'No matching granules found.',
+                'No matching granules found.'
             )
         } finally {
             HarmonyRequestController.prototype.startJob = originalStartJob
@@ -521,9 +509,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
         let capturedHarmonyRequest: any
         const originalStartJob = HarmonyRequestController.prototype.startJob
 
-        HarmonyRequestController.prototype.startJob = (async (
-            variables: any,
-        ) => {
+        HarmonyRequestController.prototype.startJob = (async (variables: any) => {
             capturedHarmonyRequest = variables.harmonyRequest
             throw new HttpException({ status: 400, message: 'stop' })
         }) as typeof HarmonyRequestController.prototype.startJob
@@ -536,7 +522,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -545,15 +531,15 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
 
             setup?.(el)
             await elementUpdated(el)
 
             const getDataButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
                 | HTMLButtonElement
                 | undefined
 
@@ -602,7 +588,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
             error: null,
         })
 
-        const harmonyRequest = await submitAndCaptureRequest((el) => {
+        const harmonyRequest = await submitAndCaptureRequest(el => {
             el.selectedFormat = { key: 'text/csv', isGiovanniFormat: true }
             el.selectedVariables = [{ conceptId: 'V1', name: 'Variable 1' }]
             el.spatialSelection = new LatLng(10, 20)
@@ -619,7 +605,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
             error: null,
         })
 
-        const harmonyRequest = await submitAndCaptureRequest((el) => {
+        const harmonyRequest = await submitAndCaptureRequest(el => {
             el.selectedFormat = { key: 'text/csv', isGiovanniFormat: true }
             el.selectedVariables = [{ conceptId: 'V1', name: 'Variable 1' }]
             el.spatialSelection = new LatLngBounds([-10, -10, 10, 10])
@@ -679,7 +665,7 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
 
         HarmonyRequestController.prototype.startJob = (async () => {
             startJobCallCount++
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 resolveStartJob = resolve
             })
         }) as typeof HarmonyRequestController.prototype.startJob
@@ -692,7 +678,7 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -701,15 +687,13 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
 
             const getDataButton = () =>
-                Array.from(
-                    el.shadowRoot?.querySelectorAll('button') ?? [],
-                ).find((button: any) =>
-                    button.textContent?.trim().startsWith('Get Data'),
+                Array.from(el.shadowRoot?.querySelectorAll('button') ?? []).find(
+                    (button: any) => button.textContent?.trim().startsWith('Get Data')
                 ) as HTMLButtonElement | undefined
 
             const button = getDataButton()
@@ -792,7 +776,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
     // collection meta, since both drive #getDefaultRecentDateRange's cadence math.
     function stubCollectionFetchWithGranules(
         granuleCount: number,
-        collectionEntryId: string,
+        collectionEntryId: string
     ) {
         const cmrCollectionResponse = {
             hits: 1,
@@ -824,9 +808,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
 
         return sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
             const url =
-                typeof input === 'string'
-                    ? input
-                    : (input?.url ?? String(input))
+                typeof input === 'string' ? input : (input?.url ?? String(input))
 
             if (url.includes('collections.umm_json')) {
                 return okJson(cmrCollectionResponse)
@@ -840,9 +822,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
                 // fetches the last/latest granule
                 const isDescending = url.includes('-startDate')
                 return okJson(
-                    granuleResponse(
-                        isDescending ? lastGranuleDate : firstGranuleDate,
-                    ),
+                    granuleResponse(isDescending ? lastGranuleDate : firstGranuleDate)
                 )
             }
             if (url.includes('/capabilities')) {
@@ -861,7 +841,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
         stubCollectionFetchWithGranules(granuleCount, collectionEntryId)
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
         el.dataAccessMode = 'subset'
         el.collectionEntryId = collectionEntryId
@@ -869,7 +849,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
         await waitUntil(
             () => Boolean(el.granuleMinDate) && Boolean(el.granuleMaxDate),
             'expected granule sampling dates to be populated',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
         await elementUpdated(el)
 
@@ -919,11 +899,11 @@ describe('<terra-data-subsetter> recent date range default', () => {
         await elementUpdated(el)
 
         const dateRangeResetButton = Array.from(
-            el.shadowRoot?.querySelectorAll('.reset-btn') ?? [],
+            el.shadowRoot?.querySelectorAll('.reset-btn') ?? []
         ).find((button: any) =>
             button
                 .closest('terra-accordion')
-                ?.textContent?.includes('Refine Date Range'),
+                ?.textContent?.includes('Refine Date Range')
         ) as HTMLButtonElement | undefined
 
         expect(dateRangeResetButton).to.exist
@@ -946,8 +926,8 @@ describe('<terra-data-subsetter> recent date range default', () => {
         await elementUpdated(el)
 
         const resetAllButton = Array.from(
-            el.shadowRoot?.querySelectorAll('button') ?? [],
-        ).find((button) => button.textContent?.trim() === 'Reset All') as
+            el.shadowRoot?.querySelectorAll('button') ?? []
+        ).find(button => button.textContent?.trim() === 'Reset All') as
             | HTMLButtonElement
             | undefined
 
@@ -1006,8 +986,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
     const pausedJobStatus = {
         jobID: 'job-paused',
         status: 'paused',
-        message:
-            'The job is paused and may be resumed using the provided link.',
+        message: 'The job is paused and may be resumed using the provided link.',
         progress: 15,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -1032,7 +1011,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         try {
@@ -1042,13 +1021,13 @@ describe('<terra-data-subsetter> paused job handling', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
 
             const getDataButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
                 | HTMLButtonElement
                 | undefined
 
@@ -1058,7 +1037,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
             await waitUntil(
                 () => el.shadowRoot?.textContent?.includes('Paused for review'),
                 'expected the job status section to show the paused status',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
         } finally {
@@ -1072,25 +1051,23 @@ describe('<terra-data-subsetter> paused job handling', () => {
         const el = await startPausedJob()
 
         const alertText = Array.from(
-            el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
+            el.shadowRoot?.querySelectorAll('terra-alert') ?? []
         )
             .map((alert: any) => alert.textContent)
             .join(' ')
 
         expect(alertText).to.include(
-            'This is a large request, so processing paused after the first few files so you can review the results.',
+            'This is a large request, so processing paused after the first few files so you can review the results.'
         )
 
         const buttons = Array.from(
-            el.shadowRoot?.querySelectorAll('button') ?? [],
+            el.shadowRoot?.querySelectorAll('button') ?? []
         ) as HTMLButtonElement[]
 
-        expect(
-            buttons.some((button) => button.textContent?.trim() === 'Resume'),
-        ).to.be.true
-        expect(
-            buttons.some((button) => button.textContent?.trim() === 'Cancel'),
-        ).to.be.true
+        expect(buttons.some(button => button.textContent?.trim() === 'Resume')).to.be
+            .true
+        expect(buttons.some(button => button.textContent?.trim() === 'Cancel')).to.be
+            .true
     })
 
     it('calls HarmonyRequestController.resumeJob with the job ID when Resume Job is clicked', async () => {
@@ -1099,17 +1076,15 @@ describe('<terra-data-subsetter> paused job handling', () => {
         const originalResumeJob = HarmonyRequestController.prototype.resumeJob
         let resumeJobArgs: any
 
-        HarmonyRequestController.prototype.resumeJob = (async (
-            options: any,
-        ) => {
+        HarmonyRequestController.prototype.resumeJob = (async (options: any) => {
             resumeJobArgs = options
             return pausedJobStatus
         }) as typeof HarmonyRequestController.prototype.resumeJob
 
         try {
             const resumeButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Resume') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Resume') as
                 | HTMLButtonElement
                 | undefined
 

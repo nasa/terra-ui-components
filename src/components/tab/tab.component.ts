@@ -100,8 +100,9 @@ export default class TerraTab extends TerraElement {
                 })}
             >
                 <slot></slot>
-                ${this.closable
-                    ? html`
+                ${
+                    this.closable
+                        ? html`
                           <button
                               part="close-button"
                               class="tab__close-button"
@@ -117,7 +118,8 @@ export default class TerraTab extends TerraElement {
                               ></terra-icon>
                           </button>
                       `
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }

@@ -289,7 +289,7 @@ export default class TerraDataRods extends TerraElement {
     }
 
     #handleChunkProgressChange(
-        event: CustomEvent<{ currentChunk: number; totalChunks: number }>,
+        event: CustomEvent<{ currentChunk: number; totalChunks: number }>
     ) {
         const { currentChunk, totalChunks } = event.detail
 

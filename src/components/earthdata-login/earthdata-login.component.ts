@@ -98,8 +98,9 @@ export default class TerraEarthdataLogin extends TerraElement {
                     </a>
                 </div>
 
-                ${this.#authController.state.user?.uid
-                    ? html`<div class="login-form">
+                ${
+                    this.#authController.state.user?.uid
+                        ? html`<div class="login-form">
                           <p>
                               ${this.#authController.state.user.first_name},<br />
                               You've successfully authenticated with Earthdata Login!
@@ -111,7 +112,7 @@ export default class TerraEarthdataLogin extends TerraElement {
                               >Logout</terra-button
                           >
                       </div>`
-                    : html`
+                        : html`
                           <form class="login-form" @submit=${this.#handleFormSubmit}>
                               <terra-input
                                   id="username-input"
@@ -119,8 +120,10 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   name="username"
                                   type="text"
                                   .value=${this.username}
-                                  ?disabled=${this.#authController.loginTask
-                                      .status === TaskStatus.PENDING}
+                                  ?disabled=${
+                                      this.#authController.loginTask.status ===
+                                      TaskStatus.PENDING
+                                  }
                                   autocomplete="username"
                                   .errorText=${this.usernameError || ''}
                                   required
@@ -135,8 +138,10 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   type="password"
                                   autocomplete="current-password"
                                   ?password-toggle=${!this.hidePasswordToggle}
-                                  ?disabled=${this.#authController.loginTask
-                                      .status === TaskStatus.PENDING}
+                                  ?disabled=${
+                                      this.#authController.loginTask.status ===
+                                      TaskStatus.PENDING
+                                  }
                                   .value=${this.password}
                                   .errorText=${this.passwordError || ''}
                                   required
@@ -148,8 +153,10 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   type="submit"
                                   variant="primary"
                                   class="login-button"
-                                  ?disabled=${this.#authController.loginTask
-                                      .status === TaskStatus.PENDING}
+                                  ?disabled=${
+                                      this.#authController.loginTask.status ===
+                                      TaskStatus.PENDING
+                                  }
                               >
                                   ${this.#authController.loginTask.render({
                                       initial: () => html`Log in`,
@@ -159,12 +166,14 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   })}
                               </terra-button>
 
-                              ${this.#authController.state.error
-                                  ? html`<div class="form-feedback">
+                              ${
+                                  this.#authController.state.error
+                                      ? html`<div class="form-feedback">
                                         ${this.#authController.state.error}
-                                        ${this.#authController.state.error ===
-                                        'Invalid user credentials'
-                                            ? html`<p>
+                                        ${
+                                            this.#authController.state.error ===
+                                            'Invalid user credentials'
+                                                ? html`<p>
                                                   <a
                                                       class="link"
                                                       href="https://urs.earthdata.nasa.gov/retrieve_info"
@@ -180,9 +189,11 @@ export default class TerraEarthdataLogin extends TerraElement {
                                                       >Forgot password?</a
                                                   >
                                               </p>`
-                                            : nothing}
+                                                : nothing
+                                        }
                                     </div>`
-                                  : ''}
+                                      : ''
+                              }
                               <a
                                   class="link register-link"
                                   href="https://urs.earthdata.nasa.gov/users/new"
@@ -191,7 +202,8 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   >Register for a profile</a
                               >
                           </form>
-                      `}
+                      `
+                }
             </div>
         `
     }

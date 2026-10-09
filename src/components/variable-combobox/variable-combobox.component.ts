@@ -186,11 +186,9 @@ export default class TerraVariableCombobox extends TerraElement {
         await this.#fetchController.taskComplete
 
         const compatibleValue = adaptValueToVariableMetadata(this.value)
-        const selectedVariable = this.#fetchController.value?.find(
-            (metadata) => {
-                return compatibleValue === metadata.entryId
-            },
-        )
+        const selectedVariable = this.#fetchController.value?.find(metadata => {
+            return compatibleValue === metadata.entryId
+        })
 
         // Update the internal state to match the selected external value.
         if (selectedVariable) {
@@ -222,7 +220,7 @@ export default class TerraVariableCombobox extends TerraElement {
         globalThis.addEventListener('click', this.#manageListboxVisibility)
         this.addEventListener(
             'terra-show-variable-info',
-            this.#handleShowVariableInfo,
+            this.#handleShowVariableInfo
         )
         this.addEventListener('mouseleave', this.#handleIconLeave)
     }
@@ -233,7 +231,7 @@ export default class TerraVariableCombobox extends TerraElement {
         globalThis.removeEventListener('click', this.#manageListboxVisibility)
         this.removeEventListener(
             'terra-show-variable-info',
-            this.#handleShowVariableInfo,
+            this.#handleShowVariableInfo
         )
         this.removeEventListener('mouseleave', this.#handleIconLeave)
     }
@@ -280,7 +278,7 @@ export default class TerraVariableCombobox extends TerraElement {
 
         // filter out anything not role="option"
         const [target] = path.filter(
-            (eventTarget) => (eventTarget as HTMLElement).role === 'option',
+            eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
 
         if (!target) {
@@ -295,7 +293,7 @@ export default class TerraVariableCombobox extends TerraElement {
             case 'ArrowDown': {
                 clearSelection(
                     this.#combobox as HTMLInputElement,
-                    this.#listbox as HTMLUListElement,
+                    this.#listbox as HTMLUListElement
                 )
 
                 if (!this.isExpanded) {
@@ -310,7 +308,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 walkToOption(
                     this.#walker as TreeWalker,
                     this.#combobox as HTMLInputElement,
-                    'next',
+                    'next'
                 )
 
                 break
@@ -319,7 +317,7 @@ export default class TerraVariableCombobox extends TerraElement {
             case 'ArrowUp': {
                 clearSelection(
                     this.#combobox as HTMLInputElement,
-                    this.#listbox as HTMLUListElement,
+                    this.#listbox as HTMLUListElement
                 )
 
                 if (!this.isExpanded) {
@@ -329,7 +327,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 walkToOption(
                     this.#walker as TreeWalker,
                     this.#combobox as HTMLInputElement,
-                    'previous',
+                    'previous'
                 )
 
                 break
@@ -345,7 +343,7 @@ export default class TerraVariableCombobox extends TerraElement {
             case 'Escape': {
                 clearSelection(
                     this.#combobox as HTMLInputElement,
-                    this.#listbox as HTMLUListElement,
+                    this.#listbox as HTMLUListElement
                 )
 
                 if (this.isExpanded) {
@@ -369,9 +367,9 @@ export default class TerraVariableCombobox extends TerraElement {
     #manageListboxVisibility = (event: Event) => {
         const path = event.composedPath()
         const containedThis = path.some(
-            (eventTarget) =>
+            eventTarget =>
                 (eventTarget as HTMLElement).localName ===
-                TerraVariableCombobox.tagName,
+                TerraVariableCombobox.tagName
         )
 
         if (!containedThis) {
@@ -389,7 +387,7 @@ export default class TerraVariableCombobox extends TerraElement {
 
         clearSelection(
             this.#combobox as HTMLInputElement,
-            this.#listbox as HTMLUListElement,
+            this.#listbox as HTMLUListElement
         )
 
         if (this.useTags) {
@@ -516,7 +514,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 ${
                     this.useTags
                         ? html`<div
-                          ${ref((el) => {
+                          ${ref(el => {
                               if (el) {
                                   this.#tagContainer ??= el as HTMLDivElement
                                   this.tagContainerWidth =
@@ -527,13 +525,13 @@ export default class TerraVariableCombobox extends TerraElement {
                           id="tag-container"
                       >
                           ${map(this.tags, (value, index) =>
-                              this.#renderTags(value, index),
+                              this.#renderTags(value, index)
                           )}
                       </div>`
                         : nothing
                 }
                 <input
-                    ${ref((el) => {
+                    ${ref(el => {
                         if (el) {
                             this.#combobox ??= el as HTMLInputElement
                         }
@@ -560,9 +558,7 @@ export default class TerraVariableCombobox extends TerraElement {
                             : (this.placeholder ?? `${this.label}…`)
                     }
                     .value=${
-                        this.useTags
-                            ? TerraVariableCombobox.initialQuery
-                            : this.query
+                        this.useTags ? TerraVariableCombobox.initialQuery : this.query
                     }
                     @input=${this.#handleComboboxChange}
                     @keydown=${this.#handleKeydown}
@@ -583,7 +579,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 >
                     ${
                         ['COMPLETE', 'ERROR'].includes(
-                            this.#fetchController.taskStatus,
+                            this.#fetchController.taskStatus
                         )
                             ? html`<terra-icon
                               class="chevron"
@@ -627,7 +623,7 @@ export default class TerraVariableCombobox extends TerraElement {
             </div>
 
             <ul
-                ${ref((el) => {
+                ${ref(el => {
                     if (el) {
                         this.#listbox ??= el as HTMLUListElement
 
@@ -635,12 +631,12 @@ export default class TerraVariableCombobox extends TerraElement {
                         this.#walker = document.createTreeWalker(
                             el,
                             NodeFilter.SHOW_ELEMENT,
-                            (node) => {
-                                return (node as HTMLElement).dataset
-                                    .treeWalker === 'filter_skip'
+                            node => {
+                                return (node as HTMLElement).dataset.treeWalker ===
+                                    'filter_skip'
                                     ? NodeFilter.FILTER_SKIP
                                     : NodeFilter.FILTER_ACCEPT
-                            },
+                            }
                         )
                     }
                 })}
@@ -648,9 +644,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 ?open=${this.isExpanded}
                 @click=${this.#handleOptionClick}
                 aria-label=${
-                    this.query
-                        ? `Variables Matching ${this.query}`
-                        : 'Variables'
+                    this.query ? `Variables Matching ${this.query}` : 'Variables'
                 }
                 id="listbox"
                 part="listbox"
@@ -662,15 +656,14 @@ export default class TerraVariableCombobox extends TerraElement {
                         html`<li class="updating">Updating List of Variables</li>`,
                     pending: () =>
                         html`<li class="updating">Updating List of Variables</li>`,
-                    complete: (list) => {
+                    complete: list => {
                         //Filter out GPM_3IMERGHH V06 as soon as results arrive
                         const filtered = list.filter(
-                            (item) =>
+                            item =>
                                 !(
-                                    item.collectionShortName ===
-                                        'GPM_3IMERGHH' &&
+                                    item.collectionShortName === 'GPM_3IMERGHH' &&
                                     item.collectionVersion === '06'
-                                ),
+                                )
                         )
 
                         this.#searchableList = filtered
@@ -693,24 +686,20 @@ export default class TerraVariableCombobox extends TerraElement {
                             this.query === TerraVariableCombobox.initialQuery
                                 ? map(
                                       removeEmptyCollections(
-                                          groupDocsByCollection(
-                                              this.#searchableList,
-                                          ),
+                                          groupDocsByCollection(this.#searchableList)
                                       ),
-                                      renderSearchResult,
+                                      renderSearchResult
                                   )
                                 : map(
                                       removeEmptyCollections(
-                                          groupDocsByCollection(
-                                              this.searchResults,
-                                          ),
+                                          groupDocsByCollection(this.searchResults)
                                       ),
-                                      renderSearchResult,
-                                  ),
+                                      renderSearchResult
+                                  )
                         )
                     },
                     // TODO: Consider a more robust error strategy...like retry w/ backoff?
-                    error: (errorMessage) =>
+                    error: errorMessage =>
                         html`<li class="error" data-tree-walker="filter_skip">
                             ${errorMessage}
                         </li>`,
