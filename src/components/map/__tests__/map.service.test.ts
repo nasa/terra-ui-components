@@ -10,6 +10,8 @@ import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
 import Draw from 'ol/interaction/Draw.js'
 import Collection from 'ol/Collection.js'
+import GeoJSON from 'ol/format/GeoJSON.js'
+import type { Projection } from 'ol/proj.js'
 
 describe('Map Service', () => {
     let el: HTMLElement
@@ -211,6 +213,14 @@ describe('Map Service', () => {
         expect(service.getCanvasElements()).to.have.keys(['canvases', 'svgs'])
     })
 
+    it('delegates getFeaturesAtPixel to the underlying map', () => {
+        const getFeaturesAtPixelSpy = sinon.spy(Map.prototype, 'getFeaturesAtPixel')
+
+        service.getFeaturesAtPixel([10, 10])
+
+        expect(getFeaturesAtPixelSpy.calledWith([10, 10])).to.be.true
+    })
+
     it.skip('dispatches onDraw for bbox geometry', () => {
         // TODO
     })
@@ -225,5 +235,77 @@ describe('Map Service', () => {
 
     it.skip('dispatches onDraw for polygon geometry', () => {
         // TODO
+    })
+
+    describe('projection', () => {
+        it('defaults the view to EPSG:3857', () => {
+            expect(service.getView().getProjection().getCode()).to.equal(
+                'EPSG:3857',
+            )
+        })
+
+        it('uses the configured projection for the view', () => {
+            const el2 = document.createElement('div')
+            document.body.appendChild(el2)
+            const polarService = new MapService(el2, {
+                projection: 'EPSG:4326',
+                onMouseMove: sinon.spy(),
+                onDraw: sinon.spy(),
+            })
+
+            expect(polarService.getView().getProjection().getCode()).to.equal(
+                'EPSG:4326',
+            )
+        })
+
+        it('builds the view with noWorldWrap on a non-EPSG:3857 projection without throwing', () => {
+            const el2 = document.createElement('div')
+            document.body.appendChild(el2)
+
+            expect(
+                () =>
+                    new MapService(el2, {
+                        projection: 'EPSG:4326',
+                        noWorldWrap: true,
+                        onMouseMove: sinon.spy(),
+                        onDraw: sinon.spy(),
+                    }),
+            ).to.not.throw()
+        })
+
+        it('reprojects a loaded shape into the configured view projection, not a hardcoded EPSG:3857', async () => {
+            const el2 = document.createElement('div')
+            document.body.appendChild(el2)
+            const readFeaturesSpy = sinon.spy(GeoJSON.prototype, 'readFeatures')
+            const polarService = new MapService(el2, {
+                projection: 'EPSG:4326',
+                onMouseMove: sinon.spy(),
+                onDraw: sinon.spy(),
+                getGeoJson: async () => ({
+                    type: 'FeatureCollection',
+                    features: [
+                        {
+                            type: 'Feature',
+                            properties: {},
+                            geometry: { type: 'Point', coordinates: [10, 20] },
+                        },
+                    ],
+                }),
+            })
+
+            await polarService.handleShapeSelect({
+                target: { value: 'some-shape', options: [], selectedIndex: 0 },
+            } as unknown as Event)
+
+            expect(
+                readFeaturesSpy.calledWith(
+                    sinon.match.any,
+                    sinon.match({ featureProjection: sinon.match.has('getCode') }),
+                ),
+            ).to.be.true
+            const featureProjection = readFeaturesSpy.firstCall
+                ?.args[1]?.featureProjection as Projection
+            expect(featureProjection.getCode()).to.equal('EPSG:4326')
+        })
     })
 })
