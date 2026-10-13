@@ -897,6 +897,7 @@ describe('<terra-date-picker>', () => {
                     <terra-date-picker enable-time show-presets range timezone="America/New_York"></terra-date-picker>
                 `)
                 await elementUpdated(el)
+                const eventPromise = oneEvent(el, 'terra-date-range-change')
     
                 const todayPreset = el.presets.find(
                     (preset: any) => preset.label === 'Today'
@@ -912,6 +913,7 @@ describe('<terra-date-picker>', () => {
     
                 el.selectPreset(todayPreset)
                 await elementUpdated(el)
+                const event = await eventPromise
     
                 // Check start date's time (00:00:00 New York display time is 05:00:00 UTC)
                 expect(el.startHour).to.equal(5)
@@ -922,6 +924,10 @@ describe('<terra-date-picker>', () => {
                 expect(el.endHour).to.equal(4)
                 expect(el.endMinute).to.equal(59)
                 expect(el.endSecond).to.equal(59)
+
+                // Check if internal startDate and endDate values have correct UTC times
+                expect(event.detail.startDate).to.equal('2024-01-15T05:00:00.000Z')
+                expect(event.detail.endDate).to.equal('2024-01-16T04:59:59.000Z')
             })
         })
     })

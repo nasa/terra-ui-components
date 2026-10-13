@@ -1743,54 +1743,35 @@ export default class TerraDatePicker extends TerraElement {
         }
     }
 
+    private selectedDateToString(selectedDate: Date, hour: number, minute: number, second: number, enableTime: boolean) {
+        if (enableTime) {
+            const date = new Date(selectedDate)
+            date.setUTCHours(hour, minute, second, 0)
+            const display = this.getDisplayTimeComponents(hour, minute, second, selectedDate);
+            const offsetMins = this.getTimezoneOffsetMinutes(selectedDate);
+            const rawUtcMinutes = (display.hour * 60) + display.minute - offsetMins;
+            const dayOffset = Math.floor(rawUtcMinutes / 1440);
+            if (dayOffset !== 0) {
+                date.setUTCDate(date.getUTCDate() + dayOffset);
+            }
+            return date.toISOString()
+        }
+        const year = selectedDate.getFullYear()
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0')
+        const day = String(selectedDate.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+    }
+
     private emitChange() {
         let startDateTime = ''
         let endDateTime = ''
 
         if (this.selectedStart) {
-            if (this.enableTime) {
-                const startDate = new Date(this.selectedStart)
-                startDate.setUTCHours(
-                    this.startHour,
-                    this.startMinute,
-                    this.startSecond,
-                    0,
-                )
-                startDateTime = startDate.toISOString()
-            } else {
-                // Format using local date components to avoid timezone conversion issues
-                const year = this.selectedStart.getFullYear()
-                const month = String(
-                    this.selectedStart.getMonth() + 1,
-                ).padStart(2, '0')
-                const day = String(this.selectedStart.getDate()).padStart(
-                    2,
-                    '0',
-                )
-                startDateTime = `${year}-${month}-${day}`
-            }
+            startDateTime = this.selectedDateToString(this.selectedStart, this.startHour, this.startMinute, this.startSecond, this.enableTime)
         }
 
         if (this.selectedEnd) {
-            if (this.enableTime) {
-                const endDate = new Date(this.selectedEnd)
-                endDate.setUTCHours(
-                    this.endHour,
-                    this.endMinute,
-                    this.endSecond,
-                    0,
-                )
-                endDateTime = endDate.toISOString()
-            } else {
-                // Format using local date components to avoid timezone conversion issues
-                const year = this.selectedEnd.getFullYear()
-                const month = String(this.selectedEnd.getMonth() + 1).padStart(
-                    2,
-                    '0',
-                )
-                const day = String(this.selectedEnd.getDate()).padStart(2, '0')
-                endDateTime = `${year}-${month}-${day}`
-            }
+            endDateTime = this.selectedDateToString(this.selectedEnd, this.endHour, this.endMinute, this.endSecond, this.enableTime)
         }
 
         this.emit('terra-date-range-change', {
