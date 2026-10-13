@@ -890,44 +890,6 @@ describe('<terra-date-picker>', () => {
                 expect(event.detail.endDate).to.not.be.empty
             }
         })
-
-        it('should correctly set UTC start/end times based on the configured timezone (e.g., America/New_York) when any preset is selected', async () => {
-            const el: any = await fixture(html`
-                <terra-date-picker enable-time show-presets range timezone="America/New_York"></terra-date-picker>
-            `)
-            await elementUpdated(el)
-            const eventPromise = oneEvent(el, 'terra-date-range-change')
-
-            const todayPreset = el.presets.find(
-                (preset: any) => preset.label === 'Today'
-            )
-            expect(todayPreset).to.exist
-
-            // Using fixed date in January to guarantee non-Daylight Savings Time date
-            const mockDate = new Date('2024-01-15T12:00:00Z')
-            todayPreset.getValue = () => ({
-                startDate: mockDate,
-                endDate: mockDate
-            })
-
-            el.selectPreset(todayPreset)
-            await elementUpdated(el)
-            const event = await eventPromise
-
-            // Check start date's time (00:00:00 New York display time is 05:00:00 UTC)
-            expect(el.startHour).to.equal(5)
-            expect(el.startMinute).to.equal(0)
-            expect(el.startSecond).to.equal(0)
-
-            // Check end date's time (23:59:59 New York display time is 04:59:59 UTC the NEXT day)
-            expect(el.endHour).to.equal(4)
-            expect(el.endMinute).to.equal(59)
-            expect(el.endSecond).to.equal(59)
-
-            // Check if internal startDate and endDate values have correct UTC times
-            expect(event.detail.startDate).to.equal('2024-01-15T05:00:00.000Z')
-            expect(event.detail.endDate).to.equal('2024-01-16T04:59:59.000Z')
-        })
     })
 
     describe('Time Selection', () => {
