@@ -59,28 +59,27 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     /** Screen size detection use to determine layout for mobile devices */
 
-    @state() 
+    @state()
     isMobile = false
 
-    private mediaQuery = window.matchMedia('(max-width: 600px)');
-    
-    connectedCallback() {
-        super.connectedCallback();
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
 
-        this.isMobile = this.mediaQuery.matches;
-        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
     }
 
     disconnectedCallback() {
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
 
-        super.disconnectedCallback();
+        super.disconnectedCallback()
     }
 
     private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches;
-    };
-
+        this.isMobile = event.matches
+    }
 
     /**
      * Allows the user to switch the catalog between different providers
@@ -236,11 +235,12 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     }
 
     private handleMobileVariableClick(index: number) {
-        if (this.mobileDetailsIndex === index) {    // Close the details panel if it's already open for this variable
+        if (this.mobileDetailsIndex === index) {
+            // Close the details panel if it's already open for this variable
             this.mobileDetailsIndex = undefined
             return
         }
-        this.mobileDetailsIndex = index             // Open the details panel for this variable
+        this.mobileDetailsIndex = index // Open the details panel for this variable
     }
 
     private handleDetailClose() {
@@ -467,7 +467,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     }
 
     #renderVariableDetails(index: number) {
-
         const variables = this.#getSortedVariables()
         const variable = variables[index]
 
@@ -477,9 +476,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <label
                             ><strong>Name in Data File:</strong></label
                         >
-                        ${
-                            variable.dataFieldShortName
-                        }
+                        ${variable.dataFieldShortName}
                     </p>
                     <p>
                         <label><strong>Units:</strong></label>
@@ -489,13 +486,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <label
                             ><strong>Temporal Coverage:</strong></label
                         >
-                        ${
-                            variable.dataProductBeginDateTime
-                        }
+                        ${variable.dataProductBeginDateTime}
                         –
-                        ${
-                            variable.dataProductEndDateTime
-                        }
+                        ${variable.dataProductEndDateTime}
                     </p>
                     <p>
                         <label><strong>Region Coverage:</strong></label>
@@ -508,15 +501,11 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <label
                             ><strong>Spatial Resolution:</strong></label
                         >
-                        ${
-                            variable.dataProductSpatialResolution
-                        }
+                        ${variable.dataProductSpatialResolution}
                     </p>
                     <p>
                         <label><strong>Dataset:</strong></label>
-                        ${
-                            variable.dataProductShortName
-                        }_${
+                        ${variable.dataProductShortName}_${
                             variable.dataProductVersion
                         }
                     </p>
@@ -619,15 +608,18 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 </menu>
             </header>
 
-            ${this.isMobile
-                ? html `
+            ${
+                this.isMobile
+                    ? html`
                     <aside>
                         <terra-accordion summary="Filter Results">
                             ${facets.map((facet) =>
                                 this.#renderFacet(
                                     facet.facetKey,
                                     facet.title,
-                                    this.#controller.facetsByCategory?.[facet.facetKey],
+                                    this.#controller.facetsByCategory?.[
+                                        facet.facetKey
+                                    ],
                                     facet.open,
                                 ),
                             )}
@@ -637,7 +629,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                     <main>
                         ${this.#renderMobileVariablesList(Boolean(loading))}
                     </main>`
-                : html `
+                    : html`
                     <aside>
                         <h3>Filter</h3>
 
@@ -645,7 +637,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                             this.#renderFacet(
                                 facet.facetKey,
                                 facet.title,
-                                this.#controller.facetsByCategory?.[facet.facetKey],
+                                this.#controller.facetsByCategory?.[
+                                    facet.facetKey
+                                ],
                                 facet.open,
                             ),
                         )}
@@ -654,7 +648,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                     <main>
                         ${this.#renderVariablesList(Boolean(loading))}
                     </main>`
-                }
+            }
 
         </div> `
     }
@@ -690,10 +684,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                 @click=${(event: Event) => {
                                     const target =
                                         event.currentTarget as HTMLLIElement
-                                    const targetCheckbox =
-                                        target.querySelector(
-                                            'input[type="checkbox"]',
-                                        ) as HTMLInputElement | null
+                                    const targetCheckbox = target.querySelector(
+                                        'input[type="checkbox"]',
+                                    ) as HTMLInputElement | null
 
                                     if (!targetCheckbox) {
                                         return
@@ -745,7 +738,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <section class="variable-details">
                         ${
                             this.activeIndex !== undefined
-                                ? this.#renderVariableDetails(this.activeIndex ?? 0)
+                                ? this.#renderVariableDetails(
+                                      this.activeIndex ?? 0,
+                                  )
                                 : html`<p class="placeholder">
                                         Hover over a variable to see details
                                     </p>`
@@ -757,7 +752,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     }
 
     #renderMobileVariablesList(loading?: boolean) {
-
         const variables = this.#getSortedVariables()
 
         return html`
@@ -771,7 +765,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                             <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
                         </terra-alert>
                     `
-                        : nothing
+                            : nothing
                     }
 
                     ${variables.map(
@@ -798,7 +792,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                     />
                                     <label 
                                         @click=${() =>
-                                            this.handleMobileVariableClick(index)}
+                                            this.handleMobileVariableClick(
+                                                index,
+                                            )}
                                     >
                                         <strong>
                                             ${variable.dataFieldLongName}
@@ -820,11 +816,10 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                     <span>
                                         <terra-divider></terra-divider>
                                         <terra-button outline circle size="small"
-                                            @click=${(event: Event) =>
-                                                {
-                                                    event.stopPropagation()
-                                                    this.handleDetailClose()
-                                                }}
+                                            @click=${(event: Event) => {
+                                                event.stopPropagation()
+                                                this.handleDetailClose()
+                                            }}
                                         >
                                         <slot name="label">
                                             <terra-icon name="outline-x-mark" library="heroicons" font-size="1.5em"></terra-icon>
@@ -866,12 +861,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         @terra-search=${this.handleSearch}
                     ></terra-variable-keyword-search>
                 </header>
-
-                ${
-                    this.isMobile
-                        ? console.log('Mobile view')
-                        : console.log('Desktop view')
-                }
 
                 ${
                     this.showVariablesBrowse
