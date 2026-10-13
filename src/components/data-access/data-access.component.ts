@@ -73,6 +73,39 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         'terra-alert': TerraAlert,
     }
 
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state()
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
+
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
+    }
+
+    disconnectedCallback() {
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
+
+        super.disconnectedCallback()
+        if (this.#boundHandleCloudCoverClickOutside) {
+            document.removeEventListener(
+                'click',
+                this.#boundHandleCloudCoverClickOutside,
+            )
+            this.#boundHandleCloudCoverClickOutside = null
+        }
+
+    }
+
+    private handleMediaChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches
+        console.log('isMobile changed:', this.isMobile)
+    }
+
     service = new DataAccessService()
 
     @property({
@@ -170,17 +203,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
 
     get spatialConstraints(): string {
         return this.#collectionController.spatialConstraints
-    }
-
-    disconnectedCallback(): void {
-        super.disconnectedCallback()
-        if (this.#boundHandleCloudCoverClickOutside) {
-            document.removeEventListener(
-                'click',
-                this.#boundHandleCloudCoverClickOutside,
-            )
-            this.#boundHandleCloudCoverClickOutside = null
-        }
     }
 
     #handleCloudCoverClickOutside(event: MouseEvent) {

@@ -104,6 +104,25 @@ export default class TerraDatePicker extends TerraElement {
     @state() endMinute: number = 59
     @state() endSecond: number = 59
 
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state()
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
+
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
+    }
+
+    private handleMediaChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches
+        console.log('isMobile changed:', this.isMobile)
+    }
+
     private getDefaultEndHour() {
         return this.useEndOfDay ? 23 : 0
     }
@@ -730,6 +749,7 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     disconnectedCallback() {
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
         super.disconnectedCallback()
         // Dropdown handles its own cleanup
     }
