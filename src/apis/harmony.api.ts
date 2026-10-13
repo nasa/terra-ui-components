@@ -299,6 +299,14 @@ class HarmonyApi {
             signal: options?.signal,
         })
 
+        if (res.status >= 300 && res.status < 400) {
+            const location = res.headers.get('Location')
+            const jobId = this.#extractJobIdFromLocation(location)
+            if (jobId) {
+                return this.getJobStatus(jobId, options)
+            }
+        }
+
         if (!res.ok) {
             if (res.status === 401) {
                 authService.logout() // clear any existing auth state since our token is no longer valid
@@ -324,6 +332,15 @@ class HarmonyApi {
         }
 
         return res.json() as Promise<SubsetJobStatus>
+    }
+
+    /**
+     * Extracts a Harmony job ID from a redirect's `Location` header, if it points at
+     * a job (e.g. `https://harmony.earthdata.nasa.gov/jobs/{jobId}`). Returns
+     * `undefined` for any other redirect target.
+     */
+    #extractJobIdFromLocation(location: string | null): string | undefined {
+        return location?.match(/\/jobs\/([^/?]+)/)?.[1]
     }
 
     /**
