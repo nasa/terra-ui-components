@@ -92,6 +92,7 @@ export default class TerraStepperStep extends TerraElement {
                     'stepper-step--upcoming': this.state === 'upcoming',
                 })}
             >
+                <div part="bar" class="stepper-step__bar"></div>
                 ${
                     !isCondensed && !this.isMobile
                         ? html`
