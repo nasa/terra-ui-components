@@ -174,7 +174,7 @@ This will run tests for the `input` component (the test file `input.test.ts`).
 Tests should be placed in `*.test.ts` files alongside the component. Use the `@open-wc/testing` library which provides helpful testing utilities:
 
 ```typescript
-import '../../../dist/terra-ui-components.js'
+import './my-component.js'
 import { expect, fixture, html } from '@open-wc/testing'
 
 describe('<terra-my-component>', () => {
