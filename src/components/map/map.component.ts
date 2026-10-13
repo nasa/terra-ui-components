@@ -333,8 +333,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 part="map"
                 class=${`map ${this.staticMode ? 'static' : ''} ${this.fill ? 'fill' : ''}`}
             >
-                ${this.showMouseCoordinates
-                    ? html`
+                ${
+                    this.showMouseCoordinates
+                        ? html`
                           <div id="mouse-info">
                               <div>
                                   <strong
@@ -345,14 +346,17 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                               </div>
                           </div>
                       `
-                    : nothing}
-                ${this.shapeLoading
-                    ? html`
+                        : nothing
+                }
+                ${
+                    this.shapeLoading
+                        ? html`
                           <div class="map__loading-overlay">
                               <div class="map__spinner"></div>
                           </div>
                       `
-                    : nothing}
+                        : nothing
+                }
             </div>
         `
     }

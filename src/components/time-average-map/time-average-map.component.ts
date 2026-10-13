@@ -1153,8 +1153,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
 
     render() {
         return html`
-            ${this.#isVariableNotFound()
-                ? html`
+            ${
+                this.#isVariableNotFound()
+                    ? html`
                       <terra-alert
                           class="no-data-alert"
                           variant="danger"
@@ -1169,9 +1170,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                           The selected variable was not found in the catalog
                       </terra-alert>
                   `
-                : ''}
-            ${this.timeAverageMapError
-                ? html`
+                    : ''
+            }
+            ${
+                this.timeAverageMapError
+                    ? html`
                       <terra-alert
                           class="error-alert"
                           variant="danger"
@@ -1187,7 +1190,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                           ${this.#getErrorMessage(this.timeAverageMapError)}
                       </terra-alert>
                   `
-                : ''}
+                    : ''
+            }
             <div class="toolbar-container">
                 ${cache(
                     this.catalogVariable
@@ -1247,8 +1251,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                 </div>
             </div>
 
-            ${this.harmonyJobId
-                ? html`
+            ${
+                this.harmonyJobId
+                    ? html`
                       <div class="harmony-job-link">
                           <a
                               href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
@@ -1259,15 +1264,17 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                           </a>
                       </div>
                   `
-                : nothing}
+                    : nothing
+            }
 
             <!-- Floating Popover for Plot -->
-            ${this.toggleState &&
-            this.plotData &&
-            Object.keys(this.plotData).length &&
-            this.layout &&
-            Object.keys(this.layout).length
-                ? html`
+            ${
+                this.toggleState &&
+                this.plotData &&
+                Object.keys(this.plotData).length &&
+                this.layout &&
+                Object.keys(this.layout).length
+                    ? html`
                       <div class="plot-popover ${this.minimized ? 'minimized' : ''}">
                           <terra-plot
                               style="display: ${this.minimized ? 'none' : 'block'}"
@@ -1285,11 +1292,13 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                           </terra-button>
                       </div>
                   `
-                : null}
+                    : null
+            }
 
             <dialog
-                ?open=${this.#controller?.jobStatusTask?.status ===
-                TaskStatus.PENDING}
+                ?open=${
+                    this.#controller?.jobStatusTask?.status === TaskStatus.PENDING
+                }
             >
                 <terra-loader indeterminate variant="orbit"></terra-loader>
                 <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>

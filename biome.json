@@ -6,23 +6,58 @@
         "useIgnoreFile": true
     },
     "files": {
-        "includes": ["**", "!!**/dist"]
+        "includes": [
+            "src/**",
+            "scripts/**",
+            "packages/**",
+            "!src/themes/Figma_Export_Variables.json",
+            "!src/components/map/layers/labelsStyleConfig.ts",
+            "!src/components/map/layers/bordersStyleConfig.ts",
+            "!src/components/icon/icons/**",
+            "!**/dist/**",
+            "!**/cdn/**",
+            "!**/_site/**"
+        ]
     },
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
-        "indentWidth": 4
+        "indentWidth": 4,
+        "lineWidth": 86
     },
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true
+            "recommended": true,
+            "style": {
+                "noNonNullAssertion": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+                "useIterableCallbackReturn": "off",
+                "noDoubleEquals": "warn",
+                "noAssignInExpressions": "warn",
+                "noTsIgnore": "warn",
+                "noShadowRestrictedNames": "off",
+                "noMisleadingInstantiator": "off",
+                "noAsyncPromiseExecutor": "warn",
+                "noEmptyInterface": "warn"
+            },
+            "correctness": {
+                "noEmptyPattern": "off",
+                "noInnerDeclarations": "off"
+            },
+            "complexity": {
+                "noBannedTypes": "warn"
+            }
         }
     },
     "javascript": {
         "formatter": {
             "quoteStyle": "single",
-            "semicolons": "asNeeded"
+            "semicolons": "asNeeded",
+            "trailingCommas": "es5",
+            "arrowParentheses": "asNeeded"
         }
     },
     "assist": {

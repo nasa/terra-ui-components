@@ -134,10 +134,10 @@ Listen for the `terra-select` event to handle menu item selection.
 
 The menu component follows accessibility best practices:
 
--   Uses proper ARIA attributes (`role="menu"`)
--   Supports keyboard navigation (Arrow keys, Home, End, Enter, Space)
--   Implements roving tabindex for focus management
--   Works with screen readers
+- Uses proper ARIA attributes (`role="menu"`)
+- Supports keyboard navigation (Arrow keys, Home, End, Enter, Space)
+- Implements roving tabindex for focus management
+- Works with screen readers
 
 ## Keyboard Shortcuts
 

@@ -14,10 +14,10 @@ A theme is a stylesheet that uses CSS custom properties (design tokens) to defin
 
 The Horizon theme is Terra UI's default theme and implements NASA's Horizon Design System. It includes:
 
--   Complete design token system (colors, typography, spacing, etc.)
--   Optional automatic dark mode support via `prefers-color-scheme` (requires `terra-prefers-color-scheme` class on body)
--   Manual theme control via CSS classes
--   Full component styling
+- Complete design token system (colors, typography, spacing, etc.)
+- Optional automatic dark mode support via `prefers-color-scheme` (requires `terra-prefers-color-scheme` class on body)
+- Manual theme control via CSS classes
+- Full component styling
 
 ### Installing the Horizon Theme
 
@@ -182,12 +182,12 @@ For component developers, the Horizon theme is also available as a JavaScript mo
 
 The Horizon theme provides a comprehensive set of design tokens that you can use and customize. These include:
 
--   **Colors**: NASA brand colors, neutrals, and semantic colors
--   **Typography**: Font families, sizes, weights, and line heights
--   **Spacing**: Consistent spacing scale
--   **Shadows**: Elevation tokens
--   **Border Radius**: Consistent border radius values
--   **Transitions**: Animation timing values
--   **Z-index**: Layering system
+- **Colors**: NASA brand colors, neutrals, and semantic colors
+- **Typography**: Font families, sizes, weights, and line heights
+- **Spacing**: Consistent spacing scale
+- **Shadows**: Elevation tokens
+- **Border Radius**: Consistent border radius values
+- **Transitions**: Animation timing values
+- **Z-index**: Layering system
 
 For a complete reference of all available design tokens, see the [Design Tokens](/tokens/typography) section.

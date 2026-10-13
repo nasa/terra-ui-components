@@ -24,9 +24,7 @@ describe('HarmonyAPI', () => {
                 await harmonyApi.getCollectionCapabilities()
                 expect.fail('Expected getCollectionCapabilities to throw')
             } catch (err: any) {
-                expect(err?.message).to.equal(
-                    '`collectionConceptId` is required',
-                )
+                expect(err?.message).to.equal('`collectionConceptId` is required')
             }
         })
 
@@ -35,12 +33,12 @@ describe('HarmonyAPI', () => {
 
             const result = await harmonyApi.getCollectionCapabilities(
                 onlyNetcdf.conceptId,
-                { bearerToken: 'test-token' },
+                { bearerToken: 'test-token' }
             )
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                `https://harmony.earthdata.nasa.gov/capabilities?collectionId=${onlyNetcdf.conceptId}&version=3`,
+                `https://harmony.earthdata.nasa.gov/capabilities?collectionId=${onlyNetcdf.conceptId}&version=3`
             )
             expect(apiGetStub.firstCall.args[1]).to.deep.equal({
                 signal: undefined,
@@ -64,7 +62,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                `https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/capabilities?collectionId=${allServices.conceptId}&version=3`,
+                `https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/capabilities?collectionId=${allServices.conceptId}&version=3`
             )
             expect(apiGetStub.firstCall.args[1]).to.deep.equal({
                 signal: undefined,
@@ -75,7 +73,7 @@ describe('HarmonyAPI', () => {
         it('should add conceptId to variables based on href when missing', async () => {
             const responseWithoutConceptIds = {
                 ...onlyNetcdf,
-                variables: onlyNetcdf.variables.map((variable) => ({
+                variables: onlyNetcdf.variables.map(variable => ({
                     ...variable,
                     conceptId: '',
                 })),
@@ -85,15 +83,11 @@ describe('HarmonyAPI', () => {
 
             const result = await harmonyApi.getCollectionCapabilities(
                 onlyNetcdf.conceptId,
-                { bearerToken: 'token' },
+                { bearerToken: 'token' }
             )
 
-            expect(result.variables[0].conceptId).to.equal(
-                'V2778423892-GES_DISC',
-            )
-            expect(result.variables[1].conceptId).to.equal(
-                'V2778427374-GES_DISC',
-            )
+            expect(result.variables[0].conceptId).to.equal('V2778423892-GES_DISC')
+            expect(result.variables[1].conceptId).to.equal('V2778427374-GES_DISC')
         })
     })
 
@@ -105,7 +99,7 @@ describe('HarmonyAPI', () => {
                 new Response(JSON.stringify(body), {
                     status: 200,
                     headers: { 'Content-Type': 'application/json' },
-                }),
+                })
             )
         }
 
@@ -117,12 +111,12 @@ describe('HarmonyAPI', () => {
                     requestUrl:
                         'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
                 } as any,
-                { bearerToken: 'test-token' },
+                { bearerToken: 'test-token' }
             )
 
             expect(fetchStub.calledOnce).to.be.true
             expect(fetchStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)'
             )
             expect(fetchStub.firstCall.args[1]).to.deep.equal({
                 method: 'GET',
@@ -145,7 +139,7 @@ describe('HarmonyAPI', () => {
 
             expect(fetchStub.calledOnce).to.be.true
             expect(fetchStub.firstCall.args[0]).to.equal(
-                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)'
             )
             expect(fetchStub.firstCall.args[1]).to.deep.equal({
                 method: 'GET',
@@ -161,10 +155,9 @@ describe('HarmonyAPI', () => {
                 new Response(null, {
                     status: 303,
                     headers: {
-                        Location:
-                            'https://harmony.earthdata.nasa.gov/jobs/job-1',
+                        Location: 'https://harmony.earthdata.nasa.gov/jobs/job-1',
                     },
-                }),
+                })
             )
             apiGetStub.resolves({
                 jobID: 'job-1',
@@ -178,14 +171,14 @@ describe('HarmonyAPI', () => {
                     requestUrl:
                         'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
                 } as any,
-                { bearerToken: 'test-token' },
+                { bearerToken: 'test-token' }
             )
 
             expect(fetchStub.calledOnce).to.be.true
             // falls through to getJobStatus, which goes through apiClient.get
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/jobs/job-1',
+                'https://harmony.earthdata.nasa.gov/jobs/job-1'
             )
             expect(result).to.deep.equal({
                 jobID: 'job-1',
@@ -199,7 +192,7 @@ describe('HarmonyAPI', () => {
                 new Response(null, {
                     status: 303,
                     headers: { Location: 'https://example.com/not-a-job' },
-                }),
+                })
             )
 
             try {
@@ -223,8 +216,8 @@ describe('HarmonyAPI', () => {
                     {
                         status: 400,
                         headers: { 'Content-Type': 'application/json' },
-                    },
-                ),
+                    }
+                )
             )
 
             try {
@@ -249,7 +242,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/jobs/abc123',
+                'https://harmony.earthdata.nasa.gov/jobs/abc123'
             )
         })
 
@@ -260,7 +253,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/cancel',
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/cancel'
             )
         })
 
@@ -271,7 +264,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/jobs/abc123/resume',
+                'https://harmony.earthdata.nasa.gov/jobs/abc123/resume'
             )
         })
 
@@ -282,7 +275,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/resume',
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/resume'
             )
         })
 
@@ -294,7 +287,7 @@ describe('HarmonyAPI', () => {
 
                 expect(apiGetStub.calledOnce).to.be.true
                 expect(apiGetStub.firstCall.args[0]).to.equal(
-                    'https://harmony.earthdata.nasa.gov/jobs?',
+                    'https://harmony.earthdata.nasa.gov/jobs?'
                 )
             })
 
@@ -303,12 +296,12 @@ describe('HarmonyAPI', () => {
 
                 await harmonyApi.getJobs(
                     { page: 2, limit: 50, label: 'terra-time-average-map' },
-                    { bearerToken: 'token' },
+                    { bearerToken: 'token' }
                 )
 
                 expect(apiGetStub.calledOnce).to.be.true
                 expect(apiGetStub.firstCall.args[0]).to.equal(
-                    'https://harmony.earthdata.nasa.gov/jobs?page=2&limit=50&label=terra-time-average-map',
+                    'https://harmony.earthdata.nasa.gov/jobs?page=2&limit=50&label=terra-time-average-map'
                 )
             })
 
@@ -319,7 +312,7 @@ describe('HarmonyAPI', () => {
 
                 expect(apiGetStub.calledOnce).to.be.true
                 expect(apiGetStub.firstCall.args[0]).to.equal(
-                    'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs?limit=10',
+                    'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs?limit=10'
                 )
             })
         })
@@ -328,7 +321,7 @@ describe('HarmonyAPI', () => {
     describe('output format options', () => {
         it('should return NetCDF output formats if only NetCDF services available', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(onlyNetcdf as any),
+                harmonyApi.getOutputFormatOptions(onlyNetcdf as any)
             ).to.deep.equal([
                 {
                     key: 'application/x-netcdf4',
@@ -340,7 +333,7 @@ describe('HarmonyAPI', () => {
 
         it('should include non-Giovanni formats when both Giovanni and non-Giovanni services are available', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(giovanniAndNetcdf as any),
+                harmonyApi.getOutputFormatOptions(giovanniAndNetcdf as any)
             ).to.deep.equal([
                 {
                     key: 'application/x-netcdf4',
@@ -370,7 +363,7 @@ describe('HarmonyAPI', () => {
 
         it('should include only Giovanni output formats when only Giovanni services are available', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(onlyGiovanniServices as any),
+                harmonyApi.getOutputFormatOptions(onlyGiovanniServices as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -397,13 +390,12 @@ describe('HarmonyAPI', () => {
             const onlyTimeSeriesAdapter = {
                 ...onlyGiovanniServices,
                 services: onlyGiovanniServices.services.filter(
-                    (service) =>
-                        service.name === 'giovanni-time-series-adapter',
+                    service => service.name === 'giovanni-time-series-adapter'
                 ),
             }
 
             expect(
-                harmonyApi.getOutputFormatOptions(onlyTimeSeriesAdapter as any),
+                harmonyApi.getOutputFormatOptions(onlyTimeSeriesAdapter as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -418,12 +410,12 @@ describe('HarmonyAPI', () => {
             const onlyAveragingAdapter = {
                 ...onlyGiovanniServices,
                 services: onlyGiovanniServices.services.filter(
-                    (service) => service.name === 'giovanni-averaging-service',
+                    service => service.name === 'giovanni-averaging-service'
                 ),
             }
 
             expect(
-                harmonyApi.getOutputFormatOptions(onlyAveragingAdapter as any),
+                harmonyApi.getOutputFormatOptions(onlyAveragingAdapter as any)
             ).to.deep.equal([
                 {
                     key: 'image/tiff',
@@ -444,13 +436,12 @@ describe('HarmonyAPI', () => {
             const nonGiovanniServices = {
                 ...allServices,
                 services: allServices.services.filter(
-                    (service) =>
-                        !service.name.toLowerCase().includes('giovanni'),
+                    service => !service.name.toLowerCase().includes('giovanni')
                 ),
             }
 
             expect(
-                harmonyApi.getOutputFormatOptions(nonGiovanniServices as any),
+                harmonyApi.getOutputFormatOptions(nonGiovanniServices as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -467,7 +458,7 @@ describe('HarmonyAPI', () => {
 
         it('should include csv from non-Giovanni service and CSV from Giovanni and deduplicate netcdf variants', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(allServices as any),
+                harmonyApi.getOutputFormatOptions(allServices as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',

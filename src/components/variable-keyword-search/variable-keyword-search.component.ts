@@ -33,7 +33,7 @@ import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
  * @event terra-search - Emitted when the component is triggering a search (like a form triggering submit).
  */
 export default class TerraVariableKeywordSearch extends QueryClientMixin(
-    TerraElement,
+    TerraElement
 ) {
     static dependencies = {
         'terra-button': TerraButton,
@@ -149,7 +149,7 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
 
         //* It's possible to click on elements that are not an option, so filter out anything not role="option".
         const [target] = path.filter(
-            (eventTarget) => (eventTarget as HTMLElement).role === 'option',
+            eventTarget => (eventTarget as HTMLElement).role === 'option'
         )
 
         if (!target) {
@@ -169,13 +169,13 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
 
                 clearSelection(
                     this.#combobox as HTMLInputElement,
-                    this.#listbox as HTMLUListElement,
+                    this.#listbox as HTMLUListElement
                 )
 
                 walkToOption(
                     this.#walker as TreeWalker,
                     this.#combobox as HTMLInputElement,
-                    'next',
+                    'next'
                 )
 
                 break
@@ -188,13 +188,13 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
 
                 clearSelection(
                     this.#combobox as HTMLInputElement,
-                    this.#listbox as HTMLUListElement,
+                    this.#listbox as HTMLUListElement
                 )
 
                 walkToOption(
                     this.#walker as TreeWalker,
                     this.#combobox as HTMLInputElement,
-                    'previous',
+                    'previous'
                 )
 
                 break
@@ -217,7 +217,7 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
             case 'Escape': {
                 clearSelection(
                     this.#combobox as HTMLInputElement,
-                    this.#listbox as HTMLUListElement,
+                    this.#listbox as HTMLUListElement
                 )
 
                 if (this.isExpanded) {
@@ -241,9 +241,9 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
     #manageListboxVisibility = (event: Event) => {
         const path = event.composedPath()
         const containedThis = path.some(
-            (eventTarget) =>
+            eventTarget =>
                 (eventTarget as HTMLElement).localName ===
-                TerraVariableKeywordSearch.tagName,
+                TerraVariableKeywordSearch.tagName
         )
 
         if (!containedThis) {
@@ -259,7 +259,7 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
 
         clearSelection(
             this.#combobox as HTMLInputElement,
-            this.#listbox as HTMLUListElement,
+            this.#listbox as HTMLUListElement
         )
     }
 
@@ -275,7 +275,7 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
 
         clearSelection(
             this.#combobox as HTMLInputElement,
-            this.#listbox as HTMLUListElement,
+            this.#listbox as HTMLUListElement
         )
 
         this.#combobox?.focus()
@@ -310,7 +310,7 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
                 </terra-button>
 
                 <input
-                    ${ref((el) => {
+                    ${ref(el => {
                         if (el) {
                             this.#combobox ??= el as HTMLInputElement
                         }
@@ -355,7 +355,7 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
             </div>
 
             <ul
-                ${ref((el) => {
+                ${ref(el => {
                     if (el) {
                         this.#listbox ??= el as HTMLUListElement
                     }
@@ -376,30 +376,27 @@ export default class TerraVariableKeywordSearch extends QueryClientMixin(
                         html`<li class="updating">Updating List of Keywords</li>`,
                     pending: () =>
                         html`<li class="updating">Updating List of Keywords</li>`,
-                    complete: (list) => {
+                    complete: list => {
                         //* @see {@link https://www.fusejs.io/api/options.html}
-                        this.#searchEngine = new Fuse(
-                            list as any,
-                            this.searchConfig,
-                        )
+                        this.#searchEngine = new Fuse(list as any, this.searchConfig)
 
                         //* This needs to get reassigned on render, as this listbox's renderable nodes will change based on the active query.
                         this.#walker = document.createTreeWalker(
                             this.#listbox as HTMLUListElement,
                             NodeFilter.SHOW_ELEMENT,
-                            (node) => {
+                            node => {
                                 return ['option', 'listbox'].includes(
-                                    (node as HTMLElement).role ?? '',
+                                    (node as HTMLElement).role ?? ''
                                 )
                                     ? NodeFilter.FILTER_ACCEPT
                                     : NodeFilter.FILTER_SKIP
-                            },
+                            }
                         )
 
                         return map(this.searchResults, renderSearchResult)
                     },
                     // TODO: Consider a more robust error strategy...like retry w/ backoff?
-                    error: (errorMessage) =>
+                    error: errorMessage =>
                         html`<li class="error">${errorMessage}</li>`,
                 })}
             </ul>

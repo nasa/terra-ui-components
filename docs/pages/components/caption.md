@@ -108,11 +108,11 @@ terra-caption {
 
 The following design tokens are available for customization:
 
--   `--terra-caption-font-family`: Font family (default: `--terra-font-family--public-sans`)
--   `--terra-caption-font-size`: Font size (default: `--terra-font-size-small`)
--   `--terra-caption-font-weight`: Font weight (default: `--terra-font-weight-normal`)
--   `--terra-caption-line-height`: Line height (default: `--terra-line-height-normal`)
--   `--terra-caption-color`: Text color (default: `--terra-color-carbon-50` in light mode, `--terra-color-carbon-60` in dark mode)
--   `--terra-caption-credit-color`: Credit text color (default: `--terra-color-carbon-70` in light mode, `--terra-color-carbon-70` in dark mode)
+- `--terra-caption-font-family`: Font family (default: `--terra-font-family--public-sans`)
+- `--terra-caption-font-size`: Font size (default: `--terra-font-size-small`)
+- `--terra-caption-font-weight`: Font weight (default: `--terra-font-weight-normal`)
+- `--terra-caption-line-height`: Line height (default: `--terra-line-height-normal`)
+- `--terra-caption-color`: Text color (default: `--terra-color-carbon-50` in light mode, `--terra-color-carbon-60` in dark mode)
+- `--terra-caption-credit-color`: Credit text color (default: `--terra-color-carbon-70` in light mode, `--terra-color-carbon-70` in dark mode)
 
 All tokens automatically adapt to dark mode when dark mode is active.
