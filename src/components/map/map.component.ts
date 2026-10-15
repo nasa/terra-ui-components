@@ -17,12 +17,32 @@ import {
     type GibsLayerConfig,
     type Projection,
 } from './layers/gibs.layer.js'
+import {
+    buildGeoTiffLayer,
+    type GeoTiffLayerConfig,
+    type GeoTiffLayerInfo,
+} from './layers/geotiff.layer.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     queryGiovanniShapeFiles,
     queryGiovanniGeoJsonShape,
 } from '../../queries/giovanni.queries.js'
+
+const geotiffLayersConverter = {
+    fromAttribute: (value: string | null): GeoTiffLayerConfig[] => {
+        if (!value) {
+            return []
+        }
+
+        try {
+            const parsed = JSON.parse(value)
+            return Array.isArray(parsed) ? parsed : []
+        } catch {
+            return []
+        }
+    },
+}
 
 const gibsLayersConverter = {
     fromAttribute: (value: string | null): GibsLayerConfig[] => {
@@ -90,7 +110,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'has-coord-tracker', type: Boolean })
     set hasCoordTracker(value: boolean) {
         console.warn(
-            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.',
+            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
         )
         this.showMouseCoordinates = value
     }
@@ -121,7 +141,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.',
+            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
         )
         this.showBoundingBoxSelection = !value
     }
@@ -138,7 +158,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.',
+            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
         )
         this.showPointSelection = !value
     }
@@ -217,12 +237,10 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @watch('gibsLayers', { waitUntilFirstUpdate: true })
     async gibsLayersChanged(
         previous: GibsLayerConfig[] = [],
-        next: GibsLayerConfig[] = [],
+        next: GibsLayerConfig[] = []
     ) {
-        const previousByName = new Map(
-            previous.map((config) => [config.name, config]),
-        )
-        const nextByName = new Map(next.map((config) => [config.name, config]))
+        const previousByName = new Map(previous.map(config => [config.name, config]))
+        const nextByName = new Map(next.map(config => [config.name, config]))
 
         for (const name of previousByName.keys()) {
             if (!nextByName.has(name)) {
@@ -250,7 +268,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     : (config.projection ?? 'EPSG:3857')
             if (layerProjection !== this.projection) {
                 console.warn(
-                    `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`,
+                    `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`
                 )
             }
 
@@ -274,6 +292,111 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 console.error(`Failed to build GIBS layer "${name}":`, error)
             }
         }
+    }
+
+    /**
+     * Declarative GeoTIFF layers to add to the map, for loading any
+     * standalone GeoTIFF/COG by URL - not tied to Harmony, Giovanni, or any
+     * other GESDISC-specific service. Each gets a colormap-based style
+     * computed from the raster's actual data range. e.g.:
+     *
+     * ```html
+     * <terra-map geotiff-layers='[{ "name": "my-data", "url": "https://example.com/data.tif", "colorMapName": "viridis" }]'></terra-map>
+     * ```
+     */
+    @property({ attribute: 'geotiff-layers', converter: geotiffLayersConverter })
+    geotiffLayers: GeoTiffLayerConfig[] = []
+
+    #geotiffLayerRequestIds = new Map<string, number>()
+    #geotiffLayerInfo = new Map<string, GeoTiffLayerInfo>()
+
+    @watch('geotiffLayers', { waitUntilFirstUpdate: true })
+    async geotiffLayersChanged(
+        previous: GeoTiffLayerConfig[] = [],
+        next: GeoTiffLayerConfig[] = []
+    ) {
+        const previousByName = new Map(previous.map(config => [config.name, config]))
+        const nextByName = new Map(next.map(config => [config.name, config]))
+
+        for (const name of previousByName.keys()) {
+            if (!nextByName.has(name)) {
+                this.removeLayer(name)
+                this.#geotiffLayerRequestIds.delete(name)
+                this.#geotiffLayerInfo.delete(name)
+            }
+        }
+
+        for (const [name, config] of nextByName) {
+            const previousConfig = previousByName.get(name)
+            if (
+                previousConfig &&
+                JSON.stringify(previousConfig) === JSON.stringify(config)
+            ) {
+                continue // unchanged
+            }
+
+            const requestId = (this.#geotiffLayerRequestIds.get(name) ?? 0) + 1
+            this.#geotiffLayerRequestIds.set(name, requestId)
+
+            if (previousConfig) {
+                this.removeLayer(name)
+                this.#geotiffLayerInfo.delete(name)
+            }
+
+            try {
+                const info = await buildGeoTiffLayer(config)
+
+                // bail if this layer was removed or superseded while it was building
+                if (this.#geotiffLayerRequestIds.get(name) !== requestId) {
+                    continue
+                }
+
+                this.addLayer(info.layer, { name, position: config.position })
+                this.#geotiffLayerInfo.set(name, info)
+
+                if (config.fitView && info.extent) {
+                    this.fitToExtent(info.extent, {
+                        projection: info.projection,
+                        padding: [50, 50, 50, 50],
+                        duration: 300,
+                    })
+                }
+
+                this.emit('terra-map-geotiff-layer-change', {
+                    detail: { name, info },
+                })
+            } catch (error) {
+                // bail if this layer was removed or superseded while it was building
+                if (this.#geotiffLayerRequestIds.get(name) !== requestId) {
+                    continue
+                }
+
+                console.error(`Failed to build GeoTIFF layer "${name}":`, error)
+                this.emit('terra-map-geotiff-layer-change', {
+                    detail: { name, error: error as Error },
+                })
+            }
+        }
+    }
+
+    /**
+     * Gets the computed data range, colormap stops, and legend values for a
+     * declaratively-added GeoTIFF layer, as built by `geotiffLayers`.
+     */
+    getGeoTiffLayerInfo(name: string): GeoTiffLayerInfo | undefined {
+        return this.#geotiffLayerInfo.get(name)
+    }
+
+    /**
+     * Reads the raw band value(s) of a `geotiffLayers` layer at a given
+     * pixel (e.g. from a `terra-map-pointer-move` event), for building a
+     * hover readout.
+     */
+    getGeoTiffValueAtPixel(
+        name: string,
+        pixel: [number, number]
+    ): ReturnType<GeoTiffLayerInfo['layer']['getData']> | undefined {
+        return this.#geotiffLayerInfo.get(name)?.layer.getData(pixel)
     }
 
     // querySelector for the map element
@@ -327,7 +450,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
-            getGeoJson: (shapeId) =>
+            getGeoJson: shapeId =>
                 this.queryClient.fetchQuery(queryGiovanniGeoJsonShape(shapeId)),
             onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
@@ -335,10 +458,10 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     detail: { coordinate, pixel },
                 })
             },
-            onDraw: (detail) => {
+            onDraw: detail => {
                 this.emit('terra-map-change', { detail })
             },
-            onShapeLoading: (loading) => {
+            onShapeLoading: loading => {
                 this.shapeLoading = loading
             },
         })
@@ -347,6 +470,10 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         // first update, so apply whatever was set declaratively up front here
         if (this.gibsLayers.length) {
             this.gibsLayersChanged(undefined, this.gibsLayers)
+        }
+
+        if (this.geotiffLayers.length) {
+            this.geotiffLayersChanged(undefined, this.geotiffLayers)
         }
     }
 
@@ -357,7 +484,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     addLayer(
         layer: Parameters<MapService['addLayer']>[0],
-        options?: AddLayerOptions,
+        options?: AddLayerOptions
     ) {
         this.#service?.addLayer(layer, options)
     }
@@ -382,7 +509,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     fitToExtent(
         extent: Parameters<MapService['fitToExtent']>[0],
-        options?: FitToExtentOptions,
+        options?: FitToExtentOptions
     ) {
         this.#service?.fitToExtent(extent, options)
     }
@@ -391,9 +518,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         this.#service?.addInteraction(interaction)
     }
 
-    removeInteraction(
-        interaction: Parameters<MapService['removeInteraction']>[0],
-    ) {
+    removeInteraction(interaction: Parameters<MapService['removeInteraction']>[0]) {
         this.#service?.removeInteraction(interaction)
     }
 
@@ -437,9 +562,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(shapes ?? undefined, (category) => {
+                    map(shapes ?? undefined, category => {
                         return html`<optgroup label="${category.title}">
-                            ${category.shapes.map((shape) => {
+                            ${category.shapes.map(shape => {
                                 return html`
                                     <option
                                         value="${shape.shapefileID}/${shape.shapeID}"
@@ -449,7 +574,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                                 `
                             })}
                         </optgroup> `
-                    }),
+                    })
                 )}
             </select>
         `
@@ -465,25 +590,26 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 ${
                     this.showMouseCoordinates
                         ? html`
-                          <div id="mouse-info">
-                              <div>
-                                  <strong
-                                      >lat: ${this.cursorCoordinates[1].toFixed(2)},
-                                      lng:
-                                      ${this.cursorCoordinates[0].toFixed(2)}</strong
-                                  >
+                              <div id="mouse-info">
+                                  <div>
+                                      <strong
+                                          >lat:
+                                          ${this.cursorCoordinates[1].toFixed(2)},
+                                          lng:
+                                          ${this.cursorCoordinates[0].toFixed(2)}</strong
+                                      >
+                                  </div>
                               </div>
-                          </div>
-                      `
+                          `
                         : nothing
                 }
                 ${
                     this.shapeLoading
                         ? html`
-                          <div class="map__loading-overlay">
-                              <div class="map__spinner"></div>
-                          </div>
-                      `
+                              <div class="map__loading-overlay">
+                                  <div class="map__spinner"></div>
+                              </div>
+                          `
                         : nothing
                 }
             </div>

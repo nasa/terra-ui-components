@@ -193,6 +193,40 @@ If you don't need to write JS, the `gibs-layers` attribute/property lets you dec
 
 Changing the attribute/property later diffs against what's currently applied: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If an entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
 
+### Adding GeoTIFF Layers
+
+Use the `geotiff-layers` attribute/property to load any standalone GeoTIFF or Cloud-Optimized GeoTIFF by URL — not tied to Giovanni, Harmony, or any other GESDISC-specific service. Each entry needs a `name` and a `url`; a colormap-based style is computed automatically from the raster's actual data range. The example below loads a small GeoTIFF exported from Giovanni, but any GeoTIFF URL works the same way:
+
+```html:preview
+<terra-map
+    geotiff-layers='[{ "name": "my-data", "url": "/assets/examples/giovanni.tif", "colorMapName": "viridis", "fitView": true }]'
+></terra-map>
+```
+
+Other fields: `bands` (which band(s) to read, defaults to `[1]`), `noDataValue` (a pixel value to treat as "no data" and exclude from rendering/min-max), `opacity`, `colorSteps` (number of color stops, defaults to 72), `reverseColors`, and `position` (same as `gibs-layers`). Set `fitView: true` to pan/zoom the map to the GeoTIFF's native extent once it loads — off by default, since auto-fitting isn't always desirable with multiple layers on the same map.
+
+Like `gibs-layers`, changing the array later diffs by `name`: removed entries are taken off the map, unchanged entries are left alone, and changed entries are rebuilt. Each build attempt (success or failure) fires a `terra-map-geotiff-layer-change` event, and once built, the layer's computed data range, colormap stops, and legend entries are available via `getGeoTiffLayerInfo(name)` — handy for rendering a legend:
+
+```ts
+map.addEventListener('terra-map-geotiff-layer-change', event => {
+    const { name, info, error } = event.detail
+    if (error) {
+        console.error(`Failed to load GeoTIFF layer "${name}":`, error)
+        return
+    }
+    // info.min, info.max, info.legendValues - build a legend from these
+})
+```
+
+To read the raw value under the cursor (e.g. for a hover readout), combine `getGeoTiffValueAtPixel(name, pixel)` with the `terra-map-pointer-move` event:
+
+```ts
+map.addEventListener('terra-map-pointer-move', event => {
+    const value = map.getGeoTiffValueAtPixel('my-data', event.detail.pixel)
+    // value is a typed array of band value(s) at that pixel, or undefined
+})
+```
+
 ### Adding GIBS Vector Imagery
 
 Some GIBS collections are published as vector data (e.g. `GRanD_Dams`, `VIIRS_NOAA20_Thermal_Anomalies_375m_All`) rather than raster imagery. Use `buildGibsVectorLayer()` to load these as Mapbox Vector Tiles. Without a `style`, a simple default circle style is applied:
@@ -229,7 +263,7 @@ const damsLayer = await buildGibsVectorLayer({
 For hover/click feature interactions (e.g. showing a dam's properties on hover), use `getFeaturesAtPixel()` with the `terra-map-pointer-move` event's `pixel`:
 
 ```ts
-map.addEventListener('terra-map-pointer-move', (event) => {
+map.addEventListener('terra-map-pointer-move', event => {
     const features = map.getFeaturesAtPixel(event.detail.pixel)
     // features[0]?.getProperties() has the hovered feature's attributes, if any
 })

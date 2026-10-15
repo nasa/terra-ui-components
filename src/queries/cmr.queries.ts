@@ -20,6 +20,24 @@ export function queryCmrCollection(
     }
 }
 
+export function queryCmrCollectionByConceptId(
+    collectionConceptId?: string,
+    options?: RequestOptions,
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof cmrApi.getCollectionByConceptId>
+> | null> {
+    return {
+        queryKey: ['cmr', 'collection-by-concept-id', collectionConceptId],
+        queryFn: async ({ signal }) => {
+            return cmrApi.getCollectionByConceptId(collectionConceptId, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: !!collectionConceptId, // prevent firing when collectionConceptId is undefined
+    }
+}
+
 export function queryCmrGranules(
     searchParams: Parameters<typeof cmrApi.searchGranules>[0],
     options?: RequestOptions,
@@ -55,6 +73,24 @@ export function queryCmrVariables(
             })
         },
         enabled: !!searchParams.collectionConceptId, // prevent firing when collectionConceptId is undefined
+    }
+}
+
+export function queryCmrVisualizationsByIds(
+    visualizationConceptIds: string[],
+    options?: RequestOptions,
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof cmrApi.getVisualizationsByIds>
+> | null> {
+    return {
+        queryKey: ['cmr', 'visualizations', visualizationConceptIds],
+        queryFn: async ({ signal }) => {
+            return cmrApi.getVisualizationsByIds(visualizationConceptIds, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: visualizationConceptIds.length > 0, // prevent firing when there's nothing to look up
     }
 }
 
