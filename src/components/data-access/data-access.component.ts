@@ -73,22 +73,11 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         'terra-alert': TerraAlert,
     }
 
-    /** Screen size detection use to determine layout for mobile devices */
-
-    @state()
-    isMobile = false
-
-    private mediaQuery = window.matchMedia('(max-width: 600px)')
-
     connectedCallback() {
         super.connectedCallback()
-
-        this.isMobile = this.mediaQuery.matches
-        this.mediaQuery.addEventListener('change', this.handleMediaChange)
     }
 
     disconnectedCallback() {
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
 
         super.disconnectedCallback()
         if (this.#boundHandleCloudCoverClickOutside) {
@@ -99,11 +88,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             this.#boundHandleCloudCoverClickOutside = null
         }
 
-    }
-
-    private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches
-        console.log('isMobile changed:', this.isMobile)
     }
 
     service = new DataAccessService()
