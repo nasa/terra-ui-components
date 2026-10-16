@@ -130,6 +130,7 @@ export class LayerPickerControl extends Control {
 
     #renderPanel() {
         const map = this.getMap()
+
         if (!map || !this.#panel) {
             return
         }
