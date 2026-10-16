@@ -18,6 +18,7 @@ layout: component
     show-polygon-selection
     show-point-selection
     show-circle-selection
+    show-layer-picker
 ></terra-map>
 
 <form style="max-width: 600px;">
@@ -57,6 +58,12 @@ layout: component
     <div>
         <terra-checkbox name="showCircleSelection" class="map-option">
         Show Circle Selection
+        </terra-checkbox>
+    </div>
+
+    <div>
+        <terra-checkbox name="showLayerPicker" class="map-option">
+        Show Layer Picker
         </terra-checkbox>
     </div>
   </fieldset>

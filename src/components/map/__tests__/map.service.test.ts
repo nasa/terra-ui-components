@@ -3,8 +3,9 @@ import { MapService } from '../map.service.js'
 import sinon, { type SinonSpy } from 'sinon'
 import { LatLng } from '../models/LatLng.js'
 import { LatLngBounds } from '../models/LatLngBounds.js'
-import { Map, View } from 'ol'
+import { Map as OlMap, View } from 'ol'
 import { DrawToolbarControl } from '../controls/draw-toolbar.control.js'
+import { LayerPickerControl } from '../controls/layer-picker.control.js'
 import { Layer } from 'ol/layer.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
@@ -94,22 +95,37 @@ describe('Map Service', () => {
     })
 
     it('updates the draw toolbar visibility', () => {
-        const setOptionsSpy = sinon.spy(DrawToolbarControl.prototype, 'setOptions')
+        const setDrawOptionsSpy = sinon.spy(
+            DrawToolbarControl.prototype,
+            'setOptions'
+        )
+        const setLayerOptionsSpy = sinon.spy(
+            LayerPickerControl.prototype,
+            'setOptions'
+        )
 
         service.updateDrawToolbarVisibility({
             showBoundingBoxSelection: true,
             showPolygonSelection: false,
             showPointSelection: true,
             showCircleSelection: false,
+            showLayerPicker: true,
         })
 
-        expect(setOptionsSpy.calledOnce).to.be.true
+        expect(setDrawOptionsSpy.calledOnce).to.be.true
         expect(
-            setOptionsSpy.calledWith({
+            setDrawOptionsSpy.calledWith({
                 showBboxTool: true,
                 showPolygonTool: false,
                 showPointTool: true,
                 showCircleTool: false,
+            })
+        ).to.be.true
+
+        expect(setLayerOptionsSpy.calledOnce).to.be.true
+        expect(
+            setLayerOptionsSpy.calledWith({
+                showLayerPicker: true,
             })
         ).to.be.true
     })
@@ -144,15 +160,18 @@ describe('Map Service', () => {
     })
 
     describe('addLayer / removeLayer / getLayer', () => {
-        it('inserts a custom layer below the borders layer by default', () => {
-            // the map is created with 6 built-in layers (base, borders,
-            // labels, graticule, shapes, draw), with borders at index 1
+        it('inserts a custom layer below the borders layer by default and stamps metadata', () => {
+            // the map is created with 8 built-in layers (base, osm, topo,
+            // borders, labels, graticule, shapes, draw), with borders at index 3
             const insertAtSpy = sinon.spy(Collection.prototype, 'insertAt')
             const customLayer = new VectorLayer({ source: new VectorSource() })
 
-            service.addLayer(customLayer, { name: 'custom' })
+            service.addLayer(customLayer, { name: 'custom', title: 'Custom Layer' })
 
-            expect(insertAtSpy.calledWith(1, customLayer)).to.be.true
+            expect(insertAtSpy.calledWith(3, customLayer)).to.be.true
+            expect(customLayer.get('name')).to.equal('custom')
+            expect(customLayer.get('title')).to.equal('Custom Layer')
+            expect(customLayer.get('type')).to.equal('overlay')
         })
 
         it('inserts a custom layer above everything when position is "top"', () => {
@@ -161,9 +180,9 @@ describe('Map Service', () => {
 
             service.addLayer(customLayer, { name: 'custom-top', position: 'top' })
 
-            // 6 built-in layers occupy indices 0-5, so pushing onto the end
-            // inserts at index 6
-            expect(insertAtSpy.calledWith(6, customLayer)).to.be.true
+            // 8 built-in layers occupy indices 0-7, so pushing onto the end
+            // inserts at index 8
+            expect(insertAtSpy.calledWith(8, customLayer)).to.be.true
         })
 
         it('finds a named layer with getLayer', () => {
@@ -198,8 +217,8 @@ describe('Map Service', () => {
             type: 'Point',
         })
 
-        const addSpy = sinon.spy(Map.prototype, 'addInteraction')
-        const removeSpy = sinon.spy(Map.prototype, 'removeInteraction')
+        const addSpy = sinon.spy(OlMap.prototype, 'addInteraction')
+        const removeSpy = sinon.spy(OlMap.prototype, 'removeInteraction')
 
         service.addInteraction(draw)
         service.removeInteraction(draw)
@@ -214,7 +233,7 @@ describe('Map Service', () => {
     })
 
     it('delegates getFeaturesAtPixel to the underlying map', () => {
-        const getFeaturesAtPixelSpy = sinon.spy(Map.prototype, 'getFeaturesAtPixel')
+        const getFeaturesAtPixelSpy = sinon.spy(OlMap.prototype, 'getFeaturesAtPixel')
 
         service.getFeaturesAtPixel([10, 10])
 
@@ -239,9 +258,7 @@ describe('Map Service', () => {
 
     describe('projection', () => {
         it('defaults the view to EPSG:3857', () => {
-            expect(service.getView().getProjection().getCode()).to.equal(
-                'EPSG:3857',
-            )
+            expect(service.getView().getProjection().getCode()).to.equal('EPSG:3857')
         })
 
         it('uses the configured projection for the view', () => {
@@ -254,7 +271,7 @@ describe('Map Service', () => {
             })
 
             expect(polarService.getView().getProjection().getCode()).to.equal(
-                'EPSG:4326',
+                'EPSG:4326'
             )
         })
 
@@ -269,7 +286,7 @@ describe('Map Service', () => {
                         noWorldWrap: true,
                         onMouseMove: sinon.spy(),
                         onDraw: sinon.spy(),
-                    }),
+                    })
             ).to.not.throw()
         })
 
@@ -300,11 +317,11 @@ describe('Map Service', () => {
             expect(
                 readFeaturesSpy.calledWith(
                     sinon.match.any,
-                    sinon.match({ featureProjection: sinon.match.has('getCode') }),
-                ),
+                    sinon.match({ featureProjection: sinon.match.has('getCode') })
+                )
             ).to.be.true
-            const featureProjection = readFeaturesSpy.firstCall
-                ?.args[1]?.featureProjection as Projection
+            const featureProjection = readFeaturesSpy.firstCall?.args[1]
+                ?.featureProjection as Projection
             expect(featureProjection.getCode()).to.equal('EPSG:4326')
         })
     })
