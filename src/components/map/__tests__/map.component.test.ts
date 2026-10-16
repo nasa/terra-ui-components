@@ -44,7 +44,7 @@ function makeCapabilitiesXml(projection: string, matrixSet: string) {
 </Capabilities>`
 }
 
-describe('<terra-map> gibs-layers', () => {
+describe('<terra-map> layers (gibs)', () => {
     let originalFetch: typeof fetch
 
     beforeEach(() => {
@@ -61,40 +61,40 @@ describe('<terra-map> gibs-layers', () => {
     }
 
     describe('attribute parsing', () => {
-        it('parses a JSON array from the gibs-layers attribute', async () => {
+        it('parses a JSON array from the layers attribute', async () => {
             const el = await fixture<TerraMap>(html`
                 <terra-map
-                    gibs-layers='[{ "name": "imagery", "layer": "TestLayer" }]'
+                    layers='[{ "type": "gibs", "name": "imagery", "layer": "TestLayer" }]'
                 ></terra-map>
             `)
 
-            expect(el.gibsLayers).to.deep.equal([
-                { name: 'imagery', layer: 'TestLayer' },
+            expect(el.layers).to.deep.equal([
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer' },
             ])
         })
 
         it('falls back to an empty array for missing/invalid JSON', async () => {
             const el = await fixture<TerraMap>(
-                html`<terra-map gibs-layers="not json"></terra-map>`
+                html`<terra-map layers="not json"></terra-map>`
             )
 
-            expect(el.gibsLayers).to.deep.equal([])
+            expect(el.layers).to.deep.equal([])
         })
 
         it('falls back to an empty array when the parsed value is not an array', async () => {
             const el = await fixture<TerraMap>(
-                html`<terra-map gibs-layers='{ "name": "imagery" }'></terra-map>`
+                html`<terra-map layers='{ "name": "imagery" }'></terra-map>`
             )
 
-            expect(el.gibsLayers).to.deep.equal([])
+            expect(el.layers).to.deep.equal([])
         })
     })
 
     describe('declared up front (EPSG:3857, sync)', () => {
-        it('adds a layer for each entry in gibs-layers', async () => {
+        it('adds a layer for each entry in layers', async () => {
             const el = await fixture<TerraMap>(html`
                 <terra-map
-                    gibs-layers='[{ "name": "imagery", "layer": "TestLayer" }]'
+                    layers='[{ "type": "gibs", "name": "imagery", "layer": "TestLayer" }]'
                 ></terra-map>
             `)
 
@@ -104,6 +104,19 @@ describe('<terra-map> gibs-layers', () => {
             expect(layer).to.exist
             expect(layer!.getSource()).to.be.instanceOf(ImageTile)
         })
+
+        it('emits terra-map-layer-change once the layer is built', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            const changeSpy = sinon.spy()
+            el.addEventListener('terra-map-layer-change', changeSpy)
+
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+
+            await waitUntil(() => changeSpy.called)
+
+            const detail = changeSpy.firstCall.args[0].detail
+            expect(detail).to.deep.equal({ name: 'imagery', type: 'gibs' })
+        })
     })
 
     describe('forProjection (async, non-EPSG:3857)', () => {
@@ -111,8 +124,13 @@ describe('<terra-map> gibs-layers', () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
 
             const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.gibsLayers = [
-                { name: 'polar', layer: 'TestLayer', projection: 'EPSG:3413' },
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'polar',
+                    layer: 'TestLayer',
+                    projection: 'EPSG:3413',
+                },
             ]
 
             await waitUntil(() => el.getLayer('polar'))
@@ -138,13 +156,18 @@ describe('<terra-map> gibs-layers', () => {
             expect(el.projection).to.equal('EPSG:3413')
         })
 
-        it('warns when a gibs-layers entry does not match the configured projection', async () => {
+        it('warns when a gibs layers entry does not match the configured projection', async () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
             const warnSpy = sinon.spy(console, 'warn')
 
             const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.gibsLayers = [
-                { name: 'polar', layer: 'TestLayer', projection: 'EPSG:3413' },
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'polar',
+                    layer: 'TestLayer',
+                    projection: 'EPSG:3413',
+                },
             ]
 
             await waitUntil(() => el.getLayer('polar'))
@@ -155,15 +178,20 @@ describe('<terra-map> gibs-layers', () => {
             warnSpy.restore()
         })
 
-        it('does not warn when a gibs-layers entry matches the configured projection', async () => {
+        it('does not warn when a gibs layers entry matches the configured projection', async () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
             const warnSpy = sinon.spy(console, 'warn')
 
             const el = await fixture<TerraMap>(
                 html`<terra-map projection="EPSG:3413"></terra-map>`
             )
-            el.gibsLayers = [
-                { name: 'polar', layer: 'TestLayer', projection: 'EPSG:3413' },
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'polar',
+                    layer: 'TestLayer',
+                    projection: 'EPSG:3413',
+                },
             ]
 
             await waitUntil(() => el.getLayer('polar'))
@@ -173,7 +201,7 @@ describe('<terra-map> gibs-layers', () => {
         })
     })
 
-    describe('vector gibs-layers (type: "vector")', () => {
+    describe('vector gibs layers (type: "gibs-vector")', () => {
         function stubVectorFetch() {
             window.fetch = (async () =>
                 new Response(
@@ -207,11 +235,11 @@ describe('<terra-map> gibs-layers', () => {
                 )) as typeof fetch
         }
 
-        it('adds a VectorTileLayer for a type: "vector" entry', async () => {
+        it('adds a VectorTileLayer for a type: "gibs-vector" entry', async () => {
             stubVectorFetch()
 
             const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.gibsLayers = [{ name: 'dams', type: 'vector', layer: 'GRanD_Dams' }]
+            el.layers = [{ type: 'gibs-vector', name: 'dams', layer: 'GRanD_Dams' }]
 
             await waitUntil(() => el.getLayer('dams'))
 
@@ -230,10 +258,10 @@ describe('<terra-map> gibs-layers', () => {
     describe('diffing on updates', () => {
         it('removes a layer whose entry is dropped from the array', async () => {
             const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.gibsLayers = [{ name: 'imagery', layer: 'TestLayer' }]
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
             await waitUntil(() => el.getLayer('imagery'))
 
-            el.gibsLayers = []
+            el.layers = []
             await waitUntil(() => !el.getLayer('imagery'))
 
             expect(el.getLayer('imagery')).to.not.exist
@@ -241,14 +269,24 @@ describe('<terra-map> gibs-layers', () => {
 
         it('rebuilds a layer whose config changed', async () => {
             const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.gibsLayers = [
-                { name: 'imagery', layer: 'TestLayer', date: '2024-06-01' },
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    date: '2024-06-01',
+                },
             ]
             await waitUntil(() => el.getLayer('imagery'))
             const firstLayer = el.getLayer('imagery')
 
-            el.gibsLayers = [
-                { name: 'imagery', layer: 'TestLayer', date: '2024-06-02' },
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    date: '2024-06-02',
+                },
             ]
             await waitUntil(() => el.getLayer('imagery') !== firstLayer)
 
@@ -259,12 +297,12 @@ describe('<terra-map> gibs-layers', () => {
 
         it('leaves an unchanged entry alone', async () => {
             const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.gibsLayers = [{ name: 'imagery', layer: 'TestLayer' }]
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
             await waitUntil(() => el.getLayer('imagery'))
             const firstLayer = el.getLayer('imagery')
 
             // re-assign an equivalent (but new) array reference
-            el.gibsLayers = [{ name: 'imagery', layer: 'TestLayer' }]
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
             await el.updateComplete
 
             expect(el.getLayer('imagery')).to.equal(firstLayer)
@@ -272,28 +310,31 @@ describe('<terra-map> gibs-layers', () => {
     })
 })
 
-describe('<terra-map> geotiff-layers', () => {
+describe('<terra-map> layers (geotiff)', () => {
     // NOTE: `ol/source/GeoTIFF.js` statically imports the `geotiff` npm
     // package, which only ships Node and bundled-browser builds - not a
     // plain unbundled ESM build - so web-test-runner's unbundled dev server
     // can't load it (a pre-existing, environment-level constraint; a bundled
     // build, e.g. `npm run build`, resolves it fine). That means every
-    // `geotiffLayers` build attempt below rejects, exercising
-    // `geotiffLayersChanged`'s error path, diffing, and cleanup logic - just
-    // not the happy-path layer construction itself (covered indirectly by
+    // geotiff-type `layers` build attempt below rejects, exercising
+    // `layersChanged`'s error path, diffing, and cleanup logic - just not the
+    // happy-path layer construction itself (covered indirectly by
     // `geotiff.layer.test.ts`'s unit tests of the underlying math).
 
     it('emits an error event when the layer fails to build', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
         const changeSpy = sinon.spy()
-        el.addEventListener('terra-map-geotiff-layer-change', changeSpy)
+        el.addEventListener('terra-map-layer-change', changeSpy)
 
-        el.geotiffLayers = [{ name: 'my-data', url: 'https://example.com/data.tif' }]
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+        ]
 
         await waitUntil(() => changeSpy.called)
 
         const detail = changeSpy.firstCall.args[0].detail
         expect(detail.name).to.equal('my-data')
+        expect(detail.type).to.equal('geotiff')
         expect(detail.error).to.be.instanceOf(Error)
         expect(el.getLayer('my-data')).to.not.exist
         expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
@@ -301,11 +342,13 @@ describe('<terra-map> geotiff-layers', () => {
 
     it('removes a dropped entry without throwing, even if it never finished building', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-        el.geotiffLayers = [{ name: 'my-data', url: 'https://example.com/data.tif' }]
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+        ]
         await el.updateComplete
 
         expect(() => {
-            el.geotiffLayers = []
+            el.layers = []
         }).to.not.throw()
         await el.updateComplete
 
@@ -315,7 +358,9 @@ describe('<terra-map> geotiff-layers', () => {
 
     it('getGeoTiffValueAtPixel returns undefined for a layer that never finished building', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-        el.geotiffLayers = [{ name: 'my-data', url: 'https://example.com/data.tif' }]
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+        ]
         await el.updateComplete
 
         expect(el.getGeoTiffValueAtPixel('my-data', [0, 0])).to.be.undefined
@@ -324,8 +369,12 @@ describe('<terra-map> geotiff-layers', () => {
     it('does not throw when the config changes again before the previous attempt settles', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
 
-        el.geotiffLayers = [{ name: 'my-data', url: 'https://example.com/a.tif' }]
-        el.geotiffLayers = [{ name: 'my-data', url: 'https://example.com/b.tif' }]
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/a.tif' },
+        ]
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/b.tif' },
+        ]
 
         // give both build attempts a chance to settle
         await new Promise(resolve => setTimeout(resolve, 50))

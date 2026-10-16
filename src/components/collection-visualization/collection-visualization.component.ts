@@ -30,7 +30,7 @@ import type { GibsLayerConfig } from '../map/layers/gibs.layer.js'
  * @csspart base - The component's base wrapper.
  */
 export default class TerraCollectionVisualization extends QueryClientMixin(
-    TerraElement,
+    TerraElement
 ) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
@@ -150,7 +150,7 @@ export default class TerraCollectionVisualization extends QueryClientMixin(
             <terra-map
                 fill
                 projection=${projection ?? 'EPSG:3857'}
-                .gibsLayers=${gibsLayer ? [gibsLayer] : []}
+                .layers=${gibsLayer ? [gibsLayer] : []}
             ></terra-map>
         `
     }

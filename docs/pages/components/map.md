@@ -177,39 +177,46 @@ map.addLayer(polarLayer, { name: 'gibs-imagery' })
 ```html:preview
 <terra-map
     projection="EPSG:3413"
-    gibs-layers='[{ "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01", "projection": "EPSG:3413" }]'
+    layers='[{ "type": "gibs", "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01", "projection": "EPSG:3413" }]'
 ></terra-map>
 ```
 
-### Declaring GIBS Layers in HTML
+### Declaring Layers in HTML
 
-If you don't need to write JS, the `gibs-layers` attribute/property lets you declare GIBS layers directly, as a JSON array. Each entry mirrors `GibsLayer`'s options (`layer`, `date`, `projection`, `format`, `tileMatrixSet`, `extent`, `noWorldWrap`) plus a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`) and an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options). Non-EPSG:3857 projections are resolved asynchronously under the hood via `GibsLayer.forProjection()`, same as the imperative API above. Set `"type": "vector"` to declare a [GIBS vector tile layer](#adding-gibs-vector-imagery) instead — see that section for its fields.
+If you don't need to write JS, the `layers` attribute/property lets you declare layers directly, as a JSON array. Each entry's `type` picks what kind of layer it builds:
+
+- `"type": "gibs"` mirrors `GibsLayer`'s options (`layer`, `date`, `projection`, `format`, `tileMatrixSet`, `extent`, `noWorldWrap`). Non-EPSG:3857 projections are resolved asynchronously under the hood via `GibsLayer.forProjection()`, same as the imperative API above.
+- `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
+- `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
+
+Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`) and an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options).
 
 ```html:preview
 <terra-map
-    gibs-layers='[{ "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
+    layers='[{ "type": "gibs", "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
 ></terra-map>
 ```
 
-Changing the attribute/property later diffs against what's currently applied: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If an entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
+Changing the attribute/property later diffs against what's currently applied, by `name`: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If a GIBS entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. Each build attempt (success or failure) fires a `terra-map-layer-change` event — see below for GeoTIFF's `info`/`error` detail. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
 
-### Adding GeoTIFF Layers
+### Adding **GeoTIFF** Layers
 
-Use the `geotiff-layers` attribute/property to load any standalone GeoTIFF or Cloud-Optimized GeoTIFF by URL — not tied to Giovanni, Harmony, or any other GESDISC-specific service. Each entry needs a `name` and a `url`; a colormap-based style is computed automatically from the raster's actual data range. The example below loads a small GeoTIFF exported from Giovanni, but any GeoTIFF URL works the same way:
+Use a `"type": "geotiff"` entry in `layers` to load any standalone GeoTIFF or Cloud-Optimized GeoTIFF by URL — not tied to Giovanni, Harmony, or any other GESDISC-specific service. Each entry needs a `name` and a `url`; a colormap-based style is computed automatically from the raster's actual data range. The example below loads a small GeoTIFF exported from Giovanni, but any GeoTIFF URL works the same way:
 
 ```html:preview
 <terra-map
-    geotiff-layers='[{ "name": "my-data", "url": "/assets/examples/giovanni.tif", "colorMapName": "viridis", "fitView": true }]'
+    layers='[{ "type": "geotiff", "name": "my-data", "url": "/assets/examples/giovanni.tif", "colorMapName": "viridis", "fitView": true }]'
 ></terra-map>
 ```
 
-Other fields: `bands` (which band(s) to read, defaults to `[1]`), `noDataValue` (a pixel value to treat as "no data" and exclude from rendering/min-max), `opacity`, `colorSteps` (number of color stops, defaults to 72), `reverseColors`, and `position` (same as `gibs-layers`). Set `fitView: true` to pan/zoom the map to the GeoTIFF's native extent once it loads — off by default, since auto-fitting isn't always desirable with multiple layers on the same map.
+Other fields: `bands` (which band(s) to read, defaults to `[1]`), `noDataValue` (a pixel value to treat as "no data" and exclude from rendering/min-max), `opacity`, `colorSteps` (number of color stops, defaults to 72), `reverseColors`, and `position` (same as any other `layers` entry). Set `fitView: true` to pan/zoom the map to the GeoTIFF's native extent once it loads — off by default, since auto-fitting isn't always desirable with multiple layers on the same map.
 
-Like `gibs-layers`, changing the array later diffs by `name`: removed entries are taken off the map, unchanged entries are left alone, and changed entries are rebuilt. Each build attempt (success or failure) fires a `terra-map-geotiff-layer-change` event, and once built, the layer's computed data range, colormap stops, and legend entries are available via `getGeoTiffLayerInfo(name)` — handy for rendering a legend:
+Once built, the layer's computed data range, colormap stops, and legend entries are available via `getGeoTiffLayerInfo(name)` — handy for rendering a legend:
 
 ```ts
-map.addEventListener('terra-map-geotiff-layer-change', event => {
-    const { name, info, error } = event.detail
+map.addEventListener('terra-map-layer-change', event => {
+    const { name, type, info, error } = event.detail
+    if (type !== 'geotiff') return
     if (error) {
         console.error(`Failed to load GeoTIFF layer "${name}":`, error)
         return

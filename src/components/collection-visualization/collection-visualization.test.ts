@@ -12,7 +12,7 @@ const VIS_ID = 'VIS1-ESDIS'
 
 function makeCollectionResponse(
     visualizationIds: string[] = [],
-    relatedUrls: unknown[] = [],
+    relatedUrls: unknown[] = []
 ) {
     return {
         hits: 1,
@@ -72,14 +72,14 @@ describe('<terra-collection-visualization>', () => {
 
     it('should render a component', async () => {
         const el = await fixture(
-            html`<terra-collection-visualization></terra-collection-visualization>`,
+            html`<terra-collection-visualization></terra-collection-visualization>`
         )
         expect(el).to.exist
     })
 
     it('shows a warning when no collection-id is provided', async () => {
         const el: any = await fixture(
-            html`<terra-collection-visualization></terra-collection-visualization>`,
+            html`<terra-collection-visualization></terra-collection-visualization>`
         )
         const alert = el.shadowRoot?.querySelector('terra-alert')
         expect(alert).to.exist
@@ -93,7 +93,7 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${ENTRY_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         expect(el.shadowRoot?.querySelector('terra-loader')).to.exist
@@ -113,18 +113,20 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${ENTRY_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         await waitUntil(
             () => el.shadowRoot?.querySelector('terra-map'),
-            'map never rendered',
+            'map never rendered'
         )
 
         const mapEl = el.shadowRoot?.querySelector('terra-map') as TerraMap
         expect(mapEl).to.exist
-        expect(mapEl.gibsLayers).to.have.lengthOf(1)
-        expect(mapEl.gibsLayers[0].layer).to.equal('Test_GIBS_Layer')
+        expect(mapEl.layers).to.have.lengthOf(1)
+        expect((mapEl.layers[0] as { layer: string }).layer).to.equal(
+            'Test_GIBS_Layer'
+        )
 
         const collectionsRequest = apiGetStub
             .getCalls()
@@ -134,7 +136,9 @@ describe('<terra-collection-visualization>', () => {
         const visualizationsRequest = apiGetStub
             .getCalls()
             .find(call => call.args[0].includes('visualizations.umm_json'))
-        expect(visualizationsRequest?.args[0]).to.include(`concept_id%5B%5D=${VIS_ID}`)
+        expect(visualizationsRequest?.args[0]).to.include(
+            `concept_id%5B%5D=${VIS_ID}`
+        )
     })
 
     it('looks up the collection by concept-id rather than entry-id when given one', async () => {
@@ -151,12 +155,12 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${CONCEPT_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         await waitUntil(
             () => el.shadowRoot?.querySelector('terra-map'),
-            'map never rendered',
+            'map never rendered'
         )
 
         const collectionsRequest = apiGetStub
@@ -170,14 +174,17 @@ describe('<terra-collection-visualization>', () => {
         apiGetStub.callsFake((url: string) => {
             if (url.includes('collections.umm_json')) {
                 return Promise.resolve(
-                    makeCollectionResponse([VIS_ID], [
-                        {
-                            Type: 'GET RELATED VISUALIZATION',
-                            Subtype: 'WORLDVIEW',
-                            URLContentType: 'VisualizationURL',
-                            URL: 'https://worldview.earthdata.nasa.gov/?l=Curated_Layer_Id',
-                        },
-                    ]),
+                    makeCollectionResponse(
+                        [VIS_ID],
+                        [
+                            {
+                                Type: 'GET RELATED VISUALIZATION',
+                                Subtype: 'WORLDVIEW',
+                                URLContentType: 'VisualizationURL',
+                                URL: 'https://worldview.earthdata.nasa.gov/?l=Curated_Layer_Id',
+                            },
+                        ]
+                    )
                 )
             }
             if (url.includes('visualizations.umm_json')) {
@@ -191,16 +198,18 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${CONCEPT_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         await waitUntil(
             () => el.shadowRoot?.querySelector('terra-map'),
-            'map never rendered',
+            'map never rendered'
         )
 
         const mapEl = el.shadowRoot?.querySelector('terra-map') as TerraMap
-        expect(mapEl.gibsLayers[0].layer).to.equal('Curated_Layer_Id')
+        expect((mapEl.layers[0] as { layer: string }).layer).to.equal(
+            'Curated_Layer_Id'
+        )
     })
 
     it('shows a "not found" alert when the collection has no associated visualizations', async () => {
@@ -214,7 +223,7 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${CONCEPT_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         await waitUntil(() => {
@@ -230,7 +239,7 @@ describe('<terra-collection-visualization>', () => {
         expect(
             apiGetStub
                 .getCalls()
-                .some(call => call.args[0].includes('visualizations.umm_json')),
+                .some(call => call.args[0].includes('visualizations.umm_json'))
         ).to.be.false
     })
 
@@ -260,7 +269,7 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${CONCEPT_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         await waitUntil(() => {
@@ -281,7 +290,7 @@ describe('<terra-collection-visualization>', () => {
         const el: any = await fixture(
             html`<terra-collection-visualization
                 collection-id=${CONCEPT_ID}
-            ></terra-collection-visualization>`,
+            ></terra-collection-visualization>`
         )
 
         await waitUntil(() => {
@@ -302,7 +311,7 @@ describe('<terra-collection-visualization>', () => {
         })
 
         const el = document.createElement(
-            'terra-collection-visualization',
+            'terra-collection-visualization'
         ) as TerraCollectionVisualization
         el.collectionId = CONCEPT_ID
 
@@ -324,21 +333,24 @@ describe('<terra-collection-visualization>', () => {
         apiGetStub.callsFake((url: string) => {
             if (url.includes('collections.umm_json')) {
                 return Promise.resolve(
-                    makeCollectionResponse([], [
-                        {
-                            Type: 'GET RELATED VISUALIZATION',
-                            Subtype: 'WORLDVIEW',
-                            URLContentType: 'VisualizationURL',
-                            URL: 'https://worldview.earthdata.nasa.gov/?l=Curated_Layer_Id',
-                        },
-                    ]),
+                    makeCollectionResponse(
+                        [],
+                        [
+                            {
+                                Type: 'GET RELATED VISUALIZATION',
+                                Subtype: 'WORLDVIEW',
+                                URLContentType: 'VisualizationURL',
+                                URL: 'https://worldview.earthdata.nasa.gov/?l=Curated_Layer_Id',
+                            },
+                        ]
+                    )
                 )
             }
             return Promise.reject(new Error(`Unexpected request: ${url}`))
         })
 
         const el = document.createElement(
-            'terra-collection-visualization',
+            'terra-collection-visualization'
         ) as TerraCollectionVisualization
         el.collectionId = CONCEPT_ID
 

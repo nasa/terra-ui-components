@@ -1,15 +1,10 @@
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { Extent } from 'ol/extent.js'
 import type { ProjectionLike } from 'ol/proj.js'
-
-type CommonConfig = {
-    /** Unique name for this layer, used for add/remove/update diffing and `getLayer()`. */
-    name: string
-    /** Where to place the layer relative to the borders/labels layers. Defaults to 'below-borders'. */
-    position?: 'below-borders' | 'top'
-}
+import type { CommonConfig } from './common.js'
 
 export type GeoTiffLayerConfig = CommonConfig & {
+    type: 'geotiff'
     /**
      * URL to a GeoTIFF / Cloud-Optimized GeoTIFF. This can be a direct link
      * to a file hosted anywhere (e.g. an external data provider), or an

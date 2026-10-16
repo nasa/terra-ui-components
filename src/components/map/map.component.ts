@@ -12,16 +12,9 @@ import {
     type AddLayerOptions,
     type FitToExtentOptions,
 } from './map.service.js'
-import {
-    buildGibsLayer,
-    type GibsLayerConfig,
-    type Projection,
-} from './layers/gibs.layer.js'
-import {
-    buildGeoTiffLayer,
-    type GeoTiffLayerConfig,
-    type GeoTiffLayerInfo,
-} from './layers/geotiff.layer.js'
+import type { Projection } from './layers/gibs.layer.js'
+import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
+import { buildMapLayer, type MapLayerConfig } from './layers/layer.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
@@ -29,23 +22,8 @@ import {
     queryGiovanniGeoJsonShape,
 } from '../../queries/giovanni.queries.js'
 
-const geotiffLayersConverter = {
-    fromAttribute: (value: string | null): GeoTiffLayerConfig[] => {
-        if (!value) {
-            return []
-        }
-
-        try {
-            const parsed = JSON.parse(value)
-            return Array.isArray(parsed) ? parsed : []
-        } catch {
-            return []
-        }
-    },
-}
-
-const gibsLayersConverter = {
-    fromAttribute: (value: string | null): GibsLayerConfig[] => {
+const layersConverter = {
+    fromAttribute: (value: string | null): MapLayerConfig[] => {
         if (!value) {
             return []
         }
@@ -204,7 +182,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      * view's projection in place.
      *
      * Set this to match any non-`'EPSG:3857'` `projection` used by a
-     * `gibs-layers` entry (e.g. `projection="EPSG:3413"`). Imagery published
+     * `layers` entry (e.g. `projection="EPSG:3413"`). Imagery published
      * only in a polar/geographic projection renders with severe distortion if
      * left on the default Web Mercator view, since OpenLayers will silently
      * reproject it.
@@ -222,22 +200,28 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     fitToValue: boolean = false
 
     /**
-     * Declarative GIBS layers to add to the map, for use in plain HTML
-     * without writing JS, e.g.:
+     * Declarative layers to add to the map, for use in plain HTML without
+     * writing JS. Each entry's `type` picks which kind of layer it builds:
+     * `'gibs'` (raster) or `'gibs-vector'` for NASA GIBS imagery, or
+     * `'geotiff'` for a standalone GeoTIFF/COG by URL. e.g.:
      *
      * ```html
-     * <terra-map gibs-layers='[{ "name": "imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01", "projection": "EPSG:3413" }]'></terra-map>
+     * <terra-map layers='[
+     *     { "type": "gibs", "name": "imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01", "projection": "EPSG:3413" },
+     *     { "type": "geotiff", "name": "my-data", "url": "https://example.com/data.tif", "colorMapName": "viridis" }
+     * ]'></terra-map>
      * ```
      */
-    @property({ attribute: 'gibs-layers', converter: gibsLayersConverter })
-    gibsLayers: GibsLayerConfig[] = []
+    @property({ attribute: 'layers', converter: layersConverter })
+    layers: MapLayerConfig[] = []
 
-    #gibsLayerRequestIds = new Map<string, number>()
+    #layerRequestIds = new Map<string, number>()
+    #geotiffLayerInfo = new Map<string, GeoTiffLayerInfo>()
 
-    @watch('gibsLayers', { waitUntilFirstUpdate: true })
-    async gibsLayersChanged(
-        previous: GibsLayerConfig[] = [],
-        next: GibsLayerConfig[] = []
+    @watch('layers', { waitUntilFirstUpdate: true })
+    async layersChanged(
+        previous: MapLayerConfig[] = [],
+        next: MapLayerConfig[] = []
     ) {
         const previousByName = new Map(previous.map(config => [config.name, config]))
         const nextByName = new Map(next.map(config => [config.name, config]))
@@ -245,7 +229,8 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         for (const name of previousByName.keys()) {
             if (!nextByName.has(name)) {
                 this.removeLayer(name)
-                this.#gibsLayerRequestIds.delete(name)
+                this.#layerRequestIds.delete(name)
+                this.#geotiffLayerInfo.delete(name)
             }
         }
 
@@ -262,81 +247,20 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             // layers default to EPSG:3857. Either way, warn (rather than
             // silently rendering distorted/reprojected imagery) if it doesn't
             // match the map's own view projection.
-            const layerProjection =
-                config.type === 'vector'
-                    ? 'EPSG:4326'
-                    : (config.projection ?? 'EPSG:3857')
-            if (layerProjection !== this.projection) {
-                console.warn(
-                    `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`
-                )
-            }
-
-            const requestId = (this.#gibsLayerRequestIds.get(name) ?? 0) + 1
-            this.#gibsLayerRequestIds.set(name, requestId)
-
-            if (previousConfig) {
-                this.removeLayer(name)
-            }
-
-            try {
-                const layer = await buildGibsLayer(config)
-
-                // bail if this layer was removed or superseded while it was building
-                if (this.#gibsLayerRequestIds.get(name) !== requestId) {
-                    continue
+            if (config.type === 'gibs' || config.type === 'gibs-vector') {
+                const layerProjection =
+                    config.type === 'gibs-vector'
+                        ? 'EPSG:4326'
+                        : (config.projection ?? 'EPSG:3857')
+                if (layerProjection !== this.projection) {
+                    console.warn(
+                        `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`
+                    )
                 }
-
-                this.addLayer(layer, { name, position: config.position })
-            } catch (error) {
-                console.error(`Failed to build GIBS layer "${name}":`, error)
-            }
-        }
-    }
-
-    /**
-     * Declarative GeoTIFF layers to add to the map, for loading any
-     * standalone GeoTIFF/COG by URL - not tied to Harmony, Giovanni, or any
-     * other GESDISC-specific service. Each gets a colormap-based style
-     * computed from the raster's actual data range. e.g.:
-     *
-     * ```html
-     * <terra-map geotiff-layers='[{ "name": "my-data", "url": "https://example.com/data.tif", "colorMapName": "viridis" }]'></terra-map>
-     * ```
-     */
-    @property({ attribute: 'geotiff-layers', converter: geotiffLayersConverter })
-    geotiffLayers: GeoTiffLayerConfig[] = []
-
-    #geotiffLayerRequestIds = new Map<string, number>()
-    #geotiffLayerInfo = new Map<string, GeoTiffLayerInfo>()
-
-    @watch('geotiffLayers', { waitUntilFirstUpdate: true })
-    async geotiffLayersChanged(
-        previous: GeoTiffLayerConfig[] = [],
-        next: GeoTiffLayerConfig[] = []
-    ) {
-        const previousByName = new Map(previous.map(config => [config.name, config]))
-        const nextByName = new Map(next.map(config => [config.name, config]))
-
-        for (const name of previousByName.keys()) {
-            if (!nextByName.has(name)) {
-                this.removeLayer(name)
-                this.#geotiffLayerRequestIds.delete(name)
-                this.#geotiffLayerInfo.delete(name)
-            }
-        }
-
-        for (const [name, config] of nextByName) {
-            const previousConfig = previousByName.get(name)
-            if (
-                previousConfig &&
-                JSON.stringify(previousConfig) === JSON.stringify(config)
-            ) {
-                continue // unchanged
             }
 
-            const requestId = (this.#geotiffLayerRequestIds.get(name) ?? 0) + 1
-            this.#geotiffLayerRequestIds.set(name, requestId)
+            const requestId = (this.#layerRequestIds.get(name) ?? 0) + 1
+            this.#layerRequestIds.set(name, requestId)
 
             if (previousConfig) {
                 this.removeLayer(name)
@@ -344,36 +268,46 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             }
 
             try {
-                const info = await buildGeoTiffLayer(config)
+                const result = await buildMapLayer(config)
 
                 // bail if this layer was removed or superseded while it was building
-                if (this.#geotiffLayerRequestIds.get(name) !== requestId) {
+                if (this.#layerRequestIds.get(name) !== requestId) {
                     continue
                 }
 
-                this.addLayer(info.layer, { name, position: config.position })
-                this.#geotiffLayerInfo.set(name, info)
+                this.addLayer(result.layer, { name, position: config.position })
 
-                if (config.fitView && info.extent) {
-                    this.fitToExtent(info.extent, {
-                        projection: info.projection,
-                        padding: [50, 50, 50, 50],
-                        duration: 300,
+                if (config.type === 'geotiff' && result.type === 'geotiff') {
+                    this.#geotiffLayerInfo.set(name, result.info)
+
+                    if (config.fitView && result.info.extent) {
+                        this.fitToExtent(result.info.extent, {
+                            projection: result.info.projection,
+                            padding: [50, 50, 50, 50],
+                            duration: 300,
+                        })
+                    }
+
+                    this.emit('terra-map-layer-change', {
+                        detail: { name, type: result.type, info: result.info },
+                    })
+                } else {
+                    this.emit('terra-map-layer-change', {
+                        detail: { name, type: result.type as 'gibs' | 'gibs-vector' },
                     })
                 }
-
-                this.emit('terra-map-geotiff-layer-change', {
-                    detail: { name, info },
-                })
             } catch (error) {
                 // bail if this layer was removed or superseded while it was building
-                if (this.#geotiffLayerRequestIds.get(name) !== requestId) {
+                if (this.#layerRequestIds.get(name) !== requestId) {
                     continue
                 }
 
-                console.error(`Failed to build GeoTIFF layer "${name}":`, error)
-                this.emit('terra-map-geotiff-layer-change', {
-                    detail: { name, error: error as Error },
+                console.error(
+                    `Failed to build "${config.type}" layer "${name}":`,
+                    error
+                )
+                this.emit('terra-map-layer-change', {
+                    detail: { name, type: config.type, error: error as Error },
                 })
             }
         }
@@ -381,14 +315,15 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
     /**
      * Gets the computed data range, colormap stops, and legend values for a
-     * declaratively-added GeoTIFF layer, as built by `geotiffLayers`.
+     * declaratively-added GeoTIFF layer, as built by a `'geotiff'` entry in
+     * `layers`.
      */
     getGeoTiffLayerInfo(name: string): GeoTiffLayerInfo | undefined {
         return this.#geotiffLayerInfo.get(name)
     }
 
     /**
-     * Reads the raw band value(s) of a `geotiffLayers` layer at a given
+     * Reads the raw band value(s) of a `layers` GeoTIFF layer at a given
      * pixel (e.g. from a `terra-map-pointer-move` event), for building a
      * hover readout.
      */
@@ -466,14 +401,10 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             },
         })
 
-        // the `gibsLayers` @watch handler only fires on changes *after* this
+        // the `layers` @watch handler only fires on changes *after* this
         // first update, so apply whatever was set declaratively up front here
-        if (this.gibsLayers.length) {
-            this.gibsLayersChanged(undefined, this.gibsLayers)
-        }
-
-        if (this.geotiffLayers.length) {
-            this.geotiffLayersChanged(undefined, this.geotiffLayers)
+        if (this.layers.length) {
+            this.layersChanged(undefined, this.layers)
         }
     }
 

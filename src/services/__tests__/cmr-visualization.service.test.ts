@@ -4,9 +4,7 @@ import type { UmmResponse, UmmResult } from '../../apis/cmr.api.js'
 import type { UmmC } from '../../apis/types/cmr/umm-c.js'
 import type { UmmVis } from '../../apis/types/cmr/umm-vis.js'
 
-function makeVisualization(
-    overrides: Partial<UmmVis> = {},
-): UmmResult<UmmVis> {
+function makeVisualization(overrides: Partial<UmmVis> = {}): UmmResult<UmmVis> {
     return {
         meta: {
             'concept-id': 'VIS123-ESDIS',
@@ -39,9 +37,8 @@ function makeCollection(relatedUrls: UmmC['RelatedUrls'] = []): UmmC {
 describe('CmrVisualizationService', () => {
     describe('getCuratedGibsLayerId', () => {
         it('returns undefined when there are no RelatedUrls', () => {
-            expect(
-                cmrVisualizationService.getCuratedGibsLayerId(makeCollection()),
-            ).to.be.undefined
+            expect(cmrVisualizationService.getCuratedGibsLayerId(makeCollection())).to
+                .be.undefined
         })
 
         it('returns undefined when given null/undefined', () => {
@@ -73,9 +70,9 @@ describe('CmrVisualizationService', () => {
                 },
             ])
 
-            expect(cmrVisualizationService.getCuratedGibsLayerId(collection)).to.equal(
-                'AIRS_L2_Temperature_500hPa_Day',
-            )
+            expect(
+                cmrVisualizationService.getCuratedGibsLayerId(collection)
+            ).to.equal('AIRS_L2_Temperature_500hPa_Day')
         })
 
         it('returns undefined if the URL has no "l" param', () => {
@@ -105,8 +102,8 @@ describe('CmrVisualizationService', () => {
         it('returns undefined when given null/undefined', () => {
             expect(cmrVisualizationService.selectTopVisualization(null)).to.be
                 .undefined
-            expect(cmrVisualizationService.selectTopVisualization(undefined)).to
-                .be.undefined
+            expect(cmrVisualizationService.selectTopVisualization(undefined)).to.be
+                .undefined
         })
 
         it('returns the first tile-type visualization', () => {
@@ -136,7 +133,7 @@ describe('CmrVisualizationService', () => {
         it('prefers BestAvailableExternalIdentifier', () => {
             const vis = makeVisualization()
             expect(cmrVisualizationService.getGibsLayerIdentifier(vis)).to.equal(
-                'Best_Layer_Id',
+                'Best_Layer_Id'
             )
         })
 
@@ -149,7 +146,7 @@ describe('CmrVisualizationService', () => {
                 },
             })
             expect(cmrVisualizationService.getGibsLayerIdentifier(vis)).to.equal(
-                'Standard_Layer_Id',
+                'Standard_Layer_Id'
             )
         })
 
@@ -241,10 +238,11 @@ describe('CmrVisualizationService', () => {
             const vis = makeVisualization()
             const config = cmrVisualizationService.buildGibsLayerConfig(
                 { layerId: 'Best_Layer_Id', visualization: vis },
-                { name: 'top-layer', date: '2024-06-01' },
+                { name: 'top-layer', date: '2024-06-01' }
             )
 
             expect(config).to.deep.equal({
+                type: 'gibs',
                 name: 'top-layer',
                 layer: 'Best_Layer_Id',
                 date: '2024-06-01',
@@ -257,10 +255,11 @@ describe('CmrVisualizationService', () => {
         it('builds a minimal config when there is no matching visualization record', () => {
             const config = cmrVisualizationService.buildGibsLayerConfig(
                 { layerId: 'Curated_Layer_Id' },
-                { name: 'top-layer' },
+                { name: 'top-layer' }
             )
 
             expect(config).to.deep.equal({
+                type: 'gibs',
                 name: 'top-layer',
                 layer: 'Curated_Layer_Id',
                 date: undefined,
@@ -276,7 +275,7 @@ describe('CmrVisualizationService', () => {
             })
             const config = cmrVisualizationService.buildGibsLayerConfig(
                 { layerId: 'Best_Layer_Id', visualization: vis },
-                { name: 'top-layer' },
+                { name: 'top-layer' }
             )
 
             expect('projection' in config && config.projection).to.be.undefined

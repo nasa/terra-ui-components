@@ -32,7 +32,7 @@ class CmrVisualizationService {
         const worldviewUrl = collection?.RelatedUrls?.find(
             url =>
                 url.Type === 'GET RELATED VISUALIZATION' &&
-                url.Subtype === 'WORLDVIEW',
+                url.Subtype === 'WORLDVIEW'
         )?.URL
 
         if (!worldviewUrl) {
@@ -64,14 +64,14 @@ class CmrVisualizationService {
      * actually GIBS-tile-renderable (`VisualizationType === 'tiles'`).
      */
     selectTopVisualization(
-        visualizations?: UmmResponse<UmmVis> | null,
+        visualizations?: UmmResponse<UmmVis> | null
     ): UmmResult<UmmVis> | undefined {
         if (!visualizations?.items?.length) {
             return undefined
         }
 
         return visualizations.items.find(
-            item => item.umm.VisualizationType === 'tiles',
+            item => item.umm.VisualizationType === 'tiles'
         )
     }
 
@@ -104,7 +104,7 @@ class CmrVisualizationService {
 
         if (curatedLayerId) {
             const matchingVisualization = args.visualizations?.items?.find(
-                item => this.getGibsLayerIdentifier(item) === curatedLayerId,
+                item => this.getGibsLayerIdentifier(item) === curatedLayerId
             )
             return { layerId: curatedLayerId, visualization: matchingVisualization }
         }
@@ -122,12 +122,12 @@ class CmrVisualizationService {
 
     /**
      * Builds a `GibsLayerConfig` (ready to hand to `buildGibsLayer()` or the
-     * `<terra-map gibs-layers>` property) from a resolved layer id, enriched
+     * `<terra-map layers>` property) from a resolved layer id, enriched
      * with projection/extent from a matching UMM-Vis record when available.
      */
     buildGibsLayerConfig(
         resolved: { layerId: string; visualization?: UmmResult<UmmVis> },
-        options: { name: string; date?: string },
+        options: { name: string; date?: string }
     ): GibsLayerConfig {
         const outputProjection = resolved.visualization?.umm.Generation
             ?.OutputProjection as Projection | undefined
@@ -141,6 +141,7 @@ class CmrVisualizationService {
                 ?.NativeSpatialCoverage
 
         return {
+            type: 'gibs',
             name: options.name,
             layer: resolved.layerId,
             date: options.date,

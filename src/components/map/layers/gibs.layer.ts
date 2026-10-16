@@ -6,6 +6,7 @@ import type { Extent } from 'ol/extent.js'
 import { XYZLayer } from './xyz.layer.js'
 import { getGibsCapabilities } from './gibs-capabilities.js'
 import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
+import type { CommonConfig } from './common.js'
 import '../projections.js' // registers EPSG:3413/3031 with OpenLayers
 
 export type Projection = 'EPSG:3857' | 'EPSG:4326' | 'EPSG:3413' | 'EPSG:3031'
@@ -79,26 +80,19 @@ export class GibsLayer extends XYZLayer {
      * Async factory for non-Mercator GIBS imagery (EPSG:4326 / EPSG:3413 / EPSG:3031).
      */
     static async forProjection(
-        options: Options & { projection: Exclude<Projection, 'EPSG:3857'> },
+        options: Options & { projection: Exclude<Projection, 'EPSG:3857'> }
     ): Promise<TileLayer> {
-        const {
-            layer,
-            date = 'default',
-            projection,
-            tileMatrixSet,
-            extent,
-        } = options
+        const { layer, date = 'default', projection, tileMatrixSet, extent } = options
 
         const capabilities = await getGibsCapabilities(projection)
         const wmtsOptions = optionsFromCapabilities(capabilities, {
             layer,
-            matrixSet:
-                tileMatrixSet ?? DEFAULT_MATRIX_SET_BY_PROJECTION[projection],
+            matrixSet: tileMatrixSet ?? DEFAULT_MATRIX_SET_BY_PROJECTION[projection],
         })
 
         if (!wmtsOptions) {
             throw new Error(
-                `GIBS layer "${layer}" was not found, or isn't available in ${projection}`,
+                `GIBS layer "${layer}" was not found, or isn't available in ${projection}`
             )
         }
 
@@ -113,29 +107,22 @@ export class GibsLayer extends XYZLayer {
     }
 }
 
-type CommonConfig = {
-    /** Unique name for this layer, used for add/remove/update diffing and `getLayer()`. */
-    name: string
-    /** Where to place the layer relative to the borders/labels layers. Defaults to 'below-borders'. */
-    position?: 'below-borders' | 'top'
-}
-
 export type GibsLayerConfig =
-    | (Options & CommonConfig & { type?: 'raster'; projection?: Projection })
-    | (VectorOptions & CommonConfig & { type: 'vector' })
+    | (Options & CommonConfig & { type: 'gibs'; projection?: Projection })
+    | (VectorOptions & CommonConfig & { type: 'gibs-vector' })
 
 /**
  * Builds a layer from a `GibsLayerConfig`, dispatching to:
- * - `buildGibsVectorLayer()` when `type: 'vector'` is given
+ * - `buildGibsVectorLayer()` when `type: 'gibs-vector'` is given
  * - the sync `GibsLayer` constructor for EPSG:3857 raster imagery (or no projection given)
  * - the async `GibsLayer.forProjection()` factory for EPSG:4326/3413/3031 raster imagery
  */
 export async function buildGibsLayer(
-    config: GibsLayerConfig,
+    config: GibsLayerConfig
 ): Promise<TileLayer | VectorTileLayer> {
     const { name, position, ...options } = config
 
-    if (options.type === 'vector') {
+    if (options.type === 'gibs-vector') {
         const { type, ...vectorOptions } = options
         return buildGibsVectorLayer(vectorOptions)
     }
