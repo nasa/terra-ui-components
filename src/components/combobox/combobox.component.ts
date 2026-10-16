@@ -142,7 +142,7 @@ export default class TerraCombobox extends TerraElement {
     disconnectedCallback() {
         super.disconnectedCallback()
 
-        globalThis.addEventListener('click', this.#manageListboxVisibility)
+        globalThis.removeEventListener('click', this.#manageListboxVisibility)
     }
 
     @watch('content')
@@ -414,57 +414,61 @@ export default class TerraCombobox extends TerraElement {
                     type="button"
                     @click=${this.#handleButtonClick}
                 >
-                    ${['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
-                        ? html`<svg
-                              aria-hidden="true"
-                              class="button-icon chevron"
-                              focusable="false"
-                              viewBox="0 0 400 400"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="currentColor"
-                          >
-                              <path
-                                  d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
-                              ></path>
-                          </svg> `
-                        : html`<svg
-                              class="button-icon spinner"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                              xmlns="http://www.w3.org/2000/svg"
-                          >
-                              <circle
-                                  cx="12"
-                                  cy="12"
-                                  r="9.5"
-                                  fill="none"
-                                  stroke-width="3"
-                              ></circle>
-                          </svg>`}
-                </terra-button>
-
-                ${this.hideHelp
-                    ? nothing
-                    : html`<p class="search-help">
-                          See
-                          <a
-                              href="https://www.fusejs.io/examples.html#extended-search"
-                              rel="noopener noreferrer"
-                              target="_blank"
-                              >extended search syntax
-                              <svg
+                    ${
+                        ['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
+                            ? html`<svg
                                   aria-hidden="true"
-                                  class="external-link"
+                                  class="button-icon chevron"
+                                  focusable="false"
+                                  viewBox="0 0 400 400"
                                   xmlns="http://www.w3.org/2000/svg"
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 24 24"
+                                  fill="currentColor"
                               >
                                   <path
-                                      d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
-                                  /></svg></a
-                          >.
-                      </p>`}
+                                      d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
+                                  ></path>
+                              </svg> `
+                            : html`<svg
+                                  class="button-icon spinner"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                              >
+                                  <circle
+                                      cx="12"
+                                      cy="12"
+                                      r="9.5"
+                                      fill="none"
+                                      stroke-width="3"
+                                  ></circle>
+                              </svg>`
+                    }
+                </terra-button>
+
+                ${
+                    this.hideHelp
+                        ? nothing
+                        : html`<p class="search-help">
+                              See
+                              <a
+                                  href="https://www.fusejs.io/examples.html#extended-search"
+                                  rel="noopener noreferrer"
+                                  target="_blank"
+                                  >extended search syntax
+                                  <svg
+                                      aria-hidden="true"
+                                      class="external-link"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                  >
+                                      <path
+                                          d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+                                      /></svg></a
+                              >.
+                          </p>`
+                }
             </div>
 
             <ul
@@ -488,9 +492,9 @@ export default class TerraCombobox extends TerraElement {
                 ?inert=${!this.isExpanded}
                 ?open=${this.isExpanded}
                 @click=${this.#handleOptionClick}
-                aria-label=${this.query
-                    ? `${this.name} Matching ${this.query}`
-                    : this.name}
+                aria-label=${
+                    this.query ? `${this.name} Matching ${this.query}` : this.name
+                }
                 id="listbox"
                 part="listbox"
                 role="listbox"
