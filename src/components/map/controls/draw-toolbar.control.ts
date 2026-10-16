@@ -190,25 +190,22 @@ export class DrawToolbarControl extends Control {
     }
 
     #isButtonVisible(tool: DrawTool) {
-        if (!this.#options) return true
-
-        if (tool === 'bbox') {
-            return this.#options.showBboxTool ?? true
+        if (!this.#options) {
+            return true
         }
 
-        if (tool === 'polygon') {
-            return this.#options.showPolygonTool ?? true
+        switch (tool) {
+            case 'bbox':
+                return this.#options.showBboxTool ?? true
+            case 'polygon':
+                return this.#options.showPolygonTool ?? true
+            case 'point':
+                return this.#options.showPointTool ?? true
+            case 'circle':
+                return this.#options.showCircleTool ?? true
+            default:
+                return false
         }
-
-        if (tool === 'point') {
-            return this.#options.showPointTool ?? true
-        }
-
-        if (tool === 'circle') {
-            return this.#options.showCircleTool ?? true
-        }
-
-        return false
     }
 
     #viewProjection() {
