@@ -48,7 +48,7 @@ layout: component
 
 ## Disable Caching
 
-By default, the component caches results in IndexedDB and reuses them on subsequent renders with the same parameters. Use `no-cache` to disable all IndexedDB reads and writes. Harmony job history is still checked before a new request is created, so returning users benefit from previously-completed jobs without populating the local cache.
+By default, the component caches results in IndexedDB and reuses them on subsequent renders with the same parameters. Use `no-cache` to disable all IndexedDB reads and writes.
 
 This is useful for applications (such as Giovanni) that always want requests to go through the server.
 

@@ -44,9 +44,19 @@ export default class TerraLogin extends TerraElement {
     @property({ attribute: 'loading-message' })
     loadingMessage?: string
 
+    @property({ attribute: false })
+    onLoginClick?: () => void
+
     #authController = new AuthController(this)
 
     login() {
+        if (this.onLoginClick) {
+            // call the login handler instead of handling login ourselves
+            // ex. a consumer of this component wants to use their own login process
+            this.onLoginClick()
+            return
+        }
+
         this.#authController.login()
     }
 
@@ -59,14 +69,16 @@ export default class TerraLogin extends TerraElement {
             // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
             const template = this.querySelector<HTMLTemplateElement>(
-                'template[slot="logged-in"]'
+                'template[slot="logged-in"]',
             )
 
-            return html`${template
-                ? template.content.cloneNode(true)
-                : html`<slot name="logged-in" .user=${this.#authController.state.user}
+            return html`${
+                template
+                    ? template.content.cloneNode(true)
+                    : html`<slot name="logged-in" .user=${this.#authController.state.user}
                       >${this.#applyUserToMessage(this.loggedInMessage)}</slot
-                  >`}`
+                  >`
+            }`
         }
 
         if (this.#authController.state.isLoading) {
@@ -84,8 +96,11 @@ export default class TerraLogin extends TerraElement {
             .replace('{username}', this.#authController.state.user?.uid ?? '')
             .replace(
                 '{first_name}',
-                this.#authController.state.user?.first_name ?? ''
+                this.#authController.state.user?.first_name ?? '',
             )
-            .replace('{last_name}', this.#authController.state.user?.last_name ?? '')
+            .replace(
+                '{last_name}',
+                this.#authController.state.user?.last_name ?? '',
+            )
     }
 }

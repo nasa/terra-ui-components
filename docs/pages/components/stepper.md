@@ -67,18 +67,17 @@ The condensed version uses colored bars to represent each step. It can be used w
 
 ```html:preview
 <terra-stepper variant="condensed">
-  <terra-stepper-step state="completed"></terra-stepper-step>
-  <terra-stepper-step state="completed"></terra-stepper-step>
-  <terra-stepper-step state="current"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
-  <terra-stepper-step state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 1" state="completed"></terra-stepper-step>
+  <terra-stepper-step title="Step 2" state="completed"></terra-stepper-step>
+  <terra-stepper-step title="Step 3" state="current"></terra-stepper-step>
+  <terra-stepper-step title="Step 4" state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 5" state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 6" state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 7" state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 8" state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 9" state="upcoming"></terra-stepper-step>
+  <terra-stepper-step title="Step 10" state="upcoming"></terra-stepper-step>
 </terra-stepper>
-<div style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--terra-color-carbon-60);">Step 3 of 10</div>
 ```
 
 ### Step States

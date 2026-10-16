@@ -379,6 +379,17 @@ export default css`
         text-decoration: underline;
     }
 
+    .action-link {
+        color: inherit;
+        font-weight: 600;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .action-link:hover {
+        text-decoration: none;
+    }
+
     .documentation-links {
         background: #f8f9fa;
         border: 1px solid #dee2e6;
@@ -402,6 +413,11 @@ export default css`
 
     .status-running {
         color: #ffc107;
+        font-weight: 500;
+    }
+
+    .status-paused {
+        color: var(--terra-text-on-warning, #856404);
         font-weight: 500;
     }
 

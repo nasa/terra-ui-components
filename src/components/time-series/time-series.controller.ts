@@ -2,6 +2,7 @@ import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
 import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
+// @ts-ignore
 import type { Data, PlotData } from 'plotly.js-dist-min'
 import type {
     TimeSeriesData,
@@ -609,6 +610,8 @@ export class TimeSeriesController {
             .dateRange(startDate.toISOString(), endDate.toISOString())
             .format('text/csv')
             .label('terra-time-series')
+            // time series always needs the final data, so never let Harmony pause the job in a PREVIEWING state
+            .skipPreview(true)
 
         if (this.host.applicationId) {
             harmonyRequest.label(this.host.applicationId)
@@ -859,6 +862,27 @@ export class TimeSeriesController {
 
     render(renderFunctions: StatusRenderer<Partial<Data>[]>) {
         return this.task.render(renderFunctions)
+    }
+
+    /**
+     * Cancels the in-flight Harmony job server-side (best-effort) and aborts
+     * the local data-loading task.
+     */
+    async cancelJob(): Promise<void> {
+        const jobId = this.#harmonyRequestController.jobId
+
+        if (jobId && jobId !== 'new') {
+            try {
+                await this.#harmonyRequestController.cancelJob({
+                    jobId,
+                    options: { bearerToken: this.host.bearerToken },
+                })
+            } catch (error) {
+                console.warn('Failed to cancel Harmony job', error)
+            }
+        }
+
+        this.task.abort('Cancelled time series request')
     }
 
     /**

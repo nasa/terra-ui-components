@@ -7,7 +7,11 @@ import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
-import { MapService } from './map.service.js'
+import {
+    MapService,
+    type AddLayerOptions,
+    type FitToExtentOptions,
+} from './map.service.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
@@ -66,7 +70,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'has-coord-tracker', type: Boolean })
     set hasCoordTracker(value: boolean) {
         console.warn(
-            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.',
+            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
         )
         this.showMouseCoordinates = value
     }
@@ -97,7 +101,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.',
+            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
         )
         this.showBoundingBoxSelection = !value
     }
@@ -114,7 +118,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.',
+            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
         )
         this.showPointSelection = !value
     }
@@ -130,6 +134,14 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
     @property({ type: Boolean })
     staticMode?: boolean = false
+
+    /**
+     * Removes the map's default card chrome (padding, border, fixed aspect
+     * ratio) so it stretches to fill its container. Useful when embedding
+     * this map inside another component.
+     */
+    @property({ type: Boolean, reflect: true })
+    fill: boolean = false
 
     /**
      * Disables infinite horizontal scrolling on the map (world wrapping)
@@ -203,18 +215,87 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
-            getGeoJson: (shapeId) =>
+            getGeoJson: shapeId =>
                 this.queryClient.fetchQuery(queryGiovanniGeoJsonShape(shapeId)),
-            onMouseMove: (coordinate) => {
+            onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
+                this.emit('terra-map-pointer-move', {
+                    detail: { coordinate, pixel },
+                })
             },
-            onDraw: (detail) => {
+            onDraw: detail => {
                 this.emit('terra-map-change', { detail })
             },
-            onShapeLoading: (loading) => {
+            onShapeLoading: loading => {
                 this.shapeLoading = loading
             },
         })
+    }
+
+    /**
+     * Adds a custom layer to the map. By default the layer is placed below
+     * the borders/labels layers so they continue to render on top of it; pass
+     * `{ position: 'top' }` to place it above everything else instead.
+     */
+    addLayer(
+        layer: Parameters<MapService['addLayer']>[0],
+        options?: AddLayerOptions
+    ) {
+        this.#service?.addLayer(layer, options)
+    }
+
+    /**
+     * Removes a previously added layer by the `name` it was given.
+     */
+    removeLayer(name: string) {
+        this.#service?.removeLayer(name)
+    }
+
+    /**
+     * Gets a layer (built-in or custom) by name.
+     */
+    getLayer(name: string) {
+        return this.#service?.getLayer(name)
+    }
+
+    /**
+     * Fits the map's view to the given extent, reprojecting from
+     * `options.projection` to the map's view projection if provided.
+     */
+    fitToExtent(
+        extent: Parameters<MapService['fitToExtent']>[0],
+        options?: FitToExtentOptions
+    ) {
+        this.#service?.fitToExtent(extent, options)
+    }
+
+    addInteraction(interaction: Parameters<MapService['addInteraction']>[0]) {
+        this.#service?.addInteraction(interaction)
+    }
+
+    removeInteraction(interaction: Parameters<MapService['removeInteraction']>[0]) {
+        this.#service?.removeInteraction(interaction)
+    }
+
+    /**
+     * Returns the map's rendered canvas/svg elements, in z-order, for
+     * consumers that need to composite the rendered map (e.g. exporting an
+     * image or capturing a thumbnail).
+     */
+    getCanvasElements() {
+        return this.#service?.getCanvasElements()
+    }
+
+    getSize() {
+        return this.#service?.getSize()
+    }
+
+    getPixelFromCoordinate(coordinate: [number, number]) {
+        return this.#service?.getPixelFromCoordinate(coordinate)
+    }
+
+    renderComplete() {
+        return this.#service?.renderComplete()
     }
 
     selectTemplate() {
@@ -227,9 +308,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(shapes ?? undefined, (category) => {
+                    map(shapes ?? undefined, category => {
                         return html`<optgroup label="${category.title}">
-                            ${category.shapes.map((shape) => {
+                            ${category.shapes.map(shape => {
                                 return html`
                                     <option
                                         value="${shape.shapefileID}/${shape.shapeID}"
@@ -239,7 +320,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                                 `
                             })}
                         </optgroup> `
-                    }),
+                    })
                 )}
             </select>
         `
@@ -248,10 +329,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     render() {
         return html`
             ${this.hasShapeSelector ? this.selectTemplate() : nothing}
-            <div part="map" class=${`map ${this.staticMode ? 'static' : ''}`}>
-                ${
-                    this.showMouseCoordinates
-                        ? html`
+            <div
+                part="map"
+                class=${`map ${this.staticMode ? 'static' : ''} ${this.fill ? 'fill' : ''}`}
+            >
+                ${this.showMouseCoordinates
+                    ? html`
                           <div id="mouse-info">
                               <div>
                                   <strong
@@ -262,17 +345,14 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                               </div>
                           </div>
                       `
-                        : nothing
-                }
-                ${
-                    this.shapeLoading
-                        ? html`
+                    : nothing}
+                ${this.shapeLoading
+                    ? html`
                           <div class="map__loading-overlay">
                               <div class="map__spinner"></div>
                           </div>
                       `
-                        : nothing
-                }
+                    : nothing}
             </div>
         `
     }

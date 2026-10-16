@@ -1,7 +1,13 @@
-import { expect } from '@open-wc/testing'
+import { expect, fixture, html } from '@open-wc/testing'
+import sinon from 'sinon'
 import './time-series.js'
+import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 
 describe('<terra-time-series>', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
     it('should parse JSON variable-entry-ids attribute values', () => {
         const el = document.createElement('terra-time-series') as any
 
@@ -46,5 +52,42 @@ describe('<terra-time-series>', () => {
         const el = document.createElement('terra-time-series') as any
         el.setAttribute('job-id', 'abc-123')
         expect(el.jobId).to.equal('abc-123')
+    })
+
+    it('should call the real Harmony cancelJob endpoint when Cancel is clicked while a job is running', async () => {
+        const cancelJobStub = sinon
+            .stub(HarmonyRequestController.prototype, 'cancelJob')
+            .resolves({} as any)
+        sinon.stub(HarmonyRequestController.prototype, 'jobId').get(() => 'job-123')
+
+        const el: any = await fixture(html`<terra-time-series></terra-time-series>`)
+
+        const cancelButton = el.shadowRoot?.querySelector('dialog terra-button')
+        expect(cancelButton).to.exist
+
+        cancelButton.click()
+        await el.updateComplete
+
+        expect(
+            cancelJobStub.calledWith({
+                jobId: 'job-123',
+                options: { bearerToken: el.bearerToken },
+            })
+        ).to.be.true
+    })
+
+    it('should not call cancelJob when no Harmony job has started', async () => {
+        const cancelJobStub = sinon
+            .stub(HarmonyRequestController.prototype, 'cancelJob')
+            .resolves({} as any)
+        sinon.stub(HarmonyRequestController.prototype, 'jobId').get(() => null)
+
+        const el: any = await fixture(html`<terra-time-series></terra-time-series>`)
+
+        const cancelButton = el.shadowRoot?.querySelector('dialog terra-button')
+        cancelButton.click()
+        await el.updateComplete
+
+        expect(cancelJobStub.called).to.be.false
     })
 })
