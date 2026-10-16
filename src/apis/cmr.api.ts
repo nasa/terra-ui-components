@@ -7,6 +7,7 @@ import type { MapEventDetail } from '../components/map/type.js'
 import type { UmmC } from './types/cmr/umm-c.js'
 import type { UmmVar } from './types/cmr/umm-var.js'
 import type { UmmG } from './types/cmr/umm-g.js'
+import type { UmmVis } from './types/cmr/umm-vis.js'
 
 export type CmrCollectionCitationItem = {
     doi: {
@@ -92,6 +93,14 @@ export interface UmmMeta {
     'native-id': string
     'provider-id': string
     'granule-count'?: number
+    /**
+     * Other CMR concepts associated with this record. For a collection, this
+     * is how GIBS/Worldview visualizations are tied to it — see
+     * `associations.visualizations` (an array of UMM-Vis concept-ids).
+     */
+    associations?: {
+        visualizations?: string[]
+    }
 }
 
 export type SearchParams = {
@@ -139,16 +148,45 @@ class CmrApi {
             })
         }
 
+        return this.#getCollection(
+            `entry_id=${collectionEntryId}`,
+            collectionEntryId,
+            options,
+        )
+    }
+
+    async getCollectionByConceptId(
+        collectionConceptId?: string,
+        options?: RequestOptions,
+    ) {
+        if (!collectionConceptId) {
+            throw new BadRequestException({
+                message: '`collectionConceptId` is required',
+            })
+        }
+
+        return this.#getCollection(
+            `concept-id=${collectionConceptId}`,
+            collectionConceptId,
+            options,
+        )
+    }
+
+    async #getCollection(
+        queryParam: string,
+        collectionId: string,
+        options?: RequestOptions,
+    ) {
         // CMR has a search-based API, so you always get back an items[] array
         // we'll grab the first item to represent the collection
         const ummResponse = await this.#request<UmmResponse<UmmC>>(
-            `collections.umm_json?entry_id=${collectionEntryId}&include_granule_counts=true`,
+            `collections.umm_json?${queryParam}&include_granule_counts=true`,
             options,
         )
 
         if (!ummResponse.items.length) {
             throw new NotFoundException({
-                message: `Collection ${collectionEntryId} was not found`,
+                message: `Collection ${collectionId} was not found`,
             })
         }
 
@@ -168,6 +206,37 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmVar>>(
             `variables.umm_json?keyword=${searchParams.collectionConceptId}&page_size=${searchParams.pageSize ?? 200}`,
+            options,
+        )
+    }
+
+    /**
+     * CMR's `visualizations` search doesn't support filtering by collection —
+     * there's no `collection_concept_id` param. Instead, a collection's UMM-C
+     * record lists its associated visualization concept-ids under
+     * `meta.associations.visualizations` (see `getCollectionByEntryId` /
+     * `getCollectionByConceptId`), and those ids are looked up here in a
+     * single batched request via repeated `concept_id[]` params.
+     *
+     * Coverage is sparse (most collections have no visualizations at all),
+     * so an empty `visualizationConceptIds` array or empty `items` result is
+     * expected, not an error.
+     */
+    async getVisualizationsByIds(
+        visualizationConceptIds: string[],
+        options?: RequestOptions,
+    ) {
+        if (!visualizationConceptIds.length) {
+            return { hits: 0, items: [] } as UmmResponse<UmmVis>
+        }
+
+        const searchParams = new URLSearchParams()
+        for (const id of visualizationConceptIds) {
+            searchParams.append('concept_id[]', id)
+        }
+
+        return this.#request<UmmResponse<UmmVis>>(
+            `visualizations.umm_json?${searchParams.toString()}`,
             options,
         )
     }

@@ -63,6 +63,7 @@ export { default as TerraEarthdataLogin } from './components/earthdata-login/ear
 export { default as TerraHarmonyHistory } from './components/harmony-history/harmony-history.js'
 export { default as TerraBanner } from './components/banner/banner.js'
 
+export { default as TerraCollectionVisualization } from './components/collection-visualization/collection-visualization.js'
 /* plop:component */
 
 // Utilities

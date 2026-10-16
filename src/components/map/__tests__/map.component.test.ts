@@ -1,0 +1,385 @@
+import { expect, fixture, html, waitUntil } from '@open-wc/testing'
+import sinon from 'sinon'
+import ImageTile from 'ol/source/ImageTile.js'
+import WMTS from 'ol/source/WMTS.js'
+import type TileLayer from 'ol/layer/Tile.js'
+import TerraMap from '../map.component.js'
+import '../map.js'
+
+function makeCapabilitiesXml(projection: string, matrixSet: string) {
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.0">
+    <Contents>
+        <Layer>
+            <ows:Title>Test Layer</ows:Title>
+            <ows:Identifier>TestLayer</ows:Identifier>
+            <Style isDefault="true">
+                <ows:Identifier>default</ows:Identifier>
+            </Style>
+            <Format>image/jpeg</Format>
+            <Dimension>
+                <ows:Identifier>Time</ows:Identifier>
+                <Default>default</Default>
+                <Value>2024-06-01</Value>
+            </Dimension>
+            <TileMatrixSetLink>
+                <TileMatrixSet>${matrixSet}</TileMatrixSet>
+            </TileMatrixSetLink>
+            <ResourceURL format="image/jpeg" resourceType="tile" template="https://example.com/${projection}/TestLayer/default/{Time}/${matrixSet}/{TileMatrix}/{TileRow}/{TileCol}.jpg"/>
+        </Layer>
+        <TileMatrixSet>
+            <ows:Identifier>${matrixSet}</ows:Identifier>
+            <ows:SupportedCRS>urn:ogc:def:crs:${projection.replace(':', '::')}</ows:SupportedCRS>
+            <TileMatrix>
+                <ows:Identifier>0</ows:Identifier>
+                <ScaleDenominator>279541132.0143589</ScaleDenominator>
+                <TopLeftCorner>-180 90</TopLeftCorner>
+                <TileWidth>512</TileWidth>
+                <TileHeight>512</TileHeight>
+                <MatrixWidth>2</MatrixWidth>
+                <MatrixHeight>1</MatrixHeight>
+            </TileMatrix>
+        </TileMatrixSet>
+    </Contents>
+</Capabilities>`
+}
+
+describe('<terra-map> layers (gibs)', () => {
+    let originalFetch: typeof fetch
+
+    beforeEach(() => {
+        originalFetch = window.fetch
+    })
+
+    afterEach(() => {
+        window.fetch = originalFetch
+    })
+
+    function stubFetch(xml: string) {
+        window.fetch = (async () =>
+            new Response(xml, { status: 200 })) as typeof fetch
+    }
+
+    describe('attribute parsing', () => {
+        it('parses a JSON array from the layers attribute', async () => {
+            const el = await fixture<TerraMap>(html`
+                <terra-map
+                    layers='[{ "type": "gibs", "name": "imagery", "layer": "TestLayer" }]'
+                ></terra-map>
+            `)
+
+            expect(el.layers).to.deep.equal([
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer' },
+            ])
+        })
+
+        it('falls back to an empty array for missing/invalid JSON', async () => {
+            const el = await fixture<TerraMap>(
+                html`<terra-map layers="not json"></terra-map>`
+            )
+
+            expect(el.layers).to.deep.equal([])
+        })
+
+        it('falls back to an empty array when the parsed value is not an array', async () => {
+            const el = await fixture<TerraMap>(
+                html`<terra-map layers='{ "name": "imagery" }'></terra-map>`
+            )
+
+            expect(el.layers).to.deep.equal([])
+        })
+    })
+
+    describe('declared up front (EPSG:3857, sync)', () => {
+        it('adds a layer for each entry in layers', async () => {
+            const el = await fixture<TerraMap>(html`
+                <terra-map
+                    layers='[{ "type": "gibs", "name": "imagery", "layer": "TestLayer" }]'
+                ></terra-map>
+            `)
+
+            await waitUntil(() => el.getLayer('imagery'))
+
+            const layer = el.getLayer('imagery') as TileLayer | undefined
+            expect(layer).to.exist
+            expect(layer!.getSource()).to.be.instanceOf(ImageTile)
+        })
+
+        it('emits terra-map-layer-change once the layer is built', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            const changeSpy = sinon.spy()
+            el.addEventListener('terra-map-layer-change', changeSpy)
+
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+
+            await waitUntil(() => changeSpy.called)
+
+            const detail = changeSpy.firstCall.args[0].detail
+            expect(detail).to.deep.equal({ name: 'imagery', type: 'gibs' })
+        })
+    })
+
+    describe('forProjection (async, non-EPSG:3857)', () => {
+        it('adds the resolved layer once the GetCapabilities fetch completes', async () => {
+            stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
+
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'polar',
+                    layer: 'TestLayer',
+                    projection: 'EPSG:3413',
+                },
+            ]
+
+            await waitUntil(() => el.getLayer('polar'))
+
+            const layer = el.getLayer('polar') as TileLayer | undefined
+            expect(layer).to.exist
+            expect(layer!.getSource()).to.be.instanceOf(WMTS)
+        })
+    })
+
+    describe('projection', () => {
+        it('defaults to EPSG:3857', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+
+            expect(el.projection).to.equal('EPSG:3857')
+        })
+
+        it('passes the projection attribute through to the map view', async () => {
+            const el = await fixture<TerraMap>(
+                html`<terra-map projection="EPSG:3413"></terra-map>`
+            )
+
+            expect(el.projection).to.equal('EPSG:3413')
+        })
+
+        it('warns when a gibs layers entry does not match the configured projection', async () => {
+            stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
+            const warnSpy = sinon.spy(console, 'warn')
+
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'polar',
+                    layer: 'TestLayer',
+                    projection: 'EPSG:3413',
+                },
+            ]
+
+            await waitUntil(() => el.getLayer('polar'))
+
+            expect(
+                warnSpy.calledWith(sinon.match(/published in EPSG:3413.*EPSG:3857/))
+            ).to.be.true
+            warnSpy.restore()
+        })
+
+        it('does not warn when a gibs layers entry matches the configured projection', async () => {
+            stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
+            const warnSpy = sinon.spy(console, 'warn')
+
+            const el = await fixture<TerraMap>(
+                html`<terra-map projection="EPSG:3413"></terra-map>`
+            )
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'polar',
+                    layer: 'TestLayer',
+                    projection: 'EPSG:3413',
+                },
+            ]
+
+            await waitUntil(() => el.getLayer('polar'))
+
+            expect(warnSpy.called).to.be.false
+            warnSpy.restore()
+        })
+    })
+
+    describe('vector gibs layers (type: "gibs-vector")', () => {
+        function stubVectorFetch() {
+            window.fetch = (async () =>
+                new Response(
+                    `<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.0">
+    <Contents>
+        <Layer>
+            <ows:Title>GRanD_Dams</ows:Title>
+            <ows:Identifier>GRanD_Dams</ows:Identifier>
+            <Style isDefault="true"><ows:Identifier>default</ows:Identifier></Style>
+            <Format>application/vnd.mapbox-vector-tile</Format>
+            <TileMatrixSetLink><TileMatrixSet>2km</TileMatrixSet></TileMatrixSetLink>
+            <ResourceURL format="application/vnd.mapbox-vector-tile" resourceType="tile" template="https://example.com/epsg4326/GRanD_Dams/default/{Time}/2km/{TileMatrix}/{TileRow}/{TileCol}.mvt"/>
+        </Layer>
+        <TileMatrixSet>
+            <ows:Identifier>2km</ows:Identifier>
+            <ows:SupportedCRS>urn:ogc:def:crs:EPSG::4326</ows:SupportedCRS>
+            <TileMatrix>
+                <ows:Identifier>0</ows:Identifier>
+                <ScaleDenominator>279541132.0143589</ScaleDenominator>
+                <TopLeftCorner>-180 90</TopLeftCorner>
+                <TileWidth>512</TileWidth>
+                <TileHeight>512</TileHeight>
+                <MatrixWidth>2</MatrixWidth>
+                <MatrixHeight>1</MatrixHeight>
+            </TileMatrix>
+        </TileMatrixSet>
+    </Contents>
+</Capabilities>`,
+                    { status: 200 }
+                )) as typeof fetch
+        }
+
+        it('adds a VectorTileLayer for a type: "gibs-vector" entry', async () => {
+            stubVectorFetch()
+
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [{ type: 'gibs-vector', name: 'dams', layer: 'GRanD_Dams' }]
+
+            await waitUntil(() => el.getLayer('dams'))
+
+            expect(el.getLayer('dams')).to.exist
+        })
+    })
+
+    describe('getFeaturesAtPixel', () => {
+        it('delegates to the underlying map service', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+
+            expect(() => el.getFeaturesAtPixel([0, 0])).to.not.throw()
+        })
+    })
+
+    describe('diffing on updates', () => {
+        it('removes a layer whose entry is dropped from the array', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await waitUntil(() => el.getLayer('imagery'))
+
+            el.layers = []
+            await waitUntil(() => !el.getLayer('imagery'))
+
+            expect(el.getLayer('imagery')).to.not.exist
+        })
+
+        it('rebuilds a layer whose config changed', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    date: '2024-06-01',
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+            const firstLayer = el.getLayer('imagery')
+
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    date: '2024-06-02',
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery') !== firstLayer)
+
+            const secondLayer = el.getLayer('imagery')
+            expect(secondLayer).to.exist
+            expect(secondLayer).to.not.equal(firstLayer)
+        })
+
+        it('leaves an unchanged entry alone', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await waitUntil(() => el.getLayer('imagery'))
+            const firstLayer = el.getLayer('imagery')
+
+            // re-assign an equivalent (but new) array reference
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+
+            expect(el.getLayer('imagery')).to.equal(firstLayer)
+        })
+    })
+})
+
+describe('<terra-map> layers (geotiff)', () => {
+    // NOTE: `ol/source/GeoTIFF.js` statically imports the `geotiff` npm
+    // package, which only ships Node and bundled-browser builds - not a
+    // plain unbundled ESM build - so web-test-runner's unbundled dev server
+    // can't load it (a pre-existing, environment-level constraint; a bundled
+    // build, e.g. `npm run build`, resolves it fine). That means every
+    // geotiff-type `layers` build attempt below rejects, exercising
+    // `layersChanged`'s error path, diffing, and cleanup logic - just not the
+    // happy-path layer construction itself (covered indirectly by
+    // `geotiff.layer.test.ts`'s unit tests of the underlying math).
+
+    it('emits an error event when the layer fails to build', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        const changeSpy = sinon.spy()
+        el.addEventListener('terra-map-layer-change', changeSpy)
+
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+        ]
+
+        await waitUntil(() => changeSpy.called)
+
+        const detail = changeSpy.firstCall.args[0].detail
+        expect(detail.name).to.equal('my-data')
+        expect(detail.type).to.equal('geotiff')
+        expect(detail.error).to.be.instanceOf(Error)
+        expect(el.getLayer('my-data')).to.not.exist
+        expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
+    })
+
+    it('removes a dropped entry without throwing, even if it never finished building', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+        ]
+        await el.updateComplete
+
+        expect(() => {
+            el.layers = []
+        }).to.not.throw()
+        await el.updateComplete
+
+        expect(el.getLayer('my-data')).to.not.exist
+        expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
+    })
+
+    it('getGeoTiffValueAtPixel returns undefined for a layer that never finished building', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+        ]
+        await el.updateComplete
+
+        expect(el.getGeoTiffValueAtPixel('my-data', [0, 0])).to.be.undefined
+    })
+
+    it('does not throw when the config changes again before the previous attempt settles', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/a.tif' },
+        ]
+        el.layers = [
+            { type: 'geotiff', name: 'my-data', url: 'https://example.com/b.tif' },
+        ]
+
+        // give both build attempts a chance to settle
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+        expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
+        expect(el.getLayer('my-data')).to.not.exist
+    })
+})
