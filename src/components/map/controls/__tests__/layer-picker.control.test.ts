@@ -38,7 +38,7 @@ describe('LayerPickerControl', () => {
             visible: true,
         })
         bordersOverlay.set('name', 'borders')
-        bordersOverlay.set('title', 'Borders')
+        bordersOverlay.set('title', 'International Boundaries')
         bordersOverlay.set('type', 'overlay')
 
         graticuleOverlay = new VectorLayer({
@@ -126,36 +126,36 @@ describe('LayerPickerControl', () => {
         const sections = element.querySelectorAll('.layer-picker-section')
         expect(sections.length).to.equal(2)
 
-        const overlayHeading = sections[0].querySelector(
-            '.layer-picker-heading'
-        )?.textContent
-        // Overlays are listed top-down (reversed from map layer order)
-        const overlayLabels = Array.from(
-            sections[0].querySelectorAll('.layer-picker-item span')
-        ).map(s => s.textContent)
-        const overlayInputs = Array.from(
-            sections[0].querySelectorAll('input')
-        ) as HTMLInputElement[]
-
-        expect(overlayHeading).to.equal('Overlays')
-        expect(overlayLabels).to.deep.equal(['Graticule', 'Borders'])
-        expect(overlayInputs.map(i => i.type)).to.deep.equal(['checkbox', 'checkbox'])
-        expect(overlayInputs.map(i => i.checked)).to.deep.equal([false, true])
-
-        const baseHeading = sections[1].querySelector(
+        const baseHeading = sections[0].querySelector(
             '.layer-picker-heading'
         )?.textContent
         const baseLabels = Array.from(
-            sections[1].querySelectorAll('.layer-picker-item span')
+            sections[0].querySelectorAll('.layer-picker-item span')
         ).map(s => s.textContent)
         const baseInputs = Array.from(
-            sections[1].querySelectorAll('input')
+            sections[0].querySelectorAll('input')
         ) as HTMLInputElement[]
 
         expect(baseHeading).to.equal('Base Maps')
         expect(baseLabels).to.deep.equal(['World Imagery', 'OpenStreetMap'])
         expect(baseInputs.map(i => i.type)).to.deep.equal(['radio', 'radio'])
         expect(baseInputs.map(i => i.checked)).to.deep.equal([true, false])
+
+        const overlayHeading = sections[1].querySelector(
+            '.layer-picker-heading'
+        )?.textContent
+        // Overlays are listed top-down (reversed from map layer order)
+        const overlayLabels = Array.from(
+            sections[1].querySelectorAll('.layer-picker-item span')
+        ).map(s => s.textContent)
+        const overlayInputs = Array.from(
+            sections[1].querySelectorAll('input')
+        ) as HTMLInputElement[]
+
+        expect(overlayHeading).to.equal('Overlays')
+        expect(overlayLabels).to.deep.equal(['Graticule', 'International Boundaries'])
+        expect(overlayInputs.map(i => i.type)).to.deep.equal(['checkbox', 'checkbox'])
+        expect(overlayInputs.map(i => i.checked)).to.deep.equal([false, true])
     })
 
     it('enforces mutual exclusion on base layers and notifies onLayerToggle', () => {

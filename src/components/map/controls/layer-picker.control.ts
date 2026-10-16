@@ -150,13 +150,13 @@ export class LayerPickerControl extends Control {
             .slice()
             .reverse()
 
-        if (overlayLayers.length > 0) {
-            const section = this.#buildSection('Overlays', overlayLayers, 'overlay')
+        if (baseLayers.length > 0) {
+            const section = this.#buildSection('Base Maps', baseLayers, 'base')
             this.#panel.appendChild(section)
         }
 
-        if (baseLayers.length > 0) {
-            const section = this.#buildSection('Base Maps', baseLayers, 'base')
+        if (overlayLayers.length > 0) {
+            const section = this.#buildSection('Overlays', overlayLayers, 'overlay')
             this.#panel.appendChild(section)
         }
     }

@@ -331,12 +331,12 @@ export class MapService {
 
         const bordersLayer = new BordersLayer(options)
         bordersLayer.set('name', 'borders')
-        bordersLayer.set('title', 'Borders')
+        bordersLayer.set('title', 'International Boundaries')
         bordersLayer.set('type', 'overlay')
 
         const labelsLayer = new LabelsLayer(options)
         labelsLayer.set('name', 'labels')
-        labelsLayer.set('title', 'Labels')
+        labelsLayer.set('title', 'Place Labels')
         labelsLayer.set('type', 'overlay')
 
         const graticuleLayer = this.#createGraticuleLayer(options)
