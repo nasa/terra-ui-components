@@ -3,7 +3,7 @@ import sinon from 'sinon'
 import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
 import type TileLayer from 'ol/layer/Tile.js'
-import TerraMap from '../map.component.js'
+import type TerraMap from '../map.component.js'
 import '../map.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {
@@ -102,7 +102,7 @@ describe('<terra-map> layers (gibs)', () => {
 
             const layer = el.getLayer('imagery') as TileLayer | undefined
             expect(layer).to.exist
-            expect(layer!.getSource()).to.be.instanceOf(ImageTile)
+            expect(layer?.getSource()).to.be.instanceOf(ImageTile)
         })
 
         it('emits terra-map-layer-change once the layer is built', async () => {
@@ -137,7 +137,7 @@ describe('<terra-map> layers (gibs)', () => {
 
             const layer = el.getLayer('polar') as TileLayer | undefined
             expect(layer).to.exist
-            expect(layer!.getSource()).to.be.instanceOf(WMTS)
+            expect(layer?.getSource()).to.be.instanceOf(WMTS)
         })
     })
 
@@ -381,5 +381,70 @@ describe('<terra-map> layers (geotiff)', () => {
 
         expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
         expect(el.getLayer('my-data')).to.not.exist
+    })
+})
+
+describe('<terra-map> layer picker', () => {
+    it('emits terra-map-layer-toggle and switches base layers when a radio option is selected', async () => {
+        const el = await fixture<TerraMap>(
+            html`<terra-map show-layer-picker></terra-map>`
+        )
+        const toggleSpy = sinon.spy()
+        el.addEventListener('terra-map-layer-toggle', toggleSpy)
+
+        const toggleBtn = el.shadowRoot?.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        expect(toggleBtn.style.display).to.equal('flex')
+
+        toggleBtn.click()
+
+        const radios = el.shadowRoot?.querySelectorAll(
+            '.layer-picker-panel input[type="radio"]'
+        ) as NodeListOf<HTMLInputElement>
+        expect(radios.length).to.equal(3)
+
+        // Select OpenStreetMap (second base layer)
+        radios[1].checked = true
+        radios[1].dispatchEvent(new Event('change'))
+
+        expect(el.getLayer('base')?.getVisible()).to.be.false
+        expect(el.getLayer('osm')?.getVisible()).to.be.true
+        expect(el.getLayer('topo')?.getVisible()).to.be.false
+
+        expect(toggleSpy.calledOnce).to.be.true
+        const detail = toggleSpy.firstCall.args[0].detail
+        expect(detail).to.include({
+            name: 'osm',
+            title: 'OpenStreetMap',
+            type: 'base',
+            visible: true,
+        })
+        expect(detail.layer).to.equal(el.getLayer('osm'))
+    })
+
+    it('synchronizes showGraticule when the Graticule overlay checkbox is toggled', async () => {
+        const el = await fixture<TerraMap>(
+            html`<terra-map show-layer-picker show-graticule></terra-map>`
+        )
+        expect(el.showGraticule).to.be.true
+        expect(el.getLayer('graticule')?.getVisible()).to.be.true
+
+        const toggleBtn = el.shadowRoot?.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        toggleBtn.click()
+
+        const checkboxes = el.shadowRoot?.querySelectorAll(
+            '.layer-picker-panel input[type="checkbox"]'
+        ) as NodeListOf<HTMLInputElement>
+        // Graticule is the topmost overlay (first checkbox)
+        expect(checkboxes[0].checked).to.be.true
+
+        checkboxes[0].checked = false
+        checkboxes[0].dispatchEvent(new Event('change'))
+
+        expect(el.showGraticule).to.be.false
+        expect(el.getLayer('graticule')?.getVisible()).to.be.false
     })
 })
