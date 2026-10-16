@@ -2333,6 +2333,16 @@ terra-site-header {
     box-sizing: border-box;
 }
 
+@media (max-width: 768px) {
+    .terra-toast-stack {
+        inset-inline-start: 0;
+        inset-inline-end: 0;
+        width: auto;
+        max-width: none;
+        padding: var(--terra-spacing-small);
+    }
+}
+
 .terra-toast-stack terra-alert,
 .terra-toast-stack terra-toast {
     display: block;
