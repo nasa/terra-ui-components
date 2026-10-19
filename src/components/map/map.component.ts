@@ -299,7 +299,11 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     continue
                 }
 
-                this.addLayer(result.layer, { name, position: config.position })
+                this.addLayer(result.layer, {
+                    name,
+                    position: config.position,
+                    title: config.title,
+                })
 
                 if (config.type === 'geotiff' && result.type === 'geotiff') {
                     this.#geotiffLayerInfo.set(name, result.info)
