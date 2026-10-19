@@ -189,7 +189,7 @@ If you don't need to write JS, the `layers` attribute/property lets you declare 
 - `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
 - `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
 
-Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`) and an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options).
+Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
 
 ```html:preview
 <terra-map
@@ -204,10 +204,12 @@ Changing the attribute/property later diffs against what's currently applied, by
 Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
 
 ```html:preview
-<terra-map collection-id="AIRS2RET_NRT_7.0"></terra-map>
+<terra-map collection-id="GPM_3IMERGHH_07"></terra-map>
 ```
 
 Under the hood, this reads the collection's `edsc.extra.serverless.gibs` tag from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped; set `projection` to match a polar/geographic layer the same way you would for a manual `"type": "gibs"` entry. Like declarative `layers`, each resolved layer fires a `terra-map-layer-change` event and can be inspected or removed individually with `getLayer()`/`removeLayer()`. `collection-id` and `layers` are independent — both can be used on the same map at once, since their layer names never collide.
+
+Only the first resolved layer is visible by default — the rest are still added (so `getLayer()` finds them and `terra-map-layer-change` still fires for each), just hidden, to avoid painting every product in the collection on top of each other. Toggle one on with `getLayer(name).setVisible(true)`.
 
 ### Adding **GeoTIFF** Layers
 

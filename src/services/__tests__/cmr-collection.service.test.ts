@@ -142,8 +142,10 @@ describe('CmrCollectionService', () => {
                     layer: 'AIRS_L2_Surface_Air_Temperature_Day',
                     date: undefined,
                     format: 'png',
+                    tileMatrixSet: 'GoogleMapsCompatible_Level6', // from the default 2km geographic_resolution
                     projection: undefined,
                     position: 'top',
+                    visible: true,
                 },
                 {
                     type: 'gibs',
@@ -151,8 +153,10 @@ describe('CmrCollectionService', () => {
                     layer: 'AIRS_L2_Surface_Air_Temperature_Night',
                     date: undefined,
                     format: 'jpg',
+                    tileMatrixSet: 'GoogleMapsCompatible_Level6',
                     projection: undefined,
                     position: 'top',
+                    visible: false,
                 },
             ])
         })
@@ -170,7 +174,81 @@ describe('CmrCollectionService', () => {
             expect(configs[0]).to.include({
                 date: '2024-06-01',
                 projection: 'EPSG:3413',
+                tileMatrixSet: '1km', // from the default arctic_resolution
+                visible: true,
             })
+        })
+
+        it('only marks the first entry as visible by default', () => {
+            const configs = cmrCollectionService.buildGibsLayerConfigs(
+                [
+                    makeEntry({ product: 'A' }),
+                    makeEntry({ product: 'B' }),
+                    makeEntry({ product: 'C' }),
+                ],
+                { collectionId: 'AIRS2RET_NRT_7.0', projection: 'EPSG:3857' }
+            )
+
+            expect(configs.map(c => c.visible)).to.deep.equal([true, false, false])
+        })
+    })
+
+    describe('getTileMatrixSet', () => {
+        it('maps a web mercator entry resolution to its GoogleMapsCompatible_Level#', () => {
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ geographic_resolution: '2km' }),
+                    'EPSG:3857'
+                )
+            ).to.equal('GoogleMapsCompatible_Level6')
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ geographic_resolution: '1km' }),
+                    'EPSG:3857'
+                )
+            ).to.equal('GoogleMapsCompatible_Level7')
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ geographic_resolution: '500m' }),
+                    'EPSG:3857'
+                )
+            ).to.equal('GoogleMapsCompatible_Level8')
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ geographic_resolution: '250m' }),
+                    'EPSG:3857'
+                )
+            ).to.equal('GoogleMapsCompatible_Level9')
+        })
+
+        it('returns undefined for an unrecognized or missing web mercator resolution', () => {
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ geographic_resolution: null }),
+                    'EPSG:3857'
+                )
+            ).to.be.undefined
+        })
+
+        it('uses the resolution string directly for EPSG:4326/3413/3031', () => {
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ geographic_resolution: '2km' }),
+                    'EPSG:4326'
+                )
+            ).to.equal('2km')
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ arctic_resolution: '1km' }),
+                    'EPSG:3413'
+                )
+            ).to.equal('1km')
+            expect(
+                cmrCollectionService.getTileMatrixSet(
+                    makeEntry({ antarctic_resolution: '1km' }),
+                    'EPSG:3031'
+                )
+            ).to.equal('1km')
         })
     })
 })

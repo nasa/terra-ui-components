@@ -122,6 +122,10 @@ export class MapService {
         return this.#getLayerByName(name)
     }
 
+    getAllLayers() {
+        return this.#map.getAllLayers()
+    }
+
     /**
      * Fits the map's view to the given extent, reprojecting from
      * `options.projection` to the map's view projection if provided.

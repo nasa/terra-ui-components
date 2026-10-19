@@ -4,7 +4,11 @@ import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js'
 import { transformExtent } from 'ol/proj.js'
 import type { Extent } from 'ol/extent.js'
 import { XYZLayer } from './xyz.layer.js'
-import { getGibsCapabilities } from './gibs-capabilities.js'
+import {
+    getGibsCapabilities,
+    getGibsLegendUrls,
+    type GibsLegendUrls,
+} from './gibs-capabilities.js'
 import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
 import type { CommonConfig } from './common.js'
 import '../projections.js' // registers EPSG:3413/3031 with OpenLayers
@@ -111,6 +115,18 @@ export type GibsLayerConfig =
     | (Options & CommonConfig & { type: 'gibs'; projection?: Projection })
     | (VectorOptions & CommonConfig & { type: 'gibs-vector' })
 
+export type GibsLayerInfo = {
+    layer: TileLayer | VectorTileLayer
+    /**
+     * The layer's color map legend image URLs (horizontal/vertical), if GIBS
+     * publishes one, read from the layer's GetCapabilities `Style`. Not
+     * awaited before the layer itself is built/added to the map - fetching
+     * it here is a best-effort lookup off a (possibly already-cached)
+     * capabilities document, not a blocking network call.
+     */
+    legend: Promise<GibsLegendUrls | undefined>
+}
+
 /**
  * Builds a layer from a `GibsLayerConfig`, dispatching to:
  * - `buildGibsVectorLayer()` when `type: 'gibs-vector'` is given
@@ -119,19 +135,25 @@ export type GibsLayerConfig =
  */
 export async function buildGibsLayer(
     config: GibsLayerConfig
-): Promise<TileLayer | VectorTileLayer> {
+): Promise<GibsLayerInfo> {
     const { name, position, ...options } = config
 
     if (options.type === 'gibs-vector') {
         const { type, ...vectorOptions } = options
-        return buildGibsVectorLayer(vectorOptions)
+        const layer = await buildGibsVectorLayer(vectorOptions)
+        return { layer, legend: Promise.resolve(undefined) }
     }
 
     const { type, projection, ...rasterOptions } = options
+    const legend = getGibsLegendUrls(
+        projection ?? 'EPSG:3857',
+        rasterOptions.layer
+    ).catch(() => undefined)
 
     if (!projection || projection === 'EPSG:3857') {
-        return new GibsLayer(rasterOptions)
+        return { layer: new GibsLayer(rasterOptions), legend }
     }
 
-    return GibsLayer.forProjection({ ...rasterOptions, projection })
+    const layer = await GibsLayer.forProjection({ ...rasterOptions, projection })
+    return { layer, legend }
 }

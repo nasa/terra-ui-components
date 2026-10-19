@@ -2,7 +2,8 @@ import { expect } from '@open-wc/testing'
 import TileLayer from 'ol/layer/Tile.js'
 import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
-import { GibsLayer } from '../gibs.layer.js'
+import { buildGibsLayer, GibsLayer } from '../gibs.layer.js'
+import { getGibsLegendUrls } from '../gibs-capabilities.js'
 import '../../projections.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {
@@ -178,6 +179,83 @@ describe('GibsLayer', () => {
             expect(extent).to.exist
             // EPSG:4326 (-10, -80) should not equal the EPSG:3031 meters-based extent
             expect(extent[0]).to.not.equal(-10)
+        })
+    })
+})
+
+describe('GIBS color map legend URLs', () => {
+    // EPSG:3857's capabilities doc isn't touched by any other test in this
+    // file (its sync GibsLayer constructor never fetches), so it's safe to
+    // share one cached fetch across these assertions.
+    const CAPABILITIES_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.0">
+    <Contents>
+        <Layer>
+            <ows:Title>With Legend</ows:Title>
+            <ows:Identifier>WithLegend</ows:Identifier>
+            <Style isDefault="true">
+                <ows:Identifier>default</ows:Identifier>
+                <LegendURL xlink:type="simple" xlink:href="https://example.com/legend-h.svg" xlink:role="http://earthdata.nasa.gov/gibs/legend-type/horizontal" format="image/svg+xml" width="378" height="86"/>
+                <LegendURL xlink:type="simple" xlink:href="https://example.com/legend-v.svg" xlink:role="http://earthdata.nasa.gov/gibs/legend-type/vertical" format="image/svg+xml" width="135" height="288"/>
+            </Style>
+            <Format>image/jpeg</Format>
+        </Layer>
+        <Layer>
+            <ows:Title>Without Legend</ows:Title>
+            <ows:Identifier>WithoutLegend</ows:Identifier>
+            <Style isDefault="true">
+                <ows:Identifier>default</ows:Identifier>
+            </Style>
+            <Format>image/jpeg</Format>
+        </Layer>
+    </Contents>
+</Capabilities>`
+
+    let originalFetch: typeof fetch
+
+    beforeEach(() => {
+        originalFetch = window.fetch
+        window.fetch = (async () =>
+            new Response(CAPABILITIES_XML, { status: 200 })) as typeof fetch
+    })
+
+    afterEach(() => {
+        window.fetch = originalFetch
+    })
+
+    it('should read both the horizontal and vertical legend URLs for a layer that has them', async () => {
+        const legends = await getGibsLegendUrls('EPSG:3857', 'WithLegend')
+
+        expect(legends).to.deep.equal({
+            horizontal: 'https://example.com/legend-h.svg',
+            vertical: 'https://example.com/legend-v.svg',
+        })
+    })
+
+    it('should resolve to undefined for a layer whose style has no LegendURL', async () => {
+        const legends = await getGibsLegendUrls('EPSG:3857', 'WithoutLegend')
+
+        expect(legends).to.be.undefined
+    })
+
+    it('should resolve to undefined for an unknown layer', async () => {
+        const legends = await getGibsLegendUrls('EPSG:3857', 'NoSuchLayer')
+
+        expect(legends).to.be.undefined
+    })
+
+    it('should expose the legend on the result of buildGibsLayer() without blocking it', async () => {
+        const result = await buildGibsLayer({
+            type: 'gibs',
+            name: 'with-legend',
+            layer: 'WithLegend',
+        })
+
+        expect(result.legend).to.be.instanceOf(Promise)
+        const legends = await result.legend
+        expect(legends).to.deep.equal({
+            horizontal: 'https://example.com/legend-h.svg',
+            vertical: 'https://example.com/legend-v.svg',
         })
     })
 })

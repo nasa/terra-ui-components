@@ -7,6 +7,19 @@ import type {
     Projection,
 } from '../components/map/layers/gibs.layer.js'
 
+// GIBS' Web Mercator ("epsg3857/best") endpoint is tied to a specific
+// GoogleMapsCompatible_Level# per layer, keyed by its native resolution —
+// requesting the wrong one 400s instead of just rendering blank. EPSG:4326
+// and the polar projections instead use the resolution string itself
+// (e.g. '2km', '500m') as the tile matrix set id directly, so they don't need
+// this table. Source: https://nasa-gibs.github.io/gibs-api-docs/map-library-usage/
+const WEB_MERCATOR_LEVEL_BY_RESOLUTION: Record<string, string> = {
+    '2km': 'GoogleMapsCompatible_Level6',
+    '1km': 'GoogleMapsCompatible_Level7',
+    '500m': 'GoogleMapsCompatible_Level8',
+    '250m': 'GoogleMapsCompatible_Level9',
+}
+
 class CmrCollectionService {
     /**
      * Pulls the GIBS tag data (every imagery product CMR knows about for the
@@ -47,26 +60,56 @@ class CmrCollectionService {
     }
 
     /**
+     * The WMTS tile matrix set id to request for an entry, in the given
+     * projection, derived from the entry's own advertised resolution rather
+     * than `GibsLayer`'s generic 250m-oriented default — requesting the wrong
+     * one 400s instead of silently falling back to a coarser/finer zoom.
+     */
+    getTileMatrixSet(
+        entry: GibsTagEntry,
+        projection: Projection
+    ): string | undefined {
+        switch (projection) {
+            case 'EPSG:3857':
+                return entry.geographic_resolution
+                    ? WEB_MERCATOR_LEVEL_BY_RESOLUTION[entry.geographic_resolution]
+                    : undefined
+            case 'EPSG:4326':
+                return entry.geographic_resolution ?? undefined
+            case 'EPSG:3413':
+                return entry.arctic_resolution ?? undefined
+            case 'EPSG:3031':
+                return entry.antarctic_resolution ?? undefined
+        }
+    }
+
+    /**
      * Builds a `GibsLayerConfig` per entry, ready to hand to `buildGibsLayer()`
      * or the `<terra-map layers>`/`collection-id` pipeline. Every entry
      * becomes its own named layer — `${collectionId}:${entry.product}` — so
      * multiple products (day/night variants, pressure levels, etc.) can
      * coexist without colliding with each other or with user-supplied
-     * `layers` entries.
+     * `layers` entries. Only the first entry defaults to `visible: true` —
+     * the rest are added (addressable via `getLayer()`/`removeLayer()`, and
+     * toggleable with `getLayer(name).setVisible(true)`) but hidden, so a
+     * collection with many GIBS products doesn't paint them all on top of
+     * each other by default.
      */
     buildGibsLayerConfigs(
         entries: GibsTagEntry[],
         options: { collectionId: string; projection: Projection; date?: string }
     ): GibsLayerConfig[] {
-        return entries.map(entry => ({
+        return entries.map((entry, index) => ({
             type: 'gibs',
             name: `${options.collectionId}:${entry.product}`,
             layer: entry.product,
             date: options.date,
             format: entry.format === 'png' ? 'png' : 'jpg',
+            tileMatrixSet: this.getTileMatrixSet(entry, options.projection),
             projection:
                 options.projection === 'EPSG:3857' ? undefined : options.projection,
             position: 'top',
+            visible: index === 0,
         }))
     }
 }
