@@ -100,7 +100,7 @@ This example disables infinite horizontal scrolling, restricting the map to a si
 
 ### Adding Custom Layers
 
-Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layers on the map (for example, a data overlay). By default a custom layer is inserted just above the base imagery layer and below the borders/labels layers, so borders/labels keep rendering on top of it; pass `{ position: 'top' }` to place it above everything else instead.
+Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layers on the map (for example, a data overlay). By default a custom layer is inserted just above the base imagery layer and below the borders/labels layers, so borders/labels keep rendering on top of it; pass `{ position: 'top' , title: 'My Custom Layer'}` to place it above everything else instead and to specify the display label shown in UI controls.
 
 ```html:preview
 <terra-map id="custom-layer-map" has-navigation></terra-map>
@@ -196,12 +196,13 @@ If you don't need to write JS, the `layers` attribute/property lets you declare 
 - `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
 - `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
 
-Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`) and an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options).
+Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `title` (a human-readable label displayed in controls like the layer picker; defaults to `name` or the layer's source title), and an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options).
 
 ```html:preview
-<terra-map
-    layers='[{ "type": "gibs", "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
-></terra-map>
+    <terra-map
+        show-layer-picker
+        layers='[{ "type": "gibs", "name": "gibs-imagery", "title": "MODIS Terra True Color", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
+    ></terra-map>
 ```
 
 Changing the attribute/property later diffs against what's currently applied, by `name`: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If a GIBS entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. Each build attempt (success or failure) fires a `terra-map-layer-change` event — see below for GeoTIFF's `info`/`error` detail. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
