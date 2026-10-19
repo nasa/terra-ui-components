@@ -6,7 +6,7 @@ import { transformExtent } from 'ol/proj.js'
 import { Circle, Fill, Style } from 'ol/style.js'
 import { stylefunction } from 'ol-mapbox-style'
 import type { Extent } from 'ol/extent.js'
-import { getGibsCapabilities } from './gibs-capabilities.js'
+import { getGibsCapabilities } from './gibs.layer.js'
 
 const GIBS_WMTS_ROOT = 'https://gibs.earthdata.nasa.gov/wmts'
 const MVT_FORMAT = 'application/vnd.mapbox-vector-tile'

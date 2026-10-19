@@ -207,7 +207,7 @@ Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or co
 <terra-map collection-id="GPM_3IMERGHH_07"></terra-map>
 ```
 
-Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped. 
+Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped.
 
 NOTE: Only the first resolved layer is visible by default to avoid painting every product in the collection on top of each other.
 
@@ -249,7 +249,7 @@ map.addEventListener('terra-map-pointer-move', event => {
 Some GIBS collections are published as vector data (e.g. `GRanD_Dams`, `VIIRS_NOAA20_Thermal_Anomalies_375m_All`) rather than raster imagery. Use `buildGibsVectorLayer()` to load these as Mapbox Vector Tiles. Without a `style`, a simple default circle style is applied:
 
 ```html:preview
-<terra-map id="gibs-vector-map" has-navigation></terra-map>
+<terra-map id="gibs-vector-map" has-navigation projection="EPSG:4326"></terra-map>
 
 <script type="module">
     import { buildGibsVectorLayer } from '/dist/components/map/layers/gibs-vector.layer.js'

@@ -2,8 +2,7 @@ import { expect } from '@open-wc/testing'
 import TileLayer from 'ol/layer/Tile.js'
 import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
-import { buildGibsLayer, GibsLayer } from '../gibs.layer.js'
-import { getGibsLegendUrls } from '../gibs-capabilities.js'
+import { buildGibsLayer, GibsLayer, getGibsLegendUrls } from '../gibs.layer.js'
 import '../../projections.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {
@@ -89,7 +88,10 @@ describe('GibsLayer', () => {
         })
 
         it('should propagate noWorldWrap to wrapX: false on the source', () => {
-            const layer = new GibsLayer({ layer: 'TestLayer', noWorldWrap: true })
+            const layer = new GibsLayer({
+                layer: 'TestLayer',
+                noWorldWrap: true,
+            })
             const source = layer.getSource() as ImageTile
 
             expect(source.getWrapX()).to.be.false
@@ -148,7 +150,9 @@ describe('GibsLayer', () => {
             })
             const source = layer.getSource() as WMTS
 
-            expect(source.getDimensions()).to.deep.include({ Time: '2024-06-01' })
+            expect(source.getDimensions()).to.deep.include({
+                Time: '2024-06-01',
+            })
         })
 
         it('should cache the capabilities fetch per projection', async () => {

@@ -16,7 +16,11 @@ import {
 } from './map.service.js'
 import type { Projection } from './layers/gibs.layer.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
-import { buildMapLayer, type MapLayerConfig } from './layers/layer.js'
+import {
+    buildMapLayer,
+    type MapLayerConfig,
+    type MapLayerResult,
+} from './layers/layer.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
@@ -225,8 +229,14 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     })
     #previousCollectionLayers: MapLayerConfig[] = []
 
+    // `buildMapLayer()` (below) is async - GetCapabilities fetches, raster
+    // min/max reads - so if a layer's config changes again before its build
+    // resolves, two builds for the same `name` can be in flight at once.
+    // This counter, bumped per-name each time a (re)build starts, lets each
+    // build's continuation check whether it's still the most recent one for
+    // that name before applying its result; a superseded build just bails
+    // instead of a slow-but-stale result clobbering a newer one.
     #layerRequestIds = new Map<string, number>()
-    #geotiffLayerInfo = new Map<string, GeoTiffLayerInfo>()
 
     @watch('layers', { waitUntilFirstUpdate: true })
     async layersChanged(
@@ -242,7 +252,6 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             if (!nextByName.has(name)) {
                 this.removeLayer(name)
                 this.#layerRequestIds.delete(name)
-                this.#geotiffLayerInfo.delete(name)
             }
         }
 
@@ -255,28 +264,13 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 continue // unchanged
             }
 
-            // GIBS vector layers are only published in EPSG:4326 today; raster
-            // layers default to EPSG:3857. Either way, warn (rather than
-            // silently rendering distorted/reprojected imagery) if it doesn't
-            // match the map's own view projection.
-            if (config.type === 'gibs' || config.type === 'gibs-vector') {
-                const layerProjection =
-                    config.type === 'gibs-vector'
-                        ? 'EPSG:4326'
-                        : (config.projection ?? 'EPSG:3857')
-                if (layerProjection !== this.projection) {
-                    console.warn(
-                        `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`,
-                    )
-                }
-            }
+            this.#warnIfProjectionMismatch(name, config)
 
             const requestId = (this.#layerRequestIds.get(name) ?? 0) + 1
             this.#layerRequestIds.set(name, requestId)
 
             if (previousConfig) {
                 this.removeLayer(name)
-                this.#geotiffLayerInfo.delete(name)
             }
 
             try {
@@ -287,33 +281,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     continue
                 }
 
-                this.addLayer(result.layer, { name, position: config.position })
-                result.layer.setVisible(config.visible ?? true)
-
-                if (config.type === 'geotiff' && result.type === 'geotiff') {
-                    this.#geotiffLayerInfo.set(name, result.info)
-
-                    if (config.fitView && result.info.extent) {
-                        this.fitToExtent(result.info.extent, {
-                            projection: result.info.projection,
-                            padding: [50, 50, 50, 50],
-                            duration: 300,
-                        })
-                    }
-
-                    this.emit('terra-map-layer-change', {
-                        detail: { name, type: result.type, info: result.info },
-                    })
-                } else if (
-                    result.type === 'gibs' ||
-                    result.type === 'gibs-vector'
-                ) {
-                    result.layer.set('legend', result.legend)
-
-                    this.emit('terra-map-layer-change', {
-                        detail: { name, type: result.type },
-                    })
-                }
+                this.#handleLayerBuilt(name, config, result)
             } catch (error) {
                 // bail if this layer was removed or superseded while it was building
                 if (this.#layerRequestIds.get(name) !== requestId) {
@@ -332,12 +300,73 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     }
 
     /**
+     * GIBS vector layers are only published in EPSG:4326 today; raster
+     * layers default to EPSG:3857. Either way, warn (rather than silently
+     * rendering distorted/reprojected raster imagery, or - for vector
+     * layers - rendering nothing at all, since OpenLayers' vector tile
+     * reprojection doesn't reliably handle GIBS' tile grids) if a layer's
+     * projection doesn't match the map's own view projection.
+     */
+    #warnIfProjectionMismatch(name: string, config: MapLayerConfig) {
+        if (config.type !== 'gibs' && config.type !== 'gibs-vector') {
+            return
+        }
+
+        const layerProjection =
+            config.type === 'gibs-vector'
+                ? 'EPSG:4326'
+                : (config.projection ?? 'EPSG:3857')
+
+        if (layerProjection !== this.projection) {
+            console.warn(
+                `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`,
+            )
+        }
+    }
+
+    /**
+     * Adds a successfully-built `layers` entry to the map and fires
+     * `terra-map-layer-change` with its type-specific detail.
+     */
+    #handleLayerBuilt(
+        name: string,
+        config: MapLayerConfig,
+        result: MapLayerResult,
+    ) {
+        this.addLayer(result.layer, { name, position: config.position })
+        result.layer.setVisible(config.visible ?? true)
+
+        if (config.type === 'geotiff' && result.type === 'geotiff') {
+            // stash the computed info directly on the OL layer
+            result.layer.set('info', result.info)
+
+            if (config.fitView && result.info.extent) {
+                this.fitToExtent(result.info.extent, {
+                    projection: result.info.projection,
+                    padding: [50, 50, 50, 50],
+                    duration: 300,
+                })
+            }
+
+            this.emit('terra-map-layer-change', {
+                detail: { name, type: result.type, info: result.info },
+            })
+        } else if (result.type === 'gibs' || result.type === 'gibs-vector') {
+            result.layer.set('legend', result.legend)
+
+            this.emit('terra-map-layer-change', {
+                detail: { name, type: result.type },
+            })
+        }
+    }
+
+    /**
      * Gets the computed data range, colormap stops, and legend values for a
      * declaratively-added GeoTIFF layer, as built by a `'geotiff'` entry in
      * `layers`.
      */
     getGeoTiffLayerInfo(name: string): GeoTiffLayerInfo | undefined {
-        return this.#geotiffLayerInfo.get(name)
+        return this.getLayer(name)?.get('info')
     }
 
     /**
@@ -349,7 +378,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         name: string,
         pixel: [number, number],
     ): ReturnType<GeoTiffLayerInfo['layer']['getData']> | undefined {
-        return this.#geotiffLayerInfo.get(name)?.layer.getData(pixel)
+        return this.getGeoTiffLayerInfo(name)?.layer.getData(pixel)
     }
 
     // querySelector for the map element
@@ -429,9 +458,16 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     updated(changedProps: globalThis.Map<string, unknown>) {
         super.updated(changedProps)
 
-        // resolved via `collection-id`, separately from the declarative
-        // `layers` property — reuses the exact same diff/build/emit logic,
-        // just fed a different before/after pair
+        // `gibsLayerConfigs` is a plain getter on `#collectionController`,
+        // not a `@property`/`@state` - it's computed from CMR query results
+        // and the current `projection` (see CmrCollectionController) - so
+        // `@watch` (which only observes reactive properties) can't react to
+        // it directly. Polling it here after every update and diffing by
+        // reference instead (the getter returns a cached array unless its
+        // own inputs actually changed) is what lets `collection-id`-derived
+        // layers reuse the exact same add/remove/rebuild diffing `layersChanged`
+        // already does for the declarative `layers` property, just fed a
+        // different before/after pair.
         const nextCollectionLayers = this.#collectionController.gibsLayerConfigs
         if (nextCollectionLayers !== this.#previousCollectionLayers) {
             const previousCollectionLayers = this.#previousCollectionLayers
