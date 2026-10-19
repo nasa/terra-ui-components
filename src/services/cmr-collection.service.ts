@@ -22,57 +22,50 @@ const WEB_MERCATOR_LEVEL_BY_RESOLUTION: Record<string, string> = {
 
 class CmrCollectionService {
     /**
-     * Pulls the GIBS tag data (every imagery product CMR knows about for the
-     * collection) out of a `collections.json?...&include_tags=edsc*`
-     * response. A `entry_id[]`/`concept-id` lookup matches at most one
-     * collection, so only `feed.entry[0]` is relevant; `[]` when the
-     * collection has no `edsc.extra.serverless.gibs` tag at all (most don't).
+     * Pulls the GIBS tag data (every imagery product CMR knows about for the collection) out of a UMM-C response
      */
-    extractGibsEntries(response?: CmrCollectionsJsonResponse | null): GibsTagEntry[] {
+    extractGibsEntries(
+        response?: CmrCollectionsJsonResponse | null,
+    ): GibsTagEntry[] {
         return (
-            response?.feed?.entry?.[0]?.tags?.['edsc.extra.serverless.gibs']?.data ??
-            []
+            // we're looking for a single collection, so only the first result is important
+            response?.feed?.entry?.[0]?.tags?.['edsc.extra.serverless.gibs']
+                ?.data ?? []
         )
     }
 
     /**
      * Keeps only the entries actually available in the given map projection.
-     * The tag data has no explicit "web mercator" flag — GIBS' `epsg3857/best`
-     * endpoint is treated as always attemptable, matching `GibsLayer`'s own
-     * unvalidated default (it fails at tile-load time, not config time, if a
-     * layer isn't really published there). `EPSG:4326`/`EPSG:3413`/`EPSG:3031`
-     * are explicit per-entry flags (`geographic`/`arctic`/`antarctic`).
      */
     filterByProjection(
         entries: GibsTagEntry[],
-        projection: Projection
+        projection: Projection,
     ): GibsTagEntry[] {
         switch (projection) {
             case 'EPSG:4326':
-                return entries.filter(entry => entry.geographic)
+                return entries.filter((entry) => entry.geographic)
             case 'EPSG:3413':
-                return entries.filter(entry => entry.arctic)
+                return entries.filter((entry) => entry.arctic)
             case 'EPSG:3031':
-                return entries.filter(entry => entry.antarctic)
+                return entries.filter((entry) => entry.antarctic)
             default:
                 return entries
         }
     }
 
     /**
-     * The WMTS tile matrix set id to request for an entry, in the given
-     * projection, derived from the entry's own advertised resolution rather
-     * than `GibsLayer`'s generic 250m-oriented default — requesting the wrong
-     * one 400s instead of silently falling back to a coarser/finer zoom.
+     * The WMTS tile matrix set id to request for an entry
      */
     getTileMatrixSet(
         entry: GibsTagEntry,
-        projection: Projection
+        projection: Projection,
     ): string | undefined {
         switch (projection) {
             case 'EPSG:3857':
                 return entry.geographic_resolution
-                    ? WEB_MERCATOR_LEVEL_BY_RESOLUTION[entry.geographic_resolution]
+                    ? WEB_MERCATOR_LEVEL_BY_RESOLUTION[
+                          entry.geographic_resolution
+                      ]
                     : undefined
             case 'EPSG:4326':
                 return entry.geographic_resolution ?? undefined
@@ -85,19 +78,15 @@ class CmrCollectionService {
 
     /**
      * Builds a `GibsLayerConfig` per entry, ready to hand to `buildGibsLayer()`
-     * or the `<terra-map layers>`/`collection-id` pipeline. Every entry
-     * becomes its own named layer — `${collectionId}:${entry.product}` — so
-     * multiple products (day/night variants, pressure levels, etc.) can
-     * coexist without colliding with each other or with user-supplied
-     * `layers` entries. Only the first entry defaults to `visible: true` —
-     * the rest are added (addressable via `getLayer()`/`removeLayer()`, and
-     * toggleable with `getLayer(name).setVisible(true)`) but hidden, so a
-     * collection with many GIBS products doesn't paint them all on top of
-     * each other by default.
+     * or the `<terra-map layers>`/`collection-id` pipeline.
      */
     buildGibsLayerConfigs(
         entries: GibsTagEntry[],
-        options: { collectionId: string; projection: Projection; date?: string }
+        options: {
+            collectionId: string
+            projection: Projection
+            date?: string
+        },
     ): GibsLayerConfig[] {
         return entries.map((entry, index) => ({
             type: 'gibs',
@@ -107,7 +96,9 @@ class CmrCollectionService {
             format: entry.format === 'png' ? 'png' : 'jpg',
             tileMatrixSet: this.getTileMatrixSet(entry, options.projection),
             projection:
-                options.projection === 'EPSG:3857' ? undefined : options.projection,
+                options.projection === 'EPSG:3857'
+                    ? undefined
+                    : options.projection,
             position: 'top',
             visible: index === 0,
         }))

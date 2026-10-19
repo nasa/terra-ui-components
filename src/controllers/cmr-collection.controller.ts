@@ -20,20 +20,11 @@ export interface CmrCollectionControllerConfig {
 }
 
 /**
- * A Lit ReactiveController that resolves a CMR collection id (entry-id or
- * concept-id) down to every `GibsLayerConfig` available for it, by reading
- * the collection's `edsc.extra.serverless.gibs` tag (see `CmrApi.getCollectionTags`).
- *
- * Unlike UMM-Vis associations (sparse, unordered, one layer at a time), this
- * tag lists every GIBS imagery product EDSC knows about for the collection —
- * day/night variants, pressure levels, etc. — so every entry available in the
- * current map projection is resolved, not just a single "top" pick.
+ * Resolves a CMR collection id (entry-id or concept-id) down to every `GibsLayerConfig` available for it
  */
 export class CmrCollectionController implements ReactiveController {
     #query
 
-    // Memoized so callers get a stable array reference when nothing has
-    // actually changed, instead of a fresh array on every property read.
     #gibsLayerConfigsCache: GibsLayerConfig[] = EMPTY
     #gibsLayerConfigsData: unknown
     #gibsLayerConfigsProjection: Projection | undefined
@@ -41,12 +32,12 @@ export class CmrCollectionController implements ReactiveController {
 
     constructor(
         private host: ReactiveControllerHost & QueryClientHost,
-        private config: CmrCollectionControllerConfig
+        private config: CmrCollectionControllerConfig,
     ) {
         this.host.addController(this)
 
         this.#query = new QueryController(this.host, () =>
-            queryCmrCollectionTags(this.#collectionId)
+            queryCmrCollectionTags(this.#collectionId),
         )
     }
 
@@ -83,7 +74,7 @@ export class CmrCollectionController implements ReactiveController {
 
         const entries = cmrCollectionService.filterByProjection(
             cmrCollectionService.extractGibsEntries(data),
-            projection
+            projection,
         )
 
         this.#gibsLayerConfigsCache = entries.length

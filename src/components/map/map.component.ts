@@ -180,15 +180,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     /**
      * The map view's projection. Defaults to `'EPSG:3857'` (Web Mercator).
      *
-     * This is a construction-time setting, like `no-world-wrap` — changing it
-     * after the map has rendered has no effect, since OpenLayers can't swap a
-     * view's projection in place.
-     *
-     * Set this to match any non-`'EPSG:3857'` `projection` used by a
-     * `layers` entry (e.g. `projection="EPSG:3413"`). Imagery published
-     * only in a polar/geographic projection renders with severe distortion if
-     * left on the default Web Mercator view, since OpenLayers will silently
-     * reproject it.
+     * This is a construction-time setting. Changing it after the map has rendered has no effect.
      */
     @property({ type: String })
     projection: Projection = 'EPSG:3857'
@@ -203,8 +195,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     fitToValue: boolean = false
 
     /**
-     * Declarative layers to add to the map, for use in plain HTML without
-     * writing JS. Each entry's `type` picks which kind of layer it builds:
+     * Declarative layers to add to the map. Each entry's `type` picks which kind of layer it builds:
      * `'gibs'` (raster) or `'gibs-vector'` for NASA GIBS imagery, or
      * `'geotiff'` for a standalone GeoTIFF/COG by URL. e.g.:
      *
@@ -219,13 +210,8 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     layers: MapLayerConfig[] = []
 
     /**
-     * A CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id
-     * (e.g. `C1234567890-PROVIDER`). Either is accepted. When set, every
-     * GIBS imagery product CMR has tagged for the collection — that's
-     * available in this map's current `projection` — is added as its own
-     * layer, named `` `${collectionId}:${product}` ``. Layers can be
-     * observed via `terra-map-layer-change` and removed with `removeLayer()`,
-     * same as any `layers` entry.
+     * A CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-PROVIDER`). Either is accepted.
+     * When set, every GIBS imagery product CMR has tagged for the collection is added as its own layer.
      */
     @property({
         attribute: 'collection-id',

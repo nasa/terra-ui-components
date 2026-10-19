@@ -1,6 +1,6 @@
 /**
- * A single GIBS imagery product, as listed under a collection's
- * `edsc.extra.serverless.gibs` tag.
+ * A single GIBS imagery product, as listed under a collection's `edsc.extra.serverless.gibs` tag.
+ * (example collection with tags: https://cmr.earthdata.nasa.gov/search/collections.json?entry_id[]=AIRS2RET_NRT_7.0&include_tags=edsc*)
  */
 export interface GibsTagEntry {
     /** GIBS WMTS layer identifier, e.g. 'AIRS_L2_Surface_Air_Temperature_Day'. */
@@ -25,12 +25,6 @@ export interface GibsTagEntry {
     updated_at: string
 }
 
-/**
- * The shape of CMR's `collections.json?...&include_tags=edsc*` response. Only
- * the first `entry` is relevant — a `entry_id[]`/`concept-id` lookup matches
- * at most one collection. Other `edsc.extra.serverless.*` tags (e.g.
- * `collection_capabilities`) can show up alongside `gibs` here too.
- */
 export interface CmrCollectionsJsonResponse {
     feed: {
         entry: Array<{
