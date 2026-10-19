@@ -4,7 +4,7 @@ import type { RequestOptions } from '../lib/api.client.js'
 
 export function queryCmrCollection(
     collectionEntryId?: string,
-    options?: RequestOptions,
+    options?: RequestOptions
 ): QueryObserverOptions<Awaited<
     ReturnType<typeof cmrApi.getCollectionByEntryId>
 > | null> {
@@ -22,7 +22,7 @@ export function queryCmrCollection(
 
 export function queryCmrCollectionByConceptId(
     collectionConceptId?: string,
-    options?: RequestOptions,
+    options?: RequestOptions
 ): QueryObserverOptions<Awaited<
     ReturnType<typeof cmrApi.getCollectionByConceptId>
 > | null> {
@@ -40,10 +40,8 @@ export function queryCmrCollectionByConceptId(
 
 export function queryCmrGranules(
     searchParams: Parameters<typeof cmrApi.searchGranules>[0],
-    options?: RequestOptions,
-): QueryObserverOptions<Awaited<
-    ReturnType<typeof cmrApi.searchGranules>
-> | null> {
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<ReturnType<typeof cmrApi.searchGranules>> | null> {
     return {
         queryKey: ['cmr', 'granules', searchParams],
         queryFn: async ({ signal }) => {
@@ -53,17 +51,14 @@ export function queryCmrGranules(
             })
         },
         enabled:
-            !!searchParams.collectionEntryId ||
-            !!searchParams.collectionConceptId, // prevent firing when collectionEntryId and collectionConceptId are undefined
+            !!searchParams.collectionEntryId || !!searchParams.collectionConceptId, // prevent firing when collectionEntryId and collectionConceptId are undefined
     }
 }
 
 export function queryCmrVariables(
     searchParams: Parameters<typeof cmrApi.searchVariables>[0],
-    options?: RequestOptions,
-): QueryObserverOptions<Awaited<
-    ReturnType<typeof cmrApi.searchVariables>
-> | null> {
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<ReturnType<typeof cmrApi.searchVariables>> | null> {
     return {
         queryKey: ['cmr', 'variables', searchParams],
         queryFn: async ({ signal }) => {
@@ -76,27 +71,25 @@ export function queryCmrVariables(
     }
 }
 
-export function queryCmrVisualizationsByIds(
-    visualizationConceptIds: string[],
-    options?: RequestOptions,
-): QueryObserverOptions<Awaited<
-    ReturnType<typeof cmrApi.getVisualizationsByIds>
-> | null> {
+export function queryCmrCollectionTags(
+    collectionId?: string,
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<ReturnType<typeof cmrApi.getCollectionTags>> | null> {
     return {
-        queryKey: ['cmr', 'visualizations', visualizationConceptIds],
+        queryKey: ['cmr', 'collection-tags', collectionId],
         queryFn: async ({ signal }) => {
-            return cmrApi.getVisualizationsByIds(visualizationConceptIds, {
+            return cmrApi.getCollectionTags(collectionId as string, {
                 ...options,
                 signal,
             })
         },
-        enabled: visualizationConceptIds.length > 0, // prevent firing when there's nothing to look up
+        enabled: !!collectionId, // prevent firing when collectionId is undefined
     }
 }
 
 export function queryCmrSampling(
     collectionEntryId?: string,
-    options?: RequestOptions,
+    options?: RequestOptions
 ): QueryObserverOptions<Awaited<
     ReturnType<typeof cmrApi.getSamplingOfGranules>
 > | null> {

@@ -3,6 +3,7 @@ import sinon from 'sinon'
 import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
 import type TileLayer from 'ol/layer/Tile.js'
+import { apiClient } from '../../../lib/api.client.js'
 import TerraMap from '../map.component.js'
 import '../map.js'
 
@@ -381,5 +382,174 @@ describe('<terra-map> layers (geotiff)', () => {
 
         expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
         expect(el.getLayer('my-data')).to.not.exist
+    })
+})
+
+describe('<terra-map> collection-id', () => {
+    const ENTRY_ID = 'AIRS2RET_NRT_7.0'
+
+    let apiGetStub: sinon.SinonStub
+    let originalFetch: typeof fetch
+
+    /** Stubs `apiClient.get` so only `collections.json` requests resolve with `response` — other requests (e.g. the map's unrelated Giovanni shapefiles query) are left alone. */
+    function stubCollectionTags(response: unknown) {
+        apiGetStub.callsFake((url: string) => {
+            if (url.includes('collections.json')) {
+                return Promise.resolve(response)
+            }
+            return Promise.resolve({ categories: [] })
+        })
+    }
+
+    function makeTagsResponse(
+        entries: Array<{
+            product: string
+            geographic?: boolean
+            arctic?: boolean
+            antarctic?: boolean
+        }>
+    ) {
+        return {
+            feed: {
+                entry: [
+                    {
+                        tags: {
+                            'edsc.extra.serverless.gibs': {
+                                data: entries.map(entry => ({
+                                    product: entry.product,
+                                    title: entry.product,
+                                    source: 'Test',
+                                    group: 'overlays',
+                                    format: 'png',
+                                    layerPeriod: 'Daily',
+                                    geographic: entry.geographic ?? true,
+                                    geographic_resolution: '2km',
+                                    arctic: entry.arctic ?? false,
+                                    arctic_resolution: null,
+                                    antarctic: entry.antarctic ?? false,
+                                    antarctic_resolution: null,
+                                    match: {},
+                                    updated_at: '2026-10-19T12:45:17.245Z',
+                                })),
+                            },
+                        },
+                    },
+                ],
+            },
+        }
+    }
+
+    beforeEach(() => {
+        apiGetStub = sinon.stub(apiClient, 'get')
+        originalFetch = window.fetch
+    })
+
+    afterEach(() => {
+        sinon.restore()
+        window.fetch = originalFetch
+    })
+
+    it('adds one layer per GIBS product tagged on the collection', async () => {
+        stubCollectionTags(
+            makeTagsResponse([
+                { product: 'AIRS_L2_Surface_Air_Temperature_Day' },
+                { product: 'AIRS_L2_Surface_Air_Temperature_Night' },
+            ])
+        )
+
+        const el = await fixture<TerraMap>(
+            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
+        )
+
+        await waitUntil(() =>
+            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)
+        )
+        await waitUntil(() =>
+            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        )
+
+        expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)).to
+            .exist
+        expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)).to
+            .exist
+    })
+
+    it("only adds layers available in the map's current projection", async () => {
+        window.fetch = (async () =>
+            new Response(makeCapabilitiesXml('EPSG:3413', '1km'), {
+                status: 200,
+            })) as typeof fetch
+        stubCollectionTags(
+            makeTagsResponse([
+                { product: 'Geographic_Only', geographic: true, arctic: false },
+                // 'TestLayer' is the layer identifier baked into makeCapabilitiesXml()
+                { product: 'TestLayer', geographic: false, arctic: true },
+            ])
+        )
+
+        const el = await fixture<TerraMap>(
+            html`<terra-map
+                collection-id=${ENTRY_ID}
+                projection="EPSG:3413"
+            ></terra-map>`
+        )
+
+        await waitUntil(() => el.getLayer(`${ENTRY_ID}:TestLayer`))
+
+        expect(el.getLayer(`${ENTRY_ID}:TestLayer`)).to.exist
+        expect(el.getLayer(`${ENTRY_ID}:Geographic_Only`)).to.not.exist
+    })
+
+    it('removes the collection layers when collection-id is cleared', async () => {
+        stubCollectionTags(makeTagsResponse([{ product: 'Test_Layer' }]))
+
+        const el = await fixture<TerraMap>(
+            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
+        )
+
+        await waitUntil(() => el.getLayer(`${ENTRY_ID}:Test_Layer`))
+
+        el.collectionId = undefined
+        await waitUntil(() => !el.getLayer(`${ENTRY_ID}:Test_Layer`))
+
+        expect(el.getLayer(`${ENTRY_ID}:Test_Layer`)).to.not.exist
+    })
+
+    it('looks up by entry_id[] when given an entry-id', async () => {
+        stubCollectionTags(makeTagsResponse([]))
+
+        await fixture<TerraMap>(
+            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
+        )
+
+        await waitUntil(() =>
+            apiGetStub
+                .getCalls()
+                .some(call => call.args[0].includes('collections.json'))
+        )
+        const call = apiGetStub
+            .getCalls()
+            .find(call => call.args[0].includes('collections.json'))
+        expect(call?.args[0]).to.include(`entry_id[]=${ENTRY_ID}`)
+    })
+
+    it('looks up by concept-id when given a concept-id', async () => {
+        const CONCEPT_ID = 'C1234567890-GES_DISC'
+        stubCollectionTags(makeTagsResponse([]))
+
+        await fixture<TerraMap>(
+            html`<terra-map collection-id=${CONCEPT_ID}></terra-map>`
+        )
+
+        await waitUntil(() =>
+            apiGetStub
+                .getCalls()
+                .some(call => call.args[0].includes('collections.json'))
+        )
+        const call = apiGetStub
+            .getCalls()
+            .find(call => call.args[0].includes('collections.json'))
+        expect(call?.args[0]).to.include(`concept-id=${CONCEPT_ID}`)
+        expect(call?.args[0]).to.not.include('entry_id')
     })
 })
