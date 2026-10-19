@@ -181,7 +181,7 @@ export class TimeSeriesCacheService {
         )
 
         // Use the requested range as the stored range when it extends beyond the actual data.
-        // This prevents a cache-miss loop when the dataset simply has no data at the edges
+        // This prevents a cache-miss loop when the data set simply has no data at the edges
         // (e.g. requesting Jan 1 but the first available data point is Jan 15).
         const storedStart =
             requestedStartDate && sortedData.length > 0

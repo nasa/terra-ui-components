@@ -15,7 +15,7 @@ import { clearSelection, renderSearchResult, walkToOption } from './lib.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 
 /**
- * @summary Fuzzy-search for dataset keywords in combobox with list autocomplete.
+ * @summary Fuzzy-search for data set keywords in combobox with list autocomplete.
  * @documentation https://terra-ui.netlify.app/components/giovanni-serch
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
  * @status stable

@@ -146,7 +146,7 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
 
     /**
-     * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
+     * if you include an application citation, it will be displayed in the citation panel alongside the data set citation
      */
     @property({ attribute: 'application-citation' })
     applicationCitation?: string
