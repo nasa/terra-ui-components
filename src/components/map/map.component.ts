@@ -3,7 +3,9 @@ import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
@@ -16,6 +18,7 @@ import type { Projection } from './layers/gibs.layer.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
 import { buildMapLayer, type MapLayerConfig } from './layers/layer.js'
 import { QueryController } from '../../controllers/query.controller.js'
+import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     queryGiovanniShapeFiles,
@@ -217,6 +220,24 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     @property({ attribute: 'layers', converter: layersConverter })
     layers: MapLayerConfig[] = []
+
+    /**
+     * A CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id
+     * (e.g. `C1234567890-PROVIDER`). Either is accepted. When set, every
+     * GIBS imagery product CMR has tagged for the collection — that's
+     * available in this map's current `projection` — is added as its own
+     * layer, named `` `${collectionId}:${product}` ``. Layers can be
+     * observed via `terra-map-layer-change` and removed with `removeLayer()`,
+     * same as any `layers` entry.
+     */
+    @property({ attribute: 'collection-id', converter: undefinedStringConverter })
+    collectionId?: string
+
+    #collectionController = new CmrCollectionController(this, {
+        getCollectionId: () => this.collectionId,
+        getProjection: () => this.projection,
+    })
+    #previousCollectionLayers: MapLayerConfig[] = []
 
     #layerRequestIds = new Map<string, number>()
     #geotiffLayerInfo = new Map<string, GeoTiffLayerInfo>()
@@ -423,6 +444,20 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         }
 
         console.log(this.#service)
+    }
+
+    updated(changedProps: globalThis.Map<string, unknown>) {
+        super.updated(changedProps)
+
+        // resolved via `collection-id`, separately from the declarative
+        // `layers` property — reuses the exact same diff/build/emit logic,
+        // just fed a different before/after pair
+        const nextCollectionLayers = this.#collectionController.gibsLayerConfigs
+        if (nextCollectionLayers !== this.#previousCollectionLayers) {
+            const previousCollectionLayers = this.#previousCollectionLayers
+            this.#previousCollectionLayers = nextCollectionLayers
+            this.layersChanged(previousCollectionLayers, nextCollectionLayers)
+        }
     }
 
     /**

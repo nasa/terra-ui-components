@@ -206,6 +206,16 @@ Every entry also takes a required `name` (used for add/remove/update diffing and
 
 Changing the attribute/property later diffs against what's currently applied, by `name`: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If a GIBS entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. Each build attempt (success or failure) fires a `terra-map-layer-change` event — see below for GeoTIFF's `info`/`error` detail. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
 
+### Visualizing a CMR Collection's GIBS Imagery
+
+Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
+
+```html:preview
+<terra-map collection-id="AIRS2RET_NRT_7.0"></terra-map>
+```
+
+Under the hood, this reads the collection's `edsc.extra.serverless.gibs` tag from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped; set `projection` to match a polar/geographic layer the same way you would for a manual `"type": "gibs"` entry. Like declarative `layers`, each resolved layer fires a `terra-map-layer-change` event and can be inspected or removed individually with `getLayer()`/`removeLayer()`. `collection-id` and `layers` are independent — both can be used on the same map at once, since their layer names never collide.
+
 ### Adding **GeoTIFF** Layers
 
 Use a `"type": "geotiff"` entry in `layers` to load any standalone GeoTIFF or Cloud-Optimized GeoTIFF by URL — not tied to Giovanni, Harmony, or any other GESDISC-specific service. Each entry needs a `name` and a `url`; a colormap-based style is computed automatically from the raster's actual data range. The example below loads a small GeoTIFF exported from Giovanni, but any GeoTIFF URL works the same way:
