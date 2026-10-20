@@ -304,12 +304,12 @@ export default css`
         align-items: center;
         margin-left: 0.4rem;
         cursor: pointer;
-        color: var(--terra-color-primary, #0071bc);
+        color: var(--terra-text-link-default);
         line-height: 1;
     }
 
     .info-icon:hover {
-        color: var(--terra-color-primary-hover, #004f8c);
+        color: var(--terra-text-link-hover);
     }
 
     /* Optional: better accessibility feedback */
@@ -324,10 +324,10 @@ export default css`
     }
 
     .variable-info-popup {
-        background: var(--terra-color-spacesuit-white);
-        border: 1px solid var(--terra-color-carbon-30);
-        border-radius: 0.5rem;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        background: var(--terra-container-panel-bg);
+        border: 1px solid var(--terra-container-panel-border);
+        border-radius: var(--terra-container-panel-border-radius: 0.5rem);
+        box-shadow: var(--terra-shadow-medium);
         padding: 1rem;
     }
 

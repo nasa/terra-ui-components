@@ -1,3 +1,4 @@
+import { formatCoord } from '../../../utilities/number.js'
 import { LatLng } from './LatLng.js'
 
 export class LatLngBounds {
@@ -37,10 +38,24 @@ export class LatLngBounds {
     }
 
     toBBoxString() {
-        return `${this.getWest().toFixed(2)},${this.getSouth().toFixed(2)},${this.getEast().toFixed(2)},${this.getNorth().toFixed(2)}`
+        return `${formatCoord(this.getWest())},${formatCoord(this.getSouth())},${formatCoord(this.getEast())},${formatCoord(this.getNorth())}`
     }
 
     toString() {
         return this.toBBoxString()
+    }
+
+    /**
+     * Compares bounds against another LatLngBounds within a small tolerance (to account
+     * for floating point imprecision, e.g. after round-tripping through a URL and back).
+     */
+    equals(other?: LatLngBounds, epsilon = 1e-9): boolean {
+        if (!other) return false
+        return (
+            Math.abs(this.getWest() - other.getWest()) <= epsilon &&
+            Math.abs(this.getSouth() - other.getSouth()) <= epsilon &&
+            Math.abs(this.getEast() - other.getEast()) <= epsilon &&
+            Math.abs(this.getNorth() - other.getNorth()) <= epsilon
+        )
     }
 }

@@ -156,6 +156,31 @@ export function queryCancelHarmonySubsetJob(): MutationObserverOptions<
 }
 
 /**
+ * Mutation options for resuming a Harmony subset job that's paused for preview.
+ * Intended for use with MutationController.
+ *
+ * @example
+ * const mutation = new MutationController(host, queryResumeHarmonySubsetJob())
+ * // later:
+ * await mutation.mutate({ jobId, options: { bearerToken } })
+ */
+export type ResumeHarmonyJobVariables = {
+    jobId: string
+    options?: SearchOptions
+}
+
+export function queryResumeHarmonySubsetJob(): MutationObserverOptions<
+    SubsetJobStatus,
+    Error,
+    ResumeHarmonyJobVariables
+> {
+    return {
+        mutationFn: ({ jobId, options }) =>
+            harmonyApi.resumeJob(jobId, options),
+    }
+}
+
+/**
  * Mutation options for removing labels from one or more Harmony jobs.
  * Used when `removeLabelsOnDelete` is set on terra-harmony-history — after removal
  * the jobs will no longer match the active label filter and disappear from the list.

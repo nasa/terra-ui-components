@@ -56,12 +56,12 @@ describe('LatLng', () => {
 
     it('should format toString() correctly', () => {
         const latLng = new LatLng(40.7128, -74.006)
-        expect(latLng.toString()).to.equal('40.7128, -74.006')
+        expect(latLng.toString()).to.equal('40.71, -74.01')
     })
 
     it('should format toString() with negative coordinates', () => {
         const latLng = new LatLng(-33.8688, 151.2093)
-        expect(latLng.toString()).to.equal('-33.8688, 151.2093')
+        expect(latLng.toString()).to.equal('-33.87, 151.21')
     })
 
     it('should format toString() with zero coordinates', () => {
@@ -71,7 +71,7 @@ describe('LatLng', () => {
 
     it('should not include altitude in toString()', () => {
         const latLng = new LatLng(40.7128, -74.006, 10)
-        expect(latLng.toString()).to.equal('40.7128, -74.006')
+        expect(latLng.toString()).to.equal('40.71, -74.01')
     })
 
     it('should have independent instances', () => {
@@ -91,5 +91,42 @@ describe('LatLng', () => {
     it('should handle negative altitude values', () => {
         const latLng = new LatLng(40.7128, -74.006, -100)
         expect(latLng.alt).to.equal(-100)
+    })
+
+    describe('equals', () => {
+        it('should return true for identical coordinates', () => {
+            const a = new LatLng(40.7128, -74.006)
+            const b = new LatLng(40.7128, -74.006)
+            expect(a.equals(b)).to.be.true
+        })
+
+        it('should return true for coordinates within the default epsilon', () => {
+            const a = new LatLng(40.7128, -74.006)
+            const b = new LatLng(40.7128 + 1e-10, -74.006 - 1e-10)
+            expect(a.equals(b)).to.be.true
+        })
+
+        it('should return false for different lat', () => {
+            const a = new LatLng(40.7128, -74.006)
+            const b = new LatLng(40.71, -74.006)
+            expect(a.equals(b)).to.be.false
+        })
+
+        it('should return false for different lng', () => {
+            const a = new LatLng(40.7128, -74.006)
+            const b = new LatLng(40.7128, -74.0)
+            expect(a.equals(b)).to.be.false
+        })
+
+        it('should ignore alt when comparing', () => {
+            const a = new LatLng(40.7128, -74.006, 10)
+            const b = new LatLng(40.7128, -74.006, 400)
+            expect(a.equals(b)).to.be.true
+        })
+
+        it('should return false when compared against undefined', () => {
+            const a = new LatLng(40.7128, -74.006)
+            expect(a.equals(undefined)).to.be.false
+        })
     })
 })

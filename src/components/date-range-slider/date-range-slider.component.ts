@@ -196,7 +196,7 @@ export default class TerraDateRangeSlider extends TerraElement {
     }
 
     render() {
-        const containerClass = 'container' + this.hasPips ? ' hasPips' : ''
+        const containerClass = `container${this.hasPips ? ' hasPips' : ''}`
 
         return html`
             <div class="${containerClass}">

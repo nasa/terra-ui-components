@@ -3,9 +3,13 @@ import { MapService } from '../map.service.js'
 import sinon, { type SinonSpy } from 'sinon'
 import { LatLng } from '../models/LatLng.js'
 import { LatLngBounds } from '../models/LatLngBounds.js'
-import { View } from 'ol'
+import { Map, View } from 'ol'
 import { DrawToolbarControl } from '../controls/draw-toolbar.control.js'
 import { Layer } from 'ol/layer.js'
+import VectorLayer from 'ol/layer/Vector.js'
+import VectorSource from 'ol/source/Vector.js'
+import Draw from 'ol/interaction/Draw.js'
+import Collection from 'ol/Collection.js'
 
 describe('Map Service', () => {
     let el: HTMLElement
@@ -135,6 +139,76 @@ describe('Map Service', () => {
 
     it.skip('calls onMouseMove when pointer moves', () => {
         // TODO
+    })
+
+    describe('addLayer / removeLayer / getLayer', () => {
+        it('inserts a custom layer below the borders layer by default', () => {
+            // the map is created with 6 built-in layers (base, borders,
+            // labels, graticule, shapes, draw), with borders at index 1
+            const insertAtSpy = sinon.spy(Collection.prototype, 'insertAt')
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(insertAtSpy.calledWith(1, customLayer)).to.be.true
+        })
+
+        it('inserts a custom layer above everything when position is "top"', () => {
+            const insertAtSpy = sinon.spy(Collection.prototype, 'insertAt')
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, { name: 'custom-top', position: 'top' })
+
+            // 6 built-in layers occupy indices 0-5, so pushing onto the end
+            // inserts at index 6
+            expect(insertAtSpy.calledWith(6, customLayer)).to.be.true
+        })
+
+        it('finds a named layer with getLayer', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(service.getLayer('custom')).to.equal(customLayer)
+            expect(service.getLayer('nonexistent')).to.be.undefined
+        })
+
+        it('removes a named layer', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            service.removeLayer('custom')
+
+            expect(service.getLayer('custom')).to.be.undefined
+        })
+    })
+
+    it('fits the view to a reprojected extent', () => {
+        const fitSpy = sinon.spy(View.prototype, 'fit')
+
+        service.fitToExtent([-74, 40, -73, 41], { projection: 'EPSG:4326' })
+
+        expect(fitSpy.calledOnce).to.be.true
+    })
+
+    it('adds and removes an interaction', () => {
+        const draw = new Draw({
+            source: new VectorSource(),
+            type: 'Point',
+        })
+
+        const addSpy = sinon.spy(Map.prototype, 'addInteraction')
+        const removeSpy = sinon.spy(Map.prototype, 'removeInteraction')
+
+        service.addInteraction(draw)
+        service.removeInteraction(draw)
+
+        expect(addSpy.calledWith(draw)).to.be.true
+        expect(removeSpy.calledWith(draw)).to.be.true
+    })
+
+    it('returns the map size and canvas/svg elements', () => {
+        expect(service.getSize()).to.exist
+        expect(service.getCanvasElements()).to.have.keys(['canvases', 'svgs'])
     })
 
     it.skip('dispatches onDraw for bbox geometry', () => {

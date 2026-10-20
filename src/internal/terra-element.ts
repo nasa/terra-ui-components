@@ -1,11 +1,27 @@
-import { LitElement } from 'lit'
+import { type ComplexAttributeConverter, LitElement } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import { Environment } from '../utilities/environment.js'
+
+// Some consumers (e.g. non-Lit frameworks like AngularJS) set attributes via `setAttribute()`,
+// which stringifies its value — `setAttribute('bearer-token', undefined)` produces the literal
+// string "undefined" rather than omitting the attribute. Treat that and 'null' as undefined
+export const undefinedStringConverter: ComplexAttributeConverter<
+    string | undefined
+> = {
+    fromAttribute(value) {
+        if (!value || value === 'undefined' || value === 'null') {
+            return undefined
+        }
+        return value
+    },
+}
 
 // Match event type name strings that are registered on GlobalEventHandlersEventMap...
 type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
     ? // ...where the event detail is an object...
-      GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
+      GlobalEventHandlersEventMap[T] extends CustomEvent<
+          Record<PropertyKey, unknown>
+      >
         ? // ...that is non-empty...
           GlobalEventHandlersEventMap[T] extends CustomEvent<
               Record<PropertyKey, never>
@@ -21,19 +37,22 @@ type EventTypeRequiresDetail<T> = T extends keyof GlobalEventHandlersEventMap
     : never
 
 // The inverse of the above (match any type that doesn't match EventTypeRequiresDetail)
-type EventTypeDoesNotRequireDetail<T> = T extends keyof GlobalEventHandlersEventMap
-    ? GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
+type EventTypeDoesNotRequireDetail<T> =
+    T extends keyof GlobalEventHandlersEventMap
         ? GlobalEventHandlersEventMap[T] extends CustomEvent<
-              Record<PropertyKey, never>
+              Record<PropertyKey, unknown>
           >
-            ? T
-            : Partial<
-                    GlobalEventHandlersEventMap[T]['detail']
-                > extends GlobalEventHandlersEventMap[T]['detail']
-              ? T
-              : never
+            ? GlobalEventHandlersEventMap[T] extends CustomEvent<
+                  Record<PropertyKey, never>
+              >
+                ? T
+                : Partial<
+                        GlobalEventHandlersEventMap[T]['detail']
+                    > extends GlobalEventHandlersEventMap[T]['detail']
+                  ? T
+                  : never
+            : T
         : T
-    : T
 
 // `keyof EventTypesWithRequiredDetail` lists all registered event types that require detail
 type EventTypesWithRequiredDetail = {
@@ -52,7 +71,9 @@ type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 // just CustomEventInit when appropriate (validate the type of the event detail, and require it to be provided if the
 // event requires it)
 type TerraEventInit<T> = T extends keyof GlobalEventHandlersEventMap
-    ? GlobalEventHandlersEventMap[T] extends CustomEvent<Record<PropertyKey, unknown>>
+    ? GlobalEventHandlersEventMap[T] extends CustomEvent<
+          Record<PropertyKey, unknown>
+      >
         ? GlobalEventHandlersEventMap[T] extends CustomEvent<
               Record<PropertyKey, never>
           >
@@ -85,7 +106,7 @@ export default class TerraElement extends LitElement {
     @property() dir: string
     @property() lang: string
     @property() environment?: Environment = Environment.PROD
-    @property() bearerToken?: string
+    @property({ converter: undefinedStringConverter }) bearerToken?: string
     @state() isVisible: boolean = false
 
     #io?: IntersectionObserver
@@ -124,8 +145,8 @@ export default class TerraElement extends LitElement {
         // Component isn't visible, probably in a modal/dialog
         // instead we'll setup an IntersectionObserver to wait for visibility
         this.#io = new IntersectionObserver(
-            entries => {
-                if (entries.some(e => e.isIntersecting)) {
+            (entries) => {
+                if (entries.some((e) => e.isIntersecting)) {
                     // Component is visible! Call "firstVisible"
                     this.#io?.disconnect()
                     this.#io = undefined
@@ -135,7 +156,7 @@ export default class TerraElement extends LitElement {
                     setTimeout(() => this.firstVisible(), 500)
                 }
             },
-            { root: null, threshold: 0 }
+            { root: null, threshold: 0 },
         )
 
         this.#io.observe(this)
@@ -174,15 +195,15 @@ export default class TerraElement extends LitElement {
     /** Emits a custom event with more convenient defaults. */
     emit<T extends string & keyof EventTypesWithoutRequiredDetail>(
         name: EventTypeDoesNotRequireDetail<T>,
-        options?: TerraEventInit<T> | undefined
+        options?: TerraEventInit<T> | undefined,
     ): GetCustomEventType<T>
     emit<T extends string & keyof EventTypesWithRequiredDetail>(
         name: EventTypeRequiresDetail<T>,
-        options: TerraEventInit<T>
+        options: TerraEventInit<T>,
     ): GetCustomEventType<T>
     emit<T extends string & keyof ValidEventTypeMap>(
         name: T,
-        options?: TerraEventInit<T> | undefined
+        options?: TerraEventInit<T> | undefined,
     ): GetCustomEventType<T> {
         const event = new CustomEvent(name, {
             bubbles: true,
@@ -205,7 +226,7 @@ export default class TerraElement extends LitElement {
     static define(
         name: string,
         elementConstructor = this,
-        options: ElementDefinitionOptions = {}
+        options: ElementDefinitionOptions = {},
     ) {
         const currentlyRegisteredConstructor = customElements.get(name) as
             | CustomElementConstructor
@@ -215,7 +236,7 @@ export default class TerraElement extends LitElement {
             customElements.define(
                 name,
                 class extends elementConstructor {} as unknown as CustomElementConstructor,
-                options
+                options,
             )
             return
         }
@@ -241,7 +262,7 @@ export default class TerraElement extends LitElement {
         }
 
         console.warn(
-            `Attempted to register <${name}>${newVersion}, but <${name}>${existingVersion} has already been registered.`
+            `Attempted to register <${name}>${newVersion}, but <${name}>${existingVersion} has already been registered.`,
         )
     }
 
@@ -250,7 +271,7 @@ export default class TerraElement extends LitElement {
     constructor() {
         super()
         Object.entries(
-            (this.constructor as typeof TerraElement).dependencies
+            (this.constructor as typeof TerraElement).dependencies,
         ).forEach(([name, component]) => {
             ;(this.constructor as typeof TerraElement).define(name, component)
         })

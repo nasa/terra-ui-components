@@ -1,7 +1,8 @@
 import { html } from 'lit'
 import type { TemplateResult } from 'lit'
 import type { AllGeoJSON } from '@turf/helpers'
-import { simplify, coordAll } from '@turf/turf'
+import { simplify } from '@turf/simplify'
+import { coordAll } from '@turf/meta'
 import type { SubsetJobError } from '../apis/harmony.api.js'
 
 export interface HarmonyErrorDetails {

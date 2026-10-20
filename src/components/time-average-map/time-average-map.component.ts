@@ -1,19 +1,17 @@
 import { html, nothing } from 'lit'
-import { property, state } from 'lit/decorators.js'
-import { ImageTile, Map, MapBrowserEvent, View } from 'ol'
+import { property, query, state } from 'lit/decorators.js'
+import { ImageTile } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import VectorLayer from 'ol/layer/Vector.js'
-import Graticule from 'ol/layer/Graticule.js'
-import OSM from 'ol/source/OSM.js'
 import VectorSource from 'ol/source/Vector.js'
-import GeoJSON from 'ol/format/GeoJSON.js'
 import type GeoTIFF from 'ol/source/GeoTIFF.js'
-import { Style, Stroke } from 'ol/style.js'
 import Draw from 'ol/interaction/Draw.js'
 import Point from 'ol/geom/Point.js'
 import { getLength } from 'ol/sphere.js'
 import Feature from 'ol/Feature.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -24,11 +22,13 @@ import TerraPlot from '../plot/plot.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import TerraAlert from '../alert/alert.component.js'
+import TerraMap from '../map/map.component.js'
+import type { TerraMapPointerMoveEvent } from '../../events/events.js'
 import { TaskStatus } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
 import { AuthController } from '../../auth/auth.controller.js'
-import { toLonLat, transformExtent } from 'ol/proj.js'
+import { toLonLat } from 'ol/proj.js'
 import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import { getVariableEntryId } from '../../utilities/variable.js'
 import {
@@ -54,6 +54,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         'terra-loader': TerraLoader,
         'terra-plot': TerraPlot,
         'terra-alert': TerraAlert,
+        'terra-map': TerraMap,
     }
 
     @property({ reflect: true }) collection?: string
@@ -61,7 +62,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     @property({ attribute: 'start-date', reflect: true }) startDate?: string
     @property({ attribute: 'end-date', reflect: true }) endDate?: string
     @property({ reflect: true }) location?: string
-    @property({ attribute: 'bearer-token', reflect: false })
+    @property({
+        attribute: 'bearer-token',
+        reflect: false,
+        converter: undefinedStringConverter,
+    })
     bearerToken: string
     @property({ type: String }) long_name = ''
     @property({ type: String, attribute: 'color-map-name', reflect: true })
@@ -75,11 +80,25 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     applicationId?: string
 
     /**
-     * When true, enables IndexedDB caching — data will be read from and written to the local cache.
-     * Defaults to false, meaning no caching is performed.
+     * When true, disables IndexedDB caching for this component — data will not be
+     * read from or written to the local cache. Caching is enabled by default.
+     */
+    @property({ type: Boolean, attribute: 'no-cache' })
+    noCache = false
+
+    /**
+     * @deprecated Caching is now enabled by default. Set `no-cache` to disable it instead.
      */
     @property({ type: Boolean })
-    cache = false
+    set cache(value: boolean) {
+        console.warn(
+            '<terra-time-average-map> `cache` is deprecated and enabled by default; use `no-cache` to disable caching instead.',
+        )
+        this.noCache = !value
+    }
+    get cache() {
+        return !this.noCache
+    }
 
     /**
      * If provided, skips creating a new Harmony job and instead waits for this existing job ID to complete.
@@ -110,15 +129,12 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     } | null = null
 
     #controller: TimeAvgMapController = new TimeAvgMapController(this)
-    #map: Map | null = null
     #gtLayer: WebGLTileLayer | null = null
-    #geoTiffGraticuleLayer: Graticule | null = null
-    #statesLayer: VectorLayer<VectorSource> | null = null
-    #bordersLayer: VectorLayer<VectorSource> | null = null
     #vectorSource: VectorSource | null = null
     #vectorLayer: VectorLayer | null = null
     #draw: Draw | null = null
-    #graticuleLayer: Graticule | null = null
+
+    @query('terra-map') innerMap: TerraMap
 
     _authController = new AuthController(this)
 
@@ -211,11 +227,14 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             'terra-plot-toolbar-export-image',
             this.#handleExportImage as EventListener,
         )
+
+        this.addEventListener(
+            'terra-map-pointer-move',
+            this.#handlePointerMove as EventListener,
+        )
     }
 
     async firstUpdated() {
-        // Initialize the base layer open street map
-        this.intializeMap()
         this._fetchVariableTask.run()
     }
 
@@ -260,6 +279,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             'terra-plot-toolbar-export-image',
             this.#handleExportImage as EventListener,
         )
+        this.removeEventListener(
+            'terra-map-pointer-move',
+            this.#handlePointerMove as EventListener,
+        )
     }
 
     #handleMapError = (event: CustomEvent) => {
@@ -273,10 +296,35 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         }
     }
 
+    #handlePointerMove = (event: TerraMapPointerMoveEvent) => {
+        if (!this.#gtLayer) {
+            return
+        }
+
+        let data = this.#gtLayer.getData(event.detail.pixel)
+        const [lon, lat] = event.detail.coordinate
+
+        if (
+            !data ||
+            !(
+                data instanceof Uint8Array ||
+                data instanceof Uint8ClampedArray ||
+                data instanceof Float32Array
+            ) ||
+            isNaN(data[0]) ||
+            data[0] === 0
+        ) {
+            data = null
+        }
+
+        this.pixelValue = data ? Number(data[0]).toExponential(3) : 'N/A'
+        this.pixelCoordinates = [lon, lat].map((c) => c.toFixed(3)).join(', ')
+    }
+
     #handleExportImage = async (
         event: CustomEvent<{ format: 'png' | 'jpg' }>,
     ) => {
-        if (!this.#map) {
+        if (!this.innerMap) {
             console.warn('Map not initialized, cannot export image')
             return
         }
@@ -285,17 +333,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
         try {
             // Wait for map to finish rendering
-            await new Promise<void>((resolve) => {
-                this.#map!.once('rendercomplete', () => {
-                    resolve()
-                })
-                // Force a render to ensure we get the rendercomplete event
-                this.#map!.render()
-            })
+            await this.innerMap.renderComplete()
 
-            // Get the map viewport and size
-            const mapElement = this.#map.getViewport()
-            const mapSize = this.#map.getSize()
+            // Get the map size
+            const mapSize = this.innerMap.getSize()
 
             if (!mapSize) {
                 console.warn('Map size is not available')
@@ -305,16 +346,13 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             const mapWidth = mapSize[0]
             const mapHeight = mapSize[1]
 
-            // Get all canvas elements (OpenLayers can have multiple canvases for different layers)
-            // We need to get them in z-order (bottom to top)
-            const allCanvases = Array.from(
-                mapElement.querySelectorAll('canvas'),
-            ) as HTMLCanvasElement[]
-
-            // Also get SVG elements (vector layers might be rendered as SVG)
-            const svgs = Array.from(
-                mapElement.querySelectorAll('svg'),
-            ) as SVGElement[]
+            // Get all canvas and SVG elements (OpenLayers can have multiple canvases for
+            // different layers) in z-order (bottom to top)
+            const { canvases: allCanvases, svgs } =
+                this.innerMap.getCanvasElements() ?? {
+                    canvases: [],
+                    svgs: [],
+                }
 
             if (allCanvases.length === 0 && svgs.length === 0) {
                 console.warn('Could not find map canvas or SVG elements')
@@ -468,8 +506,8 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             return
         }
 
-        // Get the #map container for relative positioning
-        const mapContainer = this.shadowRoot?.getElementById('map')
+        // Get the map container for relative positioning
+        const mapContainer = this.shadowRoot?.querySelector('.map-container')
         if (!mapContainer) {
             return
         }
@@ -651,26 +689,19 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
         thumbWidth = 200,
         thumbHeight = 200,
     ): Promise<Blob | undefined> {
-        if (!this.#map) {
+        if (!this.innerMap) {
             return undefined
         }
 
-        const map = this.#map
-
         try {
-            await new Promise<void>((resolve) => {
-                map.once('rendercomplete', () => resolve())
-                map.render()
-            })
+            await this.innerMap.renderComplete()
 
-            const mapElement = map.getViewport()
-            const mapSize = map.getSize()
+            const mapSize = this.innerMap.getSize()
             if (!mapSize) return undefined
 
             const [mapWidth, mapHeight] = mapSize
-            const allCanvases = Array.from(
-                mapElement.querySelectorAll('canvas'),
-            ) as HTMLCanvasElement[]
+            const allCanvases =
+                this.innerMap.getCanvasElements()?.canvases ?? []
 
             if (allCanvases.length === 0) return undefined
 
@@ -730,179 +761,37 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             source: gtSource,
         })
 
-        if (this.#map) {
-            this.#map.addLayer(this.#gtLayer)
-
-            // Add borders/coastlines layer on top of the GeoTIFF layer
-            await this.addSupportingLayersForGeoTIFF(gtSource)
+        if (this.innerMap) {
+            // remove any previously loaded GeoTIFF layer (e.g. the user changed
+            // variable/date range and we're loading a new one)
+            this.innerMap.removeLayer('geotiff')
+            this.innerMap.addLayer(this.#gtLayer, { name: 'geotiff' })
         }
 
         this.metadata = await this.fetchGeotiffMetadata(gtSource)
         this.long_name = this.metadata['long_name'] ?? ''
 
-        if (this.#map && this.#gtLayer) {
-            this.renderPixelValues(this.#map, this.#gtLayer)
+        if (this.innerMap && this.#gtLayer) {
             this.applyColorToLayer(gtSource, this.colorMapName)
 
-            setTimeout(async () => {
-                // Try to fit the map view to the GeoTIFF extent
-                try {
-                    // Get the GeoTIFF view
-                    const view = await this.#gtLayer!.getSource()?.getView()
+            // Try to fit the map view to the GeoTIFF extent
+            try {
+                // Get the GeoTIFF view
+                const view = await this.#gtLayer.getSource()?.getView()
 
-                    // Because the GeoTIFF and the map projection's differ, we'll transform the GeoTIFF projection
-                    // to the maps projection
-                    const transformedExtent = transformExtent(
-                        view!.extent!,
-                        view!.projection!,
-                        this.#map!.getView().getProjection(),
-                    )
-
-                    // Now we can change the map view to fit the GeoTIFF
-                    this.#map!.getView().fit(transformedExtent, {
+                if (view?.extent && view.projection) {
+                    // Because the GeoTIFF and the map projection's differ, fitToExtent
+                    // will transform the GeoTIFF projection to the map's projection
+                    this.innerMap.fitToExtent(view.extent, {
+                        projection: view.projection,
                         padding: [50, 50, 50, 50],
                         duration: 300,
                     })
-                } catch (error) {
-                    console.warn('Failed to fit map to GeoTIFF extent:', error)
                 }
-            }, 500)
-        }
-    }
-
-    intializeMap() {
-        const baseLayer = new WebGLTileLayer({
-            source: new OSM() as any,
-        })
-
-        this.#graticuleLayer = new Graticule({
-            strokeStyle: new Stroke({
-                color: 'rgba(0,0,0,0.2)',
-                width: 2,
-                lineDash: [0.5, 4],
-            }),
-            showLabels: true,
-            wrapX: false,
-        })
-
-        this.#map = new Map({
-            target: this.shadowRoot?.getElementById('map') ?? undefined,
-            layers: [baseLayer, this.#graticuleLayer],
-            view: new View({
-                center: [0, 0],
-                zoom: 2,
-                projection: 'EPSG:3857',
-            }),
-        })
-
-        if (this.#map) {
-            const resizeObserver = new ResizeObserver(() => {
-                this.#map?.updateSize()
-            })
-
-            const mapElement = this.shadowRoot?.getElementById('map')
-            if (mapElement) {
-                resizeObserver.observe(mapElement)
+            } catch (error) {
+                console.warn('Failed to fit map to GeoTIFF extent:', error)
             }
         }
-    }
-
-    async addSupportingLayersForGeoTIFF(gtSource: GeoTIFF) {
-        if (!this.#map) {
-            return
-        }
-
-        // Remove existing supporting layers if they exist 
-        // (e.g. if user changes variable and we need to load a new GeoTIFF)
-        if (this.#geoTiffGraticuleLayer) {
-            this.#map.removeLayer(this.#geoTiffGraticuleLayer)
-            this.#geoTiffGraticuleLayer = null
-        }
-
-        if (this.#statesLayer) {
-            this.#map.removeLayer(this.#statesLayer)
-            this.#statesLayer = null
-        }
-
-        if (this.#bordersLayer) {
-            this.#map.removeLayer(this.#bordersLayer)
-            this.#bordersLayer = null
-        }
-
-        // Get the GeoTIFF extent to clip borders rendering
-        let geoTiffExtent: number[] | undefined
-        try {
-            const view = await gtSource.getView()
-            if (view?.extent) {
-                geoTiffExtent = transformExtent(
-                    view.extent,
-                    view.projection!,
-                    this.#map.getView().getProjection(),
-                )
-            }
-        } catch (error) {
-            console.warn(
-                'Could not get GeoTIFF extent for border clipping:',
-                error,
-            )
-        }
-
-        // Add a graticule layer with the same extent as the GeoTIFF for better visualization
-        // of the grid
-        this.#geoTiffGraticuleLayer = new Graticule({
-            extent: geoTiffExtent,
-            strokeStyle: new Stroke({
-                color: 'rgba(0,0,0,0.5)',
-                width: 2,
-                lineDash: [0.5, 4],
-            }),
-            showLabels: true,
-            wrapX: false,
-        })
-
-        this.#map.addLayer(this.#geoTiffGraticuleLayer)
-
-        // Add a states vector layer with the same extent as the GeoTIFF to provide geographic 
-        // context. This is optional but can be helpful for users to orient themselves when looking 
-        // at the map. We use a GeoJSON source from Natural Earth, but this could be swapped out 
-        // for any vector source with appropriate styling.
-        const statesVectorSource = new VectorSource({
-            url: 'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/refs/heads/master/10m/cultural/ne_10m_admin_1_states_provinces.json',
-            format: new GeoJSON(),
-        })
-
-        this.#statesLayer = new VectorLayer({
-            source: statesVectorSource,
-            extent: geoTiffExtent,
-            style: new Style({
-                stroke: new Stroke({
-                    color: '#222222',
-                    width: 0.75,
-                }),
-            }),
-        })
-
-        this.#map.addLayer(this.#statesLayer)
-
-        const vectorSource = new VectorSource({
-            url: 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson',
-            format: new GeoJSON(),
-        })
-
-        this.#bordersLayer = new VectorLayer({
-            source: vectorSource,
-            extent: geoTiffExtent,
-            style: new Style({
-                stroke: new Stroke({
-                    color: '#000000',
-                    width: 1,
-                }),
-            }),
-        })
-
-        this.#map.addLayer(this.#bordersLayer)
-
-
     }
 
     async fetchGeotiffMetadata(
@@ -1081,9 +970,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     }
 
     #abortJobStatusTask() {
-        this.#controller.jobStatusTask?.abort(
-            'Cancelled time averaged map request',
-        )
+        this.#controller.cancelJob()
     }
 
     async applyColorToLayer(
@@ -1174,9 +1061,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
 
     #cleanUpMap() {
         this.toggleState = false
-        if (this.#map && this.#draw && this.#vectorLayer) {
-            this.#map.removeInteraction(this.#draw)
-            this.#map.removeLayer(this.#vectorLayer)
+        if (this.innerMap && this.#draw) {
+            this.innerMap.removeInteraction(this.#draw)
+            this.innerMap.removeLayer('profile-line')
         }
 
         // Clear vector features
@@ -1189,9 +1076,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     }
 
     #getRasterValueAtCoordinate(coord: [number, number]): number {
-        if (!this.#map || !this.#gtLayer) return NaN
+        if (!this.innerMap || !this.#gtLayer) return NaN
 
-        const pixel = this.#map.getPixelFromCoordinate(coord)
+        const pixel = this.innerMap.getPixelFromCoordinate(coord)
         if (!pixel) return NaN
 
         const data = this.#gtLayer.getData(pixel)
@@ -1227,9 +1114,12 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                 source: this.#vectorSource,
                 type: 'LineString',
             })
-            if (this.#map) {
-                this.#map.addLayer(this.#vectorLayer)
-                this.#map.addInteraction(this.#draw)
+            if (this.innerMap) {
+                this.innerMap.addLayer(this.#vectorLayer, {
+                    name: 'profile-line',
+                    position: 'top',
+                })
+                this.innerMap.addInteraction(this.#draw)
 
                 this.#draw.on('drawend', (event: any) => {
                     const line = event.feature.getGeometry() // Getting line geometry
@@ -1392,46 +1282,34 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             </div>
 
             <div class="map-container">
-                <div id="map">
-                    <div id="settings">
-                        <div>
-                            <strong>Value:</strong>
-                            <span id="pixelValue">${this.pixelValue}</span>
-                        </div>
+                <terra-map fill show-graticule></terra-map>
 
-                        <div>
-                            <strong>Coordinate: </strong>
-                            <span id="cursorCoordinates"
-                                >${this.pixelCoordinates}</span
-                            >
-                        </div>
+                <div id="settings">
+                    <div>
+                        <strong>Value:</strong>
+                        <span id="pixelValue">${this.pixelValue}</span>
                     </div>
 
-                    ${
-                        this.legendValues.length > 0
-                            ? html`
-                              <div id="legend">
-                                  <div class="stats" id="statsMax">
-                                      ${this.max}
-                                  </div>
-                                  <div class="palette">
-                                      ${this.legendValues.map(
-                                          (value) => html`
-                                              <div
-                                                  class="color-box"
-                                                  style="background-color: rgba(${value.rgb})"
-                                                  title="${value.value}"
-                                              ></div>
-                                          `,
-                                      )}
-                                  </div>
-                                  <div class="stats" id="statsMin">
-                                      ${this.min}
-                                  </div>
-                              </div>
-                          `
-                            : nothing
-                    }
+                    <div>
+                        <strong>Coordinate: </strong>
+                        <span id="cursorCoordinates">${this.pixelCoordinates}</span>
+                    </div>
+                </div>
+
+                <div id="legend">
+                    <div class="stats" id="statsMax">${this.max}</div>
+                    <div class="palette">
+                        ${this.legendValues.map(
+                            (value) => html`
+                                <div
+                                    class="color-box"
+                                    style="background-color: rgba(${value.rgb})"
+                                    title="${value.value}"
+                                ></div>
+                            `,
+                        )}
+                    </div>
+                    <div class="stats" id="statsMin">${this.min}</div>
                 </div>
             </div>
 
