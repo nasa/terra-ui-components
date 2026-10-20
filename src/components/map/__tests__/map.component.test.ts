@@ -592,6 +592,34 @@ describe('<terra-map> collection-id', () => {
             .exist
     })
 
+    it('only makes the first resolved GIBS layer visible by default', async () => {
+        stubCollectionTags(
+            makeTagsResponse([
+                { product: 'AIRS_L2_Surface_Air_Temperature_Day' },
+                { product: 'AIRS_L2_Surface_Air_Temperature_Night' },
+            ])
+        )
+
+        const el = await fixture<TerraMap>(
+            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
+        )
+
+        await waitUntil(() =>
+            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        )
+
+        expect(
+            el
+                .getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)
+                ?.getVisible()
+        ).to.be.true
+        expect(
+            el
+                .getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+                ?.getVisible()
+        ).to.be.false
+    })
+
     it("only adds layers available in the map's current projection", async () => {
         window.fetch = (async () =>
             new Response(makeCapabilitiesXml('EPSG:3413', '1km'), {

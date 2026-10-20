@@ -196,7 +196,7 @@ If you don't need to write JS, the `layers` attribute/property lets you declare 
 - `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
 - `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
 
-Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `title` (a human-readable label displayed in controls like the layer picker; defaults to `name` or the layer's source title), and an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options).
+Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `title` (a human-readable label displayed in controls like the layer picker; defaults to `name` or the layer's source title), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
 
 ```html:preview
     <terra-map
@@ -212,22 +212,22 @@ Changing the attribute/property later diffs against what's currently applied, by
 Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
 
 ```html:preview
-<terra-map collection-id="AIRS2RET_NRT_7.0"></terra-map>
+<terra-map collection-id="GPM_3IMERGHH_07"></terra-map>
 ```
 
-Under the hood, this reads the collection's `edsc.extra.serverless.gibs` tag from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped; set `projection` to match a polar/geographic layer the same way you would for a manual `"type": "gibs"` entry. Like declarative `layers`, each resolved layer fires a `terra-map-layer-change` event and can be inspected or removed individually with `getLayer()`/`removeLayer()`. `collection-id` and `layers` are independent — both can be used on the same map at once, since their layer names never collide.
+Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped.
+
+NOTE: Only the first resolved layer is visible by default to avoid painting every product in the collection on top of each other.
 
 ### Adding **GeoTIFF** Layers
 
-Use a `"type": "geotiff"` entry in `layers` to load any standalone GeoTIFF or Cloud-Optimized GeoTIFF by URL — not tied to Giovanni, Harmony, or any other GESDISC-specific service. Each entry needs a `name` and a `url`; a colormap-based style is computed automatically from the raster's actual data range. The example below loads a small GeoTIFF exported from Giovanni, but any GeoTIFF URL works the same way:
+Use a `"type": "geotiff"` entry in `layers` to load any standalone GeoTIFF or Cloud-Optimized GeoTIFF by URL. Each entry needs a `name` and a `url`; a colormap-based style is computed automatically from the raster's actual data range. The example below loads a small GeoTIFF from a relative path, but any GeoTIFF URL works the same way:
 
 ```html:preview
 <terra-map
     layers='[{ "type": "geotiff", "name": "my-data", "url": "/assets/examples/giovanni.tif", "colorMapName": "viridis", "fitView": true }]'
 ></terra-map>
 ```
-
-Other fields: `bands` (which band(s) to read, defaults to `[1]`), `noDataValue` (a pixel value to treat as "no data" and exclude from rendering/min-max), `opacity`, `colorSteps` (number of color stops, defaults to 72), `reverseColors`, and `position` (same as any other `layers` entry). Set `fitView: true` to pan/zoom the map to the GeoTIFF's native extent once it loads — off by default, since auto-fitting isn't always desirable with multiple layers on the same map.
 
 Once built, the layer's computed data range, colormap stops, and legend entries are available via `getGeoTiffLayerInfo(name)` — handy for rendering a legend:
 
@@ -257,7 +257,7 @@ map.addEventListener('terra-map-pointer-move', event => {
 Some GIBS collections are published as vector data (e.g. `GRanD_Dams`, `VIIRS_NOAA20_Thermal_Anomalies_375m_All`) rather than raster imagery. Use `buildGibsVectorLayer()` to load these as Mapbox Vector Tiles. Without a `style`, a simple default circle style is applied:
 
 ```html:preview
-<terra-map id="gibs-vector-map" has-navigation></terra-map>
+<terra-map id="gibs-vector-map" has-navigation projection="EPSG:4326"></terra-map>
 
 <script type="module">
     import { buildGibsVectorLayer } from '/dist/components/map/layers/gibs-vector.layer.js'

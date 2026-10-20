@@ -16,7 +16,11 @@ import {
 } from './map.service.js'
 import type { Projection } from './layers/gibs.layer.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
-import { buildMapLayer, type MapLayerConfig } from './layers/layer.js'
+import {
+    buildMapLayer,
+    type MapLayerConfig,
+    type MapLayerResult,
+} from './layers/layer.js'
 import { QueryController } from '../../controllers/query.controller.js'
 import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
@@ -91,7 +95,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'has-coord-tracker', type: Boolean })
     set hasCoordTracker(value: boolean) {
         console.warn(
-            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
+            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.',
         )
         this.showMouseCoordinates = value
     }
@@ -122,7 +126,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
+            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.',
         )
         this.showBoundingBoxSelection = !value
     }
@@ -139,7 +143,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
+            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.',
         )
         this.showPointSelection = !value
     }
@@ -183,15 +187,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     /**
      * The map view's projection. Defaults to `'EPSG:3857'` (Web Mercator).
      *
-     * This is a construction-time setting, like `no-world-wrap` — changing it
-     * after the map has rendered has no effect, since OpenLayers can't swap a
-     * view's projection in place.
-     *
-     * Set this to match any non-`'EPSG:3857'` `projection` used by a
-     * `layers` entry (e.g. `projection="EPSG:3413"`). Imagery published
-     * only in a polar/geographic projection renders with severe distortion if
-     * left on the default Web Mercator view, since OpenLayers will silently
-     * reproject it.
+     * This is a construction-time setting. Changing it after the map has rendered has no effect.
      */
     @property({ type: String })
     projection: Projection = 'EPSG:3857'
@@ -206,8 +202,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     fitToValue: boolean = false
 
     /**
-     * Declarative layers to add to the map, for use in plain HTML without
-     * writing JS. Each entry's `type` picks which kind of layer it builds:
+     * Declarative layers to add to the map. Each entry's `type` picks which kind of layer it builds:
      * `'gibs'` (raster) or `'gibs-vector'` for NASA GIBS imagery, or
      * `'geotiff'` for a standalone GeoTIFF/COG by URL. e.g.:
      *
@@ -222,15 +217,13 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     layers: MapLayerConfig[] = []
 
     /**
-     * A CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id
-     * (e.g. `C1234567890-PROVIDER`). Either is accepted. When set, every
-     * GIBS imagery product CMR has tagged for the collection — that's
-     * available in this map's current `projection` — is added as its own
-     * layer, named `` `${collectionId}:${product}` ``. Layers can be
-     * observed via `terra-map-layer-change` and removed with `removeLayer()`,
-     * same as any `layers` entry.
+     * A CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-PROVIDER`). Either is accepted.
+     * When set, every GIBS imagery product CMR has tagged for the collection is added as its own layer.
      */
-    @property({ attribute: 'collection-id', converter: undefinedStringConverter })
+    @property({
+        attribute: 'collection-id',
+        converter: undefinedStringConverter,
+    })
     collectionId?: string
 
     #collectionController = new CmrCollectionController(this, {
@@ -239,22 +232,29 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     })
     #previousCollectionLayers: MapLayerConfig[] = []
 
+    // `buildMapLayer()` (below) is async - GetCapabilities fetches, raster
+    // min/max reads - so if a layer's config changes again before its build
+    // resolves, two builds for the same `name` can be in flight at once.
+    // This counter, bumped per-name each time a (re)build starts, lets each
+    // build's continuation check whether it's still the most recent one for
+    // that name before applying its result; a superseded build just bails
+    // instead of a slow-but-stale result clobbering a newer one.
     #layerRequestIds = new Map<string, number>()
-    #geotiffLayerInfo = new Map<string, GeoTiffLayerInfo>()
 
     @watch('layers', { waitUntilFirstUpdate: true })
     async layersChanged(
         previous: MapLayerConfig[] = [],
-        next: MapLayerConfig[] = []
+        next: MapLayerConfig[] = [],
     ) {
-        const previousByName = new Map(previous.map(config => [config.name, config]))
-        const nextByName = new Map(next.map(config => [config.name, config]))
+        const previousByName = new Map(
+            previous.map((config) => [config.name, config]),
+        )
+        const nextByName = new Map(next.map((config) => [config.name, config]))
 
         for (const name of previousByName.keys()) {
             if (!nextByName.has(name)) {
                 this.removeLayer(name)
                 this.#layerRequestIds.delete(name)
-                this.#geotiffLayerInfo.delete(name)
             }
         }
 
@@ -267,28 +267,13 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 continue // unchanged
             }
 
-            // GIBS vector layers are only published in EPSG:4326 today; raster
-            // layers default to EPSG:3857. Either way, warn (rather than
-            // silently rendering distorted/reprojected imagery) if it doesn't
-            // match the map's own view projection.
-            if (config.type === 'gibs' || config.type === 'gibs-vector') {
-                const layerProjection =
-                    config.type === 'gibs-vector'
-                        ? 'EPSG:4326'
-                        : (config.projection ?? 'EPSG:3857')
-                if (layerProjection !== this.projection) {
-                    console.warn(
-                        `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`
-                    )
-                }
-            }
+            this.#warnIfProjectionMismatch(name, config)
 
             const requestId = (this.#layerRequestIds.get(name) ?? 0) + 1
             this.#layerRequestIds.set(name, requestId)
 
             if (previousConfig) {
                 this.removeLayer(name)
-                this.#geotiffLayerInfo.delete(name)
             }
 
             try {
@@ -299,34 +284,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     continue
                 }
 
-                this.addLayer(result.layer, {
-                    name,
-                    position: config.position,
-                    title: config.title,
-                })
-
-                if (config.type === 'geotiff' && result.type === 'geotiff') {
-                    this.#geotiffLayerInfo.set(name, result.info)
-
-                    if (config.fitView && result.info.extent) {
-                        this.fitToExtent(result.info.extent, {
-                            projection: result.info.projection,
-                            padding: [50, 50, 50, 50],
-                            duration: 300,
-                        })
-                    }
-
-                    this.emit('terra-map-layer-change', {
-                        detail: { name, type: result.type, info: result.info },
-                    })
-                } else {
-                    this.emit('terra-map-layer-change', {
-                        detail: {
-                            name,
-                            type: result.type as 'gibs' | 'gibs-vector',
-                        },
-                    })
-                }
+                this.#handleLayerBuilt(name, config, result)
             } catch (error) {
                 // bail if this layer was removed or superseded while it was building
                 if (this.#layerRequestIds.get(name) !== requestId) {
@@ -335,7 +293,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
                 console.error(
                     `Failed to build "${config.type}" layer "${name}":`,
-                    error
+                    error,
                 )
                 this.emit('terra-map-layer-change', {
                     detail: { name, type: config.type, error: error as Error },
@@ -345,12 +303,77 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     }
 
     /**
+     * GIBS vector layers are only published in EPSG:4326 today; raster
+     * layers default to EPSG:3857. Either way, warn (rather than silently
+     * rendering distorted/reprojected raster imagery, or - for vector
+     * layers - rendering nothing at all, since OpenLayers' vector tile
+     * reprojection doesn't reliably handle GIBS' tile grids) if a layer's
+     * projection doesn't match the map's own view projection.
+     */
+    #warnIfProjectionMismatch(name: string, config: MapLayerConfig) {
+        if (config.type !== 'gibs' && config.type !== 'gibs-vector') {
+            return
+        }
+
+        const layerProjection =
+            config.type === 'gibs-vector'
+                ? 'EPSG:4326'
+                : (config.projection ?? 'EPSG:3857')
+
+        if (layerProjection !== this.projection) {
+            console.warn(
+                `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`,
+            )
+        }
+    }
+
+    /**
+     * Adds a successfully-built `layers` entry to the map and fires
+     * `terra-map-layer-change` with its type-specific detail.
+     */
+    #handleLayerBuilt(
+        name: string,
+        config: MapLayerConfig,
+        result: MapLayerResult,
+    ) {
+        this.addLayer(result.layer, {
+            name,
+            position: config.position,
+            title: config.title,
+        })
+        result.layer.setVisible(config.visible ?? true)
+
+        if (config.type === 'geotiff' && result.type === 'geotiff') {
+            // stash the computed info directly on the OL layer
+            result.layer.set('info', result.info)
+
+            if (config.fitView && result.info.extent) {
+                this.fitToExtent(result.info.extent, {
+                    projection: result.info.projection,
+                    padding: [50, 50, 50, 50],
+                    duration: 300,
+                })
+            }
+
+            this.emit('terra-map-layer-change', {
+                detail: { name, type: result.type, info: result.info },
+            })
+        } else if (result.type === 'gibs' || result.type === 'gibs-vector') {
+            result.layer.set('legend', result.legend)
+
+            this.emit('terra-map-layer-change', {
+                detail: { name, type: result.type },
+            })
+        }
+    }
+
+    /**
      * Gets the computed data range, colormap stops, and legend values for a
      * declaratively-added GeoTIFF layer, as built by a `'geotiff'` entry in
      * `layers`.
      */
     getGeoTiffLayerInfo(name: string): GeoTiffLayerInfo | undefined {
-        return this.#geotiffLayerInfo.get(name)
+        return this.getLayer(name)?.get('info')
     }
 
     /**
@@ -360,9 +383,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     getGeoTiffValueAtPixel(
         name: string,
-        pixel: [number, number]
+        pixel: [number, number],
     ): ReturnType<GeoTiffLayerInfo['layer']['getData']> | undefined {
-        return this.#geotiffLayerInfo.get(name)?.layer.getData(pixel)
+        return this.getGeoTiffLayerInfo(name)?.layer.getData(pixel)
     }
 
     // querySelector for the map element
@@ -419,7 +442,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
-            getGeoJson: shapeId =>
+            getGeoJson: (shapeId) =>
                 this.queryClient.fetchQuery(queryGiovanniGeoJsonShape(shapeId)),
             onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
@@ -427,16 +450,16 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     detail: { coordinate, pixel },
                 })
             },
-            onDraw: detail => {
+            onDraw: (detail) => {
                 this.emit('terra-map-change', { detail })
             },
-            onLayerToggle: detail => {
+            onLayerToggle: (detail) => {
                 if (detail.name === 'graticule') {
                     this.showGraticule = detail.visible
                 }
                 this.emit('terra-map-layer-toggle', { detail })
             },
-            onShapeLoading: loading => {
+            onShapeLoading: (loading) => {
                 this.shapeLoading = loading
             },
         })
@@ -446,16 +469,21 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         if (this.layers.length) {
             this.layersChanged(undefined, this.layers)
         }
-
-        console.log(this.#service)
     }
 
     updated(changedProps: globalThis.Map<string, unknown>) {
         super.updated(changedProps)
 
-        // resolved via `collection-id`, separately from the declarative
-        // `layers` property — reuses the exact same diff/build/emit logic,
-        // just fed a different before/after pair
+        // `gibsLayerConfigs` is a plain getter on `#collectionController`,
+        // not a `@property`/`@state` - it's computed from CMR query results
+        // and the current `projection` (see CmrCollectionController) - so
+        // `@watch` (which only observes reactive properties) can't react to
+        // it directly. Polling it here after every update and diffing by
+        // reference instead (the getter returns a cached array unless its
+        // own inputs actually changed) is what lets `collection-id`-derived
+        // layers reuse the exact same add/remove/rebuild diffing `layersChanged`
+        // already does for the declarative `layers` property, just fed a
+        // different before/after pair.
         const nextCollectionLayers = this.#collectionController.gibsLayerConfigs
         if (nextCollectionLayers !== this.#previousCollectionLayers) {
             const previousCollectionLayers = this.#previousCollectionLayers
@@ -471,7 +499,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     addLayer(
         layer: Parameters<MapService['addLayer']>[0],
-        options?: AddLayerOptions
+        options?: AddLayerOptions,
     ) {
         this.#service?.addLayer(layer, options)
     }
@@ -496,7 +524,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     fitToExtent(
         extent: Parameters<MapService['fitToExtent']>[0],
-        options?: FitToExtentOptions
+        options?: FitToExtentOptions,
     ) {
         this.#service?.fitToExtent(extent, options)
     }
@@ -505,7 +533,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         this.#service?.addInteraction(interaction)
     }
 
-    removeInteraction(interaction: Parameters<MapService['removeInteraction']>[0]) {
+    removeInteraction(
+        interaction: Parameters<MapService['removeInteraction']>[0],
+    ) {
         this.#service?.removeInteraction(interaction)
     }
 
@@ -549,9 +579,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(shapes ?? undefined, category => {
+                    map(shapes ?? undefined, (category) => {
                         return html`<optgroup label="${category.title}">
-                            ${category.shapes.map(shape => {
+                            ${category.shapes.map((shape) => {
                                 return html`
                                     <option
                                         value="${shape.shapefileID}/${shape.shapeID}"
@@ -561,7 +591,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                                 `
                             })}
                         </optgroup> `
-                    })
+                    }),
                 )}
             </select>
         `

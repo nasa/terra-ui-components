@@ -1,6 +1,10 @@
 import type TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
-import { buildGibsLayer, type GibsLayerConfig } from './gibs.layer.js'
+import {
+    buildGibsLayer,
+    type GibsLayerConfig,
+    type GibsLayerInfo,
+} from './gibs.layer.js'
 import {
     buildGeoTiffLayer,
     type GeoTiffLayerConfig,
@@ -15,7 +19,11 @@ import {
 export type MapLayerConfig = GibsLayerConfig | GeoTiffLayerConfig
 
 export type MapLayerResult =
-    | { type: 'gibs' | 'gibs-vector'; layer: TileLayer | VectorTileLayer }
+    | {
+          type: 'gibs' | 'gibs-vector'
+          layer: TileLayer | VectorTileLayer
+          legend: GibsLayerInfo['legend']
+      }
     | { type: 'geotiff'; layer: GeoTiffLayerInfo['layer']; info: GeoTiffLayerInfo }
 
 /**
@@ -28,6 +36,6 @@ export async function buildMapLayer(config: MapLayerConfig): Promise<MapLayerRes
         return { type: 'geotiff', layer: info.layer, info }
     }
 
-    const layer = await buildGibsLayer(config)
-    return { type: config.type, layer }
+    const { layer, legend } = await buildGibsLayer(config)
+    return { type: config.type, layer, legend }
 }
