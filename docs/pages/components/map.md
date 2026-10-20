@@ -199,10 +199,10 @@ If you don't need to write JS, the `layers` attribute/property lets you declare 
 Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `title` (a human-readable label displayed in controls like the layer picker; defaults to `name` or the layer's source title), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
 
 ```html:preview
-    <terra-map
-        show-layer-picker
-        layers='[{ "type": "gibs", "name": "gibs-imagery", "title": "MODIS Terra True Color", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
-    ></terra-map>
+<terra-map
+    show-layer-picker
+    layers='[{ "type": "gibs", "name": "gibs-imagery", "title": "MODIS Terra True Color", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
+></terra-map>
 ```
 
 Changing the attribute/property later diffs against what's currently applied, by `name`: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If a GIBS entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. Each build attempt (success or failure) fires a `terra-map-layer-change` event — see below for GeoTIFF's `info`/`error` detail. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.

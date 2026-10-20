@@ -61,10 +61,20 @@ async function getNoDataValue(
     fallback?: number,
 ): Promise<number | undefined> {
     await gtSource.getView()
-    const gtImage = (gtSource as any).sourceImagery_[0][0]
-    const tagValue = gtImage.fileDirectory?.GDAL_NODATA
+    try {
+        // `sourceImagery_` is an undocumented internal of OL's `GeoTIFF` source
+        // if it doesn't exist, we'll fall back to the configured noDataValue
+        const gtImage = (gtSource as any).sourceImagery_?.[0]?.[0]
+        const tagValue = gtImage?.fileDirectory?.GDAL_NODATA
 
-    return tagValue !== undefined ? parseFloat(tagValue) : fallback
+        return tagValue !== undefined ? parseFloat(tagValue) : fallback
+    } catch (error) {
+        console.warn(
+            'Failed to read GDAL_NODATA tag from GeoTIFF source; falling back to configured noDataValue.',
+            error,
+        )
+        return fallback
+    }
 }
 
 /**

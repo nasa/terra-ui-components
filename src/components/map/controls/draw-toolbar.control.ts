@@ -120,6 +120,10 @@ export class DrawToolbarControl extends Control {
         }
     }
 
+    #viewProjection() {
+        return this.getMap()?.getView().getProjection() ?? 'EPSG:3857'
+    }
+
     buildPointFeature(latLng: LatLng) {
         const viewProjection = this.#viewProjection()
         const coords = transform(
@@ -161,7 +165,6 @@ export class DrawToolbarControl extends Control {
                 ],
             ]),
         })
-
         feature.set('drawtool', 'bbox')
 
         return feature
@@ -206,10 +209,6 @@ export class DrawToolbarControl extends Control {
             default:
                 return false
         }
-    }
-
-    #viewProjection() {
-        return this.getMap()?.getView().getProjection() ?? 'EPSG:3857'
     }
 
     #getIcon(tool: DrawTool | 'cancel') {
