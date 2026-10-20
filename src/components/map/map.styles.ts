@@ -19,12 +19,18 @@ export default css`
 
     :root,
     :host {
-        --ol-background-color: white;
-        --ol-accent-background-color: #f5f5f5;
-        --ol-subtle-background-color: rgba(128, 128, 128, 0.25);
+        --ol-background-color: var(--terra-container-panel-bg, white);
+        --ol-accent-background-color: var(
+            --terra-color-bg-surface-neutral-secondary,
+            #f5f5f5
+        );
+        --ol-subtle-background-color: var(
+            --terra-color-bg-surface-neutral-secondary,
+            rgba(128, 128, 128, 0.25)
+        );
         --ol-partial-background-color: rgba(255, 255, 255, 0.75);
-        --ol-foreground-color: #333333;
-        --ol-subtle-foreground-color: #666666;
+        --ol-foreground-color: var(--terra-text-primary, #333333);
+        --ol-subtle-foreground-color: var(--terra-text-secondary, #666666);
         --ol-brand-color: #00aaff;
     }
 
@@ -42,10 +48,10 @@ export default css`
         left: 10px;
         border-radius: 4px;
         padding: 5px;
-        background-color: var(--terra-input-background-default, #ffffff);
-        color: var(--terra-input-text-default, #333333);
+        background-color: var(--terra-container-panel-bg, #ffffff);
+        color: var(--terra-text-primary, #333333);
         box-shadow: none;
-        border: 2px solid rgba(0, 0, 0, 0.2);
+        border: 2px solid var(--terra-container-panel-border, rgba(0, 0, 0, 0.2));
         background-clip: padding-box;
         z-index: 2;
     }

@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { ImageTile } from 'ol'
+import type { Map, MapBrowserEvent } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
@@ -1218,40 +1219,40 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
             ${
                 this.#isVariableNotFound()
                     ? html`
-                      <terra-alert
-                          class="no-data-alert"
-                          variant="danger"
-                          open
-                          closable
-                      >
-                          <terra-icon
-                              slot="icon"
-                              name="outline-exclamation-triangle"
-                              library="heroicons"
-                          ></terra-icon>
-                          The selected variable was not found in the catalog
-                      </terra-alert>
-                  `
+                          <terra-alert
+                              class="no-data-alert"
+                              variant="danger"
+                              open
+                              closable
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              The selected variable was not found in the catalog
+                          </terra-alert>
+                      `
                     : ''
             }
             ${
                 this.timeAverageMapError
                     ? html`
-                      <terra-alert
-                          class="error-alert"
-                          variant="danger"
-                          open
-                          closable
-                          @terra-after-hide=${() => (this.timeAverageMapError = null)}
-                      >
-                          <terra-icon
-                              slot="icon"
-                              name="outline-exclamation-triangle"
-                              library="heroicons"
-                          ></terra-icon>
-                          ${this.#getErrorMessage(this.timeAverageMapError)}
-                      </terra-alert>
-                  `
+                          <terra-alert
+                              class="error-alert"
+                              variant="danger"
+                              open
+                              closable
+                              @terra-after-hide=${() => (this.timeAverageMapError = null)}
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              ${this.#getErrorMessage(this.timeAverageMapError)}
+                          </terra-alert>
+                      `
                     : ''
             }
             <div class="toolbar-container">
@@ -1296,36 +1297,42 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                     </div>
                 </div>
 
-                <div id="legend">
-                    <div class="stats" id="statsMax">${this.max}</div>
-                    <div class="palette">
-                        ${this.legendValues.map(
-                            (value) => html`
-                                <div
-                                    class="color-box"
-                                    style="background-color: rgba(${value.rgb})"
-                                    title="${value.value}"
-                                ></div>
-                            `,
-                        )}
-                    </div>
-                    <div class="stats" id="statsMin">${this.min}</div>
-                </div>
+                ${
+                    this.legendValues.length > 0
+                        ? html`
+                              <div id="legend">
+                                  <div class="stats" id="statsMax">${this.max}</div>
+                                  <div class="palette">
+                                      ${this.legendValues.map(
+                                          (value) => html`
+                                              <div
+                                                  class="color-box"
+                                                  style="background-color: rgba(${value.rgb})"
+                                                  title="${value.value}"
+                                              ></div>
+                                          `,
+                                      )}
+                                  </div>
+                                  <div class="stats" id="statsMin">${this.min}</div>
+                              </div>
+                          `
+                        : nothing
+                }
             </div>
 
             ${
                 this.harmonyJobId
                     ? html`
-                      <div class="harmony-job-link">
-                          <a
-                              href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                          >
-                              Request Status: ${this.harmonyJobId}
-                          </a>
-                      </div>
-                  `
+                          <div class="harmony-job-link">
+                              <a
+                                  href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                              >
+                                  Request Status: ${this.harmonyJobId}
+                              </a>
+                          </div>
+                      `
                     : nothing
             }
 
@@ -1337,23 +1344,25 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
                 this.layout &&
                 Object.keys(this.layout).length
                     ? html`
-                      <div class="plot-popover ${this.minimized ? 'minimized' : ''}">
-                          <terra-plot
-                              style="display: ${this.minimized ? 'none' : 'block'}"
-                              .data=${this.plotData}
-                              plotTitle="Data Profile"
-                              .layout=${this.layout}
+                          <div
+                              class="plot-popover ${this.minimized ? 'minimized' : ''}"
                           >
-                          </terra-plot>
+                              <terra-plot
+                                  style="display: ${this.minimized ? 'none' : 'block'}"
+                                  .data=${this.plotData}
+                                  plotTitle="Data Profile"
+                                  .layout=${this.layout}
+                              >
+                              </terra-plot>
 
-                          <terra-button
-                              class="minify-btn"
-                              @click=${this.#minifyMapPopover}
-                          >
-                              ${this.minimized ? 'Restore' : 'Minimize'}
-                          </terra-button>
-                      </div>
-                  `
+                              <terra-button
+                                  class="minify-btn"
+                                  @click=${this.#minifyMapPopover}
+                              >
+                                  ${this.minimized ? 'Restore' : 'Minimize'}
+                              </terra-button>
+                          </div>
+                      `
                     : null
             }
 
