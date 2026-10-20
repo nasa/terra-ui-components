@@ -49,7 +49,7 @@ const layersConverter = {
  * @documentation https://terra-ui.netlify.app/components/map
  * @status stable
  * @since 1.0
- *
+ * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -95,7 +95,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'has-coord-tracker', type: Boolean })
     set hasCoordTracker(value: boolean) {
         console.warn(
-            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.',
+            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
         )
         this.showMouseCoordinates = value
     }
@@ -126,7 +126,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
     set hideBoundingBoxSelection(value: boolean) {
         console.warn(
-            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.',
+            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
         )
         this.showBoundingBoxSelection = !value
     }
@@ -143,7 +143,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'hide-point-selection', type: Boolean })
     set hidePointSelection(value: boolean) {
         console.warn(
-            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.',
+            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
         )
         this.showPointSelection = !value
     }
@@ -157,6 +157,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'show-circle-selection', type: Boolean })
     showCircleSelection: boolean = false
 
+    /**
+     * Whether to display the layer picker control on the map.
+     */
     @property({ attribute: 'show-layer-picker', type: Boolean })
     showLayerPicker: boolean = false
 
@@ -244,12 +247,10 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @watch('layers', { waitUntilFirstUpdate: true })
     async layersChanged(
         previous: MapLayerConfig[] = [],
-        next: MapLayerConfig[] = [],
+        next: MapLayerConfig[] = []
     ) {
-        const previousByName = new Map(
-            previous.map((config) => [config.name, config]),
-        )
-        const nextByName = new Map(next.map((config) => [config.name, config]))
+        const previousByName = new Map(previous.map(config => [config.name, config]))
+        const nextByName = new Map(next.map(config => [config.name, config]))
 
         for (const name of previousByName.keys()) {
             if (!nextByName.has(name)) {
@@ -293,7 +294,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
                 console.error(
                     `Failed to build "${config.type}" layer "${name}":`,
-                    error,
+                    error
                 )
                 this.emit('terra-map-layer-change', {
                     detail: { name, type: config.type, error: error as Error },
@@ -322,7 +323,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
         if (layerProjection !== this.projection) {
             console.warn(
-                `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`,
+                `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`
             )
         }
     }
@@ -331,11 +332,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      * Adds a successfully-built `layers` entry to the map and fires
      * `terra-map-layer-change` with its type-specific detail.
      */
-    #handleLayerBuilt(
-        name: string,
-        config: MapLayerConfig,
-        result: MapLayerResult,
-    ) {
+    #handleLayerBuilt(name: string, config: MapLayerConfig, result: MapLayerResult) {
         this.addLayer(result.layer, {
             name,
             position: config.position,
@@ -383,7 +380,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     getGeoTiffValueAtPixel(
         name: string,
-        pixel: [number, number],
+        pixel: [number, number]
     ): ReturnType<GeoTiffLayerInfo['layer']['getData']> | undefined {
         return this.getGeoTiffLayerInfo(name)?.layer.getData(pixel)
     }
@@ -442,7 +439,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
-            getGeoJson: (shapeId) =>
+            getGeoJson: shapeId =>
                 this.queryClient.fetchQuery(queryGiovanniGeoJsonShape(shapeId)),
             onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
@@ -450,16 +447,16 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                     detail: { coordinate, pixel },
                 })
             },
-            onDraw: (detail) => {
+            onDraw: detail => {
                 this.emit('terra-map-change', { detail })
             },
-            onLayerToggle: (detail) => {
+            onLayerToggle: detail => {
                 if (detail.name === 'graticule') {
                     this.showGraticule = detail.visible
                 }
                 this.emit('terra-map-layer-toggle', { detail })
             },
-            onShapeLoading: (loading) => {
+            onShapeLoading: loading => {
                 this.shapeLoading = loading
             },
         })
@@ -499,7 +496,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     addLayer(
         layer: Parameters<MapService['addLayer']>[0],
-        options?: AddLayerOptions,
+        options?: AddLayerOptions
     ) {
         this.#service?.addLayer(layer, options)
     }
@@ -524,7 +521,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     fitToExtent(
         extent: Parameters<MapService['fitToExtent']>[0],
-        options?: FitToExtentOptions,
+        options?: FitToExtentOptions
     ) {
         this.#service?.fitToExtent(extent, options)
     }
@@ -533,9 +530,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         this.#service?.addInteraction(interaction)
     }
 
-    removeInteraction(
-        interaction: Parameters<MapService['removeInteraction']>[0],
-    ) {
+    removeInteraction(interaction: Parameters<MapService['removeInteraction']>[0]) {
         this.#service?.removeInteraction(interaction)
     }
 
@@ -579,9 +574,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 <option value="">Select a Shape...</option>
 
                 ${cache(
-                    map(shapes ?? undefined, (category) => {
+                    map(shapes ?? undefined, category => {
                         return html`<optgroup label="${category.title}">
-                            ${category.shapes.map((shape) => {
+                            ${category.shapes.map(shape => {
                                 return html`
                                     <option
                                         value="${shape.shapefileID}/${shape.shapeID}"
@@ -591,7 +586,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                                 `
                             })}
                         </optgroup> `
-                    }),
+                    })
                 )}
             </select>
         `
@@ -604,31 +599,26 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 part="map"
                 class=${`map ${this.staticMode ? 'static' : ''} ${this.fill ? 'fill' : ''}`}
             >
-                ${
-                    this.showMouseCoordinates
-                        ? html`
-                              <div id="mouse-info">
-                                  <div>
-                                      <strong
-                                          >lat:
-                                          ${this.cursorCoordinates[1].toFixed(2)},
-                                          lng:
-                                          ${this.cursorCoordinates[0].toFixed(2)}</strong
-                                      >
-                                  </div>
+                ${this.showMouseCoordinates
+                    ? html`
+                          <div id="mouse-info">
+                              <div>
+                                  <strong
+                                      >lat: ${this.cursorCoordinates[1].toFixed(2)},
+                                      lng:
+                                      ${this.cursorCoordinates[0].toFixed(2)}</strong
+                                  >
                               </div>
-                          `
-                        : nothing
-                }
-                ${
-                    this.shapeLoading
-                        ? html`
-                              <div class="map__loading-overlay">
-                                  <div class="map__spinner"></div>
-                              </div>
-                          `
-                        : nothing
-                }
+                          </div>
+                      `
+                    : nothing}
+                ${this.shapeLoading
+                    ? html`
+                          <div class="map__loading-overlay">
+                              <div class="map__spinner"></div>
+                          </div>
+                      `
+                    : nothing}
             </div>
         `
     }

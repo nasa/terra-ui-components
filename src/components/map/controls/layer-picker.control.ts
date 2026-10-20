@@ -17,7 +17,7 @@ const LAYERS_ICON = `<svg viewBox="0 0 30 30" width="18" height="18" fill="curre
 </svg>`
 
 export class LayerPickerControl extends Control {
-    declare public element: HTMLElement
+    public declare element: HTMLElement
 
     #options?: LayerPickerControlOptions
     #toggleBtn: HTMLButtonElement
@@ -43,7 +43,7 @@ export class LayerPickerControl extends Control {
         toggleBtn.setAttribute('aria-haspopup', 'true')
         toggleBtn.style.display = 'none'
 
-        toggleBtn.addEventListener('click', e => {
+        toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation()
             this.#togglePanel()
         })
@@ -51,7 +51,7 @@ export class LayerPickerControl extends Control {
 
         const panel = document.createElement('div')
         panel.className = 'layer-picker-panel'
-        panel.addEventListener('click', e => e.stopPropagation())
+        panel.addEventListener('click', (e) => e.stopPropagation())
         element.appendChild(panel)
 
         this.#toggleBtn = toggleBtn
@@ -69,6 +69,13 @@ export class LayerPickerControl extends Control {
 
     setMap(map: OlMap | null) {
         super.setMap(map)
+
+        // clean up old renders
+        if (!map) {
+            document.removeEventListener('click', this.#documentClickHandler)
+
+            return
+        }
 
         if (map) {
             const layers = map.getLayers()
@@ -143,7 +150,7 @@ export class LayerPickerControl extends Control {
             .filter((layer: BaseLayer) => Boolean(layer.get('title')))
 
         const baseLayers = titledLayers.filter(
-            (layer: BaseLayer) => layer.get('type') === 'base'
+            (layer: BaseLayer) => layer.get('type') === 'base',
         )
         // Reverse overlays so topmost rendered layer appears at the top of the list
         const overlayLayers = titledLayers
@@ -157,12 +164,20 @@ export class LayerPickerControl extends Control {
         }
 
         if (overlayLayers.length > 0) {
-            const section = this.#buildSection('Overlays', overlayLayers, 'overlay')
+            const section = this.#buildSection(
+                'Overlays',
+                overlayLayers,
+                'overlay',
+            )
             this.#panel.appendChild(section)
         }
     }
 
-    #buildSection(heading: string, layers: BaseLayer[], type: 'base' | 'overlay') {
+    #buildSection(
+        heading: string,
+        layers: BaseLayer[],
+        type: 'base' | 'overlay',
+    ) {
         const section = document.createElement('div')
         section.className = 'layer-picker-section'
 
@@ -171,7 +186,7 @@ export class LayerPickerControl extends Control {
         titleEl.textContent = heading
         section.appendChild(titleEl)
 
-        layers.forEach(layer => {
+        layers.forEach((layer) => {
             const label = document.createElement('label')
             label.className = 'layer-picker-item'
 
@@ -186,7 +201,7 @@ export class LayerPickerControl extends Control {
 
             input.addEventListener('change', () => {
                 if (type === 'base') {
-                    layers.forEach(bLayer => {
+                    layers.forEach((bLayer) => {
                         bLayer.setVisible(bLayer === layer)
                     })
                 } else {
