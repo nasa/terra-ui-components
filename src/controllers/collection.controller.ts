@@ -9,12 +9,14 @@ import { queryGiovanniConfiguredVariables } from '../queries/giovanni.queries.js
 import { queryGesDiscCollection } from '../queries/gesdisc.queries.js'
 import { queryHarmonyCapabilities } from '../queries/harmony.queries.js'
 import { QueryController } from './query.controller.js'
+import { sortByPriority } from '../utilities/sort.js'
 import type { HarmonyCapabilitiesResponse } from '../apis/harmony.api.js'
 import type { UmmC } from '../apis/types/cmr/umm-c.js'
 
 export interface CollectionControllerConfig {
     getCollectionEntryId: () => string | undefined
     getBearerToken: () => string | undefined
+    preferredOutputFormats?: string[]
 }
 
 export type CollectionWithAvailableServices = HarmonyCapabilitiesResponse & {
@@ -197,6 +199,11 @@ export class CollectionController implements ReactiveController {
             this.#cmrData = cmr
             this.#collectionInfo = {
                 ...caps,
+                configuredOutputFormats: sortByPriority(
+                    caps.configuredOutputFormats,
+                    this.config.preferredOutputFormats ?? [],
+                    (format) => format.key,
+                ),
                 granuleCount: cmr.meta['granule-count'] ?? 0,
                 collection: cmr.umm,
             }

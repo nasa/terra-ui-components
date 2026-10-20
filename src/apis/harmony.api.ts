@@ -5,6 +5,7 @@ import {
     HttpException,
 } from '../exceptions/http.exception.js'
 import { authService } from '../auth/auth.service.js'
+import { invertObject } from '../utilities/object.js'
 
 const API_VERSION = '3'
 
@@ -74,6 +75,8 @@ export const OUTPUT_FORMATS = {
 } as const
 
 export type OutputFormats = (typeof OUTPUT_FORMATS)[keyof typeof OUTPUT_FORMATS]
+
+export const OUTPUT_MIME_TYPES = invertObject(OUTPUT_FORMATS)
 
 export interface HarmonyCapabilitiesResponse {
     conceptId: string

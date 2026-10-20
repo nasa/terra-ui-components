@@ -51,6 +51,7 @@ import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { getUTCDate, formatDate } from '../../utilities/date.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import {
+    OUTPUT_MIME_TYPES,
     Status,
     type ConfiguredOutputFormat,
     type Variable,
@@ -270,6 +271,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #collectionController = new CollectionController(this, {
         getCollectionEntryId: () => this.collectionEntryId,
         getBearerToken: () => this.bearerToken,
+        preferredOutputFormats: [
+            OUTPUT_MIME_TYPES['X-NETCDF-4 (OPeNDAP URL)'],
+            OUTPUT_MIME_TYPES['X-NETCDF-4'],
+            OUTPUT_MIME_TYPES.NETCDF,
+        ],
     })
 
     #authController = new AuthController(this)
@@ -1436,21 +1442,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #resetFormatSelection = () => {
-        // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.configuredOutputFormats?.length) {
-            const netcdfFormat =
-                this.collectionWithServices.configuredOutputFormats.find(
-                    (f) =>
-                        f.key === 'application/x-netcdf4' ||
-                        f.key === 'application/netcdf',
-                )
-
-            this.selectedFormat =
-                netcdfFormat ||
-                this.collectionWithServices.configuredOutputFormats[0]
-        } else {
-            this.selectedFormat = defaultOutputFormat
-        }
+        // Reset to highest-priority format available for the collection, or fall back to defaultOutputFormat's key
+        this.selectedFormat =
+            this.collectionWithServices?.configuredOutputFormats?.[0] ??
+            defaultOutputFormat
     }
 
     #getCollectionDateRange() {
