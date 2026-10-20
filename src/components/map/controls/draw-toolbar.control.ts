@@ -118,11 +118,15 @@ export class DrawToolbarControl extends Control {
         }
     }
 
+    #viewProjection() {
+        return this.getMap()?.getView().getProjection() ?? 'EPSG:3857'
+    }
+
     buildPointFeature(latLng: LatLng) {
         const coords = transform(
             [latLng.lng, latLng.lat],
             'EPSG:4326',
-            'EPSG:3857',
+            this.#viewProjection(),
         )
         const point = new Point(coords)
         const feature = new Feature({ geometry: point })
@@ -135,13 +139,14 @@ export class DrawToolbarControl extends Control {
         const south = bounds.getSouth()
         const east = bounds.getEast()
         const north = bounds.getNorth()
+        const viewProjection = this.#viewProjection()
         const coordinates = [
             [west, south],
             [west, north],
             [east, north],
             [east, south],
             [west, south],
-        ].map((coord) => transform(coord, 'EPSG:4326', 'EPSG:3857'))
+        ].map((coord) => transform(coord, 'EPSG:4326', viewProjection))
         const polygon = new Polygon([coordinates])
         const feature = new Feature({ geometry: polygon })
         feature.set('drawtool', 'bbox')
@@ -300,6 +305,8 @@ export class DrawToolbarControl extends Control {
             this.#cleanup()
         })
 
+        const viewProjection = this.#viewProjection()
+
         this.#draw.on('drawstart', (e: any) => {
             const geom = e.feature.getGeometry()
 
@@ -309,7 +316,7 @@ export class DrawToolbarControl extends Control {
                 // TODO: cleanup for other types (polygon, circle)
                 const bbox4326 = transformExtent(
                     extent,
-                    'EPSG:3857',
+                    viewProjection,
                     'EPSG:4326',
                 )
 

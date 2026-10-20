@@ -7,6 +7,7 @@ import type { MapEventDetail } from '../components/map/type.js'
 import type { UmmC } from './types/cmr/umm-c.js'
 import type { UmmVar } from './types/cmr/umm-var.js'
 import type { UmmG } from './types/cmr/umm-g.js'
+import type { CmrCollectionsJsonResponse } from './types/cmr/collection-tags.js'
 
 export type CmrCollectionCitationItem = {
     doi: {
@@ -94,6 +95,10 @@ export interface UmmMeta {
     'granule-count'?: number
 }
 
+// CMR concept-ids look like 'C1234567890-PROVIDER_ID'; entry-ids don't follow
+// this shape (e.g. 'M2T1NXAER_5_12_4'), so this is enough to tell them apart.
+export const CONCEPT_ID_PATTERN = /^[A-Z]\d+-[A-Z0-9_]+$/i
+
 export type SearchParams = {
     pageSize?: number
     pageNum?: number
@@ -139,16 +144,45 @@ class CmrApi {
             })
         }
 
+        return this.#getCollection(
+            `entry_id=${collectionEntryId}`,
+            collectionEntryId,
+            options,
+        )
+    }
+
+    async getCollectionByConceptId(
+        collectionConceptId?: string,
+        options?: RequestOptions,
+    ) {
+        if (!collectionConceptId) {
+            throw new BadRequestException({
+                message: '`collectionConceptId` is required',
+            })
+        }
+
+        return this.#getCollection(
+            `concept-id=${collectionConceptId}`,
+            collectionConceptId,
+            options,
+        )
+    }
+
+    async #getCollection(
+        queryParam: string,
+        collectionId: string,
+        options?: RequestOptions,
+    ) {
         // CMR has a search-based API, so you always get back an items[] array
         // we'll grab the first item to represent the collection
         const ummResponse = await this.#request<UmmResponse<UmmC>>(
-            `collections.umm_json?entry_id=${collectionEntryId}&include_granule_counts=true`,
+            `collections.umm_json?${queryParam}&include_granule_counts=true`,
             options,
         )
 
         if (!ummResponse.items.length) {
             throw new NotFoundException({
-                message: `Collection ${collectionEntryId} was not found`,
+                message: `Collection ${collectionId} was not found`,
             })
         }
 
@@ -168,6 +202,26 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmVar>>(
             `variables.umm_json?keyword=${searchParams.collectionConceptId}&page_size=${searchParams.pageSize ?? 200}`,
+            options,
+        )
+    }
+
+    /**
+     * Looks up a collection's curated tags (GIBS imagery, products, collection capabilities, etc.)
+     * via CMR's `collections.json` search.
+     *
+     * Unlike the UMM-JSON endpoints used elsewhere in this class, `collections.json` is what exposes EDSC's curated tag data.
+     */
+    async getCollectionTags(
+        collectionId: string,
+        options?: RequestOptions,
+    ): Promise<CmrCollectionsJsonResponse> {
+        const queryParam = CONCEPT_ID_PATTERN.test(collectionId)
+            ? `concept-id=${collectionId}`
+            : `entry_id[]=${collectionId}`
+
+        return this.#request<CmrCollectionsJsonResponse>(
+            `collections.json?${queryParam}&include_tags=edsc*`,
             options,
         )
     }
