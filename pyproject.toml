@@ -23,7 +23,6 @@ dev = ["watchfiles", "jupyterlab", "hatch"]
 
 [tool.uv.workspace]
 members = [
-    "examples/fastmcp",
     "examples/fastmcp-example",
 ]
 

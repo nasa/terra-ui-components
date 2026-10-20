@@ -50,6 +50,9 @@ const layersConverter = {
  * @status stable
  * @since 1.0
  *
+ * @event terra-map-change - Emitted when a point, bounding box, polygon, or circle is drawn/selected. `detail` is a `MapEventDetail` shaped by `detail.type` (`'point'`, `'bbox'`, `'polygon'`, `'circle'`).
+ * @event terra-map-pointer-move - Emitted on mouse move over the map (while `show-mouse-coordinates` is set). `detail` is `{ coordinate, pixel }`.
+ * @event terra-map-layer-change - Emitted when a declarative `layers` entry finishes building, successfully or not. `detail` is `{ name, type, info? }` on success, or `{ name, type, error }` on failure.
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
