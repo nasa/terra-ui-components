@@ -119,6 +119,10 @@ export class MapService {
         return this.#getLayerByName(name)
     }
 
+    getAllLayers() {
+        return this.#map.getAllLayers()
+    }
+
     /**
      * Fits the map's view to the given extent, reprojecting from
      * `options.projection` to the map's view projection if provided.
@@ -168,6 +172,18 @@ export class MapService {
      */
     getPixelFromCoordinate(coordinate: [number, number]) {
         return this.#map.getPixelFromCoordinate(coordinate)
+    }
+
+    /**
+     * Returns the features rendered at a pixel position, for hover/click
+     * feature interactions on vector layers (e.g. `GibsVectorLayer`).
+     */
+    getFeaturesAtPixel(pixel: [number, number]) {
+        return this.#map.getFeaturesAtPixel(pixel)
+    }
+
+    getView() {
+        return this.#map.getView()
     }
 
     renderComplete(): Promise<void> {
@@ -262,7 +278,7 @@ export class MapService {
             // Parse the GeoJSON into OpenLayers features, reprojecting from WGS84 to the map projection
             const format = new GeoJSON()
             const features = format.readFeatures(shapeGeoJson, {
-                featureProjection: 'EPSG:3857',
+                featureProjection: this.#map.getView().getProjection(),
             })
 
             const source = this.#shapeLayer.getSource()!
@@ -310,7 +326,7 @@ export class MapService {
         const drawLayer = this.#createDrawLayer()
         this.#shapeLayer = this.#createShapeLayer()
 
-        const projection = getProjection('EPSG:3857')
+        const projection = getProjection(options.projection ?? 'EPSG:3857')
         const worldExtent = projection?.getExtent()
 
         const map = new Map({
@@ -366,11 +382,16 @@ export class MapService {
                 }
 
                 const geometry = event.feature!.getGeometry()!
+                const viewProjection = map.getView().getProjection()
 
                 if (drawtool === 'bbox') {
                     // transform the extent into lat/lng bounds
                     const extent = event.feature!.getGeometry()!.getExtent()!
-                    const bbox4326 = transformExtent(extent, 'EPSG:3857', 'EPSG:4326')
+                    const bbox4326 = transformExtent(
+                        extent,
+                        viewProjection,
+                        'EPSG:4326'
+                    )
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -381,7 +402,11 @@ export class MapService {
                     const coordinates = geometry.getCoordinates()[0].slice(0, -1) // remove last point (duplicate of first)
 
                     const latLngs = coordinates.map(([x, y]) => {
-                        const [lng, lat] = transform([x, y], 'EPSG:3857', 'EPSG:4326')
+                        const [lng, lat] = transform(
+                            [x, y],
+                            viewProjection,
+                            'EPSG:4326'
+                        )
                         return new LatLng(lat, lng)
                     })
 
@@ -392,7 +417,7 @@ export class MapService {
                     })
                 } else if (geometry instanceof Point) {
                     const coords = geometry.getCoordinates()
-                    const [lng, lat] = transform(coords, 'EPSG:3857', 'EPSG:4326')
+                    const [lng, lat] = transform(coords, viewProjection, 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -403,7 +428,7 @@ export class MapService {
                     const radius = geometry.getRadius()
                     const [lng, lat] = transform(
                         geometry.getCenter(),
-                        'EPSG:3857',
+                        viewProjection,
                         'EPSG:4326'
                     )
 

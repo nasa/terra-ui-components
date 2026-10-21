@@ -3,7 +3,9 @@ import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
-import TerraElement from '../../internal/terra-element.js'
+import TerraElement, {
+    undefinedStringConverter,
+} from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './map.styles.js'
@@ -12,12 +14,35 @@ import {
     type AddLayerOptions,
     type FitToExtentOptions,
 } from './map.service.js'
+import type { Projection } from './layers/gibs.layer.js'
+import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
+import {
+    buildMapLayer,
+    type MapLayerConfig,
+    type MapLayerResult,
+} from './layers/layer.js'
 import { QueryController } from '../../controllers/query.controller.js'
+import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     queryGiovanniShapeFiles,
     queryGiovanniGeoJsonShape,
 } from '../../queries/giovanni.queries.js'
+
+const layersConverter = {
+    fromAttribute: (value: string | null): MapLayerConfig[] => {
+        if (!value) {
+            return []
+        }
+
+        try {
+            const parsed = JSON.parse(value)
+            return Array.isArray(parsed) ? parsed : []
+        } catch {
+            return []
+        }
+    },
+}
 
 /**
  * @summary A map component for visualizing and selecting coordinates.
@@ -25,6 +50,9 @@ import {
  * @status stable
  * @since 1.0
  *
+ * @event terra-map-change - Emitted when a point, bounding box, polygon, or circle is drawn/selected. `detail` is a `MapEventDetail` shaped by `detail.type` (`'point'`, `'bbox'`, `'polygon'`, `'circle'`).
+ * @event terra-map-pointer-move - Emitted on mouse move over the map (while `show-mouse-coordinates` is set). `detail` is `{ coordinate, pixel }`.
+ * @event terra-map-layer-change - Emitted when a declarative `layers` entry finishes building, successfully or not. `detail` is `{ name, type, info? }` on success, or `{ name, type, error }` on failure.
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -156,6 +184,14 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     @property({ attribute: 'spatial-constraints' })
     spatialConstraints: string = '-180, -90, 180, 90'
 
+    /**
+     * The map view's projection. Defaults to `'EPSG:3857'` (Web Mercator).
+     *
+     * This is a construction-time setting. Changing it after the map has rendered has no effect.
+     */
+    @property({ type: String })
+    projection: Projection = 'EPSG:3857'
+
     @property({ type: String })
     value?: string
 
@@ -164,6 +200,183 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     @property({ type: Boolean, attribute: 'fit-to-feature' })
     fitToValue: boolean = false
+
+    /**
+     * Declarative layers to add to the map. Each entry's `type` picks which kind of layer it builds:
+     * `'gibs'` (raster) or `'gibs-vector'` for NASA GIBS imagery, or
+     * `'geotiff'` for a standalone GeoTIFF/COG by URL. e.g.:
+     *
+     * ```html
+     * <terra-map layers='[
+     *     { "type": "gibs", "name": "imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01", "projection": "EPSG:3413" },
+     *     { "type": "geotiff", "name": "my-data", "url": "https://example.com/data.tif", "colorMapName": "viridis" }
+     * ]'></terra-map>
+     * ```
+     */
+    @property({ attribute: 'layers', converter: layersConverter })
+    layers: MapLayerConfig[] = []
+
+    /**
+     * A CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-PROVIDER`). Either is accepted.
+     * When set, every GIBS imagery product CMR has tagged for the collection is added as its own layer.
+     */
+    @property({
+        attribute: 'collection-id',
+        converter: undefinedStringConverter,
+    })
+    collectionId?: string
+
+    #collectionController = new CmrCollectionController(this, {
+        getCollectionId: () => this.collectionId,
+        getProjection: () => this.projection,
+    })
+    #previousCollectionLayers: MapLayerConfig[] = []
+
+    // `buildMapLayer()` (below) is async - GetCapabilities fetches, raster
+    // min/max reads - so if a layer's config changes again before its build
+    // resolves, two builds for the same `name` can be in flight at once.
+    // This counter, bumped per-name each time a (re)build starts, lets each
+    // build's continuation check whether it's still the most recent one for
+    // that name before applying its result; a superseded build just bails
+    // instead of a slow-but-stale result clobbering a newer one.
+    #layerRequestIds = new Map<string, number>()
+
+    @watch('layers', { waitUntilFirstUpdate: true })
+    async layersChanged(
+        previous: MapLayerConfig[] = [],
+        next: MapLayerConfig[] = []
+    ) {
+        const previousByName = new Map(previous.map(config => [config.name, config]))
+        const nextByName = new Map(next.map(config => [config.name, config]))
+
+        for (const name of previousByName.keys()) {
+            if (!nextByName.has(name)) {
+                this.removeLayer(name)
+                this.#layerRequestIds.delete(name)
+            }
+        }
+
+        for (const [name, config] of nextByName) {
+            const previousConfig = previousByName.get(name)
+            if (
+                previousConfig &&
+                JSON.stringify(previousConfig) === JSON.stringify(config)
+            ) {
+                continue // unchanged
+            }
+
+            this.#warnIfProjectionMismatch(name, config)
+
+            const requestId = (this.#layerRequestIds.get(name) ?? 0) + 1
+            this.#layerRequestIds.set(name, requestId)
+
+            if (previousConfig) {
+                this.removeLayer(name)
+            }
+
+            try {
+                const result = await buildMapLayer(config)
+
+                // bail if this layer was removed or superseded while it was building
+                if (this.#layerRequestIds.get(name) !== requestId) {
+                    continue
+                }
+
+                this.#handleLayerBuilt(name, config, result)
+            } catch (error) {
+                // bail if this layer was removed or superseded while it was building
+                if (this.#layerRequestIds.get(name) !== requestId) {
+                    continue
+                }
+
+                console.error(
+                    `Failed to build "${config.type}" layer "${name}":`,
+                    error
+                )
+                this.emit('terra-map-layer-change', {
+                    detail: { name, type: config.type, error: error as Error },
+                })
+            }
+        }
+    }
+
+    /**
+     * GIBS vector layers are only published in EPSG:4326 today; raster
+     * layers default to EPSG:3857. Either way, warn (rather than silently
+     * rendering distorted/reprojected raster imagery, or - for vector
+     * layers - rendering nothing at all, since OpenLayers' vector tile
+     * reprojection doesn't reliably handle GIBS' tile grids) if a layer's
+     * projection doesn't match the map's own view projection.
+     */
+    #warnIfProjectionMismatch(name: string, config: MapLayerConfig) {
+        if (config.type !== 'gibs' && config.type !== 'gibs-vector') {
+            return
+        }
+
+        const layerProjection =
+            config.type === 'gibs-vector'
+                ? 'EPSG:4326'
+                : (config.projection ?? 'EPSG:3857')
+
+        if (layerProjection !== this.projection) {
+            console.warn(
+                `GIBS layer "${name}" is published in ${layerProjection}, but <terra-map> is using ${this.projection}. Set projection="${layerProjection}" on <terra-map> to render it without distortion.`
+            )
+        }
+    }
+
+    /**
+     * Adds a successfully-built `layers` entry to the map and fires
+     * `terra-map-layer-change` with its type-specific detail.
+     */
+    #handleLayerBuilt(name: string, config: MapLayerConfig, result: MapLayerResult) {
+        this.addLayer(result.layer, { name, position: config.position })
+        result.layer.setVisible(config.visible ?? true)
+
+        if (config.type === 'geotiff' && result.type === 'geotiff') {
+            // stash the computed info directly on the OL layer
+            result.layer.set('info', result.info)
+
+            if (config.fitView && result.info.extent) {
+                this.fitToExtent(result.info.extent, {
+                    projection: result.info.projection,
+                    padding: [50, 50, 50, 50],
+                    duration: 300,
+                })
+            }
+
+            this.emit('terra-map-layer-change', {
+                detail: { name, type: result.type, info: result.info },
+            })
+        } else if (result.type === 'gibs' || result.type === 'gibs-vector') {
+            result.layer.set('legend', result.legend)
+
+            this.emit('terra-map-layer-change', {
+                detail: { name, type: result.type },
+            })
+        }
+    }
+
+    /**
+     * Gets the computed data range, colormap stops, and legend values for a
+     * declaratively-added GeoTIFF layer, as built by a `'geotiff'` entry in
+     * `layers`.
+     */
+    getGeoTiffLayerInfo(name: string): GeoTiffLayerInfo | undefined {
+        return this.getLayer(name)?.get('info')
+    }
+
+    /**
+     * Reads the raw band value(s) of a `layers` GeoTIFF layer at a given
+     * pixel (e.g. from a `terra-map-pointer-move` event), for building a
+     * hover readout.
+     */
+    getGeoTiffValueAtPixel(
+        name: string,
+        pixel: [number, number]
+    ): ReturnType<GeoTiffLayerInfo['layer']['getData']> | undefined {
+        return this.getGeoTiffLayerInfo(name)?.layer.getData(pixel)
+    }
 
     // querySelector for the map element
     @query('[part="map"]')
@@ -204,6 +417,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
     async firstUpdated() {
         this.#service = new MapService(this.mapElement, {
+            projection: this.projection,
             zoom: this.zoom,
             minZoom: this.minZoom,
             maxZoom: this.maxZoom,
@@ -230,6 +444,33 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 this.shapeLoading = loading
             },
         })
+
+        // the `layers` @watch handler only fires on changes *after* this
+        // first update, so apply whatever was set declaratively up front here
+        if (this.layers.length) {
+            this.layersChanged(undefined, this.layers)
+        }
+    }
+
+    updated(changedProps: globalThis.Map<string, unknown>) {
+        super.updated(changedProps)
+
+        // `gibsLayerConfigs` is a plain getter on `#collectionController`,
+        // not a `@property`/`@state` - it's computed from CMR query results
+        // and the current `projection` (see CmrCollectionController) - so
+        // `@watch` (which only observes reactive properties) can't react to
+        // it directly. Polling it here after every update and diffing by
+        // reference instead (the getter returns a cached array unless its
+        // own inputs actually changed) is what lets `collection-id`-derived
+        // layers reuse the exact same add/remove/rebuild diffing `layersChanged`
+        // already does for the declarative `layers` property, just fed a
+        // different before/after pair.
+        const nextCollectionLayers = this.#collectionController.gibsLayerConfigs
+        if (nextCollectionLayers !== this.#previousCollectionLayers) {
+            const previousCollectionLayers = this.#previousCollectionLayers
+            this.#previousCollectionLayers = nextCollectionLayers
+            this.layersChanged(previousCollectionLayers, nextCollectionLayers)
+        }
     }
 
     /**
@@ -294,6 +535,15 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         return this.#service?.getPixelFromCoordinate(coordinate)
     }
 
+    /**
+     * Returns the features rendered at a pixel position (e.g. from the
+     * `pixel` in a `terra-map-pointer-move` event), for hover/click feature
+     * interactions on vector layers like `GibsVectorLayer`.
+     */
+    getFeaturesAtPixel(pixel: [number, number]) {
+        return this.#service?.getFeaturesAtPixel(pixel)
+    }
+
     renderComplete() {
         return this.#service?.renderComplete()
     }
@@ -336,25 +586,26 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 ${
                     this.showMouseCoordinates
                         ? html`
-                          <div id="mouse-info">
-                              <div>
-                                  <strong
-                                      >lat: ${this.cursorCoordinates[1].toFixed(2)},
-                                      lng:
-                                      ${this.cursorCoordinates[0].toFixed(2)}</strong
-                                  >
+                              <div id="mouse-info">
+                                  <div>
+                                      <strong
+                                          >lat:
+                                          ${this.cursorCoordinates[1].toFixed(2)},
+                                          lng:
+                                          ${this.cursorCoordinates[0].toFixed(2)}</strong
+                                      >
+                                  </div>
                               </div>
-                          </div>
-                      `
+                          `
                         : nothing
                 }
                 ${
                     this.shapeLoading
                         ? html`
-                          <div class="map__loading-overlay">
-                              <div class="map__spinner"></div>
-                          </div>
-                      `
+                              <div class="map__loading-overlay">
+                                  <div class="map__spinner"></div>
+                              </div>
+                          `
                         : nothing
                 }
             </div>
