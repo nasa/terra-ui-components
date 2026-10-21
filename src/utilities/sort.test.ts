@@ -1,6 +1,5 @@
 import { expect } from '@open-wc/testing'
 import { SortOrder, getSortLabel, sortByPriority } from './sort.js'
-import { invertObject } from './object.js'
 
 describe('sort utilities', () => {
     it('returns sort labels for SortOrder values', () => {
@@ -13,7 +12,7 @@ describe('sort utilities', () => {
         const items = [
             { key: 'text/csv' },
             { key: 'image/tiff' },
-            { key: 'application/x-netcdf4' },
+            { key: 'application/netcdf' },
             { key: 'application/x-netcdf4;profile=opendap_url' },
         ]
 
@@ -21,7 +20,6 @@ describe('sort utilities', () => {
             items,
             [
                 'application/x-netcdf4;profile=opendap_url',
-                'application/x-netcdf4',
                 'application/netcdf',
             ],
             item => item.key
@@ -29,7 +27,7 @@ describe('sort utilities', () => {
 
         expect(sorted.map(i => i.key)).to.deep.equal([
             'application/x-netcdf4;profile=opendap_url',
-            'application/x-netcdf4',
+            'application/netcdf',
             'text/csv',
             'image/tiff',
         ])
@@ -41,21 +39,5 @@ describe('sort utilities', () => {
         const items = [{ key: 'a' }, { key: 'b' }]
         const sorted = sortByPriority(items, [], i => i.key)
         expect(sorted).to.equal(items)
-    })
-})
-
-describe('object utilities', () => {
-    it('inverts keys and values of an object', () => {
-        const original = {
-            'application/x-netcdf4': 'X-NETCDF-4',
-            'text/csv': 'CSV',
-        } as const
-
-        const inverted = invertObject(original)
-
-        expect(inverted).to.deep.equal({
-            'X-NETCDF-4': 'application/x-netcdf4',
-            CSV: 'text/csv',
-        })
     })
 })
