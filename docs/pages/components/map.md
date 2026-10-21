@@ -212,7 +212,7 @@ Changing the attribute/property later diffs against what's currently applied, by
 Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
 
 ```html:preview
-<terra-map collection-id="GPM_3IMERGHH_07"></terra-map>
+<terra-map collection-id="AIRS2RET_NRT_7.0" show-layer-picker></terra-map>
 ```
 
 Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped.
