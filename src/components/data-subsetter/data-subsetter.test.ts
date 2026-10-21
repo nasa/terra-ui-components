@@ -1076,6 +1076,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
         )
             .map((alert: any) => alert.textContent)
             .join(' ')
+            .replace(/\s+/g, ' ')
 
         expect(alertText).to.include(
             'This is a large request, so processing paused after the first few files so you can review the results.',
@@ -1122,5 +1123,206 @@ describe('<terra-data-subsetter> paused job handling', () => {
         } finally {
             HarmonyRequestController.prototype.resumeJob = originalResumeJob
         }
+    })
+})
+
+describe('<terra-data-subsetter> output format priority ordering and default selection', () => {
+    afterEach(() => {
+        sinon.restore()
+        sharedQueryClient.clear()
+    })
+
+    const baseCollectionUmm = {
+        ShortName: 'FMT',
+        Version: '1',
+        EntryTitle: 'Format Test Collection',
+        SpatialExtent: {
+            GranuleSpatialRepresentation: 'CARTESIAN',
+            HorizontalSpatialDomain: {
+                Geometry: {
+                    CoordinateSystem: 'CARTESIAN',
+                    BoundingRectangles: [
+                        {
+                            WestBoundingCoordinate: -180,
+                            NorthBoundingCoordinate: 90,
+                            EastBoundingCoordinate: 180,
+                            SouthBoundingCoordinate: -90,
+                        },
+                    ],
+                },
+            },
+        },
+        TemporalExtents: [
+            {
+                EndsAtPresentFlag: false,
+                RangeDateTimes: [
+                    {
+                        BeginningDateTime: '2020-01-01T00:00:00.000Z',
+                        EndingDateTime: '2020-01-10T00:00:00.000Z',
+                    },
+                ],
+            },
+        ],
+    }
+
+    it('orders OPeNDAP first, NetCDF second, and remaining formats after, selecting OPeNDAP by default', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'FMT_1',
+            caps: {
+                conceptId: 'C-FMT-1',
+                shortName: 'FMT',
+                capabilitiesVersion: '3',
+                summary: {
+                    subsetting: {
+                        bbox: true,
+                        dimension: false,
+                        shape: false,
+                        temporal: true,
+                        variable: true,
+                    },
+                    reprojection: {
+                        supported: false,
+                        supportedProjections: [],
+                        interpolationMethods: [],
+                    },
+                    averaging: { time: false, area: false },
+                    concatenation: false,
+                    outputFormats: [
+                        'text/csv',
+                        'image/tiff',
+                        'application/x-netcdf4',
+                        'application/x-netcdf4;profile=opendap_url',
+                    ],
+                },
+                services: [
+                    {
+                        name: 'harmony-service',
+                        href: 'https://harmony.earthdata.nasa.gov/service',
+                        capabilities: {
+                            subsetting: {
+                                bbox: true,
+                                variable: true,
+                                multipleVariables: true,
+                            },
+                            outputFormats: [
+                                'text/csv',
+                                'image/tiff',
+                                'application/x-netcdf4',
+                                'application/x-netcdf4;profile=opendap_url',
+                            ],
+                        },
+                    },
+                ],
+                variables: [],
+                configuredOutputFormats: [],
+            },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+        el.dataAccessMode = 'subset'
+        el.collectionEntryId = 'FMT_1'
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated',
+            { timeout: 3000 },
+        )
+
+        const formatKeys =
+            el.collectionWithServices.configuredOutputFormats.map(
+                (f: any) => f.key,
+            )
+
+        expect(formatKeys).to.deep.equal([
+            'application/x-netcdf4;profile=opendap_url',
+            'application/netcdf',
+            'text/csv',
+            'image/tiff',
+        ])
+
+        expect(el.selectedFormat.key).to.equal(
+            'application/x-netcdf4;profile=opendap_url',
+        )
+    })
+
+    it('orders NetCDF first and selects it by default when OPeNDAP is not available', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'FMT_2',
+            caps: {
+                conceptId: 'C-FMT-2',
+                shortName: 'FMT',
+                capabilitiesVersion: '3',
+                summary: {
+                    subsetting: {
+                        bbox: true,
+                        dimension: false,
+                        shape: false,
+                        temporal: true,
+                        variable: true,
+                    },
+                    reprojection: {
+                        supported: false,
+                        supportedProjections: [],
+                        interpolationMethods: [],
+                    },
+                    averaging: { time: false, area: false },
+                    concatenation: false,
+                    outputFormats: [
+                        'text/csv',
+                        'image/tiff',
+                        'application/x-netcdf4',
+                    ],
+                },
+                services: [
+                    {
+                        name: 'harmony-service',
+                        href: 'https://harmony.earthdata.nasa.gov/service',
+                        capabilities: {
+                            subsetting: {
+                                bbox: true,
+                                variable: true,
+                                multipleVariables: true,
+                            },
+                            outputFormats: [
+                                'text/csv',
+                                'image/tiff',
+                                'application/x-netcdf4',
+                            ],
+                        },
+                    },
+                ],
+                variables: [],
+                configuredOutputFormats: [],
+            },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`,
+        )
+        el.dataAccessMode = 'subset'
+        el.collectionEntryId = 'FMT_2'
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated',
+            { timeout: 3000 },
+        )
+
+        const formatKeys =
+            el.collectionWithServices.configuredOutputFormats.map(
+                (f: any) => f.key,
+            )
+
+        expect(formatKeys).to.deep.equal([
+            'application/netcdf',
+            'text/csv',
+            'image/tiff',
+        ])
+
+        expect(el.selectedFormat.key).to.equal('application/netcdf')
     })
 })

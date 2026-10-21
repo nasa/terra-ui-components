@@ -51,6 +51,7 @@ import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { getUTCDate, formatDate } from '../../utilities/date.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import {
+    OUTPUT_MIME_TYPES,
     Status,
     type ConfiguredOutputFormat,
     type Variable,
@@ -58,7 +59,7 @@ import {
 import { HttpException } from '../../exceptions/http.exception.js'
 
 const defaultOutputFormat: ConfiguredOutputFormat = {
-    key: 'application/x-netcdf4',
+    key: OUTPUT_MIME_TYPES['NETCDF-4'],
     label: 'NetCDF',
     description: 'Download data in NetCDF format',
 }
@@ -270,6 +271,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #collectionController = new CollectionController(this, {
         getCollectionEntryId: () => this.collectionEntryId,
         getBearerToken: () => this.bearerToken,
+        preferredOutputFormats: [
+            OUTPUT_MIME_TYPES['NETCDF-4 (OPeNDAP URL)'],
+            OUTPUT_MIME_TYPES['NETCDF-4'],
+        ],
     })
 
     #authController = new AuthController(this)
@@ -1152,7 +1157,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     </button>
                 </div>
 
-                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends? 
+                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends?
                 <div class="quick-links-mini">
                     <a href="#" class="quick-link-mini" onclick="quickSearch('GPM')"
                         >GPM Precipitation</a
@@ -1436,21 +1441,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #resetFormatSelection = () => {
-        // Reset to NetCDF if available, otherwise first available format from collection, or fall back to default
-        if (this.collectionWithServices?.configuredOutputFormats?.length) {
-            const netcdfFormat =
-                this.collectionWithServices.configuredOutputFormats.find(
-                    (f) =>
-                        f.key === 'application/x-netcdf4' ||
-                        f.key === 'application/netcdf',
-                )
-
-            this.selectedFormat =
-                netcdfFormat ||
-                this.collectionWithServices.configuredOutputFormats[0]
-        } else {
-            this.selectedFormat = defaultOutputFormat
-        }
+        // Reset to highest-priority format available for the collection, or fall back to defaultOutputFormat's key
+        this.selectedFormat =
+            this.collectionWithServices?.configuredOutputFormats?.[0] ??
+            defaultOutputFormat
     }
 
     #getCollectionDateRange() {
