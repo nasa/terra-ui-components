@@ -59,20 +59,29 @@ export const IN_FLIGHT_STATUSES = new Set<Status>([
     Status.PAUSED,
 ])
 
+// Mirrors Harmony's canonical MIME-type-to-name mapping and alias table:
+// https://github.com/nasa/harmony/blob/0f82b4f405373fe8c07eaa41a3840b0554356504/services/harmony/app/util/file-formats.ts
 export const OUTPUT_FORMATS = {
-    'application/x-netcdf4': 'X-NETCDF-4',
-    'application/netcdf4': 'NETCDF-4',
-    'application/x-netcdf4;profile=opendap_url': 'X-NETCDF-4 (OPeNDAP URL)',
-    'application/netcdf': 'NETCDF',
-    'application/x-hdf': 'X-HDF',
-    'image/tiff': 'GEOTIFF',
+    'application/netcdf': 'NETCDF-4',
+    'application/x-hdf': 'HDF',
+    'application/x-netcdf4;profile=opendap_url': 'NETCDF-4 (OPeNDAP URL)',
+    'application/x-zarr': 'ZARR',
     'image/gif': 'GIF',
-    'image/png': 'PNG',
     'image/jpeg': 'JPEG',
+    'image/png': 'PNG',
+    'image/tiff': 'GEOTIFF',
     'text/csv': 'CSV',
     'application/shapefile+zip': 'Shapefile+zip',
-    'application/x-zarr': 'ZARR',
 } as const
+
+export const MIME_TYPE_ALIASES: Record<string, keyof typeof OUTPUT_FORMATS> = {
+    'application/netcdf4': 'application/netcdf',
+    'application/x-netcdf': 'application/netcdf',
+    'application/x-netcdf4': 'application/netcdf',
+    'application/octet-stream': 'application/x-hdf',
+    'image/tif': 'image/tiff',
+    'image/jpg': 'image/jpeg',
+}
 
 export type OutputFormats = (typeof OUTPUT_FORMATS)[keyof typeof OUTPUT_FORMATS]
 
@@ -532,17 +541,22 @@ class HarmonyApi {
             let label = format
             let description = `Download data in ${format} format`
 
+            // MIME types are de-duplicated before this point, so this list is canonical
             switch (format) {
                 case 'application/x-hdf':
-                case 'application/octet-stream':
                     label = 'HDF-EOS5'
                     description = 'Download data in HDF-EOS5 format'
                     break
 
-                case 'application/x-netcdf4':
                 case 'application/netcdf':
                     label = 'NetCDF'
                     description = 'Download data in NetCDF format'
+                    break
+
+                case 'application/shapefile+zip':
+                    label = 'Shapefile+zip'
+                    description =
+                        'Download data in Shapefile+zip format'
                     break
 
                 case 'application/x-netcdf4;profile=opendap_url':
@@ -551,13 +565,17 @@ class HarmonyApi {
                         'Download data in OPeNDAP URL (x-netcdf4) format'
                     break
 
+                case 'application/x-zarr':
+                    label = 'ZARR'
+                    description = 'Download data in ZARR format'
+                    break
+
                 case 'text/csv':
                     label = 'CSV'
                     description = 'Download data in CSV format'
                     break
 
                 case 'image/tiff':
-                case 'image/tif':
                     label = 'TIFF'
                     description = 'Download data in TIFF format'
                     break
@@ -567,20 +585,9 @@ class HarmonyApi {
                     description = 'Download data in PNG format'
                     break
 
-                case 'image/jpg':
                 case 'image/jpeg':
                     label = 'JPEG'
                     description = 'Download data in JPEG format'
-                    break
-
-                case 'application/shapefile+zip':
-                    label = 'Shapefile+zip'
-                    description = 'Download data in Shapefile+zip format'
-                    break
-
-                case 'application/x-zarr':
-                    label = 'ZARR'
-                    description = 'Download data in ZARR format'
                     break
 
                 default:
@@ -633,32 +640,22 @@ class HarmonyApi {
             (service) => !service.name.toLowerCase().includes('giovanni'),
         )
 
-        // Collect all unique output formats from non-Giovanni services
+        // Collect all unique output formats from non-Giovanni services,
+        // normalizing aliased MIME types to their canonical key
         const formats = new Set<string>()
+
         nonGiovanniServices.forEach((service) => {
             service.capabilities.outputFormats?.forEach((format: any) => {
-                if (typeof format !== 'string' && 'mimeType' in format) {
-                    formats.add(format.mimeType)
-                } else {
-                    formats.add(format)
-                }
+                const rawMimeType =
+                    typeof format !== 'string' && 'mimeType' in format
+                        ? format.mimeType
+                        : format
+
+                formats.add(MIME_TYPE_ALIASES[rawMimeType] ?? rawMimeType)
             })
         })
 
-        const formatArray = Array.from(formats)
-
-        // If both application/netcdf and application/x-netcdf4 are present,
-        // only use application/x-netcdf4
-        if (
-            formatArray.includes('application/netcdf') &&
-            formatArray.includes('application/x-netcdf4')
-        ) {
-            return formatArray.filter(
-                (format) => format !== 'application/netcdf',
-            )
-        }
-
-        return formatArray
+        return Array.from(formats)
     }
 
     #getGiovanniFormats(

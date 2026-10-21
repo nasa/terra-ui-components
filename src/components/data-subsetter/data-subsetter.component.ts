@@ -59,7 +59,7 @@ import {
 import { HttpException } from '../../exceptions/http.exception.js'
 
 const defaultOutputFormat: ConfiguredOutputFormat = {
-    key: 'application/x-netcdf4',
+    key: OUTPUT_MIME_TYPES['NETCDF-4'],
     label: 'NetCDF',
     description: 'Download data in NetCDF format',
 }
@@ -272,9 +272,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         getCollectionEntryId: () => this.collectionEntryId,
         getBearerToken: () => this.bearerToken,
         preferredOutputFormats: [
-            OUTPUT_MIME_TYPES['X-NETCDF-4 (OPeNDAP URL)'],
-            OUTPUT_MIME_TYPES['X-NETCDF-4'],
-            OUTPUT_MIME_TYPES.NETCDF,
+            OUTPUT_MIME_TYPES['NETCDF-4 (OPeNDAP URL)'],
+            OUTPUT_MIME_TYPES['NETCDF-4'],
         ],
     })
 
@@ -1158,7 +1157,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                     </button>
                 </div>
 
-                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends? 
+                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends?
                 <div class="quick-links-mini">
                     <a href="#" class="quick-link-mini" onclick="quickSearch('GPM')"
                         >GPM Precipitation</a

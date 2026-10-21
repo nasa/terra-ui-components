@@ -1238,7 +1238,7 @@ describe('<terra-data-subsetter> output format priority ordering and default sel
 
         expect(formatKeys).to.deep.equal([
             'application/x-netcdf4;profile=opendap_url',
-            'application/x-netcdf4',
+            'application/netcdf',
             'text/csv',
             'image/tiff',
         ])
@@ -1318,11 +1318,11 @@ describe('<terra-data-subsetter> output format priority ordering and default sel
             )
 
         expect(formatKeys).to.deep.equal([
-            'application/x-netcdf4',
+            'application/netcdf',
             'text/csv',
             'image/tiff',
         ])
 
-        expect(el.selectedFormat.key).to.equal('application/x-netcdf4')
+        expect(el.selectedFormat.key).to.equal('application/netcdf')
     })
 })
