@@ -69,6 +69,8 @@ export default class TerraAlert extends TerraElement {
     /** Enables a close button that allows the user to dismiss the alert. */
     @property({ type: Boolean, reflect: true }) closable = false
 
+    @property({ type: Boolean, reflect: true }) isToast = false
+
     /** The alert's theme variant. */
     @property({ reflect: true })
     variant:
@@ -255,6 +257,7 @@ export default class TerraAlert extends TerraElement {
                 part="base"
                 class=${classMap({
                     alert: true,
+                    'toast': this.isToast,
                     'alert--open': this.open,
                     'alert--closable': this.closable,
                     'alert--has-countdown': !!this.countdown,
