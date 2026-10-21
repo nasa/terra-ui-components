@@ -94,6 +94,7 @@ class CmrCollectionService {
             layer: entry.product,
             date: options.date,
             format: entry.format === 'png' ? 'png' : 'jpg',
+            title: entry.title,
             tileMatrixSet: this.getTileMatrixSet(entry, options.projection),
             projection:
                 options.projection === 'EPSG:3857'

@@ -142,6 +142,7 @@ export class LayerPickerControl extends Control {
             return
         }
 
+        const scrollTop = this.#panel.scrollTop
         this.#panel.innerHTML = ''
 
         const titledLayers = map
@@ -171,6 +172,8 @@ export class LayerPickerControl extends Control {
             )
             this.#panel.appendChild(section)
         }
+
+        this.#panel.scrollTop = scrollTop
     }
 
     #buildSection(

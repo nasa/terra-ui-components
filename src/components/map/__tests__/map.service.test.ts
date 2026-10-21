@@ -161,14 +161,14 @@ describe('Map Service', () => {
 
     describe('addLayer / removeLayer / getLayer', () => {
         it('inserts a custom layer below the borders layer by default and stamps metadata', () => {
-            // the map is created with 8 built-in layers (base, osm, topo,
-            // borders, labels, graticule, shapes, draw), with borders at index 3
+            // the map is created with 9 built-in layers (base, true-color, land-water, topo,
+            // borders, labels, graticule, shapes, draw), with borders at index 4
             const insertAtSpy = sinon.spy(Collection.prototype, 'insertAt')
             const customLayer = new VectorLayer({ source: new VectorSource() })
 
             service.addLayer(customLayer, { name: 'custom', title: 'Custom Layer' })
 
-            expect(insertAtSpy.calledWith(3, customLayer)).to.be.true
+            expect(insertAtSpy.calledWith(4, customLayer)).to.be.true
             expect(customLayer.get('name')).to.equal('custom')
             expect(customLayer.get('title')).to.equal('Custom Layer')
             expect(customLayer.get('type')).to.equal('overlay')
@@ -180,9 +180,9 @@ describe('Map Service', () => {
 
             service.addLayer(customLayer, { name: 'custom-top', position: 'top' })
 
-            // 8 built-in layers occupy indices 0-7, so pushing onto the end
-            // inserts at index 8
-            expect(insertAtSpy.calledWith(8, customLayer)).to.be.true
+            // 9 built-in layers occupy indices 0-8, so pushing onto the end
+            // inserts at index 9
+            expect(insertAtSpy.calledWith(9, customLayer)).to.be.true
         })
 
         it('finds a named layer with getLayer', () => {

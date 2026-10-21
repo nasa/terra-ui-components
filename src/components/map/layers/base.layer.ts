@@ -1,5 +1,6 @@
 import TileLayer from 'ol/layer/Tile.js'
 import ImageTile from 'ol/source/ImageTile.js'
+import { getYesterdayIsoDate } from '../../../utilities/date.js'
 
 export type Options = {
     noWorldWrap?: boolean
@@ -32,6 +33,8 @@ export function buildBaseLayer(config: BaseLayerConfig): TileLayer {
 }
 
 export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
+    const yesterday = getYesterdayIsoDate()
+
     return [
         buildBaseLayer({
             ...options,
@@ -45,10 +48,27 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
         }),
         buildBaseLayer({
             ...options,
-            name: 'osm',
-            title: 'OpenStreetMap',
-            url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            attributions: ['© OpenStreetMap contributors'],
+            name: 'true-color',
+            title: 'Corrected Reflectance (True Color)',
+            url:
+                'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
+                `VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${yesterday}/` +
+                'GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+            attributions: ['NASA EOSDIS GIBS'],
+            visible: false,
+        }),
+        buildBaseLayer({
+            ...options,
+            name: 'land-water',
+            title: 'Land / Water Map',
+            url:
+                'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
+                'OSM_Land_Water_Map/default/default/' +
+                'GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
+            attributions: [
+                '© OpenStreetMap contributors',
+                'NASA EOSDIS GIBS',
+            ],
             visible: false,
         }),
         buildBaseLayer({

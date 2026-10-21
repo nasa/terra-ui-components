@@ -428,25 +428,26 @@ describe('<terra-map> layer picker', () => {
         const radios = el.shadowRoot?.querySelectorAll(
             '.layer-picker-panel input[type="radio"]'
         ) as NodeListOf<HTMLInputElement>
-        expect(radios.length).to.equal(3)
+        expect(radios.length).to.equal(4)
 
-        // Select OpenStreetMap (second base layer)
+        // Select Corrected Reflectance (True Color) (second base layer)
         radios[1].checked = true
         radios[1].dispatchEvent(new Event('change'))
 
         expect(el.getLayer('base')?.getVisible()).to.be.false
-        expect(el.getLayer('osm')?.getVisible()).to.be.true
+        expect(el.getLayer('true-color')?.getVisible()).to.be.true
+        expect(el.getLayer('land-water')?.getVisible()).to.be.false
         expect(el.getLayer('topo')?.getVisible()).to.be.false
 
         expect(toggleSpy.calledOnce).to.be.true
         const detail = toggleSpy.firstCall.args[0].detail
         expect(detail).to.include({
-            name: 'osm',
-            title: 'OpenStreetMap',
+            name: 'true-color',
+            title: 'Corrected Reflectance (True Color)',
             type: 'base',
             visible: true,
         })
-        expect(detail.layer).to.equal(el.getLayer('osm'))
+        expect(detail.layer).to.equal(el.getLayer('true-color'))
     })
 
     it('synchronizes showGraticule when the Graticule overlay checkbox is toggled', async () => {

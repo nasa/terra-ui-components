@@ -270,4 +270,39 @@ describe('LayerPickerControl', () => {
         expect(customTarget.contains(ctrl.element)).to.be.true
         testMap.setTarget(undefined)
     })
+
+    it('preserves panel scrollTop when a layer visibility change triggers a re-render', () => {
+        const element = pickerControl.element
+        const toggleBtn = element.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        const panel = element.querySelector('.layer-picker-panel') as HTMLElement
+
+        // Add enough layers to make the panel scrollable
+        for (let i = 0; i < 20; i++) {
+            const layer = new VectorLayer({
+                source: new VectorSource(),
+                visible: false,
+            })
+            layer.set('name', `extra-${i}`)
+            layer.set('title', `Extra Layer ${i}`)
+            layer.set('type', 'overlay')
+            map.addLayer(layer)
+        }
+
+        panel.style.maxHeight = '100px'
+        panel.style.overflowY = 'auto'
+
+        toggleBtn.click()
+        panel.scrollTop = 60
+        expect(panel.scrollTop).to.equal(60)
+
+        const checkboxes = panel.querySelectorAll(
+            'input[type="checkbox"]'
+        ) as NodeListOf<HTMLInputElement>
+        checkboxes[10].checked = true
+        checkboxes[10].dispatchEvent(new Event('change'))
+
+        expect(panel.scrollTop).to.equal(60)
+    })
 })

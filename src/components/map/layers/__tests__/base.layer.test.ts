@@ -21,8 +21,14 @@ describe('base.layer', () => {
                 visible: true,
             },
             {
-                name: 'osm',
-                title: 'OpenStreetMap',
+                name: 'true-color',
+                title: 'Corrected Reflectance (True Color)',
+                type: 'base',
+                visible: false,
+            },
+            {
+                name: 'land-water',
+                title: 'Land / Water Map',
                 type: 'base',
                 visible: false,
             },
