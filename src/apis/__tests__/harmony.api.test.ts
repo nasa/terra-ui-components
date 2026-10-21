@@ -50,7 +50,7 @@ describe('HarmonyAPI', () => {
             })
             expect(result.configuredOutputFormats).to.deep.equal([
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -331,7 +331,7 @@ describe('HarmonyAPI', () => {
                 harmonyApi.getOutputFormatOptions(onlyNetcdf as any),
             ).to.deep.equal([
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -343,7 +343,7 @@ describe('HarmonyAPI', () => {
                 harmonyApi.getOutputFormatOptions(giovanniAndNetcdf as any),
             ).to.deep.equal([
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -458,7 +458,7 @@ describe('HarmonyAPI', () => {
                     description: 'Download data in CSV format',
                 },
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -475,7 +475,7 @@ describe('HarmonyAPI', () => {
                     description: 'Download data in CSV format',
                 },
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -496,6 +496,51 @@ describe('HarmonyAPI', () => {
                     label: 'CSV (area-averaged time series; one file)',
                     description: 'Area averaged data over time',
                     isGiovanniFormat: true,
+                },
+            ])
+        })
+
+        it('should normalize and deduplicate aliased MIME types to their canonical keys', () => {
+            const aliasedCapabilities = {
+                services: [
+                    {
+                        name: 'test-service',
+                        capabilities: {
+                            outputFormats: [
+                                'application/x-netcdf4',
+                                'application/netcdf4',
+                                'application/x-netcdf',
+                                'application/octet-stream',
+                                'image/tif',
+                                'image/jpg',
+                            ],
+                        },
+                    },
+                ],
+            }
+
+            expect(
+                harmonyApi.getOutputFormatOptions(aliasedCapabilities as any),
+            ).to.deep.equal([
+                {
+                    key: 'application/netcdf',
+                    label: 'NetCDF',
+                    description: 'Download data in NetCDF format',
+                },
+                {
+                    key: 'application/x-hdf',
+                    label: 'HDF-EOS5',
+                    description: 'Download data in HDF-EOS5 format',
+                },
+                {
+                    key: 'image/tiff',
+                    label: 'TIFF',
+                    description: 'Download data in TIFF format',
+                },
+                {
+                    key: 'image/jpeg',
+                    label: 'JPEG',
+                    description: 'Download data in JPEG format',
                 },
             ])
         })

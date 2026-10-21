@@ -1074,7 +1074,7 @@ Stepper tokens define the visual appearance of Stepper elements. Steppers are a 
 | Token | Value | Preview |
 |-------|-------|---------|
 | `--terra-stepper-complete-color` | `var(--terra-color-blue-400)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-blue-400);"></span> |
-| `--terra-stepper-current-color` | `var(--terra-color-nasa-blue)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-nasa-blue);"></span> |
+| `--terra-stepper-current-color` | `var(--terra-color-blue-500)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-blue-500);"></span> |
 | `--terra-stepper-upcoming-color` | `var(--terra-color-neutral-200)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-neutral-200);"></span> |
 | `--terra-stepper-background-color` | `var(--terra-color-neutral-200)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-neutral-200);"></span> |
 
