@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
     "vcs": {
         "enabled": true,
         "clientKind": "git",
@@ -8,15 +8,14 @@
     "files": {
         "includes": [
             "src/**",
-            "scripts/**",
-            "packages/**",
+            "!src/react/index.ts",
             "!src/themes/Figma_Export_Variables.json",
             "!src/components/map/layers/labelsStyleConfig.ts",
             "!src/components/map/layers/bordersStyleConfig.ts",
-            "!src/components/icon/icons/**",
-            "!**/dist/**",
-            "!**/cdn/**",
-            "!**/_site/**"
+            "!src/components/icon/icons",
+            "!**/dist",
+            "!**/cdn",
+            "!**/_site"
         ]
     },
     "formatter": {
@@ -28,7 +27,7 @@
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true,
+            "preset": "recommended",
             "style": {
                 "noNonNullAssertion": "off"
             },
