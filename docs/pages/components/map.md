@@ -80,7 +80,7 @@ layout: component
 ### Configured Map
 
 ```html:preview
-<terra-map has-navigation has-shape-selector has-coord-tracker></terra-map>
+<terra-map has-navigation has-shape-selector show-mouse-coordinates></terra-map>
 ```
 
 ### Map with No World Wrap
@@ -99,12 +99,11 @@ Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layer
 <terra-map id="custom-layer-map" has-navigation></terra-map>
 
 <script type="module">
-    import VectorLayer from 'https://cdn.skypack.dev/ol/layer/Vector.js'
-    import VectorSource from 'https://cdn.skypack.dev/ol/source/Vector.js'
-    import { Circle as CircleStyle, Fill, Style } from 'https://cdn.skypack.dev/ol/style.js'
-    import Feature from 'https://cdn.skypack.dev/ol/Feature.js'
-    import Point from 'https://cdn.skypack.dev/ol/geom/Point.js'
-    import { fromLonLat } from 'https://cdn.skypack.dev/ol/proj.js'
+    import VectorLayer from 'https://esm.sh/ol@10.11.0/layer/Vector.js'
+    import VectorSource from 'https://esm.sh/ol@10.11.0/source/Vector.js'
+    import Feature from 'https://esm.sh/ol@10.11.0/Feature.js'
+    import Point from 'https://esm.sh/ol@10.11.0/geom/Point.js'
+    import { fromLonLat } from 'https://esm.sh/ol@10.11.0/proj.js'
 
     const map = document.getElementById('custom-layer-map')
 
@@ -114,12 +113,12 @@ Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layer
 
     const layer = new VectorLayer({
         source,
-        style: new Style({
-            image: new CircleStyle({
-                radius: 8,
-                fill: new Fill({ color: 'red' }),
-            }),
-        }),
+        // a "flat style" literal (plain data, no OL class instances) avoids
+        // an `instanceof Style` check failing across separately-loaded
+        // copies of OpenLayers (this example's CDN-loaded `ol` vs. the one
+        // bundled inside `terra-map` itself) - see
+        // https://openlayers.org/en/latest/apidoc/module-ol_style_flat.html
+        style: { 'circle-radius': 8, 'circle-fill-color': 'red' },
     })
 
     map.addEventListener(
@@ -310,6 +309,188 @@ Use the `fill` attribute to remove the map's default card chrome (padding, borde
 <div style="height: 300px;">
     <terra-map fill has-navigation></terra-map>
 </div>
+```
+
+### Map Navigation
+
+Drive the view imperatively with `setCenter(lon, lat, options?)`, `getCenter()`, `setZoom(zoom, options?)`, `getZoom()`, `zoomIn(options?)`, `zoomOut(options?)`, `fitBounds(bounds, options?)`, `getBounds()`, `resetView(options?)`, `setRotation(radians, options?)`, and `getRotation()`. Every method that changes the view accepts an optional `{ duration }` (milliseconds) — pass it to animate the change; omit it to jump immediately. `fitBounds()` is a thin wrapper around `fitToExtent()` that takes a `LatLngBounds` instance (EPSG:4326) instead of a raw extent - if you don't need a full `LatLngBounds` (e.g. for `getSouthWest()`/`toBBoxString()`/etc.), pass a `[west, south, east, north]` array to `fitToExtent()` directly instead.
+
+```html:preview
+<terra-map id="navigation-map" has-navigation zoom="3"></terra-map>
+
+<div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+    <terra-button id="nav-set-center">Fly to Tokyo</terra-button>
+    <terra-button id="nav-zoom-in">Zoom In</terra-button>
+    <terra-button id="nav-zoom-out">Zoom Out</terra-button>
+    <terra-button id="nav-fit-bounds">Fit to Western US</terra-button>
+    <terra-button id="nav-reset">Reset View</terra-button>
+</div>
+
+<script type="module">
+    import { LatLngBounds } from '/dist/components/map/models/LatLngBounds.js'
+
+    const map = document.getElementById('navigation-map')
+
+    customElements.whenDefined('terra-map').then(() => {
+        document.getElementById('nav-set-center').addEventListener('click', () => {
+            map.setCenter(139.6917, 35.6895, { duration: 500 })
+        })
+
+        document.getElementById('nav-zoom-in').addEventListener('click', () => {
+            map.zoomIn({ duration: 250 })
+        })
+
+        document.getElementById('nav-zoom-out').addEventListener('click', () => {
+            map.zoomOut({ duration: 250 })
+        })
+
+        document.getElementById('nav-fit-bounds').addEventListener('click', () => {
+            const westernUS = new LatLngBounds([-125, 32, -114, 42]) // west, south, east, north
+            map.fitBounds(westernUS, { duration: 500, padding: [20, 20, 20, 20] })
+        })
+
+        document.getElementById('nav-reset').addEventListener('click', () => {
+            map.resetView({ duration: 500 })
+        })
+    })
+</script>
+```
+
+### Layer Management
+
+Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set of methods manage layers added through the imperative API: `setLayerVisibility(name, show)`, `setLayerOpacity(name, opacity)`, `setLayerOrder(names)`, `fitToLayer(name, options?)`, `getLayers()`, `clearLayers()`, and `refreshLayer(name)`.
+
+**`getLayers()` and `clearLayers()` only see consumer-added layers** - layers added through `addLayer()`. The map's built-in layers (base imagery, borders, labels, graticule, shapes, draw) are never included or touched, unlike `getLayer()`/`getAllLayers()`, which see every layer. `setLayerOrder()` follows the same rule: it only reorders consumer-added layers relative to each other, leaving built-in layers at their existing position.
+
+**Caveat:** mixing imperative `removeLayer()`/`clearLayers()` calls with the declarative `layers` property for the same layer `name` is the consumer's responsibility - it isn't auto-synced. If you imperatively remove a layer whose `name` is still present in `layers`, the next time `layers` is diffed (e.g. any other change to the array) that entry will be treated as newly added and rebuilt.
+
+```html:preview
+<terra-map id="layer-management-map" has-navigation></terra-map>
+
+<div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+    <terra-button id="layers-toggle">Toggle Visibility</terra-button>
+    <terra-button id="layers-opacity">Set Opacity 50%</terra-button>
+    <terra-button id="layers-order">Send to Back</terra-button>
+    <terra-button id="layers-clear">Clear Custom Layers</terra-button>
+</div>
+
+<script type="module">
+    import { GibsLayer } from '/dist/components/map/layers/gibs.layer.js'
+
+    const map = document.getElementById('layer-management-map')
+    const bbox = [-130, 20, -60, 55] // west, south, east, north
+
+    customElements.whenDefined('terra-map').then(() => {
+        // two dates of the same proven-good imagery layer, stacked so
+        // toggling/opacity/order on the top one has a visible effect
+        const june = new GibsLayer({
+            layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+            date: '2024-06-01',
+            extent: bbox,
+        })
+        const january = new GibsLayer({
+            layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+            date: '2024-01-01',
+            extent: bbox,
+        })
+
+        map.addLayer(june, { name: 'june', position: 'top' })
+        map.addLayer(january, { name: 'january', position: 'top' })
+        map.fitToExtent(bbox, { projection: 'EPSG:4326', padding: [20, 20, 20, 20] })
+
+        document.getElementById('layers-toggle').addEventListener('click', () => {
+            const layer = map.getLayer('january')
+            map.setLayerVisibility('january', !layer?.getVisible())
+        })
+
+        document.getElementById('layers-opacity').addEventListener('click', () => {
+            map.setLayerOpacity('january', 0.5)
+        })
+
+        document.getElementById('layers-order').addEventListener('click', () => {
+            map.setLayerOrder(['january', 'june'])
+        })
+
+        document.getElementById('layers-clear').addEventListener('click', () => {
+            map.clearLayers() // removes june/january; built-in layers are untouched
+        })
+    })
+</script>
+```
+
+### Map Events
+
+`terra-map` fires the following events. All of them bubble and are composed, so they can be listened for on an ancestor element as well as on the `<terra-map>` itself.
+
+| Event                    | Fires when                                                                                     | `detail`                                                                                 |
+| ------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `terra-map-change`       | A point, bounding box, polygon, or circle is drawn/selected                                    | `MapEventDetail`, shaped by `detail.type` (`'point'`, `'bbox'`, `'polygon'`, `'circle'`) |
+| `terra-map-pointer-move` | The mouse moves over the map (while `show-mouse-coordinates` is set)                           | `{ coordinate, pixel }`                                                                  |
+| `terra-map-layer-change` | A declarative `layers` entry finishes building, successfully or not                            | `{ name, type, info? }` on success, or `{ name, type, error }` on failure                |
+| `terra-map-ready`        | The map finishes its initial construction (fires once, synchronously, during `firstUpdated()`) | _(none)_                                                                                 |
+| `terra-map-click`        | The map is clicked                                                                             | `{ latLng, pixel, features }`                                                            |
+| `terra-map-double-click` | The map is double-clicked                                                                      | `{ latLng, pixel, features }`                                                            |
+| `terra-map-move-end`     | The view's center/zoom/rotation settles after a pan or zoom                                    | `{ center, zoom }`                                                                       |
+| `terra-map-zoom-change`  | The view's resolution changes                                                                  | `{ zoom }`                                                                               |
+| `terra-map-layer-click`  | A click hits a feature on a consumer-added layer                                               | `{ feature, layerName, latLng, pixel }`                                                  |
+| `terra-map-layer-error`  | A consumer-added layer fails to load a tile or image at runtime                                | `{ name, error }`                                                                        |
+
+**`terra-map-zoom-change` fires on every resolution change, with no internal debouncing** - the same way `terra-map-pointer-move` forwards every raw pointer move. If you only care about the settled zoom level once a pan/zoom finishes, use `terra-map-move-end` instead.
+
+**`terra-map-ready` fires synchronously during `firstUpdated()`,** before the element has finished being appended in most usage patterns. Attach your listener before or at element creation (e.g. via `document.createElement('terra-map')`) rather than afterward, or you'll miss it - the same caveat that applies to any "fires once, early" event.
+
+```html:preview
+<terra-map id="events-map" has-navigation show-mouse-coordinates show-point-selection></terra-map>
+<pre id="events-log" style="max-height: 200px; overflow: auto; margin-top: 8px;"></pre>
+
+<script type="module">
+    const map = document.getElementById('events-map')
+    const log = document.getElementById('events-log')
+
+    const eventNames = [
+        'terra-map-change',
+        'terra-map-pointer-move',
+        'terra-map-layer-change',
+        'terra-map-ready',
+        'terra-map-click',
+        'terra-map-double-click',
+        'terra-map-move-end',
+        'terra-map-zoom-change',
+        'terra-map-layer-click',
+        'terra-map-layer-error',
+    ]
+
+    // most detail shapes serialize fine with JSON.stringify, but a few carry
+    // non-plain objects (a `LatLng`/feature instance, an `Error`) that either
+    // throw or stringify to `{}` - summarize those fields by hand instead
+    function describeDetail(detail) {
+        if (!detail) return '(none)'
+
+        const summary = {}
+        for (const [key, value] of Object.entries(detail)) {
+            if (key === 'latLng' || key === 'center') {
+                summary[key] = value ? { lat: value.lat, lng: value.lng } : value
+            } else if (key === 'error') {
+                summary[key] = value?.message ?? String(value)
+            } else if (key === 'feature' || key === 'features') {
+                summary[key] = Array.isArray(value)
+                    ? value.map(f => f.getGeometry?.()?.getType())
+                    : value?.getGeometry?.()?.getType()
+            } else {
+                summary[key] = value
+            }
+        }
+        return JSON.stringify(summary)
+    }
+
+    customElements.whenDefined('terra-map').then(() => {
+        eventNames.forEach(name => {
+            map.addEventListener(name, event => {
+                log.textContent = `${name}: ${describeDetail(event.detail)}\n${log.textContent}`
+            })
+        })
+    })
+</script>
 ```
 
 [component-metadata:terra-map]

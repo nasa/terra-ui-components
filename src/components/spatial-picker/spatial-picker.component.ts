@@ -53,38 +53,10 @@ export default class TerraSpatialPicker extends TerraElement {
     showPolygonSelection: boolean = false
 
     /**
-     * @deprecated Use show-bounding-box-selection instead.
-     */
-    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
-    set hideBoundingBoxSelection(value: boolean) {
-        console.warn(
-            '"hide-bounding-box-selection" is deprecated. Use "show-bounding-box-selection" instead.',
-        )
-        this.showBoundingBoxSelection = !value
-    }
-    get hideBoundingBoxSelection() {
-        return !this.showBoundingBoxSelection
-    }
-
-    /**
      * Whether point selection is allowed via the draw toolbar.
      */
     @property({ attribute: 'show-point-selection', type: Boolean })
     showPointSelection: boolean = true
-
-    /**
-     * @deprecated Use show-point-selection instead.
-     */
-    @property({ attribute: 'hide-point-selection', type: Boolean })
-    set hidePointSelection(value: boolean) {
-        console.warn(
-            '"hide-point-selection" is deprecated. Use "show-point-selection" instead.',
-        )
-        this.showPointSelection = !value
-    }
-    get hidePointSelection() {
-        return !this.showPointSelection
-    }
 
     /** Initial/current value of the picker. */
     @property({ attribute: 'initial-value' }) initialValue:
