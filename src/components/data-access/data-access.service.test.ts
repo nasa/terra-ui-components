@@ -93,22 +93,20 @@ describe('DataAccessService', () => {
         it('formats available range for daily display', () => {
             const date = '2024-03-05T09:08:07.000Z'
             expect(service.formatAvailableRangeDate(date, false)).to.equal(
-                '2024-03-05',
+                '2024-03-05'
             )
         })
 
         it('formats available range for sub-daily display with time', () => {
             const date = '2024-03-05T09:08:07.000Z'
             expect(service.formatAvailableRangeDate(date, true)).to.equal(
-                '2024-03-05 09:08:07',
+                '2024-03-05 09:08:07'
             )
         })
 
         it('returns empty string for null/undefined dates', () => {
             expect(service.formatAvailableRangeDate(null, false)).to.equal('')
-            expect(service.formatAvailableRangeDate(undefined, true)).to.equal(
-                '',
-            )
+            expect(service.formatAvailableRangeDate(undefined, true)).to.equal('')
         })
     })
 })

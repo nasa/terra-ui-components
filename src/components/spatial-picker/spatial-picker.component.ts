@@ -82,8 +82,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ type: Boolean }) inline: boolean = false
     @property({ attribute: 'show-map-on-focus', type: Boolean })
     showMapOnFocus: boolean = false
-    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean =
-        false
+    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean = false
     @property({ attribute: 'help-text' }) helpText = ''
 
     /**
@@ -114,8 +113,7 @@ export default class TerraSpatialPicker extends TerraElement {
     firstUpdated() {
         const urlParams = new URLSearchParams(window.location.search)
         const spatialParam = urlParams.get('spatial')
-        const seed =
-            this.urlState && spatialParam ? spatialParam : this.initialValue
+        const seed = this.urlState && spatialParam ? spatialParam : this.initialValue
 
         if (seed) {
             if (typeof seed === 'string') {
@@ -226,7 +224,7 @@ export default class TerraSpatialPicker extends TerraElement {
         // Validate against constraints before accepting the draw
         const constraintError = SpatialPickerService.validateConstraints(
             value,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
         if (constraintError) {
             this.error = constraintError
@@ -263,7 +261,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
 
         if (!result.ok) {
@@ -282,7 +280,7 @@ export default class TerraSpatialPicker extends TerraElement {
      */
     private _applyValue(
         raw: string | LatLng | LatLngBounds,
-        { emit }: { emit: boolean },
+        { emit }: { emit: boolean }
     ) {
         if (typeof raw !== 'string') {
             // Already a typed value — serialize and commit directly
@@ -297,7 +295,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
 
         if (!result.ok) {

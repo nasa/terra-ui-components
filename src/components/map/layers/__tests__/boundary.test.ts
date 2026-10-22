@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing'
 import Feature from 'ol/Feature.js'
 import { Polygon } from 'ol/geom.js'
-import { Stroke, Style } from 'ol/style.js'
+import type { Stroke, Style } from 'ol/style.js'
 import { BOUNDARY_COLORS, buildExtentFeature, getBoundaryStyle } from '../boundary.js'
 
 function strokeColor(style: Style) {

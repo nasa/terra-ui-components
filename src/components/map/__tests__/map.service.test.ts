@@ -14,7 +14,7 @@ import GeoJSON from 'ol/format/GeoJSON.js'
 import { transformExtent, type Projection } from 'ol/proj.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
-import { Stroke, Style } from 'ol/style.js'
+import type { Stroke, Style } from 'ol/style.js'
 
 describe('Map Service', () => {
     let el: HTMLElement

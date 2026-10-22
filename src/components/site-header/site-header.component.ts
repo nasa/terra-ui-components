@@ -50,18 +50,21 @@ export default class TerraSiteHeader extends TerraElement {
                         <terra-icon name="nasa-logo" font-size="4rem"></terra-icon>
                     </div>
                     <div part="title" class="site-header__title">
-                        ${hasTitleSlot
-                            ? html`<slot name="title"></slot>`
-                            : html`<span>${this.siteName}</span>`}
+                        ${
+                            hasTitleSlot
+                                ? html`<slot name="title"></slot>`
+                                : html`<span>${this.siteName}</span>`
+                        }
                     </div>
                 </div>
                 <div part="center" class="site-header__center">
                     <slot name="center"></slot>
                 </div>
                 <div part="right" class="site-header__right">
-                    ${hasRightSlot
-                        ? html`<slot name="right"></slot>`
-                        : html`
+                    ${
+                        hasRightSlot
+                            ? html`<slot name="right"></slot>`
+                            : html`
                               <button
                                   class="site-header__search"
                                   type="button"
@@ -73,7 +76,8 @@ export default class TerraSiteHeader extends TerraElement {
                                       library="heroicons"
                                   ></terra-icon>
                               </button>
-                          `}
+                          `
+                    }
                 </div>
             </header>
         `

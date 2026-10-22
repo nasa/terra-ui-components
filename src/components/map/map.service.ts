@@ -1,4 +1,4 @@
-import { Feature, Graticule, Map, MapBrowserEvent, View } from 'ol'
+import { type Feature, Graticule, Map, type MapBrowserEvent, View } from 'ol'
 import {
     toLonLat,
     fromLonLat,
@@ -17,7 +17,7 @@ import Layer from 'ol/layer/Layer.js'
 import type Source from 'ol/source/Source.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
-import VectorSource, { VectorSourceEvent } from 'ol/source/Vector.js'
+import VectorSource, { type VectorSourceEvent } from 'ol/source/Vector.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import { Circle, Point, Polygon, type Geometry } from 'ol/geom.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
@@ -149,7 +149,11 @@ export class MapService {
             options.extent ?? (layer.get('sourceExtent') as Extent | undefined)
 
         if (boundaryExtent && options.showBoundary !== false) {
-            this.#addBoundary(options.name, boundaryExtent, options.boundaryColorIndex)
+            this.#addBoundary(
+                options.name,
+                boundaryExtent,
+                options.boundaryColorIndex
+            )
         }
 
         if (options.position === 'top') {

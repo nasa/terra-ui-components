@@ -8,8 +8,8 @@ import VectorSource from 'ol/source/Vector.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import { apiClient } from '../../../lib/api.client.js'
-import TerraMap from '../map.component.js'
 import { LatLng } from '../models/LatLng.js'
+import type TerraMap from '../map.component.js'
 import '../map.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {
