@@ -28,31 +28,29 @@ export default class TerraStepperStep extends TerraElement {
         'terra-icon': TerraIcon,
     }
 
-
     /** Screen size detection use to determine layout for mobile devices */
 
-    @state() 
+    @state()
     isMobile = false
 
-    private mediaQuery = window.matchMedia('(max-width: 600px)');
-    
-    connectedCallback() {
-        super.connectedCallback();
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
 
-        this.isMobile = this.mediaQuery.matches;
-        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
     }
 
     disconnectedCallback() {
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
 
-        super.disconnectedCallback();
+        super.disconnectedCallback()
     }
 
     private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches;
-    };
-
+        this.isMobile = event.matches
+    }
 
     /**
      * The step's state. "completed" shows a checkmark, "current" highlights the step as active,
@@ -95,12 +93,14 @@ export default class TerraStepperStep extends TerraElement {
                 })}
             >
                 <div part="bar" class="stepper-step__bar"></div>
-                ${!isCondensed && !this.isMobile
-                    ? html`
+                ${
+                    !isCondensed && !this.isMobile
+                        ? html`
                           <div part="content" class="stepper-step__content">
                               <div part="title" class="stepper-step__title">
-                                  ${isCompleted && !this.hideCheckmark
-                                      ? html`
+                                  ${
+                                      isCompleted && !this.hideCheckmark
+                                          ? html`
                                             <terra-icon
                                                 part="icon"
                                                 name="solid-check"
@@ -108,7 +108,8 @@ export default class TerraStepperStep extends TerraElement {
                                                 class="stepper-step__icon"
                                             ></terra-icon>
                                         `
-                                      : ''}
+                                          : ''
+                                  }
                                   ${this.title}
                               </div>
                               <div part="caption" class="stepper-step__caption">
@@ -116,7 +117,8 @@ export default class TerraStepperStep extends TerraElement {
                               </div>
                           </div>
                       `
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }

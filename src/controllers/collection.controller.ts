@@ -58,38 +58,38 @@ export class CollectionController implements ReactiveController {
 
     constructor(
         private host: ReactiveControllerHost & QueryClientHost,
-        private config: CollectionControllerConfig,
+        private config: CollectionControllerConfig
     ) {
         this.host.addController(this)
 
         this.#collectionQuery = new QueryController(this.host, () =>
-            queryCmrCollection(this.config.getCollectionEntryId()),
+            queryCmrCollection(this.config.getCollectionEntryId())
         )
 
         this.#capabilitiesQuery = new QueryController(this.host, () =>
             queryHarmonyCapabilities(this.conceptId, {
                 bearerToken: this.config.getBearerToken(),
-            }),
+            })
         )
 
         this.#variablesQuery = new QueryController(this.host, () =>
-            queryCmrVariables({ collectionConceptId: this.conceptId }),
+            queryCmrVariables({ collectionConceptId: this.conceptId })
         )
 
         this.#gesDiscCollectionQuery = new QueryController(this.host, () =>
             queryGesDiscCollection({
                 collectionEntryId: this.config.getCollectionEntryId(),
                 collectionConceptId: this.conceptId,
-            }),
+            })
         )
 
         this.#samplingQuery = new QueryController(this.host, () =>
-            queryCmrSampling(this.config.getCollectionEntryId()),
+            queryCmrSampling(this.config.getCollectionEntryId())
         )
 
         this.#giovanniVariablesQuery = new QueryController(
             this.host,
-            queryGiovanniConfiguredVariables,
+            queryGiovanniConfiguredVariables
         )
     }
 
@@ -202,7 +202,7 @@ export class CollectionController implements ReactiveController {
                 configuredOutputFormats: sortByPriority(
                     caps.configuredOutputFormats,
                     this.config.preferredOutputFormats ?? [],
-                    (format) => format.key,
+                    format => format.key
                 ),
                 granuleCount: cmr.meta['granule-count'] ?? 0,
                 collection: cmr.umm,

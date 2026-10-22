@@ -2648,7 +2648,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                                         <terra-button
                                             outline
                                             @click=${() =>
-                                                    this.#handleJupyterNotebookClick()}
+                                                this.#handleJupyterNotebookClick()}
                                         >
                                             <terra-icon
                                                 name="outline-code-bracket"

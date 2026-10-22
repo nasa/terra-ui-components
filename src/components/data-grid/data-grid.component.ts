@@ -314,13 +314,15 @@ export default class TerraDataGrid<T = any> extends TerraElement {
                     style="height: ${this.height};"
                 ></div>
 
-                ${this.isLoading && this.showLoading
-                    ? html`
+                ${
+                    this.isLoading && this.showLoading
+                        ? html`
                           <div class="loading-overlay" part="loading">
                               <terra-loader indeterminate></terra-loader>
                           </div>
                       `
-                    : nothing}
+                        : nothing
+                }
             </div>
         `
     }

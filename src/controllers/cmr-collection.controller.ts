@@ -32,12 +32,12 @@ export class CmrCollectionController implements ReactiveController {
 
     constructor(
         private host: ReactiveControllerHost & QueryClientHost,
-        private config: CmrCollectionControllerConfig,
+        private config: CmrCollectionControllerConfig
     ) {
         this.host.addController(this)
 
         this.#query = new QueryController(this.host, () =>
-            queryCmrCollectionTags(this.#collectionId),
+            queryCmrCollectionTags(this.#collectionId)
         )
     }
 
@@ -74,7 +74,7 @@ export class CmrCollectionController implements ReactiveController {
 
         const entries = cmrCollectionService.filterByProjection(
             cmrCollectionService.extractGibsEntries(data),
-            projection,
+            projection
         )
 
         this.#gibsLayerConfigsCache = entries.length

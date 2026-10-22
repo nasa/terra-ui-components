@@ -45,7 +45,7 @@ function sameStringSet(a?: Array<string>, b?: Array<string>): boolean {
 /** Order-independent equality check for two optional RangeDimension arrays. */
 function sameDimensions(
     a?: Array<RangeDimension>,
-    b?: Array<RangeDimension>,
+    b?: Array<RangeDimension>
 ): boolean {
     const aList = a ?? []
     const bList = b ?? []
@@ -58,15 +58,11 @@ function sameDimensions(
 }
 
 /** Equality check for two optional locations, which may be a LatLng, a LatLngBounds, or undefined. */
-function sameLocation(
-    a?: LatLng | LatLngBounds,
-    b?: LatLng | LatLngBounds,
-): boolean {
+function sameLocation(a?: LatLng | LatLngBounds, b?: LatLng | LatLngBounds): boolean {
     if (!a && !b) return true
     if (!a || !b) return false
     if (a instanceof LatLng && b instanceof LatLng) return a.equals(b)
-    if (a instanceof LatLngBounds && b instanceof LatLngBounds)
-        return a.equals(b)
+    if (a instanceof LatLngBounds && b instanceof LatLngBounds) return a.equals(b)
     return false
 }
 
@@ -86,7 +82,7 @@ export class HarmonyRequest {
 
         // variables might have been passed in as concept ids, use the helper method to ensure we add them in the right spot
         this.#options.variables = undefined // clear out variables first
-        options?.variables?.forEach((v) => {
+        options?.variables?.forEach(v => {
             this.variable(v)
         })
 
@@ -134,12 +130,8 @@ export class HarmonyRequest {
     }
 
     get baseUrl() {
-        const {
-            environment,
-            collectionConceptId,
-            variableConceptIds,
-            variables,
-        } = this.#options
+        const { environment, collectionConceptId, variableConceptIds, variables } =
+            this.#options
 
         if (!collectionConceptId) {
             throw new BadRequestException({
@@ -181,11 +173,11 @@ export class HarmonyRequest {
         } else if (location instanceof LatLngBounds) {
             params.append(
                 'subset',
-                `lat(${location.getSouth()}:${location.getNorth()})`,
+                `lat(${location.getSouth()}:${location.getNorth()})`
             )
             params.append(
                 'subset',
-                `lon(${location.getWest()}:${location.getEast()})`,
+                `lon(${location.getWest()}:${location.getEast()})`
             )
         }
 
@@ -193,14 +185,11 @@ export class HarmonyRequest {
 
         if (startDate) {
             // at least start date is required
-            params.append(
-                'subset',
-                `time("${startDate}":"${endDate ?? startDate}")`,
-            )
+            params.append('subset', `time("${startDate}":"${endDate ?? startDate}")`)
         }
 
         if (dimensions && dimensions.length > 0) {
-            dimensions.forEach((dim) => {
+            dimensions.forEach(dim => {
                 params.append('subset', `${dim.name}(${dim.min}:${dim.max})`)
             })
         }
@@ -209,11 +198,11 @@ export class HarmonyRequest {
             params.append('format', format)
         }
 
-        labels?.forEach((label) => {
+        labels?.forEach(label => {
             params.append('label', label)
         })
 
-        variables?.forEach((v) => {
+        variables?.forEach(v => {
             params.append('variable', v)
         })
 
@@ -250,9 +239,7 @@ export class HarmonyRequest {
      * Helper method to get a label value by prefix, e.g. getLabelByPrefix('instrument-short-name') will return the value of the label that starts with 'instrument-short-name:'
      */
     getLabelByPrefix(prefix: string) {
-        const label = this.#options.labels?.find((l) =>
-            l.startsWith(`${prefix}:`),
-        )
+        const label = this.#options.labels?.find(l => l.startsWith(`${prefix}:`))
 
         const value = label ? label.split(':')[1].trim() : undefined
 
@@ -317,13 +304,13 @@ export class HarmonyRequest {
 
     addLabelsFromVariable(variable: Variable) {
         this.label(
-            `collection: ${variable.dataProductShortName}_${variable.dataProductVersion}`,
+            `collection: ${variable.dataProductShortName}_${variable.dataProductVersion}`
         )
         this.label(
-            `variable-display-name: ${variable.dataFieldLongName || variable.dataFieldId}`,
+            `variable-display-name: ${variable.dataFieldLongName || variable.dataFieldId}`
         )
         this.label(
-            `instrument-short-name: ${variable.dataProductInstrumentShortName}`,
+            `instrument-short-name: ${variable.dataProductInstrumentShortName}`
         )
         this.label(`time-interval: ${variable.dataProductTimeInterval}`)
         this.label(`units: ${variable.dataFieldUnits}`)
