@@ -847,8 +847,11 @@ describe('<terra-data-subsetter> recent date range default', () => {
         el.collectionEntryId = collectionEntryId
 
         await waitUntil(
-            () => Boolean(el.granuleMinDate) && Boolean(el.granuleMaxDate),
-            'expected granule sampling dates to be populated',
+            () =>
+                Boolean(el.granuleMinDate) &&
+                Boolean(el.granuleMaxDate) &&
+                Boolean(el.collectionWithServices),
+            'expected granule sampling dates and collection capabilities to be populated',
             { timeout: 3000 }
         )
         await elementUpdated(el)
