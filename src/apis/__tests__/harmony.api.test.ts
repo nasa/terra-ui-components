@@ -323,6 +323,68 @@ describe('HarmonyAPI', () => {
                 )
             })
         })
+
+        describe('job endpoint pagination', () => {
+            it('should follow next links when job status is successful', async () => {
+                // Page 1 response
+                apiGetStub.onFirstCall().resolves({
+                    jobID: 'job-123',
+                    status: 'successful',
+                    links: [
+                        { href: 'https://example.com/file1.nc', rel: 'data', title: 'file1.nc' },
+                        { href: 'https://harmony.earthdata.nasa.gov/jobs/job-123?page=2', rel: 'next' },
+                    ],
+                })
+
+                // Page 2 response (last page)
+                apiGetStub.onSecondCall().resolves({
+                    jobID: 'job-123',
+                    status: 'successful',
+                    links: [
+                        { href: 'https://example.com/file2.nc', rel: 'data', title: 'file2.nc' },
+                    ],
+                })
+
+                const status = await harmonyApi.getJobStatus('job-123', { bearerToken: 'token' })
+
+                expect(apiGetStub.calledTwice).to.be.true
+                expect(status.links.filter((l) => l.rel === 'data')).to.have.lengthOf(2)
+            })
+
+            it('should not follow next links while job is running', async () => {
+                apiGetStub.resolves({
+                    jobID: 'job-123',
+                    status: 'running',
+                    links: [
+                        { href: 'https://example.com/file1.nc', rel: 'data', title: 'file1.nc' },
+                        { href: 'https://harmony.earthdata.nasa.gov/jobs/job-123?page=2', rel: 'next' },
+                    ],
+                })
+
+                const status = await harmonyApi.getJobStatus('job-123', { bearerToken: 'token' })
+
+                expect(apiGetStub.calledOnce).to.be.true
+                expect(status.links.filter((l) => l.rel === 'data')).to.have.lengthOf(1)
+            })
+
+            it('should handle subsequent page failure gracefully and return available links', async () => {
+                apiGetStub.onFirstCall().resolves({
+                    jobID: 'job-123',
+                    status: 'successful',
+                    links: [
+                        { href: 'https://example.com/file1.nc', rel: 'data', title: 'file1.nc' },
+                        { href: 'https://harmony.earthdata.nasa.gov/jobs/job-123?page=2', rel: 'next' },
+                    ],
+                })
+                apiGetStub.onSecondCall().rejects(new Error('Network error on page 2'))
+
+                const status = await harmonyApi.getJobStatus('job-123', { bearerToken: 'token' })
+
+                expect(status.status).to.equal('successful')
+                expect(status.links.filter((l) => l.rel === 'data')).to.have.lengthOf(1)
+            })
+
+        })
     })
 
     describe('output format options', () => {
