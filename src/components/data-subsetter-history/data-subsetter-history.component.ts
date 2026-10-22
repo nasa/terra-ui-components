@@ -12,7 +12,7 @@ import { queryHarmonyJobs } from '../../queries/harmony.queries.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraDataSubsetter from '../data-subsetter/data-subsetter.component.js'
 import TerraDialog from '../dialog/dialog.component.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { Status, type SubsetJobStatus } from '../../apis/harmony.api.js'
 
 /**
@@ -25,8 +25,8 @@ import { Status, type SubsetJobStatus } from '../../apis/harmony.api.js'
  * @dependency terra-data-subsetter
  * @dependency terra-dialog
  */
-export default class TerraDataSubsetterHistory extends QueryClientMixin(
-    TerraElement,
+export default class TerraDataSubsetterHistory extends AuthMixin(
+    QueryClientMixin(TerraElement)
 ) {
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-icon': TerraIcon,
@@ -72,7 +72,6 @@ export default class TerraDataSubsetterHistory extends QueryClientMixin(
     jobsQuery = new QueryController(this, () =>
         queryHarmonyJobs({ page: 1 }, { bearerToken: this.bearerToken }),
     )
-    _authController = new AuthController(this)
 
     private toggleCollapsed() {
         this.collapsed = !this.collapsed

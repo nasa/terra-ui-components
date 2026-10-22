@@ -1,7 +1,7 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import {
     CollectionController,
     type CollectionWithAvailableServices,
@@ -83,7 +83,9 @@ const DEFAULT_DATE_RANGE_MIN_GRANULES = 3
  *
  * @event terra-subset-job-complete - called when a subset job enters a final state (e.g. successful, failed, completed_with_errors)
  */
-export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
+export default class TerraDataSubsetter extends AuthMixin(
+    QueryClientMixin(TerraElement)
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-accordion': TerraAccordion,
@@ -277,7 +279,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         ],
     })
 
-    #authController = new AuthController(this)
     #harmonyRequestController = new HarmonyRequestController(this)
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
@@ -844,8 +845,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderSizeInfo(estimates: { days: number; links: number }) {
         if (
-            !this.#authController.state.isLoading &&
-            !this.#authController.state.user
+            !this.authState.isLoading &&
+            !this.authState.user
         ) {
             return html`
                 <div class="size-info warning">
@@ -2879,7 +2880,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             collectionConceptId: this.collectionWithServices!.conceptId,
             variables,
             location: this.spatialSelection,
-            anonymous: !this.#authController.state.user,
+            anonymous: !this.authState.user,
         })
 
         if (this.shapeGeoJson) {

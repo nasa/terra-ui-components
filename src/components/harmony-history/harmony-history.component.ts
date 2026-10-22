@@ -13,7 +13,7 @@ import {
 } from '../../queries/harmony.queries.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './harmony-history.styles.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import type { SubsetJobStatus, SubsetJobLink } from '../../apis/harmony.api.js'
 import TerraLoader from '../loader/loader.component.js'
@@ -65,8 +65,8 @@ function formatDatetimeUtc(dateStr: string | undefined): string {
  * @csspart track - The inner flex container that translates to implement scrolling.
  * @csspart thumbnail - Each individual job thumbnail wrapper.
  */
-export default class TerraHarmonyHistory extends QueryClientMixin(
-    TerraElement,
+export default class TerraHarmonyHistory extends AuthMixin(
+    QueryClientMixin(TerraElement)
 ) {
     static styles: CSSResultGroup = [componentStyles, styles]
 
@@ -116,8 +116,6 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     private _showTooltipTimer?: number
     private _refreshPage1Timer?: number
     private _resizeObserver?: ResizeObserver
-
-    _authController = new AuthController(this)
 
     _removeLabelsOnDeleteMutation = new MutationController(
         this,

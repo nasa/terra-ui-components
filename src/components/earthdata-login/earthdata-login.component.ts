@@ -8,8 +8,7 @@ import TerraInput from '../input/input.js'
 import TerraLoader from '../loader/loader.js'
 import styles from './earthdata-login.styles.js'
 import { property, state, query } from 'lit/decorators.js'
-import { AuthController } from '../../auth/auth.controller.js'
-import { TaskStatus } from '@lit/task'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 
 /**
  * @summary A form that logs in to Earthdata Login (EDL)
@@ -19,7 +18,7 @@ import { TaskStatus } from '@lit/task'
  *
  * @event terra-login - Emitted when a bearer token has been received from EDL.
  */
-export default class TerraEarthdataLogin extends TerraElement {
+export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
@@ -66,15 +65,13 @@ export default class TerraEarthdataLogin extends TerraElement {
     @query('#username-input') usernameInput?: TerraInput
     @query('#password-input') passwordInput?: TerraInput
 
-    #authController = new AuthController(this)
-
     firstUpdated(): void {
         if (this.username && this.password) {
             // user passed in a password, we should hide the toggle for security
             this.hidePasswordToggle = true
 
             if (this.autoLogin) {
-                this.#authController.loginTask.run([this.username, this.password])
+                this.loginWithCredentials(this.username, this.password)
             }
         }
     }
@@ -98,14 +95,14 @@ export default class TerraEarthdataLogin extends TerraElement {
                     </a>
                 </div>
 
-                ${this.#authController.state.user?.uid
+                ${this.authState.user?.uid
                     ? html`<div class="login-form">
                           <p>
-                              ${this.#authController.state.user.first_name},<br />
+                              ${this.authState.user.first_name},<br />
                               You've successfully authenticated with Earthdata Login!
                           </p>
                           <terra-button
-                              @click=${() => this.#authController.logout()}
+                              @click=${() => this.logout()}
                               size="small"
                               outline
                               >Logout</terra-button
@@ -119,8 +116,7 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   name="username"
                                   type="text"
                                   .value=${this.username}
-                                  ?disabled=${this.#authController.loginTask
-                                      .status === TaskStatus.PENDING}
+                                  ?disabled=${this.isLoggingIn}
                                   autocomplete="username"
                                   .errorText=${this.usernameError || ''}
                                   required
@@ -135,8 +131,7 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   type="password"
                                   autocomplete="current-password"
                                   ?password-toggle=${!this.hidePasswordToggle}
-                                  ?disabled=${this.#authController.loginTask
-                                      .status === TaskStatus.PENDING}
+                                  ?disabled=${this.isLoggingIn}
                                   .value=${this.password}
                                   .errorText=${this.passwordError || ''}
                                   required
@@ -148,21 +143,15 @@ export default class TerraEarthdataLogin extends TerraElement {
                                   type="submit"
                                   variant="primary"
                                   class="login-button"
-                                  ?disabled=${this.#authController.loginTask
-                                      .status === TaskStatus.PENDING}
+                                  ?disabled=${this.isLoggingIn}
                               >
-                                  ${this.#authController.loginTask.render({
-                                      initial: () => html`Log in`,
-                                      pending: () => html`Logging In...`,
-                                      complete: () => html`Log in`,
-                                      error: () => html`Log in`,
-                                  })}
+                                  ${this.isLoggingIn ? 'Logging In...' : 'Log in'}
                               </terra-button>
 
-                              ${this.#authController.state.error
+                              ${this.authState.error
                                   ? html`<div class="form-feedback">
-                                        ${this.#authController.state.error}
-                                        ${this.#authController.state.error ===
+                                        ${this.authState.error}
+                                        ${this.authState.error ===
                                         'Invalid user credentials'
                                             ? html`<p>
                                                   <a
@@ -266,7 +255,7 @@ export default class TerraEarthdataLogin extends TerraElement {
 
         const form = event.target as HTMLFormElement
         if (form.checkValidity() && this.username && this.password) {
-            this.#authController.loginTask.run([this.username, this.password])
+            this.loginWithCredentials(this.username, this.password)
         } else {
             // Report validity to trigger validation and show error messages
             // This will set data-user-invalid on the inputs, which will display errors

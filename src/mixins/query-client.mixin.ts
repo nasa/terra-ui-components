@@ -3,6 +3,7 @@ import { QueryClient } from '@tanstack/query-core'
 import { persistQueryClient } from '@tanstack/query-persist-client-core'
 import { HttpException } from '../exceptions/http.exception.js'
 import { createIDBPersister } from '../lib/indexeddb-persister.js'
+import type { Constructor } from './mixin.types.js'
 
 const fifteenMinutesMs = 1000 * 60 * 15
 
@@ -26,8 +27,6 @@ export const sharedQueryClient = new QueryClient({
         },
     },
 })
-
-export type Constructor<T = object> = new (...args: any[]) => T
 
 let mountCount = 0
 let mountPromise: Promise<void> | undefined
@@ -60,9 +59,7 @@ export interface QueryClientHost {
     queryClient: QueryClient
 }
 
-export const QueryClientMixin = <T extends Constructor<LitElement>>(
-    Base: T,
-) => {
+export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => {
     class WithQueryClient extends Base implements QueryClientHost {
         queryClient: QueryClient = sharedQueryClient
 

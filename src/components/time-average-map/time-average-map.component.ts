@@ -10,9 +10,7 @@ import Draw from 'ol/interaction/Draw.js'
 import Point from 'ol/geom/Point.js'
 import { getLength } from 'ol/sphere.js'
 import Feature from 'ol/Feature.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './time-average-map.styles.js'
@@ -28,7 +26,7 @@ import type { TerraMapPointerMoveEvent } from '../../events/events.js'
 import { TaskStatus } from '@lit/task'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { cache } from 'lit/directives/cache.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { toLonLat } from 'ol/proj.js'
 import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import { getVariableEntryId } from '../../utilities/variable.js'
@@ -44,8 +42,8 @@ import type DataTileSource from 'ol/source/DataTile.js'
 import type DataTile from 'ol/DataTile.js'
 import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 
-export default class TerraTimeAverageMap extends QueryClientMixin(
-    TerraElement,
+export default class TerraTimeAverageMap extends AuthMixin(
+    QueryClientMixin(TerraElement)
 ) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
@@ -63,12 +61,6 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     @property({ attribute: 'start-date', reflect: true }) startDate?: string
     @property({ attribute: 'end-date', reflect: true }) endDate?: string
     @property({ reflect: true }) location?: string
-    @property({
-        attribute: 'bearer-token',
-        reflect: false,
-        converter: undefinedStringConverter,
-    })
-    bearerToken: string
     @property({ type: String }) long_name = ''
     @property({ type: String, attribute: 'color-map-name', reflect: true })
     colorMapName: string = 'viridis'
@@ -136,8 +128,6 @@ export default class TerraTimeAverageMap extends QueryClientMixin(
     #draw: Draw | null = null
 
     @query('terra-map') innerMap: TerraMap
-
-    _authController = new AuthController(this)
 
     @state() colormaps = [
         'jet',
