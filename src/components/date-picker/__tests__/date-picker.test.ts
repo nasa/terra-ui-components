@@ -1392,17 +1392,17 @@ describe('<terra-date-picker>', () => {
 
             const eventPromise = oneEvent(el, 'terra-date-range-change')
             const presetButtons = el.shadowRoot?.querySelectorAll(
-                '.date-picker__preset',
+                '.date-picker__preset'
             )
 
             const todayPreset = Array.from(presetButtons || []).find(
-                (btn: any) => btn.textContent?.trim() === 'Today',
+                (btn: any) => btn.textContent?.trim() === 'Today'
             ) as HTMLElement
 
             // Click preset
             todayPreset.click()
             await elementUpdated(el)
-            
+
             const event = await eventPromise
 
             // Verify emitted times align precisely with midnight and 23:59:59 bounds
@@ -1426,7 +1426,7 @@ describe('<terra-date-picker>', () => {
             // Simulate the user selecting Febuary 24, 2025 in local time (EST), which is UTC-5
             el.selectedStart = new Date(Date.UTC(2025, 1, 24))
             el.selectedEnd = new Date(Date.UTC(2025, 1, 24))
-            
+
             // Simulate a UTC hour that corresponds to late night local time
             // e.g., 02:30 AM UTC the next day translates to 10:30 PM EST
             el.startHour = 2
@@ -1435,11 +1435,11 @@ describe('<terra-date-picker>', () => {
             el.endHour = 2
             el.endMinute = 30
             el.endSecond = 0
-            
+
             el.emitChange()
-            
+
             const event = await eventPromise
-            
+
             // The emitted UTC string should mathematically roll the calendar day over to the 25th
             expect(event.detail.startDate).to.include('2025-02-25')
             expect(event.detail.endDate).to.include('2025-02-25')

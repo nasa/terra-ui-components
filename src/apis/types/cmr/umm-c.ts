@@ -1018,9 +1018,7 @@ function transform(
         const result: any = {}
         Object.getOwnPropertyNames(props).forEach(key => {
             const prop = props[key]
-            const v = Object.hasOwn(val, key)
-                ? val[key]
-                : undefined
+            const v = Object.hasOwn(val, key) ? val[key] : undefined
             result[prop.key] = transform(v, prop.typ, getProps, key, ref)
         })
         Object.getOwnPropertyNames(val).forEach(key => {
@@ -1037,14 +1035,14 @@ function transform(
         return invalidValue(typ, val, key, parent)
     }
     if (typ === false) return invalidValue(typ, val, key, parent)
-    let ref: any 
+    let ref: any
     while (typeof typ === 'object' && typ.ref !== undefined) {
         ref = typ.ref
         typ = typeMap[typ.ref]
     }
     if (Array.isArray(typ)) return transformEnum(typ, val)
     if (typeof typ === 'object') {
-        return  Object.hasOwn(typ, 'unionMembers')
+        return Object.hasOwn(typ, 'unionMembers')
             ? transformUnion(typ.unionMembers, val)
             : Object.hasOwn(typ, 'arrayItems')
               ? transformArray(typ.arrayItems, val)

@@ -1188,15 +1188,14 @@ export default class TerraPlotToolbar extends TerraElement {
         })
 
         // Return x and y values for every data point in each plot line
-        const csvData = plotData
-            .flatMap(trace => {
-                return trace.x.map((x: any, i: number) => {
-                    return {
-                        x: x,
-                        y: trace.y[i],
-                    }
-                })
+        const csvData = plotData.flatMap(trace => {
+            return trace.x.map((x: any, i: number) => {
+                return {
+                    x: x,
+                    y: trace.y[i],
+                }
             })
+        })
 
         // Create CSV format, make it a Blob file and generate a link to it.
         const csv = this.#convertToCSV(csvData)
