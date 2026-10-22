@@ -4,7 +4,7 @@ import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
 import type TileLayer from 'ol/layer/Tile.js'
 import { apiClient } from '../../../lib/api.client.js'
-import TerraMap from '../map.component.js'
+import type TerraMap from '../map.component.js'
 import '../map.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {

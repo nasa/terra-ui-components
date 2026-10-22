@@ -1,6 +1,6 @@
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { ImageTile } from 'ol'
+import type { ImageTile } from 'ol'
 import type { Map, MapBrowserEvent } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import VectorLayer from 'ol/layer/Vector.js'
@@ -951,10 +951,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
 
     async applyColorToLayer(
         gtSource: DataTileSource<DataTile | ImageTile>,
-        color: String
+        color: string
     ) {
         var { min, max } = await this.getMinMax(gtSource)
-        let gtStyle = {
+        const gtStyle = {
             color: [
                 'case',
                 ['==', ['band', 2], 0],

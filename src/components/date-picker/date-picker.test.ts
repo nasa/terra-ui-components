@@ -136,9 +136,7 @@ function mockTimezoneOffset(offsetMinutes: number): () => void {
 
     // Mock getTimezoneOffset to return the desired offset
     // Note: getTimezoneOffset() returns positive for timezones behind UTC
-    Date.prototype.getTimezoneOffset = function () {
-        return offsetMinutes
-    }
+    Date.prototype.getTimezoneOffset = () => offsetMinutes
 
     // Mock getHours and getMinutes to account for the timezone offset
     // getTimezoneOffset() returns the offset from local to UTC, so:

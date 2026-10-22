@@ -17,7 +17,7 @@ export function mergeTooltips(
 
     // Move tooltips into the origin element. The default stylesheet handles this.
     // @ts-expect-error
-    tooltips.forEach(function (tooltip, index) {
+    tooltips.forEach((tooltip, index) => {
         if (tooltip) {
             origins[index].appendChild(tooltip)
         }
@@ -25,7 +25,7 @@ export function mergeTooltips(
 
     slider.noUiSlider.on(
         'update',
-        function (values, _handle, _unencoded, _tap, positions) {
+        (values, _handle, _unencoded, _tap, positions) => {
             var pools: Array<Array<number>> = [[]]
             var poolPositions: Array<Array<number>> = [[]]
             var poolValues: Array<Array<string | number>> = [[]]
@@ -55,7 +55,7 @@ export function mergeTooltips(
                 }
             }
 
-            pools.forEach(function (pool, poolIndex) {
+            pools.forEach((pool, poolIndex) => {
                 var handlesInPool = pool.length
 
                 for (var j = 0; j < handlesInPool; j++) {
@@ -64,7 +64,7 @@ export function mergeTooltips(
                     if (j === handlesInPool - 1) {
                         var offset = 0
 
-                        poolPositions[poolIndex].forEach(function (value) {
+                        poolPositions[poolIndex].forEach((value) => {
                             offset += 1000 - value
                         })
 

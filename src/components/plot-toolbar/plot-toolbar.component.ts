@@ -1176,7 +1176,7 @@ export default class TerraPlotToolbar extends TerraElement {
     }
 
     #downloadCSV(_event: Event) {
-        let plotData: Array<Plot> = []
+        const plotData: Array<Plot> = []
 
         if (!Array.isArray(this.timeSeriesData)) {
             return
@@ -1189,7 +1189,7 @@ export default class TerraPlotToolbar extends TerraElement {
 
         // Return x and y values for every data point in each plot line
         const csvData = plotData
-            .map(trace => {
+            .flatMap(trace => {
                 return trace.x.map((x: any, i: number) => {
                     return {
                         x: x,
@@ -1197,7 +1197,6 @@ export default class TerraPlotToolbar extends TerraElement {
                     }
                 })
             })
-            .flat()
 
         // Create CSV format, make it a Blob file and generate a link to it.
         const csv = this.#convertToCSV(csvData)
@@ -1241,7 +1240,7 @@ export default class TerraPlotToolbar extends TerraElement {
         const a = document.createElement('a')
 
         const locationStr = `${this.location!.replace(/,/g, '_')}`
-        let file_name = `${this.variableEntryId}_${this.startDate}-${this.endDate}_${locationStr}.tif`
+        const file_name = `${this.variableEntryId}_${this.startDate}-${this.endDate}_${locationStr}.tif`
         a.href = url
         a.download = `${file_name}`
         a.style.display = 'none'

@@ -209,7 +209,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(TerraElement)
         }
     }
 
-    #handleVariableSelection(variable: Variable, checked: Boolean) {
+    #handleVariableSelection(variable: Variable, checked: boolean) {
         const variableIsSelected = this.selectedVariables.find(
             v => v.dataFieldLongName === variable.dataFieldLongName
         )

@@ -1,4 +1,4 @@
-import { Feature, Graticule, Map, MapBrowserEvent, View } from 'ol'
+import { type Feature, Graticule, Map, type MapBrowserEvent, View } from 'ol'
 import {
     toLonLat,
     transform,
@@ -12,7 +12,7 @@ import type Interaction from 'ol/interaction/Interaction.js'
 import type { FitOptions } from 'ol/View.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
-import VectorSource, { VectorSourceEvent } from 'ol/source/Vector.js'
+import VectorSource, { type VectorSourceEvent } from 'ol/source/Vector.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import { Circle, Point, Polygon, type Geometry } from 'ol/geom.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'

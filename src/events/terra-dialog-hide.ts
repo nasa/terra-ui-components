@@ -1,4 +1,4 @@
-import TerraDialog from '../components/dialog/dialog.component.js'
+import type TerraDialog from '../components/dialog/dialog.component.js'
 
 export type TerraDialogHideEvent = CustomEvent<Record<PropertyKey, never>> & {
     target: TerraDialog

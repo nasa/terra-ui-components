@@ -37,7 +37,7 @@ export class DrawToolbarControl extends Control {
 
         this.#options = options
 
-        let tools: DrawTool[] = ['bbox', 'polygon', 'point', 'circle']
+        const tools: DrawTool[] = ['bbox', 'polygon', 'point', 'circle']
 
         tools.forEach(tool => {
             const btn = document.createElement('button')

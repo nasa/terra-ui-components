@@ -362,7 +362,7 @@ function getMode(control: TerraFormControl) {
     }
 
     // <terra-button href="...">
-    if (control.localName === 'terra-button' && 'href' in control && !!control.href) {
+    if (control.localName === 'terra-button' && 'href' in control && control.href) {
         return 'TerraButtonWithHRef'
     }
 
