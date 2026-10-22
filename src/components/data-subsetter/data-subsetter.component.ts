@@ -221,9 +221,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     isSubmittingRequest: boolean = false
 
     @state()
-    selectedTab: 'web-links' | 'selected-params' = 'web-links'
-
-    @state()
     refineParameters: boolean = false
 
     @state()
@@ -262,6 +259,12 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @state()
     giovanniConfiguredVariables?: Set<string>
 
+    @state()
+    selectedTab: 'web-links' | 'selected-params' = 'web-links'
+
+    @state()
+    visibleWebLinksCount: number = 100
+
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
 
@@ -283,6 +286,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
+            // reset the WebLinks count when switching to a new jobId to reset "Load More" behavior
+            this.visibleWebLinksCount = 100
             this.#harmonyRequestController.startPollForJobStatus(this.jobId, {
                 bearerToken: this.bearerToken,
             })
@@ -2523,21 +2528,35 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             : nothing
                     }
 
-                    <ul class="file-list">
-                        ${this.#getDataLinks().map(
-                            (link) => html`
-                                <li class="file-item">
-                                    <a
-                                        href="${link.href}"
-                                        class="file-link"
-                                        target="_blank"
-                                    >
-                                        ${link.title}
-                                    </a>
-                                </li>
-                            `,
-                        )}
+                    <ul
+                        class="file-list"
+                        @scroll=${this.#handleWebLinksScroll}
+                    >
+                        ${this.#getDataLinks()
+                            .slice(0, this.visibleWebLinksCount)
+                            .map(
+                                (link) => html`
+                                    <li class="file-item">
+                                        <a
+                                            href="${link.href}"
+                                            class="file-link"
+                                            target="_blank"
+                                        >
+                                            ${link.title}
+                                        </a>
+                                    </li>
+                                `,
+                            )}
                     </ul>
+                    ${this.#getDataLinks().length > this.visibleWebLinksCount
+                        ? html`
+                            <div
+                                style="font-size: 0.85em; color: #666; margin-top: -6px; margin-bottom: 10px;"
+                            >
+                                Showing ${Math.min(this.visibleWebLinksCount, this.#getDataLinks().length)} of ${this.#getDataLinks().length.toLocaleString()} files (scroll to load more).
+                            </div>
+                        `
+                        : nothing}
                 </div>
 
                 <div
@@ -3191,6 +3210,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     #backToSubsetOptions() {
         this.refineParameters = true
         this.harmonyRequestError = undefined
+        this.visibleWebLinksCount = 100
         // Scroll to the top of the component
         setTimeout(() => {
             const container = this.renderRoot.querySelector('.container')
@@ -3205,6 +3225,27 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             const el = this.renderRoot.querySelector('#job-status-section')
             el?.scrollIntoView({ behavior: 'smooth' })
         }, 100)
+    }
+
+    // TODO: make some of these magic numbers a constant
+    #handleWebLinksScroll(event: Event) {
+        const target = event.target as HTMLElement
+
+        if (!target) {
+            return
+        }
+
+        // When scrolled within 50px of the bottom, load the next 100 links
+        if (target.scrollHeight - target.scrollTop - target.clientHeight < 50) {
+            const total = this.#getDataLinks().length
+
+            if (this.visibleWebLinksCount < total) {
+                this.visibleWebLinksCount = Math.min(
+                    this.visibleWebLinksCount + 100,
+                    total,
+                )
+            }
+        }
     }
 
     #handleDownloadSelect(event: TerraSelectEvent) {

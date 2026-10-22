@@ -349,6 +349,7 @@ class HarmonyApi {
     /**
      * Get the current status of an existing subset job.
      * Intended for polling until the job reaches a final state.
+     * Final state triggers a check for a "next" link to support paginated responses.
      */
     async getJobStatus(
         jobId: string,
@@ -361,6 +362,43 @@ class HarmonyApi {
         status.links = status.links.map((link) =>
             HarmonyApi.normalizeJobLink(link),
         )
+
+        // Only fetch subsequent link pages once the job has completed processing
+        if (
+            status.status === Status.SUCCESSFUL ||
+            status.status === Status.COMPLETE_WITH_ERRORS
+        ) {
+            try {
+                const visited = new Set<string>()
+                let nextLink = status.links.find((link) => link.rel === 'next')
+
+                while (nextLink?.href && !visited.has(nextLink.href)) {
+                    visited.add(nextLink.href)
+
+                    const pageData = await this.#request<SubsetJobStatus>(
+                        nextLink.href,
+                        options,
+                    )
+                    const normalizedLinks = (pageData.links || []).map((link) =>
+                        HarmonyApi.normalizeJobLink(link),
+                    )
+
+                    status.links.push(...normalizedLinks)
+                    // Find next link from the newly fetched page
+                    nextLink = normalizedLinks.find((link) => link.rel === 'next')
+                }
+            } catch (error) {
+                if (options?.signal?.aborted) {
+                    throw error
+                }
+
+                console.warn(
+                    `Failed to fetch all paginated links for job ${jobId}; returning available links:`,
+                    error,
+                )
+            }
+        }
+
         return status
     }
 
