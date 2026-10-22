@@ -143,13 +143,10 @@ export type Options = {
     /** Bounding box [west, south, east, north] in EPSG:4326 to clip rendering to. */
     extent?: Extent
     /**
-     * Shown automatically whenever `extent` is set - set to `false` to
-     * suppress the boundary outline. Not consumed by `GibsLayer` itself -
-     * it's read by `<terra-map>`'s `layers` diffing to pass through to
-     * `addLayer()`'s `showBoundary`/`boundaryColorIndex` options.
+     * Shown automatically whenever `extent` is set
      */
     showBoundary?: boolean
-    /** Palette index (cycled mod 5) for the outline color. Defaults to 0. */
+    /** Palette index. Defaults to 0. */
     boundaryColorIndex?: number
 }
 
@@ -198,6 +195,8 @@ export class GibsLayer extends XYZLayer {
         })
 
         if (extent) {
+            // adds a sourceExtent property to this layer
+            // can be used by other layers (ex. boundary layer) to visually identify the extent of this layer
             this.set('sourceExtent', extent)
         }
     }

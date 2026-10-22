@@ -35,18 +35,12 @@ export type AddLayerOptions = {
     name?: string
     position?: 'below-borders' | 'top'
     /**
-     * Draws a boundary outline at this extent (`[west, south, east, north]`,
-     * EPSG:4326), tied to this layer's add/remove lifecycle. Purely visual -
-     * this doesn't clip the layer itself; pass the layer's own clipping
-     * extent here too if you want the outline to match it. If omitted, falls
-     * back to the layer's own `sourceExtent` tag (e.g. set by `GibsLayer`
-     * when it's constructed with an `extent`), if it has one.
+     * Draws a boundary outline at this extent (`[west, south, east, north]`)
+     * If omitted, falls back to the layer's own `sourceExtent`, if it has one
      */
     extent?: Extent
     /**
-     * Set to `false` to suppress the boundary outline that's otherwise drawn
-     * automatically whenever an extent is known (`extent` above, or a
-     * `sourceExtent` tag the layer carries).
+     * Set to `false` to suppress the boundary outline
      */
     showBoundary?: boolean
     /** Palette index (cycled mod 5) for the outline color. Defaults to 0. */
@@ -171,10 +165,7 @@ export class MapService {
     }
 
     /**
-     * Draws a boundary outline feature at `extent`, tagged with `name` so
-     * `removeLayer()` can remove it again in lockstep with the layer it
-     * belongs to. Purely additive - doesn't affect the layer's own extent
-     * clipping, if any.
+     * Draws a boundary outline feature at `extent`
      */
     #addBoundary(name: string | undefined, extent: Extent, colorIndex = 0) {
         const feature = buildExtentFeature(

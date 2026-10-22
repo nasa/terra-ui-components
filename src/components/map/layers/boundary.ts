@@ -5,10 +5,7 @@ import { Fill, Stroke, Style } from 'ol/style.js'
 import type { Extent } from 'ol/extent.js'
 
 /**
- * The 5-color palette NASA Earthdata Search cycles through (by index) for
- * granule boundary polygons. Shared here so any boundary-style feature in
- * `terra-map` - GIBS extent outlines today, granule boundaries eventually -
- * looks the same way EDSC's does.
+ * 5-color palette for boundaries to cycle through (by index) for granule boundary polygons.
  */
 export const BOUNDARY_COLORS: ReadonlyArray<readonly [number, number, number]> = [
     [46, 204, 113], // green
@@ -73,10 +70,7 @@ export function getBoundaryStyle(
  * Builds a closed-ring `Polygon` feature outlining `extent`
  * (`[west, south, east, north]`, in `extentProjection` - defaults to
  * EPSG:4326, matching GIBS' own `extent` convention), reprojected into
- * `viewProjection`. Mirrors `DrawToolbarControl.buildBBoxFeature()`, but
- * works off a raw `Extent` instead of a `LatLngBounds` so it isn't tied to
- * the draw toolbar - any extent-shaped boundary (a GIBS clip box today,
- * granule bounding boxes eventually) can reuse this.
+ * `viewProjection`.
  */
 export function buildExtentFeature(
     extent: Extent,
