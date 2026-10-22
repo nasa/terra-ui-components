@@ -311,6 +311,15 @@ class HarmonyApi {
             signal: options?.signal,
         })
 
+        if (res.status >= 300 && res.status < 400) {
+            const location = res.headers.get('Location')
+            const jobId = location?.match(/\/jobs\/([^/?#]+)\/?$/)?.[1]
+
+            if (jobId) {
+                return this.getJobStatus(jobId, options)
+            }
+        }
+
         if (!res.ok) {
             if (res.status === 401) {
                 authService.logout() // clear any existing auth state since our token is no longer valid
