@@ -103,6 +103,27 @@ export class SpatialPickerService {
         return null
     }
 
+    static spatialPartsFromString(constraintsStr: string): Array<number> | null {
+        const parts = constraintsStr.split(',').map(p => parseFloat(p.trim()))
+
+        if (parts.length !== 4 || parts.some(isNaN)) return null
+
+        return parts
+    }
+
+    static spatialConstraintIsGlobal(
+        west: number,
+        south: number,
+        east: number,
+        north: number
+    ): boolean | null {
+        // Skip check for global coverage
+        if (west === -180 && south === -90 && east === 180 && north === 90)
+            return true
+
+        return false
+    }
+
     /**
      * Validate the parsed value against a spatial constraints extent.
      * Constraints are in "west, south, east, north" format.
@@ -112,14 +133,13 @@ export class SpatialPickerService {
         constraintsStr: string
     ): string | null {
         if (!constraintsStr) return null
-        const parts = constraintsStr.split(',').map(p => parseFloat(p.trim()))
-        if (parts.length !== 4 || parts.some(isNaN)) return null
+        const parts = this.spatialPartsFromString(constraintsStr)
+        if (!parts) return null
 
         const [west, south, east, north] = parts
 
         // Skip check for global coverage
-        if (west === -180 && south === -90 && east === 180 && north === 90)
-            return null
+        if (this.spatialConstraintIsGlobal(west, south, east, north)) return null
 
         if (value instanceof LatLng) {
             const inside =

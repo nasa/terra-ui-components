@@ -13,6 +13,13 @@ import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
 import { SpatialPickerService } from './spatial-picker.service.js'
 import styles from './spatial-picker.styles.js'
+import { watch } from '../../internal/watch.js'
+import Polygon from 'ol/geom/Polygon.js'
+import Feature from 'ol/Feature.js'
+import VectorLayer from 'ol/layer/Vector.js'
+import VectorSource from 'ol/source/Vector.js'
+import { Style, Stroke, Fill } from 'ol/style.js'
+import { transform } from 'ol/proj.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -73,6 +80,73 @@ export default class TerraSpatialPicker extends TerraElement {
      */
     @property({ attribute: 'spatial-constraints' })
     spatialConstraints: string = '-180, -90, 180, 90'
+
+    @watch('spatialConstraints')
+    constraintChange() {
+        // Return if the map isn't ready yet.
+        if (!this.map) return
+
+        const parts = SpatialPickerService.spatialPartsFromString(
+            this.spatialConstraints
+        )
+        if (!parts) return
+
+        const [west, south, east, north] = parts
+        const isGlobal = SpatialPickerService.spatialConstraintIsGlobal(
+            west,
+            south,
+            east,
+            north
+        )
+        if (!isGlobal) {
+            console.log('Adding spatial constraint to map.')
+
+            // Transform from Spatial constraint's lat/lon (EPSG:4326) to map
+            // coordinates
+            const [westProj, southProj] = transform(
+                [west, south],
+                'EPSG:4326',
+                this.map.projection
+            )
+            const [eastProj, northProj] = transform(
+                [east, north],
+                'EPSG:4326',
+                this.map.projection
+            )
+
+            // Craete a new polygon representing the spatial constraint
+            // TODO: some datasets have more complex cases (multiple polygons)
+            const constraintPolygon = new Polygon([
+                [
+                    [westProj, northProj],
+                    [westProj, southProj],
+                    [eastProj, southProj],
+                    [eastProj, northProj],
+                    [westProj, northProj],
+                ],
+            ])
+            // Create a vector layer and add it to the map
+            const source = new VectorSource({
+                features: [
+                    new Feature({
+                        geometry: constraintPolygon,
+                    }),
+                ],
+            })
+            const layer = new VectorLayer({
+                source,
+                style: new Style({
+                    stroke: new Stroke({
+                        color: 'rgba(0, 255, 255, 1)',
+                    }),
+                    fill: new Fill({
+                        color: 'rgba(0, 255, 255, 0.3)',
+                    }),
+                }),
+            })
+            this.map.addLayer(layer, { name: 'collection-constraint' })
+        }
+    }
 
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
