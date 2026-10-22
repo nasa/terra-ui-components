@@ -184,7 +184,7 @@ map.addLayer(polarLayer, { name: 'gibs-imagery' })
 
 If you don't need to write JS, the `layers` attribute/property lets you declare layers directly, as a JSON array. Each entry's `type` picks what kind of layer it builds:
 
-- `"type": "gibs"` mirrors `GibsLayer`'s options (`layer`, `date`, `projection`, `format`, `tileMatrixSet`, `extent`, `noWorldWrap`). Non-EPSG:3857 projections are resolved asynchronously under the hood via `GibsLayer.forProjection()`, same as the imperative API above.
+- `"type": "gibs"` mirrors `GibsLayer`'s options (`layer`, `date`, `projection`, `format`, `tileMatrixSet`, `extent`, `noWorldWrap`). Non-EPSG:3857 projections are resolved asynchronously under the hood via `GibsLayer.forProjection()`, same as the imperative API above. The boundary outline shown automatically when `extent` is set (see above) applies here too - set `showBoundary: false` to suppress it, or `boundaryColorIndex` (defaults to `0`) to pick its color from the same 5-color palette.
 - `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
 - `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
 

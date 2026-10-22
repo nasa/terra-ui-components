@@ -29,10 +29,28 @@ import GeoJSON from 'ol/format/GeoJSON.js'
 import { BaseLayer } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
 import { LabelsLayer } from './layers/labels.layer.js'
+import { buildExtentFeature, getBoundaryStyle } from './layers/boundary.js'
 
 export type AddLayerOptions = {
     name?: string
     position?: 'below-borders' | 'top'
+    /**
+     * Draws a boundary outline at this extent (`[west, south, east, north]`,
+     * EPSG:4326), tied to this layer's add/remove lifecycle. Purely visual -
+     * this doesn't clip the layer itself; pass the layer's own clipping
+     * extent here too if you want the outline to match it. If omitted, falls
+     * back to the layer's own `sourceExtent` tag (e.g. set by `GibsLayer`
+     * when it's constructed with an `extent`), if it has one.
+     */
+    extent?: Extent
+    /**
+     * Set to `false` to suppress the boundary outline that's otherwise drawn
+     * automatically whenever an extent is known (`extent` above, or a
+     * `sourceExtent` tag the layer carries).
+     */
+    showBoundary?: boolean
+    /** Palette index (cycled mod 5) for the outline color. Defaults to 0. */
+    boundaryColorIndex?: number
 }
 
 export type FitToExtentOptions = {
@@ -59,21 +77,18 @@ type MapOptions = {
     fitToValue?: boolean
     getGeoJson?: (shapeId: string) => Promise<unknown>
     onShapeLoading?: (loading: boolean) => void
-    onMouseMove?: (
-        coordinate: [number, number],
-        pixel: [number, number],
-    ) => void
+    onMouseMove?: (coordinate: [number, number], pixel: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
     onReady?: () => void
     onClick?: (
         latLng: LatLng,
         pixel: [number, number],
-        features: FeatureLike[],
+        features: FeatureLike[]
     ) => void
     onDoubleClick?: (
         latLng: LatLng,
         pixel: [number, number],
-        features: FeatureLike[],
+        features: FeatureLike[]
     ) => void
     onMoveEnd?: (center: LatLng, zoom: number) => void
     onZoomChange?: (zoom: number) => void
@@ -81,7 +96,7 @@ type MapOptions = {
         feature: FeatureLike,
         layerName: string,
         latLng: LatLng,
-        pixel: [number, number],
+        pixel: [number, number]
     ) => void
     onLayerError?: (name: string, error: Error) => void
 }
@@ -92,6 +107,7 @@ export class MapService {
     #drawToolbarControl: DrawToolbarControl
     #options: MapOptions
     #shapeLayer: VectorLayer
+    #boundaryLayer: VectorLayer
     #onDraw: MapOptions['onDraw']
     #onShapeLoading: MapOptions['onShapeLoading']
     #initialView: { center: Coordinate; zoom: number; rotation: number }
@@ -129,6 +145,13 @@ export class MapService {
 
         this.#wireLayerErrorForwarding(layer)
 
+        const boundaryExtent =
+            options.extent ?? (layer.get('sourceExtent') as Extent | undefined)
+
+        if (boundaryExtent && options.showBoundary !== false) {
+            this.#addBoundary(options.name, boundaryExtent, options.boundaryColorIndex)
+        }
+
         if (options.position === 'top') {
             this.#map.addLayer(layer)
             return
@@ -141,6 +164,23 @@ export class MapService {
             : layers.getLength()
 
         layers.insertAt(index, layer)
+    }
+
+    /**
+     * Draws a boundary outline feature at `extent`, tagged with `name` so
+     * `removeLayer()` can remove it again in lockstep with the layer it
+     * belongs to. Purely additive - doesn't affect the layer's own extent
+     * clipping, if any.
+     */
+    #addBoundary(name: string | undefined, extent: Extent, colorIndex = 0) {
+        const feature = buildExtentFeature(
+            extent,
+            this.#map.getView().getProjection()
+        )
+        feature.set('layerName', name)
+        feature.setStyle(getBoundaryStyle(colorIndex))
+
+        this.#boundaryLayer.getSource()?.addFeature(feature)
     }
 
     /**
@@ -161,9 +201,7 @@ export class MapService {
         const forward = () => {
             this.#options.onLayerError?.(
                 name,
-                new Error(
-                    `Failed to load a tile or image for layer "${name}".`,
-                ),
+                new Error(`Failed to load a tile or image for layer "${name}".`)
             )
         }
 
@@ -171,7 +209,7 @@ export class MapService {
         // letting whichever doesn't apply simply never fire is simpler than narrowing by layer type.
         const on = source.on.bind(source) as (
             type: string,
-            listener: () => void,
+            listener: () => void
         ) => void
         on('tileloaderror', forward)
         on('imageloaderror', forward)
@@ -183,6 +221,21 @@ export class MapService {
         if (layer) {
             this.#map.removeLayer(layer)
         }
+
+        this.#removeBoundary(name)
+    }
+
+    /** Removes any boundary feature(s) added via `addLayer(..., { extent })` for `name`. */
+    #removeBoundary(name: string) {
+        const source = this.#boundaryLayer.getSource()
+        if (!source) return
+
+        source
+            .getFeatures()
+            .filter(feature => feature.get('layerName') === name)
+            .forEach(feature => {
+                source.removeFeature(feature)
+            })
     }
 
     getLayer(name: string) {
@@ -202,7 +255,7 @@ export class MapService {
         return this.#map
             .getLayers()
             .getArray()
-            .filter((layer) => this.#isConsumerLayer(layer))
+            .filter(layer => this.#isConsumerLayer(layer))
     }
 
     setLayerOpacity(name: string, opacity: number) {
@@ -223,15 +276,13 @@ export class MapService {
         const layers = this.#map.getLayers()
         const snapshot = layers.getArray().slice()
 
-        const consumerLayers = snapshot.filter((layer) =>
-            this.#isConsumerLayer(layer),
-        )
+        const consumerLayers = snapshot.filter(layer => this.#isConsumerLayer(layer))
 
         const ordered: BaseLayerType[] = []
         const used = new Set<BaseLayerType>()
 
         for (const name of names) {
-            const layer = consumerLayers.find((l) => l.get('name') === name)
+            const layer = consumerLayers.find(l => l.get('name') === name)
 
             if (!layer) {
                 console.warn(`setLayerOrder: no consumer layer named "${name}"`)
@@ -251,12 +302,12 @@ export class MapService {
         }
 
         let consumerIndex = 0
-        const rebuilt = snapshot.map((layer) =>
-            this.#isConsumerLayer(layer) ? ordered[consumerIndex++] : layer,
+        const rebuilt = snapshot.map(layer =>
+            this.#isConsumerLayer(layer) ? ordered[consumerIndex++] : layer
         )
 
         layers.clear()
-        rebuilt.forEach((layer) => {
+        rebuilt.forEach(layer => {
             layers.push(layer)
         })
     }
@@ -295,7 +346,7 @@ export class MapService {
 
     /** Removes every consumer-added layer; built-in layers are untouched. */
     clearLayers() {
-        this.getLayers().forEach((layer) => {
+        this.getLayers().forEach(layer => {
             this.#map.removeLayer(layer)
         })
     }
@@ -316,11 +367,7 @@ export class MapService {
         const { projection, ...fitOptions } = options
 
         const targetExtent = projection
-            ? transformExtent(
-                  extent,
-                  projection,
-                  this.#map.getView().getProjection(),
-              )
+            ? transformExtent(extent, projection, this.#map.getView().getProjection())
             : extent
 
         this.#map.getView().fit(targetExtent, fitOptions)
@@ -344,11 +391,9 @@ export class MapService {
 
         return {
             canvases: Array.from(
-                viewport?.querySelectorAll('canvas') ?? [],
+                viewport?.querySelectorAll('canvas') ?? []
             ) as HTMLCanvasElement[],
-            svgs: Array.from(
-                viewport?.querySelectorAll('svg') ?? [],
-            ) as SVGElement[],
+            svgs: Array.from(viewport?.querySelectorAll('svg') ?? []) as SVGElement[],
         }
     }
 
@@ -378,7 +423,7 @@ export class MapService {
     }
 
     renderComplete(): Promise<void> {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             this.#map.once('rendercomplete', () => resolve())
             this.refresh()
         })
@@ -395,10 +440,7 @@ export class MapService {
      * `options.duration` ms when given, otherwise jumps immediately.
      */
     setCenter(lon: number, lat: number, options: AnimationOptions = {}) {
-        const center = fromLonLat(
-            [lon, lat],
-            this.#map.getView().getProjection(),
-        )
+        const center = fromLonLat([lon, lat], this.#map.getView().getProjection())
 
         if (options.duration) {
             this.#map.getView().animate({ center, duration: options.duration })
@@ -460,7 +502,7 @@ export class MapService {
                 bounds.getEast(),
                 bounds.getNorth(),
             ],
-            { projection: 'EPSG:4326', ...options },
+            { projection: 'EPSG:4326', ...options }
         )
     }
 
@@ -470,7 +512,7 @@ export class MapService {
         const bbox4326 = transformExtent(
             extent,
             this.#map.getView().getProjection(),
-            'EPSG:4326',
+            'EPSG:4326'
         )
 
         return new LatLngBounds(bbox4326)
@@ -525,7 +567,7 @@ export class MapService {
         try {
             const locationParts = location
                 .split(',')
-                .map((part) => parseFloat(part.trim()))
+                .map(part => parseFloat(part.trim()))
 
             // handle lat/lng points
             if (locationParts.length === 2) {
@@ -543,7 +585,7 @@ export class MapService {
             }
 
             throw new Error(
-                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`,
+                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`
             )
         } catch (e) {
             throw new BadRequestException({
@@ -637,6 +679,7 @@ export class MapService {
         const graticuleLayer = this.#createGraticuleLayer(options)
         const drawLayer = this.#createDrawLayer()
         this.#shapeLayer = this.#createShapeLayer()
+        this.#boundaryLayer = this.#createBoundaryLayer()
 
         const projection = getProjection(options.projection ?? 'EPSG:3857')
         const worldExtent = projection?.getExtent()
@@ -649,6 +692,7 @@ export class MapService {
                 labelsLayer,
                 graticuleLayer,
                 this.#shapeLayer,
+                this.#boundaryLayer,
                 drawLayer,
             ],
             view: new View({
@@ -671,7 +715,7 @@ export class MapService {
             const coordinate = toLonLat(event.coordinate)
             options.onMouseMove?.(
                 coordinate as [number, number],
-                event.pixel as [number, number],
+                event.pixel as [number, number]
             )
         })
 
@@ -684,12 +728,7 @@ export class MapService {
 
             map.forEachFeatureAtPixel(pixel, (feature, layer) => {
                 if (layer && this.#isConsumerLayer(layer)) {
-                    options.onLayerClick?.(
-                        feature,
-                        layer.get('name'),
-                        latLng,
-                        pixel,
-                    )
+                    options.onLayerClick?.(feature, layer.get('name'), latLng, pixel)
                 }
             })
         })
@@ -707,10 +746,7 @@ export class MapService {
             const center = view.getCenter()
 
             if (center) {
-                options.onMoveEnd?.(
-                    this.#toLatLng(center, map),
-                    view.getZoom() ?? 0,
-                )
+                options.onMoveEnd?.(this.#toLatLng(center, map), view.getZoom() ?? 0)
             }
         })
 
@@ -755,7 +791,7 @@ export class MapService {
                     const bbox4326 = transformExtent(
                         extent,
                         viewProjection,
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
@@ -764,15 +800,13 @@ export class MapService {
                         bounds: new LatLngBounds(bbox4326),
                     })
                 } else if (geometry instanceof Polygon) {
-                    const coordinates = geometry
-                        .getCoordinates()[0]
-                        .slice(0, -1) // remove last point (duplicate of first)
+                    const coordinates = geometry.getCoordinates()[0].slice(0, -1) // remove last point (duplicate of first)
 
                     const latLngs = coordinates.map(([x, y]) => {
                         const [lng, lat] = transform(
                             [x, y],
                             viewProjection,
-                            'EPSG:4326',
+                            'EPSG:4326'
                         )
                         return new LatLng(lat, lng)
                     })
@@ -784,11 +818,7 @@ export class MapService {
                     })
                 } else if (geometry instanceof Point) {
                     const coords = geometry.getCoordinates()
-                    const [lng, lat] = transform(
-                        coords,
-                        viewProjection,
-                        'EPSG:4326',
-                    )
+                    const [lng, lat] = transform(coords, viewProjection, 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -800,7 +830,7 @@ export class MapService {
                     const [lng, lat] = transform(
                         geometry.getCenter(),
                         viewProjection,
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
@@ -865,6 +895,20 @@ export class MapService {
         return layer
     }
 
+    /** Holds boundary outline features drawn by `addLayer(..., { extent })`. */
+    #createBoundaryLayer() {
+        const source = new VectorSource()
+
+        const layer = new VectorLayer({
+            source,
+        })
+
+        layer.set('name', 'boundaries')
+        layer.set('__builtin', true)
+
+        return layer
+    }
+
     #updateMapSizeOnResize() {
         if (isResizeObserverSupported()) {
             // anytime the element is resized, update the map size
@@ -880,7 +924,7 @@ export class MapService {
         return this.#map
             .getLayers()
             .getArray()
-            .find((layer) => layer.get('name') === name)
+            .find(layer => layer.get('name') === name)
     }
 
     /**
@@ -899,7 +943,7 @@ export class MapService {
         const [lng, lat] = transform(
             coordinate,
             map.getView().getProjection(),
-            'EPSG:4326',
+            'EPSG:4326'
         )
 
         return new LatLng(lat, lng)

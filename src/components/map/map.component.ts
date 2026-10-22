@@ -304,7 +304,16 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         config: MapLayerConfig,
         result: MapLayerResult,
     ) {
-        this.addLayer(result.layer, { name, position: config.position })
+        this.addLayer(result.layer, {
+            name,
+            position: config.position,
+            ...(config.type === 'gibs'
+                ? {
+                      showBoundary: config.showBoundary,
+                      boundaryColorIndex: config.boundaryColorIndex,
+                  }
+                : {}),
+        })
         result.layer.setVisible(config.visible ?? true)
 
         if (config.type === 'geotiff' && result.type === 'geotiff') {

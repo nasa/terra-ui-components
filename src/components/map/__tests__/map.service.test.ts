@@ -11,9 +11,10 @@ import VectorSource from 'ol/source/Vector.js'
 import Draw from 'ol/interaction/Draw.js'
 import Collection from 'ol/Collection.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
-import type { Projection } from 'ol/proj.js'
+import { transformExtent, type Projection } from 'ol/proj.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
+import { Stroke, Style } from 'ol/style.js'
 
 describe('Map Service', () => {
     let el: HTMLElement
@@ -179,8 +180,8 @@ describe('Map Service', () => {
 
     describe('addLayer / removeLayer / getLayer', () => {
         it('inserts a custom layer below the borders layer by default', () => {
-            // the map is created with 6 built-in layers (base, borders,
-            // labels, graticule, shapes, draw), with borders at index 1
+            // the map is created with 7 built-in layers (base, borders,
+            // labels, graticule, shapes, boundaries, draw), with borders at index 1
             const insertAtSpy = sinon.spy(Collection.prototype, 'insertAt')
             const customLayer = new VectorLayer({ source: new VectorSource() })
 
@@ -195,9 +196,10 @@ describe('Map Service', () => {
 
             service.addLayer(customLayer, { name: 'custom-top', position: 'top' })
 
-            // 6 built-in layers occupy indices 0-5, so pushing onto the end
-            // inserts at index 6
-            expect(insertAtSpy.calledWith(6, customLayer)).to.be.true
+            // 7 built-in layers occupy indices 0-6 (base, borders, labels,
+            // graticule, shapes, boundaries, draw), so pushing onto the end
+            // inserts at index 7
+            expect(insertAtSpy.calledWith(7, customLayer)).to.be.true
         })
 
         it('finds a named layer with getLayer', () => {
@@ -215,6 +217,138 @@ describe('Map Service', () => {
             service.removeLayer('custom')
 
             expect(service.getLayer('custom')).to.be.undefined
+        })
+    })
+
+    describe('layer boundaries (extent outlines)', () => {
+        function boundaryFeatures() {
+            const boundaryLayer = service.getLayer('boundaries') as VectorLayer
+            return boundaryLayer.getSource()!.getFeatures()
+        }
+
+        it('draws a boundary feature when extent is given', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+            })
+
+            const features = boundaryFeatures()
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('custom')
+        })
+
+        it('adds no boundary feature when extent is omitted', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(boundaryFeatures().length).to.equal(0)
+        })
+
+        it("removes only the removed layer's boundary feature", () => {
+            const layerA = new VectorLayer({ source: new VectorSource() })
+            const layerB = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(layerA, { name: 'a', extent: [-10, -10, 10, 10] })
+            service.addLayer(layerB, { name: 'b', extent: [-20, -20, 20, 20] })
+
+            service.removeLayer('a')
+
+            const features = boundaryFeatures()
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('b')
+        })
+
+        it('removing a layer with no boundary does not throw', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(() => service.removeLayer('custom')).to.not.throw()
+        })
+
+        it('styles the boundary feature by boundaryColorIndex', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                boundaryColorIndex: 1,
+            })
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect((style.getStroke() as Stroke).getColor()).to.equal(
+                'rgba(52, 152, 219, 1)'
+            )
+        })
+
+        it('defaults boundaryColorIndex to 0', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+            })
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect((style.getStroke() as Stroke).getColor()).to.equal(
+                'rgba(46, 204, 113, 1)'
+            )
+        })
+
+        it('draws a boundary from a sourceExtent tag on the layer when extent is omitted', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            customLayer.set('sourceExtent', [-10, -10, 10, 10])
+
+            service.addLayer(customLayer, { name: 'custom' })
+
+            const features = boundaryFeatures()
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('custom')
+        })
+
+        it('prefers an explicit extent over a sourceExtent tag', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            customLayer.set('sourceExtent', [-10, -10, 10, 10])
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-20, -20, 20, 20],
+            })
+
+            const expected = transformExtent(
+                [-20, -20, 20, 20],
+                'EPSG:4326',
+                'EPSG:3857'
+            )
+            const actual = boundaryFeatures()[0].getGeometry()!.getExtent()
+
+            expect(actual[0]).to.be.closeTo(expected[0]!, 1)
+            expect(actual[1]).to.be.closeTo(expected[1]!, 1)
+            expect(actual[2]).to.be.closeTo(expected[2]!, 1)
+            expect(actual[3]).to.be.closeTo(expected[3]!, 1)
+        })
+
+        it('suppresses the boundary when showBoundary is false, even with a sourceExtent tag', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            customLayer.set('sourceExtent', [-10, -10, 10, 10])
+
+            service.addLayer(customLayer, { name: 'custom', showBoundary: false })
+
+            expect(boundaryFeatures().length).to.equal(0)
+        })
+
+        it('suppresses the boundary when showBoundary is false, even with an explicit extent', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                showBoundary: false,
+            })
+
+            expect(boundaryFeatures().length).to.equal(0)
         })
     })
 

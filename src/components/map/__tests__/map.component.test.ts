@@ -125,6 +125,98 @@ describe('<terra-map> layers (gibs)', () => {
         })
     })
 
+    describe('showBoundary', () => {
+        function boundaryFeatures(el: TerraMap) {
+            const boundaryLayer = el.getLayer('boundaries') as VectorLayer
+            return boundaryLayer.getSource()!.getFeatures()
+        }
+
+        it('draws a boundary feature for an entry with showBoundary and extent', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    extent: [-10, -10, 10, 10],
+                    showBoundary: true,
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+
+            const features = boundaryFeatures(el)
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('imagery')
+        })
+
+        it('draws a boundary feature for an entry with extent when showBoundary is omitted', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    extent: [-10, -10, 10, 10],
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+
+            const features = boundaryFeatures(el)
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('imagery')
+        })
+
+        it('does not draw a boundary feature when showBoundary is false, even with an extent', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    extent: [-10, -10, 10, 10],
+                    showBoundary: false,
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+
+            expect(boundaryFeatures(el).length).to.equal(0)
+        })
+
+        it('does not draw a boundary feature when showBoundary is set without an extent', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    showBoundary: true,
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+
+            expect(boundaryFeatures(el).length).to.equal(0)
+        })
+
+        it('removes the boundary feature when the layer entry is removed', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    extent: [-10, -10, 10, 10],
+                    showBoundary: true,
+                },
+            ]
+            await waitUntil(() => boundaryFeatures(el).length === 1)
+
+            el.layers = []
+            await waitUntil(() => !el.getLayer('imagery'))
+
+            expect(boundaryFeatures(el).length).to.equal(0)
+        })
+    })
+
     describe('forProjection (async, non-EPSG:3857)', () => {
         it('adds the resolved layer once the GetCapabilities fetch completes', async () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
