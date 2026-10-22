@@ -1392,6 +1392,75 @@ describe('<terra-date-picker>', () => {
         })
     })
 
+    describe('Timezone and Preset Time Handling', () => {
+        it('should normalize preset times to midnight and 23:59:59 in the configured timezone', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    show-presets
+                    range
+                    timezone="UTC"
+                    inline
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            const presetButtons = el.shadowRoot?.querySelectorAll(
+                '.date-picker__preset',
+            )
+
+            const todayPreset = Array.from(presetButtons || []).find(
+                (btn: any) => btn.textContent?.trim() === 'Today',
+            ) as HTMLElement
+
+            // Click preset
+            todayPreset.click()
+            await elementUpdated(el)
+            
+            const event = await eventPromise
+
+            // Verify emitted times align precisely with midnight and 23:59:59 bounds
+            expect(event.detail.startDate).to.include('T00:00:00')
+            expect(event.detail.endDate).to.include('T23:59:59')
+        })
+
+        it('should correctly roll over the UTC day when local time plus offset exceeds midnight', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    range
+                    timezone="America/New_York"
+                    inline
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            // Simulate the user selecting Febuary 24, 2025 in local time (EST), which is UTC-5
+            el.selectedStart = new Date(Date.UTC(2025, 1, 24))
+            el.selectedEnd = new Date(Date.UTC(2025, 1, 24))
+            
+            // Simulate a UTC hour that corresponds to late night local time
+            // e.g., 02:30 AM UTC the next day translates to 10:30 PM EST
+            el.startHour = 2
+            el.startMinute = 30
+            el.startSecond = 0
+            el.endHour = 2
+            el.endMinute = 30
+            el.endSecond = 0
+            
+            el.emitChange()
+            
+            const event = await eventPromise
+            
+            // The emitted UTC string should mathematically roll the calendar day over to the 25th
+            expect(event.detail.startDate).to.include('2025-02-25')
+            expect(event.detail.endDate).to.include('2025-02-25')
+        })
+    })
+
     describe('Split Inputs', () => {
         it('should show two inputs when split-inputs and range are true', async () => {
             const el: any = await fixture(html`

@@ -1720,6 +1720,25 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
+        if (this.enableTime) {
+            if (startDate) {
+                // Normalize local date to UTC midnight to match manual date parsing
+                // startDate = new Date(Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()))
+                const startUtc = this.getUtcTimeFromDisplay(0, 0, 0, startDate)
+                this.startHour = startUtc.hour
+                this.startMinute = startUtc.minute
+                this.startSecond = startUtc.second
+            }
+            if (endDate) {
+                // Normalize local date to UTC midnight to match manual date parsing
+                // endDate = new Date(Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()))
+                const endUtc = this.getUtcTimeFromDisplay(23, 59, 59, endDate)
+                this.endHour = endUtc.hour
+                this.endMinute = endUtc.minute
+                this.endSecond = endUtc.second
+            }
+        }
+
         this.emitChange()
         if (!this.range && !this.inline) {
             this.isOpen = false
@@ -1732,45 +1751,63 @@ export default class TerraDatePicker extends TerraElement {
 
         if (this.selectedStart) {
             if (this.enableTime) {
-                const startDate = new Date(this.selectedStart)
-                startDate.setUTCHours(
+                // Get the local time the user thinks they chose
+                const startDisplay = this.getDisplayTimeComponents(
                     this.startHour,
                     this.startMinute,
                     this.startSecond,
-                    0,
+                    this.selectedStart,
+                )
+                const offsetMinutes = this.getTimezoneOffsetMinutes(this.selectedStart)
+                
+                // Construct the true UTC timestamp using the calendar date + local time + offset
+                const startDate = new Date(
+                    Date.UTC(
+                        this.selectedStart.getUTCFullYear(),
+                        this.selectedStart.getUTCMonth(),
+                        this.selectedStart.getUTCDate(),
+                        startDisplay.hour,
+                        startDisplay.minute - offsetMinutes, // Math shifts the day safely!
+                        startDisplay.second,
+                        0,
+                    ),
                 )
                 startDateTime = startDate.toISOString()
             } else {
-                // Format using local date components to avoid timezone conversion issues
                 const year = this.selectedStart.getFullYear()
-                const month = String(
-                    this.selectedStart.getMonth() + 1,
-                ).padStart(2, '0')
-                const day = String(this.selectedStart.getDate()).padStart(
-                    2,
-                    '0',
-                )
+                const month = String(this.selectedStart.getMonth() + 1).padStart(2, '0')
+                const day = String(this.selectedStart.getDate()).padStart(2, '0')
                 startDateTime = `${year}-${month}-${day}`
             }
         }
 
         if (this.selectedEnd) {
             if (this.enableTime) {
-                const endDate = new Date(this.selectedEnd)
-                endDate.setUTCHours(
+                // Get the local time the user thinks they chose
+                const endDisplay = this.getDisplayTimeComponents(
                     this.endHour,
                     this.endMinute,
                     this.endSecond,
-                    0,
+                    this.selectedEnd,
+                )
+                const offsetMinutes = this.getTimezoneOffsetMinutes(this.selectedEnd)
+                
+                // Construct the true UTC timestamp using the calendar date + local time + offset
+                const endDate = new Date(
+                    Date.UTC(
+                        this.selectedEnd.getUTCFullYear(),
+                        this.selectedEnd.getUTCMonth(),
+                        this.selectedEnd.getUTCDate(),
+                        endDisplay.hour,
+                        endDisplay.minute - offsetMinutes,
+                        endDisplay.second,
+                        0,
+                    ),
                 )
                 endDateTime = endDate.toISOString()
             } else {
-                // Format using local date components to avoid timezone conversion issues
                 const year = this.selectedEnd.getFullYear()
-                const month = String(this.selectedEnd.getMonth() + 1).padStart(
-                    2,
-                    '0',
-                )
+                const month = String(this.selectedEnd.getMonth() + 1).padStart(2, '0')
                 const day = String(this.selectedEnd.getDate()).padStart(2, '0')
                 endDateTime = `${year}-${month}-${day}`
             }
