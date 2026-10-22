@@ -34,14 +34,14 @@ The `<terra-data-subsetter-history>` component displays a floating panel showing
 
 ## Best Practices
 
--   Use `always-show` if you want to encourage new users to create their first request.
--   Place the component once per page, typically at the root level, to avoid duplicate panels.
--   Clicking a job opens the full job details in a dialog for review or re-download.
+- Use `always-show` if you want to encourage new users to create their first request.
+- Place the component once per page, typically at the root level, to avoid duplicate panels.
+- Clicking a job opens the full job details in a dialog for review or re-download.
 
 ## Accessibility
 
--   The panel and dialog are keyboard accessible.
--   All interactive elements have clear focus indicators.
--   Uses ARIA roles and labels for screen readers.
+- The panel and dialog are keyboard accessible.
+- All interactive elements have clear focus indicators.
+- Uses ARIA roles and labels for screen readers.
 
 [component-metadata:terra-data-subsetter-history]

@@ -204,19 +204,19 @@ Tabs can also be used to toggle between different views of the same content set.
 
 ## Best Practices
 
--   Use tabs to organize related content into distinct sections
--   Keep tab labels concise and descriptive
--   Don't use tabs to switch between drastically different types of content
--   Use large tabs by default; use small tabs in dense UIs
--   For icon-only tabs, ensure icons are recognizable and have tooltips or labels for accessibility
+- Use tabs to organize related content into distinct sections
+- Keep tab labels concise and descriptive
+- Don't use tabs to switch between drastically different types of content
+- Use large tabs by default; use small tabs in dense UIs
+- For icon-only tabs, ensure icons are recognizable and have tooltips or labels for accessibility
 
 ## Accessibility
 
 Tabs are fully keyboard accessible:
 
--   Use arrow keys to navigate between tabs
--   Press Enter or Space to activate a tab
--   Press Home to jump to the first tab
--   Press End to jump to the last tab
+- Use arrow keys to navigate between tabs
+- Press Enter or Space to activate a tab
+- Press Home to jump to the first tab
+- Press End to jump to the last tab
 
 Tabs use proper ARIA attributes for screen readers and maintain focus management for keyboard navigation.

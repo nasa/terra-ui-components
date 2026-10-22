@@ -11,13 +11,13 @@ describe('projections', () => {
         expect(getProjection('EPSG:3031')).to.exist
     })
 
-    it('should set a world extent on EPSG:3413, matching GIBS/NASA\'s examples', () => {
+    it("should set a world extent on EPSG:3413, matching GIBS/NASA's examples", () => {
         expect(getProjection('EPSG:3413')!.getExtent()).to.deep.equal([
             -4194304, -4194304, 4194304, 4194304,
         ])
     })
 
-    it('should set a world extent on EPSG:3031, matching GIBS/NASA\'s examples', () => {
+    it("should set a world extent on EPSG:3031, matching GIBS/NASA's examples", () => {
         expect(getProjection('EPSG:3031')!.getExtent()).to.deep.equal([
             -4194304, -4194304, 4194304, 4194304,
         ])
