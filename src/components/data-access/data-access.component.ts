@@ -40,6 +40,8 @@ import type { UmmG } from '../../apis/types/cmr/umm-g.js'
 import { RelatedURLTypeEnum } from '../../apis/types/cmr/umm-g.js'
 import DataAccessService from './data-access.service.js'
 import { CollectionController } from '../../controllers/collection.controller.js'
+import { map } from 'lit/directives/map.js'
+import type { LatLngBounds } from '../../components/map/models/LatLngBounds.js'
 
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
@@ -167,7 +169,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         return maxDateStr ? new Date(maxDateStr) : null
     }
 
-    get spatialConstraints(): string {
+    get spatialConstraints(): LatLngBounds[] {
         return this.#collectionController.spatialConstraints
     }
 
@@ -783,9 +785,12 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 @terra-map-change=${this.#handleMapChange}
                             >
                                 <p class="available-range" slot="additional-text">
-                                    <strong>Available range:</strong> ${
-                                        this.spatialConstraints
-                                    }
+                                    <strong>Available range(s):</strong> 
+                                    ${map(this.spatialConstraints, (spatialConstraint) => html`
+                                        <p class="available-range">
+                                        ${spatialConstraint.toBBoxString()},
+                                        </p>
+                                    `)}
                                 </p>
                             </terra-spatial-picker>
                         </div>
