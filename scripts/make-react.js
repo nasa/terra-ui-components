@@ -4,6 +4,7 @@ import path from 'path'
 import { deleteSync } from 'del'
 import prettier from 'prettier'
 import { default as prettierConfig } from '@gesdisc/prettier-config/index.json' with { type: 'json' }
+import { pascalCase } from 'pascal-case'
 import { getAllComponents } from './shared.js'
 
 const { outdir } = commandLineArgs({ name: 'outdir', type: String })
@@ -27,26 +28,27 @@ for await (const component of components) {
     const componentFile = path.join(componentDir, 'index.ts')
     const importPath = component.path.replace(/\.js$/, '.component.js')
     const eventImports = (component.events || [])
-        .map(
-            event =>
-                `import type { ${event.eventName} } from '../../events/events.js';`
-        )
+        .map(event => {
+            const eventName = event.eventName || `${pascalCase(event.name)}Event`
+            return `import type { ${eventName} } from '../../events/events.js';`
+        })
         .join('\n')
     const eventExports = (component.events || [])
-        .map(
-            event =>
-                `export type { ${event.eventName} } from '../../events/events.js';`
-        )
+        .map(event => {
+            const eventName = event.eventName || `${pascalCase(event.name)}Event`
+            return `export type { ${eventName} } from '../../events/events.js';`
+        })
         .join('\n')
     const eventNameImport =
         (component.events || []).length > 0
             ? `import { type EventName } from '@lit/react';`
             : ``
     const events = (component.events || [])
-        .map(
-            event =>
-                `${event.reactName}: '${event.name}' as EventName<${event.eventName}>`
-        )
+        .map(event => {
+            const eventName = event.eventName || `${pascalCase(event.name)}Event`
+            const reactName = event.reactName || `on${pascalCase(event.name)}`
+            return `${reactName}: '${event.name}' as EventName<${eventName}>`
+        })
         .join(',\n')
 
     fs.mkdirSync(componentDir, { recursive: true })
