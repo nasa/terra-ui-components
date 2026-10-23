@@ -72,8 +72,8 @@ export default class TerraFileUpload extends TerraElement {
     @property({ type: Number, attribute: 'max-files' }) maxFiles?: number
 
     @state() private mobile =
-            window.matchMedia('(max-width: 768px)').matches ||
-            navigator.maxTouchPoints > 0;
+        window.matchMedia('(max-width: 768px)').matches ||
+        navigator.maxTouchPoints > 0
 
     connectedCallback() {
         super.connectedCallback()
@@ -230,20 +230,25 @@ export default class TerraFileUpload extends TerraElement {
         const fileCount = this.files.length
         return html`
             <div class="file-upload-wrapper">
-                ${this.label
-                    ? html`
+                ${
+                    this.label
+                        ? html`
                           <label for="file-input" class="file-upload__label">
                               ${this.label}
-                              ${this.required
-                                  ? html`<span class="file-upload__required-indicator"
+                              ${
+                                  this.required
+                                      ? html`<span class="file-upload__required-indicator"
                                         >*</span
                                     >`
-                                  : ''}
+                                      : ''
+                              }
                           </label>
                       `
-                    : ''}
-                ${hasFiles
-                    ? html`
+                        : ''
+                }
+                ${
+                    hasFiles
+                        ? html`
                           <div class="file-upload__preview">
                               <div class="file-upload__preview-header">
                                   <strong class="file-upload__file-count"
@@ -267,8 +272,9 @@ export default class TerraFileUpload extends TerraElement {
                                               class="file-upload__file-item"
                                               part="file-item"
                                           >
-                                              ${file.preview
-                                                  ? html`
+                                              ${
+                                                  file.preview
+                                                      ? html`
                                                         <img
                                                             part="file-thumbnail"
                                                             class="file-upload__thumbnail"
@@ -276,7 +282,7 @@ export default class TerraFileUpload extends TerraElement {
                                                             alt=${file.name}
                                                         />
                                                     `
-                                                  : html`
+                                                      : html`
                                                         <div
                                                             class="file-upload__thumbnail file-upload__thumbnail--placeholder"
                                                         >
@@ -303,7 +309,8 @@ export default class TerraFileUpload extends TerraElement {
                                                                 />
                                                             </svg>
                                                         </div>
-                                                    `}
+                                                    `
+                                              }
                                               <span
                                                   part="file-name"
                                                   class="file-upload__file-name"
@@ -315,7 +322,7 @@ export default class TerraFileUpload extends TerraElement {
                               </div>
                           </div>
                       `
-                    : html`
+                        : html`
                           <div
                               part="dropzone"
                               class=${classMap({
@@ -342,9 +349,7 @@ export default class TerraFileUpload extends TerraElement {
                           >
                               <slot>
                                   <span class="file-upload__dropzone-text">
-                                      ${this.mobile 
-                                        ? '' 
-                                        : 'Drag files here or'}
+                                      ${this.mobile ? '' : 'Drag files here or'}
                                       <button
                                           type="button"
                                           class="file-upload__browse-link"
@@ -353,14 +358,17 @@ export default class TerraFileUpload extends TerraElement {
                                               this.handleClick()
                                           }}
                                       >
-                                          ${this.mobile 
-                                            ? 'Choose from folder'
-                                            : 'choose from folder'}
+                                          ${
+                                              this.mobile
+                                                  ? 'Choose from folder'
+                                                  : 'choose from folder'
+                                          }
                                       </button>
                                   </span>
                               </slot>
                           </div>
-                      `}
+                      `
+                }
 
                 <input
                     part="file-input"
@@ -376,9 +384,11 @@ export default class TerraFileUpload extends TerraElement {
                     tabindex="-1"
                 />
 
-                ${this.helpText
-                    ? html`<div class="file-upload__help-text">${this.helpText}</div>`
-                    : ''}
+                ${
+                    this.helpText
+                        ? html`<div class="file-upload__help-text">${this.helpText}</div>`
+                        : ''
+                }
             </div>
         `
     }

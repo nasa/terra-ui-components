@@ -141,8 +141,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     cloudCoverSliderRef = createRef<TerraSlider>()
     gridRef = createRef<TerraDataGrid<UmmResult<UmmG>>>()
 
-    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null =
-        null
+    #boundHandleCloudCoverClickOutside: ((event: MouseEvent) => void) | null = null
 
     #collectionController = new CollectionController(this, {
         getCollectionEntryId: () => this.collectionEntryId,
@@ -189,6 +188,17 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         return this.#collectionController.spatialConstraints
     }
 
+    disconnectedCallback(): void {
+        super.disconnectedCallback()
+        if (this.#boundHandleCloudCoverClickOutside) {
+            document.removeEventListener(
+                'click',
+                this.#boundHandleCloudCoverClickOutside
+            )
+            this.#boundHandleCloudCoverClickOutside = null
+        }
+    }
+
     #handleCloudCoverClickOutside(event: MouseEvent) {
         const target = event.target as Node
         const dropdown = this.shadowRoot?.querySelector('.cloud-cover-dropdown')
@@ -202,7 +212,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside,
+                this.#boundHandleCloudCoverClickOutside
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -244,8 +254,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                         sortDirection: params.sortModel?.[0]?.sort ?? 'asc',
                     })
 
-                    const data =
-                        await this.queryClient.ensureQueryData(queryOptions)
+                    const data = await this.queryClient.ensureQueryData(queryOptions)
 
                     if (data?.hits === undefined || !data?.items) {
                         // TODO: handle this case, show an error? likely means the request failed because CMR is down
@@ -264,7 +273,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     this.estimatedSize = this.service.getEstimatedGranuleSize(
                         firstGranule,
                         lastGranule,
-                        this.totalGranules,
+                        this.totalGranules
                     )
 
                     const lastRow = data.hits <= params.endRow ? data.hits : -1
@@ -286,16 +295,13 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 field: 'umm.GranuleUR',
                 headerName: 'Title',
                 flex: 3,
-                cellRenderer: (
-                    params: ICellRendererParams<UmmResult<UmmG>>,
-                ) => {
+                cellRenderer: (params: ICellRendererParams<UmmResult<UmmG>>) => {
                     if (!params.data) {
                         return ''
                     }
 
                     const url = params.data.umm.RelatedUrls?.find(
-                        (relatedUrl) =>
-                            relatedUrl.Type === RelatedURLTypeEnum.GetData,
+                        relatedUrl => relatedUrl.Type === RelatedURLTypeEnum.GetData
                     )?.URL
 
                     if (url) {
@@ -316,7 +322,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             {
                 colId: 'umm.DataGranule.Size',
                 headerName: 'Size (MB)',
-                valueGetter: (g) => {
+                valueGetter: g => {
                     if (!g.data) {
                         return undefined
                     }
@@ -420,8 +426,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 this.searchParams.location.type === MapEventType.BBOX &&
                 this.searchParams.location.bounds
             ) {
-                const boundsStr =
-                    this.searchParams.location.bounds.toBBoxString()
+                const boundsStr = this.searchParams.location.bounds.toBBoxString()
                 const coords = boundsStr
                     .split(',')
                     .map((c: string) => parseFloat(c.trim()))
@@ -473,7 +478,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                         this.#handleCloudCoverClickOutside.bind(this)
                     document.addEventListener(
                         'click',
-                        this.#boundHandleCloudCoverClickOutside,
+                        this.#boundHandleCloudCoverClickOutside
                     )
                 }
             } else {
@@ -481,7 +486,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                 if (this.#boundHandleCloudCoverClickOutside) {
                     document.removeEventListener(
                         'click',
-                        this.#boundHandleCloudCoverClickOutside,
+                        this.#boundHandleCloudCoverClickOutside
                     )
                     this.#boundHandleCloudCoverClickOutside = null
                 }
@@ -496,7 +501,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         if (this.#boundHandleCloudCoverClickOutside) {
             document.removeEventListener(
                 'click',
-                this.#boundHandleCloudCoverClickOutside,
+                this.#boundHandleCloudCoverClickOutside
             )
             this.#boundHandleCloudCoverClickOutside = null
         }
@@ -527,12 +532,12 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         event.stopPropagation()
 
         const response = await fetch(
-            getBasePath('assets/data-access/download_files.py.txt'),
+            getBasePath('assets/data-access/download_files.py.txt')
         )
 
         if (!response.ok) {
             alert(
-                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime',
+                'Sorry, there was a problem generating the Python script. We are investigating the issue.\nYou could try using the Jupyter Notebook in the meantime'
             )
         }
 
@@ -549,8 +554,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                     this.searchParams.location.bounds
                 ) {
                     // toBBoxString returns west,south,east,north
-                    const boundsStr =
-                        this.searchParams.location.bounds.toBBoxString()
+                    const boundsStr = this.searchParams.location.bounds.toBBoxString()
                     // Remove spaces and split to verify format
                     const coords = boundsStr
                         .split(',')
@@ -585,20 +589,18 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
             .replace(
                 /{{filter_temporal}}/gi,
                 this.searchParams.startDate && this.searchParams.endDate
-                    ? this.searchParams.startDate +
-                          ',' +
-                          this.searchParams.endDate
-                    : '',
+                    ? this.searchParams.startDate + ',' + this.searchParams.endDate
+                    : ''
             )
             .replace(/{{filter_bbox}}/gi, getBboxString())
             .replace(/{{filter_search}}/gi, this.searchParams.search ?? '')
             .replace(
                 /{{filter_cloud_cover_min}}/gi,
-                this.searchParams.cloudCover?.min?.toString() ?? '',
+                this.searchParams.cloudCover?.min?.toString() ?? ''
             )
             .replace(
                 /{{filter_cloud_cover_max}}/gi,
-                this.searchParams.cloudCover?.max?.toString() ?? '',
+                this.searchParams.cloudCover?.max?.toString() ?? ''
             )
 
         const blob = new Blob([content], { type: 'text/plain' })
@@ -665,7 +667,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                         .value=${this.searchParams.search ?? ''}
                         @input=${(event: Event) => {
                             this.handleSearch(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                             )
                         }}
                     />
@@ -742,12 +744,12 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                           <strong>Available Range:</strong>
                                           ${this.service.formatAvailableRangeDate(
                                               this.granuleMinDate,
-                                              this.isSubDaily,
+                                              this.isSubDaily
                                           )}
                                           -
                                           ${this.service.formatAvailableRangeDate(
                                               this.granuleMaxDate,
-                                              this.isSubDaily,
+                                              this.isSubDaily
                                           )}
                                       </p>`
                                         : nothing
@@ -854,9 +856,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                   <!-- hidden slider to show when clicking the filter -->
                                   <div
                                       class="cloud-cover-dropdown ${
-                                          this.cloudCoverPickerOpen
-                                              ? 'open'
-                                              : ''
+                                          this.cloudCoverPickerOpen ? 'open' : ''
                                       }"
                                       @click=${(e: Event) => e.stopPropagation()}
                                   >
@@ -866,13 +866,11 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                           min=${this.cloudCoverRange?.min}
                                           max=${this.cloudCoverRange?.max}
                                           start-value=${
-                                              this.searchParams.cloudCover
-                                                  ?.min ??
+                                              this.searchParams.cloudCover?.min ??
                                               this.cloudCoverRange?.min
                                           }
                                           end-value=${
-                                              this.searchParams.cloudCover
-                                                  ?.max ??
+                                              this.searchParams.cloudCover?.max ??
                                               this.cloudCoverRange?.max
                                           }
                                           step="0.1"

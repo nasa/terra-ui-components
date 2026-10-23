@@ -63,47 +63,26 @@ export class HarmonyRequestController implements ReactiveController {
         // no-op, required to satisfy ReactiveController interface
     }
 
-    #createJob: MutationController<
-        SubsetJobStatus,
-        Error,
-        CreateHarmonyJobVariables
-    >
+    #createJob: MutationController<SubsetJobStatus, Error, CreateHarmonyJobVariables>
 
     #jobStatus: QueryController<SubsetJobStatus | null>
 
-    #cancelJob: MutationController<
-        SubsetJobStatus,
-        Error,
-        CancelHarmonyJobVariables
-    >
+    #cancelJob: MutationController<SubsetJobStatus, Error, CancelHarmonyJobVariables>
 
-    #resumeJob: MutationController<
-        SubsetJobStatus,
-        Error,
-        ResumeHarmonyJobVariables
-    >
+    #resumeJob: MutationController<SubsetJobStatus, Error, ResumeHarmonyJobVariables>
 
     constructor(private host: ReactiveControllerHost & QueryClientHost) {
         host.addController(this)
 
-        this.#createJob = new MutationController(
-            host,
-            queryCreateHarmonySubsetJob(),
-        )
+        this.#createJob = new MutationController(host, queryCreateHarmonySubsetJob())
 
         this.#jobStatus = new QueryController(host, () =>
-            queryHarmonyJobStatus(this.#jobId, this.#options),
+            queryHarmonyJobStatus(this.#jobId, this.#options)
         )
 
-        this.#cancelJob = new MutationController(
-            host,
-            queryCancelHarmonySubsetJob(),
-        )
+        this.#cancelJob = new MutationController(host, queryCancelHarmonySubsetJob())
 
-        this.#resumeJob = new MutationController(
-            host,
-            queryResumeHarmonySubsetJob(),
-        )
+        this.#resumeJob = new MutationController(host, queryResumeHarmonySubsetJob())
     }
 
     async startJob(variables: CreateHarmonyJobVariables) {
@@ -141,45 +120,45 @@ export class HarmonyRequestController implements ReactiveController {
      * per-user job list to search through the anonymous proxy.
      */
     async #findReusableJob(
-        variables: CreateHarmonyJobVariables,
+        variables: CreateHarmonyJobVariables
     ): Promise<SubsetJobStatus | null> {
         if (!variables.options?.bearerToken) return null
 
         try {
             const { jobs } = await harmonyApi.getJobs(
                 { limit: DEDUPE_SEARCH_LIMIT },
-                variables.options,
+                variables.options
             )
 
             const candidates = jobs
                 .filter(isReusableJobStatus)
-                .map((job) => ({
+                .map(job => ({
                     job,
                     parsedRequest: safeParseRequest(job.request),
                 }))
                 .filter(
                     (
-                        candidate,
+                        candidate
                     ): candidate is {
                         job: SubsetJobStatus
                         parsedRequest: HarmonyRequest
                     } =>
                         candidate.parsedRequest !== null &&
                         candidate.parsedRequest.isEquivalentTo(
-                            variables.harmonyRequest,
-                        ),
+                            variables.harmonyRequest
+                        )
                 )
                 .sort(
                     (a, b) =>
                         new Date(b.job.createdAt).getTime() -
-                        new Date(a.job.createdAt).getTime(),
+                        new Date(a.job.createdAt).getTime()
                 )
 
             return candidates[0]?.job ?? null
         } catch (error) {
             console.warn(
                 'Failed to look up existing Harmony jobs for dedup, falling back to creating a new job',
-                error,
+                error
             )
             return null
         }

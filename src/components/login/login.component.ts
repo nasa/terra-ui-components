@@ -69,7 +69,7 @@ export default class TerraLogin extends TerraElement {
             // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
             const template = this.querySelector<HTMLTemplateElement>(
-                'template[slot="logged-in"]',
+                'template[slot="logged-in"]'
             )
 
             return html`${
@@ -96,11 +96,8 @@ export default class TerraLogin extends TerraElement {
             .replace('{username}', this.#authController.state.user?.uid ?? '')
             .replace(
                 '{first_name}',
-                this.#authController.state.user?.first_name ?? '',
+                this.#authController.state.user?.first_name ?? ''
             )
-            .replace(
-                '{last_name}',
-                this.#authController.state.user?.last_name ?? '',
-            )
+            .replace('{last_name}', this.#authController.state.user?.last_name ?? '')
     }
 }

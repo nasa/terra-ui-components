@@ -15,7 +15,7 @@ export const TIME_SERIES_CACHE_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 function getStartOfUtcDay(date: Date): Date {
     return new Date(
-        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+        Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
     )
 }
 
@@ -28,8 +28,8 @@ function getEndOfUtcDay(date: Date): Date {
             23,
             59,
             59,
-            999,
-        ),
+            999
+        )
     )
 }
 
@@ -37,7 +37,7 @@ export class TimeSeriesCacheService {
     getCacheKeyForVariable(
         variableEntryId: string,
         location?: string,
-        environment?: string,
+        environment?: string
     ): string {
         if (!location) {
             return ''
@@ -45,23 +45,21 @@ export class TimeSeriesCacheService {
 
         const normalizedCoordinates = location
             .split(',')
-            .map((coord) => Number(coord).toFixed(2))
+            .map(coord => Number(coord).toFixed(2))
         const normalizedLocation = normalizedCoordinates.join(',%20')
         const normalizedEnvironment = environment ?? 'prod'
 
         return `${variableEntryId}_${normalizedLocation}_${normalizedEnvironment}`
     }
 
-    async getValidCacheEntry(
-        cacheKey: string,
-    ): Promise<VariableDbEntry | undefined> {
+    async getValidCacheEntry(cacheKey: string): Promise<VariableDbEntry | undefined> {
         if (!cacheKey) {
             return undefined
         }
 
         const existing = await getDataByKey<VariableDbEntry>(
             IndexedDbStores.TIME_SERIES,
-            cacheKey,
+            cacheKey
         )
 
         if (!existing) {
@@ -88,7 +86,7 @@ export class TimeSeriesCacheService {
     calculateDataGaps(
         start: Date,
         end: Date,
-        existingData?: VariableDbEntry,
+        existingData?: VariableDbEntry
     ): Array<{ start: Date; end: Date }> {
         if (!existingData) {
             return [{ start, end }]
@@ -96,9 +94,7 @@ export class TimeSeriesCacheService {
 
         const requestedStart = getStartOfUtcDay(start)
         const requestedEnd = getEndOfUtcDay(end)
-        const existingStartDate = getStartOfUtcDay(
-            new Date(existingData.startDate),
-        )
+        const existingStartDate = getStartOfUtcDay(new Date(existingData.startDate))
         const existingEndDate = getEndOfUtcDay(new Date(existingData.endDate))
         const gaps: Array<{ start: Date; end: Date }> = []
 
@@ -135,19 +131,19 @@ export class TimeSeriesCacheService {
     getDataInRange(
         data: TimeSeriesData,
         startDate: Date,
-        endDate: Date,
+        endDate: Date
     ): TimeSeriesData {
         return {
             ...data,
             data: data.data
-                .filter((row) => {
+                .filter(row => {
                     const timestamp = new Date(row.timestamp)
                     return timestamp >= startDate && timestamp <= endDate
                 })
                 .sort(
                     (a, b) =>
                         new Date(a.timestamp).getTime() -
-                        new Date(b.timestamp).getTime(),
+                        new Date(b.timestamp).getTime()
                 ),
         }
     }
@@ -181,8 +177,7 @@ export class TimeSeriesCacheService {
 
         const sortedData = [...data].sort(
             (a, b) =>
-                new Date(a.timestamp).getTime() -
-                new Date(b.timestamp).getTime(),
+                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         )
 
         // Use the requested range as the stored range when it extends beyond the actual data.
@@ -193,8 +188,8 @@ export class TimeSeriesCacheService {
                 ? new Date(
                       Math.min(
                           requestedStartDate.getTime(),
-                          new Date(sortedData[0].timestamp).getTime(),
-                      ),
+                          new Date(sortedData[0].timestamp).getTime()
+                      )
                   ).toISOString()
                 : sortedData[0]?.timestamp
         const storedEnd =
@@ -203,9 +198,9 @@ export class TimeSeriesCacheService {
                       Math.max(
                           requestedEndDate.getTime(),
                           new Date(
-                              sortedData[sortedData.length - 1].timestamp,
-                          ).getTime(),
-                      ),
+                              sortedData[sortedData.length - 1].timestamp
+                          ).getTime()
+                      )
                   ).toISOString()
                 : sortedData[sortedData.length - 1]?.timestamp
 
@@ -213,20 +208,16 @@ export class TimeSeriesCacheService {
             return
         }
 
-        await storeDataByKey<VariableDbEntry>(
-            IndexedDbStores.TIME_SERIES,
-            cacheKey,
-            {
-                variableEntryId,
-                key: cacheKey,
-                startDate: storedStart,
-                endDate: storedEnd,
-                metadata: metadata as TimeSeriesMetadata,
-                data: sortedData,
-                environment,
-                cachedAt: Date.now(),
-            },
-        )
+        await storeDataByKey<VariableDbEntry>(IndexedDbStores.TIME_SERIES, cacheKey, {
+            variableEntryId,
+            key: cacheKey,
+            startDate: storedStart,
+            endDate: storedEnd,
+            metadata: metadata as TimeSeriesMetadata,
+            data: sortedData,
+            environment,
+            cachedAt: Date.now(),
+        })
     }
 }
 
