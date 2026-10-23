@@ -111,7 +111,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLng(45, 90),
-                    '-180, -90, 180, 90'
+                    [new LatLngBounds([-180, -90, 180, 90])]
                 )
             ).to.be.null
         })
@@ -120,7 +120,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLng(45, 90),
-                    '0, 0, 10, 10'
+                    [new LatLngBounds([0, 0, 10, 10])]
                 )
             ).to.include('outside the allowed spatial extent')
         })
@@ -129,7 +129,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLngBounds([0, 0, 5, 5]),
-                    '-180, -90, 180, 90'
+                    [new LatLngBounds([-180, -90, 180, 90])]
                 )
             ).to.be.null
         })
@@ -138,7 +138,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLngBounds([-10, -10, 5, 5]),
-                    '0, 0, 10, 10'
+                    [new LatLngBounds([0, 0, 10, 10])]
                 )
             ).to.include('outside the allowed spatial extent')
         })
@@ -147,7 +147,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLng(45, 90),
-                    '-180, -90, 180, 90'
+                    [new LatLngBounds([-180, -90, 180, 90])]
                 )
             ).to.be.null
         })
@@ -213,7 +213,7 @@ describe('SpatialPickerService', () => {
             const result = SpatialPickerService.validate(
                 '45, 90',
                 allowed,
-                '0, 0, 10, 10'
+                [new LatLngBounds([0, 0, 10, 10])]
             )
             expect(result.ok).to.be.false
             if (!result.ok)

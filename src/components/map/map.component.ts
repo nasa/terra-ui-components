@@ -44,6 +44,10 @@ const layersConverter = {
     },
 }
 
+export interface TerraMapReadyEvent extends CustomEvent {
+    detail: undefined
+}
+
 /**
  * @summary A map component for visualizing and selecting coordinates.
  * @documentation https://terra-ui.netlify.app/components/map
@@ -53,6 +57,7 @@ const layersConverter = {
  * @event terra-map-change - Emitted when a point, bounding box, polygon, or circle is drawn/selected. `detail` is a `MapEventDetail` shaped by `detail.type` (`'point'`, `'bbox'`, `'polygon'`, `'circle'`).
  * @event terra-map-pointer-move - Emitted on mouse move over the map (while `show-mouse-coordinates` is set). `detail` is `{ coordinate, pixel }`.
  * @event terra-map-layer-change - Emitted when a declarative `layers` entry finishes building, successfully or not. `detail` is `{ name, type, info? }` on success, or `{ name, type, error }` on failure.
+ * @event terra-map-ready - Emitted when the map has finished initializing and is ready for use.
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -176,13 +181,6 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      */
     @property({ attribute: 'no-world-wrap', type: Boolean })
     noWorldWrap: boolean = false
-
-    /**
-     * Spatial constraints for the map (default: '-180, -90, 180, 90')
-     * Format: 'west, south, east, north'
-     */
-    @property({ attribute: 'spatial-constraints' })
-    spatialConstraints: string = '-180, -90, 180, 90'
 
     /**
      * The map view's projection. Defaults to `'EPSG:3857'` (Web Mercator).
@@ -450,6 +448,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         if (this.layers.length) {
             this.layersChanged(undefined, this.layers)
         }
+
+        // Emit event indicating that the terra map is now ready.
+        this.dispatchEvent(new CustomEvent('terra-map-ready', {
+            bubbles: true,
+            composed: true
+        }))
     }
 
     updated(changedProps: globalThis.Map<string, unknown>) {

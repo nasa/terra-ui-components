@@ -8,11 +8,17 @@ import TerraDropdown from '../dropdown/dropdown.component.js'
 import TerraInput from '../input/input.component.js'
 import TerraMap from '../map/map.component.js'
 import { LatLng } from '../map/models/LatLng.js'
-import type { LatLngBounds } from '../map/models/LatLngBounds.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
 import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
 import { SpatialPickerService } from './spatial-picker.service.js'
 import styles from './spatial-picker.styles.js'
+import Polygon from 'ol/geom/Polygon.js'
+import Feature from 'ol/Feature.js'
+import VectorLayer from 'ol/layer/Vector.js'
+import VectorSource from 'ol/source/Vector.js'
+import { Style, Stroke, Fill } from 'ol/style.js'
+import { transform } from 'ol/proj.js'
 
 /**
  * @summary A component that allows input of coordinates and rendering of map.
@@ -95,12 +101,98 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Region'
 
+    private _lastConstraints: string = ''
+
     /**
-     * Spatial constraints extent: 'west, south, east, north'.
+     * Spatial constraint extents - JSON string representing an array of
+       bounding boxes: '\[[west, south, east, north]\]'.
      * Draws a visual overlay on the map and rejects draws outside this area.
      */
     @property({ attribute: 'spatial-constraints' })
-    spatialConstraints: string = '-180, -90, 180, 90'
+    set spatialConstraints(value: string | LatLngBounds[]) {
+        if (typeof value === 'string') {
+            const data = JSON.parse(value)
+            this._spatialConstraints = data.map((spatial_constraint_coords: number[]) => {
+                return new LatLngBounds(spatial_constraint_coords)
+            })
+        } else {
+            this._spatialConstraints = value
+        }
+
+        // Only add constraints to map if the constraints actually changed
+        const constraintString = JSON.stringify(this._spatialConstraints)
+        if (constraintString != this._lastConstraints) {
+            this.addSpatialConstraints()
+        }
+        this._lastConstraints = constraintString
+    }
+    get spatialConstraints(): LatLngBounds[] {
+        return this._spatialConstraints
+    }
+    private _spatialConstraints: LatLngBounds[] = [new LatLngBounds([-180, -90, 180, 90])]
+    private _spatial_constraint_layer_names: string[] = []
+
+    addSpatialConstraints() {
+        if (!this.map) return
+
+        if (!this.spatialConstraints.length) return
+
+        if (this.spatialConstraints.length === 1 && SpatialPickerService.spatialConstraintIsGlobal(this.spatialConstraints[0])) return 
+
+        // Remove any existing spatial constraint layers
+        this._spatial_constraint_layer_names.forEach((spatial_constraint_layer_name) => {
+            this.map.removeLayer(spatial_constraint_layer_name)
+        })
+
+        // Add the new spatial constraints
+        for (const [index, spatial_constraint] of this.spatialConstraints.entries()) {
+            // Transform from Spatial constraint's lat/lon (EPSG:4326) to map
+            // coordinates
+            const [westProj, southProj] = transform(
+                [spatial_constraint.getWest(), spatial_constraint.getSouth()],
+                'EPSG:4326',
+                this.map.projection
+            )
+            const [eastProj, northProj] = transform(
+                [spatial_constraint.getEast(), spatial_constraint.getNorth()],
+                'EPSG:4326',
+                this.map.projection
+            )
+
+            // Create a new polygon representing the spatial constraint
+            const constraintPolygon = new Polygon([
+                [
+                    [westProj, northProj],
+                    [westProj, southProj],
+                    [eastProj, southProj],
+                    [eastProj, northProj],
+                    [westProj, northProj],
+                ],
+            ])
+            // Create a vector layer and add it to the map
+            const source = new VectorSource({
+                features: [
+                    new Feature({
+                        geometry: constraintPolygon,
+                    }),
+                ],
+            })
+            const layer = new VectorLayer({
+                source,
+                style: new Style({
+                    stroke: new Stroke({
+                        color: 'rgba(0, 255, 255, 1)',
+                    }),
+                    fill: new Fill({
+                        color: 'rgba(0, 255, 255, 0.3)',
+                    }),
+                }),
+            })
+            let layer_name = 'collection-constraint-' + index
+            this._spatial_constraint_layer_names.push(layer_name)
+            this.map.addLayer(layer, { name: layer_name })
+        }
+    }
 
     @property({ attribute: 'is-expanded', type: Boolean, reflect: true })
     isExpanded: boolean = false
@@ -409,18 +501,24 @@ export default class TerraSpatialPicker extends TerraElement {
             ?show-polygon-selection=${this.showPolygonSelection}
             ?show-point-selection=${this.showPointSelection}
             ?no-world-wrap=${!this.worldWrap}
-            spatial-constraints=${this.spatialConstraints}
             @terra-map-change=${this._handleMapChange}
+            @terra-map-ready=${this.addSpatialConstraints}
         ></terra-map>`
     }
 
     private _inputTemplate(slot?: string) {
+        // Default to global selection unless there is just a single spatial constraint
+        let spatial_selection_placeholder = '-180, -90, 180, 90'
+        if (this.spatialConstraints.length === 1) {
+            spatial_selection_placeholder = this.spatialConstraints[0].toBBoxString()
+        }
+
         return html`<terra-input
             slot=${slot ?? nothing}
             .label=${this.label}
             .hideLabel=${this.hideLabel}
             .value=${SpatialPickerService.serialize(this.initialValue)}
-            placeholder="${this.spatialConstraints}"
+            placeholder="${spatial_selection_placeholder}"
             aria-controls="map"
             aria-expanded=${this.inline ? true : this.isExpanded}
             @terra-input=${this._input}
