@@ -3365,7 +3365,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             this.visibleWebLinksCount >= totalLoaded &&
             !this.#getNextLink()
         ) {
-            message = `Showing all ${totalLoaded.toLocaleString()} currently loaded ${fileNoun} of estimated ${targetTotal.toLocaleString()}. Processing is in progress at ${this.#harmonyRequestController.progress}%.`
+            message = `Showing all ${totalLoaded.toLocaleString()} currently loaded ${fileNoun} of estimated ${targetTotal.toLocaleString()}.`
         } else {
             message = `Showing ${visibleCount.toLocaleString()} of estimated ${targetTotal.toLocaleString()} ${fileNoun}.`
         }
