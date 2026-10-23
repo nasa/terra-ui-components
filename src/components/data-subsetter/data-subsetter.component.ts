@@ -143,12 +143,6 @@ export default class TerraDataSubsetter extends AuthMixin(
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
 
-    @property({
-        attribute: 'bearer-token',
-        converter: undefinedStringConverter,
-    })
-    bearerToken?: string
-
     @property({ attribute: false })
     onLoginClick?: () => void
 

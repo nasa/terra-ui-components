@@ -6,6 +6,7 @@ import { map } from 'lit/directives/map.js'
 import { ref } from 'lit/directives/ref.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
 import TerraIcon from '../icon/icon.js'
@@ -40,7 +41,7 @@ import type { ListItem } from './variable-combobox.types.js'
  *
  * @event terra-combobox-change - Emitted when an option is selected.
  */
-export default class TerraVariableCombobox extends TerraElement {
+export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,

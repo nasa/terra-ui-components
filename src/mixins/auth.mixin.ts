@@ -30,7 +30,8 @@ export function AuthMixin<T extends Constructor<LitElement>>(Base: T) {
          * The token to be used for authentication with remote servers.
          * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
          * The property's value will be inserted after "Bearer" (the authentication scheme).
-         */ @property({
+         */
+        @property({
             attribute: 'bearer-token',
             reflect: false,
             converter: undefinedStringConverter,

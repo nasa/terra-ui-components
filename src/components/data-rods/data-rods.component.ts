@@ -5,6 +5,7 @@ import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-chang
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import { getUTCDate } from '../../utilities/date.js'
 import { getVariableEntryId } from '../../utilities/variable.js'
@@ -28,7 +29,7 @@ import styles from './data-rods.styles.js'
 
 type LastChanged = 'variable' | 'location' | undefined
 
-export default class TerraDataRods extends TerraElement {
+export default class TerraDataRods extends AuthMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-time-series': TerraTimeSeries,
