@@ -269,6 +269,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     isLoadingMoreLinks: boolean = false
 
     #activeNextLink: string | null | undefined = undefined
+    #paginationAbortController: AbortController | null = null
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -291,8 +292,11 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
+            this.#paginationAbortController?.abort()
+            this.#paginationAbortController = null
             // reset the WebLinks count when switching to a new jobId to reset "Load More" behavior
             this.visibleWebLinksCount = 100
+            this.isLoadingMoreLinks = false
             this.additionalJobLinks = []
             this.#activeNextLink = undefined
             this.#harmonyRequestController.startPollForJobStatus(this.jobId, {
@@ -345,6 +349,13 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 )
             }
         }
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback()
+
+        this.#paginationAbortController?.abort()
+        this.#paginationAbortController = null
     }
 
     firstUpdated() {
@@ -3210,6 +3221,8 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #backToSubsetOptions() {
+        this.#paginationAbortController?.abort()
+        this.#paginationAbortController = null
         this.refineParameters = true
         this.harmonyRequestError = undefined
         this.visibleWebLinksCount = 100
@@ -3252,11 +3265,20 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                 // If all in-memory links are visible, check if Harmony has another page to fetch
                 const nextUrl = this.#getNextLink()
                 if (nextUrl) {
+                    this.#paginationAbortController?.abort()
+                    this.#paginationAbortController = new AbortController()
                     this.isLoadingMoreLinks = true
+
+                    const currentJobId = this.jobId
                     try {
                         const pageData = await harmonyApi.getJobPage(nextUrl, {
                             bearerToken: this.bearerToken,
+                            signal: this.#paginationAbortController.signal,
                         })
+
+                        if (currentJobId !== this.jobId) {
+                            return
+                        }
 
                         const newNextLink = pageData.links.find(l => l.rel === 'next')
                         this.#activeNextLink = newNextLink?.href ?? null
@@ -3267,10 +3289,16 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
                             ...newLinks,
                         ]
                         this.visibleWebLinksCount += 100
-                    } catch (err) {
-                        console.warn('Failed to load next page of links:', err)
+                    } catch (error) {
+                        if (error instanceof Error && error.name === 'AbortError') {
+                            return
+                        }
+
+                        console.warn('Failed to load next page of links:', error)
                     } finally {
-                        this.isLoadingMoreLinks = false
+                        if (currentJobId === this.jobId) {
+                            this.isLoadingMoreLinks = false
+                        }
                     }
                 }
             }
