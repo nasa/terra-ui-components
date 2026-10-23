@@ -65,10 +65,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
                 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
                 'OSM_Land_Water_Map/default/default/' +
                 'GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
-            attributions: [
-                '© OpenStreetMap contributors',
-                'NASA EOSDIS GIBS',
-            ],
+            attributions: ['© OpenStreetMap contributors', 'NASA EOSDIS GIBS'],
             visible: false,
         }),
         buildBaseLayer({

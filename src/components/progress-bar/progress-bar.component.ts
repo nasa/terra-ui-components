@@ -79,11 +79,13 @@ export default class TerraProgressBar extends TerraElement {
                         width: this.indeterminate ? undefined : `${this.value}%`,
                     })}
                 >
-                    ${!this.indeterminate
-                        ? html`
+                    ${
+                        !this.indeterminate
+                            ? html`
                               <slot part="label" class="progress-bar__label"></slot>
                           `
-                        : ''}
+                            : ''
+                    }
                 </div>
             </div>
         `

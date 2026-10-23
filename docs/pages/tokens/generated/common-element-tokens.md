@@ -7,4 +7,3 @@ meta:
 # Common Element Tokens
 
 These tokens are used for common UI elements that are shared across multiple components. They reference the foundation tokens and provide specific values for things like buttons, icons, avatars, etc.
-

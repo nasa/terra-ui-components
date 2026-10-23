@@ -26,9 +26,9 @@ Tab panels contain the content that is displayed when their corresponding tab is
 
 ## Best Practices
 
--   Ensure each tab panel has a unique `name` that matches its corresponding tab's `panel` attribute
--   Keep tab panel content focused and relevant to its tab label
--   Use appropriate heading levels within tab panels for document structure
+- Ensure each tab panel has a unique `name` that matches its corresponding tab's `panel` attribute
+- Keep tab panel content focused and relevant to its tab label
+- Use appropriate heading levels within tab panels for document structure
 
 ## Accessibility
 

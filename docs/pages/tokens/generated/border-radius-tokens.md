@@ -10,11 +10,10 @@ Border radius tokens are used to give sharp edges a more subtle, rounded effect.
 
 ### Border Radius
 
-| Token | Value | Preview |
-|-------|-------|---------|
-| `--terra-border-radius-small` | `0.125rem` (2px) | <div class="border-radius-demo" style="border-radius: 0.125rem;"></div> |
-| `--terra-border-radius-medium` | `0.25rem` (4px) | <div class="border-radius-demo" style="border-radius: 0.25rem;"></div> |
-| `--terra-border-radius-large` | `0.5rem` (8px) | <div class="border-radius-demo" style="border-radius: 0.5rem;"></div> |
-| `--terra-border-radius-x-large` | `1rem` (16px) | <div class="border-radius-demo" style="border-radius: 1rem;"></div> |
-| `--terra-border-radius-circle` | `50%` | <div class="border-radius-demo" style="border-radius: 50%;"></div> |
-
+| Token                           | Value            | Preview                                                                 |
+| ------------------------------- | ---------------- | ----------------------------------------------------------------------- |
+| `--terra-border-radius-small`   | `0.125rem` (2px) | <div class="border-radius-demo" style="border-radius: 0.125rem;"></div> |
+| `--terra-border-radius-medium`  | `0.25rem` (4px)  | <div class="border-radius-demo" style="border-radius: 0.25rem;"></div>  |
+| `--terra-border-radius-large`   | `0.5rem` (8px)   | <div class="border-radius-demo" style="border-radius: 0.5rem;"></div>   |
+| `--terra-border-radius-x-large` | `1rem` (16px)    | <div class="border-radius-demo" style="border-radius: 1rem;"></div>     |
+| `--terra-border-radius-circle`  | `50%`            | <div class="border-radius-demo" style="border-radius: 50%;"></div>      |

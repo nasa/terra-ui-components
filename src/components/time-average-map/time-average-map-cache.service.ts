@@ -22,20 +22,20 @@ export class TimeAvgMapCacheService {
         startDate: string,
         endDate: string,
         location: string,
-        environment?: string,
+        environment?: string
     ): string {
         const normalizedEnv = environment ?? 'prod'
         return `map_${collection}_${variable}_${startDate}_${endDate}_${location}_${normalizedEnv}`
     }
 
     async getValidCacheEntry(
-        cacheKey: string,
+        cacheKey: string
     ): Promise<TimeAvgMapCacheEntry | undefined> {
         if (!cacheKey) return undefined
 
         const existing = await getDataByKey<TimeAvgMapCacheEntry>(
             IndexedDbStores.TIME_AVERAGE_MAP,
-            cacheKey,
+            cacheKey
         )
 
         if (!existing) return undefined
@@ -55,7 +55,7 @@ export class TimeAvgMapCacheService {
 
     async storeEntry(
         cacheKey: string,
-        entry: Omit<TimeAvgMapCacheEntry, 'key' | 'cachedAt'>,
+        entry: Omit<TimeAvgMapCacheEntry, 'key' | 'cachedAt'>
     ): Promise<void> {
         await storeDataByKey(IndexedDbStores.TIME_AVERAGE_MAP, cacheKey, {
             key: cacheKey,

@@ -22,8 +22,8 @@ The `<terra-data-access>` component provides a streamlined UI for discovering an
 
 Notes:
 
--   The component derives the CMR Collection Entry ID as `short-name_version` (e.g., `MODISA_L2_OC_2022.0`).
--   Cloud cover filtering appears only for collections that provide a cloud cover range.
+- The component derives the CMR Collection Entry ID as `short-name_version` (e.g., `MODISA_L2_OC_2022.0`).
+- Cloud cover filtering appears only for collections that provide a cloud cover range.
 
 ## Events
 
@@ -53,10 +53,10 @@ This component does not emit custom events.
 
 Use the top filter bar to:
 
--   Search filenames
--   Choose a date range
--   Pick a spatial area (point, bounding box, or shape)
--   Adjust cloud cover (when available)
+- Search filenames
+- Choose a date range
+- Pick a spatial area (point, bounding box, or shape)
+- Adjust cloud cover (when available)
 
 The results grid updates as filters change. The selection summary displays file count and estimated total size.
 
@@ -74,21 +74,21 @@ Datepicker supports sub-daily granules. Select a date and then choose specific t
 <terra-data-access short-name="MODISA_L2_OC" version="2022.0"></terra-data-access>
 ```
 
--   Download Options → Python Script: generates a script pre-populated with your current filters.
--   Earthdata Download: currently not supported and will show a notice.
--   Open in Jupyter Notebook: opens an interactive flow using the `terra_ui_components` Python package.
+- Download Options → Python Script: generates a script pre-populated with your current filters.
+- Earthdata Download: currently not supported and will show a notice.
+- Open in Jupyter Notebook: opens an interactive flow using the `terra_ui_components` Python package.
 
 ## Best Practices
 
--   Provide both `short-name` and `version` so the component can query the correct collection.
--   Encourage users to set temporal and spatial filters to reduce result size and improve performance.
--   Cloud cover filter appears only when the collection supports it; do not rely on it being present.
--   Listen for grid sorting and filtering changes visually; no custom events are required.
+- Provide both `short-name` and `version` so the component can query the correct collection.
+- Encourage users to set temporal and spatial filters to reduce result size and improve performance.
+- Cloud cover filter appears only when the collection supports it; do not rely on it being present.
+- Listen for grid sorting and filtering changes visually; no custom events are required.
 
 ## Accessibility
 
--   Filter controls and buttons are keyboard accessible.
--   Clear focus states and labels are provided for interactive elements.
--   Icons include accessible text where relevant, and controls include descriptive labels.
+- Filter controls and buttons are keyboard accessible.
+- Clear focus states and labels are provided for interactive elements.
+- Icons include accessible text where relevant, and controls include descriptive labels.
 
 [component-metadata:terra-data-access]

@@ -2,7 +2,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&display=swap');
 
-    /**
+/**
     * IMPORTANT NOTE ON DOCUMENTATION SYNTAX:
     *
     * This theme file uses a DocJS-like syntax to document the design tokens defined in this file. The tags are parsed at build time by a 
@@ -290,7 +290,6 @@
     --terra-color-blue-functional-link-on-tertiary-hover: hsla(218, 79%, 34%, 1);
     --terra-color-blue-functional-link-inverse-hover: hsla(219, 100%, 68%, 1);
 
-
     /**
      * @tokens Foundation Tokens
      * @description
@@ -300,7 +299,7 @@
      * The Foundation tokens reference the <a href="/tokens/generated/primitive-tokens">Primitives tokens</a> directly, which allows for easy updates 
      * to the color palettes without having to update every single token in the system. The <a href="/tokens/generated/semantic-tokens">Semantic</a> level UI role tokens are build on the  
      * Foundation-level tokens (rather than primitives) for the most-part so that changes to the theme Foundation are reflected in the <a href="/tokens/generated/semantic-tokens">Semantic tokens</a>. 
-     */ 
+     */
 
     /**
      * @tokens-subsection Surface Color Tokens
@@ -583,7 +582,6 @@
     --terra-border-action-info-active: var(--terra-color-action-info-active);
     --terra-border-action-info-disabled: var(--terra-color-action-info-disabled);
 
-
     /**
      * @tokens Semantic Tokens
      * @description
@@ -724,7 +722,6 @@
 
     /* Figma Design System Tokens ------------------------------------------------- END */
 
-
     /**
      * @tokens Border Radius Tokens
      * @description
@@ -766,15 +763,16 @@
     * @tokens-subgroup Style and Layout
     * @layout table
     */
-        --terra-focus-ring-style: solid;
-        --terra-focus-ring-width: 3px;
-        --terra-focus-ring: var(--terra-focus-ring-style) var(--terra-focus-ring-width) var(--terra-focus-ring-color);
-        --terra-focus-ring-offset: 1px;
+    --terra-focus-ring-style: solid;
+    --terra-focus-ring-width: 3px;
+    --terra-focus-ring: var(--terra-focus-ring-style) var(--terra-focus-ring-width)
+        var(--terra-focus-ring-color);
+    --terra-focus-ring-offset: 1px;
     /** 
         * @tokens-subgroup Color
         * @layout table-swatch
         */
-        --terra-focus-ring-color: var(--terra-border-interactive-focus-ring);
+    --terra-focus-ring-color: var(--terra-border-interactive-focus-ring);
 
     /** 
      * @tokens Spacing Tokens
@@ -820,18 +818,17 @@
     * @description
     * Z-index tokens are used to control the stacking order of elements on the page.
     */
-    
+
     /**
     * @tokens-subgroup Z-index
     * @layout table
     */
-    
+
     --terra-z-index-drawer: 700;
     --terra-z-index-dialog: 1000;
     --terra-z-index-dropdown: 900;
     --terra-z-index-toast: 950;
     --terra-z-index-tooltip: 1000;
-
 
     /** 
      * @tokens Typography Tokens
@@ -893,7 +890,6 @@
     --terra-line-height-loose: 2.2;
     --terra-line-height-looser: 2.6;
 
-
     /* Utility Tokens ------------------------------------------------------------ END
 
     /**
@@ -913,14 +909,13 @@
     --terra-link-text-decoration-style: dotted;
     --terra-link-underline-offset: 2px;
 
-
     /* Help text */
     /* Help text tokens control the appearance of help text in form controls. */
     --terra-input-help-text-font-size-small: var(--terra-font-size-x-small);
     --terra-input-help-text-font-size-medium: var(--terra-font-size-small);
     --terra-input-help-text-font-size-large: var(--terra-font-size-medium);
     --terra-input-help-text-color: var(--terra-text-secondary);
-    
+
     /* Common Element Tokens ------------------------------------------------------------ END
 
 
@@ -946,7 +941,8 @@
     --terra-accordion-content-padding: var(--terra-spacing-medium);
     --terra-accordion-summary-font-size: var(--terra-font-size-small);
     --terra-accordion-summary-font-weight: var(--terra-font-weight-semibold);
-    --terra-accordion-summary-padding: var(--terra-spacing-small) var(--terra-spacing-medium);
+    --terra-accordion-summary-padding: var(--terra-spacing-small)
+        var(--terra-spacing-medium);
 
     /**
     * @tokens-subgroup Accordion Colors
@@ -954,14 +950,18 @@
     * Accordion color tokens define the visual colors of accordion elements.
     * @layout table-swatch
     */
-    --terra-accordion-border-color: var(--terra-border-neutral-default);       
+    --terra-accordion-border-color: var(--terra-border-neutral-default);
     --terra-accordion-content-color: var(--terra-text-secondary);
     --terra-accordion-background-color: var(--terra-container-menu-bg);
-    --terra-accordion-summary-background-color: var(--terra-color-bg-surface-neutral-primary);
-    --terra-accordion-summary-background-color-hover: var(--terra-color-bg-surface-neutral-secondary);
+    --terra-accordion-summary-background-color: var(
+        --terra-color-bg-surface-neutral-primary
+    );
+    --terra-accordion-summary-background-color-hover: var(
+        --terra-color-bg-surface-neutral-secondary
+    );
     --terra-accordion-summary-border-color: var(--terra-border-neutral-default);
     --terra-accordion-summary-color: var(--terra-text-primary);
-    --terra-accordion-transition: background-color var(--terra-transition-fast); 
+    --terra-accordion-transition: background-color var(--terra-transition-fast);
 
     /**
     * @tokens-subsection Alerts Tokens
@@ -975,14 +975,14 @@
     * @layout table
     */
     --terra-alert-line-height: var(--terra-line-height-normal);
-    
+
     /**
     * @tokens-subgroup Filled Alert Appearance
     * @description
     * Alert filled tokens define the visual appearance of filled alert elements in the design system.
     * @layout table-swatch
     */
-  
+
     --terra-alert-filled-background-color-information: var(
         --terra-color-bg-info-bold
     );
@@ -1245,7 +1245,6 @@
     --terra-checkbox-focus-ring-width: var(--terra-focus-ring-width);
     --terra-checkbox-focus-ring-offset: var(--terra-focus-ring-offset);
 
-
     /**
     * @tokens-subsection Chips
     * @description
@@ -1351,14 +1350,24 @@
     --terra-data-grid-row-height: calc(var(--terra-data-grid-grid-size) * 7);
     --terra-data-grid-header-height: calc(var(--terra-data-grid-grid-size) * 8);
     --terra-data-grid-list-item-height: calc(var(--terra-data-grid-grid-size) * 4);
-    --terra-data-grid-cell-horizontal-padding: calc(var(--terra-data-grid-grid-size) * 3);
+    --terra-data-grid-cell-horizontal-padding: calc(
+        var(--terra-data-grid-grid-size) * 3
+    );
     --terra-data-grid-cell-widget-spacing: calc(var(--terra-data-grid-grid-size) * 2);
-    --terra-data-grid-widget-container-vertical-padding: calc(var(--terra-data-grid-grid-size) * 2);
-    --terra-data-grid-widget-container-horizontal-padding: calc(var(--terra-data-grid-grid-size) * 2);
-    --terra-data-grid-widget-vertical-spacing: calc(var(--terra-data-grid-grid-size) * 1.5);
+    --terra-data-grid-widget-container-vertical-padding: calc(
+        var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-widget-container-horizontal-padding: calc(
+        var(--terra-data-grid-grid-size) * 2
+    );
+    --terra-data-grid-widget-vertical-spacing: calc(
+        var(--terra-data-grid-grid-size) * 1.5
+    );
     --terra-data-grid-column-select-indent-size: var(--terra-data-grid-icon-size);
     --terra-data-grid-set-filter-indent-size: var(--terra-data-grid-icon-size);
-    --terra-data-grid-advanced-filter-builder-indent-size: calc(var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2);
+    --terra-data-grid-advanced-filter-builder-indent-size: calc(
+        var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2
+    );
     --terra-data-grid-toggle-button-height: 18px;
     --terra-data-grid-toggle-button-width: 28px;
     --terra-data-grid-tab-min-width: 240px;
@@ -1388,7 +1397,9 @@
     * @layout table
     */
     --terra-data-grid-selected-tab-underline-width: 2px;
-    --terra-data-grid-selected-tab-underline-transition-speed: var(--terra-transition-medium);
+    --terra-data-grid-selected-tab-underline-transition-speed: var(
+        --terra-transition-medium
+    );
     /**
     * @tokens-subgroup Primary Colors
     * @layout table-swatch
@@ -1505,7 +1516,6 @@
         --terra-tab-indicator-selected
     );
 
-
     /**
     * @tokens-subsection Date Picker
     * @description
@@ -1597,7 +1607,6 @@
         --terra-color-bg-surface-neutral-base
     );
 
-
     /**
     * @tokens-subsection Data Subsetter History
     * @description
@@ -1623,7 +1632,7 @@
     /**
     * @tokens-subgroup Shadow
     * @layout table
-    */  
+    */
     --terra-subsetter-history-panel-shadow: var(--terra-shadow-medium);
 
     /**
@@ -1826,7 +1835,6 @@
         --terra-menu-item-background-selected
     );
 
-
     /**
     * @tokens-subsection Overlays
     * @description
@@ -1918,7 +1926,6 @@
     --terra-popup-arrow-size: 6px;
     --terra-popup-arrow-color: var(--terra-container-panel-bg);
     --terra-popup-padding: var(--terra-spacing-medium);
-
 
     /**
     * @tokens-subsection Progress Bar
@@ -2225,7 +2232,8 @@
     * @layout table
     */
     --terra-tag-padding-small: 0.25rem 0.5rem;
-    --terra-tag-padding-medium: var(--terra-spacing-x-small, 0.5rem) var(--terra-spacing-small, 0.75rem);
+    --terra-tag-padding-medium: var(--terra-spacing-x-small, 0.5rem)
+        var(--terra-spacing-small, 0.75rem);
     --terra-tag-padding-large: 0.625rem 1rem;
 
     /**
@@ -2302,7 +2310,7 @@
     /**
     * @tokens-subgroup Topography
     * @layout table
-    */    
+    */
     --terra-tooltip-font-family: var(--terra-font-family--public-sans);
     --terra-tooltip-font-weight: var(--terra-font-weight-normal);
     --terra-tooltip-font-size: var(--terra-font-size-small);
@@ -2313,7 +2321,7 @@
     * @layout table
     */
     --terra-tooltip-padding: var(--terra-spacing-2x-small)
-    var(--terra-spacing-x-small);
+        var(--terra-spacing-x-small);
     --terra-tooltip-arrow-size: 6px;
     --terra-tooltip-border-radius: var(--terra-border-radius-medium);
 
@@ -2325,7 +2333,6 @@
         --terra-color-bg-surface-neutral-inverse-primary
     );
     --terra-tooltip-color: var(--terra-text-primary-inverse);
-
 
     /* Component Tokens ---------------------------------------------------------------- END */
 }

@@ -426,7 +426,7 @@ export class MapService {
                     const bbox4326 = transformExtent(
                         extent,
                         viewProjection,
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
@@ -441,7 +441,7 @@ export class MapService {
                         const [lng, lat] = transform(
                             [x, y],
                             viewProjection,
-                            'EPSG:4326',
+                            'EPSG:4326'
                         )
                         return new LatLng(lat, lng)
                     })
@@ -453,11 +453,7 @@ export class MapService {
                     })
                 } else if (geometry instanceof Point) {
                     const coords = geometry.getCoordinates()
-                    const [lng, lat] = transform(
-                        coords,
-                        viewProjection,
-                        'EPSG:4326',
-                    )
+                    const [lng, lat] = transform(coords, viewProjection, 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -469,7 +465,7 @@ export class MapService {
                     const [lng, lat] = transform(
                         geometry.getCenter(),
                         viewProjection,
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
