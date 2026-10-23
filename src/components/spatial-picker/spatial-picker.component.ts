@@ -13,7 +13,6 @@ import type { MapEventDetail } from '../map/type.js'
 import { MapEventType } from '../map/type.js'
 import { SpatialPickerService } from './spatial-picker.service.js'
 import styles from './spatial-picker.styles.js'
-import { watch } from '../../internal/watch.js'
 import Polygon from 'ol/geom/Polygon.js'
 import Feature from 'ol/Feature.js'
 import VectorLayer from 'ol/layer/Vector.js'
@@ -74,24 +73,50 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ attribute: 'hide-label', type: Boolean }) hideLabel = false
     @property() label: string = 'Select Region'
 
+    private _lastConstraints: string = ''
+
     /**
-     * Spatial constraints extent: 'west, south, east, north'.
+     * Spatial constraint extents - JSON string representing an array of
+       bounding boxes: '\[[west, south, east, north]\]'.
      * Draws a visual overlay on the map and rejects draws outside this area.
      */
     @property({ attribute: 'spatial-constraints' })
-    spatialConstraints: LatLngBounds[] = [new LatLngBounds([-180, -90, 180, 90])]
+    set spatialConstraints(value: string | LatLngBounds[]) {
+        if (typeof value === 'string') {
+            const data = JSON.parse(value)
+            this._spatialConstraints = data.map((spatial_constraint_coords: number[]) => {
+                return new LatLngBounds(spatial_constraint_coords)
+            })
+        } else {
+            this._spatialConstraints = value
+        }
 
-    @watch('spatialConstraints')
-    constraintChange() {
-        // Return if the map isn't ready yet.
+        // Only add constraints to map if the constraints actually changed
+        const constraintString = JSON.stringify(this._spatialConstraints)
+        if (constraintString != this._lastConstraints) {
+            this.addSpatialConstraints()
+        }
+        this._lastConstraints = constraintString
+    }
+    get spatialConstraints(): LatLngBounds[] {
+        return this._spatialConstraints
+    }
+    private _spatialConstraints: LatLngBounds[] = [new LatLngBounds([-180, -90, 180, 90])]
+    private _spatial_constraint_layer_names: string[] = []
+
+    addSpatialConstraints() {
         if (!this.map) return
 
         if (!this.spatialConstraints.length) return
 
         if (this.spatialConstraints.length === 1 && SpatialPickerService.spatialConstraintIsGlobal(this.spatialConstraints[0])) return 
-        console.log('Adding spatial constraint to map.')
 
-        
+        // Remove any existing spatial constraint layers
+        this._spatial_constraint_layer_names.forEach((spatial_constraint_layer_name) => {
+            this.map.removeLayer(spatial_constraint_layer_name)
+        })
+
+        // Add the new spatial constraints
         for (const [index, spatial_constraint] of this.spatialConstraints.entries()) {
             // Transform from Spatial constraint's lat/lon (EPSG:4326) to map
             // coordinates
@@ -135,7 +160,9 @@ export default class TerraSpatialPicker extends TerraElement {
                     }),
                 }),
             })
-            this.map.addLayer(layer, { name: 'collection-constraint-' + index })
+            const layer_name = 'collection-constraint-' + index
+            this._spatial_constraint_layer_names.push(layer_name)
+            this.map.addLayer(layer, { name: layer_name })
         }
     }
 
@@ -447,6 +474,7 @@ export default class TerraSpatialPicker extends TerraElement {
             ?show-point-selection=${this.showPointSelection}
             ?no-world-wrap=${!this.worldWrap}
             @terra-map-change=${this._handleMapChange}
+            @terra-map-ready=${this.addSpatialConstraints}
         ></terra-map>`
     }
 
