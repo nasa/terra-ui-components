@@ -12,6 +12,7 @@ import { QueryController } from './query.controller.js'
 import { sortByPriority } from '../utilities/sort.js'
 import type { HarmonyCapabilitiesResponse } from '../apis/harmony.api.js'
 import type { UmmC } from '../apis/types/cmr/umm-c.js'
+import { LatLngBounds } from '../components/map/models/LatLngBounds.js'
 
 export interface CollectionControllerConfig {
     getCollectionEntryId: () => string | undefined
@@ -171,15 +172,30 @@ export class CollectionController implements ReactiveController {
      * Bounding box string derived from the UMM-C spatial extent, in the format
      * "west, south, east, north". Returns a global default if no extent is defined.
      */
-    get spatialConstraints(): string {
+
+    get spatialConstraints(): LatLngBounds[] {
         const rects =
             this.#collectionQuery.result?.data?.umm.SpatialExtent
                 ?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
 
-        if (!rects?.length) return '-180, -90, 180, 90'
+        if (!rects?.length) {
+            // Return global coverage
+            // TODO: some datasets have no spatial metadata and might be better
+            // to explicitly return null so that the data access component knows
+            // not to render a spatial picker at all.
+            return [new LatLngBounds([-180, -90, 180, 90])]
+        }
 
-        const r = rects[0]
-        return `${r.WestBoundingCoordinate}, ${r.SouthBoundingCoordinate}, ${r.EastBoundingCoordinate}, ${r.NorthBoundingCoordinate}`
+        const spatial_constraints = rects.map((constraint) => {
+            return new LatLngBounds([
+                constraint.WestBoundingCoordinate,
+                constraint.SouthBoundingCoordinate,
+                constraint.EastBoundingCoordinate,
+                constraint.NorthBoundingCoordinate,
+            ])
+        })
+
+        return spatial_constraints
     }
 
     /**

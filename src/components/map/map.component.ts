@@ -152,13 +152,6 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     noWorldWrap: boolean = false
 
     /**
-     * Spatial constraints for the map (default: '-180, -90, 180, 90')
-     * Format: 'west, south, east, north'
-     */
-    @property({ attribute: 'spatial-constraints' })
-    spatialConstraints: string = '-180, -90, 180, 90'
-
-    /**
      * The map view's projection. Defaults to `'EPSG:3857'` (Web Mercator).
      *
      * This is a construction-time setting. Changing it after the map has rendered has no effect.
