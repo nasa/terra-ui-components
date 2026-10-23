@@ -7,7 +7,7 @@ import {
     type CollectionWithAvailableServices,
 } from '../../controllers/collection.controller.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
-import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import { debounce } from '../../internal/debounce.js'

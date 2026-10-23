@@ -7,7 +7,14 @@ export type { TerraLoadEvent } from './terra-load.js'
 export type {
     TerraMapChangeEvent,
     TerraMapPointerMoveEvent,
-} from './terra-map-change.js'
+    TerraMapReadyEvent,
+    TerraMapClickEvent,
+    TerraMapDoubleClickEvent,
+    TerraMapMoveEndEvent,
+    TerraMapZoomChangeEvent,
+    TerraMapLayerClickEvent,
+    TerraMapLayerErrorEvent,
+} from './terra-map.js'
 export type { TerraRemoveEvent } from './terra-remove.js'
 export type { TerraSearchEvent } from './terra-search.js'
 export type { TerraLoginEvent } from './terra-login.ts'
