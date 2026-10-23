@@ -1,7 +1,7 @@
+import { authService } from '../auth/auth.service.js'
+import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
-import { authService } from '../auth/auth.service.js'
 import { invertObject } from '../utilities/object.js'
 
 const API_VERSION = '3'
@@ -397,11 +397,6 @@ class HarmonyApi {
                         link => link.rel === 'next'
                     )
                 }
-
-                // If all pages were gathered, remove stale 'next' links from status.links
-                if (!nextLink?.href) {
-                    status.links = status.links.filter(link => link.rel !== 'next')
-                }
             } catch (error) {
                 if (options?.signal?.aborted) {
                     throw error
@@ -411,6 +406,9 @@ class HarmonyApi {
                     `Failed to fetch all paginated links for job ${jobId}; returning available links:`,
                     error
                 )
+            } finally {
+                // Always remove remaning 'next' links so terminal-state jobs don't cache pagination links, which could be state.
+                status.links = status.links.filter(link => link.rel !== 'next')
             }
         }
 
