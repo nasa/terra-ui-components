@@ -248,8 +248,8 @@ Note: Presets are shown if any part of the preset range overlaps the `min-date`/
   id="preset-bounded-picker"
   range
   show-presets
-  min-date="2024-03-15"
-  max-date="2024-03-20"
+  min-date="2020-01-01"
+  max-date="2030-12-31"
 ></terra-date-picker>
 ```
 

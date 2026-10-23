@@ -274,7 +274,6 @@ export default class TerraDatePicker extends TerraElement {
 
     constructor() {
         super()
-        this.initializePresets()
     }
 
     /**
@@ -375,10 +374,11 @@ export default class TerraDatePicker extends TerraElement {
         return this.doesRangeOverlapBounds(range)
     }
 
-    private get filteredPresets(): PresetRange[] {
-        return (this.presets || []).filter(preset =>
-            this.isPresetWithinBounds(preset.getValue())
-        )
+    get #filteredPresets(): PresetRange[] {
+        const source =
+            this.presets?.length > 0 ? this.presets : this.#getDefaultPresets()
+
+        return source.filter(preset => this.isPresetWithinBounds(preset.getValue()))
     }
 
     open() {
@@ -581,78 +581,57 @@ export default class TerraDatePicker extends TerraElement {
         }
     }
 
-    private initializePresets() {
-        if (this.presets.length === 0) {
-            this.presets = [
-                {
-                    label: 'Today',
-                    getValue: () => {
-                        const today = new Date()
-                        return {
-                            startDate: today,
-                            endDate: this.range ? today : null,
-                        }
-                    },
-                },
-                {
-                    label: 'Yesterday',
-                    getValue: () => {
-                        const yesterday = new Date()
-                        yesterday.setDate(yesterday.getDate() - 1)
-                        return {
-                            startDate: yesterday,
-                            endDate: this.range ? yesterday : null,
-                        }
-                    },
-                },
-                {
-                    label: 'Last 7 days',
-                    getValue: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setDate(start.getDate() - 6)
-                        return { startDate: start, endDate: end }
-                    },
-                },
-                {
-                    label: 'Last 30 days',
-                    getValue: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setDate(start.getDate() - 29)
-                        return { startDate: start, endDate: end }
-                    },
-                },
-                {
-                    label: 'Last 6 months',
-                    getValue: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setMonth(start.getMonth() - 6)
-                        return { startDate: start, endDate: end }
-                    },
-                },
-                {
-                    label: 'Last year',
-                    getValue: () => {
-                        const end = new Date()
-                        const start = new Date()
-                        start.setFullYear(start.getFullYear() - 1)
-                        return { startDate: start, endDate: end }
-                    },
-                },
-                {
-                    label: 'All time',
-                    getValue: () => {
-                        const { min, max } = this.getBounds()
-                        return {
-                            startDate: min || null,
-                            endDate: max || null,
-                        }
-                    },
-                },
-            ]
+    #getDefaultPresets(): PresetRange[] {
+        const dayPreset = (label: string, dayOffset = 0): PresetRange => ({
+            label,
+            getValue: () => {
+                const now = new Date()
+
+                if (dayOffset !== 0) {
+                    now.setDate(now.getDate() - dayOffset)
+                }
+
+                return {
+                    startDate: now,
+                    endDate: this.range ? new Date(now) : null,
+                }
+            },
+        })
+
+        const rangePreset = (
+            label: string,
+            shiftFn: (d: Date) => void
+        ): PresetRange => ({
+            label,
+            getValue: () => {
+                const end = new Date()
+                const start = new Date(end)
+
+                shiftFn(start)
+
+                return { startDate: start, endDate: end }
+            },
+        })
+
+        const presets: PresetRange[] = [
+            dayPreset('Today', 0),
+            dayPreset('Yesterday', 1),
+            rangePreset('Last 7 days', d => d.setDate(d.getDate() - 6)),
+            rangePreset('Last 30 days', d => d.setDate(d.getDate() - 29)),
+            rangePreset('Last 6 months', d => d.setMonth(d.getMonth() - 6)),
+            rangePreset('Last year', d => d.setFullYear(d.getFullYear() - 1)),
+        ]
+
+        const { min, max } = this.getBounds()
+
+        if (min && max) {
+            presets.push({
+                label: 'All time',
+                getValue: () => ({ startDate: min, endDate: max }),
+            })
         }
+
+        return presets
     }
 
     firstUpdated() {
@@ -2683,13 +2662,13 @@ export default class TerraDatePicker extends TerraElement {
              }
                 <div class="date-picker__content">
                     ${
-                        this.showPresets && this.filteredPresets.length > 0
+                        this.showPresets && this.#filteredPresets.length > 0
                             ? html`
                               <div class="date-picker__sidebar" part="sidebar">
                                   <slot name="sidebar-header"></slot>
 
                                   <div class="presets">
-                                      ${this.filteredPresets.map(
+                                      ${this.#filteredPresets.map(
                                           preset => html`
                                               <button
                                                   type="button"
@@ -2811,7 +2790,7 @@ export default class TerraDatePicker extends TerraElement {
                             <div class="date-picker__content">
                                 ${
                                     this.showPresets &&
-                                    this.filteredPresets.length > 0
+                                    this.#filteredPresets.length > 0
                                         ? html`
                                           <div
                                               class="date-picker__sidebar"
@@ -2820,7 +2799,7 @@ export default class TerraDatePicker extends TerraElement {
                                               <slot name="sidebar-header"></slot>
 
                                               <div class="presets">
-                                                  ${this.filteredPresets.map(
+                                                  ${this.#filteredPresets.map(
                                                       preset => html`
                                                           <button
                                                               type="button"
