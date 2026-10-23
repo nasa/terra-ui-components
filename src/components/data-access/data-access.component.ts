@@ -73,6 +73,10 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         'terra-alert': TerraAlert,
     }
 
+    connectedCallback() {
+        super.connectedCallback()
+    }
+
     service = new DataAccessService()
 
     @property({

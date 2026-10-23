@@ -179,12 +179,16 @@
     width: 100%;
 }
 
-@media (max-width: 600px) {
-    .code-preview__preview-content {
-        height: 844px;
+@media (max-width: 768px) {
+    .code-preview {
+        /* height: 844px; */
         border: 2px, solid, var(--terra-border-neutral-default);
         border-radius: 30px;
         overflow-y: scroll;    
+    }
+
+    .code-preview__preview {
+        border: none;
     }
 }
 
