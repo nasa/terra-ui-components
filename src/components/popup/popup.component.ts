@@ -366,6 +366,12 @@ export default class TerraPopup extends TerraElement {
             this.popup.style.height = ''
         }
 
+        const isVerticalPlacement =
+            this.placement.startsWith('top') ||
+            this.placement.startsWith('bottom')
+
+        const allowMainAxisShift = this.shift
+        
         if (this.isMobile) {
             middleware.push(
                 flip({
@@ -376,7 +382,8 @@ export default class TerraPopup extends TerraElement {
                 shift({
                     boundary: this.shiftBoundary,
                     padding: 8,
-                    crossAxis: true,
+                    mainAxis: allowMainAxisShift || isVerticalPlacement,
+                    crossAxis: !isVerticalPlacement,
                 }),
                 size({
                     padding: 8,
