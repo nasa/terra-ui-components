@@ -1,3 +1,4 @@
+import type { MapBrowserEvent, Map as OlMap } from 'ol'
 import { Control } from 'ol/control.js'
 import { Draw } from 'ol/interaction.js'
 import { createBox } from 'ol/interaction/Draw.js'
@@ -6,6 +7,9 @@ import Feature from 'ol/Feature.js'
 import { Point, Polygon } from 'ol/geom.js'
 import { transform, transformExtent } from 'ol/proj.js'
 import { Fill, Stroke, Style } from 'ol/style.js'
+import type { DrawEvent } from 'ol/interaction/Draw.js'
+import type { Pixel } from 'ol/pixel.js'
+import type { Options as DrawOptions } from 'ol/interaction/Draw.js'
 import { LatLng } from '../models/LatLng.js'
 import { LatLngBounds } from '../models/LatLngBounds.js'
 
@@ -16,24 +20,24 @@ export type Options = {
     showPolygonTool?: boolean
     showPointTool?: boolean
     showCircleTool?: boolean
+    target?: HTMLElement | string
 }
 
 export class DrawToolbarControl extends Control {
+    declare public element: HTMLElement
     protected vectorLayer: VectorLayer
 
     #draw?: Draw
     #options?: Options
     #tooltipEl: HTMLElement
     #cancelBtn: HTMLButtonElement
-    // @ts-expect-error
-    #activeTool?: DrawTool
-    #boundMoveHandler: any
+    #boundMoveHandler: (event: MapBrowserEvent) => void
 
     constructor(vectorLayer: VectorLayer, options?: Options) {
         const element = document.createElement('div')
         element.className = 'draw-toolbar ol-unselectable ol-control'
 
-        super({ element })
+        super({ element, target: options?.target })
 
         this.#options = options
 
@@ -41,6 +45,7 @@ export class DrawToolbarControl extends Control {
 
         tools.forEach(tool => {
             const btn = document.createElement('button')
+            btn.type = 'button'
             btn.innerHTML = this.#getIcon(tool)
             btn.title = this.#getTitle(tool)
 
@@ -52,9 +57,12 @@ export class DrawToolbarControl extends Control {
         })
 
         const cancelBtn = document.createElement('button')
-        cancelBtn.innerHTML = '✕'
-        cancelBtn.style.display = 'none'
+        cancelBtn.type = 'button'
+        cancelBtn.className = 'cancel-btn'
+        cancelBtn.innerHTML = this.#getIcon('cancel')
+        cancelBtn.title = 'Cancel drawing'
 
+        cancelBtn.addEventListener('click', () => this.#cleanup())
         element.appendChild(cancelBtn)
 
         this.vectorLayer = vectorLayer
@@ -64,9 +72,15 @@ export class DrawToolbarControl extends Control {
         this.#tooltipEl.className = 'ol-tooltip'
         this.#tooltipEl.style.display = 'none'
 
-        cancelBtn.addEventListener('click', () => this.#cleanup())
-
         this.#boundMoveHandler = this.#moveHandler.bind(this)
+    }
+
+    setMap(map: OlMap | null) {
+        super.setMap(map)
+
+        if (map) {
+            map.getViewport()?.appendChild(this.#tooltipEl)
+        }
     }
 
     setOptions(options: Partial<Options>) {
@@ -84,7 +98,7 @@ export class DrawToolbarControl extends Control {
         this.vectorLayer.getSource()?.clear()
     }
 
-    setValue(value: LatLng | LatLngBounds, fitToValue: boolean = false) {
+    setValue(value: LatLng | LatLngBounds, _fitToValue: boolean = false) {
         this.clearValue()
 
         const source = this.vectorLayer.getSource()
@@ -101,20 +115,8 @@ export class DrawToolbarControl extends Control {
             feature = this.buildBBoxFeature(value)
         }
 
-        if (!feature) return
-
-        source.addFeature(feature)
-
-        if (fitToValue) {
-            this.#fitToFeature(feature)
-        }
-    }
-
-    setMap(map: any) {
-        super.setMap(map)
-
-        if (map) {
-            map.getViewport().appendChild(this.#tooltipEl)
+        if (feature) {
+            source.addFeature(feature)
         }
     }
 
@@ -123,85 +125,118 @@ export class DrawToolbarControl extends Control {
     }
 
     buildPointFeature(latLng: LatLng) {
+        const viewProjection = this.#viewProjection()
         const coords = transform(
             [latLng.lng, latLng.lat],
             'EPSG:4326',
-            this.#viewProjection()
+            viewProjection
         )
-        const point = new Point(coords)
-        const feature = new Feature({ geometry: point })
+
+        const feature = new Feature({
+            geometry: new Point(coords),
+        })
+
         feature.set('drawtool', 'point')
+
         return feature
     }
 
     buildBBoxFeature(bounds: LatLngBounds) {
-        const west = bounds.getWest()
-        const south = bounds.getSouth()
-        const east = bounds.getEast()
-        const north = bounds.getNorth()
         const viewProjection = this.#viewProjection()
-        const coordinates = [
-            [west, south],
-            [west, north],
-            [east, north],
-            [east, south],
-            [west, south],
-        ].map(coord => transform(coord, 'EPSG:4326', viewProjection))
-        const polygon = new Polygon([coordinates])
-        const feature = new Feature({ geometry: polygon })
+        const [minX, minY] = transform(
+            [bounds.getWest(), bounds.getSouth()],
+            'EPSG:4326',
+            viewProjection
+        )
+        const [maxX, maxY] = transform(
+            [bounds.getEast(), bounds.getNorth()],
+            'EPSG:4326',
+            viewProjection
+        )
+
+        const feature = new Feature({
+            geometry: new Polygon([
+                [
+                    [minX, minY],
+                    [maxX, minY],
+                    [maxX, maxY],
+                    [minX, maxY],
+                    [minX, minY],
+                ],
+            ]),
+        })
         feature.set('drawtool', 'bbox')
+
         return feature
     }
 
-    #fitToFeature(feature: Feature) {
-        const map = this.getMap()
-        if (!map) return
-
-        const geometry = feature.getGeometry()
-        if (!geometry) return
-
-        const extent = geometry.getExtent()
-        if (!extent) return
-
-        map.getView().fit(extent, {
-            padding: [20, 20, 20, 20],
-            maxZoom: 5, // don't allow zooming in too far, you lose context of where you are on the map
-            duration: 250,
-        })
-    }
-
     toggleButtonVisibility(tool: DrawTool) {
-        const show =
-            this.#options?.[
-                `show${tool.charAt(0).toUpperCase() + tool.slice(1)}Tool` as keyof Options
-            ] ?? false
+        let btnIndex = 0
+
+        if (tool === 'bbox') {
+            btnIndex = 1
+        } else if (tool === 'polygon') {
+            btnIndex = 2
+        } else if (tool === 'point') {
+            btnIndex = 3
+        } else if (tool === 'circle') {
+            btnIndex = 4
+        }
 
         const btn = this.element?.querySelector(
-            `button:nth-child(${this.#getButtonIndex(tool)})`
+            `button:nth-child(${btnIndex})`
         ) as HTMLButtonElement
 
         if (btn) {
-            btn.style.display = show ? 'inline-block' : 'none'
+            btn.style.display = this.#isButtonVisible(tool) ? 'flex' : 'none'
         }
     }
 
-    #getButtonIndex(tool: DrawTool) {
-        if (tool === 'bbox') return 1
-        if (tool === 'polygon') return 2
-        if (tool === 'point') return 3
-        if (tool === 'circle') return 4
-        return -1
+    #isButtonVisible(tool: DrawTool) {
+        if (!this.#options) {
+            return true
+        }
+
+        switch (tool) {
+            case 'bbox':
+                return this.#options.showBboxTool ?? true
+            case 'polygon':
+                return this.#options.showPolygonTool ?? true
+            case 'point':
+                return this.#options.showPointTool ?? true
+            case 'circle':
+                return this.#options.showCircleTool ?? true
+            default:
+                return false
+        }
     }
 
-    #getIcon(tool: DrawTool) {
-        if (tool === 'bbox') return '<div class="control-button control-bbox"></div>'
-        if (tool === 'polygon')
-            return '<div class="control-button control-polygon"></div>'
-        if (tool === 'point')
-            return '<div class="control-button control-point"></div>'
-        if (tool === 'circle')
-            return '<div class="control-button control-circle"></div>'
-        return ''
+    #getIcon(tool: DrawTool | 'cancel') {
+        switch (tool) {
+            case 'bbox':
+                return `<svg viewBox="12 12 36 36" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M 44,14 H 16 v 28 h 28 z m -2,26 H 18 V 16 h 24 z" />
+            </svg>`
+            case 'polygon':
+                return `<svg viewBox="73 15 30 30" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="M 100,24.565 97.904,39.395 83.07,42 76,28.773 86.463,18 Z" />
+            </svg>`
+            case 'point':
+                return `<svg viewBox="255 15 30 30" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="m 270,19 c -4.971,0 -9,4.029 -9,9 0,4.971 5.001,12 9,14 4.001,-2 9,-9.029 9,-14 0,-4.971 -4.029,-9 -9,-9 z m 0,12.5 c -2.484,0 -4.5,-2.014 -4.5,-4.5 0,-2.484 2.016,-4.5 4.5,-4.5 2.485,0 4.5,2.016 4.5,4.5 0,2.486 -2.015,4.5 -4.5,4.5 z" />
+            </svg>`
+            case 'circle':
+                return `<svg viewBox="195 15 30 30" width="18" height="18" fill="currentColor" aria-hidden="true">
+              <path d="m 221,30 c 0,6.078 -4.926,11 -11,11 -6.074,0 -11,-4.922 -11,-11 0,-6.074 4.926,-11 11,-11 6.074,0 11,4.926 11,11 z" />
+            </svg>`
+            case 'cancel':
+                return `<svg viewBox="0 0 30 30" width="18" height="18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+              <line x1="8" y1="8" x2="22" y2="22" />
+              <line x1="22" y1="8" x2="8" y2="22" />
+            </svg>`
+            default:
+                return ''
+        }
     }
 
     #getTitle(tool: DrawTool) {
@@ -222,7 +257,7 @@ export class DrawToolbarControl extends Control {
 
     #getDrawDefaults() {
         return {
-            source: this.vectorLayer.getSource()!,
+            source: this.vectorLayer.getSource() ?? undefined,
             dragVertexDelay: 0,
             style: new Style({
                 stroke: new Stroke({
@@ -237,7 +272,7 @@ export class DrawToolbarControl extends Control {
         }
     }
 
-    #getDrawOptions(tool: DrawTool) {
+    #getDrawOptions(tool: DrawTool): DrawOptions {
         const base = this.#getDrawDefaults()
 
         if (tool === 'bbox') {
@@ -277,8 +312,6 @@ export class DrawToolbarControl extends Control {
 
         this.#cleanup()
 
-        this.#activeTool = tool
-
         this.vectorLayer.getSource()?.clear()
 
         const viewport = map.getViewport()
@@ -288,26 +321,26 @@ export class DrawToolbarControl extends Control {
         }
 
         const drawOptions = this.#getDrawOptions(tool)
-        // @ts-expect-error - TypeScript is confused about the dynamic nature of the options
         this.#draw = new Draw(drawOptions)
 
         map.addInteraction(this.#draw)
 
         this.#tooltipEl.style.display = 'block'
-        this.#tooltipEl.innerText = this.#getTooltipText(tool)!
-        this.#cancelBtn.style.display = 'inline-block'
+        this.#tooltipEl.innerText = this.#getTooltipText(tool)
+        this.#cancelBtn.classList.add('visible')
 
         map.on('pointermove', this.#boundMoveHandler)
 
-        this.#draw.on('drawend', (event: any) => {
+        this.#draw.on('drawend', (event: DrawEvent) => {
             event.feature.set('drawtool', tool)
             this.#cleanup()
         })
 
         const viewProjection = this.#viewProjection()
 
-        this.#draw.on('drawstart', (e: any) => {
+        this.#draw.on('drawstart', (e: DrawEvent) => {
             const geom = e.feature.getGeometry()
+            if (!geom) return
 
             geom.on('change', () => {
                 const extent = geom.getExtent()
@@ -327,9 +360,10 @@ export class DrawToolbarControl extends Control {
         })
     }
 
-    #moveHandler(e: any) {
-        this.#tooltipEl.style.left = e.pixel[0] + 12 + 'px'
-        this.#tooltipEl.style.top = e.pixel[1] + 12 + 'px'
+    #moveHandler(e: MapBrowserEvent) {
+        const pixel = e.pixel as Pixel
+        this.#tooltipEl.style.left = `${pixel[0] + 12}px`
+        this.#tooltipEl.style.top = `${pixel[1] + 12}px`
     }
 
     #cleanup() {
@@ -347,8 +381,7 @@ export class DrawToolbarControl extends Control {
         }
 
         this.#draw = undefined
-        this.#activeTool = undefined
         this.#tooltipEl.style.display = 'none'
-        this.#cancelBtn.style.display = 'none'
+        this.#cancelBtn.classList.remove('visible')
     }
 }
