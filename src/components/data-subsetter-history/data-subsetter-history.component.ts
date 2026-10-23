@@ -70,7 +70,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
     subsetter: TerraDataSubsetter
 
     jobsQuery = new QueryController(this, () =>
-        queryHarmonyJobs({ page: 1 }, { bearerToken: this.bearerToken }),
+        queryHarmonyJobs({ page: 1 }, { bearerToken: this.bearerToken })
     )
 
     private toggleCollapsed() {
@@ -172,7 +172,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
     #renderHistoryItems(subsetJobs: { jobs: SubsetJobStatus[] }) {
         const filteredJobs = subsetJobs.jobs
             .slice()
-            .filter((job) => {
+            .filter(job => {
                 if (this.hideCancelled) {
                     return job.status !== Status.CANCELED
                 }
@@ -181,8 +181,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
             })
             .sort(
                 (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime(),
+                    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             )
 
         if (!filteredJobs.length) {
@@ -206,7 +205,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
             `
         }
 
-        return filteredJobs.map((job) => {
+        return filteredJobs.map(job => {
             let fillColor = '#0066cc'
             if (
                 job.status === Status.SUCCESSFUL ||
@@ -257,7 +256,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
 
     #renderSubsetterHistoryItem(
         job: SubsetJobStatus,
-        labels: Record<string, unknown>,
+        labels: Record<string, unknown>
     ) {
         return html`
             <div class="subsetter-history-item">
@@ -281,7 +280,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
     #parseLabelsAsJson(labels: string[]): { [k: string]: unknown } {
         try {
             return Object.fromEntries(
-                labels.map((line) => {
+                labels.map(line => {
                     const [key, ...rest] = line.split(':')
                     const valueRaw = rest.join(':').trim()
 
@@ -297,7 +296,7 @@ export default class TerraDataSubsetterHistory extends AuthMixin(
                     }
 
                     return [key.trim(), value]
-                }),
+                })
             )
         } catch (e) {
             return {}

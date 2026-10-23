@@ -1,4 +1,4 @@
-import { Feature, Graticule, Map, MapBrowserEvent, View } from 'ol'
+import { type Feature, Graticule, Map, type MapBrowserEvent, View } from 'ol'
 import {
     toLonLat,
     transform,
@@ -12,7 +12,7 @@ import type Interaction from 'ol/interaction/Interaction.js'
 import type { FitOptions } from 'ol/View.js'
 import { Stroke } from 'ol/style.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
-import VectorSource, { VectorSourceEvent } from 'ol/source/Vector.js'
+import VectorSource, { type VectorSourceEvent } from 'ol/source/Vector.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import { Circle, Point, Polygon, type Geometry } from 'ol/geom.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
@@ -49,10 +49,7 @@ type MapOptions = {
     fitToValue?: boolean
     getGeoJson?: (shapeId: string) => Promise<unknown>
     onShapeLoading?: (loading: boolean) => void
-    onMouseMove?: (
-        coordinate: [number, number],
-        pixel: [number, number],
-    ) => void
+    onMouseMove?: (coordinate: [number, number], pixel: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
 }
 
@@ -134,11 +131,7 @@ export class MapService {
         const { projection, ...fitOptions } = options
 
         const targetExtent = projection
-            ? transformExtent(
-                  extent,
-                  projection,
-                  this.#map.getView().getProjection(),
-              )
+            ? transformExtent(extent, projection, this.#map.getView().getProjection())
             : extent
 
         this.#map.getView().fit(targetExtent, fitOptions)
@@ -162,11 +155,9 @@ export class MapService {
 
         return {
             canvases: Array.from(
-                viewport?.querySelectorAll('canvas') ?? [],
+                viewport?.querySelectorAll('canvas') ?? []
             ) as HTMLCanvasElement[],
-            svgs: Array.from(
-                viewport?.querySelectorAll('svg') ?? [],
-            ) as SVGElement[],
+            svgs: Array.from(viewport?.querySelectorAll('svg') ?? []) as SVGElement[],
         }
     }
 
@@ -196,7 +187,7 @@ export class MapService {
     }
 
     renderComplete(): Promise<void> {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
             this.#map.once('rendercomplete', () => resolve())
             this.#map.render()
         })
@@ -225,7 +216,7 @@ export class MapService {
         try {
             const locationParts = location
                 .split(',')
-                .map((part) => parseFloat(part.trim()))
+                .map(part => parseFloat(part.trim()))
 
             // handle lat/lng points
             if (locationParts.length === 2) {
@@ -243,7 +234,7 @@ export class MapService {
             }
 
             throw new Error(
-                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`,
+                `Provided location had invalid length of ${locationParts.length}. Should have 2 or 4 items.`
             )
         } catch (e) {
             throw new BadRequestException({
@@ -362,7 +353,7 @@ export class MapService {
             const coordinate = toLonLat(event.coordinate)
             options.onMouseMove?.(
                 coordinate as [number, number],
-                event.pixel as [number, number],
+                event.pixel as [number, number]
             )
         })
 
@@ -399,7 +390,7 @@ export class MapService {
                     const bbox4326 = transformExtent(
                         extent,
                         viewProjection,
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
@@ -408,15 +399,13 @@ export class MapService {
                         bounds: new LatLngBounds(bbox4326),
                     })
                 } else if (geometry instanceof Polygon) {
-                    const coordinates = geometry
-                        .getCoordinates()[0]
-                        .slice(0, -1) // remove last point (duplicate of first)
+                    const coordinates = geometry.getCoordinates()[0].slice(0, -1) // remove last point (duplicate of first)
 
                     const latLngs = coordinates.map(([x, y]) => {
                         const [lng, lat] = transform(
                             [x, y],
                             viewProjection,
-                            'EPSG:4326',
+                            'EPSG:4326'
                         )
                         return new LatLng(lat, lng)
                     })
@@ -428,11 +417,7 @@ export class MapService {
                     })
                 } else if (geometry instanceof Point) {
                     const coords = geometry.getCoordinates()
-                    const [lng, lat] = transform(
-                        coords,
-                        viewProjection,
-                        'EPSG:4326',
-                    )
+                    const [lng, lat] = transform(coords, viewProjection, 'EPSG:4326')
 
                     options.onDraw?.({
                         cause: 'draw',
@@ -444,7 +429,7 @@ export class MapService {
                     const [lng, lat] = transform(
                         geometry.getCenter(),
                         viewProjection,
-                        'EPSG:4326',
+                        'EPSG:4326'
                     )
 
                     options.onDraw?.({
@@ -515,6 +500,6 @@ export class MapService {
         return this.#map
             .getLayers()
             .getArray()
-            .find((layer) => layer.get('name') === name)
+            .find(layer => layer.get('name') === name)
     }
 }

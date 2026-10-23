@@ -18,10 +18,7 @@ describe('sort utilities', () => {
 
         const sorted = sortByPriority(
             items,
-            [
-                'application/x-netcdf4;profile=opendap_url',
-                'application/netcdf',
-            ],
+            ['application/x-netcdf4;profile=opendap_url', 'application/netcdf'],
             item => item.key
         )
 

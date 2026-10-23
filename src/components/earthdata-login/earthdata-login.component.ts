@@ -95,8 +95,9 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                     </a>
                 </div>
 
-                ${this.authState.user?.uid
-                    ? html`<div class="login-form">
+                ${
+                    this.authState.user?.uid
+                        ? html`<div class="login-form">
                           <p>
                               ${this.authState.user.first_name},<br />
                               You've successfully authenticated with Earthdata Login!
@@ -108,7 +109,7 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                               >Logout</terra-button
                           >
                       </div>`
-                    : html`
+                        : html`
                           <form class="login-form" @submit=${this.#handleFormSubmit}>
                               <terra-input
                                   id="username-input"
@@ -148,12 +149,14 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                                   ${this.isLoggingIn ? 'Logging In...' : 'Log in'}
                               </terra-button>
 
-                              ${this.authState.error
-                                  ? html`<div class="form-feedback">
+                              ${
+                                  this.authState.error
+                                      ? html`<div class="form-feedback">
                                         ${this.authState.error}
-                                        ${this.authState.error ===
-                                        'Invalid user credentials'
-                                            ? html`<p>
+                                        ${
+                                            this.authState.error ===
+                                            'Invalid user credentials'
+                                                ? html`<p>
                                                   <a
                                                       class="link"
                                                       href="https://urs.earthdata.nasa.gov/retrieve_info"
@@ -169,9 +172,11 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                                                       >Forgot password?</a
                                                   >
                                               </p>`
-                                            : nothing}
+                                                : nothing
+                                        }
                                     </div>`
-                                  : ''}
+                                      : ''
+                              }
                               <a
                                   class="link register-link"
                                   href="https://urs.earthdata.nasa.gov/users/new"
@@ -180,7 +185,8 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                                   >Register for a profile</a
                               >
                           </form>
-                      `}
+                      `
+                }
             </div>
         `
     }

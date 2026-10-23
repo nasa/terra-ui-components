@@ -1,4 +1,9 @@
 *.hbs
+*.ts
+*.tsx
+*.js
+*.jsx
+*.css
 .cache
 .github
 cspell.json

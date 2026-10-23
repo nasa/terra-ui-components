@@ -957,4 +957,3 @@ The Chartreuse color palette is not a HDS color. It is a vibrant green intended 
   <div><code>hsla(219, 100%, 68%, 1)</code></div>
 </div>
 </div>
-

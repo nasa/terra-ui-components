@@ -242,8 +242,7 @@ describe('AuthMixin', () => {
             const loginPromise = el.loginWithCredentials('user', 'secret')
 
             expect(el.isLoggingIn).to.be.true
-            expect(loginWithCredentialsStub.calledWith('user', 'secret')).to
-                .be.true
+            expect(loginWithCredentialsStub.calledWith('user', 'secret')).to.be.true
 
             resolveLogin!(mockUser)
             const result = await loginPromise

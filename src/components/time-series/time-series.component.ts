@@ -368,8 +368,9 @@ export default class TerraTimeSeries extends AuthMixin(
     render() {
         return html`
             <div class="plot-container" @mouseleave=${this.#handleComponentLeave}>
-                ${this.quotaExceededOpen
-                    ? html`
+                ${
+                    this.quotaExceededOpen
+                        ? html`
                           <terra-alert
                               variant="warning"
                               duration="10000"
@@ -391,16 +392,19 @@ export default class TerraTimeSeries extends AuthMixin(
                               for further assistance.
                           </terra-alert>
                       `
-                    : ''}
-                ${!this.hideToolbar
-                    ? cache(
-                          this.catalogVariable
-                              ? html`<terra-plot-toolbar
+                        : ''
+                }
+                ${
+                    !this.hideToolbar
+                        ? cache(
+                              this.catalogVariable
+                                  ? html`<terra-plot-toolbar
                                     .catalogVariable=${this.catalogVariable}
                                     .plot=${this.plot}
-                                    .timeSeriesData=${this.#timeSeriesController
-                                        .lastTaskValue ??
-                                    this.#timeSeriesController.emptyPlotData}
+                                    .timeSeriesData=${
+                                        this.#timeSeriesController.lastTaskValue ??
+                                        this.#timeSeriesController.emptyPlotData
+                                    }
                                     .location=${this.location}
                                     .startDate=${this.startDate}
                                     .endDate=${this.endDate}
@@ -414,11 +418,13 @@ export default class TerraTimeSeries extends AuthMixin(
                                 >
                                     <slot name="help-links" slot="help-links"></slot>
                                 </terra-plot-toolbar>`
-                              : html`<div class="spacer"></div>`
-                      )
-                    : nothing}
-                ${this.#hasNoData()
-                    ? html`
+                                  : html`<div class="spacer"></div>`
+                          )
+                        : nothing
+                }
+                ${
+                    this.#hasNoData()
+                        ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="warning"
@@ -435,9 +441,11 @@ export default class TerraTimeSeries extends AuthMixin(
                               more results.
                           </terra-alert>
                       `
-                    : ''}
-                ${this.#isVariableNotFound()
-                    ? html`
+                        : ''
+                }
+                ${
+                    this.#isVariableNotFound()
+                        ? html`
                           <terra-alert
                               class="no-data-alert"
                               variant="danger"
@@ -452,9 +460,11 @@ export default class TerraTimeSeries extends AuthMixin(
                               The selected variable was not found in the catalog
                           </terra-alert>
                       `
-                    : ''}
-                ${this.timeSeriesError
-                    ? html`
+                        : ''
+                }
+                ${
+                    this.timeSeriesError
+                        ? html`
                           <terra-alert
                               class="error-alert"
                               variant="danger"
@@ -470,12 +480,15 @@ export default class TerraTimeSeries extends AuthMixin(
                               ${this.#getErrorMessage(this.timeSeriesError)}
                           </terra-alert>
                       `
-                    : ''}
+                        : ''
+                }
 
                 <terra-plot
                     exportparts="base:plot__base, plot-title:plot__title"
-                    .data=${this.#timeSeriesController.lastTaskValue ??
-                    this.#timeSeriesController.emptyPlotData}
+                    .data=${
+                        this.#timeSeriesController.lastTaskValue ??
+                        this.#timeSeriesController.emptyPlotData
+                    }
                     .layout="${{
                         xaxis: {
                             title: 'Time',
@@ -509,27 +522,34 @@ export default class TerraTimeSeries extends AuthMixin(
             </div>
 
             <dialog
-                ?open=${this.#timeSeriesController.task.status ===
-                    TaskStatus.PENDING ||
-                this._fetchVariableTask.status === TaskStatus.PENDING}
+                ?open=${
+                    this.#timeSeriesController.task.status === TaskStatus.PENDING ||
+                    this._fetchVariableTask.status === TaskStatus.PENDING
+                }
             >
                 <terra-loader indeterminate></terra-loader>
 
-                ${this.#timeSeriesController.task.status === TaskStatus.PENDING
-                    ? html`
+                ${
+                    this.#timeSeriesController.task.status === TaskStatus.PENDING
+                        ? html`
                           <p>
-                              ${this.catalogVariables.length > 1
-                                  ? `Plotting ${this.catalogVariables.length} variables…`
-                                  : `Plotting ${this.catalogVariable?.dataFieldId}…`}
+                              ${
+                                  this.catalogVariables.length > 1
+                                      ? `Plotting ${this.catalogVariables.length} variables…`
+                                      : `Plotting ${this.catalogVariable?.dataFieldId}…`
+                              }
                           </p>
-                          ${this.chunkProgress
-                              ? html`<p>
+                          ${
+                              this.chunkProgress
+                                  ? html`<p>
                                     Fetching chunk ${this.chunkProgress.currentChunk}
                                     of ${this.chunkProgress.totalChunks}&hellip;
                                 </p>`
-                              : nothing}
+                                  : nothing
+                          }
                       `
-                    : html`<p>Preparing plot&hellip;</p>`}
+                        : html`<p>Preparing plot&hellip;</p>`
+                }
 
                 <terra-button @click=${this.#abortDataLoad}>Cancel</terra-button>
             </dialog>
@@ -627,8 +647,8 @@ export default class TerraTimeSeries extends AuthMixin(
         // Check if user has provided variable information
         const hasVariableRequest = Boolean(
             this.variableEntryId ||
-            this.variableEntryIds.length ||
-            (this.collection && this.variable)
+                this.variableEntryIds.length ||
+                (this.collection && this.variable)
         )
 
         // If user requested a variable but catalogVariable is not set, variable was not found

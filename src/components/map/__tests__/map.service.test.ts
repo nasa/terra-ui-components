@@ -239,9 +239,7 @@ describe('Map Service', () => {
 
     describe('projection', () => {
         it('defaults the view to EPSG:3857', () => {
-            expect(service.getView().getProjection().getCode()).to.equal(
-                'EPSG:3857',
-            )
+            expect(service.getView().getProjection().getCode()).to.equal('EPSG:3857')
         })
 
         it('uses the configured projection for the view', () => {
@@ -254,7 +252,7 @@ describe('Map Service', () => {
             })
 
             expect(polarService.getView().getProjection().getCode()).to.equal(
-                'EPSG:4326',
+                'EPSG:4326'
             )
         })
 
@@ -269,7 +267,7 @@ describe('Map Service', () => {
                         noWorldWrap: true,
                         onMouseMove: sinon.spy(),
                         onDraw: sinon.spy(),
-                    }),
+                    })
             ).to.not.throw()
         })
 
@@ -300,11 +298,11 @@ describe('Map Service', () => {
             expect(
                 readFeaturesSpy.calledWith(
                     sinon.match.any,
-                    sinon.match({ featureProjection: sinon.match.has('getCode') }),
-                ),
+                    sinon.match({ featureProjection: sinon.match.has('getCode') })
+                )
             ).to.be.true
-            const featureProjection = readFeaturesSpy.firstCall
-                ?.args[1]?.featureProjection as Projection
+            const featureProjection = readFeaturesSpy.firstCall?.args[1]
+                ?.featureProjection as Projection
             expect(featureProjection.getCode()).to.equal('EPSG:4326')
         })
     })

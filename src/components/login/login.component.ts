@@ -67,7 +67,7 @@ export default class TerraLogin extends AuthMixin(TerraElement) {
             // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
             const template = this.querySelector<HTMLTemplateElement>(
-                'template[slot="logged-in"]',
+                'template[slot="logged-in"]'
             )
 
             return html`${
@@ -92,13 +92,7 @@ export default class TerraLogin extends AuthMixin(TerraElement) {
     #applyUserToMessage(message?: string) {
         return (message ?? '')
             .replace('{username}', this.authState.user?.uid ?? '')
-            .replace(
-                '{first_name}',
-                this.authState.user?.first_name ?? '',
-            )
-            .replace(
-                '{last_name}',
-                this.authState.user?.last_name ?? '',
-            )
+            .replace('{first_name}', this.authState.user?.first_name ?? '')
+            .replace('{last_name}', this.authState.user?.last_name ?? '')
     }
 }
