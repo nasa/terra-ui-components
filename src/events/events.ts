@@ -10,7 +10,7 @@ export type {
 } from './terra-map-change.js'
 export type { TerraRemoveEvent } from './terra-remove.js'
 export type { TerraSearchEvent } from './terra-search.js'
-export type { TerraLoginEvent } from './terra-login.ts'
+export type { TerraLoginEvent } from './terra-login.js'
 export type { TerraPlotToolbarExportImageEvent } from './terra-plot-toolbar-export-image.js'
 export type { TerraTimeSeriesDataChangeEvent } from './terra-time-series-data-change.js'
 export type { TerraShowEvent } from './terra-show.js'
