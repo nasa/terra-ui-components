@@ -25,7 +25,7 @@ import type { ListItem } from './variable-combobox.types.js'
 import TerraPopup from '../popup/popup.js'
 
 /**
- * @summary Fuzzy-search for dataset variables in combobox with list autocomplete.
+ * @summary Fuzzy-search for data set variables in combobox with list autocomplete.
  * @documentation https://terra-ui.netlify.app/components/variable-combobox
  * @see https://www.w3.org/WAI/ARIA/apg/patterns/combobox/examples/combobox-autocomplete-list/
  * @status stable
@@ -448,7 +448,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 <dt>Units</dt>
                 <dd><code>${variable.dataFieldUnits}</code></dd>
 
-                <dt>Dataset Information</dt>
+                <dt>Data Set Information</dt>
                 <dd>
                     <a
                         href=${variable.dataProductDescriptionUrl}

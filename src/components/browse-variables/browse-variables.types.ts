@@ -61,7 +61,7 @@ export type Variable = {
     dataProductEndDateTime: string
     dataFieldKeywords: string[]
     dataFieldUnits: string
-    // dataset landing page
+    // data set landing page
     dataProductDescriptionUrl: string
     // variable landing page
     dataFieldDescriptionUrl: string

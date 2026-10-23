@@ -2626,7 +2626,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         return html`
             <dl class="params-summary">
                 <div>
-                    <dt><strong>Dataset</strong></dt>
+                    <dt><strong>Data Set</strong></dt>
                     <dd>${collection?.EntryTitle ?? '—'}</dd>
                 </div>
                 <div>

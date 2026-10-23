@@ -73,7 +73,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
 
     /**
-     * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
+     * if you include an application citation, it will be displayed in the citation panel alongside the data set citation
      */
     @property({ attribute: 'application-citation' })
     applicationCitation?: string
@@ -737,7 +737,7 @@ export default class TerraPlotToolbar extends TerraElement {
                     <code>${this.catalogVariable.dataFieldUnits}</code>
                 </dd>
 
-                <dt>Dataset Information</dt>
+                <dt>Data Set Information</dt>
                 <dd>
                     <a
                         href=${this.catalogVariable.dataProductDescriptionUrl}
@@ -878,7 +878,7 @@ export default class TerraPlotToolbar extends TerraElement {
                         href=${this.catalogVariable.dataProductDescriptionUrl}
                         rel="noopener noreffer"
                         target="_blank"
-                        >Dataset Information
+                        >Data Set Information
                         <terra-icon
                             name="outline-arrow-top-right-on-square"
                             library="heroicons"

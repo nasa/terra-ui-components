@@ -623,7 +623,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
             parts.push(this.catalogVariable.dataProductSpatialResolution)
         }
 
-        // Add dataset info in brackets
+        // Add data set info in brackets
         if (this.catalogVariable.dataProductShortName) {
             let datasetInfo = `[${this.catalogVariable.dataProductShortName}`
             if (this.catalogVariable.dataProductVersion) {
