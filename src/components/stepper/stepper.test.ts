@@ -10,17 +10,13 @@ describe('<terra-stepper>', () => {
         })
 
         it('should render with base part', async () => {
-            const el: any = await fixture(
-                html` <terra-stepper></terra-stepper> `,
-            )
+            const el: any = await fixture(html` <terra-stepper></terra-stepper> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base).to.exist
         })
 
         it('should have stepper class', async () => {
-            const el: any = await fixture(
-                html` <terra-stepper></terra-stepper> `,
-            )
+            const el: any = await fixture(html` <terra-stepper></terra-stepper> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.classList.contains('stepper')).to.be.true
         })
@@ -42,9 +38,7 @@ describe('<terra-stepper>', () => {
         })
 
         it('should default variant to default', async () => {
-            const el: any = await fixture(
-                html` <terra-stepper></terra-stepper> `,
-            )
+            const el: any = await fixture(html` <terra-stepper></terra-stepper> `)
             expect(el.variant).to.equal('default')
         })
 
@@ -81,10 +75,9 @@ describe('<terra-stepper>', () => {
 
             // Check that data attributes are set
             expect(steps[0].hasAttribute('data-terra-stepper__step')).to.be.true
-            expect(steps[0].hasAttribute('data-terra-stepper__step--first')).to
-                .be.true
-            expect(steps[2].hasAttribute('data-terra-stepper__step--last')).to
-                .be.true
+            expect(steps[0].hasAttribute('data-terra-stepper__step--first')).to.be
+                .true
+            expect(steps[2].hasAttribute('data-terra-stepper__step--last')).to.be.true
         })
 
         it('should mark first step correctly', async () => {
@@ -97,10 +90,10 @@ describe('<terra-stepper>', () => {
             await elementUpdated(el)
 
             const firstStep = el.querySelector('terra-stepper-step')
-            expect(firstStep.hasAttribute('data-terra-stepper__step--first')).to
-                .be.true
-            expect(firstStep.hasAttribute('data-terra-stepper__step--last')).to
-                .be.false
+            expect(firstStep.hasAttribute('data-terra-stepper__step--first')).to.be
+                .true
+            expect(firstStep.hasAttribute('data-terra-stepper__step--last')).to.be
+                .false
         })
 
         it('should mark last step correctly', async () => {
@@ -114,10 +107,9 @@ describe('<terra-stepper>', () => {
 
             const steps = el.querySelectorAll('terra-stepper-step')
             const lastStep = steps[steps.length - 1]
-            expect(lastStep.hasAttribute('data-terra-stepper__step--last')).to
-                .be.true
-            expect(lastStep.hasAttribute('data-terra-stepper__step--first')).to
-                .be.false
+            expect(lastStep.hasAttribute('data-terra-stepper__step--last')).to.be.true
+            expect(lastStep.hasAttribute('data-terra-stepper__step--first')).to.be
+                .false
         })
 
         it('should handle single step', async () => {
@@ -129,10 +121,8 @@ describe('<terra-stepper>', () => {
             await elementUpdated(el)
 
             const step = el.querySelector('terra-stepper-step')
-            expect(step.hasAttribute('data-terra-stepper__step--first')).to.be
-                .true
-            expect(step.hasAttribute('data-terra-stepper__step--last')).to.be
-                .true
+            expect(step.hasAttribute('data-terra-stepper__step--first')).to.be.true
+            expect(step.hasAttribute('data-terra-stepper__step--last')).to.be.true
         })
 
         it('should update when steps are added', async () => {
@@ -150,10 +140,9 @@ describe('<terra-stepper>', () => {
 
             const steps = el.querySelectorAll('terra-stepper-step')
             expect(steps.length).to.equal(2)
-            expect(steps[0].hasAttribute('data-terra-stepper__step--first')).to
-                .be.true
-            expect(steps[1].hasAttribute('data-terra-stepper__step--last')).to
-                .be.true
+            expect(steps[0].hasAttribute('data-terra-stepper__step--first')).to.be
+                .true
+            expect(steps[1].hasAttribute('data-terra-stepper__step--last')).to.be.true
         })
     })
 
@@ -189,9 +178,7 @@ describe('<terra-stepper>', () => {
 
     describe('Edge Cases', () => {
         it('should handle empty stepper', async () => {
-            const el: any = await fixture(
-                html` <terra-stepper></terra-stepper> `,
-            )
+            const el: any = await fixture(html` <terra-stepper></terra-stepper> `)
             await elementUpdated(el)
             expect(el).to.exist
         })

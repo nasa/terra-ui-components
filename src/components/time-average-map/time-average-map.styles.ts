@@ -30,7 +30,9 @@ export default css`
         position: absolute;
         bottom: 10px;
         left: 10px;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--terra-container-panel-bg, #ffffff);
+        color: var(--terra-text-primary, #333333);
+        border: 1px solid var(--terra-container-panel-border, rgba(0, 0, 0, 0.2));
         padding: 8px 10px;
         border-radius: 4px;
         font-size: 12px;
@@ -45,12 +47,14 @@ export default css`
     }
 
     #legend {
-        font-family: sans-serif;
         position: absolute;
         z-index: 1;
         right: 1em;
         top: 1em;
-        background-color: white;
+        bottom: 1em;
+        background-color: var(--terra-container-panel-bg, #ffffff);
+        color: var(--terra-text-primary, #333333);
+        border: 1px solid var(--terra-container-panel-border, rgba(0, 0, 0, 0.2));
         opacity: 1;
         padding: 0.5em;
         border-radius: 0.2em;
@@ -61,9 +65,18 @@ export default css`
         flex-direction: column;
     }
 
-    .color-box {
+    .palette {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
         width: 3.5em;
-        height: 0.375em;
+    }
+
+    .color-box {
+        width: 100%;
+        flex: 1 1 0;
+        min-height: 0;
     }
 
     dialog {
@@ -98,12 +111,18 @@ export default css`
 
     :root,
     :host {
-        --ol-background-color: white;
-        --ol-accent-background-color: #f5f5f5;
-        --ol-subtle-background-color: rgba(128, 128, 128, 0.25);
+        --ol-background-color: var(--terra-container-panel-bg, white);
+        --ol-accent-background-color: var(
+            --terra-color-bg-surface-neutral-secondary,
+            #f5f5f5
+        );
+        --ol-subtle-background-color: var(
+            --terra-color-bg-surface-neutral-secondary,
+            rgba(128, 128, 128, 0.25)
+        );
         --ol-partial-background-color: rgba(255, 255, 255, 0.75);
-        --ol-foreground-color: #333333;
-        --ol-subtle-foreground-color: #666666;
+        --ol-foreground-color: var(--terra-text-primary, #333333);
+        --ol-subtle-foreground-color: var(--terra-text-secondary, #666666);
         --ol-brand-color: #00aaff;
     }
 
@@ -413,7 +432,7 @@ export default css`
         }
 
         #settings {
-            bottom: 100px;
+            bottom: 5px;
             left: 5px;
             padding: 6px 8px;
             font-size: 11px;
@@ -426,7 +445,7 @@ export default css`
         }
 
         #settings {
-            bottom: 80px;
+            bottom: 5px;
             left: 5px;
             padding: 4px 6px;
             font-size: 10px;

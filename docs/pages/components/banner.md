@@ -24,6 +24,7 @@ const App = () => (
   </TerraBanner>
 );
 ```
+
 :::tip
 Banners will not be visible if the open attribute is not present.
 :::

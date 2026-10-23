@@ -376,4 +376,32 @@ describe('<terra-time-average-map>', () => {
 
         expect(cancelJobStub.called).to.be.false
     })
+
+    it('should not render the legend when there are no legend values', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`
+        )
+
+        expect(el.legendValues).to.be.empty
+        const legend = el.shadowRoot?.querySelector('#legend')
+        expect(legend).to.not.exist
+    })
+
+    it('should render the legend once legend values are available', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`
+        )
+
+        el.legendValues = [
+            { value: '0', rgb: '0,0,0,1' },
+            { value: '1', rgb: '255,255,255,1' },
+        ]
+        await el.updateComplete
+
+        const legend = el.shadowRoot?.querySelector('#legend')
+        expect(legend).to.exist
+
+        const colorBoxes = el.shadowRoot?.querySelectorAll('#legend .color-box')
+        expect(colorBoxes?.length).to.equal(2)
+    })
 })

@@ -20,3 +20,11 @@ dev = ["watchfiles", "jupyterlab", "earthaccess"]
 # https://peps.python.org/pep-0735/
 [dependency-groups]
 dev = ["watchfiles", "jupyterlab", "hatch"]
+
+[tool.uv.workspace]
+members = [
+    "examples/fastmcp-example",
+]
+
+[tool.hatch.build]
+exclude = ["examples/"]

@@ -1,6 +1,7 @@
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { ImageTile } from 'ol'
+import type { ImageTile } from 'ol'
+import type { Map, MapBrowserEvent } from 'ol'
 import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
@@ -806,6 +807,41 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         return dataObj
     }
 
+    renderPixelValues(map: Map, gtLayer: WebGLTileLayer) {
+        const updatePixelValue = (event: MapBrowserEvent) => {
+            let data = gtLayer.getData(event.pixel)
+            const coordinate = toLonLat(event.coordinate)
+
+            if (
+                !data ||
+                !(
+                    data instanceof Uint8Array ||
+                    data instanceof Uint8ClampedArray ||
+                    data instanceof Float32Array
+                ) ||
+                isNaN(data[0]) ||
+                data[0] === 0
+            ) {
+                data = null
+            }
+
+            const val = data ? Number(data[0]).toExponential(3) : 'N/A'
+            const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
+
+            this.pixelValue = val
+            this.pixelCoordinates = coordStr
+        }
+
+        // desktop: read the value continuously as the mouse hovers
+        map.on('pointermove', updatePixelValue)
+
+        // touch devices have no hover state, so `pointermove` only fires while
+        // actively dragging a finger. `singleclick` fires on tap-release and is
+        // only triggered when the pointer didn't move beyond OL's click
+        // tolerance, so it won't fire during a pan/drag gesture.
+        map.on('singleclick', updatePixelValue)
+    }
+
     // Get the fill value from the GeoTIFF file
     getNoDataValue(gtSource: DataTileSource<DataTile | ImageTile> | null) {
         let ndv = this.noDataValue
@@ -915,10 +951,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
 
     async applyColorToLayer(
         gtSource: DataTileSource<DataTile | ImageTile>,
-        color: String
+        color: string
     ) {
         var { min, max } = await this.getMinMax(gtSource)
-        let gtStyle = {
+        const gtStyle = {
             color: [
                 'case',
                 ['==', ['band', 2], 0],
@@ -1153,41 +1189,45 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
 
     render() {
         return html`
-            ${this.#isVariableNotFound()
-                ? html`
-                      <terra-alert
-                          class="no-data-alert"
-                          variant="danger"
-                          open
-                          closable
-                      >
-                          <terra-icon
-                              slot="icon"
-                              name="outline-exclamation-triangle"
-                              library="heroicons"
-                          ></terra-icon>
-                          The selected variable was not found in the catalog
-                      </terra-alert>
-                  `
-                : ''}
-            ${this.timeAverageMapError
-                ? html`
-                      <terra-alert
-                          class="error-alert"
-                          variant="danger"
-                          open
-                          closable
-                          @terra-after-hide=${() => (this.timeAverageMapError = null)}
-                      >
-                          <terra-icon
-                              slot="icon"
-                              name="outline-exclamation-triangle"
-                              library="heroicons"
-                          ></terra-icon>
-                          ${this.#getErrorMessage(this.timeAverageMapError)}
-                      </terra-alert>
-                  `
-                : ''}
+            ${
+                this.#isVariableNotFound()
+                    ? html`
+                          <terra-alert
+                              class="no-data-alert"
+                              variant="danger"
+                              open
+                              closable
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              The selected variable was not found in the catalog
+                          </terra-alert>
+                      `
+                    : ''
+            }
+            ${
+                this.timeAverageMapError
+                    ? html`
+                          <terra-alert
+                              class="error-alert"
+                              variant="danger"
+                              open
+                              closable
+                              @terra-after-hide=${() => (this.timeAverageMapError = null)}
+                          >
+                              <terra-icon
+                                  slot="icon"
+                                  name="outline-exclamation-triangle"
+                                  library="heroicons"
+                              ></terra-icon>
+                              ${this.#getErrorMessage(this.timeAverageMapError)}
+                          </terra-alert>
+                      `
+                    : ''
+            }
             <div class="toolbar-container">
                 ${cache(
                     this.catalogVariable
@@ -1230,66 +1270,79 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                     </div>
                 </div>
 
-                <div id="legend">
-                    <div class="stats" id="statsMax">${this.max}</div>
-                    <div class="palette">
-                        ${this.legendValues.map(
-                            value => html`
-                                <div
-                                    class="color-box"
-                                    style="background-color: rgba(${value.rgb})"
-                                    title="${value.value}"
-                                ></div>
-                            `
-                        )}
-                    </div>
-                    <div class="stats" id="statsMin">${this.min}</div>
-                </div>
+                ${
+                    this.legendValues.length > 0
+                        ? html`
+                              <div id="legend">
+                                  <div class="stats" id="statsMax">${this.max}</div>
+                                  <div class="palette">
+                                      ${this.legendValues.map(
+                                          value => html`
+                                              <div
+                                                  class="color-box"
+                                                  style="background-color: rgba(${value.rgb})"
+                                                  title="${value.value}"
+                                              ></div>
+                                          `
+                                      )}
+                                  </div>
+                                  <div class="stats" id="statsMin">${this.min}</div>
+                              </div>
+                          `
+                        : nothing
+                }
             </div>
 
-            ${this.harmonyJobId
-                ? html`
-                      <div class="harmony-job-link">
-                          <a
-                              href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                          >
-                              Request Status: ${this.harmonyJobId}
-                          </a>
-                      </div>
-                  `
-                : nothing}
+            ${
+                this.harmonyJobId
+                    ? html`
+                          <div class="harmony-job-link">
+                              <a
+                                  href=${`https://harmony${this.environment === Environment.UAT ? '.uat' : ''}.earthdata.nasa.gov/jobs/${this.harmonyJobId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                              >
+                                  Request Status: ${this.harmonyJobId}
+                              </a>
+                          </div>
+                      `
+                    : nothing
+            }
 
             <!-- Floating Popover for Plot -->
-            ${this.toggleState &&
-            this.plotData &&
-            Object.keys(this.plotData).length &&
-            this.layout &&
-            Object.keys(this.layout).length
-                ? html`
-                      <div class="plot-popover ${this.minimized ? 'minimized' : ''}">
-                          <terra-plot
-                              style="display: ${this.minimized ? 'none' : 'block'}"
-                              .data=${this.plotData}
-                              plotTitle="Data Profile"
-                              .layout=${this.layout}
+            ${
+                this.toggleState &&
+                this.plotData &&
+                Object.keys(this.plotData).length &&
+                this.layout &&
+                Object.keys(this.layout).length
+                    ? html`
+                          <div
+                              class="plot-popover ${this.minimized ? 'minimized' : ''}"
                           >
-                          </terra-plot>
+                              <terra-plot
+                                  style="display: ${this.minimized ? 'none' : 'block'}"
+                                  .data=${this.plotData}
+                                  plotTitle="Data Profile"
+                                  .layout=${this.layout}
+                              >
+                              </terra-plot>
 
-                          <terra-button
-                              class="minify-btn"
-                              @click=${this.#minifyMapPopover}
-                          >
-                              ${this.minimized ? 'Restore' : 'Minimize'}
-                          </terra-button>
-                      </div>
-                  `
-                : null}
+                              <terra-button
+                                  class="minify-btn"
+                                  @click=${this.#minifyMapPopover}
+                              >
+                                  ${this.minimized ? 'Restore' : 'Minimize'}
+                              </terra-button>
+                          </div>
+                      `
+                    : null
+            }
 
             <dialog
-                ?open=${this.#controller?.jobStatusTask?.status ===
-                TaskStatus.PENDING}
+                ?open=${
+                    this.#controller?.jobStatusTask?.status === TaskStatus.PENDING
+                }
             >
                 <terra-loader indeterminate variant="orbit"></terra-loader>
                 <p>Plotting ${this.catalogVariable?.dataFieldId}&hellip;</p>
