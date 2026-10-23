@@ -2682,7 +2682,9 @@ export default class TerraDatePicker extends TerraElement {
                                             type="button"
                                             class="date-picker__preset"
                                             @click=${() =>
-                                                this.selectPreset(preset)}
+                                                this.selectPreset(
+                                                    preset
+                                                )}
                                         >
                                             ${preset.label}
                                         </button>
@@ -2712,15 +2714,18 @@ export default class TerraDatePicker extends TerraElement {
 
                 <div class="presets">
                     ${this.filteredPresets.map(
-                        (preset) => html`
+                        preset => html`
                             <button
                                 type="button"
                                 class="date-picker__preset"
-                                @click=${() => this.selectPreset(preset)}
+                                @click=${() =>
+                                    this.selectPreset(
+                                        preset
+                                    )}
                             >
                                 ${preset.label}
                             </button>
-                        `,
+                        `
                     )}
                 </div>
 
@@ -2780,41 +2785,7 @@ export default class TerraDatePicker extends TerraElement {
                      : nothing
              }
                 <div class="date-picker__content">
-                    ${
-                        this.showPresets && this.filteredPresets.length > 0
-                            ? html`
-                              <div class="date-picker__sidebar" part="sidebar">
-                                  <slot name="sidebar-header"></slot>
-
-                                  <div class="presets">
-                                      ${this.filteredPresets.map(
-                                          preset => html`
-                                              <button
-                                                  type="button"
-                                                  class="date-picker__preset"
-                                                  @click=${() =>
-                                                      this.selectPreset(preset)}
-                                              >
-                                                  ${preset.label}
-                                              </button>
-                                          `
-                                      )}
-                                  </div>
-
-                                  <slot name="sidebar-footer">
-                                      <terra-button
-                                          outline
-                                          variant="default"
-                                          size="small"
-                                          @click=${() => this.clear()}
-                                      >
-                                          ${this.clearAllLabel}
-                                      </terra-button>
-                                  </slot>
-                              </div>
-                          `
-                            : ''
-                    }
+                    ${this.renderPresets()}
 
                     <div class="date-picker__calendars">
                         ${this.renderCalendar(this.leftMonth, true)}
@@ -2907,47 +2878,7 @@ export default class TerraDatePicker extends TerraElement {
                             part="calendar"
                         >
                             <div class="date-picker__content">
-                                ${
-                                    this.showPresets &&
-                                    this.filteredPresets.length > 0
-                                        ? html`
-                                          <div
-                                              class="date-picker__sidebar"
-                                              part="sidebar"
-                                          >
-                                              <slot name="sidebar-header"></slot>
-
-                                              <div class="presets">
-                                                  ${this.filteredPresets.map(
-                                                      preset => html`
-                                                          <button
-                                                              type="button"
-                                                              class="date-picker__preset"
-                                                              @click=${() =>
-                                                                  this.selectPreset(
-                                                                      preset
-                                                                  )}
-                                                          >
-                                                              ${preset.label}
-                                                          </button>
-                                                      `
-                                                  )}
-                                              </div>
-
-                                              <slot name="sidebar-footer">
-                                                  <terra-button
-                                                      outline
-                                                      variant="default"
-                                                      size="small"
-                                                      @click=${() => this.clear()}
-                                                  >
-                                                      ${this.clearAllLabel}
-                                                  </terra-button>
-                                              </slot>
-                                          </div>
-                                      `
-                                        : ''
-                                }
+                                ${this.renderPresets()}
 
                                 <div class="date-picker__calendars">
                                     ${this.renderCalendar(this.leftMonth, true)}

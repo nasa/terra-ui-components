@@ -77,19 +77,6 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         super.connectedCallback()
     }
 
-    disconnectedCallback() {
-
-        super.disconnectedCallback()
-        if (this.#boundHandleCloudCoverClickOutside) {
-            document.removeEventListener(
-                'click',
-                this.#boundHandleCloudCoverClickOutside,
-            )
-            this.#boundHandleCloudCoverClickOutside = null
-        }
-
-    }
-
     service = new DataAccessService()
 
     @property({
