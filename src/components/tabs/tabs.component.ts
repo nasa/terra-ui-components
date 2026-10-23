@@ -46,6 +46,7 @@ export default class TerraTabs extends TerraElement {
     }
 
     private activeTab?: TerraTab
+    #intersectionObserver: IntersectionObserver
     private mutationObserver: MutationObserver
     private resizeObserver: ResizeObserver
     private tabs: TerraTab[] = []
@@ -169,30 +170,42 @@ export default class TerraTabs extends TerraElement {
                 this.resizeObserver.observe(this.nav)
             }
 
-            // Wait for tabs and tab panels to be registered
-            whenAllDefined.then(() => {
-                // Set initial tab state when the tabs become visible
-                const intersectionObserver = new IntersectionObserver(
-                    (entries, observer) => {
-                        if (entries[0].intersectionRatio > 0) {
-                            this.setAriaLabels()
-                            this.setActiveTab(this.getActiveTab() ?? this.tabs[0], {
-                                emitEvents: false,
-                            })
-                            observer.unobserve(entries[0].target)
-                        }
-                    }
-                )
-                if (this.tabsElement) {
-                    intersectionObserver.observe(this.tabsElement)
-                }
-            })
+      whenAllDefined.then(() => {
+        // Initialize semantic state (ARIA and active tab selection) immediately
+        this.setAriaLabels();
+
+        const initialTab = this.getActiveTab() ?? this.tabs[0];
+
+        if (initialTab) {
+          this.setActiveTab(initialTab, { emitEvents: false });
+        }
+
+        // Sync layout-dependent state (indicator & scroll position) when the tabs become visible
+        this.#intersectionObserver = new IntersectionObserver((entries, observer) => {
+          if (entries[0].intersectionRatio > 0) {
+            this.syncIndicator();
+            this.updateScrollControls();
+
+            if (this.activeTab && ["top", "bottom"].includes(this.placement)) {
+              scrollIntoView(this.activeTab, this.nav, "horizontal");
+            }
+
+            observer.unobserve(entries[0].target);
+          }
+
+        });
+
+        if (this.tabsElement) {
+          this.#intersectionObserver.observe(this.tabsElement);
+        }
+      });
         })
     }
 
     disconnectedCallback() {
         super.disconnectedCallback()
         this.mutationObserver?.disconnect()
+        this.#intersectionObserver?.disconnect()
 
         if (this.nav) {
             this.resizeObserver?.unobserve(this.nav)
