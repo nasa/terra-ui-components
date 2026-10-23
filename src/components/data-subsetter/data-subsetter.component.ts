@@ -1,29 +1,40 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
+import type { CmrSearchResult } from '../../apis/cmr.api.js'
+import {
+    type ConfiguredOutputFormat,
+    harmonyApi,
+    OUTPUT_MIME_TYPES,
+    Status,
+    type SubsetJobLink,
+    type Variable,
+} from '../../apis/harmony.api.js'
 import { AuthController } from '../../auth/auth.controller.js'
 import {
     CollectionController,
     type CollectionWithAvailableServices,
 } from '../../controllers/collection.controller.js'
+import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
 import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
+import { HttpException } from '../../exceptions/http.exception.js'
 import { debounce } from '../../internal/debounce.js'
 import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
-import type { CmrSearchResult } from '../../apis/cmr.api.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
-
 import cmrVariableService from '../../services/cmr-variable.service.js'
 import componentStyles from '../../styles/component.styles.js'
 import { getBasePath } from '../../utilities/base-path.js'
-import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
+import { formatDate, getUTCDate } from '../../utilities/date.js'
 import { isFeatureEnabled, KnownFeatureFlags } from '../../utilities/feature-flags.js'
+import { convertVariableEntryIdToGiovanniFormat } from '../../utilities/giovanni.js'
 import TerraAccordion from '../accordion/accordion.component.js'
 import TerraAlert from '../alert/alert.component.js'
 import TerraButton from '../button/button.component.js'
@@ -44,18 +55,6 @@ import TerraSlider from '../slider/slider.component.js'
 import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
 import styles from './data-subsetter.styles.js'
 import { getNotebook } from './notebooks/subsetter-notebook.js'
-import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
-import { getUTCDate, formatDate } from '../../utilities/date.js'
-import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
-import {
-    harmonyApi,
-    OUTPUT_MIME_TYPES,
-    Status,
-    type ConfiguredOutputFormat,
-    type SubsetJobLink,
-    type Variable,
-} from '../../apis/harmony.api.js'
-import { HttpException } from '../../exceptions/http.exception.js'
 
 const defaultOutputFormat: ConfiguredOutputFormat = {
     key: OUTPUT_MIME_TYPES['NETCDF-4'],
@@ -269,7 +268,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     @state()
     isLoadingMoreLinks: boolean = false
 
-    #activeNextLink: string | null = null
+    #activeNextLink: string | null | undefined = undefined
 
     @query('[part~="spatial-picker"]')
     spatialPicker: TerraSpatialPicker
@@ -295,7 +294,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             // reset the WebLinks count when switching to a new jobId to reset "Load More" behavior
             this.visibleWebLinksCount = 100
             this.additionalJobLinks = []
-            this.#activeNextLink = null
+            this.#activeNextLink = undefined
             this.#harmonyRequestController.startPollForJobStatus(this.jobId, {
                 bearerToken: this.bearerToken,
             })
@@ -390,7 +389,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             this.additionalJobLinks.length > 0
         ) {
             this.additionalJobLinks = []
-            this.#activeNextLink = null
+            this.#activeNextLink = undefined
         }
 
         // Sync collection data from CollectionController into @state properties so
@@ -3024,7 +3023,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #getNextLink(): string | null {
-        if (this.#activeNextLink) {
+        if (this.#activeNextLink !== undefined) {
             return this.#activeNextLink
         }
         const link = this.#harmonyRequestController.data?.links.find(
@@ -3215,7 +3214,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         this.harmonyRequestError = undefined
         this.visibleWebLinksCount = 100
         this.additionalJobLinks = []
-        this.#activeNextLink = null
+        this.#activeNextLink = undefined
         // Scroll to the top of the component
         setTimeout(() => {
             const container = this.renderRoot.querySelector('.container')
