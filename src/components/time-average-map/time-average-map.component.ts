@@ -1,46 +1,45 @@
+import { TaskStatus } from '@lit/task'
+import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { ImageTile } from 'ol'
-import type { Map, MapBrowserEvent } from 'ol'
-import WebGLTileLayer from 'ol/layer/WebGLTile.js'
-import VectorLayer from 'ol/layer/Vector.js'
-import VectorSource from 'ol/source/Vector.js'
-import type GeoTIFF from 'ol/source/GeoTIFF.js'
-import Draw from 'ol/interaction/Draw.js'
-import Point from 'ol/geom/Point.js'
-import { getLength } from 'ol/sphere.js'
+import { cache } from 'lit/directives/cache.js'
+import type { ImageTile, Map, MapBrowserEvent } from 'ol'
+import type DataTile from 'ol/DataTile.js'
 import Feature from 'ol/Feature.js'
+import Point from 'ol/geom/Point.js'
+import Draw from 'ol/interaction/Draw.js'
+import VectorLayer from 'ol/layer/Vector.js'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
+import { toLonLat } from 'ol/proj.js'
+import type DataTileSource from 'ol/source/DataTile.js'
+import type GeoTIFF from 'ol/source/GeoTIFF.js'
+import VectorSource from 'ol/source/Vector.js'
+import { getLength } from 'ol/sphere.js'
+import type { TerraMapPointerMoveEvent } from '../../events/events.js'
+import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 import TerraElement from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
-import styles from './time-average-map.styles.js'
-import type { CSSResultGroup } from 'lit'
-import { TimeAvgMapController } from './time-average-map.controller.js'
-import TerraButton from '../button/button.component.js'
-import TerraPlot from '../plot/plot.component.js'
-import TerraIcon from '../icon/icon.component.js'
-import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
-import TerraAlert from '../alert/alert.component.js'
-import TerraMap from '../map/map.component.js'
-import type { TerraMapPointerMoveEvent } from '../../events/events.js'
-import { TaskStatus } from '@lit/task'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
-import { cache } from 'lit/directives/cache.js'
-import { AuthMixin } from '../../mixins/auth.mixin.js'
-import { toLonLat } from 'ol/proj.js'
-import { getFetchVariableTask } from '../../utilities/variable-task.js'
-import { getVariableEntryId } from '../../utilities/variable.js'
+import { formatDate } from '../../utilities/date.js'
+import { Environment } from '../../utilities/environment.js'
 import {
     extractHarmonyError,
     formatHarmonyErrorMessage,
 } from '../../utilities/harmony.js'
-import { watch } from '../../internal/watch.js'
+import { getVariableEntryId } from '../../utilities/variable.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import TerraAlert from '../alert/alert.component.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import TerraButton from '../button/button.component.js'
+import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
-import { formatDate } from '../../utilities/date.js'
-import { Environment } from '../../utilities/environment.js'
-import type DataTileSource from 'ol/source/DataTile.js'
-import type DataTile from 'ol/DataTile.js'
-import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
+import TerraMap from '../map/map.component.js'
+import TerraPlot from '../plot/plot.component.js'
+import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
+import { TimeAvgMapController } from './time-average-map.controller.js'
+import styles from './time-average-map.styles.js'
 
 export default class TerraTimeAverageMap extends AuthMixin(
     QueryClientMixin(TerraElement)
@@ -943,10 +942,10 @@ export default class TerraTimeAverageMap extends AuthMixin(
 
     async applyColorToLayer(
         gtSource: DataTileSource<DataTile | ImageTile>,
-        color: String
+        color: string
     ) {
         var { min, max } = await this.getMinMax(gtSource)
-        let gtStyle = {
+        const gtStyle = {
             color: [
                 'case',
                 ['==', ['band', 2], 0],
@@ -997,10 +996,10 @@ export default class TerraTimeAverageMap extends AuthMixin(
         /*
 
         Breaks a drawn line into evenly spaced points.
-    
+
         Uses the number of points calculated from #getNumberOfPoints(line)
         to split the line into equal segments.
-    
+
         Example:
 
         If numPoints = 4, the fractions along the line will be:
@@ -1009,7 +1008,7 @@ export default class TerraTimeAverageMap extends AuthMixin(
             i = 2  → 0.5   (middle)
             i = 3  → 0.75  (75% along)
             i = 4  → 1.0   (end)
-    
+
         Returns an array of coordinates representing these evenly spaced points.
         */
 
