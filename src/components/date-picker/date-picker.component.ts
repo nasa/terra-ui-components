@@ -1,14 +1,14 @@
-import { property, state, query } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
-import { createRef, ref } from 'lit/directives/ref.js'
-import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
-import styles from './date-picker.styles.js'
-import type { CSSResultGroup } from 'lit'
-import TerraButton from '../button/button.component.js'
-import TerraInput from '../input/input.component.js'
-import TerraDropdown from '../dropdown/dropdown.component.js'
 import { isValid } from 'date-fns'
+import type { CSSResultGroup } from 'lit'
+import { html, nothing } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
+import { createRef, ref } from 'lit/directives/ref.js'
+import TerraElement from '../../internal/terra-element.js'
+import componentStyles from '../../styles/component.styles.js'
+import TerraButton from '../button/button.component.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraInput from '../input/input.component.js'
+import styles from './date-picker.styles.js'
 
 interface DateRange {
     startDate: Date | null
@@ -587,9 +587,7 @@ export default class TerraDatePicker extends TerraElement {
             getValue: () => {
                 const now = new Date()
 
-                if (dayOffset !== 0) {
-                    now.setDate(now.getDate() - dayOffset)
-                }
+                now.setDate(now.getDate() - dayOffset)
 
                 return {
                     startDate: now,
@@ -2074,7 +2072,7 @@ export default class TerraDatePicker extends TerraElement {
                                 type="button"
                                 class="calendar__day ${
                                     !isCurrentMonth ? 'calendar__day--outside' : ''
-                                } 
+                                }
                                        ${isSelected ? 'calendar__day--selected' : ''}
                                        ${isStart ? 'calendar__day--start' : ''}
                                        ${isEnd ? 'calendar__day--end' : ''}
