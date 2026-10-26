@@ -255,20 +255,27 @@ export class DrawToolbarControl extends Control {
         return 'Click to draw'
     }
 
-    #getDrawDefaults() {
+    static getDrawStyleDefaults() {
+        return new Style({
+            stroke: new Stroke({
+                color: '#DC143C',
+                width: 2,
+            }),
+            fill: new Fill({
+                color: 'rgba(220, 20, 60, 0.6)',
+            }),
+        })
+    }
+
+   #getDrawDefaults() {
+        const draw_style_defaults = DrawToolbarControl.getDrawStyleDefaults()
+        // When the polygon is being drawn, give it a line dash.
+        draw_style_defaults.getStroke()?.setLineDash([8, 4])
+
         return {
             source: this.vectorLayer.getSource() ?? undefined,
             dragVertexDelay: 0,
-            style: new Style({
-                stroke: new Stroke({
-                    color: '#0088ff',
-                    width: 2,
-                    lineDash: [8, 4],
-                }),
-                fill: new Fill({
-                    color: 'rgba(51, 136, 255, 0.1)',
-                }),
-            }),
+            style: draw_style_defaults
         }
     }
 
