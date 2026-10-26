@@ -18,6 +18,7 @@ layout: component
     show-polygon-selection
     show-point-selection
     show-circle-selection
+    show-layer-picker
 ></terra-map>
 
 <form style="max-width: 600px;">
@@ -59,6 +60,12 @@ layout: component
         Show Circle Selection
         </terra-checkbox>
     </div>
+
+    <div>
+        <terra-checkbox name="showLayerPicker" class="map-option">
+        Show Layer Picker
+        </terra-checkbox>
+    </div>
   </fieldset>
 </form>
 
@@ -93,7 +100,7 @@ This example disables infinite horizontal scrolling, restricting the map to a si
 
 ### Adding Custom Layers
 
-Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layers on the map (for example, a data overlay). By default a custom layer is inserted just above the base imagery layer and below the borders/labels layers, so borders/labels keep rendering on top of it; pass `{ position: 'top' }` to place it above everything else instead.
+Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layers on the map (for example, a data overlay). By default a custom layer is inserted just above the base imagery layer and below the borders/labels layers, so borders/labels keep rendering on top of it; pass `{ position: 'top' , title: 'My Custom Layer'}` to place it above everything else instead and to specify the display label shown in UI controls.
 
 ```html:preview
 <terra-map id="custom-layer-map" has-navigation></terra-map>
@@ -183,11 +190,12 @@ If you don't need to write JS, the `layers` attribute/property lets you declare 
 - `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
 - `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
 
-Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
+Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `title` (a human-readable label displayed in controls like the layer picker; defaults to `name` or the layer's source title), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
 
 ```html:preview
 <terra-map
-    layers='[{ "type": "gibs", "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
+    show-layer-picker
+    layers='[{ "type": "gibs", "name": "gibs-imagery", "title": "MODIS Terra True Color", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
 ></terra-map>
 ```
 
@@ -198,7 +206,7 @@ Changing the attribute/property later diffs against what's currently applied, by
 Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
 
 ```html:preview
-<terra-map collection-id="GPM_3IMERGHH_07"></terra-map>
+<terra-map collection-id="AIRS2RET_NRT_7.0" show-layer-picker></terra-map>
 ```
 
 Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped.

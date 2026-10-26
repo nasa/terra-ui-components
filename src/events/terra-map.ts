@@ -1,10 +1,10 @@
 import type { FeatureLike } from 'ol/Feature.js'
-import type { MapEventDetail } from '../components/map/type.js'
+import type { MapEventDetail, MapLayerToggleDetail } from '../components/map/type.js'
 import type { LatLng } from '../components/map/models/LatLng.js'
 
 export type TerraMapChangeEvent = CustomEvent<MapEventDetail>
 
-export type TerraSpatialPickerDrawDeletedEvent = CustomEvent<any>
+export type TerraSpatialPickerDrawDeletedEvent = CustomEvent<unknown>
 
 export type TerraMapPointerMoveEventDetail = {
     coordinate: [number, number]
@@ -56,6 +56,8 @@ export type TerraMapLayerErrorEventDetail = {
 
 export type TerraMapLayerErrorEvent = CustomEvent<TerraMapLayerErrorEventDetail>
 
+export type TerraMapLayerToggleEvent = CustomEvent<MapLayerToggleDetail>
+
 declare global {
     interface GlobalEventHandlersEventMap {
         'terra-map-change': TerraMapChangeEvent
@@ -67,5 +69,6 @@ declare global {
         'terra-map-zoom-change': TerraMapZoomChangeEvent
         'terra-map-layer-click': TerraMapLayerClickEvent
         'terra-map-layer-error': TerraMapLayerErrorEvent
+        'terra-map-layer-toggle': TerraMapLayerToggleEvent
     }
 }

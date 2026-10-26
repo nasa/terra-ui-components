@@ -14,6 +14,7 @@ export type {
     TerraMapZoomChangeEvent,
     TerraMapLayerClickEvent,
     TerraMapLayerErrorEvent,
+    TerraMapLayerToggleEvent,
 } from './terra-map.js'
 export type { TerraRemoveEvent } from './terra-remove.js'
 export type { TerraSearchEvent } from './terra-search.js'
@@ -35,7 +36,6 @@ export type { TerraPlotRelayoutEvent } from './terra-plot-relayout.js'
 export type { TerraSubsetJobCompleteEvent } from './terra-subset-job-complete.js'
 export type { TerraAccordionToggleEvent } from './terra-accordion-toggle.js'
 export type { TerraTimeAverageMapDataChangeEvent } from './terra-time-average-map-data-change.js'
-export type { TerraMapLayerChangeEvent } from './terra-map-layer-change.js'
 export type { TerraSliderChangeEvent } from './terra-slider-change.js'
 export type { TerraInputEvent } from './terra-input.js'
 export type { TerraFocusEvent } from './terra-focus.js'

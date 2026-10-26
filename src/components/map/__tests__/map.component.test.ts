@@ -70,12 +70,17 @@ describe('<terra-map> layers (gibs)', () => {
         it('parses a JSON array from the layers attribute', async () => {
             const el = await fixture<TerraMap>(html`
                 <terra-map
-                    layers='[{ "type": "gibs", "name": "imagery", "layer": "TestLayer" }]'
+                    layers='[{ "type": "gibs", "name": "imagery", "layer": "TestLayer", "title": "Custom Title" }]'
                 ></terra-map>
             `)
 
             expect(el.layers).to.deep.equal([
-                { type: 'gibs', name: 'imagery', layer: 'TestLayer' },
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    title: 'Custom Title',
+                },
             ])
         })
 
@@ -108,7 +113,7 @@ describe('<terra-map> layers (gibs)', () => {
 
             const layer = el.getLayer('imagery') as TileLayer | undefined
             expect(layer).to.exist
-            expect(layer!.getSource()).to.be.instanceOf(ImageTile)
+            expect(layer?.getSource()).to.be.instanceOf(ImageTile)
         })
 
         it('emits terra-map-layer-change once the layer is built', async () => {
@@ -235,7 +240,7 @@ describe('<terra-map> layers (gibs)', () => {
 
             const layer = el.getLayer('polar') as TileLayer | undefined
             expect(layer).to.exist
-            expect(layer!.getSource()).to.be.instanceOf(WMTS)
+            expect(layer?.getSource()).to.be.instanceOf(WMTS)
         })
     })
 
@@ -425,7 +430,11 @@ describe('<terra-map> layers (geotiff)', () => {
         el.addEventListener('terra-map-layer-change', changeSpy)
 
         el.layers = [
-            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://example.com/data.tif',
+            },
         ]
 
         await waitUntil(() => changeSpy.called)
@@ -441,7 +450,11 @@ describe('<terra-map> layers (geotiff)', () => {
     it('removes a dropped entry without throwing, even if it never finished building', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
         el.layers = [
-            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://example.com/data.tif',
+            },
         ]
         await el.updateComplete
 
@@ -457,7 +470,11 @@ describe('<terra-map> layers (geotiff)', () => {
     it('getGeoTiffValueAtPixel returns undefined for a layer that never finished building', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
         el.layers = [
-            { type: 'geotiff', name: 'my-data', url: 'https://example.com/data.tif' },
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://example.com/data.tif',
+            },
         ]
         await el.updateComplete
 
@@ -468,10 +485,18 @@ describe('<terra-map> layers (geotiff)', () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
 
         el.layers = [
-            { type: 'geotiff', name: 'my-data', url: 'https://example.com/a.tif' },
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://example.com/a.tif',
+            },
         ]
         el.layers = [
-            { type: 'geotiff', name: 'my-data', url: 'https://example.com/b.tif' },
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://example.com/b.tif',
+            },
         ]
 
         // give both build attempts a chance to settle
@@ -479,6 +504,100 @@ describe('<terra-map> layers (geotiff)', () => {
 
         expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
         expect(el.getLayer('my-data')).to.not.exist
+    })
+})
+
+describe('<terra-map> layer picker', () => {
+    it('emits terra-map-layer-toggle and switches base layers when a radio option is selected', async () => {
+        const el = await fixture<TerraMap>(
+            html`<terra-map show-layer-picker></terra-map>`
+        )
+        const toggleSpy = sinon.spy()
+        el.addEventListener('terra-map-layer-toggle', toggleSpy)
+
+        const toggleBtn = el.shadowRoot?.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        expect(toggleBtn.style.display).to.equal('flex')
+
+        toggleBtn.click()
+
+        const radios = el.shadowRoot?.querySelectorAll(
+            '.layer-picker-panel input[type="radio"]'
+        ) as NodeListOf<HTMLInputElement>
+        expect(radios.length).to.equal(4)
+
+        // Select Corrected Reflectance (True Color) (second base layer)
+        radios[1].checked = true
+        radios[1].dispatchEvent(new Event('change'))
+
+        expect(el.getLayer('base')?.getVisible()).to.be.false
+        expect(el.getLayer('true-color')?.getVisible()).to.be.true
+        expect(el.getLayer('land-water')?.getVisible()).to.be.false
+        expect(el.getLayer('topo')?.getVisible()).to.be.false
+
+        expect(toggleSpy.calledOnce).to.be.true
+        const detail = toggleSpy.firstCall.args[0].detail
+        expect(detail).to.include({
+            name: 'true-color',
+            title: 'Corrected Reflectance (True Color)',
+            type: 'base',
+            visible: true,
+        })
+        expect(detail.layer).to.equal(el.getLayer('true-color'))
+    })
+
+    it('synchronizes showGraticule when the Graticule overlay checkbox is toggled', async () => {
+        const el = await fixture<TerraMap>(
+            html`<terra-map show-layer-picker show-graticule></terra-map>`
+        )
+        expect(el.showGraticule).to.be.true
+        expect(el.getLayer('graticule')?.getVisible()).to.be.true
+
+        const toggleBtn = el.shadowRoot?.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        toggleBtn.click()
+
+        const checkboxes = el.shadowRoot?.querySelectorAll(
+            '.layer-picker-panel input[type="checkbox"]'
+        ) as NodeListOf<HTMLInputElement>
+        // Graticule is the topmost overlay (first checkbox)
+        expect(checkboxes[0].checked).to.be.true
+
+        checkboxes[0].checked = false
+        checkboxes[0].dispatchEvent(new Event('change'))
+
+        expect(el.showGraticule).to.be.false
+        expect(el.getLayer('graticule')?.getVisible()).to.be.false
+    })
+
+    it('assigns custom title to the layer when provided', async () => {
+        const el = await fixture<TerraMap>(html`
+            <terra-map
+                layers='[{ "type": "gibs", "name": "imagery", "title": "Custom Title", "layer": "TestLayer" }]'
+            ></terra-map>
+        `)
+
+        await waitUntil(() => el.getLayer('imagery'))
+        const layer = el.getLayer('imagery')
+
+        expect(layer?.get('name')).to.equal('imagery')
+        expect(layer?.get('title')).to.equal('Custom Title')
+    })
+
+    it('falls back to name as layer title when title not provided', async () => {
+        const el = await fixture<TerraMap>(html`
+            <terra-map
+                layers='[{ "type": "gibs", "name": "layer_name", "layer": "TestLayer" }]'
+            ></terra-map>
+        `)
+
+        await waitUntil(() => el.getLayer('layer_name'))
+        const layer = el.getLayer('layer_name')
+
+        expect(layer?.get('name')).to.equal('layer_name')
+        expect(layer?.get('title')).to.equal('layer_name')
     })
 })
 

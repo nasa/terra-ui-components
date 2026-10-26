@@ -123,10 +123,12 @@ describe('CmrCollectionService', () => {
         it('builds a named GibsLayerConfig per entry', () => {
             const dayEntry = makeEntry({
                 product: 'AIRS_L2_Surface_Air_Temperature_Day',
+                title: 'Surface Air Temperature (L2, Day)',
                 format: 'png',
             })
             const nightEntry = makeEntry({
                 product: 'AIRS_L2_Surface_Air_Temperature_Night',
+                title: 'Surface Air Temperature (L2, Night)',
                 format: 'jpg',
             })
 
@@ -142,6 +144,7 @@ describe('CmrCollectionService', () => {
                     layer: 'AIRS_L2_Surface_Air_Temperature_Day',
                     date: undefined,
                     format: 'png',
+                    title: 'Surface Air Temperature (L2, Day)',
                     tileMatrixSet: 'GoogleMapsCompatible_Level6', // from the default 2km geographic_resolution
                     projection: undefined,
                     position: 'top',
@@ -153,6 +156,7 @@ describe('CmrCollectionService', () => {
                     layer: 'AIRS_L2_Surface_Air_Temperature_Night',
                     date: undefined,
                     format: 'jpg',
+                    title: 'Surface Air Temperature (L2, Night)',
                     tileMatrixSet: 'GoogleMapsCompatible_Level6',
                     projection: undefined,
                     position: 'top',

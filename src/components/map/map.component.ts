@@ -52,7 +52,6 @@ const layersConverter = {
  * @documentation https://terra-ui.netlify.app/components/map
  * @status stable
  * @since 1.0
- *
  * @event terra-map-change - Emitted when a point, bounding box, polygon, or circle is drawn/selected. `detail` is a `MapEventDetail` shaped by `detail.type` (`'point'`, `'bbox'`, `'polygon'`, `'circle'`).
  * @event terra-map-pointer-move - Emitted on mouse move over the map (while `show-mouse-coordinates` is set). `detail` is `{ coordinate, pixel }`.
  * @event terra-map-layer-change - Emitted when a declarative `layers` entry finishes building, successfully or not. `detail` is `{ name, type, info? }` on success, or `{ name, type, error }` on failure.
@@ -63,6 +62,7 @@ const layersConverter = {
  * @event terra-map-zoom-change - Emitted on every resolution change (no debouncing - use `terra-map-move-end` if only the settled value matters). `detail` is `{ zoom }`.
  * @event terra-map-layer-click - Emitted when a click hits a feature on a consumer-added layer. `detail` is `{ feature, layerName, latLng, pixel }`.
  * @event terra-map-layer-error - Emitted when a consumer-added layer fails to load a tile or image at runtime. `detail` is `{ name, error }`.
+ * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -127,6 +127,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
     @property({ attribute: 'show-circle-selection', type: Boolean })
     showCircleSelection: boolean = false
+
+    /**
+     * Whether to display the layer picker control on the map.
+     */
+    @property({ attribute: 'show-layer-picker', type: Boolean })
+    showLayerPicker: boolean = false
 
     @property({ type: Boolean })
     staticMode?: boolean = false
@@ -307,6 +313,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                       boundaryColorIndex: config.boundaryColorIndex,
                   }
                 : {}),
+            title: config.title,
         })
         result.layer.setVisible(config.visible ?? true)
 
@@ -372,6 +379,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         'showPointSelection',
         'showPolygonSelection',
         'showCircleSelection',
+        'showLayerPicker',
     ])
     drawButtonSelectionChanged() {
         this.#service?.updateDrawToolbarVisibility({
@@ -379,11 +387,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             showPointSelection: this.showPointSelection,
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
+            showLayerPicker: this.showLayerPicker,
         })
     }
 
     @watch('value')
-    valueChanged(_oldValue: any, newValue: any) {
+    valueChanged(_oldValue: string | undefined, newValue: string | undefined) {
         this.#service?.setValue(newValue)
     }
 
@@ -403,6 +412,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             showPointSelection: this.showPointSelection,
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
+            showLayerPicker: this.showLayerPicker,
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
@@ -416,6 +426,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             },
             onDraw: detail => {
                 this.emit('terra-map-change', { detail })
+            },
+            onLayerToggle: detail => {
+                if (detail.name === 'graticule') {
+                    this.showGraticule = detail.visible
+                }
+                this.emit('terra-map-layer-toggle', { detail })
             },
             onShapeLoading: loading => {
                 this.shapeLoading = loading
@@ -666,7 +682,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         return html`
             <select
                 class="map__select form-control"
-                @change=${(e: any) => this.#service?.handleShapeSelect(e)}
+                @change=${(e: Event) => this.#service?.handleShapeSelect(e)}
             >
                 <option value="">Select a Shape...</option>
 

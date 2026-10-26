@@ -1,4 +1,4 @@
-import { type Feature, Graticule, Map, type MapBrowserEvent, View } from 'ol'
+import { type Feature, Graticule, Map as OlMap, type MapBrowserEvent, View } from 'ol'
 import {
     toLonLat,
     fromLonLat,
@@ -20,19 +20,24 @@ import { isResizeObserverSupported } from '../../utilities/feature.js'
 import VectorSource, { type VectorSourceEvent } from 'ol/source/Vector.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import { Circle, Point, Polygon, type Geometry } from 'ol/geom.js'
+import { Control } from 'ol/control.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
+import { LayerPickerControl } from './controls/layer-picker.control.js'
 import { MapEventType, type MapEventDetail } from './type.js'
 import { LatLngBounds } from './models/LatLngBounds.js'
 import { LatLng } from './models/LatLng.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
-import { BaseLayer } from './layers/base.layer.js'
+import { buildDefaultBaseLayers } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
 import { LabelsLayer } from './layers/labels.layer.js'
 import { buildExtentFeature, getBoundaryStyle } from './layers/boundary.js'
+import type { MapLayerToggleDetail } from './type.js'
 
 export type AddLayerOptions = {
     name?: string
+    title?: string
+    type?: 'base' | 'overlay'
     position?: 'below-borders' | 'top'
     /**
      * Draws a boundary outline at this extent (`[west, south, east, north]`)
@@ -66,6 +71,7 @@ type MapOptions = {
     showPolygonSelection?: boolean
     showPointSelection?: boolean
     showCircleSelection?: boolean
+    showLayerPicker?: boolean
     noWorldWrap?: boolean
     value?: string
     fitToValue?: boolean
@@ -93,12 +99,14 @@ type MapOptions = {
         pixel: [number, number]
     ) => void
     onLayerError?: (name: string, error: Error) => void
+    onLayerToggle?: (detail: MapLayerToggleDetail) => void
 }
 
 export class MapService {
     #el: HTMLElement // the map component's root element
-    #map: Map
+    #map: OlMap
     #drawToolbarControl: DrawToolbarControl
+    #layerPickerControl: LayerPickerControl
     #options: MapOptions
     #shapeLayer: VectorLayer
     #boundaryLayer: VectorLayer
@@ -135,6 +143,12 @@ export class MapService {
     addLayer(layer: BaseLayerType, options: AddLayerOptions = {}) {
         if (options.name) {
             layer.set('name', options.name)
+        }
+        if (options.title || options.name) {
+            layer.set('title', options.title ?? layer.get('title') ?? options.name)
+        }
+        if (!layer.get('type')) {
+            layer.set('type', options.type ?? 'overlay')
         }
 
         this.#wireLayerErrorForwarding(layer)
@@ -543,7 +557,7 @@ export class MapService {
         return this.#map.getView().getRotation()
     }
 
-    setValue(value: string) {
+    setValue(value?: string) {
         if (!value) {
             this.#drawToolbarControl.clearValue()
             return
@@ -596,12 +610,16 @@ export class MapService {
         showPolygonSelection?: boolean
         showPointSelection?: boolean
         showCircleSelection?: boolean
+        showLayerPicker?: boolean
     }) {
         this.#drawToolbarControl.setOptions({
             showBboxTool: options.showBoundingBoxSelection,
             showPolygonTool: options.showPolygonSelection,
             showPointTool: options.showPointSelection,
             showCircleTool: options.showCircleSelection,
+        })
+        this.#layerPickerControl.setOptions({
+            showLayerPicker: options.showLayerPicker,
         })
     }
 
@@ -612,7 +630,8 @@ export class MapService {
         if (!selectedShape) return
 
         // Clear any previously loaded shape
-        this.#shapeLayer.getSource()!.clear()
+        const shapeSource = this.#shapeLayer.getSource()
+        shapeSource?.clear()
 
         this.#onShapeLoading?.(true)
 
@@ -627,11 +646,10 @@ export class MapService {
                 featureProjection: this.#map.getView().getProjection(),
             })
 
-            const source = this.#shapeLayer.getSource()!
-            source.addFeatures(features)
+            shapeSource?.addFeatures(features)
 
             // Fit the view to the shape's extent
-            const extent = source.getExtent()
+            const extent = shapeSource?.getExtent()
 
             if (!extent) {
                 return
@@ -659,19 +677,24 @@ export class MapService {
         this.#onDraw = options.onDraw
         this.#onShapeLoading = options.onShapeLoading
 
-        const baseLayer = new BaseLayer(options)
-        baseLayer.set('name', 'base')
-        baseLayer.set('__builtin', true)
+        const baseLayers = buildDefaultBaseLayers(options)
 
         const bordersLayer = new BordersLayer(options)
         bordersLayer.set('name', 'borders')
+        bordersLayer.set('title', 'International Boundaries')
+        bordersLayer.set('type', 'overlay')
         bordersLayer.set('__builtin', true)
 
         const labelsLayer = new LabelsLayer(options)
         labelsLayer.set('name', 'labels')
+        labelsLayer.set('title', 'Place Labels')
+        labelsLayer.set('type', 'overlay')
         labelsLayer.set('__builtin', true)
 
         const graticuleLayer = this.#createGraticuleLayer(options)
+        graticuleLayer.set('title', 'Graticule')
+        graticuleLayer.set('type', 'overlay')
+
         const drawLayer = this.#createDrawLayer()
         this.#shapeLayer = this.#createShapeLayer()
         this.#boundaryLayer = this.#createBoundaryLayer()
@@ -679,10 +702,10 @@ export class MapService {
         const projection = getProjection(options.projection ?? 'EPSG:3857')
         const worldExtent = projection?.getExtent()
 
-        const map = new Map({
+        const map = new OlMap({
             target: this.#el,
             layers: [
-                baseLayer,
+                ...baseLayers,
                 bordersLayer,
                 labelsLayer,
                 graticuleLayer,
@@ -753,14 +776,25 @@ export class MapService {
             }
         })
 
+        const toolbar = document.createElement('div')
+        toolbar.className = 'map-toolbar ol-unselectable ol-control'
+        map.addControl(new Control({ element: toolbar }))
+
         this.#drawToolbarControl = new DrawToolbarControl(drawLayer, {
             showBboxTool: options.showBoundingBoxSelection,
             showPolygonTool: options.showPolygonSelection,
             showPointTool: options.showPointSelection,
             showCircleTool: options.showCircleSelection,
+            target: toolbar,
         })
-
         map.addControl(this.#drawToolbarControl)
+
+        this.#layerPickerControl = new LayerPickerControl({
+            showLayerPicker: options.showLayerPicker,
+            onLayerToggle: options.onLayerToggle,
+            target: toolbar,
+        })
+        map.addControl(this.#layerPickerControl)
 
         if (options.value !== undefined) {
             this.setValue(options.value)
@@ -768,8 +802,8 @@ export class MapService {
 
         // listen for when any drawing is completed and dispatch a custom event with the drawn geometry
         drawLayer
-            .getSource()!
-            .on('addfeature', (event: VectorSourceEvent<Feature<Geometry>>) => {
+            .getSource()
+            ?.on('addfeature', (event: VectorSourceEvent<Feature<Geometry>>) => {
                 const drawtool = event.feature?.get('drawtool')
 
                 if (!drawtool) {
@@ -777,12 +811,13 @@ export class MapService {
                     return
                 }
 
-                const geometry = event.feature!.getGeometry()!
+                const geometry = event.feature?.getGeometry()
+                if (!geometry) return
                 const viewProjection = map.getView().getProjection()
 
                 if (drawtool === 'bbox') {
                     // transform the extent into lat/lng bounds
-                    const extent = event.feature!.getGeometry()!.getExtent()!
+                    const extent = geometry.getExtent()
                     const bbox4326 = transformExtent(
                         extent,
                         viewProjection,
