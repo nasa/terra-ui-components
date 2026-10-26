@@ -969,7 +969,7 @@ export class MapService {
     }
 
     /** Converts a map coordinate (in the view's projection) to a `LatLng`. */
-    #toLatLng(coordinate: Coordinate, map: Map): LatLng {
+    #toLatLng(coordinate: Coordinate, map: OlMap): LatLng {
         const [lng, lat] = transform(
             coordinate,
             map.getView().getProjection(),
