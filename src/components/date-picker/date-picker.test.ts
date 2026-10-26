@@ -16,17 +16,14 @@ function getMonthYear(date: Date): string {
 
 function getCalendar(
     el: TerraDatePicker,
-    isLeft: boolean = true,
+    isLeft: boolean = true
 ): HTMLElement | undefined {
     const calendars = el.shadowRoot?.querySelectorAll<HTMLElement>('.calendar')
     return isLeft ? calendars?.[0] : calendars?.[1]
 }
 
 // Helper to find calendar day buttons in shadow root
-function getCalendarDays(
-    el: any,
-    isLeft: boolean = true,
-): NodeListOf<HTMLElement> {
+function getCalendarDays(el: any, isLeft: boolean = true): NodeListOf<HTMLElement> {
     const calendars = el.shadowRoot?.querySelectorAll('.calendar')
     const calendar = isLeft ? calendars?.[0] : calendars?.[1]
     return calendar?.querySelectorAll('.calendar__day') || ([] as any)
@@ -36,7 +33,7 @@ function getCalendarDays(
 function findDateButton(
     el: any,
     targetDate: Date,
-    isLeft: boolean = true,
+    isLeft: boolean = true
 ): HTMLElement | null {
     const days = getCalendarDays(el, isLeft)
     for (const day of Array.from(days)) {
@@ -52,11 +49,7 @@ function findDateButton(
 }
 
 // Helper function to make selecting a specific date on the calendar easier
-async function selectDate(
-    el: TerraDatePicker,
-    date: Date,
-    isLeft: boolean = true,
-) {
+async function selectDate(el: TerraDatePicker, date: Date, isLeft: boolean = true) {
     const calendar = getCalendar(el, isLeft)
 
     if (!calendar) {
@@ -64,7 +57,7 @@ async function selectDate(
     }
 
     const monthDropdown = calendar.querySelector<HTMLButtonElement>(
-        '.calendar__month-button',
+        '.calendar__month-button'
     )
 
     if (!monthDropdown) {
@@ -76,13 +69,12 @@ async function selectDate(
 
     // find the month option that contains the text of the month of the date
     const monthOption = [
-        ...(calendar.querySelectorAll<HTMLButtonElement>(
-            '.calendar__month-option',
-        ) || []),
+        ...(calendar.querySelectorAll<HTMLButtonElement>('.calendar__month-option') ||
+            []),
     ].filter((option: HTMLElement) =>
         option.textContent?.includes(
-            date.toLocaleString('default', { month: 'long' }),
-        ),
+            date.toLocaleString('default', { month: 'long' })
+        )
     )
 
     if (!monthOption) {
@@ -94,7 +86,7 @@ async function selectDate(
 
     // select the year
     const yearInput = calendar.querySelector<HTMLInputElement>(
-        '.calendar__year-input',
+        '.calendar__year-input'
     )
 
     if (!yearInput) {
@@ -112,7 +104,7 @@ async function selectDate(
         displayedMonth.getMonth() !== date.getMonth()
     ) {
         throw new Error(
-            `Calendar not showing correct month. Expected ${date.getFullYear()}-${date.getMonth() + 1}, got ${displayedMonth.getFullYear()}-${displayedMonth.getMonth() + 1}`,
+            `Calendar not showing correct month. Expected ${date.getFullYear()}-${date.getMonth() + 1}, got ${displayedMonth.getFullYear()}-${displayedMonth.getMonth() + 1}`
         )
     }
 
@@ -144,9 +136,7 @@ function mockTimezoneOffset(offsetMinutes: number): () => void {
 
     // Mock getTimezoneOffset to return the desired offset
     // Note: getTimezoneOffset() returns positive for timezones behind UTC
-    Date.prototype.getTimezoneOffset = function () {
-        return offsetMinutes
-    }
+    Date.prototype.getTimezoneOffset = () => offsetMinutes
 
     // Mock getHours and getMinutes to account for the timezone offset
     // getTimezoneOffset() returns the offset from local to UTC, so:
@@ -188,9 +178,7 @@ function mockTimezoneOffset(offsetMinutes: number): () => void {
 describe('<terra-date-picker>', () => {
     describe('Basic Rendering', () => {
         it('should render a component', async () => {
-            const el = await fixture(
-                html` <terra-date-picker></terra-date-picker> `,
-            )
+            const el = await fixture(html` <terra-date-picker></terra-date-picker> `)
             expect(el).to.exist
         })
 
@@ -707,13 +695,13 @@ describe('<terra-date-picker>', () => {
 
             const initialMonth = el.leftMonth.getMonth()
             const prevButton = el.shadowRoot?.querySelectorAll(
-                '.calendar__nav',
+                '.calendar__nav'
             )?.[0] as HTMLElement
             prevButton?.click()
             await elementUpdated(el)
 
             expect(el.leftMonth.getMonth()).to.equal(
-                initialMonth === 0 ? 11 : initialMonth - 1,
+                initialMonth === 0 ? 11 : initialMonth - 1
             )
         })
 
@@ -725,13 +713,13 @@ describe('<terra-date-picker>', () => {
 
             const initialMonth = el.leftMonth.getMonth()
             const nextButton = el.shadowRoot?.querySelectorAll(
-                '.calendar__nav',
+                '.calendar__nav'
             )?.[1] as HTMLElement
             nextButton?.click()
             await elementUpdated(el)
 
             expect(el.leftMonth.getMonth()).to.equal(
-                initialMonth === 11 ? 0 : initialMonth + 1,
+                initialMonth === 11 ? 0 : initialMonth + 1
             )
         })
 
@@ -745,13 +733,13 @@ describe('<terra-date-picker>', () => {
             const calendars = el.shadowRoot?.querySelectorAll('.calendar')
             const rightCalendar = calendars?.[1]
             const prevButton = rightCalendar?.querySelectorAll(
-                '.calendar__nav',
+                '.calendar__nav'
             )?.[0] as HTMLElement
             prevButton?.click()
             await elementUpdated(el)
 
             expect(el.rightMonth.getMonth()).to.equal(
-                initialMonth === 0 ? 11 : initialMonth - 1,
+                initialMonth === 0 ? 11 : initialMonth - 1
             )
         })
 
@@ -762,7 +750,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
 
             const yearInput = el.shadowRoot?.querySelector(
-                '.calendar__year-input',
+                '.calendar__year-input'
             ) as HTMLInputElement
             yearInput.value = '2025'
             yearInput.dispatchEvent(new Event('input'))
@@ -813,8 +801,8 @@ describe('<terra-date-picker>', () => {
             const afterMax = new Date(2024, 2, 25) // March 25
             const dateButton = findDateButton(el, afterMax, true)
             if (dateButton) {
-                expect(dateButton.classList.contains('calendar__day--disabled'))
-                    .to.be.true
+                expect(dateButton.classList.contains('calendar__day--disabled')).to.be
+                    .true
             }
         })
 
@@ -844,51 +832,94 @@ describe('<terra-date-picker>', () => {
     })
 
     describe('Presets', () => {
-        it('should show presets sidebar when show-presets is true', async () => {
-            const el: any = await fixture(html`
-                <terra-date-picker show-presets inline></terra-date-picker>
-            `)
-            await elementUpdated(el)
-
-            const sidebar = el.shadowRoot?.querySelector(
-                '.date-picker__sidebar',
-            )
-            expect(sidebar).to.exist
-        })
-
-        it('should have default presets', async () => {
-            const el: any = await fixture(html`
-                <terra-date-picker show-presets inline></terra-date-picker>
-            `)
-            await elementUpdated(el)
-
-            const presetButtons = el.shadowRoot?.querySelectorAll(
-                '.date-picker__preset',
-            )
-            expect(presetButtons?.length).to.be.greaterThan(0)
-        })
-
-        it('should select dates when preset is clicked', async () => {
+        it('should gate "All time" behind both min-date and max-date', async () => {
             const el: any = await fixture(html`
                 <terra-date-picker show-presets inline range></terra-date-picker>
             `)
             await elementUpdated(el)
 
-            const presetButtons = el.shadowRoot?.querySelectorAll(
-                '.date-picker__preset',
-            )
-            const todayPreset = Array.from(presetButtons || []).find(
-                (btn: any) => btn.textContent?.trim() === 'Today',
+            const getPresetLabels = () =>
+                Array.from(
+                    el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+                ).map((btn: any) => btn.textContent?.trim())
+
+            // Unbounded: relative presets exist, "All time" is absent
+            expect(getPresetLabels()).to.include('Today')
+            expect(getPresetLabels()).to.not.include('All time')
+
+            // Partial bound (only min-date): "All time" is still absent
+            el.minDate = '2020-01-01'
+            await elementUpdated(el)
+            expect(getPresetLabels()).to.not.include('All time')
+
+            // Partial bound (only max-date): "All time" is still absent
+            el.minDate = undefined
+            el.maxDate = '2030-12-31'
+            await elementUpdated(el)
+            expect(getPresetLabels()).to.not.include('All time')
+
+            // Fully bounded (both min and max): "All time" is present
+            el.minDate = '2020-01-01'
+            await elementUpdated(el)
+            expect(getPresetLabels()).to.include('All time')
+        })
+
+        it('should select relative dates and emit event when clicked', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker show-presets inline range></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const todayPreset = Array.from(
+                el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+            ).find((btn: any) => btn.textContent?.trim() === 'Today') as HTMLElement
+
+            expect(todayPreset, 'Today preset button should exist').to.exist
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            todayPreset.click()
+            const event = await eventPromise
+
+            const now = new Date()
+            const year = now.getFullYear()
+            const month = String(now.getMonth() + 1).padStart(2, '0')
+            const day = String(now.getDate()).padStart(2, '0')
+            const expectedDate = `${year}-${month}-${day}`
+
+            expect(event.detail.startDate).to.equal(expectedDate)
+            expect(event.detail.endDate).to.equal(expectedDate)
+            expect(el.selectedStart).to.not.be.null
+            expect(el.selectedEnd).to.not.be.null
+        })
+
+        it('should select full bounded range when "All time" is clicked', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    show-presets
+                    inline
+                    range
+                    min-date="2020-01-01"
+                    max-date="2030-12-31"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const allTimePreset = Array.from(
+                el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+            ).find(
+                (btn: any) => btn.textContent?.trim() === 'All time'
             ) as HTMLElement
 
-            if (todayPreset) {
-                const eventPromise = oneEvent(el, 'terra-date-range-change')
-                todayPreset.click()
-                const event = await eventPromise
+            expect(allTimePreset, 'All time preset button should exist').to.exist
 
-                expect(event.detail.startDate).to.not.be.empty
-                expect(event.detail.endDate).to.not.be.empty
-            }
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            allTimePreset.click()
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('2020-01-01')
+            expect(event.detail.endDate).to.equal('2030-12-31')
+            expect(el.selectedStart).to.deep.equal(new Date(2020, 0, 1))
+            expect(el.selectedEnd).to.deep.equal(new Date(2030, 11, 31))
         })
     })
 
@@ -899,8 +930,7 @@ describe('<terra-date-picker>', () => {
             `)
             await elementUpdated(el)
 
-            const timePicker =
-                el.shadowRoot?.querySelector('.date-picker__time')
+            const timePicker = el.shadowRoot?.querySelector('.date-picker__time')
             expect(timePicker).to.exist
         })
 
@@ -956,7 +986,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
 
             const hourInput = el.shadowRoot?.querySelector(
-                '.date-picker__time-input',
+                '.date-picker__time-input'
             ) as HTMLInputElement
 
             // Test setting hour to 0 (midnight)
@@ -989,7 +1019,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
 
             const hourInput = el.shadowRoot?.querySelector(
-                '.date-picker__time-input',
+                '.date-picker__time-input'
             ) as HTMLInputElement
 
             const initialHour = el.startHour
@@ -1026,7 +1056,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
 
             const spinners = el.shadowRoot?.querySelectorAll(
-                '.date-picker__time-spinner',
+                '.date-picker__time-spinner'
             )
             const upButton = spinners?.[0] as HTMLElement
 
@@ -1056,7 +1086,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
 
             const spinners = el.shadowRoot?.querySelectorAll(
-                '.date-picker__time-spinner',
+                '.date-picker__time-spinner'
             )
             const downButton = spinners?.[1] as HTMLElement
 
@@ -1086,7 +1116,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
 
             const inputs = el.shadowRoot?.querySelectorAll(
-                '.date-picker__time-input',
+                '.date-picker__time-input'
             ) as NodeListOf<HTMLInputElement>
             const minuteInput = inputs[1]
 
@@ -1335,19 +1365,19 @@ describe('<terra-date-picker>', () => {
             // Type same date for start
             startInput!.value = '2024-03-15'
             startInput!.dispatchEvent(
-                new Event('terra-blur', { bubbles: true, composed: true }),
+                new Event('terra-blur', { bubbles: true, composed: true })
             )
             await elementUpdated(el)
 
             // Type same date for end (should trigger validation)
             endInput!.value = '2024-03-15'
             endInput!.dispatchEvent(
-                new Event('terra-blur', { bubbles: true, composed: true }),
+                new Event('terra-blur', { bubbles: true, composed: true })
             )
             await elementUpdated(el)
 
             expect(endInput!.validationMessage).to.include(
-                'End time must be after start time',
+                'End time must be after start time'
             )
         })
 
@@ -1501,8 +1531,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
                 expect(startInput).to.exist
 
                 // Type a date
@@ -1544,8 +1573,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type a date before minDate
                 startInput!.value = '2024-01-05'
@@ -1568,8 +1596,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const endInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[1]
+                const endInput = el.shadowRoot?.querySelectorAll('terra-input')[1]
 
                 // Type a date after maxDate
                 endInput!.value = '2025-01-15'
@@ -1592,8 +1619,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type a date within range
                 startInput!.value = '2024-06-15'
@@ -1684,8 +1710,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type a datetime
                 startInput!.value = '2024-06-15 14:30:00'
@@ -1711,8 +1736,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type a date before minDate
                 startInput!.value = '2024-06-14 10:00:00'
@@ -1736,8 +1760,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const endInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[1]
+                const endInput = el.shadowRoot?.querySelectorAll('terra-input')[1]
 
                 // Type a date after maxDate
                 endInput!.value = '2024-06-17 10:00:00'
@@ -1761,8 +1784,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type a datetime within range
                 startInput!.value = '2024-06-15 12:00:00'
@@ -1786,8 +1808,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // First, create an error by typing invalid date
                 startInput!.value = '2024-06-10 10:00:00'
@@ -1819,8 +1840,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type empty and blur
                 startInput!.value = ''
@@ -1838,8 +1858,7 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const startInput =
-                    el.shadowRoot?.querySelectorAll('terra-input')[0]
+                const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
 
                 // Type invalid format
                 startInput!.value = 'not-a-date'
@@ -1867,18 +1886,11 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const input = await blurRangeInput(
-                    el,
-                    '2024-03-15 \u2013 2024-03-16',
-                )
+                const input = await blurRangeInput(el, '2024-03-15 \u2013 2024-03-16')
 
                 expect(input!.validationMessage).to.equal('')
-                expect(formatDate((el as any).selectedStart)).to.equal(
-                    '2024-03-15',
-                )
-                expect(formatDate((el as any).selectedEnd)).to.equal(
-                    '2024-03-16',
-                )
+                expect(formatDate((el as any).selectedStart)).to.equal('2024-03-15')
+                expect(formatDate((el as any).selectedEnd)).to.equal('2024-03-16')
             })
 
             it('should accept en-dash without spaces (YYYY-MM-DD\u2013YYYY-MM-DD)', async () => {
@@ -1887,18 +1899,11 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const input = await blurRangeInput(
-                    el,
-                    '2024-03-15\u20132024-03-16',
-                )
+                const input = await blurRangeInput(el, '2024-03-15\u20132024-03-16')
 
                 expect(input!.validationMessage).to.equal('')
-                expect(formatDate((el as any).selectedStart)).to.equal(
-                    '2024-03-15',
-                )
-                expect(formatDate((el as any).selectedEnd)).to.equal(
-                    '2024-03-16',
-                )
+                expect(formatDate((el as any).selectedStart)).to.equal('2024-03-15')
+                expect(formatDate((el as any).selectedEnd)).to.equal('2024-03-16')
             })
 
             it('should accept hyphen with spaces (YYYY-MM-DD - YYYY-MM-DD)', async () => {
@@ -1907,18 +1912,11 @@ describe('<terra-date-picker>', () => {
                 `)
                 await elementUpdated(el)
 
-                const input = await blurRangeInput(
-                    el,
-                    '2024-03-15 - 2024-03-16',
-                )
+                const input = await blurRangeInput(el, '2024-03-15 - 2024-03-16')
 
                 expect(input!.validationMessage).to.equal('')
-                expect(formatDate((el as any).selectedStart)).to.equal(
-                    '2024-03-15',
-                )
-                expect(formatDate((el as any).selectedEnd)).to.equal(
-                    '2024-03-16',
-                )
+                expect(formatDate((el as any).selectedStart)).to.equal('2024-03-15')
+                expect(formatDate((el as any).selectedEnd)).to.equal('2024-03-16')
             })
 
             it('should accept bare hyphen without spaces (YYYY-MM-DDYYYY-MM-DD)', async () => {
@@ -1930,12 +1928,8 @@ describe('<terra-date-picker>', () => {
                 const input = await blurRangeInput(el, '2024-03-15-2024-03-16')
 
                 expect(input!.validationMessage).to.equal('')
-                expect(formatDate((el as any).selectedStart)).to.equal(
-                    '2024-03-15',
-                )
-                expect(formatDate((el as any).selectedEnd)).to.equal(
-                    '2024-03-16',
-                )
+                expect(formatDate((el as any).selectedStart)).to.equal('2024-03-15')
+                expect(formatDate((el as any).selectedEnd)).to.equal('2024-03-16')
             })
 
             it('should emit correct dates for all separator formats', async () => {
@@ -1960,12 +1954,11 @@ describe('<terra-date-picker>', () => {
                     const event = await eventPromise
                     expect(
                         event.detail.startDate,
-                        `startDate for "${value}"`,
+                        `startDate for "${value}"`
                     ).to.equal('2024-03-15')
-                    expect(
-                        event.detail.endDate,
-                        `endDate for "${value}"`,
-                    ).to.equal('2024-03-16')
+                    expect(event.detail.endDate, `endDate for "${value}"`).to.equal(
+                        '2024-03-16'
+                    )
                 }
             })
 
@@ -2028,7 +2021,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
             const displayDate = (el as any).formatDisplayDate(
                 new Date('2024-01-20T15:00:00Z'),
-                true,
+                true
             ) as string
             // UTC 15:00 minus 5h = display 10:00 for EST
             expect(displayDate).to.include('10:00:00')
@@ -2078,7 +2071,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
             const displayDate = (el as any).formatDisplayDate(
                 new Date('2024-03-20T09:30:00Z'),
-                true,
+                true
             ) as string
             expect(displayDate).to.include('AM')
             expect(displayDate).to.include('09:30:00')
@@ -2095,7 +2088,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
             const displayDate = (el as any).formatDisplayDate(
                 new Date('2024-03-20T15:30:00Z'),
-                true,
+                true
             ) as string
             expect(displayDate).to.include('PM')
             // 15:00 UTC → 03:30:00 in 12h display
@@ -2156,12 +2149,12 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
             // Open the picker
             const trigger = el.shadowRoot?.querySelector<HTMLElement>(
-                '.date-picker__trigger',
+                '.date-picker__trigger'
             )
             trigger?.click()
             await elementUpdated(el)
             const periodBtn = el.shadowRoot?.querySelector(
-                '.date-picker__time-period',
+                '.date-picker__time-period'
             )
             expect(periodBtn).to.exist
         })
@@ -2199,7 +2192,7 @@ describe('<terra-date-picker>', () => {
             await elementUpdated(el)
             const displayDate = (el as any).formatDisplayDate(
                 new Date('2024-01-20T15:30:00Z'),
-                true,
+                true
             ) as string
             // UTC 15:30 minus 5h (EST) = 10:30 → 10:30:00 AM
             expect(displayDate).to.include('10:30:00')

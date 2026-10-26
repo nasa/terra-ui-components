@@ -184,7 +184,7 @@ def main():
         filter_params["bounding_box"] = FILTER_BBOX
 
     if FILTER_SEARCH:
-        filter_params["producer_granule_id[]"] = FILTER_SEARCH
+        filter_params["producer_granule_id[]"] = "*" + FILTER_SEARCH + "*"
         filter_params["options[producer_granule_id][pattern]"] = 'true'
 
     if FILTER_CLOUD_COVER_MIN and FILTER_CLOUD_COVER_MAX:

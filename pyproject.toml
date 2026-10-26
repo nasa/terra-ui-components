@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "terra_ui_components"
 dependencies = ["anywidget>=0.9"]
-version = "0.0.202"
+version = "0.0.203"
 readme = "README.md"
 description = "NASA Terra UI Components Library"
 requires-python = ">=3.8"
@@ -20,3 +20,11 @@ dev = ["watchfiles", "jupyterlab", "earthaccess"]
 # https://peps.python.org/pep-0735/
 [dependency-groups]
 dev = ["watchfiles", "jupyterlab", "hatch"]
+
+[tool.uv.workspace]
+members = [
+    "examples/fastmcp-example",
+]
+
+[tool.hatch.build]
+exclude = ["examples/"]

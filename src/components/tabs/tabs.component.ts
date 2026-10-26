@@ -589,8 +589,9 @@ export default class TerraTabs extends TerraElement {
                 @keydown=${this.handleKeyDown}
             >
                 <div class="tabs__nav-container" part="nav">
-                    ${this.hasScrollControls
-                        ? html`
+                    ${
+                        this.hasScrollControls
+                            ? html`
                               <button
                                   part="scroll-button scroll-button--start"
                                   class=${classMap({
@@ -612,7 +613,8 @@ export default class TerraTabs extends TerraElement {
                                   ></terra-icon>
                               </button>
                           `
-                        : ''}
+                            : ''
+                    }
 
                     <div class="tabs__nav" @scrollend=${this.updateScrollButtons}>
                         <div part="tabs" class="tabs__tabs" role="tablist">
@@ -629,8 +631,9 @@ export default class TerraTabs extends TerraElement {
                         </div>
                     </div>
 
-                    ${this.hasScrollControls
-                        ? html`
+                    ${
+                        this.hasScrollControls
+                            ? html`
                               <button
                                   part="scroll-button scroll-button--end"
                                   class=${classMap({
@@ -652,7 +655,8 @@ export default class TerraTabs extends TerraElement {
                                   ></terra-icon>
                               </button>
                           `
-                        : ''}
+                            : ''
+                    }
                 </div>
 
                 <slot
