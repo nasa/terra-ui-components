@@ -1,7 +1,7 @@
+import { authService } from '../auth/auth.service.js'
+import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
-import { authService } from '../auth/auth.service.js'
 import { invertObject } from '../utilities/object.js'
 
 const API_VERSION = '3'
@@ -348,15 +348,74 @@ class HarmonyApi {
     }
 
     /**
+     * Fetches a specific page of job results from a full URL (such as a `rel: "next"` link).
+     */
+    async getJobPage(url: string, options?: SearchOptions): Promise<SubsetJobStatus> {
+        const status = await this.#request<SubsetJobStatus>(url, options)
+        status.links = (status.links || []).map(link =>
+            HarmonyApi.normalizeJobLink(link)
+        )
+        return status
+    }
+
+    /**
      * Get the current status of an existing subset job.
      * Intended for polling until the job reaches a final state.
+     * Final state triggers a check for a "next" link to support paginated responses.
      */
     async getJobStatus(
         jobId: string,
         options?: SearchOptions
     ): Promise<SubsetJobStatus> {
         const status = await this.#request<SubsetJobStatus>(`jobs/${jobId}`, options)
-        status.links = status.links.map(link => HarmonyApi.normalizeJobLink(link))
+        status.links = (status.links || []).map(link =>
+            HarmonyApi.normalizeJobLink(link)
+        )
+
+        // Only fetch subsequent link pages once the job has completed processing.
+        // NOTE: Eagerly paginating terminal jobs ensures export actions (e.g. text file,
+        // python script) have all links in memory. For extremely large requests (>100k links),
+        // this can require many sequential roundtrips (at 2,000 links/page). If this causes
+        // performance bottlenecks in practice, consider deferring pagination to on-demand export/download.
+        if (
+            status.status === Status.SUCCESSFUL ||
+            status.status === Status.COMPLETE_WITH_ERRORS
+        ) {
+            try {
+                const visited = new Set<string>()
+                let nextLink = status.links.find(link => link.rel === 'next')
+
+                while (nextLink?.href && !visited.has(nextLink.href)) {
+                    visited.add(nextLink.href)
+
+                    const pageData = await this.getJobPage(nextLink.href, options)
+
+                    // Only append data links from subsequent pages to avoid duplicate metadata stubs
+                    const dataLinks = (pageData.links || []).filter(
+                        link => link.rel === 'data'
+                    )
+                    status.links.push(...dataLinks)
+
+                    // Find next link from the newly fetched page
+                    nextLink = (pageData.links || []).find(
+                        link => link.rel === 'next'
+                    )
+                }
+            } catch (error) {
+                if (options?.signal?.aborted) {
+                    throw error
+                }
+
+                console.warn(
+                    `Failed to fetch all paginated links for job ${jobId}; returning available links:`,
+                    error
+                )
+            } finally {
+                // Always remove remaning 'next' links so terminal-state jobs don't cache pagination links, which could be state.
+                status.links = status.links.filter(link => link.rel !== 'next')
+            }
+        }
+
         return status
     }
 
