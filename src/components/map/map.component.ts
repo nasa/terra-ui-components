@@ -3,31 +3,34 @@ import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
+import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
+import { QueryController } from '../../controllers/query.controller.js'
 import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
-import componentStyles from '../../styles/component.styles.js'
-import styles from './map.styles.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
-    MapService,
-    type AddLayerOptions,
-    type FitToExtentOptions,
-} from './map.service.js'
-import type { Projection } from './layers/gibs.layer.js'
+    queryGiovanniGeoJsonShape,
+    queryGiovanniShapeFiles,
+} from '../../queries/giovanni.queries.js'
+import componentStyles from '../../styles/component.styles.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
+import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
     type MapLayerConfig,
     type MapLayerResult,
 } from './layers/layer.js'
-import { QueryController } from '../../controllers/query.controller.js'
-import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
-import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
-    queryGiovanniShapeFiles,
-    queryGiovanniGeoJsonShape,
-} from '../../queries/giovanni.queries.js'
+    type AddLayerOptions,
+    type AnimationOptions,
+    type FitToExtentOptions,
+    MapService,
+} from './map.service.js'
+import styles from './map.styles.js'
+import type { LatLng } from './models/LatLng.js'
+import type { LatLngBounds } from './models/LatLngBounds.js'
 
 const layersConverter = {
     fromAttribute: (value: string | null): MapLayerConfig[] => {
@@ -49,10 +52,17 @@ const layersConverter = {
  * @documentation https://terra-ui.netlify.app/components/map
  * @status stable
  * @since 1.0
- *
  * @event terra-map-change - Emitted when a point, bounding box, polygon, or circle is drawn/selected. `detail` is a `MapEventDetail` shaped by `detail.type` (`'point'`, `'bbox'`, `'polygon'`, `'circle'`).
  * @event terra-map-pointer-move - Emitted on mouse move over the map (while `show-mouse-coordinates` is set). `detail` is `{ coordinate, pixel }`.
  * @event terra-map-layer-change - Emitted when a declarative `layers` entry finishes building, successfully or not. `detail` is `{ name, type, info? }` on success, or `{ name, type, error }` on failure.
+ * @event terra-map-ready - Emitted once, synchronously, as the map finishes its initial construction (during `firstUpdated()`). Attach a listener before/at element creation to avoid missing it.
+ * @event terra-map-click - Emitted when the map is clicked. `detail` is `{ latLng, pixel, features }`.
+ * @event terra-map-double-click - Emitted when the map is double-clicked. `detail` is `{ latLng, pixel, features }`.
+ * @event terra-map-move-end - Emitted when the view's center/zoom/rotation settles after a pan or zoom. `detail` is `{ center, zoom }`.
+ * @event terra-map-zoom-change - Emitted on every resolution change (no debouncing - use `terra-map-move-end` if only the settled value matters). `detail` is `{ zoom }`.
+ * @event terra-map-layer-click - Emitted when a click hits a feature on a consumer-added layer. `detail` is `{ feature, layerName, latLng, pixel }`.
+ * @event terra-map-layer-error - Emitted when a consumer-added layer fails to load a tile or image at runtime. `detail` is `{ name, error }`.
+ * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
  */
 export default class TerraMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -93,20 +103,6 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
     showMouseCoordinates: boolean = false
 
     /**
-     * @deprecated has coordinate tracker (use show-mouse-coordinates instead)
-     */
-    @property({ attribute: 'has-coord-tracker', type: Boolean })
-    set hasCoordTracker(value: boolean) {
-        console.warn(
-            'The "has-coord-tracker" property is deprecated. Please use "show-mouse-coordinates" instead.'
-        )
-        this.showMouseCoordinates = value
-    }
-    get hasCoordTracker() {
-        return this.showMouseCoordinates
-    }
-
-    /**
      * has shape selector
      */
     @property({ attribute: 'has-shape-selector', type: Boolean })
@@ -117,48 +113,26 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
 
     @watch('showGraticule')
     showGraticuleChanged() {
-        this.#service?.toggleLayerVisibility('graticule', this.showGraticule)
+        this.#service?.setLayerVisibility('graticule', this.showGraticule)
     }
 
     @property({ attribute: 'show-bounding-box-selection', type: Boolean })
     showBoundingBoxSelection: boolean = false
 
-    /**
-     * @deprecated hide bounding box selection (use show-bounding-box-selection instead)
-     */
-    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
-    set hideBoundingBoxSelection(value: boolean) {
-        console.warn(
-            'The "hide-bounding-box-selection" property is deprecated. Please use "show-bounding-box-selection" instead.'
-        )
-        this.showBoundingBoxSelection = !value
-    }
-    get hideBoundingBoxSelection() {
-        return !this.showBoundingBoxSelection
-    }
-
     @property({ attribute: 'show-point-selection', type: Boolean })
     showPointSelection: boolean = false
-
-    /**
-     * @deprecated hide point selection (use show-point-selection instead)
-     */
-    @property({ attribute: 'hide-point-selection', type: Boolean })
-    set hidePointSelection(value: boolean) {
-        console.warn(
-            'The "hide-point-selection" property is deprecated. Please use "show-point-selection" instead.'
-        )
-        this.showPointSelection = !value
-    }
-    get hidePointSelection() {
-        return !this.showPointSelection
-    }
 
     @property({ attribute: 'show-polygon-selection', type: Boolean })
     showPolygonSelection: boolean = false
 
     @property({ attribute: 'show-circle-selection', type: Boolean })
     showCircleSelection: boolean = false
+
+    /**
+     * Whether to display the layer picker control on the map.
+     */
+    @property({ attribute: 'show-layer-picker', type: Boolean })
+    showLayerPicker: boolean = false
 
     @property({ type: Boolean })
     staticMode?: boolean = false
@@ -330,7 +304,17 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
      * `terra-map-layer-change` with its type-specific detail.
      */
     #handleLayerBuilt(name: string, config: MapLayerConfig, result: MapLayerResult) {
-        this.addLayer(result.layer, { name, position: config.position })
+        this.addLayer(result.layer, {
+            name,
+            position: config.position,
+            ...(config.type === 'gibs'
+                ? {
+                      showBoundary: config.showBoundary,
+                      boundaryColorIndex: config.boundaryColorIndex,
+                  }
+                : {}),
+            title: config.title,
+        })
         result.layer.setVisible(config.visible ?? true)
 
         if (config.type === 'geotiff' && result.type === 'geotiff') {
@@ -395,6 +379,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         'showPointSelection',
         'showPolygonSelection',
         'showCircleSelection',
+        'showLayerPicker',
     ])
     drawButtonSelectionChanged() {
         this.#service?.updateDrawToolbarVisibility({
@@ -402,11 +387,12 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             showPointSelection: this.showPointSelection,
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
+            showLayerPicker: this.showLayerPicker,
         })
     }
 
     @watch('value')
-    valueChanged(_oldValue: any, newValue: any) {
+    valueChanged(_oldValue: string | undefined, newValue: string | undefined) {
         this.#service?.setValue(newValue)
     }
 
@@ -426,6 +412,7 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             showPointSelection: this.showPointSelection,
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
+            showLayerPicker: this.showLayerPicker,
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
@@ -440,8 +427,42 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             onDraw: detail => {
                 this.emit('terra-map-change', { detail })
             },
+            onLayerToggle: detail => {
+                if (detail.name === 'graticule') {
+                    this.showGraticule = detail.visible
+                }
+                this.emit('terra-map-layer-toggle', { detail })
+            },
             onShapeLoading: loading => {
                 this.shapeLoading = loading
+            },
+            onReady: service => {
+                this.#service = service
+                this.emit('terra-map-ready')
+            },
+            onClick: (latLng, pixel, features) => {
+                this.emit('terra-map-click', {
+                    detail: { latLng, pixel, features },
+                })
+            },
+            onDoubleClick: (latLng, pixel, features) => {
+                this.emit('terra-map-double-click', {
+                    detail: { latLng, pixel, features },
+                })
+            },
+            onMoveEnd: (center, zoom) => {
+                this.emit('terra-map-move-end', { detail: { center, zoom } })
+            },
+            onZoomChange: zoom => {
+                this.emit('terra-map-zoom-change', { detail: { zoom } })
+            },
+            onLayerClick: (feature, layerName, latLng, pixel) => {
+                this.emit('terra-map-layer-click', {
+                    detail: { feature, layerName, latLng, pixel },
+                })
+            },
+            onLayerError: (name, error) => {
+                this.emit('terra-map-layer-error', { detail: { name, error } })
             },
         })
 
@@ -548,12 +569,121 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
         return this.#service?.renderComplete()
     }
 
+    /** Forces the map to recompute its size and re-render. */
+    refresh() {
+        this.#service?.refresh()
+    }
+
+    /**
+     * Pans the view's center to `lon`/`lat`. Animates over
+     * `options.duration` ms when given, otherwise jumps immediately.
+     */
+    setCenter(lon: number, lat: number, options?: AnimationOptions) {
+        this.#service?.setCenter(lon, lat, options)
+    }
+
+    /** Returns the view's current center as a `LatLng`. */
+    getCenter(): LatLng | undefined {
+        return this.#service?.getCenter()
+    }
+
+    getZoom(): number | undefined {
+        return this.#service?.getZoom()
+    }
+
+    /**
+     * Sets the view's zoom level. Animates over `options.duration` ms when
+     * given, otherwise jumps immediately.
+     */
+    setZoom(zoom: number, options?: AnimationOptions) {
+        this.#service?.setZoom(zoom, options)
+    }
+
+    zoomIn(options?: AnimationOptions) {
+        this.#service?.zoomIn(options)
+    }
+
+    zoomOut(options?: AnimationOptions) {
+        this.#service?.zoomOut(options)
+    }
+
+    /**
+     * Fits the view to a `LatLngBounds`.
+     */
+    fitBounds(bounds: LatLngBounds, options?: FitToExtentOptions) {
+        this.#service?.fitBounds(bounds, options)
+    }
+
+    /** Returns the view's current visible extent as a `LatLngBounds`. */
+    getBounds(): LatLngBounds | undefined {
+        return this.#service?.getBounds()
+    }
+
+    /** Resets the view to its center/zoom/rotation at construction time. */
+    resetView(options?: AnimationOptions) {
+        this.#service?.resetView(options)
+    }
+
+    setRotation(radians: number, options?: AnimationOptions) {
+        this.#service?.setRotation(radians, options)
+    }
+
+    getRotation(): number | undefined {
+        return this.#service?.getRotation()
+    }
+
+    /**
+     * Shows or hides a layer (built-in or consumer-added) by name.
+     */
+    setLayerVisibility(name: string, show: boolean) {
+        this.#service?.setLayerVisibility(name, show)
+    }
+
+    setLayerOpacity(name: string, opacity: number) {
+        this.#service?.setLayerOpacity(name, opacity)
+    }
+
+    /**
+     * Returns only the layers added through `addLayer()` - built-in layers
+     * (base imagery, borders, labels, graticule, shapes, draw) are never
+     * included. Use `getLayer()`/`getAllLayers()` to see every layer,
+     * built-in or not.
+     */
+    getLayers() {
+        return this.#service?.getLayers()
+    }
+
+    /**
+     * Reorders consumer-added layers to match `names` (bottom-to-top).
+     * Built-in layers are untouched.
+     */
+    setLayerOrder(names: string[]) {
+        this.#service?.setLayerOrder(names)
+    }
+
+    /**
+     * Fits the map's view to a consumer-added layer's source extent.
+     */
+    fitToLayer(name: string, options?: Parameters<MapService['fitToLayer']>[1]) {
+        this.#service?.fitToLayer(name, options)
+    }
+
+    /** Removes every consumer-added layer; built-in layers are untouched. */
+    clearLayers() {
+        this.#service?.clearLayers()
+    }
+
+    /** Refreshes a layer's source, forcing it to reload its data. */
+    refreshLayer(name: string) {
+        this.#service?.refreshLayer(name)
+    }
+
     selectTemplate() {
         const shapes = this.shapesQuery.result?.data
         return html`
             <select
                 class="map__select form-control"
-                @change=${(e: any) => this.#service?.handleShapeSelect(e)}
+                @change=${(e: Event) => this.#service?.handleShapeSelect(e)}
             >
                 <option value="">Select a Shape...</option>
 

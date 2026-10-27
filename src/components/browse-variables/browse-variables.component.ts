@@ -498,7 +498,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(TerraElement)
                         ${variable.dataProductSpatialResolution}
                     </p>
                     <p>
-                        <label><strong>Dataset:</strong></label>
+                        <label><strong>Data Set:</strong></label>
                         ${variable.dataProductShortName}_${
                             variable.dataProductVersion
                         }

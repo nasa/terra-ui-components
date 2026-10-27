@@ -18,6 +18,7 @@ layout: component
     show-polygon-selection
     show-point-selection
     show-circle-selection
+    show-layer-picker
 ></terra-map>
 
 <form style="max-width: 600px;">
@@ -59,6 +60,12 @@ layout: component
         Show Circle Selection
         </terra-checkbox>
     </div>
+
+    <div>
+        <terra-checkbox name="showLayerPicker" class="map-option">
+        Show Layer Picker
+        </terra-checkbox>
+    </div>
   </fieldset>
 </form>
 
@@ -80,7 +87,7 @@ layout: component
 ### Configured Map
 
 ```html:preview
-<terra-map has-navigation has-shape-selector has-coord-tracker></terra-map>
+<terra-map has-navigation has-shape-selector show-mouse-coordinates></terra-map>
 ```
 
 ### Map with No World Wrap
@@ -93,18 +100,17 @@ This example disables infinite horizontal scrolling, restricting the map to a si
 
 ### Adding Custom Layers
 
-Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layers on the map (for example, a data overlay). By default a custom layer is inserted just above the base imagery layer and below the borders/labels layers, so borders/labels keep rendering on top of it; pass `{ position: 'top' }` to place it above everything else instead.
+Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layers on the map (for example, a data overlay). By default a custom layer is inserted just above the base imagery layer and below the borders/labels layers, so borders/labels keep rendering on top of it; pass `{ position: 'top' , title: 'My Custom Layer'}` to place it above everything else instead and to specify the display label shown in UI controls.
 
 ```html:preview
 <terra-map id="custom-layer-map" has-navigation></terra-map>
 
 <script type="module">
-    import VectorLayer from 'https://cdn.skypack.dev/ol/layer/Vector.js'
-    import VectorSource from 'https://cdn.skypack.dev/ol/source/Vector.js'
-    import { Circle as CircleStyle, Fill, Style } from 'https://cdn.skypack.dev/ol/style.js'
-    import Feature from 'https://cdn.skypack.dev/ol/Feature.js'
-    import Point from 'https://cdn.skypack.dev/ol/geom/Point.js'
-    import { fromLonLat } from 'https://cdn.skypack.dev/ol/proj.js'
+    import VectorLayer from 'https://esm.sh/ol@10.11.0/layer/Vector.js'
+    import VectorSource from 'https://esm.sh/ol@10.11.0/source/Vector.js'
+    import Feature from 'https://esm.sh/ol@10.11.0/Feature.js'
+    import Point from 'https://esm.sh/ol@10.11.0/geom/Point.js'
+    import { fromLonLat } from 'https://esm.sh/ol@10.11.0/proj.js'
 
     const map = document.getElementById('custom-layer-map')
 
@@ -114,12 +120,7 @@ Use `addLayer()`/`removeLayer()`/`getLayer()` to mount your own OpenLayers layer
 
     const layer = new VectorLayer({
         source,
-        style: new Style({
-            image: new CircleStyle({
-                radius: 8,
-                fill: new Fill({ color: 'red' }),
-            }),
-        }),
+        style: { 'circle-radius': 8, 'circle-fill-color': 'red' },
     })
 
     map.addEventListener(
@@ -189,11 +190,12 @@ If you don't need to write JS, the `layers` attribute/property lets you declare 
 - `"type": "gibs-vector"` declares a [GIBS vector tile layer](#adding-gibs-vector-imagery) — see that section for its fields.
 - `"type": "geotiff"` declares a [standalone GeoTIFF layer](#adding-geotiff-layers) — see that section for its fields.
 
-Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
+Every entry also takes a required `name` (used for add/remove/update diffing and `getLayer()`/`removeLayer()`), an optional `title` (a human-readable label displayed in controls like the layer picker; defaults to `name` or the layer's source title), an optional `position` (`'below-borders'` (default) or `'top'`, same as `addLayer()`'s options), and an optional `visible` (defaults to `true`) — set it to `false` to add the layer hidden, toggleable later with `getLayer(name).setVisible(true)`.
 
 ```html:preview
 <terra-map
-    layers='[{ "type": "gibs", "name": "gibs-imagery", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
+    show-layer-picker
+    layers='[{ "type": "gibs", "name": "gibs-imagery", "title": "MODIS Terra True Color", "layer": "MODIS_Terra_CorrectedReflectance_TrueColor", "date": "2024-06-01" }]'
 ></terra-map>
 ```
 
@@ -204,7 +206,7 @@ Changing the attribute/property later diffs against what's currently applied, by
 Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
 
 ```html:preview
-<terra-map collection-id="GPM_3IMERGHH_07"></terra-map>
+<terra-map collection-id="GPM_3IMERGHH_07" show-layer-picker></terra-map>
 ```
 
 Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped.
@@ -310,6 +312,113 @@ Use the `fill` attribute to remove the map's default card chrome (padding, borde
 <div style="height: 300px;">
     <terra-map fill has-navigation></terra-map>
 </div>
+```
+
+### Map Navigation
+
+Drive the view imperatively with `setCenter(lon, lat, options?)`, `getCenter()`, `setZoom(zoom, options?)`, `getZoom()`, `zoomIn(options?)`, `zoomOut(options?)`, `fitBounds(bounds, options?)`, `getBounds()`, `resetView(options?)`, `setRotation(radians, options?)`, and `getRotation()`. Every method that changes the view accepts an optional `{ duration }` (milliseconds) — pass it to animate the change; omit it to jump immediately. `fitBounds()` is a thin wrapper around `fitToExtent()` that takes a `LatLngBounds` instance (EPSG:4326) instead of a raw extent - if you don't need a full `LatLngBounds` (e.g. for `getSouthWest()`/`toBBoxString()`/etc.), pass a `[west, south, east, north]` array to `fitToExtent()` directly instead.
+
+```html:preview
+<terra-map id="navigation-map" has-navigation zoom="3"></terra-map>
+
+<div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+    <terra-button id="nav-set-center">Fly to Tokyo</terra-button>
+    <terra-button id="nav-zoom-in">Zoom In</terra-button>
+    <terra-button id="nav-zoom-out">Zoom Out</terra-button>
+    <terra-button id="nav-fit-bounds">Fit to Western US</terra-button>
+    <terra-button id="nav-reset">Reset View</terra-button>
+</div>
+
+<script type="module">
+    import { LatLngBounds } from '/dist/components/map/models/LatLngBounds.js'
+
+    const map = document.getElementById('navigation-map')
+
+    customElements.whenDefined('terra-map').then(() => {
+        document.getElementById('nav-set-center').addEventListener('click', () => {
+            map.setCenter(139.6917, 35.6895, { duration: 500 })
+        })
+
+        document.getElementById('nav-zoom-in').addEventListener('click', () => {
+            map.zoomIn({ duration: 250 })
+        })
+
+        document.getElementById('nav-zoom-out').addEventListener('click', () => {
+            map.zoomOut({ duration: 250 })
+        })
+
+        document.getElementById('nav-fit-bounds').addEventListener('click', () => {
+            const westernUS = new LatLngBounds([-125, 32, -114, 42]) // west, south, east, north
+            map.fitBounds(westernUS, { duration: 500, padding: [20, 20, 20, 20] })
+        })
+
+        document.getElementById('nav-reset').addEventListener('click', () => {
+            map.resetView({ duration: 500 })
+        })
+    })
+</script>
+```
+
+### Layer Management
+
+Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set of methods manage layers added through the imperative API: `setLayerVisibility(name, show)`, `setLayerOpacity(name, opacity)`, `setLayerOrder(names)`, `fitToLayer(name, options?)`, `getLayers()`, `clearLayers()`, and `refreshLayer(name)`.
+
+**`getLayers()` and `clearLayers()` only see consumer-added layers** - layers added through `addLayer()`. The map's built-in layers (base imagery, borders, labels, graticule, shapes, draw) are never included or touched, unlike `getLayer()`/`getAllLayers()`, which see every layer. `setLayerOrder()` follows the same rule: it only reorders consumer-added layers relative to each other, leaving built-in layers at their existing position.
+
+**Caveat:** mixing imperative `removeLayer()`/`clearLayers()` calls with the declarative `layers` property for the same layer `name` is the consumer's responsibility - it isn't auto-synced. If you imperatively remove a layer whose `name` is still present in `layers`, the next time `layers` is diffed (e.g. any other change to the array) that entry will be treated as newly added and rebuilt.
+
+```html:preview
+<terra-map id="layer-management-map" has-navigation></terra-map>
+
+<div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+    <terra-button id="layers-toggle">Toggle Visibility</terra-button>
+    <terra-button id="layers-opacity">Set Opacity 50%</terra-button>
+    <terra-button id="layers-order">Send to Back</terra-button>
+    <terra-button id="layers-clear">Clear Custom Layers</terra-button>
+</div>
+
+<script type="module">
+    import { GibsLayer } from '/dist/components/map/layers/gibs.layer.js'
+
+    const map = document.getElementById('layer-management-map')
+    const bbox = [-130, 20, -60, 55] // west, south, east, north
+
+    customElements.whenDefined('terra-map').then(() => {
+        // two dates of the same proven-good imagery layer, stacked so
+        // toggling/opacity/order on the top one has a visible effect
+        const june = new GibsLayer({
+            layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+            date: '2024-06-01',
+            extent: bbox,
+        })
+        const january = new GibsLayer({
+            layer: 'MODIS_Terra_CorrectedReflectance_TrueColor',
+            date: '2024-01-01',
+            extent: bbox,
+        })
+
+        map.addLayer(june, { name: 'june', position: 'top' })
+        map.addLayer(january, { name: 'january', position: 'top' })
+        map.fitToExtent(bbox, { projection: 'EPSG:4326', padding: [20, 20, 20, 20] })
+
+        document.getElementById('layers-toggle').addEventListener('click', () => {
+            const layer = map.getLayer('january')
+            map.setLayerVisibility('january', !layer?.getVisible())
+        })
+
+        document.getElementById('layers-opacity').addEventListener('click', () => {
+            map.setLayerOpacity('january', 0.5)
+        })
+
+        document.getElementById('layers-order').addEventListener('click', () => {
+            map.setLayerOrder(['january', 'june'])
+        })
+
+        document.getElementById('layers-clear').addEventListener('click', () => {
+            map.clearLayers() // removes june/january; built-in layers are untouched
+        })
+    })
+</script>
 ```
 
 [component-metadata:terra-map]
