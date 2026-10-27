@@ -215,9 +215,10 @@ describe('Map Service', () => {
 
             service.addLayer(customLayer, { name: 'custom-top', position: 'top' })
 
-            // 9 built-in layers occupy indices 0-8, so pushing onto the end
-            // inserts at index 9
-            expect(insertAtSpy.calledWith(9, customLayer)).to.be.true
+            // 10 built-in layers occupy indices 0-9 (base, true-color,
+            // land-water, topo, borders, labels, graticule, shapes,
+            // boundaries, draw), so pushing onto the end inserts at index 10
+            expect(insertAtSpy.calledWith(10, customLayer)).to.be.true
         })
 
         it('finds a named layer with getLayer', () => {
@@ -585,8 +586,8 @@ describe('Map Service', () => {
             service.setLayerOrder(['b', 'a'])
 
             const all = service.getAllLayers()
-            // borders is still the built-in at its original index (1)
-            expect(all[1].get('name')).to.equal('borders')
+            // borders is still the built-in at its original index (4)
+            expect(all[4].get('name')).to.equal('borders')
             expect(all.at(-2)?.get('name')).to.equal('b')
             expect(all.at(-1)?.get('name')).to.equal('a')
         })
@@ -630,7 +631,7 @@ describe('Map Service', () => {
         })
 
         it('clearLayers() removes only consumer-added layers', () => {
-            const removeLayerSpy = sinon.spy(Map.prototype, 'removeLayer')
+            const removeLayerSpy = sinon.spy(OlMap.prototype, 'removeLayer')
             const customLayer = new VectorLayer({ source: new VectorSource() })
             service.addLayer(customLayer, { name: 'custom' })
 
@@ -668,8 +669,8 @@ describe('Map Service', () => {
 
     describe('refresh / renderComplete', () => {
         it('refresh() updates the map size and re-renders', () => {
-            const updateSizeSpy = sinon.spy(Map.prototype, 'updateSize')
-            const renderSpy = sinon.spy(Map.prototype, 'render')
+            const updateSizeSpy = sinon.spy(OlMap.prototype, 'updateSize')
+            const renderSpy = sinon.spy(OlMap.prototype, 'render')
 
             service.refresh()
 
@@ -678,7 +679,7 @@ describe('Map Service', () => {
         })
 
         it('renderComplete() refreshes and resolves once rendering completes', async () => {
-            const updateSizeSpy = sinon.spy(Map.prototype, 'updateSize')
+            const updateSizeSpy = sinon.spy(OlMap.prototype, 'updateSize')
 
             await service.renderComplete()
 
