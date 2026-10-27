@@ -24,6 +24,7 @@ export class LayerPickerControl extends Control {
     #panel: HTMLElement
     #isOpen: boolean = false
     #documentClickHandler: (event: MouseEvent) => void
+    #visibilityListeners = new Map<BaseLayer, () => void>()
 
     constructor(options?: LayerPickerControlOptions) {
         const element = document.createElement('div')
@@ -86,7 +87,8 @@ export class LayerPickerControl extends Control {
                 this.#watchLayer(e.element)
                 this.#renderPanel()
             })
-            layers.on('remove', () => {
+            layers.on('remove', (e: CollectionEvent<BaseLayer>) => {
+                this.#unwatchLayer(e.element)
                 this.#renderPanel()
             })
 
@@ -101,7 +103,25 @@ export class LayerPickerControl extends Control {
     }
 
     #watchLayer(layer: BaseLayer) {
-        layer.on('change:visible', () => this.#renderPanel())
+        // Collections (e.g. map.service's setLayerOrder) can remove and re-push the
+        // *same* layer instance, firing `add` again for it. Skip re-attaching if
+        // we're already watching it so `remove` only ever needs to detach one listener.
+        if (this.#visibilityListeners.has(layer)) {
+            return
+        }
+
+        const listener = () => this.#renderPanel()
+        layer.on('change:visible', listener)
+        this.#visibilityListeners.set(layer, listener)
+    }
+
+    #unwatchLayer(layer: BaseLayer) {
+        const listener = this.#visibilityListeners.get(layer)
+
+        if (listener) {
+            layer.un('change:visible', listener)
+            this.#visibilityListeners.delete(layer)
+        }
     }
 
     setOptions(options: Partial<LayerPickerControlOptions>) {
