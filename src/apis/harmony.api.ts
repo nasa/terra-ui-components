@@ -372,7 +372,11 @@ class HarmonyApi {
             HarmonyApi.normalizeJobLink(link)
         )
 
-        // Only fetch subsequent link pages once the job has completed processing
+        // Only fetch subsequent link pages once the job has completed processing.
+        // NOTE: Eagerly paginating terminal jobs ensures export actions (e.g. text file,
+        // python script) have all links in memory. For extremely large requests (>100k links),
+        // this can require many sequential roundtrips (at 2,000 links/page). If this causes
+        // performance bottlenecks in practice, consider deferring pagination to on-demand export/download.
         if (
             status.status === Status.SUCCESSFUL ||
             status.status === Status.COMPLETE_WITH_ERRORS
