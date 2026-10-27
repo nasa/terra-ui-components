@@ -1,48 +1,42 @@
+import { TaskStatus } from '@lit/task'
+import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import type { ImageTile } from 'ol'
-import type { Map, MapBrowserEvent } from 'ol'
-import WebGLTileLayer from 'ol/layer/WebGLTile.js'
-import VectorLayer from 'ol/layer/Vector.js'
-import VectorSource from 'ol/source/Vector.js'
-import type GeoTIFF from 'ol/source/GeoTIFF.js'
-import Draw from 'ol/interaction/Draw.js'
-import Point from 'ol/geom/Point.js'
-import { getLength } from 'ol/sphere.js'
+import { cache } from 'lit/directives/cache.js'
 import Feature from 'ol/Feature.js'
+import Point from 'ol/geom/Point.js'
+import Draw from 'ol/interaction/Draw.js'
+import VectorLayer from 'ol/layer/Vector.js'
+import { toLonLat } from 'ol/proj.js'
+import VectorSource from 'ol/source/Vector.js'
+import { getLength } from 'ol/sphere.js'
+import { AuthController } from '../../auth/auth.controller.js'
+import type { TerraMapPointerMoveEvent } from '../../events/events.js'
+import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
-import styles from './time-average-map.styles.js'
-import type { CSSResultGroup } from 'lit'
-import { TimeAvgMapController } from './time-average-map.controller.js'
-import TerraButton from '../button/button.component.js'
-import TerraPlot from '../plot/plot.component.js'
-import TerraIcon from '../icon/icon.component.js'
-import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
-import TerraAlert from '../alert/alert.component.js'
-import TerraMap from '../map/map.component.js'
-import type { TerraMapPointerMoveEvent } from '../../events/events.js'
-import { TaskStatus } from '@lit/task'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
-import { cache } from 'lit/directives/cache.js'
-import { AuthController } from '../../auth/auth.controller.js'
-import { toLonLat } from 'ol/proj.js'
-import { getFetchVariableTask } from '../../utilities/variable-task.js'
-import { getVariableEntryId } from '../../utilities/variable.js'
+import { formatDate } from '../../utilities/date.js'
+import { Environment } from '../../utilities/environment.js'
 import {
     extractHarmonyError,
     formatHarmonyErrorMessage,
 } from '../../utilities/harmony.js'
-import { watch } from '../../internal/watch.js'
+import { getVariableEntryId } from '../../utilities/variable.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import TerraAlert from '../alert/alert.component.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import TerraButton from '../button/button.component.js'
+import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
-import { formatDate } from '../../utilities/date.js'
-import { Environment } from '../../utilities/environment.js'
-import type DataTileSource from 'ol/source/DataTile.js'
-import type DataTile from 'ol/DataTile.js'
-import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
+import TerraMap from '../map/map.component.js'
+import TerraPlot from '../plot/plot.component.js'
+import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
+import { TimeAvgMapController } from './time-average-map.controller.js'
+import styles from './time-average-map.styles.js'
 
 export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -127,7 +121,6 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
     } | null = null
 
     #controller: TimeAvgMapController = new TimeAvgMapController(this)
-    #gtLayer: WebGLTileLayer | null = null
     #vectorSource: VectorSource | null = null
     #vectorLayer: VectorLayer | null = null
     #draw: Draw | null = null
@@ -136,6 +129,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
 
     _authController = new AuthController(this)
 
+    @state() private blobUrl?: string
     @state() colormaps = [
         'jet',
         'hsv',
@@ -269,6 +263,13 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
 
     disconnectedCallback(): void {
         super.disconnectedCallback()
+
+        if (this.blobUrl) {
+            URL.revokeObjectURL(this.blobUrl)
+
+            this.blobUrl = undefined
+        }
+
         this.removeEventListener(
             'terra-time-average-map-error',
             this.#handleMapError as EventListener
@@ -295,11 +296,11 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
     }
 
     #handlePointerMove = (event: TerraMapPointerMoveEvent) => {
-        if (!this.#gtLayer) {
+        if (!this.innerMap) {
             return
         }
 
-        let data = this.#gtLayer.getData(event.detail.pixel)
+        let data = this.innerMap.getGeoTiffValueAtPixel('geotiff', event.detail.pixel)
         const [lon, lat] = event.detail.coordinate
 
         if (
@@ -309,7 +310,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                 data instanceof Uint8ClampedArray ||
                 data instanceof Float32Array
             ) ||
-            isNaN(data[0]) ||
+            Number.isNaN(data[0]) ||
             data[0] === 0
         ) {
             data = null
@@ -724,251 +725,36 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         }
     }
 
-    async updateGeoTIFFLayer(blob: Blob) {
-        // The task returns the blob upon completion
-        const blobUrl = URL.createObjectURL(blob)
-
-        const { default: GeoTIFF } = await import('ol/source/GeoTIFF.js')
-
-        const gtSource = new GeoTIFF({
-            sources: [
-                {
-                    url: blobUrl,
-                    bands: [1],
-                    nodata: this.noDataValue,
-                },
-            ],
-            wrapX: true, // Enable wrapping so GeoTIFF is always visible when scrolling
-            interpolate: false,
-            normalize: false,
-        })
-
-        this.#gtLayer = new WebGLTileLayer({
-            source: gtSource,
-        })
-
-        if (this.innerMap) {
-            // remove any previously loaded GeoTIFF layer (e.g. the user changed
-            // variable/date range and we're loading a new one)
-            this.innerMap.removeLayer('geotiff')
-            this.innerMap.addLayer(this.#gtLayer, { name: 'geotiff' })
+    updateGeoTIFFLayer(blob: Blob) {
+        if (this.blobUrl) {
+            URL.revokeObjectURL(this.blobUrl)
         }
 
-        this.metadata = await this.fetchGeotiffMetadata(gtSource)
-        this.long_name = this.metadata['long_name'] ?? ''
-
-        if (this.innerMap && this.#gtLayer) {
-            this.applyColorToLayer(gtSource, this.colorMapName)
-
-            // Try to fit the map view to the GeoTIFF extent
-            try {
-                // Get the GeoTIFF view
-                const view = await this.#gtLayer.getSource()?.getView()
-
-                if (view?.extent && view.projection) {
-                    // Because the GeoTIFF and the map projection's differ, fitToExtent
-                    // will transform the GeoTIFF projection to the map's projection
-                    this.innerMap.fitToExtent(view.extent, {
-                        projection: view.projection,
-                        padding: [50, 50, 50, 50],
-                        duration: 300,
-                    })
-                }
-            } catch (error) {
-                console.warn('Failed to fit map to GeoTIFF extent:', error)
-            }
-        }
-    }
-
-    async fetchGeotiffMetadata(
-        gtSource: GeoTIFF
-    ): Promise<{ [key: string]: string }> {
-        await gtSource.getView()
-        const internal = gtSource as any
-        const gtImage = internal.sourceImagery_[0][0]
-        const gtMetadata = gtImage.fileDirectory?.GDAL_METADATA
-
-        const parser = new DOMParser()
-        const xmlDoc = parser.parseFromString(gtMetadata, 'application/xml')
-        const items = xmlDoc.querySelectorAll('Item')
-
-        const dataObj: { [key: string]: string } = {}
-
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i]
-            const name = item.getAttribute('name')
-            const value = item.textContent ? item.textContent.trim() : ''
-            if (name) {
-                dataObj[name] = value
-            }
-        }
-
-        console.log('Data obj: ', dataObj)
-        return dataObj
-    }
-
-    renderPixelValues(map: Map, gtLayer: WebGLTileLayer) {
-        const updatePixelValue = (event: MapBrowserEvent) => {
-            let data = gtLayer.getData(event.pixel)
-            const coordinate = toLonLat(event.coordinate)
-
-            if (
-                !data ||
-                !(
-                    data instanceof Uint8Array ||
-                    data instanceof Uint8ClampedArray ||
-                    data instanceof Float32Array
-                ) ||
-                isNaN(data[0]) ||
-                data[0] === 0
-            ) {
-                data = null
-            }
-
-            const val = data ? Number(data[0]).toExponential(3) : 'N/A'
-            const coordStr = coordinate.map(c => c.toFixed(3)).join(', ')
-
-            this.pixelValue = val
-            this.pixelCoordinates = coordStr
-        }
-
-        // desktop: read the value continuously as the mouse hovers
-        map.on('pointermove', updatePixelValue)
-
-        // touch devices have no hover state, so `pointermove` only fires while
-        // actively dragging a finger. `singleclick` fires on tap-release and is
-        // only triggered when the pointer didn't move beyond OL's click
-        // tolerance, so it won't fire during a pan/drag gesture.
-        map.on('singleclick', updatePixelValue)
-    }
-
-    // Get the fill value from the GeoTIFF file
-    getNoDataValue(gtSource: DataTileSource<DataTile | ImageTile> | null) {
-        let ndv = this.noDataValue
-
-        if (gtSource == null) {
-            return ndv
-        }
-
-        gtSource.getView().then(() => {
-            const gtImage = (gtSource as any).sourceImagery_[0][0] // TODO: fix type
-            ndv = parseFloat(
-                gtImage.fileDirectory?.GDAL_NODATA ?? this.noDataValue.toString()
-            )
-        })
-
-        return ndv
-    }
-
-    async getMinMax(gtSource: DataTileSource<DataTile | ImageTile>) {
-        await gtSource.getView()
-        const gtImage = (gtSource as any).sourceImagery_[0][0] // TODO: fix
-
-        // read raster data from band 1
-        const rasterData = await gtImage.readRasters({ samples: [0] })
-        const pixels = rasterData[0]
-
-        let min = Infinity
-        let max = -Infinity
-
-        // Loop through pixels and get min and max values. This gives us a range to determine color mapping styling
-        for (let i = 0; i < pixels.length; i++) {
-            const val = pixels[i]
-            if (!isNaN(val) && val !== this.getNoDataValue(gtSource)) {
-                // skip no-data pixels or NaN
-                if (val < min) min = val
-                if (val > max) max = val
-            }
-        }
-
-        return { min, max }
-    }
-
-    // Referencing workshop example from https://openlayers.org/workshop/en/cog/colormap.html
-    async getColorStops(name: any, min: any, max: any, steps: any, reverse: any) {
-        const delta = (max - min) / (steps - 1)
-        const stops = new Array(steps * 2)
-
-        const { default: colormap } = await import('colormap')
-
-        const colors = colormap({
-            colormap: name,
-            nshades: steps,
-            format: 'rgba',
-        })
-
-        const dataVals = []
-
-        if (reverse) {
-            colors.reverse()
-        }
-
-        for (let i = 0; i < steps; i++) {
-            stops[i * 2] = min + i * delta
-            stops[i * 2 + 1] = colors[i]
-
-            dataVals.push((min + i * delta).toExponential(2))
-        }
-
-        this.generatePalette(colors, dataVals, min, max)
-
-        return stops
-    }
-
-    generatePalette(clrs: any, dv: any, min: any, max: any) {
-        this.legendValues = []
-
-        for (let i = clrs.length - 1; i > 0; i--) {
-            const curVal = parseFloat(dv[i])
-            if (curVal >= min && curVal <= max) {
-                this.legendValues.push({ value: dv[i], rgb: clrs[i] })
-            }
-        }
-
-        this.min = min.toExponential(3)
-        this.max = max.toExponential(3)
+        this.blobUrl = URL.createObjectURL(blob)
     }
 
     #handleOpacityChange(e: any) {
         this.opacity = e.detail
-        if (this.#gtLayer) {
-            this.#gtLayer.setOpacity(this.opacity)
-        }
     }
 
     #handleColorMapChange(e: any) {
-        const selectedColormap = e.detail
-        // Reapply the style with the new colormap to the layer
-        if (this.#gtLayer && this.#gtLayer.getSource()) {
-            this.colorMapName = selectedColormap
-            this.applyColorToLayer(this.#gtLayer.getSource()!, this.colorMapName)
+        this.colorMapName = e.detail
+    }
+
+    #handleLayerChange = (event: CustomEvent) => {
+        const { name, info } = event.detail ?? {}
+
+        if (name === 'geotiff' && info) {
+            this.min = typeof info.min === 'number' ? info.min.toExponential(3) : ''
+            this.max = typeof info.max === 'number' ? info.max.toExponential(3) : ''
+            this.legendValues = info.legendValues ?? []
+            this.metadata = info.gdalMetadata ?? {}
+            this.long_name = this.metadata.long_name ?? ''
         }
     }
 
     #abortJobStatusTask() {
         this.#controller.cancelJob()
-    }
-
-    async applyColorToLayer(
-        gtSource: DataTileSource<DataTile | ImageTile>,
-        color: string
-    ) {
-        var { min, max } = await this.getMinMax(gtSource)
-        const gtStyle = {
-            color: [
-                'case',
-                ['==', ['band', 2], 0],
-                [0, 0, 0, 0],
-                [
-                    'interpolate',
-                    ['linear'],
-                    ['band', 1],
-                    ...(await this.getColorStops(color, min, max, 72, false)),
-                ],
-            ],
-        }
-
-        this.#gtLayer?.setStyle(gtStyle)
     }
 
     #getNumberOfPoints(line: any) {
@@ -1005,10 +791,10 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
         /*
 
         Breaks a drawn line into evenly spaced points.
-    
+
         Uses the number of points calculated from #getNumberOfPoints(line)
         to split the line into equal segments.
-    
+
         Example:
 
         If numPoints = 4, the fractions along the line will be:
@@ -1017,7 +803,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
             i = 2  → 0.5   (middle)
             i = 3  → 0.75  (75% along)
             i = 4  → 1.0   (end)
-    
+
         Returns an array of coordinates representing these evenly spaced points.
         */
 
@@ -1052,25 +838,36 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
     }
 
     #getRasterValueAtCoordinate(coord: [number, number]): number {
-        if (!this.innerMap || !this.#gtLayer) return NaN
+        if (!this.innerMap) {
+            return NaN
+        }
 
         const pixel = this.innerMap.getPixelFromCoordinate(coord)
-        if (!pixel) return NaN
 
-        const data = this.#gtLayer.getData(pixel)
-        if (!data) return NaN
+        if (!pixel) {
+            return NaN
+        }
+
+        const data = this.innerMap.getGeoTiffValueAtPixel(
+            'geotiff',
+            pixel as [number, number]
+        )
+
+        if (!data) {
+            return NaN
+        }
 
         if (
             data instanceof Uint8Array ||
             data instanceof Uint8ClampedArray ||
             data instanceof Float32Array
         ) {
-            return !isNaN(data[0]) ? data[0] : NaN
+            return !Number.isNaN(data[0]) ? data[0] : NaN
         }
 
         if (data instanceof DataView) {
             const val = data.getFloat32(0, true)
-            return !isNaN(val) ? val : NaN
+            return !Number.isNaN(val) ? val : NaN
         }
 
         return NaN
@@ -1121,7 +918,9 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                     const lonLatCoords = coords.map(coord => {
                         const [lon, lat] = toLonLat(coord)
                         const val = this.#getRasterValueAtCoordinate(coord)
-                        const rastervalue = !isNaN(val) ? val.toExponential(4) : 'N/A'
+                        const rastervalue = !Number.isNaN(val)
+                            ? val.toExponential(4)
+                            : 'N/A'
                         return [
                             parseFloat(lon.toFixed(2)),
                             parseFloat(lat.toFixed(2)),
@@ -1155,7 +954,7 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                             title: 'Point Index',
                         },
                         yaxis: {
-                            title: `Cloud Coverage (${this.metadata['units']})`,
+                            title: `Cloud Coverage (${this.metadata.units})`,
                             tickformat: '.2e',
                         },
                     }
@@ -1255,8 +1054,28 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
                 )}
             </div>
 
-            <div class="map-container">
-                <terra-map fill show-graticule></terra-map>
+                <div class="map-container">
+                    <terra-map
+                        fill
+                        show-graticule
+                        .layers=${
+                            this.blobUrl
+                                ? [
+                                      {
+                                          type: 'geotiff',
+                                          name: 'geotiff',
+                                          url: this.blobUrl,
+                                          noDataValue: this.noDataValue,
+                                          colorMapName: this.colorMapName,
+                                          opacity: this.opacity,
+                                          fitView: true,
+                                      },
+                                  ]
+                                : []
+                        }
+                        @terra-map-layer-change=${this.#handleLayerChange}
+                    ></terra-map>
+                </div>
 
                 <div id="settings">
                     <div>

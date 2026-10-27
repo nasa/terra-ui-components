@@ -1,5 +1,5 @@
-import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { Extent } from 'ol/extent.js'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { ProjectionLike } from 'ol/proj.js'
 import type { CommonConfig } from './common.js'
 
@@ -29,6 +29,11 @@ export type GeoTiffLayerConfig = CommonConfig & {
      * desirable when multiple layers are present.
      */
     fitView?: boolean
+    /**
+     * Coordinate projection of the raster (e.g. 'EPSG:4326').
+     * If not provided, it will be read from the GeoTIFF metadata or default to 'EPSG:4326'.
+     */
+    projection?: ProjectionLike
 }
 
 export type GeoTiffLegendEntry = {
@@ -50,6 +55,8 @@ export type GeoTiffLayerInfo = {
     colorStops: Array<number | number[]>
     /** Convenience legend entries (highest value first), ready to render a color-ramp legend. */
     legendValues: GeoTiffLegendEntry[]
+    /** Parsed GDAL_METADATA key-value tags (e.g. units, long_name), if present. */
+    gdalMetadata?: Record<string, string>
 }
 
 /**
@@ -75,6 +82,79 @@ async function getNoDataValue(
             error
         )
         return fallback
+    }
+}
+
+/**
+ * Parses GDAL_METADATA XML into a key-value record.
+ */
+export function parseGdalMetadataXml(
+    text?: string | null
+): GeoTiffLayerInfo['gdalMetadata'] {
+    if (!text || typeof text !== 'string') {
+        return {}
+    }
+
+    try {
+        const parser = new DOMParser()
+        const xmlDoc = parser.parseFromString(text, 'application/xml')
+        const items = xmlDoc.querySelectorAll('Item')
+        const dataObj: GeoTiffLayerInfo['gdalMetadata'] = {}
+
+        for (const item of items) {
+            const name = item.getAttribute('name')
+            const value = item.textContent ? item.textContent.trim() : ''
+
+            if (name) {
+                dataObj[name] = value
+            }
+        }
+
+        return dataObj
+    } catch (error) {
+        console.warn('Failed to parse GDAL_METADATA XML:', error)
+        return {}
+    }
+}
+
+/**
+ * Reads and parses the XML `GDAL_METADATA` tag off the GeoTIFF's first image,
+ * returning a key-value record of metadata items (such as units, long_name, etc.).
+ */
+export async function getGdalMetadata(
+    gtSource: InstanceType<typeof import('ol/source/GeoTIFF.js').default>
+): Promise<GeoTiffLayerInfo['gdalMetadata']> {
+    await gtSource.getView()
+
+    try {
+        const gtImage = (gtSource as any).sourceImagery_?.[0]?.[0]
+
+        if (!gtImage) {
+            return {}
+        }
+
+        // geotiff.js provides an async helper that resolves deferred tag 42112 (GDAL_METADATA)
+        if (typeof gtImage.getGDALMetadata === 'function') {
+            const metadata = await gtImage.getGDALMetadata()
+
+            if (metadata && typeof metadata === 'object') {
+                return Object.fromEntries(
+                    Object.entries(metadata).map(([k, v]) => [k, String(v ?? '')])
+                )
+            }
+        }
+
+        // Fallback: check fileDirectory or loadValue directly if available
+        const tagValue =
+            gtImage.fileDirectory?.GDAL_METADATA ??
+            (typeof gtImage.fileDirectory?.loadValue === 'function'
+                ? await gtImage.fileDirectory.loadValue('GDAL_METADATA')
+                : undefined)
+
+        return parseGdalMetadataXml(tagValue)
+    } catch (error) {
+        console.warn('Failed to read GDAL_METADATA from GeoTIFF source:', error)
+        return {}
     }
 }
 
@@ -197,12 +277,14 @@ export async function buildGeoTiffLayer(
         colorMapName = 'viridis',
         colorSteps = 72,
         reverseColors = false,
+        projection: configProjection,
     } = config
 
     const { default: GeoTIFF } = await import('ol/source/GeoTIFF.js')
 
     const gtSource = new GeoTIFF({
         sources: [{ url, bands, nodata: noDataValue }],
+        projection: configProjection,
         // Enable wrapping so the GeoTIFF is always visible when scrolling
         wrapX: true,
         interpolate: false,
@@ -224,6 +306,7 @@ export async function buildGeoTiffLayer(
         colorSteps,
         reverseColors
     )
+    const gdalMetadata = await getGdalMetadata(gtSource)
 
     layer.setStyle({
         color: [
@@ -239,10 +322,13 @@ export async function buildGeoTiffLayer(
     return {
         layer,
         extent: view.extent as Extent,
-        projection: view.projection as ProjectionLike,
+        projection:
+            (view.projection as ProjectionLike) ?? configProjection ?? 'EPSG:4326',
+
         min,
         max,
         colorStops,
         legendValues,
+        gdalMetadata,
     }
 }
