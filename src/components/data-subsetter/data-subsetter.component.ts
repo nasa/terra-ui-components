@@ -3307,23 +3307,10 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     #renderWebLinksSummary() {
         const totalLoaded = this.#getDataLinks().length
-        if (totalLoaded === 0) {
-            const isPending =
-                this.#harmonyRequestController.isCreating ||
-                this.#harmonyRequestController.isPolling ||
-                !this.#harmonyRequestController.data
 
-            return html`
-                <div
-                    id="web-links-summary"
-                    class="web-links-info"
-                    role="status"
-                    aria-live="polite"
-                    aria-atomic="true"
-                >
-                    ${isPending ? 'Loading files from Harmony.' : 'No files found.'}
-                </div>
-            `
+        // We're still checking Harmony for links, so just use the progress bar to indicate progress.
+        if (totalLoaded === 0) {
+            return nothing
         }
 
         const status = this.#harmonyRequestController.status
