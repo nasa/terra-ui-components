@@ -31,6 +31,7 @@ function replace(string, terms) {
 export default {
     globs: ['src/components/**/*.component.ts'],
     exclude: ['**/*.styles.ts', '**/*.test.ts'],
+    packagejson: false, // Custom Elements Manifest (CEM) analyer writes `cdn` prefix to package.json, but we want our static npm path of `dist`.
     plugins: [
         // Append package data
         {
