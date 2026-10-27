@@ -20,7 +20,7 @@ import TerraIcon from '../icon/icon.component.js'
 import TerraMap from '../map/map.component.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
 import { cache } from 'lit/directives/cache.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { getTimeAveragedMapNotebook } from './notebooks/time-averaged-map-notebook.js'
 import { getTimeSeriesNotebook } from './notebooks/time-series-notebook.js'
 import { nothing } from 'lit'
@@ -42,7 +42,7 @@ import { formatDate } from '../../utilities/date.js'
  *
  * @cssproperty --terra-plot-toolbar-help-menu-display - Controls the display of the help menu button. Set to `none` to hide it. Defaults to `flex`.
  */
-export default class TerraPlotToolbar extends TerraElement {
+export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-icon': TerraIcon,
@@ -73,7 +73,7 @@ export default class TerraPlotToolbar extends TerraElement {
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
 
     /**
-     * if you include an application citation, it will be displayed in the citation panel alongside the dataset citation
+     * if you include an application citation, it will be displayed in the citation panel alongside the data set citation
      */
     @property({ attribute: 'application-citation' })
     applicationCitation?: string
@@ -94,7 +94,6 @@ export default class TerraPlotToolbar extends TerraElement {
 
     @query('.bottom-sheet') private bottomSheet: HTMLDivElement
 
-    _authController = new AuthController(this)
     #controller = new PlotToolbarController(this)
 
     metadata: TimeSeriesMetadata
@@ -737,7 +736,7 @@ export default class TerraPlotToolbar extends TerraElement {
                     <code>${this.catalogVariable.dataFieldUnits}</code>
                 </dd>
 
-                <dt>Dataset Information</dt>
+                <dt>Data Set Information</dt>
                 <dd>
                     <a
                         href=${this.catalogVariable.dataProductDescriptionUrl}
@@ -878,7 +877,7 @@ export default class TerraPlotToolbar extends TerraElement {
                         href=${this.catalogVariable.dataProductDescriptionUrl}
                         rel="noopener noreffer"
                         target="_blank"
-                        >Dataset Information
+                        >Data Set Information
                         <terra-icon
                             name="outline-arrow-top-right-on-square"
                             library="heroicons"

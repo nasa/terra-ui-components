@@ -1,46 +1,47 @@
-import { property, state } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
 import componentStyles from '../../styles/component.styles.js'
+import DataAccessService from './data-access.service.js'
+import styles from './data-access.styles.js'
+import TerraAlert from '../alert/alert.component.js'
+import TerraButton from '../button/button.component.js'
+import TerraDataGrid from '../data-grid/data-grid.component.js'
+import TerraDatePicker from '../date-picker/date-picker.component.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraIcon from '../icon/icon.component.js'
+import TerraLoader from '../loader/loader.component.js'
+import TerraMenu from '../menu/menu.component.js'
+import TerraMenuItem from '../menu-item/menu-item.component.js'
+import TerraSlider from '../slider/slider.component.js'
+import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
+import { CollectionController } from '../../controllers/collection.controller.js'
+import { createRef, ref } from 'lit/directives/ref.js'
+import { debounce } from '../../internal/debounce.js'
+import { getBasePath } from '../../utilities/base-path.js'
+import { html, nothing } from 'lit'
+import { MapEventType } from '../map/type.js'
+import { property, state } from 'lit/decorators.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import { queryCmrGranules } from '../../queries/cmr.queries.js'
+import { RelatedURLTypeEnum } from '../../apis/types/cmr/umm-g.js'
+import { watch } from '../../internal/watch.js'
+import type {
+    ColDef,
+    GridApi,
+    ICellRendererParams,
+    IDatasource,
+    IGetRowsParams,
+} from 'ag-grid-community'
+import type { CSSResultGroup } from 'lit'
+import type { SearchGranulesParams, UmmResult } from '../../apis/cmr.api.js'
+import type { UmmG } from '../../apis/types/cmr/umm-g.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map.js'
+import type { TerraSelectEvent } from '../../events/terra-select.js'
+import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
-import styles from './data-access.styles.js'
-import type { CSSResultGroup } from 'lit'
-import TerraLoader from '../loader/loader.component.js'
-import TerraIcon from '../icon/icon.component.js'
-import { debounce } from '../../internal/debounce.js'
-import { watch } from '../../internal/watch.js'
-import TerraDatePicker from '../date-picker/date-picker.component.js'
-import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
-import type { TerraMapChangeEvent } from '../../events/terra-map.js'
-import type { TerraSliderChangeEvent } from '../../events/terra-slider-change.js'
 import type { MapEventDetail } from '../map/type.js'
-import { MapEventType } from '../map/type.js'
-import { createRef, ref } from 'lit/directives/ref.js'
-import type {
-    IDatasource,
-    IGetRowsParams,
-    ICellRendererParams,
-    ColDef,
-    GridApi,
-} from 'ag-grid-community'
-import TerraSlider from '../slider/slider.component.js'
-import TerraDataGrid from '../data-grid/data-grid.component.js'
-import { getBasePath } from '../../utilities/base-path.js'
-import TerraDropdown from '../dropdown/dropdown.component.js'
-import TerraMenu from '../menu/menu.component.js'
-import TerraMenuItem from '../menu-item/menu-item.component.js'
-import TerraButton from '../button/button.component.js'
-import type { TerraSelectEvent } from '../../events/terra-select.js'
-import TerraAlert from '../alert/alert.component.js'
-import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
-import { queryCmrGranules } from '../../queries/cmr.queries.js'
-import type { SearchGranulesParams, UmmResult } from '../../apis/cmr.api.js'
-import type { UmmG } from '../../apis/types/cmr/umm-g.js'
-import { RelatedURLTypeEnum } from '../../apis/types/cmr/umm-g.js'
-import DataAccessService from './data-access.service.js'
-import { CollectionController } from '../../controllers/collection.controller.js'
 
+const ANIMATION_DELAY_DURATION = 500
 /**
  * @summary Discover and export collection granules with search, temporal, spatial, and cloud cover filters.
  * @documentation https://terra-ui.netlify.app/components/data-access
@@ -202,6 +203,11 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
     }
 
     async firstVisible(): Promise<void> {
+        // Delay allows time for dialog open animation to complete
+        await new Promise(resolve =>
+            globalThis.setTimeout(resolve, ANIMATION_DELAY_DURATION)
+        )
+
         this.#initializeGrid()
     }
 
@@ -348,7 +354,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         }
     }
 
-    @debounce(500)
+    @debounce(ANIMATION_DELAY_DURATION)
     handleSearch(search: string) {
         this.searchParams = {
             ...this.searchParams,

@@ -832,49 +832,94 @@ describe('<terra-date-picker>', () => {
     })
 
     describe('Presets', () => {
-        it('should show presets sidebar when show-presets is true', async () => {
-            const el: any = await fixture(html`
-                <terra-date-picker show-presets inline></terra-date-picker>
-            `)
-            await elementUpdated(el)
-
-            const sidebar = el.shadowRoot?.querySelector('.date-picker__sidebar')
-            expect(sidebar).to.exist
-        })
-
-        it('should have default presets', async () => {
-            const el: any = await fixture(html`
-                <terra-date-picker show-presets inline></terra-date-picker>
-            `)
-            await elementUpdated(el)
-
-            const presetButtons = el.shadowRoot?.querySelectorAll(
-                '.date-picker__preset'
-            )
-            expect(presetButtons?.length).to.be.greaterThan(0)
-        })
-
-        it('should select dates when preset is clicked', async () => {
+        it('should gate "All time" behind both min-date and max-date', async () => {
             const el: any = await fixture(html`
                 <terra-date-picker show-presets inline range></terra-date-picker>
             `)
             await elementUpdated(el)
 
-            const presetButtons = el.shadowRoot?.querySelectorAll(
-                '.date-picker__preset'
-            )
-            const todayPreset = Array.from(presetButtons || []).find(
-                (btn: any) => btn.textContent?.trim() === 'Today'
+            const getPresetLabels = () =>
+                Array.from(
+                    el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+                ).map((btn: any) => btn.textContent?.trim())
+
+            // Unbounded: relative presets exist, "All time" is absent
+            expect(getPresetLabels()).to.include('Today')
+            expect(getPresetLabels()).to.not.include('All time')
+
+            // Partial bound (only min-date): "All time" is still absent
+            el.minDate = '2020-01-01'
+            await elementUpdated(el)
+            expect(getPresetLabels()).to.not.include('All time')
+
+            // Partial bound (only max-date): "All time" is still absent
+            el.minDate = undefined
+            el.maxDate = '2030-12-31'
+            await elementUpdated(el)
+            expect(getPresetLabels()).to.not.include('All time')
+
+            // Fully bounded (both min and max): "All time" is present
+            el.minDate = '2020-01-01'
+            await elementUpdated(el)
+            expect(getPresetLabels()).to.include('All time')
+        })
+
+        it('should select relative dates and emit event when clicked', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker show-presets inline range></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const todayPreset = Array.from(
+                el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+            ).find((btn: any) => btn.textContent?.trim() === 'Today') as HTMLElement
+
+            expect(todayPreset, 'Today preset button should exist').to.exist
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            todayPreset.click()
+            const event = await eventPromise
+
+            const now = new Date()
+            const year = now.getFullYear()
+            const month = String(now.getMonth() + 1).padStart(2, '0')
+            const day = String(now.getDate()).padStart(2, '0')
+            const expectedDate = `${year}-${month}-${day}`
+
+            expect(event.detail.startDate).to.equal(expectedDate)
+            expect(event.detail.endDate).to.equal(expectedDate)
+            expect(el.selectedStart).to.not.be.null
+            expect(el.selectedEnd).to.not.be.null
+        })
+
+        it('should select full bounded range when "All time" is clicked', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    show-presets
+                    inline
+                    range
+                    min-date="2020-01-01"
+                    max-date="2030-12-31"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const allTimePreset = Array.from(
+                el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+            ).find(
+                (btn: any) => btn.textContent?.trim() === 'All time'
             ) as HTMLElement
 
-            if (todayPreset) {
-                const eventPromise = oneEvent(el, 'terra-date-range-change')
-                todayPreset.click()
-                const event = await eventPromise
+            expect(allTimePreset, 'All time preset button should exist').to.exist
 
-                expect(event.detail.startDate).to.not.be.empty
-                expect(event.detail.endDate).to.not.be.empty
-            }
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            allTimePreset.click()
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('2020-01-01')
+            expect(event.detail.endDate).to.equal('2030-12-31')
+            expect(el.selectedStart).to.deep.equal(new Date(2020, 0, 1))
+            expect(el.selectedEnd).to.deep.equal(new Date(2030, 11, 31))
         })
     })
 

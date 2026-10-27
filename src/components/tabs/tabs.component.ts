@@ -1,16 +1,16 @@
 import '../../internal/scrollend-polyfill.js'
-import { classMap } from 'lit/directives/class-map.js'
-import { eventOptions, property, query, state } from 'lit/decorators.js'
+import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
+import { eventOptions, property, query, state } from 'lit/decorators.js'
+import { classMap } from 'lit/directives/class-map.js'
 import { scrollIntoView } from '../../internal/scroll.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
 import componentStyles from '../../styles/component.styles.js'
-import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
-import styles from './tabs.styles.js'
-import type { CSSResultGroup } from 'lit'
 import type TerraTab from '../tab/tab.js'
 import type TerraTabPanel from '../tab-panel/tab-panel.js'
+import styles from './tabs.styles.js'
 
 /**
  * @summary Tabs organize content into a container that shows one section at a time.
@@ -169,22 +169,14 @@ export default class TerraTabs extends TerraElement {
                 this.resizeObserver.observe(this.nav)
             }
 
-            // Wait for tabs and tab panels to be registered
             whenAllDefined.then(() => {
-                // Set initial tab state when the tabs become visible
-                const intersectionObserver = new IntersectionObserver(
-                    (entries, observer) => {
-                        if (entries[0].intersectionRatio > 0) {
-                            this.setAriaLabels()
-                            this.setActiveTab(this.getActiveTab() ?? this.tabs[0], {
-                                emitEvents: false,
-                            })
-                            observer.unobserve(entries[0].target)
-                        }
-                    }
-                )
-                if (this.tabsElement) {
-                    intersectionObserver.observe(this.tabsElement)
+                // Initialize semantic state (ARIA and active tab selection) immediately
+                this.setAriaLabels()
+
+                const initialTab = this.getActiveTab() ?? this.tabs[0]
+
+                if (initialTab) {
+                    this.setActiveTab(initialTab, { emitEvents: false })
                 }
             })
         })
@@ -196,6 +188,17 @@ export default class TerraTabs extends TerraElement {
 
         if (this.nav) {
             this.resizeObserver?.unobserve(this.nav)
+        }
+    }
+
+    async firstVisible() {
+        await this.updateComplete
+
+        this.syncIndicator()
+        this.updateScrollControls()
+
+        if (this.activeTab && ['top', 'bottom'].includes(this.placement)) {
+            scrollIntoView(this.activeTab, this.nav, 'horizontal')
         }
     }
 
