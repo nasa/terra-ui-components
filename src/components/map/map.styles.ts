@@ -67,327 +67,445 @@ export default css`
         position: absolute;
         background: rgba(0, 0, 0, 0.75);
         color: white;
-        padding: 6px 8px;
+        padding: 0.375rem 0.5rem;
         border-radius: 4px;
-        font-size: 12px;
+        font-size: 0.75rem;
         pointer-events: none;
         white-space: nowrap;
     }
 
-    .draw-toolbar {
+    .map-toolbar {
         display: flex;
         flex-direction: column;
+        gap: 0.5rem;
         position: absolute;
-        top: 4em;
-        left: 0.5em;
+        top: 4.68rem;
+        left: 0.5rem;
+        background: transparent;
+        border-radius: 0;
+        padding: 0;
+        pointer-events: none;
     }
 
-    .draw-toolbar button {
-        width: 32px;
-        height: 32px;
-        border: none;
-        background: white;
-        cursor: pointer;
-    }
-
-    .draw-toolbar button:hover {
-        background: #f0f0f0;
-    }
-
-    .ol-box {
-        box-sizing: border-box;
-        border-radius: 2px;
-        border: 1.5px solid var(--ol-background-color);
-        background-color: var(--ol-partial-background-color);
-    }
-
-    .ol-mouse-position {
-        top: 8px;
-        right: 8px;
+    .draw-toolbar,
+    .layer-picker-control {
         position: absolute;
-    }
-
-    .ol-scale-line {
-        background: var(--ol-partial-background-color);
-        border-radius: 4px;
-        bottom: 8px;
-        left: 8px;
-        padding: 2px;
-        position: absolute;
-    }
-
-    .ol-scale-line-inner {
-        border: 1px solid var(--ol-subtle-foreground-color);
-        border-top: none;
-        color: var(--ol-foreground-color);
-        font-size: 10px;
-        text-align: center;
-        margin: 1px;
-        will-change: contents, width;
-        transition: all 0.25s;
-    }
-
-    .ol-scale-bar {
-        position: absolute;
-        bottom: 8px;
-        left: 8px;
-    }
-
-    .ol-scale-bar-inner {
+        top: 4.5rem;
+        left: 0.5rem;
         display: flex;
+        flex-direction: column;
+        pointer-events: auto;
     }
 
-    .ol-scale-step-marker {
-        width: 1px;
-        height: 15px;
-        background-color: var(--ol-foreground-color);
-        float: right;
-        z-index: 10;
-    }
-
-    .ol-scale-step-text {
-        position: absolute;
-        bottom: -5px;
-        font-size: 10px;
-        z-index: 11;
-        color: var(--ol-foreground-color);
-        text-shadow:
-            -1.5px 0 var(--ol-partial-background-color),
-            0 1.5px var(--ol-partial-background-color),
-            1.5px 0 var(--ol-partial-background-color),
-            0 -1.5px var(--ol-partial-background-color);
-    }
-
-    .ol-scale-text {
-        position: absolute;
-        font-size: 12px;
-        text-align: center;
-        bottom: 25px;
-        color: var(--ol-foreground-color);
-        text-shadow:
-            -1.5px 0 var(--ol-partial-background-color),
-            0 1.5px var(--ol-partial-background-color),
-            1.5px 0 var(--ol-partial-background-color),
-            0 -1.5px var(--ol-partial-background-color);
-    }
-
-    .ol-scale-singlebar {
+    .map-toolbar .draw-toolbar,
+    .map-toolbar .layer-picker-control {
         position: relative;
-        height: 10px;
-        z-index: 9;
-        box-sizing: border-box;
-        border: 1px solid var(--ol-foreground-color);
+        top: auto;
+        left: auto;
     }
 
-    .ol-scale-singlebar-even {
-        background-color: var(--ol-subtle-foreground-color);
-    }
-
-    .ol-scale-singlebar-odd {
-        background-color: var(--ol-background-color);
-    }
-
-    .ol-unsupported {
+    .draw-toolbar:not(:has(button:not(.cancel-btn):not([style*='display: none']))),
+    .layer-picker-control:not(:has(button:not([style*='display: none']))) {
         display: none;
     }
 
-    .ol-viewport,
-    .ol-unselectable {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        user-select: none;
-        -webkit-tap-highlight-color: transparent;
-    }
-
-    .ol-viewport canvas {
-        all: unset;
-        overflow: hidden;
-    }
-
-    .ol-viewport {
-        touch-action: pan-x pan-y;
-    }
-
-    .ol-selectable {
-        -webkit-touch-callout: default;
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        user-select: text;
-    }
-
-    .ol-grabbing {
-        cursor: -webkit-grabbing;
-        cursor: -moz-grabbing;
-        cursor: grabbing;
-    }
-
-    .ol-grab {
-        cursor: move;
-        cursor: -webkit-grab;
-        cursor: -moz-grab;
-        cursor: grab;
-    }
-
-    .ol-control {
-        position: absolute;
-        background-color: var(--ol-subtle-background-color);
-        border-radius: 4px;
-    }
-
-    .ol-zoom {
-        top: 0.5em;
-        left: 0.5em;
-    }
-
-    .ol-rotate {
-        top: 0.5em;
-        right: 0.5em;
-        transition:
-            opacity 0.25s linear,
-            visibility 0s linear;
-    }
-
-    .ol-rotate.ol-hidden {
-        opacity: 0;
-        visibility: hidden;
-        transition:
-            opacity 0.25s linear,
-            visibility 0s linear 0.25s;
-    }
-
-    .ol-zoom-extent {
-        top: 4.643em;
-        left: 0.5em;
-    }
-
-    .ol-full-screen {
-        right: 0.5em;
-        top: 0.5em;
-    }
-
-    .ol-control button {
-        display: block;
+    .map-toolbar button,
+    .draw-toolbar button,
+    .layer-picker-control button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
         margin: 1px;
         padding: 0;
-        color: var(--ol-subtle-foreground-color);
-        font-weight: bold;
-        text-decoration: none;
-        font-size: inherit;
-        text-align: center;
-        height: 1.375em;
-        width: 1.375em;
-        line-height: 0.4em;
-        background-color: var(--ol-background-color);
         border: none;
         border-radius: 2px;
-        position: relative;
-    }
-
-    .ol-control button::-moz-focus-inner {
-        border: none;
-        padding: 0;
-    }
-
-    .ol-zoom-extent button {
-        line-height: 1.4em;
-    }
-
-    .ol-compass {
-        display: block;
-        font-weight: normal;
-        will-change: transform;
-    }
-
-    .ol-touch .ol-control button {
-        font-size: 1.5em;
-    }
-
-    .ol-touch .ol-zoom-extent {
-        top: 5.5em;
-    }
-
-    .ol-control button:hover,
-    .ol-control button:focus {
-        text-decoration: none;
-        outline: 1px solid var(--ol-subtle-foreground-color);
-        color: var(--ol-foreground-color);
-    }
-
-    .ol-zoom .ol-zoom-in {
-        border-radius: 2px 2px 0 0;
-    }
-
-    .ol-zoom .ol-zoom-out {
-        border-radius: 0 0 2px 2px;
-    }
-
-    .ol-attribution {
-        display: none !important;
-    }
-
-    .ol-zoomslider {
-        top: 4.5em;
-        left: 0.5em;
-        height: 200px;
-    }
-
-    .ol-zoomslider button {
-        position: relative;
-        height: 10px;
-    }
-
-    .ol-touch .ol-zoomslider {
-        top: 5.5em;
-    }
-
-    .ol-overviewmap {
-        left: 0.5em;
-        bottom: 0.5em;
-    }
-
-    .ol-overviewmap.ol-uncollapsible {
-        bottom: 0;
-        left: 0;
-        border-radius: 0 4px 0 0;
-    }
-
-    .ol-overviewmap .ol-overviewmap-map,
-    .ol-overviewmap button {
-        display: block;
-    }
-
-    .ol-overviewmap .ol-overviewmap-map {
-        border: 1px solid var(--ol-subtle-foreground-color);
-        height: 150px;
-        width: 150px;
-    }
-
-    .ol-overviewmap:not(.ol-collapsed) button {
-        bottom: 0;
-        left: 0;
-        position: absolute;
-    }
-
-    .ol-overviewmap.ol-collapsed .ol-overviewmap-map,
-    .ol-overviewmap.ol-uncollapsible button {
-        display: none;
-    }
-
-    .ol-overviewmap:not(.ol-collapsed) {
-        background: var(--ol-subtle-background-color);
-    }
-
-    .ol-overviewmap-box {
-        border: 1.5px dotted var(--ol-subtle-foreground-color);
-    }
-
-    .ol-overviewmap .ol-overviewmap-box:hover {
-        cursor: move;
-    }
-
-    .ol-overviewmap .ol-viewport:hover {
+        background: var(--ol-background-color);
+        color: #464646;
         cursor: pointer;
+    }
+
+    .map-toolbar button svg,
+    .draw-toolbar button svg,
+    .layer-picker-control button svg {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .map-toolbar button:hover,
+    .map-toolbar button:focus,
+    .draw-toolbar button:hover,
+    .draw-toolbar button:focus,
+    .layer-picker-control button:hover,
+    .layer-picker-control button:focus {
+        background: #f0f0f0;
+        color: var(--ol-foreground-color);
+        outline: 1px solid var(--ol-subtle-foreground-color);
+    }
+
+    .map-toolbar button.active,
+    .draw-toolbar button.active,
+    .layer-picker-control button.active {
+        background: #e6f4ff;
+        color: var(--ol-brand-color);
+    }
+
+    .layer-picker-toggle {
+        anchor-name: --layer-picker-btn;
+    }
+
+    .draw-toolbar button.cancel-btn {
+        display: none;
+        height: 0;
+        margin-block: 0;
+        opacity: 0;
+        transform: scale(0.8) translateY(-4px);
+        overflow: hidden;
+        transition:
+            height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+            margin-block 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+            opacity 0.2s ease-out,
+            transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+            display 0.25s allow-discrete;
+    }
+
+    .draw-toolbar button.cancel-btn.visible {
+        display: flex;
+        height: 1.75rem;
+        margin-block: 1px;
+        opacity: 1;
+        transform: none;
+
+        @starting-style {
+            height: 0;
+            margin-block: 0;
+            opacity: 0;
+            transform: scale(0.8) translateY(-4px);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .draw-toolbar button.cancel-btn {
+            transition: none;
+        }
+    }
+
+    .ol-zoom button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        color: #464646;
+        font-size: 1.125rem;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .ol-zoom button:hover,
+    .ol-zoom button:focus {
+        background: #f0f0f0;
+        color: var(--ol-foreground-color);
+        outline: 1px solid var(--ol-subtle-foreground-color);
+    }
+
+    @layer ol {
+        .ol-box {
+            box-sizing: border-box;
+            border-radius: 2px;
+            border: 1.5px solid var(--ol-background-color);
+            background-color: var(--ol-partial-background-color);
+        }
+
+        .ol-mouse-position {
+            top: 8px;
+            right: 8px;
+            position: absolute;
+        }
+
+        .ol-scale-line {
+            background: var(--ol-partial-background-color);
+            border-radius: 4px;
+            bottom: 8px;
+            left: 8px;
+            padding: 2px;
+            position: absolute;
+        }
+
+        .ol-scale-line-inner {
+            border: 1px solid var(--ol-subtle-foreground-color);
+            border-top: none;
+            color: var(--ol-foreground-color);
+            font-size: 10px;
+            text-align: center;
+            margin: 1px;
+            will-change: contents, width;
+            transition: all 0.25s;
+        }
+
+        .ol-scale-bar {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+        }
+
+        .ol-scale-bar-inner {
+            display: flex;
+        }
+
+        .ol-scale-step-marker {
+            width: 1px;
+            height: 15px;
+            background-color: var(--ol-foreground-color);
+            float: right;
+            z-index: 10;
+        }
+
+        .ol-scale-step-text {
+            position: absolute;
+            bottom: -5px;
+            font-size: 10px;
+            z-index: 11;
+            color: var(--ol-foreground-color);
+            text-shadow:
+                -1.5px 0 var(--ol-partial-background-color),
+                0 1.5px var(--ol-partial-background-color),
+                1.5px 0 var(--ol-partial-background-color),
+                0 -1.5px var(--ol-partial-background-color);
+        }
+
+        .ol-scale-text {
+            position: absolute;
+            font-size: 12px;
+            text-align: center;
+            bottom: 25px;
+            color: var(--ol-foreground-color);
+            text-shadow:
+                -1.5px 0 var(--ol-partial-background-color),
+                0 1.5px var(--ol-partial-background-color),
+                1.5px 0 var(--ol-partial-background-color),
+                0 -1.5px var(--ol-partial-background-color);
+        }
+
+        .ol-scale-singlebar {
+            position: relative;
+            height: 10px;
+            z-index: 9;
+            box-sizing: border-box;
+            border: 1px solid var(--ol-foreground-color);
+        }
+
+        .ol-scale-singlebar-even {
+            background-color: var(--ol-subtle-foreground-color);
+        }
+
+        .ol-scale-singlebar-odd {
+            background-color: var(--ol-background-color);
+        }
+
+        .ol-unsupported {
+            display: none;
+        }
+
+        .ol-viewport,
+        .ol-unselectable {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .ol-viewport canvas {
+            all: unset;
+            overflow: hidden;
+        }
+
+        .ol-viewport {
+            touch-action: pan-x pan-y;
+        }
+
+        .ol-selectable {
+            -webkit-touch-callout: default;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            user-select: text;
+        }
+
+        .ol-grabbing {
+            cursor: -webkit-grabbing;
+            cursor: -moz-grabbing;
+            cursor: grabbing;
+        }
+
+        .ol-grab {
+            cursor: move;
+            cursor: -webkit-grab;
+            cursor: -moz-grab;
+            cursor: grab;
+        }
+
+        .ol-control {
+            position: absolute;
+            background-color: var(--ol-subtle-background-color);
+            border-radius: 4px;
+        }
+
+        .ol-zoom {
+            top: 0.5em;
+            left: 0.5em;
+        }
+
+        .ol-rotate {
+            top: 0.5em;
+            right: 0.5em;
+            transition:
+                opacity 0.25s linear,
+                visibility 0s linear;
+        }
+
+        .ol-rotate.ol-hidden {
+            opacity: 0;
+            visibility: hidden;
+            transition:
+                opacity 0.25s linear,
+                visibility 0s linear 0.25s;
+        }
+
+        .ol-zoom-extent {
+            top: 4.643em;
+            left: 0.5em;
+        }
+
+        .ol-full-screen {
+            right: 0.5em;
+            top: 0.5em;
+        }
+
+        .ol-control button {
+            display: block;
+            margin: 1px;
+            padding: 0;
+            color: var(--ol-subtle-foreground-color);
+            font-weight: bold;
+            text-decoration: none;
+            font-size: inherit;
+            text-align: center;
+            height: 1.75rem;
+            width: 1.75rem;
+            line-height: 0.4em;
+            background-color: var(--ol-background-color);
+            border: none;
+            border-radius: 2px;
+            position: relative;
+        }
+
+        .ol-control button::-moz-focus-inner {
+            border: none;
+            padding: 0;
+        }
+
+        .ol-zoom-extent button {
+            line-height: 1.4em;
+        }
+
+        .ol-compass {
+            display: block;
+            font-weight: normal;
+            will-change: transform;
+        }
+
+        .ol-touch .ol-control button {
+            font-size: 1.5em;
+        }
+
+        .ol-touch .ol-zoom-extent {
+            top: 5.5em;
+        }
+
+        .ol-control button:hover,
+        .ol-control button:focus {
+            text-decoration: none;
+            outline: 1px solid var(--ol-subtle-foreground-color);
+            color: var(--ol-foreground-color);
+        }
+
+        .ol-zoom .ol-zoom-in {
+            border-radius: 2px 2px 0 0;
+        }
+
+        .ol-zoom .ol-zoom-out {
+            border-radius: 0 0 2px 2px;
+        }
+
+        .ol-attribution {
+            display: none !important;
+        }
+
+        .ol-zoomslider {
+            top: 4.5em;
+            left: 0.5em;
+            height: 200px;
+        }
+
+        .ol-zoomslider button {
+            position: relative;
+            height: 10px;
+        }
+
+        .ol-touch .ol-zoomslider {
+            top: 5.5em;
+        }
+
+        .ol-overviewmap {
+            left: 0.5em;
+            bottom: 0.5em;
+        }
+
+        .ol-overviewmap.ol-uncollapsible {
+            bottom: 0;
+            left: 0;
+            border-radius: 0 4px 0 0;
+        }
+
+        .ol-overviewmap .ol-overviewmap-map,
+        .ol-overviewmap button {
+            display: block;
+        }
+
+        .ol-overviewmap .ol-overviewmap-map {
+            border: 1px solid var(--ol-subtle-foreground-color);
+            height: 150px;
+            width: 150px;
+        }
+
+        .ol-overviewmap:not(.ol-collapsed) button {
+            bottom: 0;
+            left: 0;
+            position: absolute;
+        }
+
+        .ol-overviewmap.ol-collapsed .ol-overviewmap-map,
+        .ol-overviewmap.ol-uncollapsible button {
+            display: none;
+        }
+
+        .ol-overviewmap:not(.ol-collapsed) {
+            background: var(--ol-subtle-background-color);
+        }
+
+        .ol-overviewmap-box {
+            border: 1.5px dotted var(--ol-subtle-foreground-color);
+        }
+
+        .ol-overviewmap .ol-overviewmap-box:hover {
+            cursor: move;
+        }
+
+        .ol-overviewmap .ol-viewport:hover {
+            cursor: pointer;
+        }
     }
 
     /* Responsive design for smaller screens */
@@ -445,35 +563,164 @@ export default css`
         display: none;
     }
 
-    .control-button {
-        /* TODO: use a local spritesheet instead */
-        background-image:
-            linear-gradient(transparent, transparent),
-            url('https://unpkg.com/leaflet-draw@1.0.4/dist/images/spritesheet.svg');
-        background-repeat: no-repeat;
-        background-size: 300px 22px;
-        background-clip: padding-box;
+    .layer-picker-panel {
+        display: none;
+        opacity: 0;
+        transform: scale(0.96) translateX(-6px);
         position: absolute;
-        top: 30%;
-        left: 30%;
-        width: 40%;
-        height: 40%;
+        left: calc(100% + 0.5rem);
+        top: 0;
+        min-width: 13.5rem;
+        max-height: min(18rem, 80vh);
+        overflow-y: auto;
+        background: var(--terra-container-menu-bg, var(--ol-background-color));
+        color: var(--terra-checkbox-label-color, var(--ol-foreground-color));
+        border: solid var(--terra-container-menu-border-width, 1px)
+            var(--terra-container-menu-border, rgba(0, 0, 0, 0.08));
+        border-radius: var(--terra-border-radius-medium, 0.25rem);
+        box-shadow: var(
+            --terra-shadow-large,
+            0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -4px rgba(0, 0, 0, 0.1)
+        );
+        padding: 0.75rem 1rem;
+        z-index: var(--terra-z-index-dropdown, 1000);
+        text-align: left;
+        font-family: var(
+            --terra-checkbox-label-font-family,
+            var(--terra-font-family--public-sans, 'Helvetica Neue', Arial, sans-serif)
+        );
+        font-size: var(--terra-checkbox-label-font-size, 0.875rem);
+        font-weight: var(--terra-checkbox-label-font-weight, 400);
+        transform-origin: left top;
+        transition:
+            opacity 0.15s ease-out,
+            transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+            display 0.15s allow-discrete;
     }
 
-    .control-bbox {
-        background-position: -90px;
+    .layer-picker-panel.open {
+        display: block;
+        opacity: 1;
+        transform: none;
+
+        @starting-style {
+            opacity: 0;
+            transform: scale(0.96) translateX(-6px);
+        }
     }
 
-    .control-polygon {
-        background-position: -68px;
+    @media (prefers-reduced-motion: reduce) {
+        .layer-picker-panel {
+            transition: none;
+        }
     }
 
-    .control-point {
-        background-position: -134px;
+    @supports (anchor-name: --layer-picker-btn) {
+        .layer-picker-panel {
+            position-anchor: --layer-picker-btn;
+            top: anchor(top);
+            left: calc(anchor(right) + 0.5rem);
+            position-try-fallbacks: flip-block;
+        }
     }
 
-    .control-circle {
-        background-position: -112px;
+    .layer-picker-section + .layer-picker-section {
+        margin-top: 0.75rem;
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .layer-picker-heading {
+        font-family: var(--terra-font-family--inter, sans-serif);
+        font-weight: var(--terra-font-weight-semi-bold, 600);
+        font-size: 0.688rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--ol-subtle-foreground-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .layer-picker-item {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0.25rem 0.125rem;
+        font-family: var(
+            --terra-checkbox-label-font-family,
+            var(--terra-font-family--public-sans, 'Helvetica Neue', Arial, sans-serif)
+        );
+        font-size: var(--terra-checkbox-label-font-size, 0.875rem);
+        font-weight: var(--terra-checkbox-label-font-weight, 400);
+        line-height: 1.35;
+        color: var(--terra-checkbox-label-color, var(--ol-foreground-color));
+        cursor: pointer;
+        white-space: nowrap;
+        border-radius: 2px;
+        user-select: none;
+    }
+
+    .layer-picker-item:hover {
+        background: var(--ol-accent-background-color);
+    }
+
+    .layer-picker-item input {
+        appearance: none;
+        -webkit-appearance: none;
+        flex: 0 0 auto;
+        margin: 0;
+        width: var(--terra-checkbox-size-medium, 1rem);
+        height: var(--terra-checkbox-size-medium, 1rem);
+        border: solid var(--terra-checkbox-border-width, 1px)
+            var(--terra-checkbox-border-color, #959599);
+        background-color: var(--terra-checkbox-background-color, #ffffff);
+        cursor: pointer;
+        display: inline-grid;
+        place-content: center;
+        transition:
+            0.15s border-color,
+            0.15s background-color;
+    }
+
+    .layer-picker-item input[type='checkbox'] {
+        border-radius: var(--terra-checkbox-border-radius, 2px);
+    }
+
+    .layer-picker-item input[type='radio'] {
+        border-radius: 50%;
+    }
+
+    .layer-picker-item input:hover {
+        border-color: var(--terra-checkbox-border-color-hover, #58585b);
+    }
+
+    .layer-picker-item input:checked {
+        border-color: var(--terra-checkbox-border-color-checked, #1c67e3);
+        background-color: var(--terra-checkbox-background-color-checked, #1c67e3);
+    }
+
+    .layer-picker-item input[type='checkbox']:checked::before {
+        content: '';
+        width: 0.55rem;
+        height: 0.3rem;
+        border-left: 2px solid var(--terra-checkbox-icon-color, #ffffff);
+        border-bottom: 2px solid var(--terra-checkbox-icon-color, #ffffff);
+        transform: translateY(-1px) rotate(-45deg);
+    }
+
+    .layer-picker-item input[type='radio']:checked::before {
+        content: '';
+        width: 0.375rem;
+        height: 0.375rem;
+        border-radius: 50%;
+        background-color: var(--terra-radio-icon-color, #ffffff);
+    }
+
+    .layer-picker-item input:focus-visible {
+        outline: var(--terra-focus-ring-style, solid)
+            var(--terra-checkbox-focus-ring-width, 2px)
+            var(--terra-checkbox-focus-ring-color, #1c67e3);
+        outline-offset: var(--terra-checkbox-focus-ring-offset, 2px);
     }
 
     .form-control {

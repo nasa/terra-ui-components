@@ -61,7 +61,6 @@ async function getNoDataValue(
     fallback?: number
 ): Promise<number | undefined> {
     await gtSource.getView()
-
     try {
         // `sourceImagery_` is an undocumented internal of OL's `GeoTIFF` source
         // if it doesn't exist, we'll fall back to the configured noDataValue

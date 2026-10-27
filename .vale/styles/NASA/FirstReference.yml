@@ -1,0 +1,77 @@
+extends: conditional
+message: "Spell out '%s' on first reference unless universally recognized (NASA Stylebook & Digital.gov)."
+level: suggestion
+ignorecase: false
+first: '\b([A-Z]{3,6})\b'
+second: '(?:\b[A-Z][a-zA-Z]+(?:\s+(?:of|the|and|for|in|on|to|[A-Z][a-zA-Z]+)){1,6}\s+\(([A-Z]{3,6})\))'
+exceptions:
+  - AAA
+  - API
+  - ARIA
+  - CDN
+  - CLI
+  - CMR
+  - CORS
+  - CSS
+  - CSV
+  - DISC
+  - DOM
+  - EMIT
+  - EOF
+  - EPSG
+  - ESDIS
+  - ESM
+  - GES
+  - GIBS
+  - GIS
+  - GUI
+  - HMR
+  - HTML
+  - HTTP
+  - HTTPS
+  - IDE
+  - ISO
+  - JPL
+  - JSDOM
+  - JSON
+  - JSX
+  - LED
+  - LTR
+  - MCP
+  - MDX
+  - MIT
+  - MODIS
+  - NASA
+  - NOAA
+  - NOT
+  - NPM
+  - NPMDIR
+  - PNG
+  - REST
+  - RGB
+  - RGBA
+  - RTL
+  - SASS
+  - SCSS
+  - SDK
+  - SSR
+  - STEM
+  - SVG
+  - TBD
+  - TLS
+  - TODO
+  - URL
+  - URLs
+  - USA
+  - USB
+  - UTC
+  - UTF
+  - UUID
+  - WCAG
+  - WKT
+  - WMS
+  - WMTS
+  - XHR
+  - XML
+  - YAML
+  - YYYY

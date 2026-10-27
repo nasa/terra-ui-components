@@ -10,7 +10,6 @@ import {
     type SubsetJobLink,
     type Variable,
 } from '../../apis/harmony.api.js'
-import { AuthController } from '../../auth/auth.controller.js'
 import {
     CollectionController,
     type CollectionWithAvailableServices,
@@ -28,6 +27,7 @@ import TerraElement, {
 import { watch } from '../../internal/watch.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import cmrVariableService from '../../services/cmr-variable.service.js'
 import componentStyles from '../../styles/component.styles.js'
@@ -81,7 +81,9 @@ const DEFAULT_DATE_RANGE_MIN_GRANULES = 3
  *
  * @event terra-subset-job-complete - called when a subset job enters a final state (e.g. successful, failed, completed_with_errors)
  */
-export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
+export default class TerraDataSubsetter extends AuthMixin(
+    QueryClientMixin(TerraElement)
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-accordion': TerraAccordion,
@@ -141,12 +143,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
 
     @property({ reflect: true, attribute: 'job-id' })
     jobId?: string
-
-    @property({
-        attribute: 'bearer-token',
-        converter: undefinedStringConverter,
-    })
-    bearerToken?: string
 
     @property({ attribute: false })
     onLoginClick?: () => void
@@ -286,7 +282,6 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         ],
     })
 
-    #authController = new AuthController(this)
     #harmonyRequestController = new HarmonyRequestController(this)
 
     @watch(['jobId'], { waitUntilFirstUpdate: true })
@@ -874,10 +869,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
     }
 
     #renderSizeInfo(estimates: { days: number; links: number }) {
-        if (
-            !this.#authController.state.isLoading &&
-            !this.#authController.state.user
-        ) {
+        if (!this.authState.isLoading && !this.authState.user) {
             return html`
                 <div class="size-info warning">
                     <terra-login .onLoginClick=${this.onLoginClick}>
@@ -2716,7 +2708,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
         return html`
             <dl class="params-summary">
                 <div>
-                    <dt><strong>Dataset</strong></dt>
+                    <dt><strong>Data Set</strong></dt>
                     <dd>${collection?.EntryTitle ?? '—'}</dd>
                 </div>
                 <div>
@@ -2896,7 +2888,7 @@ export default class TerraDataSubsetter extends QueryClientMixin(TerraElement) {
             collectionConceptId: this.collectionWithServices!.conceptId,
             variables,
             location: this.spatialSelection,
-            anonymous: !this.#authController.state.user,
+            anonymous: !this.authState.user,
         })
 
         if (this.shapeGeoJson) {

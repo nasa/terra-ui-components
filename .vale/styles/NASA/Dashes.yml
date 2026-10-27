@@ -1,0 +1,8 @@
+extends: existence
+message: "Use spaces around em dashes (' — ') and avoid en dashes ('–') per NASA/AP Stylebook."
+level: suggestion
+nonword: true
+tokens:
+  - '[^\s]—[^\s]'
+  - '\s–\s'
+  - '[^\s]–[^\s]'

@@ -6,7 +6,6 @@
 *.css
 .cache
 .github
-cspell.json
 dist
 docs/search.json
 src/components/icon/icons

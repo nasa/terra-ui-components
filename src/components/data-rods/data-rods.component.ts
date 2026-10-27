@@ -1,23 +1,22 @@
-import { property, state } from 'lit/decorators.js'
-import { html } from 'lit'
-import componentStyles from '../../styles/component.styles.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
-import styles from './data-rods.styles.js'
 import type { CSSResultGroup } from 'lit'
-import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
-import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
-import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
-import { getUTCDate } from '../../utilities/date.js'
-import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
+import { html } from 'lit'
+import { property, state } from 'lit/decorators.js'
 import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-change.js'
-import TerraTimeSeries from '../time-series/time-series.component.js'
+import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map-change.js'
-import { MapEventType } from '../map/type.js'
-import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
+import componentStyles from '../../styles/component.styles.js'
+import { getUTCDate } from '../../utilities/date.js'
 import { getVariableEntryId } from '../../utilities/variable.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
+import { MapEventType } from '../map/type.js'
+import TerraSpatialPicker from '../spatial-picker/spatial-picker.component.js'
+import TerraTimeSeries from '../time-series/time-series.component.js'
+import TerraVariableCombobox from '../variable-combobox/variable-combobox.component.js'
+import styles from './data-rods.styles.js'
 
 /**
  * @summary A component for visualizing Hydrology Data Rods time series using the GES DISC Giovanni API
@@ -30,7 +29,7 @@ import { getVariableEntryId } from '../../utilities/variable.js'
 
 type LastChanged = 'variable' | 'location' | undefined
 
-export default class TerraDataRods extends TerraElement {
+export default class TerraDataRods extends AuthMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-time-series': TerraTimeSeries,
@@ -84,18 +83,6 @@ export default class TerraDataRods extends TerraElement {
         reflect: true,
     })
     location?: string
-
-    /**
-     * The token to be used for authentication with remote servers.
-     * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
-     * The property's value will be inserted after "Bearer" (the authentication scheme).
-     */
-    @property({
-        attribute: 'bearer-token',
-        reflect: false,
-        converter: undefinedStringConverter,
-    })
-    bearerToken: string
 
     @state() catalogVariable: Variable
 

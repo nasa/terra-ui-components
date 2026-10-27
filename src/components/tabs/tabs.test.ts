@@ -18,43 +18,29 @@ const basicTabs = html`
 
 describe('<terra-tabs>', () => {
     describe('Basic Rendering', () => {
-        it('should render a component', async () => {
-            const el = await fixture(basicTabs)
-            expect(el).to.exist
-        })
-
-        it('should render with base part', async () => {
+        it('should render a tablist with accessible structure and CSS parts', async () => {
             const el: any = await fixture(basicTabs)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
-            expect(base).to.exist
-        })
-
-        it('should render a tablist', async () => {
-            const el: any = await fixture(basicTabs)
+            const nav = el.shadowRoot?.querySelector('[part~="nav"]')
             const tablist = el.shadowRoot?.querySelector('[part~="tabs"]')
-            expect(tablist?.getAttribute('role')).to.equal('tablist')
-        })
+            const indicator = el.shadowRoot?.querySelector(
+                '[part~="active-tab-indicator"]'
+            )
+            const body = el.shadowRoot?.querySelector('[part~="body"]')
 
-        it('should render slotted tabs and panels', async () => {
-            const el: any = await fixture(basicTabs)
-            expect(el.querySelectorAll('terra-tab').length).to.equal(3)
-            expect(el.querySelectorAll('terra-tab-panel').length).to.equal(3)
+            expect(base).to.exist
+            expect(nav).to.exist
+            expect(tablist?.getAttribute('role')).to.equal('tablist')
+            expect(indicator).to.exist
+            expect(body).to.exist
         })
     })
 
     describe('Properties', () => {
-        it('should default placement to top', async () => {
+        it('should have correct default property values', async () => {
             const el: any = await fixture(basicTabs)
             expect(el.placement).to.equal('top')
-        })
-
-        it('should default activation to auto', async () => {
-            const el: any = await fixture(basicTabs)
             expect(el.activation).to.equal('auto')
-        })
-
-        it('should default size to large', async () => {
-            const el: any = await fixture(basicTabs)
             expect(el.size).to.equal('large')
         })
 
@@ -98,6 +84,61 @@ describe('<terra-tabs>', () => {
             const activePanel = el.querySelector('terra-tab-panel[active]')
             expect(activeTab.getAttribute('panel')).to.equal('general')
             expect(activePanel.getAttribute('name')).to.equal('general')
+        })
+
+        it('should initialize active tab, panel, and ARIA attributes when mounted inside a hidden container', async () => {
+            const wrapper: HTMLElement = await fixture(html`
+                <div style="display: none;">
+                    <terra-tabs>
+                        <terra-tab slot="nav" panel="general">General</terra-tab>
+                        <terra-tab slot="nav" panel="custom">Custom</terra-tab>
+                        <terra-tab-panel name="general"
+                            >General panel</terra-tab-panel
+                        >
+                        <terra-tab-panel name="custom">Custom panel</terra-tab-panel>
+                    </terra-tabs>
+                </div>
+            `)
+            const el = wrapper.querySelector('terra-tabs')!
+            await waitUntil(() => el.querySelector('terra-tab[active]'))
+
+            const activeTab = el.querySelector<any>('terra-tab[active]')!
+            const activePanel = el.querySelector<any>('terra-tab-panel[active]')!
+
+            expect(activeTab.getAttribute('panel')).to.equal('general')
+            expect(activePanel.getAttribute('name')).to.equal('general')
+            expect(activeTab.tabIndex).to.equal(0)
+            expect(activeTab.getAttribute('aria-controls')).to.equal(activePanel.id)
+            expect(activePanel.getAttribute('aria-labelledby')).to.equal(activeTab.id)
+        })
+
+        it('should update the active indicator width when a hidden container becomes visible', async () => {
+            const wrapper: HTMLElement = await fixture(html`
+                <div style="display: none;">
+                    <terra-tabs>
+                        <terra-tab slot="nav" panel="general">General</terra-tab>
+                        <terra-tab slot="nav" panel="custom">Custom</terra-tab>
+                        <terra-tab-panel name="general"
+                            >General panel</terra-tab-panel
+                        >
+                        <terra-tab-panel name="custom">Custom panel</terra-tab-panel>
+                    </terra-tabs>
+                </div>
+            `)
+            const el = wrapper.querySelector('terra-tabs')!
+            await waitUntil(() => el.querySelector('terra-tab[active]'))
+
+            const indicator =
+                el.shadowRoot!.querySelector<HTMLElement>('.tabs__indicator')!
+            expect(indicator.style.width).to.equal('0px')
+
+            wrapper.style.display = 'block'
+            await waitUntil(
+                () => indicator.style.width !== '0px' && indicator.style.width !== ''
+            )
+
+            const activeTab = el.querySelector<HTMLElement>('terra-tab[active]')!
+            expect(indicator.style.width).to.equal(`${activeTab.clientWidth}px`)
         })
     })
 
