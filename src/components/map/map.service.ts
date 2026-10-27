@@ -1,38 +1,37 @@
-import { type Feature, Graticule, Map as OlMap, type MapBrowserEvent, View } from 'ol'
+import { type Feature, Graticule, type MapBrowserEvent, Map as OlMap, View } from 'ol'
+import { Control } from 'ol/control.js'
+import type { Coordinate } from 'ol/coordinate.js'
+import { type Extent, isEmpty as isEmptyExtent } from 'ol/extent.js'
+import type { FeatureLike } from 'ol/Feature.js'
+import GeoJSON from 'ol/format/GeoJSON.js'
+import { Circle, type Geometry, Point, Polygon } from 'ol/geom.js'
+import type Interaction from 'ol/interaction/Interaction.js'
+import type BaseLayerType from 'ol/layer/Base.js'
+import VectorLayer from 'ol/layer/Vector.js'
 import {
-    toLonLat,
     fromLonLat,
+    get as getProjection,
+    type ProjectionLike,
+    toLonLat,
     transform,
     transformExtent,
-    type ProjectionLike,
-    get as getProjection,
 } from 'ol/proj.js'
-import { isEmpty as isEmptyExtent, type Extent } from 'ol/extent.js'
-import type { Coordinate } from 'ol/coordinate.js'
-import type BaseLayerType from 'ol/layer/Base.js'
-import type Interaction from 'ol/interaction/Interaction.js'
-import type { FitOptions } from 'ol/View.js'
-import type { FeatureLike } from 'ol/Feature.js'
-import Layer from 'ol/layer/Layer.js'
 import type Source from 'ol/source/Source.js'
-import { Stroke } from 'ol/style.js'
-import { isResizeObserverSupported } from '../../utilities/feature.js'
 import VectorSource, { type VectorSourceEvent } from 'ol/source/Vector.js'
-import VectorLayer from 'ol/layer/Vector.js'
-import { Circle, Point, Polygon, type Geometry } from 'ol/geom.js'
-import { Control } from 'ol/control.js'
+import { Stroke } from 'ol/style.js'
+import type { FitOptions } from 'ol/View.js'
+import { BadRequestException } from '../../exceptions/http.exception.js'
+import { isResizeObserverSupported } from '../../utilities/feature.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
 import { LayerPickerControl } from './controls/layer-picker.control.js'
-import { MapEventType, type MapEventDetail } from './type.js'
-import { LatLngBounds } from './models/LatLngBounds.js'
-import { LatLng } from './models/LatLng.js'
-import { BadRequestException } from '../../exceptions/http.exception.js'
-import GeoJSON from 'ol/format/GeoJSON.js'
 import { buildDefaultBaseLayers } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
-import { LabelsLayer } from './layers/labels.layer.js'
 import { buildExtentFeature, getBoundaryStyle } from './layers/boundary.js'
+import { LabelsLayer } from './layers/labels.layer.js'
+import { LatLng } from './models/LatLng.js'
+import { LatLngBounds } from './models/LatLngBounds.js'
 import type { MapLayerToggleDetail } from './type.js'
+import { type MapEventDetail, MapEventType } from './type.js'
 
 export type AddLayerOptions = {
     name?: string
@@ -79,7 +78,7 @@ type MapOptions = {
     onShapeLoading?: (loading: boolean) => void
     onMouseMove?: (coordinate: [number, number], pixel: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
-    onReady?: () => void
+    onReady?: (service: MapService) => void
     onClick?: (
         latLng: LatLng,
         pixel: [number, number],
@@ -121,6 +120,8 @@ export class MapService {
         this.#map = this.#createMap(options)
 
         this.#updateMapSizeOnResize()
+
+        options.onReady?.(this)
     }
 
     setLayerVisibility(name: string, show: boolean) {
@@ -196,7 +197,7 @@ export class MapService {
      * Forwards a consumer-added layer's runtime tile/image load failures to `onLayerError`
      */
     #wireLayerErrorForwarding(layer: BaseLayerType) {
-        if (!(layer instanceof Layer)) {
+        if (!this.#hasGetSource(layer)) {
             return
         }
 
@@ -334,7 +335,7 @@ export class MapService {
             return
         }
 
-        const source = layer instanceof Layer ? layer.getSource() : null
+        const source = this.#hasGetSource(layer) ? layer.getSource() : null
         // `getExtent` isn't on the generic `Source` base type - only sources
         // that know their own bounds (e.g. `VectorSource`) implement it -
         // so sources that don't simply report "no extent" below.
@@ -357,13 +358,14 @@ export class MapService {
     clearLayers() {
         this.getLayers().forEach(layer => {
             this.#map.removeLayer(layer)
+            this.#removeBoundary(layer.get('name'))
         })
     }
 
     /** Refreshes a layer's source, forcing it to reload its data. */
     refreshLayer(name: string) {
         const layer = this.#getLayerByName(name)
-        const source = layer instanceof Layer ? layer.getSource() : null
+        const source = layer && this.#hasGetSource(layer) ? layer.getSource() : null
 
         source?.refresh()
     }
@@ -874,8 +876,6 @@ export class MapService {
                 }
             })
 
-        options.onReady?.()
-
         return map
     }
 
@@ -955,6 +955,15 @@ export class MapService {
             .getLayers()
             .getArray()
             .find(layer => layer.get('name') === name)
+    }
+
+    #hasGetSource(
+        layer: BaseLayerType
+    ): layer is BaseLayerType & { getSource: () => Source | null } {
+        return (
+            typeof (layer as unknown as { getSource?: unknown }).getSource ===
+            'function'
+        )
     }
 
     /**

@@ -641,6 +641,19 @@ describe('Map Service', () => {
             expect(service.getLayer('graticule')).to.exist
         })
 
+        it("clearLayers() also removes the removed layers' boundary features", () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+            })
+
+            service.clearLayers()
+
+            const boundaryLayer = service.getLayer('boundaries') as VectorLayer
+            expect(boundaryLayer.getSource()!.getFeatures()).to.have.lengthOf(0)
+        })
+
         it("refreshLayer() calls the source's refresh()", () => {
             const source = new VectorSource()
             const refreshSpy = sinon.spy(source, 'refresh')
@@ -676,6 +689,41 @@ describe('Map Service', () => {
     describe('events', () => {
         it('fires onReady once synchronously during construction', () => {
             expect(onReady.calledOnce).to.be.true
+        })
+
+        it('passes the service instance to onReady, fully constructed', () => {
+            const passedService = onReady.firstCall.args[0]
+
+            expect(passedService).to.equal(service)
+            // calling an imperative method from inside onReady must not
+            // throw - a caller that assigns its own reference to the
+            // service in this callback (before emitting its own "ready"
+            // event) relies on the service already being usable at this point
+            expect(() => passedService.getZoom()).to.not.throw()
+        })
+
+        it('onReady can be used to assign a reference before dispatching a "ready" event a listener reacts to', () => {
+            // mirrors how `map.component.ts` wires this up: assign a
+            // reference to the service inside `onReady`, then emit an event
+            // whose listener immediately calls back into that reference
+            let ref: MapService | undefined
+            const readyListener = sinon.spy(() => {
+                ref?.setZoom(9)
+            })
+
+            const el2 = document.createElement('div')
+            document.body.appendChild(el2)
+
+            new MapService(el2, {
+                zoom: 5,
+                onReady: readyService => {
+                    ref = readyService
+                    readyListener()
+                },
+            })
+
+            expect(readyListener.calledOnce).to.be.true
+            expect(ref?.getZoom()).to.equal(9)
         })
 
         it('fires onMoveEnd and onZoomChange after setCenter/setZoom settle', async () => {

@@ -3,34 +3,34 @@ import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
 import { cache } from 'lit/directives/cache.js'
 import { map } from 'lit/directives/map.js'
+import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
+import { QueryController } from '../../controllers/query.controller.js'
 import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
-import componentStyles from '../../styles/component.styles.js'
-import styles from './map.styles.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
-    MapService,
-    type AddLayerOptions,
-    type AnimationOptions,
-    type FitToExtentOptions,
-} from './map.service.js'
-import type { LatLng } from './models/LatLng.js'
-import type { LatLngBounds } from './models/LatLngBounds.js'
-import type { Projection } from './layers/gibs.layer.js'
+    queryGiovanniGeoJsonShape,
+    queryGiovanniShapeFiles,
+} from '../../queries/giovanni.queries.js'
+import componentStyles from '../../styles/component.styles.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
+import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
     type MapLayerConfig,
     type MapLayerResult,
 } from './layers/layer.js'
-import { QueryController } from '../../controllers/query.controller.js'
-import { CmrCollectionController } from '../../controllers/cmr-collection.controller.js'
-import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
-    queryGiovanniShapeFiles,
-    queryGiovanniGeoJsonShape,
-} from '../../queries/giovanni.queries.js'
+    type AddLayerOptions,
+    type AnimationOptions,
+    type FitToExtentOptions,
+    MapService,
+} from './map.service.js'
+import styles from './map.styles.js'
+import type { LatLng } from './models/LatLng.js'
+import type { LatLngBounds } from './models/LatLngBounds.js'
 
 const layersConverter = {
     fromAttribute: (value: string | null): MapLayerConfig[] => {
@@ -436,7 +436,8 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             onShapeLoading: loading => {
                 this.shapeLoading = loading
             },
-            onReady: () => {
+            onReady: service => {
+                this.#service = service
                 this.emit('terra-map-ready')
             },
             onClick: (latLng, pixel, features) => {
