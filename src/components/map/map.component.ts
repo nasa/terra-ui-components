@@ -9,6 +9,7 @@ import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     queryGiovanniGeoJsonShape,
@@ -64,7 +65,7 @@ const layersConverter = {
  * @event terra-map-layer-error - Emitted when a consumer-added layer fails to load a tile or image at runtime. `detail` is `{ name, error }`.
  * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
  */
-export default class TerraMap extends QueryClientMixin(TerraElement) {
+export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     /**
@@ -249,7 +250,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             }
 
             try {
-                const result = await buildMapLayer(config)
+                const result = await buildMapLayer(config, {
+                    bearerToken: this.bearerToken,
+                })
 
                 // bail if this layer was removed or superseded while it was building
                 if (this.#layerRequestIds.get(name) !== requestId) {

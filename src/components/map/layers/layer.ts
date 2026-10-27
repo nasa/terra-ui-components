@@ -30,9 +30,12 @@ export type MapLayerResult =
  * Builds a layer from a `MapLayerConfig`, dispatching to `buildGibsLayer()` or
  * `buildGeoTiffLayer()` based on `config.type`.
  */
-export async function buildMapLayer(config: MapLayerConfig): Promise<MapLayerResult> {
+export async function buildMapLayer(
+    config: MapLayerConfig,
+    options?: { bearerToken?: string }
+): Promise<MapLayerResult> {
     if (config.type === 'geotiff') {
-        const info = await buildGeoTiffLayer(config)
+        const info = await buildGeoTiffLayer(config, options)
         return { type: 'geotiff', layer: info.layer, info }
     }
 

@@ -413,6 +413,16 @@ describe('<terra-map> layers (gibs)', () => {
     })
 })
 
+describe('<terra-map> bearer token', () => {
+    it('exposes bearerToken via the bearer-token attribute (AuthMixin)', async () => {
+        const el = await fixture<TerraMap>(
+            html`<terra-map bearer-token="test-token"></terra-map>`
+        )
+
+        expect(el.bearerToken).to.equal('test-token')
+    })
+})
+
 describe('<terra-map> layers (geotiff)', () => {
     // NOTE: `ol/source/GeoTIFF.js` statically imports the `geotiff` npm
     // package, which only ships Node and bundled-browser builds - not a
