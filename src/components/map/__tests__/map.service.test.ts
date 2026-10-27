@@ -369,6 +369,64 @@ describe('Map Service', () => {
 
             expect(boundaryFeatures().length).to.equal(0)
         })
+
+        it('hides a boundary outline when its layer is hidden via setLayerVisibility', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                boundaryColorIndex: 1,
+            })
+
+            service.setLayerVisibility('custom', false)
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect(style.getStroke()).to.be.null
+            expect(style.getFill()).to.be.null
+        })
+
+        it('restores the boundary outline style when the layer becomes visible again', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                boundaryColorIndex: 1,
+            })
+
+            service.setLayerVisibility('custom', false)
+            service.setLayerVisibility('custom', true)
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect((style.getStroke() as Stroke).getColor()).to.equal(
+                'rgba(52, 152, 219, 1)'
+            )
+        })
+
+        it("only hides the toggled layer's boundary, leaving others visible", () => {
+            const layerA = new VectorLayer({ source: new VectorSource() })
+            const layerB = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(layerA, { name: 'a', extent: [-10, -10, 10, 10] })
+            service.addLayer(layerB, { name: 'b', extent: [-20, -20, 20, 20] })
+
+            service.setLayerVisibility('a', false)
+
+            const [featureA, featureB] = boundaryFeatures().sort((x, y) =>
+                x.get('layerName').localeCompare(y.get('layerName'))
+            )
+            expect((featureA!.getStyle() as Style).getStroke()).to.be.null
+            expect((featureB!.getStyle() as Style).getStroke()).to.not.be.null
+        })
+
+        it('does nothing when toggling visibility of a layer with no boundary', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(() => service.setLayerVisibility('custom', false)).to.not.throw()
+            expect(boundaryFeatures().length).to.equal(0)
+        })
     })
 
     it('fits the view to a reprojected extent', () => {

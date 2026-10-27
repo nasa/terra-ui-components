@@ -18,7 +18,7 @@ import {
 } from 'ol/proj.js'
 import type Source from 'ol/source/Source.js'
 import VectorSource, { type VectorSourceEvent } from 'ol/source/Vector.js'
-import { Stroke } from 'ol/style.js'
+import { Stroke, Style } from 'ol/style.js'
 import type { FitOptions } from 'ol/View.js'
 import { BadRequestException } from '../../exceptions/http.exception.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
@@ -133,6 +133,34 @@ export class MapService {
         if (layer) {
             layer.setVisible(show)
         }
+
+        this.#setBoundaryVisibility(name, show)
+    }
+
+    /**
+     * Shows/hides the boundary outline feature(s) drawn via
+     * `addLayer(..., { extent })` for `name`, keeping them in sync with
+     * their owning layer's visibility.
+     */
+    #setBoundaryVisibility(name: string, show: boolean) {
+        const source = this.#boundaryLayer.getSource()
+        if (!source) return
+
+        source
+            .getFeatures()
+            .filter(feature => feature.get('layerName') === name)
+            .forEach(feature => {
+                if (show) {
+                    const style = feature.get('boundaryStyle') as Style | undefined
+                    if (style) feature.setStyle(style)
+                } else {
+                    // stash the real style (once) so it can be restored on show
+                    if (!feature.get('boundaryStyle')) {
+                        feature.set('boundaryStyle', feature.getStyle())
+                    }
+                    feature.setStyle(new Style())
+                }
+            })
     }
 
     /**

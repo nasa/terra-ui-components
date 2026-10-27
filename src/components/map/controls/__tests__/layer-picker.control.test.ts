@@ -259,6 +259,71 @@ describe('LayerPickerControl', () => {
         expect(updatedLabels).to.not.include('Custom Overlay')
     })
 
+    it('does not accumulate duplicate change:visible listeners when a layer is removed and re-added', () => {
+        // simulate map.service's setLayerOrder: it rebuilds the collection by
+        // clearing it and pushing the *same* layer instances back on, which
+        // fires `remove` then `add` for each one without creating new objects
+        const layers = map.getLayers()
+        layers.remove(graticuleOverlay)
+        layers.push(graticuleOverlay)
+        layers.remove(graticuleOverlay)
+        layers.push(graticuleOverlay)
+
+        expect(graticuleOverlay.getListeners('change:visible')).to.have.lengthOf(1)
+    })
+
+    it('still reacts to visibility changes after a layer is removed and re-added', () => {
+        const toggleBtn = pickerControl.element.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        toggleBtn.click()
+
+        const layers = map.getLayers()
+        layers.remove(graticuleOverlay)
+        layers.push(graticuleOverlay)
+
+        const checkbox = Array.from(
+            pickerControl.element.querySelectorAll('.layer-picker-item')
+        )
+            .find(item => item.querySelector('span')?.textContent === 'Graticule')
+            ?.querySelector('input') as HTMLInputElement
+
+        expect(checkbox.checked).to.be.false
+
+        graticuleOverlay.setVisible(true)
+
+        const updatedCheckbox = Array.from(
+            pickerControl.element.querySelectorAll('.layer-picker-item')
+        )
+            .find(item => item.querySelector('span')?.textContent === 'Graticule')
+            ?.querySelector('input') as HTMLInputElement
+
+        expect(updatedCheckbox.checked).to.be.true
+    })
+
+    it('stops reacting to a removed layer after it is taken out of the collection for good', () => {
+        const toggleBtn = pickerControl.element.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        toggleBtn.click()
+
+        map.removeLayer(graticuleOverlay)
+
+        const labelsBeforeChange = Array.from(
+            pickerControl.element.querySelectorAll('.layer-picker-item span')
+        ).map(s => s.textContent)
+        expect(labelsBeforeChange).to.not.include('Graticule')
+
+        // changing visibility on a layer no longer in the map must not
+        // re-render stale markup back in (it also must not throw)
+        expect(() => graticuleOverlay.setVisible(true)).to.not.throw()
+
+        const labelsAfterChange = Array.from(
+            pickerControl.element.querySelectorAll('.layer-picker-item span')
+        ).map(s => s.textContent)
+        expect(labelsAfterChange).to.not.include('Graticule')
+    })
+
     it('supports target element option in constructor', () => {
         const customTarget = document.createElement('div')
         const ctrl = new LayerPickerControl({ target: customTarget })
