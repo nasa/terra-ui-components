@@ -95,6 +95,9 @@ export class HarmonyRequestController implements ReactiveController {
 
             if (existingJob) {
                 this.#jobId = existingJob.jobID
+                this.host.queryClient?.invalidateQueries({
+                    queryKey: ['harmony', 'jobs', existingJob.jobID],
+                })
                 return existingJob
             }
 
@@ -175,6 +178,9 @@ export class HarmonyRequestController implements ReactiveController {
     startPollForJobStatus(jobId: string, options?: SearchOptions) {
         this.#options = options
         this.#jobId = jobId
+        this.host.queryClient?.invalidateQueries({
+            queryKey: ['harmony', 'jobs', jobId],
+        })
     }
 
     reset() {

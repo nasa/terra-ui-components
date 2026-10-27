@@ -1,5 +1,6 @@
 import { elementUpdated, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import sinon from 'sinon'
+import { harmonyApi } from '../../apis/harmony.api.js'
 import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
@@ -1300,5 +1301,351 @@ describe('<terra-data-subsetter> output format priority ordering and default sel
         ])
 
         expect(el.selectedFormat.key).to.equal('application/netcdf')
+    })
+})
+
+describe('<terra-data-subsetter> web links pagination and scroll behavior', () => {
+    let getJobPageStub: sinon.SinonStub
+
+    afterEach(() => {
+        sinon.restore()
+        sharedQueryClient.clear()
+    })
+
+    const baseCaps = {
+        conceptId: 'C123-TEST',
+        shortName: 'PAG_COL',
+        summary: {
+            subsetting: {
+                bbox: true,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: false,
+            },
+            outputFormats: ['application/x-netcdf4'],
+        },
+        services: [
+            {
+                name: 'harmony',
+                capabilities: {
+                    subsetting: {
+                        bbox: true,
+                    },
+                    outputFormats: ['application/x-netcdf4'],
+                },
+            },
+        ],
+        variables: [],
+        configuredOutputFormats: [],
+    }
+
+    const baseCollectionUmm = {
+        EntryTitle: 'Pagination Test Collection',
+        ShortName: 'PAG_COL',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    function createJobStatus(options: {
+        jobID: string
+        status?: string
+        linkCount: number
+        numInputGranules?: number
+        hasNextLink?: boolean
+    }) {
+        const links: any[] = Array.from({ length: options.linkCount }, (_, i) => ({
+            href: `https://example.com/file_${options.jobID}_${i + 1}.nc`,
+            rel: 'data',
+            title: `file_${options.jobID}_${i + 1}.nc`,
+        }))
+
+        if (options.hasNextLink) {
+            links.push({
+                href: `https://harmony.earthdata.nasa.gov/jobs/${options.jobID}?page=2`,
+                rel: 'next',
+            })
+        }
+
+        return {
+            jobID: options.jobID,
+            status: options.status ?? 'running',
+            message: 'The job is running.',
+            progress: 50,
+            numInputGranules: options.numInputGranules ?? 200,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            links,
+        }
+    }
+
+    async function mountSubsetterWithJob(jobId: string, jobStatus: any) {
+        stubCollectionFetch({
+            collectionEntryId: 'PAG_1',
+            caps: baseCaps,
+            collectionUmm: baseCollectionUmm,
+            jobStatuses: { [jobId]: jobStatus },
+        })
+
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+        HarmonyRequestController.prototype.startJob = (async () => {
+            return { jobID: jobId } as any
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        try {
+            const el: any = await fixture(
+                html`<terra-data-subsetter></terra-data-subsetter>`
+            )
+            el.dataAccessMode = 'subset'
+            el.collectionEntryId = 'PAG_1'
+
+            await waitUntil(
+                () => Boolean(el.collectionWithServices),
+                'expected collectionWithServices to populate',
+                { timeout: 3000 }
+            )
+            await elementUpdated(el)
+
+            const getDataButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
+                | HTMLButtonElement
+                | undefined
+
+            getDataButton?.click()
+
+            await waitUntil(
+                () => (el.shadowRoot?.querySelectorAll('.file-item').length ?? 0) > 0,
+                'expected web links to render',
+                { timeout: 3000 }
+            )
+            await elementUpdated(el)
+
+            return el
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+    }
+
+    it('slices initial web links display to 100 items and increments on scroll', async () => {
+        const jobStatus = createJobStatus({
+            jobID: 'job-slice-test',
+            linkCount: 150,
+            numInputGranules: 200,
+        })
+        const el = await mountSubsetterWithJob('job-slice-test', jobStatus)
+
+        const fileItemsBefore = el.shadowRoot?.querySelectorAll('.file-item')
+        expect(fileItemsBefore?.length).to.equal(100)
+
+        const summary = el.shadowRoot?.querySelector('#web-links-summary')
+        expect(summary?.textContent).to.include('Showing 100 of estimated 200 files.')
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        fileList.dispatchEvent(new Event('scroll'))
+        await elementUpdated(el)
+
+        const fileItemsAfter = el.shadowRoot?.querySelectorAll('.file-item')
+        expect(fileItemsAfter?.length).to.equal(150)
+        expect(summary?.textContent).to.include(
+            'Showing all 150 currently loaded files of estimated 200.'
+        )
+    })
+
+    it('dynamically fetches next page from Harmony when user scrolls to end of loaded links', async () => {
+        getJobPageStub = sinon.stub(harmonyApi, 'getJobPage').resolves({
+            jobID: 'job-fetch-test',
+            status: 'running',
+            progress: 60,
+            links: [
+                {
+                    href: 'https://example.com/file_page2_1.nc',
+                    rel: 'data',
+                    title: 'file_page2_1.nc',
+                },
+                {
+                    href: 'https://example.com/file_page2_2.nc',
+                    rel: 'data',
+                    title: 'file_page2_2.nc',
+                },
+            ],
+        } as any)
+
+        const jobStatus = createJobStatus({
+            jobID: 'job-fetch-test',
+            linkCount: 100,
+            numInputGranules: 200,
+            hasNextLink: true,
+        })
+        const el = await mountSubsetterWithJob('job-fetch-test', jobStatus)
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        fileList.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(
+            () => getJobPageStub.calledOnce,
+            'expected harmonyApi.getJobPage to be called'
+        )
+        await elementUpdated(el)
+
+        expect(getJobPageStub.firstCall.args[0]).to.equal(
+            'https://harmony.earthdata.nasa.gov/jobs/job-fetch-test?page=2'
+        )
+
+        const fileItems = el.shadowRoot?.querySelectorAll('.file-item')
+        expect(fileItems?.length).to.equal(102)
+    })
+
+    it('exhausts pagination and prevents repeated fetch calls when subsequent page has no next link', async () => {
+        getJobPageStub = sinon.stub(harmonyApi, 'getJobPage').resolves({
+            jobID: 'job-exhaust-test',
+            status: 'running',
+            progress: 70,
+            links: [
+                {
+                    href: 'https://example.com/file_exhaust_1.nc',
+                    rel: 'data',
+                    title: 'file_exhaust_1.nc',
+                },
+            ],
+        } as any)
+
+        const jobStatus = createJobStatus({
+            jobID: 'job-exhaust-test',
+            linkCount: 100,
+            numInputGranules: 200,
+            hasNextLink: true,
+        })
+        const el = await mountSubsetterWithJob('job-exhaust-test', jobStatus)
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        // First scroll: triggers fetch
+        fileList.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(() => getJobPageStub.calledOnce)
+        await elementUpdated(el)
+
+        // Second scroll: pagination is exhausted, should not call getJobPage again
+        fileList.dispatchEvent(new Event('scroll'))
+        await elementUpdated(el)
+
+        expect(getJobPageStub.callCount).to.equal(1)
+    })
+
+    it('aborts in-flight pagination request and discards results when switching jobs', async () => {
+        let abortSignalObserved: AbortSignal | undefined
+        let resolveJobPage: (value: any) => void
+
+        const pagePromise = new Promise(resolve => {
+            resolveJobPage = resolve
+        })
+
+        getJobPageStub = sinon
+            .stub(harmonyApi, 'getJobPage')
+            .callsFake((_url, options) => {
+                abortSignalObserved = options?.signal
+                return pagePromise as any
+            })
+
+        const jobStatusA = createJobStatus({
+            jobID: 'job-A',
+            linkCount: 100,
+            numInputGranules: 200,
+            hasNextLink: true,
+        })
+
+        const el = await mountSubsetterWithJob('job-A', jobStatusA)
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        // Trigger in-flight scroll on Job A
+        fileList.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(() => Boolean(abortSignalObserved))
+        expect(abortSignalObserved?.aborted).to.be.false
+
+        // Switch to Job B while Job A fetch is in flight
+        el.jobId = 'job-B'
+        await elementUpdated(el)
+
+        // Verify the abort signal was triggered
+        expect(abortSignalObserved?.aborted).to.be.true
+
+        // Now resolve the in-flight promise for Job A with stale data
+        resolveJobPage!({
+            jobID: 'job-A',
+            links: [
+                {
+                    href: 'https://example.com/stale-job-A-link.nc',
+                    rel: 'data',
+                    title: 'stale-job-A-link.nc',
+                },
+            ],
+        })
+        await elementUpdated(el)
+
+        // Verify that Job A's stale links were NOT appended
+        const jobALink = el.shadowRoot?.querySelector('a[href*="stale-job-A-link"]')
+        expect(jobALink).to.not.exist
     })
 })
