@@ -109,7 +109,7 @@ export default function (plop) {
             },
             {
                 type: 'add',
-                path: '../../src/components/{{ tagWithoutPrefix tag }}/{{ tagWithoutPrefix tag }}.test.ts',
+                path: '../../src/components/{{ tagWithoutPrefix tag }}/__tests__/{{ tagWithoutPrefix tag }}.component.test.ts',
                 templateFile: 'templates/component/tests.hbs',
             },
             {
