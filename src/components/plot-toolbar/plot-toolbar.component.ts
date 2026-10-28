@@ -70,8 +70,7 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
     @property({ type: Number }) opacity = 1
     @property({ type: Boolean, attribute: 'show-citation' })
     showCitation: boolean = false
-    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean =
-        true
+    @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
     /**
      * Option hides the Jupyter notebook button in the plot toolbar. Option is set by parent component (time series, time average-map) if Jupyter notebook environemnt is detected.
      */
@@ -284,7 +283,7 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                         </terra-button>
                                     `
                                       : nothing
-                                }
+                              }
 
                                 <terra-button
                                     circle
@@ -310,8 +309,8 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                 </terra-button>
 
                                 ${
-                                  this.showHelp
-                                      ? html`
+                                    this.showHelp
+                                        ? html`
                                     <terra-button
                                         circle
                                         outline
@@ -335,7 +334,7 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                         ></terra-icon>
                                     </terra-button>
                                     `
-                                      : nothing
+                                        : nothing
                                 }
 
                                 ${
@@ -365,12 +364,12 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                         ></terra-icon>
                                     </terra-button>
                                     `
-                                  : nothing
+                                        : nothing
                                 }
 
                                 ${
-                                  this.dataType === 'geotiff'
-                                      ? html`
+                                    this.dataType === 'geotiff'
+                                        ? html`
                                         <terra-button
                                             circle
                                             outline
@@ -391,7 +390,7 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                             ></terra-icon>
                                         </terra-button>
                                     `
-                                      : nothing
+                                        : nothing
                                 }
                             </div>
 

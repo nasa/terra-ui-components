@@ -227,12 +227,12 @@ export default class TerraTimeAverageMap extends AuthMixin(
     /**
      * Show or hide the Jupyter notebook button in the plot toolbar.
      */
-    showJupyter?: boolean;
+    showJupyter?: boolean
 
     async firstUpdated() {
         //* Detect if time avg map component is running in a Jupyter notebook.
         if (this.showJupyter === undefined) {
-            this.showJupyter = !isNotebookEnv();
+            this.showJupyter = !isNotebookEnv()
         }
         this._fetchVariableTask.run()
     }

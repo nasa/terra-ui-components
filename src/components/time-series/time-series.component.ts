@@ -244,7 +244,7 @@ export default class TerraTimeSeries extends AuthMixin(
     /**
      * Show or hide the Jupyter notebook button in the plot toolbar.
      */
-    showJupyter?: boolean;
+    showJupyter?: boolean
 
     connectedCallback(): void {
         super.connectedCallback()
@@ -256,7 +256,7 @@ export default class TerraTimeSeries extends AuthMixin(
 
         //* Detect if time series component is running in a Jupyter notebook.
         if (this.showJupyter === undefined) {
-            this.showJupyter = !isNotebookEnv();
+            this.showJupyter = !isNotebookEnv()
         }
         //* instantiate the time series contoller maybe with a token
         this.#timeSeriesController = new TimeSeriesController(this)
