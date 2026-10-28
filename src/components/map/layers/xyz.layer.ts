@@ -42,7 +42,7 @@ export class XYZLayer extends TileLayer {
                       extent: transformExtent(
                           extent,
                           extentProjection,
-                          targetProjection,
+                          targetProjection
                       ),
                   }
                 : {}),

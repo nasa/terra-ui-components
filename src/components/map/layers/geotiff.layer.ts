@@ -58,10 +58,9 @@ export type GeoTiffLayerInfo = {
  */
 async function getNoDataValue(
     gtSource: InstanceType<typeof import('ol/source/GeoTIFF.js').default>,
-    fallback?: number,
+    fallback?: number
 ): Promise<number | undefined> {
     await gtSource.getView()
-
     try {
         // `sourceImagery_` is an undocumented internal of OL's `GeoTIFF` source
         // if it doesn't exist, we'll fall back to the configured noDataValue
@@ -72,7 +71,7 @@ async function getNoDataValue(
     } catch (error) {
         console.warn(
             'Failed to read GDAL_NODATA tag from GeoTIFF source; falling back to configured noDataValue.',
-            error,
+            error
         )
         return fallback
     }
@@ -86,7 +85,7 @@ async function getNoDataValue(
  */
 export function computeMinMax(
     pixels: ArrayLike<number>,
-    noDataValue: number | undefined,
+    noDataValue: number | undefined
 ): { min: number; max: number } {
     let min = Infinity
     let max = -Infinity
@@ -104,7 +103,7 @@ export function computeMinMax(
 
 async function getMinMax(
     gtSource: InstanceType<typeof import('ol/source/GeoTIFF.js').default>,
-    noDataValue: number | undefined,
+    noDataValue: number | undefined
 ): Promise<{ min: number; max: number }> {
     await gtSource.getView()
     const gtImage = (gtSource as any).sourceImagery_[0][0]
@@ -125,7 +124,7 @@ async function getMinMax(
 export function buildStopsFromColors(
     colors: number[][],
     min: number,
-    max: number,
+    max: number
 ): { stops: Array<number | number[]>; legendValues: GeoTiffLegendEntry[] } {
     const steps = colors.length
     const delta = (max - min) / (steps - 1)
@@ -155,7 +154,7 @@ async function buildColorStops(
     min: number,
     max: number,
     steps: number,
-    reverse: boolean,
+    reverse: boolean
 ): Promise<{
     stops: Array<number | number[]>
     legendValues: GeoTiffLegendEntry[]
@@ -187,7 +186,7 @@ async function buildColorStops(
  * it came from (a public COG URL, or an object URL from a fetched `Blob`).
  */
 export async function buildGeoTiffLayer(
-    config: GeoTiffLayerConfig,
+    config: GeoTiffLayerConfig
 ): Promise<GeoTiffLayerInfo> {
     const {
         url,
@@ -222,7 +221,7 @@ export async function buildGeoTiffLayer(
         min,
         max,
         colorSteps,
-        reverseColors,
+        reverseColors
     )
 
     layer.setStyle({

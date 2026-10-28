@@ -242,7 +242,6 @@ export default css`
     }
 
     .progress-text,
-    .search-status,
     .job-info {
         font-size: 14px;
         color: var(--terra-text-secondary);
@@ -256,6 +255,8 @@ export default css`
     }
 
     .search-status {
+        font-size: 14px;
+        color: var(--terra-text-secondary);
         margin-bottom: 20px;
     }
 
@@ -336,18 +337,35 @@ export default css`
         padding: 0;
         max-height: 250px;
         overflow-y: auto;
-        overflow-x: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
         background: #f8f9fa;
         border: 1px solid #dee2e6;
         border-radius: 6px;
         padding: 10px;
         margin-bottom: 10px;
-        white-space: nowrap;
+    }
+
+    .file-list-loader {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 0;
+    }
+
+    .file-list-loader terra-loader {
+        height: 30px;
     }
 
     .file-item {
         margin-bottom: 8px;
-        white-space: nowrap;
+    }
+
+    .web-links-info {
+        font-size: 0.85em;
+        color: #666;
+        margin-top: -6px;
+        margin-bottom: 10px;
     }
 
     .file-link,
@@ -356,8 +374,12 @@ export default css`
         text-decoration: none;
         font-size: 14px;
         display: block;
+        width: fit-content;
+        max-width: 100%;
         transition: all 0.2s;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .file-link {

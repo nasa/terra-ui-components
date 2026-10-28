@@ -54,13 +54,15 @@ export default class TerraAccordion extends TerraElement {
                     <div class="accordion-summary-right">
                         <slot name="summary-right"></slot>
 
-                        ${this.showArrow &&
-                        html`
+                        ${
+                            this.showArrow &&
+                            html`
                             <terra-icon
                                 name="chevron-down-circle"
                                 font-size="24px"
                             ></terra-icon>
-                        `}
+                        `
+                        }
                     </div>
                 </summary>
 

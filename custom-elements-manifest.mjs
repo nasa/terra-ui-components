@@ -29,7 +29,7 @@ function replace(string, terms) {
 }
 
 export default {
-    globs: ['src/components/**/*.component.ts'],
+    globs: ['src/components/**/*.component.ts', 'src/mixins/**/*.mixin.ts'],
     exclude: ['**/*.styles.ts', '**/*.test.ts'],
     plugins: [
         // Append package data
@@ -166,16 +166,11 @@ export default {
 
         {
             name: 'terra-ui-components-react-event-names',
-            analyzePhase({ ts, node, moduleDoc }) {
-                switch (node.kind) {
-                    case ts.SyntaxKind.ClassDeclaration: {
-                        const className = node.name.getText()
-                        const classDoc = moduleDoc?.declarations?.find(
-                            declaration => declaration.name === className
-                        )
-
-                        if (classDoc?.events) {
-                            classDoc.events.forEach(event => {
+            packageLinkPhase({ customElementsManifest }) {
+                customElementsManifest?.modules?.forEach(mod => {
+                    mod.declarations?.forEach(dec => {
+                        if (dec.events) {
+                            dec.events.forEach(event => {
                                 event.reactName = `on${pascalCase(
                                     event.name
                                 )}`.replace(/^Sl/, 'Terra')
@@ -184,8 +179,8 @@ export default {
                                 )}Event`.replace(/^Sl/, 'Terra')
                             })
                         }
-                    }
-                }
+                    })
+                })
             },
         },
 
@@ -204,7 +199,7 @@ export default {
                     //
                     const terms = [
                         { from: /^src\//, to: '' }, // Strip the src/ prefix
-                        { from: /\.component.(t|j)sx?$/, to: '.js' }, // Convert .ts to .js
+                        { from: /\.(component|mixin)\.(t|j)sx?$/, to: '.js' }, // Convert .ts to .js
                     ]
 
                     mod.path = replace(mod.path, terms)

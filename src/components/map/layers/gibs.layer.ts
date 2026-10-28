@@ -5,10 +5,7 @@ import WMTSCapabilities from 'ol/format/WMTSCapabilities.js'
 import { transformExtent } from 'ol/proj.js'
 import type { Extent } from 'ol/extent.js'
 import { XYZLayer } from './xyz.layer.js'
-import {
-    buildGibsVectorLayer,
-    type VectorOptions,
-} from './gibs-vector.layer.js'
+import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
 import type { CommonConfig } from './common.js'
 import '../projections.js' // registers EPSG:3413/3031 with OpenLayers
 
@@ -29,32 +26,27 @@ type CapabilitiesEntry = {
 
 const capabilitiesCache = new Map<string, Promise<CapabilitiesEntry>>()
 
-function fetchGibsCapabilities(
-    projection: Projection,
-): Promise<CapabilitiesEntry> {
+function fetchGibsCapabilities(projection: Projection): Promise<CapabilitiesEntry> {
     const endpoint = projection.replace(':', '').toLowerCase() // e.g. 'epsg4326'
 
     let cached = capabilitiesCache.get(endpoint)
     if (!cached) {
         cached = fetch(
-            `${GIBS_WMTS_ROOT}/${endpoint}/best/wmts.cgi?REQUEST=GetCapabilities`,
+            `${GIBS_WMTS_ROOT}/${endpoint}/best/wmts.cgi?REQUEST=GetCapabilities`
         )
-            .then((response) => {
+            .then(response => {
                 if (!response.ok) {
                     throw new Error(
-                        `Failed to fetch GIBS GetCapabilities for ${projection}: ${response.status} ${response.statusText}`,
+                        `Failed to fetch GIBS GetCapabilities for ${projection}: ${response.status} ${response.statusText}`
                     )
                 }
                 return response.text()
             })
-            .then((xml) => {
-                const doc = new DOMParser().parseFromString(
-                    xml,
-                    'application/xml',
-                )
+            .then(xml => {
+                const doc = new DOMParser().parseFromString(xml, 'application/xml')
                 return { capabilities: new WMTSCapabilities().read(doc), doc }
             })
-            .catch((error) => {
+            .catch(error => {
                 // don't cache failures, so a transient network error can be retried
                 capabilitiesCache.delete(endpoint)
                 throw error
@@ -72,7 +64,7 @@ function fetchGibsCapabilities(
  * calls don't refetch the (large) capabilities document every time.
  */
 export function getGibsCapabilities(projection: Projection): Promise<any> {
-    return fetchGibsCapabilities(projection).then((entry) => entry.capabilities)
+    return fetchGibsCapabilities(projection).then(entry => entry.capabilities)
 }
 
 export type GibsLegendUrls = {
@@ -94,26 +86,22 @@ export type GibsLegendUrls = {
  */
 export async function getGibsLegendUrls(
     projection: Projection,
-    layer: string,
+    layer: string
 ): Promise<GibsLegendUrls | undefined> {
     const { doc } = await fetchGibsCapabilities(projection)
 
-    const layerNode = Array.from(
-        doc.getElementsByTagNameNS(WMTS_NS, 'Layer'),
-    ).find(
-        (node) =>
-            node.getElementsByTagNameNS(OWS_NS, 'Identifier')[0]
-                ?.textContent === layer,
+    const layerNode = Array.from(doc.getElementsByTagNameNS(WMTS_NS, 'Layer')).find(
+        node =>
+            node.getElementsByTagNameNS(OWS_NS, 'Identifier')[0]?.textContent ===
+            layer
     )
     if (!layerNode) {
         return undefined
     }
 
-    const styleNodes = Array.from(
-        layerNode.getElementsByTagNameNS(WMTS_NS, 'Style'),
-    )
+    const styleNodes = Array.from(layerNode.getElementsByTagNameNS(WMTS_NS, 'Style'))
     const styleNode =
-        styleNodes.find((node) => node.getAttribute('isDefault') === 'true') ??
+        styleNodes.find(node => node.getAttribute('isDefault') === 'true') ??
         styleNodes[0]
     if (!styleNode) {
         return undefined
@@ -121,7 +109,7 @@ export async function getGibsLegendUrls(
 
     const legends: GibsLegendUrls = {}
     for (const legendNode of Array.from(
-        styleNode.getElementsByTagNameNS(WMTS_NS, 'LegendURL'),
+        styleNode.getElementsByTagNameNS(WMTS_NS, 'LegendURL')
     )) {
         const href = legendNode.getAttributeNS(XLINK_NS, 'href')
         const role = legendNode.getAttributeNS(XLINK_NS, 'role') ?? ''
@@ -154,6 +142,12 @@ export type Options = {
     noWorldWrap?: boolean
     /** Bounding box [west, south, east, north] in EPSG:4326 to clip rendering to. */
     extent?: Extent
+    /**
+     * Shown automatically whenever `extent` is set
+     */
+    showBoundary?: boolean
+    /** Palette index. Defaults to 0. */
+    boundaryColorIndex?: number
 }
 
 const DEFAULT_MATRIX_SET_BY_PROJECTION: Record<
@@ -199,43 +193,48 @@ export class GibsLayer extends XYZLayer {
             extent,
             extentProjection: 'EPSG:4326',
         })
+
+        if (extent) {
+            // adds a sourceExtent property to this layer
+            // can be used by other layers (ex. boundary layer) to visually identify the extent of this layer
+            this.set('sourceExtent', extent)
+        }
     }
 
     /**
      * Async factory for non-Mercator GIBS imagery (EPSG:4326 / EPSG:3413 / EPSG:3031).
      */
     static async forProjection(
-        options: Options & { projection: Exclude<Projection, 'EPSG:3857'> },
+        options: Options & { projection: Exclude<Projection, 'EPSG:3857'> }
     ): Promise<TileLayer> {
-        const {
-            layer,
-            date = 'default',
-            projection,
-            tileMatrixSet,
-            extent,
-        } = options
+        const { layer, date = 'default', projection, tileMatrixSet, extent } = options
 
         const capabilities = await getGibsCapabilities(projection)
         const wmtsOptions = optionsFromCapabilities(capabilities, {
             layer,
-            matrixSet:
-                tileMatrixSet ?? DEFAULT_MATRIX_SET_BY_PROJECTION[projection],
+            matrixSet: tileMatrixSet ?? DEFAULT_MATRIX_SET_BY_PROJECTION[projection],
         })
 
         if (!wmtsOptions) {
             throw new Error(
-                `GIBS layer "${layer}" was not found, or isn't available in ${projection}`,
+                `GIBS layer "${layer}" was not found, or isn't available in ${projection}`
             )
         }
 
         const source = new WMTS({ ...wmtsOptions, dimensions: { Time: date } })
 
-        return new TileLayer({
+        const tileLayer = new TileLayer({
             source,
             ...(extent
                 ? { extent: transformExtent(extent, 'EPSG:4326', projection) }
                 : {}),
         })
+
+        if (extent) {
+            tileLayer.set('sourceExtent', extent)
+        }
+
+        return tileLayer
     }
 }
 
@@ -262,7 +261,7 @@ export type GibsLayerInfo = {
  * - the async `GibsLayer.forProjection()` factory for EPSG:4326/3413/3031 raster imagery
  */
 export async function buildGibsLayer(
-    config: GibsLayerConfig,
+    config: GibsLayerConfig
 ): Promise<GibsLayerInfo> {
     const { name, position, ...options } = config
 
@@ -275,7 +274,7 @@ export async function buildGibsLayer(
     const { type, projection, ...rasterOptions } = options
     const legend = getGibsLegendUrls(
         projection ?? 'EPSG:3857',
-        rasterOptions.layer,
+        rasterOptions.layer
     ).catch(() => undefined)
 
     if (!projection || projection === 'EPSG:3857') {

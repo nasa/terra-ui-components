@@ -633,13 +633,15 @@ export default class TerraPopup extends TerraElement {
                 })}
             >
                 <slot></slot>
-                ${this.arrow
-                    ? html`<div
+                ${
+                    this.arrow
+                        ? html`<div
                           part="arrow"
                           class="popup__arrow"
                           role="presentation"
                       ></div>`
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }

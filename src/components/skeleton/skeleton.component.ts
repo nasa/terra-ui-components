@@ -31,9 +31,11 @@ export default class TerraSkeleton extends TerraElement {
                     html` <div
                         part="base"
                         class=${`skeleton ${this.effect === 'pulse' ? 'skeleton--pulse' : ''} ${this.effect === 'sheen' ? 'skeleton--sheen' : ''}`}
-                        style=${this.variableWidths
-                            ? `width: ${getRandomIntInclusive(60, 100)}%`
-                            : ''}
+                        style=${
+                            this.variableWidths
+                                ? `width: ${getRandomIntInclusive(60, 100)}%`
+                                : ''
+                        }
                     >
                         <div part="indicator" class="skeleton__indicator"></div>
                     </div>`

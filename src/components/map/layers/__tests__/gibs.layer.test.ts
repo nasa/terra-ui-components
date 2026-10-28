@@ -105,6 +105,21 @@ describe('GibsLayer', () => {
 
             expect(layer.getExtent()).to.exist
         })
+
+        it('should tag the layer with its original EPSG:4326 extent as sourceExtent', () => {
+            const layer = new GibsLayer({
+                layer: 'TestLayer',
+                extent: [-10, -10, 10, 10],
+            })
+
+            expect(layer.get('sourceExtent')).to.deep.equal([-10, -10, 10, 10])
+        })
+
+        it('should not set sourceExtent when no extent is given', () => {
+            const layer = new GibsLayer({ layer: 'TestLayer' })
+
+            expect(layer.get('sourceExtent')).to.be.undefined
+        })
     })
 
     describe('forProjection (EPSG:4326 / EPSG:3413 / EPSG:3031)', () => {
@@ -183,6 +198,29 @@ describe('GibsLayer', () => {
             expect(extent).to.exist
             // EPSG:4326 (-10, -80) should not equal the EPSG:3031 meters-based extent
             expect(extent[0]).to.not.equal(-10)
+        })
+
+        it('should tag the layer with the original EPSG:4326 extent as sourceExtent', async () => {
+            stubFetch(makeCapabilitiesXml('EPSG:3031', '1km'))
+
+            const layer = await GibsLayer.forProjection({
+                layer: 'TestLayer',
+                projection: 'EPSG:3031',
+                extent: [-10, -80, 10, -70],
+            })
+
+            expect(layer.get('sourceExtent')).to.deep.equal([-10, -80, 10, -70])
+        })
+
+        it('should not set sourceExtent when no extent is given', async () => {
+            stubFetch(makeCapabilitiesXml('EPSG:3031', '1km'))
+
+            const layer = await GibsLayer.forProjection({
+                layer: 'TestLayer',
+                projection: 'EPSG:3031',
+            })
+
+            expect(layer.get('sourceExtent')).to.be.undefined
         })
     })
 })

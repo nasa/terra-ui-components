@@ -35,20 +35,12 @@ describe('<terra-badge>', () => {
         })
 
         it('should default variant to information', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             expect(el.variant).to.equal('information')
         })
 
         it('should accept all variant values', async () => {
-            const variants = [
-                'primary',
-                'success',
-                'neutral',
-                'warning',
-                'danger',
-            ]
+            const variants = ['primary', 'success', 'neutral', 'warning', 'danger']
             for (const variant of variants) {
                 const el: any = await fixture(html`
                     <terra-badge variant=${variant}>Badge</terra-badge>
@@ -72,9 +64,7 @@ describe('<terra-badge>', () => {
         })
 
         it('should default pill to false', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             expect(el.pill).to.be.false
         })
 
@@ -93,18 +83,14 @@ describe('<terra-badge>', () => {
         })
 
         it('should default pulse to false', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             expect(el.pulse).to.be.false
         })
     })
 
     describe('Variants', () => {
         it('should apply information variant class by default', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.classList.contains('badge--information')).to.be.true
         })
@@ -152,9 +138,7 @@ describe('<terra-badge>', () => {
         })
 
         it('should not apply pill class when pill is false', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.classList.contains('badge--pill')).to.be.false
         })
@@ -170,9 +154,7 @@ describe('<terra-badge>', () => {
         })
 
         it('should not apply pulse class when pulse is false', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.classList.contains('badge--pulse')).to.be.false
         })
@@ -180,9 +162,7 @@ describe('<terra-badge>', () => {
 
     describe('Accessibility', () => {
         it('should have role="status"', async () => {
-            const el: any = await fixture(
-                html` <terra-badge>Badge</terra-badge> `,
-            )
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             expect(base?.getAttribute('role')).to.equal('status')
         })

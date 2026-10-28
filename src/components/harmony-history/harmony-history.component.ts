@@ -1,24 +1,22 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { QueryController } from '../../controllers/query.controller.js'
+import type { SubsetJobLink, SubsetJobStatus } from '../../apis/harmony.api.js'
+import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import { MutationController } from '../../controllers/mutation.controller.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     mutationRemoveHarmonyJobLabels,
     queryHarmonyJobs,
 } from '../../queries/harmony.queries.js'
 import componentStyles from '../../styles/component.styles.js'
-import styles from './harmony-history.styles.js'
-import { AuthController } from '../../auth/auth.controller.js'
-import { FINAL_STATUSES } from '../../apis/harmony.api.js'
-import type { SubsetJobStatus, SubsetJobLink } from '../../apis/harmony.api.js'
+import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraTooltip from '../tooltip/tooltip.component.js'
-import TerraIcon from '../icon/icon.component.js'
+import styles from './harmony-history.styles.js'
 import '../../events/terra-harmony-job-select.js'
 import '../../events/terra-harmony-job-delete.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
@@ -32,9 +30,7 @@ function formatDatetimeUtc(dateStr: string | undefined): string {
     if (!dateStr) return ''
     const d = new Date(dateStr)
     const hasTime =
-        d.getUTCHours() !== 0 ||
-        d.getUTCMinutes() !== 0 ||
-        d.getUTCSeconds() !== 0
+        d.getUTCHours() !== 0 || d.getUTCMinutes() !== 0 || d.getUTCSeconds() !== 0
     if (hasTime) {
         const yyyy = d.getUTCFullYear()
         const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
@@ -65,8 +61,8 @@ function formatDatetimeUtc(dateStr: string | undefined): string {
  * @csspart track - The inner flex container that translates to implement scrolling.
  * @csspart thumbnail - Each individual job thumbnail wrapper.
  */
-export default class TerraHarmonyHistory extends QueryClientMixin(
-    TerraElement,
+export default class TerraHarmonyHistory extends AuthMixin(
+    QueryClientMixin(TerraElement)
 ) {
     static styles: CSSResultGroup = [componentStyles, styles]
 
@@ -75,12 +71,6 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         'terra-tooltip': TerraTooltip,
         'terra-icon': TerraIcon,
     }
-
-    @property({
-        attribute: 'bearer-token',
-        converter: undefinedStringConverter,
-    })
-    override bearerToken?: string
 
     @property({ type: Number })
     limit: number = 20
@@ -117,11 +107,9 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     private _refreshPage1Timer?: number
     private _resizeObserver?: ResizeObserver
 
-    _authController = new AuthController(this)
-
     _removeLabelsOnDeleteMutation = new MutationController(
         this,
-        mutationRemoveHarmonyJobLabels(),
+        mutationRemoveHarmonyJobLabels()
     )
 
     /**
@@ -135,8 +123,8 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                 limit: this.limit,
                 ...(this.filterByLabels ? { label: this.filterByLabels } : {}),
             },
-            { bearerToken: this.bearerToken },
-        ),
+            { bearerToken: this.bearerToken }
+        )
     )
 
     /** Cached reference to the last page-1 result to avoid redundant state updates */
@@ -165,11 +153,11 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         if (typeof window !== 'undefined') {
             window.addEventListener(
                 'terra-time-average-map-data-change',
-                this._boundDataChangeHandler,
+                this._boundDataChangeHandler
             )
             window.addEventListener(
                 'terra-time-series-data-change',
-                this._boundDataChangeHandler,
+                this._boundDataChangeHandler
             )
         }
     }
@@ -189,11 +177,11 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         if (typeof window !== 'undefined') {
             window.removeEventListener(
                 'terra-time-average-map-data-change',
-                this._boundDataChangeHandler,
+                this._boundDataChangeHandler
             )
             window.removeEventListener(
                 'terra-time-series-data-change',
-                this._boundDataChangeHandler,
+                this._boundDataChangeHandler
             )
         }
     }
@@ -222,9 +210,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                 {
                     page: 1,
                     limit: this.limit,
-                    ...(this.filterByLabels
-                        ? { label: this.filterByLabels }
-                        : {}),
+                    ...(this.filterByLabels ? { label: this.filterByLabels } : {}),
                 },
             ],
         })
@@ -247,8 +233,8 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                             ? { label: this.filterByLabels }
                             : {}),
                     },
-                    { bearerToken: this.bearerToken },
-                ),
+                    { bearerToken: this.bearerToken }
+                )
             )
             const newMap = new Map(this._loadedPages)
             newMap.set(page, data.jobs)
@@ -265,7 +251,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
 
         const endIndex = Math.min(
             this._scrollIndex + this._visibleCount,
-            this._totalCount,
+            this._totalCount
         )
         const startPage = Math.floor(this._scrollIndex / this.limit) + 1
         const endPage = Math.floor(Math.max(0, endIndex - 1) / this.limit) + 1
@@ -322,7 +308,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
 
         if (harmonyRequest) {
             const instrumentShortName = harmonyRequest.getLabelByPrefix(
-                'instrument-short-name',
+                'instrument-short-name'
             )
             const interval = harmonyRequest.getLabelByPrefix('time-interval')
             const units = harmonyRequest.getLabelByPrefix('units')
@@ -342,11 +328,10 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                 <div class="font-weight-semibold tooltip-row">${harmonyRequest.getLabelByPrefix('variable-display-name') ?? job?.jobID}</div>
                 <div class="text-gray-300 mb-1 tooltip-row">${metadata.join(' • ')}</div>
                 ${
-                    harmonyRequest.options.startDate &&
-                    harmonyRequest.options.endDate
+                    harmonyRequest.options.startDate && harmonyRequest.options.endDate
                         ? `
                     <div class="text-gray-300 tooltip-row">
-                        <terra-icon library="heroicons" name="solid-calendar-date-range"></terra-icon> 
+                        <terra-icon library="heroicons" name="solid-calendar-date-range"></terra-icon>
                         ${formatDatetimeUtc(harmonyRequest.options.startDate)} to ${formatDatetimeUtc(harmonyRequest.options.endDate)}
                     </div>
                 `
@@ -363,7 +348,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                         </div>`
                         : `<div class="text-gray-300 tooltip-row">Status: ${job?.status}</div>`
                 }
-                
+
             `
         }
 
@@ -406,13 +391,13 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
         e.stopPropagation()
 
         const confirmed = window.confirm(
-            `Are you sure you want to delete this history item?`,
+            `Are you sure you want to delete this history item?`
         )
         if (!confirmed) return
 
         const labels = this.filterByLabels
             ?.split(',')
-            .map((l) => l.trim())
+            .map(l => l.trim())
             .filter(Boolean)
 
         // Optimistically remove the job from local state so it disappears immediately
@@ -439,7 +424,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     private _optimisticallyRemoveJob(jobID: string) {
         const newMap = new Map(this._loadedPages)
         for (const [page, jobs] of newMap) {
-            const filtered = jobs.filter((j) => j.jobID !== jobID)
+            const filtered = jobs.filter(j => j.jobID !== jobID)
             if (filtered.length !== jobs.length) {
                 newMap.set(page, filtered)
                 this._totalCount = Math.max(0, this._totalCount - 1)
@@ -449,8 +434,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
     }
 
     private _renderThumbnail(job: SubsetJobStatus | null) {
-        const showLoadingOverlay =
-            job === null || !FINAL_STATUSES.has(job.status)
+        const showLoadingOverlay = job === null || !FINAL_STATUSES.has(job.status)
         const thumbUrl = job?.thumbnailBlob
             ? URL.createObjectURL(job.thumbnailBlob)
             : null
@@ -496,11 +480,9 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                             class="delete-button"
                             aria-label="Delete job"
                             ?disabled=${
-                                this._removeLabelsOnDeleteMutation.result
-                                    ?.isPending
+                                this._removeLabelsOnDeleteMutation.result?.isPending
                             }
-                            @click=${(e: Event) =>
-                                this._handleDeleteClick(e, job)}
+                            @click=${(e: Event) => this._handleDeleteClick(e, job)}
                         >
                             ×
                         </button>`
@@ -560,7 +542,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(
                             ? html`<div class="empty-state">
                               <terra-loader indeterminate></terra-loader>
                           </div>`
-                            : jobs.map((job) => this._renderThumbnail(job))
+                            : jobs.map(job => this._renderThumbnail(job))
                     }
                 </div>
             </div>

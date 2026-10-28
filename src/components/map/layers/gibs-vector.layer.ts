@@ -57,7 +57,7 @@ const DEFAULT_STYLE = new Style({
  * builds for raster layers.
  */
 export async function buildGibsVectorLayer(
-    options: VectorOptions,
+    options: VectorOptions
 ): Promise<VectorTileLayer> {
     const {
         layer,
@@ -79,7 +79,7 @@ export async function buildGibsVectorLayer(
 
     if (!wmtsOptions) {
         throw new Error(
-            `GIBS vector layer "${layer}" was not found, or isn't available in ${tileMatrixSet}`,
+            `GIBS vector layer "${layer}" was not found, or isn't available in ${tileMatrixSet}`
         )
     }
 
@@ -112,7 +112,7 @@ export async function buildGibsVectorLayer(
     if (style) {
         if (!styleSourceId) {
             throw new Error(
-                `GIBS vector layer "${layer}" was given a "style" but no "styleSourceId" to apply it with.`,
+                `GIBS vector layer "${layer}" was given a "style" but no "styleSourceId" to apply it with.`
             )
         }
         stylefunction(tileLayer, style, styleSourceId)

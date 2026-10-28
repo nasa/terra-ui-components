@@ -1,5 +1,6 @@
 import { expect } from '@open-wc/testing'
-import { formatDate, isDateRangeContained } from './date.js'
+import sinon from 'sinon'
+import { formatDate, getYesterdayIsoDate, isDateRangeContained } from './date.js'
 
 describe('date utilities', () => {
     it('formats date-only strings in UTC (no timezone day shift)', () => {
@@ -23,8 +24,19 @@ describe('date utilities', () => {
                 requestedStart,
                 requestedEnd,
                 existingStart,
-                existingEnd,
-            ),
+                existingEnd
+            )
         ).to.equal(true)
+    })
+
+    it('returns yesterday in YYYY-MM-DD format', () => {
+        const clock = sinon.useFakeTimers(
+            new Date('2026-06-15T12:00:00.000Z').getTime()
+        )
+        try {
+            expect(getYesterdayIsoDate()).to.equal('2026-06-14')
+        } finally {
+            clock.restore()
+        }
     })
 })
