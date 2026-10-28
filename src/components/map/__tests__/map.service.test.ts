@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing'
+import { expect, waitUntil } from '@open-wc/testing'
 import { MapService } from '../map.service.js'
 import sinon, { type SinonSpy } from 'sinon'
 import { LatLng } from '../models/LatLng.js'
@@ -12,13 +12,23 @@ import VectorSource from 'ol/source/Vector.js'
 import Draw from 'ol/interaction/Draw.js'
 import Collection from 'ol/Collection.js'
 import GeoJSON from 'ol/format/GeoJSON.js'
-import type { Projection } from 'ol/proj.js'
+import { transformExtent, type Projection } from 'ol/proj.js'
+import Feature from 'ol/Feature.js'
+import Point from 'ol/geom/Point.js'
+import type { Stroke, Style } from 'ol/style.js'
 
 describe('Map Service', () => {
     let el: HTMLElement
     let service: MapService
     let onMouseMove: SinonSpy
     let onDraw: SinonSpy
+    let onReady: SinonSpy
+    let onClick: SinonSpy
+    let onDoubleClick: SinonSpy
+    let onMoveEnd: SinonSpy
+    let onZoomChange: SinonSpy
+    let onLayerClick: SinonSpy
+    let onLayerError: SinonSpy
 
     beforeEach(() => {
         el = document.createElement('div')
@@ -28,10 +38,25 @@ describe('Map Service', () => {
 
         onMouseMove = sinon.spy()
         onDraw = sinon.spy()
+        onReady = sinon.spy()
+        onClick = sinon.spy()
+        onDoubleClick = sinon.spy()
+        onMoveEnd = sinon.spy()
+        onZoomChange = sinon.spy()
+        onLayerClick = sinon.spy()
+        onLayerError = sinon.spy()
 
         service = new MapService(el, {
+            zoom: 5,
             onMouseMove,
             onDraw,
+            onReady,
+            onClick,
+            onDoubleClick,
+            onMoveEnd,
+            onZoomChange,
+            onLayerClick,
+            onLayerError,
         })
     })
 
@@ -73,6 +98,16 @@ describe('Map Service', () => {
 
         expect(setZoomSpy.calledOnce).to.be.true
         expect(setZoomSpy.calledWith(6)).to.be.true
+    })
+
+    it('animates the zoom level when a duration is given', () => {
+        const setZoomSpy = sinon.spy(View.prototype, 'setZoom')
+        const animateSpy = sinon.spy(View.prototype, 'animate')
+
+        service.setZoom(6, { duration: 200 })
+
+        expect(animateSpy.calledWith({ zoom: 6, duration: 200 })).to.be.true
+        expect(setZoomSpy.called).to.be.false
     })
 
     it('sets a LatLng value on the draw toolbar control', () => {
@@ -130,10 +165,10 @@ describe('Map Service', () => {
         ).to.be.true
     })
 
-    it('toggles the layer visibility', () => {
+    it('sets the layer visibility', () => {
         const setVisibleSpy = sinon.spy(Layer.prototype, 'setVisible')
 
-        service.toggleLayerVisibility('graticule', true)
+        service.setLayerVisibility('graticule', true)
 
         expect(setVisibleSpy.calledOnce).to.be.true
         expect(setVisibleSpy.calledWith(true)).to.be.true
@@ -142,7 +177,7 @@ describe('Map Service', () => {
     it('does nothing when layer name does not exist', () => {
         const setVisibleSpy = sinon.spy(Layer.prototype, 'setVisible')
 
-        service.toggleLayerVisibility('nonexistent', true)
+        service.setLayerVisibility('nonexistent', true)
 
         expect(setVisibleSpy.called).to.be.false
     })
@@ -150,7 +185,7 @@ describe('Map Service', () => {
     it('hides a layer', () => {
         const setVisibleSpy = sinon.spy(Layer.prototype, 'setVisible')
 
-        service.toggleLayerVisibility('graticule', false)
+        service.setLayerVisibility('graticule', false)
 
         expect(setVisibleSpy.calledWith(false)).to.be.true
     })
@@ -180,9 +215,10 @@ describe('Map Service', () => {
 
             service.addLayer(customLayer, { name: 'custom-top', position: 'top' })
 
-            // 9 built-in layers occupy indices 0-8, so pushing onto the end
-            // inserts at index 9
-            expect(insertAtSpy.calledWith(9, customLayer)).to.be.true
+            // 10 built-in layers occupy indices 0-9 (base, true-color,
+            // land-water, topo, borders, labels, graticule, shapes,
+            // boundaries, draw), so pushing onto the end inserts at index 10
+            expect(insertAtSpy.calledWith(10, customLayer)).to.be.true
         })
 
         it('finds a named layer with getLayer', () => {
@@ -200,6 +236,196 @@ describe('Map Service', () => {
             service.removeLayer('custom')
 
             expect(service.getLayer('custom')).to.be.undefined
+        })
+    })
+
+    describe('layer boundaries (extent outlines)', () => {
+        function boundaryFeatures() {
+            const boundaryLayer = service.getLayer('boundaries') as VectorLayer
+            return boundaryLayer.getSource()!.getFeatures()
+        }
+
+        it('draws a boundary feature when extent is given', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+            })
+
+            const features = boundaryFeatures()
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('custom')
+        })
+
+        it('adds no boundary feature when extent is omitted', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(boundaryFeatures().length).to.equal(0)
+        })
+
+        it("removes only the removed layer's boundary feature", () => {
+            const layerA = new VectorLayer({ source: new VectorSource() })
+            const layerB = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(layerA, { name: 'a', extent: [-10, -10, 10, 10] })
+            service.addLayer(layerB, { name: 'b', extent: [-20, -20, 20, 20] })
+
+            service.removeLayer('a')
+
+            const features = boundaryFeatures()
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('b')
+        })
+
+        it('removing a layer with no boundary does not throw', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(() => service.removeLayer('custom')).to.not.throw()
+        })
+
+        it('styles the boundary feature by boundaryColorIndex', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                boundaryColorIndex: 1,
+            })
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect((style.getStroke() as Stroke).getColor()).to.equal(
+                'rgba(52, 152, 219, 1)'
+            )
+        })
+
+        it('defaults boundaryColorIndex to 0', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+            })
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect((style.getStroke() as Stroke).getColor()).to.equal(
+                'rgba(46, 204, 113, 1)'
+            )
+        })
+
+        it('draws a boundary from a sourceExtent tag on the layer when extent is omitted', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            customLayer.set('sourceExtent', [-10, -10, 10, 10])
+
+            service.addLayer(customLayer, { name: 'custom' })
+
+            const features = boundaryFeatures()
+            expect(features.length).to.equal(1)
+            expect(features[0].get('layerName')).to.equal('custom')
+        })
+
+        it('prefers an explicit extent over a sourceExtent tag', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            customLayer.set('sourceExtent', [-10, -10, 10, 10])
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-20, -20, 20, 20],
+            })
+
+            const expected = transformExtent(
+                [-20, -20, 20, 20],
+                'EPSG:4326',
+                'EPSG:3857'
+            )
+            const actual = boundaryFeatures()[0].getGeometry()!.getExtent()
+
+            expect(actual[0]).to.be.closeTo(expected[0]!, 1)
+            expect(actual[1]).to.be.closeTo(expected[1]!, 1)
+            expect(actual[2]).to.be.closeTo(expected[2]!, 1)
+            expect(actual[3]).to.be.closeTo(expected[3]!, 1)
+        })
+
+        it('suppresses the boundary when showBoundary is false, even with a sourceExtent tag', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            customLayer.set('sourceExtent', [-10, -10, 10, 10])
+
+            service.addLayer(customLayer, { name: 'custom', showBoundary: false })
+
+            expect(boundaryFeatures().length).to.equal(0)
+        })
+
+        it('suppresses the boundary when showBoundary is false, even with an explicit extent', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                showBoundary: false,
+            })
+
+            expect(boundaryFeatures().length).to.equal(0)
+        })
+
+        it('hides a boundary outline when its layer is hidden via setLayerVisibility', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                boundaryColorIndex: 1,
+            })
+
+            service.setLayerVisibility('custom', false)
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect(style.getStroke()).to.be.null
+            expect(style.getFill()).to.be.null
+        })
+
+        it('restores the boundary outline style when the layer becomes visible again', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+                boundaryColorIndex: 1,
+            })
+
+            service.setLayerVisibility('custom', false)
+            service.setLayerVisibility('custom', true)
+
+            const style = boundaryFeatures()[0].getStyle() as Style
+            expect((style.getStroke() as Stroke).getColor()).to.equal(
+                'rgba(52, 152, 219, 1)'
+            )
+        })
+
+        it("only hides the toggled layer's boundary, leaving others visible", () => {
+            const layerA = new VectorLayer({ source: new VectorSource() })
+            const layerB = new VectorLayer({ source: new VectorSource() })
+
+            service.addLayer(layerA, { name: 'a', extent: [-10, -10, 10, 10] })
+            service.addLayer(layerB, { name: 'b', extent: [-20, -20, 20, 20] })
+
+            service.setLayerVisibility('a', false)
+
+            const [featureA, featureB] = boundaryFeatures().sort((x, y) =>
+                x.get('layerName').localeCompare(y.get('layerName'))
+            )
+            expect((featureA!.getStyle() as Style).getStroke()).to.be.null
+            expect((featureB!.getStyle() as Style).getStroke()).to.not.be.null
+        })
+
+        it('does nothing when toggling visibility of a layer with no boundary', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(() => service.setLayerVisibility('custom', false)).to.not.throw()
+            expect(boundaryFeatures().length).to.equal(0)
         })
     })
 
@@ -323,6 +549,318 @@ describe('Map Service', () => {
             const featureProjection = readFeaturesSpy.firstCall?.args[1]
                 ?.featureProjection as Projection
             expect(featureProjection.getCode()).to.equal('EPSG:4326')
+        })
+    })
+
+    describe('navigation', () => {
+        it('sets and gets the center (round-trips within tolerance)', () => {
+            service.setCenter(-74, 40.7)
+
+            const center = service.getCenter()
+
+            expect(center.equals(new LatLng(40.7, -74), 1e-6)).to.be.true
+        })
+
+        it('animates the center when a duration is given', () => {
+            const animateSpy = sinon.spy(View.prototype, 'animate')
+
+            service.setCenter(-74, 40.7, { duration: 200 })
+
+            expect(animateSpy.calledOnce).to.be.true
+        })
+
+        it('gets the zoom level', () => {
+            expect(service.getZoom()).to.equal(5)
+        })
+
+        it('zooms in and out relative to the current zoom', () => {
+            service.zoomIn()
+            expect(service.getZoom()).to.equal(6)
+
+            service.zoomOut()
+            expect(service.getZoom()).to.equal(5)
+        })
+
+        it('fits the view to a LatLngBounds', () => {
+            const fitSpy = sinon.spy(View.prototype, 'fit')
+
+            service.fitBounds(new LatLngBounds([-74, 40, -73, 41]))
+
+            expect(fitSpy.calledOnce).to.be.true
+        })
+
+        it('gets the current view bounds as a LatLngBounds', () => {
+            expect(service.getBounds()).to.be.instanceOf(LatLngBounds)
+        })
+
+        it('resets the view to its initial center/zoom/rotation', () => {
+            service.setZoom(10)
+            service.setCenter(10, 20)
+
+            service.resetView()
+
+            expect(service.getZoom()).to.equal(5)
+            expect(service.getCenter().equals(new LatLng(0, 0), 1e-6)).to.be.true
+        })
+
+        it('sets and gets rotation', () => {
+            service.setRotation(Math.PI / 4)
+
+            expect(service.getRotation()).to.equal(Math.PI / 4)
+        })
+    })
+
+    describe('layer management', () => {
+        it('getLayers() is empty on a fresh service', () => {
+            expect(service.getLayers()).to.deep.equal([])
+        })
+
+        it('getLayers() reflects only addLayer()-added layers', () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            const layers = service.getLayers()
+
+            expect(layers).to.have.lengthOf(1)
+            expect(layers[0]).to.equal(customLayer)
+        })
+
+        it('sets layer opacity', () => {
+            const setOpacitySpy = sinon.spy(Layer.prototype, 'setOpacity')
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            service.setLayerOpacity('custom', 0.5)
+
+            expect(setOpacitySpy.calledWith(0.5)).to.be.true
+        })
+
+        it("reorders consumer layers, leaving a built-in layer's absolute index unchanged", () => {
+            const a = new VectorLayer({ source: new VectorSource() })
+            const b = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(a, { name: 'a', position: 'top' })
+            service.addLayer(b, { name: 'b', position: 'top' })
+
+            service.setLayerOrder(['b', 'a'])
+
+            const all = service.getAllLayers()
+            // borders is still the built-in at its original index (4)
+            expect(all[4].get('name')).to.equal('borders')
+            expect(all.at(-2)?.get('name')).to.equal('b')
+            expect(all.at(-1)?.get('name')).to.equal('a')
+        })
+
+        it('warns and skips unknown names in setLayerOrder', () => {
+            const warnSpy = sinon.spy(console, 'warn')
+
+            service.setLayerOrder(['nonexistent'])
+
+            expect(warnSpy.called).to.be.true
+        })
+
+        it('fits to a layer with an extent-aware source', () => {
+            const fitSpy = sinon.spy(View.prototype, 'fit')
+            const source = new VectorSource()
+            source.addFeature(new Feature(new Point([0, 0])))
+            const customLayer = new VectorLayer({ source })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            service.fitToLayer('custom')
+
+            expect(fitSpy.calledOnce).to.be.true
+        })
+
+        it('warns and no-ops fitting to a layer with no extent', () => {
+            const warnSpy = sinon.spy(console, 'warn')
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            service.fitToLayer('custom')
+
+            expect(warnSpy.called).to.be.true
+        })
+
+        it('warns fitting to an unknown layer name', () => {
+            const warnSpy = sinon.spy(console, 'warn')
+
+            service.fitToLayer('nonexistent')
+
+            expect(warnSpy.called).to.be.true
+        })
+
+        it('clearLayers() removes only consumer-added layers', () => {
+            const removeLayerSpy = sinon.spy(OlMap.prototype, 'removeLayer')
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            service.clearLayers()
+
+            expect(removeLayerSpy.calledOnceWith(customLayer)).to.be.true
+            expect(service.getLayers()).to.have.lengthOf(0)
+            expect(service.getLayer('graticule')).to.exist
+        })
+
+        it("clearLayers() also removes the removed layers' boundary features", () => {
+            const customLayer = new VectorLayer({ source: new VectorSource() })
+            service.addLayer(customLayer, {
+                name: 'custom',
+                extent: [-10, -10, 10, 10],
+            })
+
+            service.clearLayers()
+
+            const boundaryLayer = service.getLayer('boundaries') as VectorLayer
+            expect(boundaryLayer.getSource()!.getFeatures()).to.have.lengthOf(0)
+        })
+
+        it("refreshLayer() calls the source's refresh()", () => {
+            const source = new VectorSource()
+            const refreshSpy = sinon.spy(source, 'refresh')
+            const customLayer = new VectorLayer({ source })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            service.refreshLayer('custom')
+
+            expect(refreshSpy.calledOnce).to.be.true
+        })
+    })
+
+    describe('refresh / renderComplete', () => {
+        it('refresh() updates the map size and re-renders', () => {
+            const updateSizeSpy = sinon.spy(OlMap.prototype, 'updateSize')
+            const renderSpy = sinon.spy(OlMap.prototype, 'render')
+
+            service.refresh()
+
+            expect(updateSizeSpy.calledOnce).to.be.true
+            expect(renderSpy.calledOnce).to.be.true
+        })
+
+        it('renderComplete() refreshes and resolves once rendering completes', async () => {
+            const updateSizeSpy = sinon.spy(OlMap.prototype, 'updateSize')
+
+            await service.renderComplete()
+
+            expect(updateSizeSpy.called).to.be.true
+        })
+    })
+
+    describe('events', () => {
+        it('fires onReady once synchronously during construction', () => {
+            expect(onReady.calledOnce).to.be.true
+        })
+
+        it('passes the service instance to onReady, fully constructed', () => {
+            const passedService = onReady.firstCall.args[0]
+
+            expect(passedService).to.equal(service)
+            // calling an imperative method from inside onReady must not
+            // throw - a caller that assigns its own reference to the
+            // service in this callback (before emitting its own "ready"
+            // event) relies on the service already being usable at this point
+            expect(() => passedService.getZoom()).to.not.throw()
+        })
+
+        it('onReady can be used to assign a reference before dispatching a "ready" event a listener reacts to', () => {
+            // mirrors how `map.component.ts` wires this up: assign a
+            // reference to the service inside `onReady`, then emit an event
+            // whose listener immediately calls back into that reference
+            let ref: MapService | undefined
+            const readyListener = sinon.spy(() => {
+                ref?.setZoom(9)
+            })
+
+            const el2 = document.createElement('div')
+            document.body.appendChild(el2)
+
+            new MapService(el2, {
+                zoom: 5,
+                onReady: readyService => {
+                    ref = readyService
+                    readyListener()
+                },
+            })
+
+            expect(readyListener.calledOnce).to.be.true
+            expect(ref?.getZoom()).to.equal(9)
+        })
+
+        it('fires onMoveEnd and onZoomChange after setCenter/setZoom settle', async () => {
+            service.setCenter(10, 20)
+            service.setZoom(8)
+
+            await waitUntil(() => onMoveEnd.called)
+            await waitUntil(() => onZoomChange.called)
+
+            expect(onMoveEnd.called).to.be.true
+            expect(onZoomChange.called).to.be.true
+        })
+
+        it('fires onClick/onDoubleClick/onLayerClick from real DOM events on the viewport', async () => {
+            // OL's Map ignores every browser event until it has rendered at
+            // least one frame (`frameState_` is null until then) - force and
+            // await a render before dispatching synthetic pointer events.
+            await service.renderComplete()
+
+            // a point feature placed exactly at the view's center (the pixel
+            // we're about to click) so hit-detection reliably finds it
+            const source = new VectorSource()
+            source.addFeature(new Feature(new Point([0, 0])))
+            const customLayer = new VectorLayer({ source })
+            service.addLayer(customLayer, { name: 'custom' })
+
+            // re-render now that the layer/feature exist, so the new
+            // layer's renderer is in place for hit-detection
+            await service.renderComplete()
+
+            const viewport = el.querySelector('.ol-viewport') as HTMLElement
+            const rect = viewport.getBoundingClientRect()
+            const options = {
+                clientX: rect.left + rect.width / 2,
+                clientY: rect.top + rect.height / 2,
+                bubbles: true,
+                button: 0,
+                pointerId: 1,
+                isPrimary: true,
+            }
+
+            // OL synthesizes click/dblclick itself from real pointerdown/up
+            // sequences fired on the viewport (it doesn't listen for native
+            // 'click'/'dblclick' at all) - a second down/up pair within its
+            // 250ms window is what produces a dblclick.
+            const tap = () => {
+                viewport.dispatchEvent(new PointerEvent('pointerdown', options))
+                document.dispatchEvent(new PointerEvent('pointerup', options))
+            }
+
+            tap()
+            await waitUntil(() => onClick.called)
+            expect(onClick.called).to.be.true
+            await waitUntil(() => onLayerClick.called)
+            expect(onLayerClick.calledWith(sinon.match.any, 'custom')).to.be.true
+
+            tap()
+            await waitUntil(() => onDoubleClick.called)
+            expect(onDoubleClick.called).to.be.true
+        })
+
+        it('wires onLayerError via tileloaderror/imageloaderror on a consumer layer source', () => {
+            const source = new VectorSource()
+            const onSpy = sinon.spy(source, 'on')
+            const customLayer = new VectorLayer({ source })
+
+            service.addLayer(customLayer, { name: 'custom' })
+
+            expect(
+                (onSpy.calledWith as unknown as (type: string) => boolean)(
+                    'tileloaderror'
+                )
+            ).to.be.true
+            expect(
+                (onSpy.calledWith as unknown as (type: string) => boolean)(
+                    'imageloaderror'
+                )
+            ).to.be.true
         })
     })
 })

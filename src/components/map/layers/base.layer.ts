@@ -28,6 +28,7 @@ export function buildBaseLayer(config: BaseLayerConfig): TileLayer {
     layer.set('name', config.name)
     layer.set('title', config.title)
     layer.set('type', 'base')
+    layer.set('__builtin', true)
 
     return layer
 }

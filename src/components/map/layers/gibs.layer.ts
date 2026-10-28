@@ -142,6 +142,12 @@ export type Options = {
     noWorldWrap?: boolean
     /** Bounding box [west, south, east, north] in EPSG:4326 to clip rendering to. */
     extent?: Extent
+    /**
+     * Shown automatically whenever `extent` is set
+     */
+    showBoundary?: boolean
+    /** Palette index. Defaults to 0. */
+    boundaryColorIndex?: number
 }
 
 const DEFAULT_MATRIX_SET_BY_PROJECTION: Record<
@@ -187,6 +193,12 @@ export class GibsLayer extends XYZLayer {
             extent,
             extentProjection: 'EPSG:4326',
         })
+
+        if (extent) {
+            // adds a sourceExtent property to this layer
+            // can be used by other layers (ex. boundary layer) to visually identify the extent of this layer
+            this.set('sourceExtent', extent)
+        }
     }
 
     /**
@@ -211,12 +223,18 @@ export class GibsLayer extends XYZLayer {
 
         const source = new WMTS({ ...wmtsOptions, dimensions: { Time: date } })
 
-        return new TileLayer({
+        const tileLayer = new TileLayer({
             source,
             ...(extent
                 ? { extent: transformExtent(extent, 'EPSG:4326', projection) }
                 : {}),
         })
+
+        if (extent) {
+            tileLayer.set('sourceExtent', extent)
+        }
+
+        return tileLayer
     }
 }
 
