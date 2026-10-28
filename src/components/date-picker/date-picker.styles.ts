@@ -627,6 +627,45 @@ export default css`
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
+
+        .date-picker--inline.date-picker--split-inputs .date-picker__inputs terra-input,
+        .date-picker--inline .date-picker__dropdown-wrapper {
+            width: 100%;
+        }
+
+        .date-picker__mobile-presets {
+            width: 100%;
+        }
+
+        .date-picker__mobile-presets-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--terra-spacing-small);
+            padding: 0 var(--terra-spacing-medium)
+                var(--terra-spacing-medium);
+        }
+
+        .date-picker__content {
+            flex-direction: column;
+            width: 100%;
+            min-width: 0;
+        }
+
+        .date-picker__dropdown--inline {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
+        }
+
+        .date-picker--inline .date-picker__dropdown {
+            border: none;
+        }
+
+        .date-picker__dropdown--inline .date-picker__content {
+            width: 100%;
+            min-width: 0;
+        }
+      
         .date-picker__dropdown {
             flex-direction: column;
         }
@@ -634,20 +673,45 @@ export default css`
         .date-picker__sidebar {
             width: 100%;
             border-right: none;
-            border-bottom: var(--terra-container-panel-border-width) solid
-                var(--terra-container-panel-border);
         }
 
         .date-picker__calendars {
             flex-direction: column;
+            min-width: 0;
+            padding: 0;
+            margin-bottom: var(--terra-spacing-medium);
         }
 
         .date-picker__time {
             flex-direction: column;
+            border: var(--terra-input-border-width) solid var(--terra-input-border-default);
+            border-radius: var(--terra-border-radius-large);
+
+        }
+
+        .date-picker__inputs {
+            flex-wrap: wrap;
+        }
+
+        .date-picker__inputs > terra-dropdown {
+            flex: 1 1 100%;
+            min-width: 0;
+        }
+
+        .calendar {
+            width: 100%;
+            min-width: 0;
+            padding: var(--terra-spacing-medium);
+            border: var(--terra-input-border-width) solid var(--terra-input-border-default);
+            border-radius: var(--terra-border-radius-large);
+        }
+
+        .accordion-summary {
+            border-bottom: none;
         }
     }
 
-     .dropdown-header {
+    .dropdown-header {
         display: flex;
         justify-content: flex-end;
         padding: 4px 6px;
