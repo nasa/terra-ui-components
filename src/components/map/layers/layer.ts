@@ -1,15 +1,16 @@
 import type TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
 import {
+    buildGeoTiffLayer,
+    type GeoTiffLayerConfig,
+    type GeoTiffLayerInfo,
+    layerRequiresAuthentication as geoTiffLayerRequiresAuthentication,
+} from './geotiff.layer.js'
+import {
     buildGibsLayer,
     type GibsLayerConfig,
     type GibsLayerInfo,
 } from './gibs.layer.js'
-import {
-    buildGeoTiffLayer,
-    type GeoTiffLayerConfig,
-    type GeoTiffLayerInfo,
-} from './geotiff.layer.js'
 
 /**
  * Declarative config for any layer `<terra-map layers>` can build, discriminated
@@ -30,12 +31,23 @@ export type MapLayerResult =
  * Builds a layer from a `MapLayerConfig`, dispatching to `buildGibsLayer()` or
  * `buildGeoTiffLayer()` based on `config.type`.
  */
-export async function buildMapLayer(config: MapLayerConfig): Promise<MapLayerResult> {
+export async function buildMapLayer(
+    config: MapLayerConfig,
+    options?: { bearerToken?: string }
+): Promise<MapLayerResult> {
     if (config.type === 'geotiff') {
-        const info = await buildGeoTiffLayer(config)
+        const info = await buildGeoTiffLayer(config, options)
         return { type: 'geotiff', layer: info.layer, info }
     }
 
     const { layer, legend } = await buildGibsLayer(config)
     return { type: config.type, layer, legend }
+}
+
+export function layerRequiresAuthentication(config: MapLayerConfig): boolean {
+    if (config.type === 'geotiff') {
+        return geoTiffLayerRequiresAuthentication(config)
+    }
+
+    return false
 }
