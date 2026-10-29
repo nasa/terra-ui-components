@@ -12,8 +12,14 @@ export default css`
         grid-column: 1 / 2;
     }
 
+    terra-spatial-picker::part(clear-btn) {
+        border: none !important;
+        background: transparent !important;
+    }
+
     terra-spatial-picker {
         grid-column: 2 / 3;
+        padding-block-start: 0.35rem;
     }
 
     terra-date-range-slider {
