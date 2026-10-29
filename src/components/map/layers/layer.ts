@@ -1,15 +1,16 @@
 import type TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
 import {
+    buildGeoTiffLayer,
+    type GeoTiffLayerConfig,
+    type GeoTiffLayerInfo,
+    layerRequiresAuthentication as geoTiffLayerRequiresAuthentication,
+} from './geotiff.layer.js'
+import {
     buildGibsLayer,
     type GibsLayerConfig,
     type GibsLayerInfo,
 } from './gibs.layer.js'
-import {
-    buildGeoTiffLayer,
-    type GeoTiffLayerConfig,
-    type GeoTiffLayerInfo,
-} from './geotiff.layer.js'
 
 /**
  * Declarative config for any layer `<terra-map layers>` can build, discriminated
@@ -41,4 +42,12 @@ export async function buildMapLayer(
 
     const { layer, legend } = await buildGibsLayer(config)
     return { type: config.type, layer, legend }
+}
+
+export function layerRequiresAuthentication(config: MapLayerConfig): boolean {
+    if (config.type === 'geotiff') {
+        return geoTiffLayerRequiresAuthentication(config)
+    }
+
+    return false
 }

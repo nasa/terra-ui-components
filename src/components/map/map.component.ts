@@ -20,6 +20,7 @@ import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
 import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
+    layerRequiresAuthentication,
     type MapLayerConfig,
     type MapLayerResult,
 } from './layers/layer.js'
@@ -275,6 +276,30 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                 })
             }
         }
+    }
+
+    @watch('bearerToken', { waitUntilFirstUpdate: true })
+    bearerTokenChanged() {
+        const affectedNames = new Set(
+            this.layers.filter(layerRequiresAuthentication).map(config => config.name)
+        )
+
+        if (!affectedNames.size) {
+            return
+        }
+
+        for (const name of affectedNames) {
+            this.removeLayer(name)
+            this.#layerRequestIds.delete(name)
+        }
+
+        // treat the affected layers as brand new so `layersChanged` rebuilds
+        // them with the current bearer token, instead of skipping them as
+        // "unchanged" since their config didn't actually change
+        const previousWithoutAffected = this.layers.filter(
+            config => !affectedNames.has(config.name)
+        )
+        this.layersChanged(previousWithoutAffected, this.layers)
     }
 
     /**

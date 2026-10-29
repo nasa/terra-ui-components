@@ -1,5 +1,5 @@
-import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { Extent } from 'ol/extent.js'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { ProjectionLike } from 'ol/proj.js'
 import { isHarmonyUrl } from '../../../apis/harmony.api.js'
 import type { CommonConfig } from './common.js'
@@ -176,6 +176,10 @@ async function buildColorStops(
     }
 
     return buildStopsFromColors(colors, min, max)
+}
+
+export function layerRequiresAuthentication(config: GeoTiffLayerConfig): boolean {
+    return isHarmonyUrl(config.url)
 }
 
 /**

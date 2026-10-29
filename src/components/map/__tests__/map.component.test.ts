@@ -515,6 +515,59 @@ describe('<terra-map> layers (geotiff)', () => {
         expect(el.getGeoTiffLayerInfo('my-data')).to.be.undefined
         expect(el.getLayer('my-data')).to.not.exist
     })
+
+    it('rebuilds Harmony-backed geotiff layers when bearerToken changes after mount', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+
+        el.bearerToken = undefined
+        await el.updateComplete
+
+        el.layers = [
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://harmony.earthdata.nasa.gov/data.tif',
+            },
+        ]
+        await el.updateComplete
+        // let the initial (token-less) build attempt settle before touching bearerToken
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
+
+        // bearer token becomes available after the initial (unauthenticated,
+        // and thus failed/rejected) load
+        el.bearerToken = 'a-fresh-test-token'
+        await el.updateComplete
+
+        // the layer should be torn down and rebuilt with the token now
+        // available, rather than being left stale
+        expect(removeLayerSpy.calledWith('my-data')).to.be.true
+    })
+
+    it('does not rebuild non-Harmony geotiff layers when bearerToken changes', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+
+        el.bearerToken = undefined
+        await el.updateComplete
+
+        el.layers = [
+            {
+                type: 'geotiff',
+                name: 'my-data',
+                url: 'https://example.com/data.tif',
+            },
+        ]
+        await el.updateComplete
+        await new Promise(resolve => setTimeout(resolve, 50))
+
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
+
+        el.bearerToken = 'a-fresh-test-token'
+        await el.updateComplete
+
+        expect(removeLayerSpy.called).to.be.false
+    })
 })
 
 describe('<terra-map> layer picker', () => {
