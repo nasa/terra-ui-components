@@ -152,13 +152,14 @@ export default css`
     }
     .js-plotly-plot .plotly .modebar-btn {
         position: relative;
-        font-size: 16px;
+        font-size: 20px;
         padding: 3px 4px;
-        height: 22px;
         /* display: inline-block; including this breaks 3d interaction in .embed mode. Chrome bug? */
         cursor: pointer;
         line-height: normal;
         box-sizing: border-box;
+        background: none;
+        border: none;
     }
     .js-plotly-plot .plotly .modebar-btn svg {
         position: relative;
