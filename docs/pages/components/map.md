@@ -19,14 +19,7 @@ layout: component
     show-point-selection
     show-circle-selection
     show-layer-picker
-    collection-id="AIRS2RET_NRT_7.0"
 ></terra-map>
-
-<script type="module">
-    document.addEventListener('terra-map-legend-click', (event) => {
-        console.log(event);
-    })
-</script>
 
 <form style="max-width: 600px;">
   <fieldset>
@@ -94,7 +87,7 @@ layout: component
 ### Configured Map
 
 ```html:preview
-<terra-map has-navigation has-shape-selector show-mouse-coordinates show-layer-picker collection-id="GPM_3IMERGHH_07"></terra-map>
+<terra-map has-navigation has-shape-selector show-mouse-coordinates></terra-map>
 ```
 
 ### Map with No World Wrap
@@ -213,7 +206,7 @@ Changing the attribute/property later diffs against what's currently applied, by
 Set `collection-id` to a CMR collection entry-id (e.g. `AIRS2RET_NRT_7.0`) or concept-id (e.g. `C1234567890-GES_DISC`) — either is accepted — to render every GIBS imagery product CMR has tagged for that collection, with no need to know individual GIBS layer names ahead of time:
 
 ```html:preview
-<terra-map collection-id="AIRS2RET_NRT_7.0" show-layer-picker></terra-map>
+<terra-map collection-id="GPM_3IMERGHH_07" show-layer-picker></terra-map>
 ```
 
 Under the hood, this reads the collection's GIBS layers from CMR, which can list many products for a single collection (day/night variants, pressure levels, etc.) — every one of them available in the map's current `projection` is added as its own layer, named `` `${collectionId}:${product}` ``. Layers not published in the map's current projection are skipped.
@@ -386,7 +379,13 @@ Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set 
 **Caveat:** mixing imperative `removeLayer()`/`clearLayers()` calls with the declarative `layers` property for the same layer `name` is the consumer's responsibility - it isn't auto-synced. If you imperatively remove a layer whose `name` is still present in `layers`, the next time `layers` is diffed (e.g. any other change to the array) that entry will be treated as newly added and rebuilt.
 
 ```html:preview
-<terra-map id="layer-management-map" has-navigation></terra-map>
+<terra-map
+    id="layer-management-map"
+    has-navigation
+    show-layer-picker
+    collection-id="AIRS2RET_NRT_7.0"
+></terra-map>
+
 
 <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
     <terra-button id="layers-toggle">Toggle Visibility</terra-button>
@@ -435,6 +434,31 @@ Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set 
         document.getElementById('layers-clear').addEventListener('click', () => {
             map.clearLayers() // removes june/january; built-in layers are untouched
         })
+    })
+</script>
+```
+
+### Layer Picker
+
+When `show-layer-picker` is enabled, the built-in Layer Picker groups layers into **Visualizations** (layers added via `layers` or `collection-id`), **Base Maps** (mutually exclusive background imagery), and **Overlays** (boundaries, place labels, graticule, and custom overlays). Each visualization layer entry includes:
+
+- A visibility checkbox (emitting `terra-map-layer-toggle`).
+- An opacity settings drawer (`0%` - `100%`).
+- Drag-and-drop and keyboard (`ArrowUp` / `ArrowDown` on the reorder handle) layer reordering (emitting `terra-map-layer-reorder` with `{ names }`).
+- An interactive color-map legend (for GeoTIFF color ramps and GIBS horizontal SVG legends) that emits `terra-map-legend-click` when a color bin or ramp value is clicked.
+
+```html:preview
+    <!-- collection-id="GPM_3IMERGHH_07" -->
+<terra-map
+    id="layer-picker-map"
+    has-navigation
+    show-layer-picker
+    collection-id="AIRS2RET_NRT_7.0"
+></terra-map>
+
+<script type="module">
+    document.addEventListener('terra-map-legend-click', (event) => {
+        console.log(event);
     })
 </script>
 ```

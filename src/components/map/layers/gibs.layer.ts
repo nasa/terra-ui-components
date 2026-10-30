@@ -43,7 +43,7 @@ type CapabilitiesEntry = {
     legends: Map<string, GibsLegendUrls>
 }
 
-const capabilitiesCache = new Map<string, Promise<CapabilitiesEntry>>()
+const capabilitiesCache = new Map<string, { xml: string; entry: CapabilitiesEntry }>()
 
 /**
  * Extracts every layer's default `<Style>` horizontal/vertical `<LegendURL>` entries
@@ -108,42 +108,36 @@ function indexGibsLegends(doc: Document): Map<string, GibsLegendUrls> {
     return legendsByLayer
 }
 
-function fetchGibsCapabilities(projection: Projection): Promise<CapabilitiesEntry> {
+async function fetchGibsCapabilities(
+    projection: Projection
+): Promise<CapabilitiesEntry> {
     const endpoint = projection.replace(':', '').toLowerCase() // e.g. 'epsg4326'
+    const xml = await sharedQueryClient.query(queryGibsCapabilitiesXml(projection))
 
-    let cached = capabilitiesCache.get(endpoint)
-    if (!cached) {
-        cached = sharedQueryClient
-            .query(queryGibsCapabilitiesXml(projection))
-            .then(xml => {
-                const doc = new DOMParser().parseFromString(xml, 'application/xml')
-                let parsedCapabilities: any
-                let indexedLegends: Map<string, GibsLegendUrls> | undefined
-                return {
-                    get capabilities() {
-                        if (!parsedCapabilities) {
-                            parsedCapabilities = new WMTSCapabilities().read(doc)
-                        }
-                        return parsedCapabilities
-                    },
-                    get legends() {
-                        if (!indexedLegends) {
-                            indexedLegends = indexGibsLegends(doc)
-                        }
-                        return indexedLegends
-                    },
-                }
-            })
-            .catch(error => {
-                // don't cache failures, so a transient network error can be retried
-                capabilitiesCache.delete(endpoint)
-                throw error
-            })
-
-        capabilitiesCache.set(endpoint, cached)
+    const cached = capabilitiesCache.get(endpoint)
+    if (cached && cached.xml === xml) {
+        return cached.entry
     }
 
-    return cached
+    const doc = new DOMParser().parseFromString(xml, 'application/xml')
+    let parsedCapabilities: any
+    let indexedLegends: Map<string, GibsLegendUrls> | undefined
+    const entry: CapabilitiesEntry = {
+        get capabilities() {
+            if (!parsedCapabilities) {
+                parsedCapabilities = new WMTSCapabilities().read(doc)
+            }
+            return parsedCapabilities
+        },
+        get legends() {
+            if (!indexedLegends) {
+                indexedLegends = indexGibsLegends(doc)
+            }
+            return indexedLegends
+        },
+    }
+    capabilitiesCache.set(endpoint, { xml, entry })
+    return entry
 }
 
 /**

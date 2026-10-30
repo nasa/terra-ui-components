@@ -4,7 +4,7 @@ import { Map as OlMap, View } from 'ol'
 import TileLayer from 'ol/layer/Tile.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
-import { LayerPickerControl } from '../layer-picker.control.js'
+import { LayerPickerControl, prepareGibsSvg } from '../layer-picker.control.js'
 
 describe('LayerPickerControl', () => {
     let mapTarget: HTMLElement
@@ -116,7 +116,7 @@ describe('LayerPickerControl', () => {
         expect(panel.classList.contains('open')).to.be.false
     })
 
-    it('groups titled layers into Base Maps and top-down Overlays while excluding untitled layers', () => {
+    it('groups titled layers into Base Maps and Overlays while excluding untitled layers', () => {
         const element = pickerControl.element
         const toggleBtn = element.querySelector(
             '.layer-picker-toggle'
@@ -144,7 +144,6 @@ describe('LayerPickerControl', () => {
         const overlayHeading = sections[1].querySelector(
             '.layer-picker-heading'
         )?.textContent
-        // Overlays are listed top-down (reversed from map layer order)
         const overlayLabels = Array.from(
             sections[1].querySelectorAll('.layer-picker-item span')
         ).map(s => s.textContent)
@@ -153,9 +152,9 @@ describe('LayerPickerControl', () => {
         ) as HTMLInputElement[]
 
         expect(overlayHeading).to.equal('Overlays')
-        expect(overlayLabels).to.deep.equal(['Graticule', 'International Boundaries'])
+        expect(overlayLabels).to.deep.equal(['International Boundaries', 'Graticule'])
         expect(overlayInputs.map(i => i.type)).to.deep.equal(['checkbox', 'checkbox'])
-        expect(overlayInputs.map(i => i.checked)).to.deep.equal([false, true])
+        expect(overlayInputs.map(i => i.checked)).to.deep.equal([true, false])
     })
 
     it('enforces mutual exclusion on base layers and notifies onLayerToggle', () => {
@@ -193,9 +192,9 @@ describe('LayerPickerControl', () => {
         const checkboxes = element.querySelectorAll(
             'input[type="checkbox"]'
         ) as NodeListOf<HTMLInputElement>
-        // First checkbox is Graticule (topmost overlay)
-        checkboxes[0].checked = true
-        checkboxes[0].dispatchEvent(new Event('change'))
+        // Second checkbox is Graticule
+        checkboxes[1].checked = true
+        checkboxes[1].dispatchEvent(new Event('change'))
 
         expect(graticuleOverlay.getVisible()).to.be.true
         expect(bordersOverlay.getVisible()).to.be.true
@@ -534,7 +533,17 @@ describe('LayerPickerControl', () => {
             expect(call.valueChosen).to.exist
         })
 
-        it('enhances GIBS SVG bins with data-value and emits onLegendClick on click', () => {
+        it('sanitizes GIBS SVG via prepareGibsSvg, enhances bins with data-value, and only emits onLegendClick on bin click', () => {
+            const rawSvg = `<svg xmlns="http://www.w3.org/2000/svg">
+                <script>alert('xss')</script>
+                <g id="figure_1">
+                    <g id="tooltip_0" visibility="hidden"><!-- 0.1 - 0.2 --><text>0.1 - 0.2</text></g>
+                    <rect onmouseover="ShowTooltip(0)" onmouseout="HideTooltip(0)" width="10" height="10"/>
+                    <text class="axis-label">AOD</text>
+                </g>
+            </svg>`
+            const preparedSvg = prepareGibsSvg(rawSvg)
+
             const gibsLayer = new VectorLayer({
                 source: new VectorSource(),
                 visible: true,
@@ -543,13 +552,7 @@ describe('LayerPickerControl', () => {
             gibsLayer.set('title', 'MODIS Aerosol Optical Depth')
             gibsLayer.set('type', 'visualization')
             gibsLayer.set('legend', Promise.resolve({ horizontal: 'dummy.svg' }))
-
-            // Simulate cached processed SVG with tooltip comment
-            const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg">
-                <rect data-tooltip-idx="0" data-value="0.1 - 0.2" title="0.1 - 0.2" aria-label="0.1 - 0.2" width="10" height="10"/>
-                <g id="tooltip_0" visibility="hidden"><!-- 0.1 - 0.2 --><text>0.1 - 0.2</text></g>
-            </svg>`
-            gibsLayer.set('__gibsLegendSvg', sampleSvg)
+            gibsLayer.set('__gibsLegendSvg', preparedSvg)
             map.addLayer(gibsLayer)
 
             const panel = pickerControl.element.querySelector(
@@ -560,12 +563,23 @@ describe('LayerPickerControl', () => {
             ) as HTMLElement
             expect(gibsLegend).to.exist
             expect(gibsLegend.getAttribute('role')).to.equal('figure')
+            expect(gibsLegend.querySelector('script')).to.not.exist
 
             const rect = gibsLegend.querySelector('rect') as SVGElement
+            expect(rect.getAttribute('onmouseover')).to.be.null
+            expect(rect.getAttribute('onmouseout')).to.be.null
+            expect(rect.getAttribute('data-tooltip-idx')).to.equal('0')
             expect(rect.getAttribute('data-value')).to.equal('0.1 - 0.2')
+            expect(rect.getAttribute('title')).to.equal('0.1 - 0.2')
+            expect(rect.getAttribute('aria-label')).to.equal('0.1 - 0.2')
             expect(rect.hasAttribute('tabindex')).to.be.false
 
-            // Click bin
+            // Clicking non-bin element inside legend does not emit onLegendClick
+            const axisLabel = gibsLegend.querySelector('.axis-label') as SVGElement
+            axisLabel.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+            expect(legendSpy.called).to.be.false
+
+            // Clicking bin emits onLegendClick with valueChosen
             rect.dispatchEvent(new MouseEvent('click', { bubbles: true }))
             expect(legendSpy.calledOnce).to.be.true
             expect(legendSpy.firstCall.args[0].valueChosen).to.equal('0.1 - 0.2')

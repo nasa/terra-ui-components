@@ -80,6 +80,7 @@ type MapOptions = {
     value?: string
     fitToValue?: boolean
     getGeoJson?: (shapeId: string) => Promise<unknown>
+    fetchLegendSvg?: (url: string) => Promise<string | null>
     onShapeLoading?: (loading: boolean) => void
     onMouseMove?: (coordinate: [number, number], pixel: [number, number]) => void
     onDraw?: (detail: MapEventDetail) => void
@@ -200,6 +201,12 @@ export class MapService {
                 boundaryExtent,
                 options.boundaryColorIndex
             )
+            if (options.name) {
+                const layerName = options.name
+                layer.on('change:visible', () => {
+                    this.#setBoundaryVisibility(layerName, layer.getVisible())
+                })
+            }
         }
 
         if (options.position === 'top') {
@@ -845,6 +852,7 @@ export class MapService {
             onLayerToggle: options.onLayerToggle,
             onLegendClick: options.onLegendClick,
             onLayerOrderChange: options.onLayerOrderChange,
+            fetchLegendSvg: options.fetchLegendSvg,
             target: toolbar,
         })
         map.addControl(this.#layerPickerControl)

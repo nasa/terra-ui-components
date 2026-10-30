@@ -11,6 +11,7 @@ import TerraElement, {
 import { watch } from '../../internal/watch.js'
 import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import { queryGibsLegendSvg } from '../../queries/gibs.queries.js'
 import {
     queryGiovanniGeoJsonShape,
     queryGiovanniShapeFiles,
@@ -67,7 +68,7 @@ const layersConverter = {
  * @event terra-map-legend-click - Emitted when a layer's legend is clicked in the layer picker. `detail` is a `MapLegendClickDetail`.
  * @event terra-map-layer-error - Emitted when a consumer-added layer fails to load a tile or image at runtime. `detail` is `{ name, error }`.
  * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
- * @event terra-map-layer-reorder - Emitted when visualization layers are reordered in the layer picker. `detail` is `{ names, layers }`.
+ * @event terra-map-layer-reorder - Emitted when visualization layers are reordered in the layer picker. `detail` is `{ names }`.
  */
 export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) {
     static styles: CSSResultGroup = [componentStyles, styles]
@@ -459,6 +460,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             fitToValue: this.fitToValue,
             getGeoJson: shapeId =>
                 this.queryClient.query(queryGiovanniGeoJsonShape(shapeId)),
+            fetchLegendSvg: url => this.queryClient.query(queryGibsLegendSvg(url)),
             onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
                 this.emit('terra-map-pointer-move', {

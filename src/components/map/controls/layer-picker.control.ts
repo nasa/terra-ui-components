@@ -14,6 +14,7 @@ export type LayerPickerControlOptions = {
     onLayerToggle?: (detail: MapLayerToggleDetail) => void
     onLegendClick?: (detail: MapLegendClickDetail) => void
     onLayerOrderChange?: (detail: { names: string[] }) => void
+    fetchLegendSvg?: (url: string) => Promise<string | null>
     target?: HTMLElement | string
 }
 
@@ -32,7 +33,7 @@ const ARROWS_UP_DOWN_ICON_SVG = html`<svg viewBox="0 0 24 24" width="16" height=
 </svg>`
 
 // TODO: replace attribute removal with the HTML Sanitizer API when baseline
-function prepareGibsSvg(rawSvg: string): string {
+export function prepareGibsSvg(rawSvg: string): string {
     const doc = new DOMParser().parseFromString(rawSvg, 'image/svg+xml')
 
     // 1. Remove embedded tags and attributes.
@@ -92,7 +93,7 @@ export class LayerPickerControl extends Control {
 
     #activeSettingsLayerName: string | null = null
     #draggedLayerName: string | null = null
-    #isAdjustingOpacity = false
+    #isReorderingLayers = false
     #options?: LayerPickerControlOptions
     #toggleBtn: HTMLButtonElement
     #panel: HTMLElement
@@ -156,10 +157,12 @@ export class LayerPickerControl extends Control {
             this.#watchLayer(layer)
         })
         layers.on('add', (e: CollectionEvent<BaseLayer>) => {
+            if (this.#isReorderingLayers) return
             this.#watchLayer(e.element)
             this.#renderPanel()
         })
         layers.on('remove', (e: CollectionEvent<BaseLayer>) => {
+            if (this.#isReorderingLayers) return
             this.#unwatchLayer(e.element)
             this.#renderPanel()
         })
@@ -179,7 +182,7 @@ export class LayerPickerControl extends Control {
         }
 
         const listener = () => {
-            if (this.#isAdjustingOpacity) {
+            if (this.#isReorderingLayers) {
                 return
             }
             this.#renderPanel()
@@ -250,13 +253,10 @@ export class LayerPickerControl extends Control {
             (layer: BaseLayer) => layer.get('type') === 'base'
         )
 
-        const overlayLayers = titledLayers
-            .filter(
-                (layer: BaseLayer) =>
-                    layer.get('type') !== 'base' &&
-                    layer.get('type') !== 'visualization'
-            )
-            .toReversed()
+        const overlayLayers = titledLayers.filter(
+            (layer: BaseLayer) =>
+                layer.get('type') !== 'base' && layer.get('type') !== 'visualization'
+        )
 
         render(
             html`
@@ -606,12 +606,12 @@ export class LayerPickerControl extends Control {
             updatedAllLayers[layerIdx] = remaining[i]
         })
 
-        this.#isAdjustingOpacity = true
+        this.#isReorderingLayers = true
         try {
             layersCollection.clear()
             updatedAllLayers.forEach(l => layersCollection.push(l))
         } finally {
-            this.#isAdjustingOpacity = false
+            this.#isReorderingLayers = false
         }
 
         this.#options?.onLayerOrderChange?.({
@@ -633,31 +633,7 @@ export class LayerPickerControl extends Control {
         const handleInput = (e: Event) => {
             const input = e.target as HTMLInputElement
             const percent = Number(input.value)
-
-            input.style.setProperty('--slider-percent', `${percent}%`)
-            this.#isAdjustingOpacity = true
-            try {
-                layer.setOpacity(percent / 100)
-            } finally {
-                this.#isAdjustingOpacity = false
-            }
-            input.setAttribute('aria-valuenow', String(percent))
-            input.setAttribute('aria-valuetext', `${percent}%`)
-
-            const valueSpan = input.previousElementSibling?.querySelector(
-                '.layer-picker-opacity-value'
-            )
-
-            if (valueSpan) {
-                const textNode = Array.from(valueSpan.childNodes).find(
-                    n => n.nodeType === Node.TEXT_NODE
-                )
-                if (textNode) {
-                    textNode.textContent = `${percent}%`
-                } else {
-                    valueSpan.textContent = `${percent}%`
-                }
-            }
+            layer.setOpacity(percent / 100)
         }
 
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -804,9 +780,13 @@ export class LayerPickerControl extends Control {
                     async (resolvedUrls: { horizontal?: string } | undefined) => {
                         if (resolvedUrls?.horizontal) {
                             try {
-                                const raw = await sharedQueryClient.query(
-                                    queryGibsLegendSvg(resolvedUrls.horizontal)
-                                )
+                                const fetchSvg =
+                                    this.#options?.fetchLegendSvg ??
+                                    ((url: string) =>
+                                        sharedQueryClient.query(
+                                            queryGibsLegendSvg(url)
+                                        ))
+                                const raw = await fetchSvg(resolvedUrls.horizontal)
                                 layer.set(
                                     '__gibsLegendSvg',
                                     raw ? prepareGibsSvg(raw) : null
@@ -862,23 +842,7 @@ export class LayerPickerControl extends Control {
             const container = e.currentTarget as HTMLElement
             const tooltip = container.querySelector<SVGElement>(`#tooltip_${idx}`)
 
-            if (tooltip) {
-                tooltip.setAttribute('visibility', 'visible')
-
-                if (!target?.getAttribute('title')) {
-                    for (const node of tooltip.childNodes) {
-                        if (node.nodeType === 8) {
-                            const val = node.textContent?.trim()
-
-                            if (val) {
-                                target?.setAttribute('title', val)
-                            }
-
-                            break
-                        }
-                    }
-                }
-            }
+            tooltip?.setAttribute('visibility', 'visible')
         }
 
         const handleMouseOut = (e: MouseEvent) => {
@@ -897,32 +861,11 @@ export class LayerPickerControl extends Control {
 
         const handleClick = (e: MouseEvent) => {
             e.stopPropagation()
-            const target = e.target as SVGElement | null
-            let valueChosen: string | undefined
+            const rect = (e.target as Element | null)?.closest('rect[data-value]')
+            const valueChosen = rect?.getAttribute('data-value')
 
-            if (target && target.tagName.toLowerCase() === 'rect') {
-                valueChosen = target.getAttribute('data-value') ?? undefined
-
-                if (!valueChosen) {
-                    const idx = target.getAttribute('data-tooltip-idx')
-
-                    if (idx) {
-                        const container = e.currentTarget as HTMLElement
-                        const tooltip = container.querySelector<SVGElement>(
-                            `#tooltip_${idx}`
-                        )
-
-                        if (tooltip) {
-                            for (const node of tooltip.childNodes) {
-                                if (node.nodeType === 8) {
-                                    valueChosen = node.textContent?.trim()
-
-                                    break
-                                }
-                            }
-                        }
-                    }
-                }
+            if (!valueChosen) {
+                return
             }
 
             this.#options?.onLegendClick?.({
