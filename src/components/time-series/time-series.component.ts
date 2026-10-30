@@ -14,6 +14,7 @@ import type { CSSResultGroup } from 'lit'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
 import { formatDate } from '../../utilities/date.js'
+import { isNotebookEnv } from '../../utilities/isNotebook.js'
 import {
     extractHarmonyError,
     formatHarmonyErrorMessage,
@@ -240,6 +241,11 @@ export default class TerraTimeSeries extends AuthMixin(
 
     _fetchVariableTask = getFetchVariableTask(this)
 
+    /**
+     * Show or hide the Jupyter notebook button in the plot toolbar.
+     */
+    showJupyter?: boolean
+
     connectedCallback(): void {
         super.connectedCallback()
 
@@ -247,6 +253,14 @@ export default class TerraTimeSeries extends AuthMixin(
             'terra-time-series-error',
             this.#handleQuotaError as EventListener
         )
+
+        //* Detect if time series component is running in a Jupyter notebook.
+        if (this.showJupyter === undefined) {
+            this.showJupyter = !isNotebookEnv()
+        }
+        //* instantiate the time series contoller maybe with a token
+        this.#timeSeriesController = new TimeSeriesController(this)
+
         this.addEventListener(
             'terra-time-series-chunk-progress-change',
             this.#handleChunkProgress as EventListener
@@ -411,6 +425,7 @@ export default class TerraTimeSeries extends AuthMixin(
                                     .cacheKey=${this.#timeSeriesController.getCacheKey()}
                                     .variableEntryId=${this.variableEntryId}
                                     .showCitation=${this.showCitation}
+                                    .showJupyter=${this.showJupyter}
                                     .showHelp=${this.showHelp}
                                     .mobileView=${this.mobileView}
                                     .productLabel=${this.productLabel}
