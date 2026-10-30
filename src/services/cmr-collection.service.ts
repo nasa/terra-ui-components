@@ -1,11 +1,9 @@
+import type { Projection } from '../apis/gibs.api.js'
 import type {
     CmrCollectionsJsonResponse,
     GibsTagEntry,
 } from '../apis/types/cmr/collection-tags.js'
-import type {
-    GibsLayerConfig,
-    Projection,
-} from '../components/map/layers/gibs.layer.js'
+import type { GibsLayerConfig } from '../components/map/layers/gibs.layer.js'
 
 // GIBS' Web Mercator ("epsg3857/best") endpoint is tied to a specific
 // GoogleMapsCompatible_Level# per layer, keyed by its native resolution —

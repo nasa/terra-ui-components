@@ -7,6 +7,7 @@ export type RequestOptions = {
     headers?: HeadersInit
     signal?: AbortSignal
     bearerToken?: string
+    responseType?: 'json' | 'text'
 }
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -17,7 +18,13 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
  */
 async function request<T>(
     url: string,
-    { method = 'GET', body, headers = {}, signal }: RequestOptions = {}
+    {
+        method = 'GET',
+        body,
+        headers = {},
+        signal,
+        responseType = 'json',
+    }: RequestOptions = {}
 ): Promise<T> {
     try {
         const res = await fetch(url, {
@@ -59,6 +66,10 @@ async function request<T>(
 
         if (res.status === 204) {
             return undefined as T
+        }
+
+        if (responseType === 'text') {
+            return res.text() as Promise<T>
         }
 
         if (!res.headers.get('Content-Type')?.includes('json')) {

@@ -3,10 +3,8 @@ import type { QueryClientHost } from '../mixins/query-client.mixin.js'
 import { queryCmrCollectionTags } from '../queries/cmr.queries.js'
 import { QueryController } from './query.controller.js'
 import cmrCollectionService from '../services/cmr-collection.service.js'
-import type {
-    GibsLayerConfig,
-    Projection,
-} from '../components/map/layers/gibs.layer.js'
+import type { GibsLayerConfig } from '../components/map/layers/gibs.layer.js'
+import type { MapProjection } from '../components/map/type.js'
 
 const EMPTY: GibsLayerConfig[] = []
 
@@ -14,7 +12,7 @@ export interface CmrCollectionControllerConfig {
     /** A CMR collection entry-id (e.g. 'AIRS2RET_NRT_7.0') or concept-id (e.g. 'C1234567-PROVIDER'). */
     getCollectionId: () => string | undefined
     /** The map's current view projection — only GIBS products available in it are returned. */
-    getProjection: () => Projection
+    getProjection: () => MapProjection
     /** ISO date (YYYY-MM-DD), or omitted/'default' for each layer's latest available date. */
     getDate?: () => string | undefined
 }
@@ -27,7 +25,7 @@ export class CmrCollectionController implements ReactiveController {
 
     #gibsLayerConfigsCache: GibsLayerConfig[] = EMPTY
     #gibsLayerConfigsData: unknown
-    #gibsLayerConfigsProjection: Projection | undefined
+    #gibsLayerConfigsProjection: MapProjection | undefined
     #gibsLayerConfigsDate: string | undefined
 
     constructor(

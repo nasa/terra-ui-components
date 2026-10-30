@@ -11,13 +11,14 @@ import TerraElement, {
 import { watch } from '../../internal/watch.js'
 import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import { queryGibsLegendSvg } from '../../queries/gibs.queries.js'
 import {
     queryGiovanniGeoJsonShape,
     queryGiovanniShapeFiles,
 } from '../../queries/giovanni.queries.js'
 import componentStyles from '../../styles/component.styles.js'
+import TerraSkeleton from '../skeleton/skeleton.component.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
-import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
     layerRequiresAuthentication,
@@ -33,6 +34,7 @@ import {
 import styles from './map.styles.js'
 import type { LatLng } from './models/LatLng.js'
 import type { LatLngBounds } from './models/LatLngBounds.js'
+import type { MapProjection } from './type.js'
 
 const layersConverter = {
     fromAttribute: (value: string | null): MapLayerConfig[] => {
@@ -63,11 +65,16 @@ const layersConverter = {
  * @event terra-map-move-end - Emitted when the view's center/zoom/rotation settles after a pan or zoom. `detail` is `{ center, zoom }`.
  * @event terra-map-zoom-change - Emitted on every resolution change (no debouncing - use `terra-map-move-end` if only the settled value matters). `detail` is `{ zoom }`.
  * @event terra-map-layer-click - Emitted when a click hits a feature on a consumer-added layer. `detail` is `{ feature, layerName, latLng, pixel }`.
+ * @event terra-map-legend-click - Emitted when a layer's legend is clicked in the layer picker. `detail` is a `MapLegendClickDetail`.
  * @event terra-map-layer-error - Emitted when a consumer-added layer fails to load a tile or image at runtime. `detail` is `{ name, error }`.
  * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
+ * @event terra-map-layer-reorder - Emitted when visualization layers are reordered in the layer picker. `detail` is `{ names }`.
  */
 export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) {
     static styles: CSSResultGroup = [componentStyles, styles]
+    static dependencies = {
+        'terra-skeleton': TerraSkeleton,
+    }
 
     /**
      * Minimum zoom level of the map.
@@ -166,7 +173,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
      * This is a construction-time setting. Changing it after the map has rendered has no effect.
      */
     @property({ type: String })
-    projection: Projection = 'EPSG:3857'
+    projection: MapProjection = 'EPSG:3857'
 
     @property({ type: String })
     value?: string
@@ -253,6 +260,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             try {
                 const result = await buildMapLayer(config, {
                     bearerToken: this.bearerToken,
+                    queryClient: this.queryClient,
                 })
 
                 // bail if this layer was removed or superseded while it was building
@@ -335,6 +343,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
         this.addLayer(result.layer, {
             name,
             position: config.position,
+            type: 'visualization',
             ...(config.type === 'gibs'
                 ? {
                       showBoundary: config.showBoundary,
@@ -424,6 +433,11 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
         this.#service?.setValue(newValue)
     }
 
+    @watch('showMouseCoordinates')
+    mouseCoordinatesVisibilityChanged() {
+        this.#service?.updateMouseCoordinatesVisibility(this.showMouseCoordinates)
+    }
+
     /**
      * List of geojson shapes
      */
@@ -441,11 +455,13 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             showPolygonSelection: this.showPolygonSelection,
             showCircleSelection: this.showCircleSelection,
             showLayerPicker: this.showLayerPicker,
+            showMouseCoordinates: this.showMouseCoordinates,
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
             getGeoJson: shapeId =>
-                this.queryClient.fetchQuery(queryGiovanniGeoJsonShape(shapeId)),
+                this.queryClient.query(queryGiovanniGeoJsonShape(shapeId)),
+            fetchLegendSvg: url => this.queryClient.query(queryGibsLegendSvg(url)),
             onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
                 this.emit('terra-map-pointer-move', {
@@ -460,6 +476,9 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                     this.showGraticule = detail.visible
                 }
                 this.emit('terra-map-layer-toggle', { detail })
+            },
+            onLegendClick: detail => {
+                this.emit('terra-map-legend-click', { detail })
             },
             onShapeLoading: loading => {
                 this.shapeLoading = loading
@@ -491,6 +510,9 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             },
             onLayerError: (name, error) => {
                 this.emit('terra-map-layer-error', { detail: { name, error } })
+            },
+            onLayerOrderChange: detail => {
+                this.emit('terra-map-layer-reorder', { detail })
             },
         })
 
@@ -741,22 +763,6 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                 part="map"
                 class=${`map ${this.staticMode ? 'static' : ''} ${this.fill ? 'fill' : ''}`}
             >
-                ${
-                    this.showMouseCoordinates
-                        ? html`
-                              <div id="mouse-info">
-                                  <div>
-                                      <strong
-                                          >lat:
-                                          ${this.cursorCoordinates[1].toFixed(2)},
-                                          lng:
-                                          ${this.cursorCoordinates[0].toFixed(2)}</strong
-                                      >
-                                  </div>
-                              </div>
-                          `
-                        : nothing
-                }
                 ${
                     this.shapeLoading
                         ? html`

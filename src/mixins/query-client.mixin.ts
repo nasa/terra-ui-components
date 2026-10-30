@@ -1,16 +1,15 @@
-import type { LitElement } from 'lit'
 import { QueryClient } from '@tanstack/query-core'
 import { persistQueryClient } from '@tanstack/query-persist-client-core'
+import type { LitElement } from 'lit'
+import { duration } from '../constants.js'
 import { HttpException } from '../exceptions/http.exception.js'
 import { createIDBPersister } from '../lib/indexeddb-persister.js'
 import type { Constructor } from './mixin.types.js'
 
-const fifteenMinutesMs = 1000 * 60 * 15
-
 export const sharedQueryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            gcTime: fifteenMinutesMs,
+            gcTime: duration.days(1),
             retry: (failureCount, error) => {
                 if (
                     error instanceof HttpException &&
@@ -42,7 +41,7 @@ const ensureMounted = (queryClient: QueryClient) => {
         const [unsubscribe, restorePromise] = persistQueryClient({
             queryClient,
             persister,
-            maxAge: fifteenMinutesMs,
+            maxAge: duration.days(1),
         })
         persistUnsubscribe = unsubscribe
         mountPromise = restorePromise
@@ -57,15 +56,22 @@ const ensureMounted = (queryClient: QueryClient) => {
 
 export interface QueryClientHost {
     queryClient: QueryClient
+    queryClientReady?: Promise<void>
 }
 
 export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => {
     class WithQueryClient extends Base implements QueryClientHost {
         queryClient: QueryClient = sharedQueryClient
+        queryClientReady?: Promise<void>
 
         connectedCallback() {
+            if (++mountCount === 1) {
+                this.queryClientReady = ensureMounted(this.queryClient)
+            } else {
+                this.queryClientReady = mountPromise
+            }
+
             super.connectedCallback()
-            if (++mountCount === 1) void ensureMounted(this.queryClient)
         }
 
         disconnectedCallback() {

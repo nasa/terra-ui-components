@@ -1,6 +1,9 @@
 import type { LatLng } from './models/LatLng.js'
 import type { LatLngBounds } from './models/LatLngBounds.js'
 
+export type MapProjection = 'EPSG:3857' | 'EPSG:4326' | 'EPSG:3413' | 'EPSG:3031'
+export type Projection = MapProjection
+
 export enum MapEventType {
     POINT = 'point',
     BBOX = 'bbox',
@@ -29,7 +32,19 @@ export type MapEventDetail = BaseMapEventDetail &
 export type MapLayerToggleDetail = {
     name: string
     title: string
-    type: 'base' | 'overlay'
+    type: 'base' | 'overlay' | 'visualization'
     visible: boolean
+    layer: unknown
+}
+
+export type MapLegendClickDetail = {
+    name: string
+    title: string
+    type: 'base' | 'overlay' | 'visualization'
+    valueChosen?: string | number
+    rgbChosen?: number[]
+    min?: number | string
+    max?: number | string
+    legendValues?: Array<{ value: string; rgb: number[] }>
     layer: unknown
 }

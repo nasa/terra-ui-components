@@ -8,6 +8,7 @@ import VectorSource from 'ol/source/Vector.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import { apiClient } from '../../../lib/api.client.js'
+import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
 import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'
 import '../map.js'
@@ -625,11 +626,11 @@ describe('<terra-map> layer picker', () => {
         const checkboxes = el.shadowRoot?.querySelectorAll(
             '.layer-picker-panel input[type="checkbox"]'
         ) as NodeListOf<HTMLInputElement>
-        // Graticule is the topmost overlay (first checkbox)
-        expect(checkboxes[0].checked).to.be.true
+        // Graticule is the third overlay (after International Boundaries and Place Labels)
+        expect(checkboxes[2].checked).to.be.true
 
-        checkboxes[0].checked = false
-        checkboxes[0].dispatchEvent(new Event('change'))
+        checkboxes[2].checked = false
+        checkboxes[2].dispatchEvent(new Event('change'))
 
         expect(el.showGraticule).to.be.false
         expect(el.getLayer('graticule')?.getVisible()).to.be.false
@@ -676,6 +677,9 @@ describe('<terra-map> collection-id', () => {
             if (url.includes('collections.json')) {
                 return Promise.resolve(response)
             }
+            if (url.includes('wmts.cgi')) {
+                return window.fetch(url).then(res => res.text())
+            }
             return Promise.resolve({ categories: [] })
         })
     }
@@ -719,11 +723,13 @@ describe('<terra-map> collection-id', () => {
     }
 
     beforeEach(() => {
+        sharedQueryClient.clear()
         apiGetStub = sinon.stub(apiClient, 'get')
         originalFetch = window.fetch
     })
 
     afterEach(() => {
+        sharedQueryClient.clear()
         sinon.restore()
         window.fetch = originalFetch
     })

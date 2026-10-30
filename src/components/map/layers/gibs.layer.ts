@@ -1,71 +1,23 @@
+import type { QueryClient } from '@tanstack/query-core'
+import type { Extent } from 'ol/extent.js'
+import WMTSCapabilities from 'ol/format/WMTSCapabilities.js'
 import TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
-import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js'
-import WMTSCapabilities from 'ol/format/WMTSCapabilities.js'
 import { transformExtent } from 'ol/proj.js'
-import type { Extent } from 'ol/extent.js'
-import { XYZLayer } from './xyz.layer.js'
-import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
+import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js'
+import gibsApi, {
+    GIBS_WMTS_ENDPOINT,
+    type Projection,
+} from '../../../apis/gibs.api.js'
+import { queryGibsCapabilitiesXml } from '../../../queries/gibs.queries.js'
 import type { CommonConfig } from './common.js'
+import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
+import { XYZLayer } from './xyz.layer.js'
 import '../projections.js' // registers EPSG:3413/3031 with OpenLayers
-
-export type Projection = 'EPSG:3857' | 'EPSG:4326' | 'EPSG:3413' | 'EPSG:3031'
-
-const GIBS_WMTS_ROOT = 'https://gibs.earthdata.nasa.gov/wmts'
 
 const WMTS_NS = 'http://www.opengis.net/wmts/1.0'
 const OWS_NS = 'http://www.opengis.net/ows/1.1'
 const XLINK_NS = 'http://www.w3.org/1999/xlink'
-
-type CapabilitiesEntry = {
-    /** The ol-parsed capabilities object, as returned by `getGibsCapabilities()`. */
-    capabilities: any
-    /** The raw parsed XML, kept around for lookups ol's parser doesn't expose (e.g. legend orientation). */
-    doc: Document
-}
-
-const capabilitiesCache = new Map<string, Promise<CapabilitiesEntry>>()
-
-function fetchGibsCapabilities(projection: Projection): Promise<CapabilitiesEntry> {
-    const endpoint = projection.replace(':', '').toLowerCase() // e.g. 'epsg4326'
-
-    let cached = capabilitiesCache.get(endpoint)
-    if (!cached) {
-        cached = fetch(
-            `${GIBS_WMTS_ROOT}/${endpoint}/best/wmts.cgi?REQUEST=GetCapabilities`
-        )
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(
-                        `Failed to fetch GIBS GetCapabilities for ${projection}: ${response.status} ${response.statusText}`
-                    )
-                }
-                return response.text()
-            })
-            .then(xml => {
-                const doc = new DOMParser().parseFromString(xml, 'application/xml')
-                return { capabilities: new WMTSCapabilities().read(doc), doc }
-            })
-            .catch(error => {
-                // don't cache failures, so a transient network error can be retried
-                capabilitiesCache.delete(endpoint)
-                throw error
-            })
-
-        capabilitiesCache.set(endpoint, cached)
-    }
-
-    return cached
-}
-
-/**
- * Fetches and parses a GIBS projection's WMTS GetCapabilities document,
- * caching the result (per projection) so repeated GibsLayer.forProjection()
- * calls don't refetch the (large) capabilities document every time.
- */
-export function getGibsCapabilities(projection: Projection): Promise<any> {
-    return fetchGibsCapabilities(projection).then(entry => entry.capabilities)
-}
 
 export type GibsLegendUrls = {
     /** Wide color map legend image, suitable for rendering below/above the map. */
@@ -74,56 +26,163 @@ export type GibsLegendUrls = {
     vertical?: string
 }
 
+type CapabilitiesEntry = {
+    /**
+     * The OpenLayers-parsed capabilities object, as returned by `getGibsCapabilities()`.
+     * Evaluated lazily on first access because `EPSG:3857` layers build their tile URLs
+     * synchronously via XYZ templates and only need the capabilities XML for legend URLs;
+     * running `WMTSCapabilities.read()` on the 1,300+ layer XML document adds unnecessary
+     * main-thread work when WMTS tile matrix options aren't needed.
+     */
+    capabilities: any
+    /**
+     * Pre-indexed map of WMTS layer identifier -> horizontal/vertical legend URLs.
+     * Built in a single pass over the XML DOM on first access so multi-layer collections
+     * (e.g. `AIRS2RET_NRT_7.0` with 22 layers) perform O(1) lookups instead of walking
+     * the 1,300+ `<Layer>` DOM nodes repeatedly.
+     */
+    legends: Map<string, GibsLegendUrls>
+}
+
+const capabilitiesCache = new Map<string, { xml: string; entry: CapabilitiesEntry }>()
+
+export function clearGibsCapabilitiesCache(): void {
+    capabilitiesCache.clear()
+}
+
+/**
+ * Extracts every layer's default `<Style>` horizontal/vertical `<LegendURL>` entries
+ * from a parsed GIBS WMTS `GetCapabilities` XML document in a single pass.
+ *
+ * Why `GetCapabilities` is required instead of constructing legend URLs from the layer ID:
+ * GIBS legend SVG filenames are keyed by shared GIBS ColorMap IDs (~413 unique files across
+ * ~1,100 layers), not by the WMTS layer `Identifier`. The vast majority of layers use a legend
+ * filename that differs non-deterministically from the layer ID (e.g.
+ * `AIRS_L2_Surface_Air_Temperature_Day` -> `AIRS_Temperature_H.svg`,
+ * `MODIS_Aqua_Aerosol_Optical_Depth_3km` -> `MODIS_VIIRS_AOD_H.svg`), and neither GIBS
+ * nor CMR's `edsc.extra.serverless.gibs` tags expose a per-layer metadata endpoint for
+ * legend URLs. Guessing filenames via HTTP probing floods the browser with 404 errors.
+ *
+ * Why this reads the raw XML DOM instead of OpenLayers' `WMTSCapabilities` output:
+ * `ol/format/WMTSCapabilities` parses `Style`/`LegendURL` elements, but drops the
+ * `xlink:role` attribute that distinguishes the horizontal from the vertical legend.
+ */
+function indexGibsLegends(doc: Document): Map<string, GibsLegendUrls> {
+    const legendsByLayer = new Map<string, GibsLegendUrls>()
+
+    for (const layerNode of Array.from(
+        doc.getElementsByTagNameNS(WMTS_NS, 'Layer')
+    )) {
+        const id = layerNode.getElementsByTagNameNS(OWS_NS, 'Identifier')[0]
+            ?.textContent
+        if (!id) {
+            continue
+        }
+
+        const styleNodes = Array.from(
+            layerNode.getElementsByTagNameNS(WMTS_NS, 'Style')
+        )
+        const styleNode =
+            styleNodes.find(node => node.getAttribute('isDefault') === 'true') ??
+            styleNodes[0]
+        if (!styleNode) {
+            continue
+        }
+
+        const legends: GibsLegendUrls = {}
+        for (const legendNode of Array.from(
+            styleNode.getElementsByTagNameNS(WMTS_NS, 'LegendURL')
+        )) {
+            const href = legendNode.getAttributeNS(XLINK_NS, 'href')
+            const role = legendNode.getAttributeNS(XLINK_NS, 'role') ?? ''
+            if (!href) {
+                continue
+            }
+            if (role.endsWith('horizontal')) {
+                legends.horizontal = href
+            } else if (role.endsWith('vertical')) {
+                legends.vertical = href
+            }
+        }
+
+        if (legends.horizontal || legends.vertical) {
+            legendsByLayer.set(id, legends)
+        }
+    }
+
+    return legendsByLayer
+}
+
+export type GibsLayerBuildOptions = {
+    queryClient?: QueryClient
+}
+
+async function fetchGibsCapabilities(
+    projection: Projection,
+    options?: GibsLayerBuildOptions
+): Promise<CapabilitiesEntry> {
+    const endpoint = projection.replace(':', '').toLowerCase() // e.g. 'epsg4326'
+
+    const cached = capabilitiesCache.get(endpoint)
+    if (cached && !options?.queryClient) {
+        return cached.entry
+    }
+
+    const xml = options?.queryClient
+        ? await options.queryClient.query(queryGibsCapabilitiesXml(projection))
+        : await gibsApi.getCapabilitiesXml(projection)
+
+    if (cached && cached.xml === xml) {
+        return cached.entry
+    }
+
+    const doc = new DOMParser().parseFromString(xml, 'application/xml')
+    let parsedCapabilities: any
+    let indexedLegends: Map<string, GibsLegendUrls> | undefined
+    const entry: CapabilitiesEntry = {
+        get capabilities() {
+            if (!parsedCapabilities) {
+                parsedCapabilities = new WMTSCapabilities().read(doc)
+            }
+            return parsedCapabilities
+        },
+        get legends() {
+            if (!indexedLegends) {
+                indexedLegends = indexGibsLegends(doc)
+            }
+            return indexedLegends
+        },
+    }
+    capabilitiesCache.set(endpoint, { xml, entry })
+    return entry
+}
+
+/**
+ * Fetches and parses a GIBS projection's WMTS GetCapabilities document,
+ * caching the result (per projection) so repeated GibsLayer.forProjection()
+ * calls don't refetch the (large) capabilities document every time.
+ */
+export function getGibsCapabilities(
+    projection: Projection,
+    options?: GibsLayerBuildOptions
+): Promise<any> {
+    return fetchGibsCapabilities(projection, options).then(
+        entry => entry.capabilities
+    )
+}
+
 /**
  * Looks up a GIBS layer's color map legend image URLs (both orientations
  * GIBS publishes, keyed by their `xlink:role`) from a projection's
  * GetCapabilities document.
- *
- * ol's `WMTSCapabilities` parser reads `Style`/`LegendURL` elements, but
- * drops the `xlink:role` attribute that distinguishes the horizontal from
- * the vertical legend image - so this reads the raw parsed XML directly
- * instead of the ol-parsed capabilities object.
  */
 export async function getGibsLegendUrls(
     projection: Projection,
-    layer: string
+    layer: string,
+    options?: GibsLayerBuildOptions
 ): Promise<GibsLegendUrls | undefined> {
-    const { doc } = await fetchGibsCapabilities(projection)
-
-    const layerNode = Array.from(doc.getElementsByTagNameNS(WMTS_NS, 'Layer')).find(
-        node =>
-            node.getElementsByTagNameNS(OWS_NS, 'Identifier')[0]?.textContent ===
-            layer
-    )
-    if (!layerNode) {
-        return undefined
-    }
-
-    const styleNodes = Array.from(layerNode.getElementsByTagNameNS(WMTS_NS, 'Style'))
-    const styleNode =
-        styleNodes.find(node => node.getAttribute('isDefault') === 'true') ??
-        styleNodes[0]
-    if (!styleNode) {
-        return undefined
-    }
-
-    const legends: GibsLegendUrls = {}
-    for (const legendNode of Array.from(
-        styleNode.getElementsByTagNameNS(WMTS_NS, 'LegendURL')
-    )) {
-        const href = legendNode.getAttributeNS(XLINK_NS, 'href')
-        const role = legendNode.getAttributeNS(XLINK_NS, 'role') ?? ''
-        if (!href) {
-            continue
-        }
-        if (role.endsWith('horizontal')) {
-            legends.horizontal = href
-        } else if (role.endsWith('vertical')) {
-            legends.vertical = href
-        }
-    }
-
-    return Object.keys(legends).length ? legends : undefined
+    const { legends } = await fetchGibsCapabilities(projection, options)
+    return legends.get(layer)
 }
 
 export type Options = {
@@ -184,7 +243,7 @@ export class GibsLayer extends XYZLayer {
             extent,
         } = options
 
-        const urlTemplate = `${GIBS_WMTS_ROOT}/epsg3857/best/${layer}/default/${date}/${tileMatrixSet}/{z}/{y}/{x}.${format}`
+        const urlTemplate = `${GIBS_WMTS_ENDPOINT}/epsg3857/best/${layer}/default/${date}/${tileMatrixSet}/{z}/{y}/{x}.${format}`
 
         super({
             urlTemplate,
@@ -205,11 +264,23 @@ export class GibsLayer extends XYZLayer {
      * Async factory for non-Mercator GIBS imagery (EPSG:4326 / EPSG:3413 / EPSG:3031).
      */
     static async forProjection(
-        options: Options & { projection: Exclude<Projection, 'EPSG:3857'> }
+        options: Options & {
+            projection: Exclude<Projection, 'EPSG:3857'>
+            queryClient?: QueryClient
+        }
     ): Promise<TileLayer> {
-        const { layer, date = 'default', projection, tileMatrixSet, extent } = options
+        const {
+            layer,
+            date = 'default',
+            projection,
+            tileMatrixSet,
+            extent,
+            queryClient,
+        } = options
 
-        const capabilities = await getGibsCapabilities(projection)
+        const capabilities = await getGibsCapabilities(projection, {
+            queryClient,
+        })
         const wmtsOptions = optionsFromCapabilities(capabilities, {
             layer,
             matrixSet: tileMatrixSet ?? DEFAULT_MATRIX_SET_BY_PROJECTION[projection],
@@ -261,7 +332,8 @@ export type GibsLayerInfo = {
  * - the async `GibsLayer.forProjection()` factory for EPSG:4326/3413/3031 raster imagery
  */
 export async function buildGibsLayer(
-    config: GibsLayerConfig
+    config: GibsLayerConfig,
+    buildOptions?: GibsLayerBuildOptions
 ): Promise<GibsLayerInfo> {
     const { name, position, ...options } = config
 
@@ -274,7 +346,8 @@ export async function buildGibsLayer(
     const { type, projection, ...rasterOptions } = options
     const legend = getGibsLegendUrls(
         projection ?? 'EPSG:3857',
-        rasterOptions.layer
+        rasterOptions.layer,
+        buildOptions
     ).catch(() => undefined)
 
     if (!projection || projection === 'EPSG:3857') {
@@ -284,6 +357,7 @@ export async function buildGibsLayer(
     const layer = await GibsLayer.forProjection({
         ...rasterOptions,
         projection,
+        queryClient: buildOptions?.queryClient,
     })
     return { layer, legend }
 }

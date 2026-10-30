@@ -222,13 +222,13 @@ function parseScss(content) {
         // and value and add it to the current subgroup's tokens array.
         //
         // Token parsing (multi-line safe)
-        //
         const trimmed = line
             .replace(/\/\*.*?\*\//g, '') // Remove inline /* ... */ comments
             .trim()
-        
-        // If we've reached a new selector, the previous documented token block is over.
-        if (parsingTokens && /^[.#:[a-zA-Z]/.test(trimmed)) {
+
+        // If we've reached a new selector or non-token property outside of an active token,
+        // the previous documented token block is over.
+        if (parsingTokens && !buffer && /^[.#:[a-zA-Z]/.test(trimmed)) {
             parsingTokens = false
             currentSubgroup = null
             buffer = ''
@@ -238,8 +238,7 @@ function parseScss(content) {
             if (!buffer && trimmed.startsWith('--')) {
                 // Starting a new token
                 buffer = trimmed
-            }
-            else if (buffer) {
+            } else if (buffer) {
                 // Continue the current multi-line token
                 buffer += ' ' + trimmed
             }

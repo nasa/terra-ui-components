@@ -432,4 +432,29 @@ Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set 
 </script>
 ```
 
+### Layer Picker
+
+When `show-layer-picker` is enabled, the built-in Layer Picker groups layers into **Visualizations** (layers added via `layers` or `collection-id`), **Base Maps** (mutually exclusive background imagery), and **Overlays** (boundaries, place labels, graticule, and custom overlays). Each visualization layer entry includes:
+
+- A visibility checkbox (emitting `terra-map-layer-toggle`).
+- An opacity settings drawer (`0%` - `100%`).
+- Drag-and-drop and keyboard (`ArrowUp` / `ArrowDown` on the reorder handle) layer reordering (emitting `terra-map-layer-reorder` with `{ names }`).
+- An interactive color-map legend (for GeoTIFF color ramps and GIBS horizontal SVG legends) that emits `terra-map-legend-click` when a color bin or ramp value is clicked.
+
+```html:preview
+    <!-- collection-id="GPM_3IMERGHH_07" -->
+<terra-map
+    id="layer-picker-map"
+    has-navigation
+    show-layer-picker
+    collection-id="AIRS2RET_NRT_7.0"
+></terra-map>
+
+<script type="module">
+    document.addEventListener('terra-map-legend-click', (event) => {
+        console.log(event);
+    })
+</script>
+```
+
 [component-metadata:terra-map]

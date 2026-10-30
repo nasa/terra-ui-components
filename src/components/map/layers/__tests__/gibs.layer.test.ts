@@ -2,7 +2,12 @@ import { expect } from '@open-wc/testing'
 import TileLayer from 'ol/layer/Tile.js'
 import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
-import { buildGibsLayer, GibsLayer, getGibsLegendUrls } from '../gibs.layer.js'
+import {
+    buildGibsLayer,
+    clearGibsCapabilitiesCache,
+    GibsLayer,
+    getGibsLegendUrls,
+} from '../gibs.layer.js'
 import '../../projections.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {
@@ -129,10 +134,12 @@ describe('GibsLayer', () => {
         beforeEach(() => {
             originalFetch = window.fetch
             fetchCallCount = 0
+            clearGibsCapabilitiesCache()
         })
 
         afterEach(() => {
             window.fetch = originalFetch
+            clearGibsCapabilitiesCache()
         })
 
         function stubFetch(xml: string) {
