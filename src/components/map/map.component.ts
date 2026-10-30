@@ -9,6 +9,7 @@ import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     queryGiovanniGeoJsonShape,
@@ -20,6 +21,7 @@ import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
 import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
+    layerRequiresAuthentication,
     type MapLayerConfig,
     type MapLayerResult,
 } from './layers/layer.js'
@@ -67,7 +69,7 @@ const layersConverter = {
  * @event terra-map-layer-toggle - Emitted when a layer's visibility is toggled via the layer picker.
  * @event terra-map-layer-reorder - Emitted when visualization layers are reordered in the layer picker. `detail` is `{ names, layers }`.
  */
-export default class TerraMap extends QueryClientMixin(TerraElement) {
+export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-skeleton': TerraSkeleton,
@@ -255,7 +257,9 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
             }
 
             try {
-                const result = await buildMapLayer(config)
+                const result = await buildMapLayer(config, {
+                    bearerToken: this.bearerToken,
+                })
 
                 // bail if this layer was removed or superseded while it was building
                 if (this.#layerRequestIds.get(name) !== requestId) {
@@ -278,6 +282,30 @@ export default class TerraMap extends QueryClientMixin(TerraElement) {
                 })
             }
         }
+    }
+
+    @watch('bearerToken', { waitUntilFirstUpdate: true })
+    bearerTokenChanged() {
+        const affectedNames = new Set(
+            this.layers.filter(layerRequiresAuthentication).map(config => config.name)
+        )
+
+        if (!affectedNames.size) {
+            return
+        }
+
+        for (const name of affectedNames) {
+            this.removeLayer(name)
+            this.#layerRequestIds.delete(name)
+        }
+
+        // treat the affected layers as brand new so `layersChanged` rebuilds
+        // them with the current bearer token, instead of skipping them as
+        // "unchanged" since their config didn't actually change
+        const previousWithoutAffected = this.layers.filter(
+            config => !affectedNames.has(config.name)
+        )
+        this.layersChanged(previousWithoutAffected, this.layers)
     }
 
     /**

@@ -253,6 +253,17 @@ map.addEventListener('terra-map-pointer-move', event => {
 })
 ```
 
+### Authenticated GeoTIFFs (Harmony)
+
+Set `bearer-token` on `<terra-map>` to authenticate requests made on your behalf. If a layer requires Earthdata Login (ex. a `type: "geotiff"` layer's `url` resolves to a Harmony origin (`harmony.earthdata.nasa.gov` or `harmony.uat.earthdata.nasa.gov`)), the map automatically attaches an `Authorization: Bearer` header to that layer's tile requests.
+
+```html
+<terra-map
+    bearer-token="your-earthdata-bearer-token"
+    layers='[{ "type": "geotiff", "name": "my-data", "url": "https://harmony.earthdata.nasa.gov/..." }]'
+></terra-map>
+```
+
 ### Adding GIBS Vector Imagery
 
 Some GIBS collections are published as vector data (e.g. `GRanD_Dams`, `VIIRS_NOAA20_Thermal_Anomalies_375m_All`) rather than raster imagery. Use `buildGibsVectorLayer()` to load these as Mapbox Vector Tiles. Without a `style`, a simple default circle style is applied:
