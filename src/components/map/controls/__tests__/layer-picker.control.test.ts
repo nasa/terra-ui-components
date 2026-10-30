@@ -370,4 +370,296 @@ describe('LayerPickerControl', () => {
 
         expect(panel.scrollTop).to.equal(60)
     })
+
+    describe('visualizations and accessibility', () => {
+        let vizLayer: VectorLayer
+        let legendSpy: sinon.SinonSpy
+
+        beforeEach(() => {
+            legendSpy = sinon.spy()
+            pickerControl.setOptions({ onLegendClick: legendSpy })
+
+            vizLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            vizLayer.set('name', 'temp-anomaly')
+            vizLayer.set('title', 'Temperature Anomaly')
+            vizLayer.set('type', 'visualization')
+            vizLayer.set('info', {
+                min: 0,
+                max: 100,
+                legendValues: [
+                    { value: '0', rgb: [0, 0, 255] },
+                    { value: '100', rgb: [255, 0, 0] },
+                ],
+            })
+            map.addLayer(vizLayer)
+
+            const toggleBtn = pickerControl.element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggleBtn.click()
+        })
+
+        it('renders visualization layers with accessible settings gear and drawer', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const headings = Array.from(
+                panel.querySelectorAll('.layer-picker-heading')
+            ).map(h => h.textContent)
+            expect(headings).to.include('Visualizations')
+
+            const gearBtn = panel.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            expect(gearBtn).to.exist
+            expect(gearBtn.getAttribute('aria-expanded')).to.equal('false')
+            expect(gearBtn.getAttribute('aria-controls')).to.equal(
+                'layer-settings-temp-anomaly'
+            )
+            expect(gearBtn.getAttribute('aria-label')).to.equal(
+                'Adjust opacity for Temperature Anomaly'
+            )
+
+            const drawer = panel.querySelector(
+                '#layer-settings-temp-anomaly'
+            ) as HTMLElement
+            expect(drawer).to.exist
+            expect(drawer.hasAttribute('hidden')).to.be.true
+            expect(drawer.getAttribute('aria-label')).to.equal(
+                'Temperature Anomaly opacity'
+            )
+
+            // Click gear to open drawer
+            gearBtn.click()
+            expect(gearBtn.getAttribute('aria-expanded')).to.equal('true')
+            const openedDrawer = panel.querySelector(
+                '#layer-settings-temp-anomaly'
+            ) as HTMLElement
+            expect(openedDrawer.hasAttribute('hidden')).to.be.false
+        })
+
+        it('updates opacity on input and announces aria-valuenow and aria-valuetext', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gearBtn = panel.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            gearBtn.click()
+
+            const slider = panel.querySelector(
+                '#opacity-input-temp-anomaly'
+            ) as HTMLInputElement
+            expect(slider).to.exist
+            expect(slider.getAttribute('aria-label')).to.equal(
+                'Temperature Anomaly opacity'
+            )
+            expect(slider.getAttribute('aria-valuenow')).to.equal('100')
+            expect(slider.getAttribute('aria-valuetext')).to.equal('100%')
+
+            slider.value = '42'
+            slider.dispatchEvent(new Event('input'))
+
+            expect(vizLayer.getOpacity()).to.be.closeTo(0.42, 0.001)
+            expect(slider.getAttribute('aria-valuenow')).to.equal('42')
+            expect(slider.getAttribute('aria-valuetext')).to.equal('42%')
+
+            const valueSpan = panel.querySelector('.layer-picker-opacity-value')
+            expect(valueSpan?.textContent).to.equal('42%')
+        })
+
+        it('closes settings drawer and restores focus on Escape key', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gearBtn = panel.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            gearBtn.click()
+
+            const drawer = panel.querySelector(
+                '#layer-settings-temp-anomaly'
+            ) as HTMLElement
+            drawer.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+            )
+
+            const closedDrawer = panel.querySelector(
+                '#layer-settings-temp-anomaly'
+            ) as HTMLElement
+            expect(closedDrawer.hasAttribute('hidden')).to.be.true
+            expect(gearBtn.getAttribute('aria-expanded')).to.equal('false')
+        })
+
+        it('reacts to external layer opacity changes and updates slider value', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gearBtn = panel.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            gearBtn.click()
+
+            vizLayer.setOpacity(0.65)
+
+            const slider = panel.querySelector(
+                '#opacity-input-temp-anomaly'
+            ) as HTMLInputElement
+            expect(slider.value).to.equal('65')
+            expect(slider.getAttribute('aria-valuenow')).to.equal('65')
+            expect(slider.getAttribute('aria-valuetext')).to.equal('65%')
+        })
+
+        it('allows activating GeoTIFF legend bar via Enter key with onLegendClick callback', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const legendBar = panel.querySelector(
+                '.layer-picker-legend-bar'
+            ) as HTMLElement
+            expect(legendBar).to.exist
+            expect(legendBar.getAttribute('role')).to.equal('button')
+            expect(legendBar.getAttribute('tabindex')).to.equal('0')
+
+            legendBar.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+            )
+            expect(legendSpy.calledOnce).to.be.true
+            const call = legendSpy.firstCall.args[0]
+            expect(call.name).to.equal('temp-anomaly')
+            expect(call.type).to.equal('visualization')
+            expect(call.valueChosen).to.exist
+        })
+
+        it('enhances GIBS SVG bins with data-value and emits onLegendClick on click', () => {
+            const gibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            gibsLayer.set('name', 'modis-aod')
+            gibsLayer.set('title', 'MODIS Aerosol Optical Depth')
+            gibsLayer.set('type', 'visualization')
+            gibsLayer.set('legend', Promise.resolve({ horizontal: 'dummy.svg' }))
+
+            // Simulate cached processed SVG with tooltip comment
+            const sampleSvg = `<svg xmlns="http://www.w3.org/2000/svg">
+                <rect data-tooltip-idx="0" data-value="0.1 - 0.2" title="0.1 - 0.2" aria-label="0.1 - 0.2" width="10" height="10"/>
+                <g id="tooltip_0" visibility="hidden"><!-- 0.1 - 0.2 --><text>0.1 - 0.2</text></g>
+            </svg>`
+            gibsLayer.set('__gibsLegendSvg', sampleSvg)
+            map.addLayer(gibsLayer)
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gibsLegend = panel.querySelector(
+                '.layer-picker-legend-gibs'
+            ) as HTMLElement
+            expect(gibsLegend).to.exist
+            expect(gibsLegend.getAttribute('role')).to.equal('figure')
+
+            const rect = gibsLegend.querySelector('rect') as SVGElement
+            expect(rect.getAttribute('data-value')).to.equal('0.1 - 0.2')
+            expect(rect.hasAttribute('tabindex')).to.be.false
+
+            // Click bin
+            rect.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+            expect(legendSpy.calledOnce).to.be.true
+            expect(legendSpy.firstCall.args[0].valueChosen).to.equal('0.1 - 0.2')
+        })
+
+        it('renders a skeleton placeholder while GIBS legend is loading', () => {
+            const pendingGibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            pendingGibsLayer.set('name', 'pending-gibs')
+            pendingGibsLayer.set('title', 'Pending GIBS Layer')
+            pendingGibsLayer.set('type', 'visualization')
+            pendingGibsLayer.set('legend', new Promise(() => {}))
+
+            map.addLayer(pendingGibsLayer)
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const skeleton = panel.querySelector(
+                '.layer-picker-legend-skeleton'
+            ) as HTMLElement
+            expect(skeleton).to.exist
+            expect(skeleton.getAttribute('role')).to.equal('status')
+            expect(skeleton.getAttribute('aria-label')).to.equal(
+                'Loading Pending GIBS Layer color map legend'
+            )
+            expect(skeleton.querySelector('terra-skeleton')).to.exist
+        })
+
+        it('renders accessible drag handle and supports keyboard layer reordering', () => {
+            const reorderSpy = sinon.spy()
+            pickerControl.setOptions({ onLayerOrderChange: reorderSpy })
+
+            // Add a second visualization layer
+            const secondViz = new TileLayer({ visible: true })
+            secondViz.set('name', 'second-viz')
+            secondViz.set('title', 'Second Visualization')
+            secondViz.set('type', 'visualization')
+            map.addLayer(secondViz)
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            expect(items.length).to.equal(2)
+
+            const handle = items[0].querySelector(
+                '.layer-picker-drag-handle'
+            ) as HTMLButtonElement
+            expect(handle).to.exist
+            expect(handle.getAttribute('draggable')).to.equal('true')
+            expect(handle.getAttribute('aria-roledescription')).to.equal(
+                'sortable layer'
+            )
+            expect(handle.getAttribute('title')).to.include('Drag to reorder')
+
+            // Press ArrowDown on the first layer handle to move it below
+            handle.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+            )
+
+            expect(reorderSpy.calledOnce).to.be.true
+            expect(reorderSpy.firstCall.args[0].names).to.deep.equal([
+                'second-viz',
+                'temp-anomaly',
+            ])
+
+            // Verify DOM order updated
+            const reorderedItems = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            expect(reorderedItems[0].getAttribute('data-layer-name')).to.equal(
+                'second-viz'
+            )
+            expect(reorderedItems[1].getAttribute('data-layer-name')).to.equal(
+                'temp-anomaly'
+            )
+
+            // Press ArrowUp on temp-anomaly handle to move it back up
+            const tempAnomalyHandle = reorderedItems[1].querySelector(
+                '.layer-picker-drag-handle'
+            ) as HTMLButtonElement
+            tempAnomalyHandle.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
+            )
+
+            expect(reorderSpy.calledTwice).to.be.true
+            expect(reorderSpy.secondCall.args[0].names).to.deep.equal([
+                'temp-anomaly',
+                'second-viz',
+            ])
+        })
+    })
 })

@@ -1,6 +1,10 @@
 import type { FeatureLike } from 'ol/Feature.js'
-import type { MapEventDetail, MapLayerToggleDetail } from '../components/map/type.js'
 import type { LatLng } from '../components/map/models/LatLng.js'
+import type {
+    MapEventDetail,
+    MapLayerToggleDetail,
+    MapLegendClickDetail,
+} from '../components/map/type.js'
 
 export type TerraMapChangeEvent = CustomEvent<MapEventDetail>
 
@@ -58,6 +62,14 @@ export type TerraMapLayerErrorEvent = CustomEvent<TerraMapLayerErrorEventDetail>
 
 export type TerraMapLayerToggleEvent = CustomEvent<MapLayerToggleDetail>
 
+export type TerraMapLegendClickEvent = CustomEvent<MapLegendClickDetail>
+
+export type TerraMapLayerReorderEventDetail = {
+    names: string[]
+}
+
+export type TerraMapLayerReorderEvent = CustomEvent<TerraMapLayerReorderEventDetail>
+
 declare global {
     interface GlobalEventHandlersEventMap {
         'terra-map-change': TerraMapChangeEvent
@@ -70,5 +82,7 @@ declare global {
         'terra-map-layer-click': TerraMapLayerClickEvent
         'terra-map-layer-error': TerraMapLayerErrorEvent
         'terra-map-layer-toggle': TerraMapLayerToggleEvent
+        'terra-map-layer-reorder': TerraMapLayerReorderEvent
+        'terra-map-legend-click': TerraMapLegendClickEvent
     }
 }

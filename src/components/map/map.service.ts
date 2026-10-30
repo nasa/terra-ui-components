@@ -24,22 +24,23 @@ import { BadRequestException } from '../../exceptions/http.exception.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
 import { LayerPickerControl } from './controls/layer-picker.control.js'
-import {
-    MapEventType,
-    type MapEventDetail,
-    type MapLayerToggleDetail,
-} from './type.js'
-import { LatLngBounds } from './models/LatLngBounds.js'
-import { LatLng } from './models/LatLng.js'
 import { buildDefaultBaseLayers } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
 import { buildExtentFeature, getBoundaryStyle } from './layers/boundary.js'
 import { LabelsLayer } from './layers/labels.layer.js'
+import { LatLng } from './models/LatLng.js'
+import { LatLngBounds } from './models/LatLngBounds.js'
+import {
+    type MapEventDetail,
+    MapEventType,
+    type MapLayerToggleDetail,
+    type MapLegendClickDetail,
+} from './type.js'
 
 export type AddLayerOptions = {
     name?: string
     title?: string
-    type?: 'base' | 'overlay'
+    type?: 'base' | 'overlay' | 'visualization'
     position?: 'below-borders' | 'top'
     /**
      * Draws a boundary outline at this extent (`[west, south, east, north]`)
@@ -74,6 +75,7 @@ type MapOptions = {
     showPointSelection?: boolean
     showCircleSelection?: boolean
     showLayerPicker?: boolean
+    showMouseCoordinates?: boolean
     noWorldWrap?: boolean
     value?: string
     fitToValue?: boolean
@@ -102,6 +104,8 @@ type MapOptions = {
     ) => void
     onLayerError?: (name: string, error: Error) => void
     onLayerToggle?: (detail: MapLayerToggleDetail) => void
+    onLegendClick?: (detail: MapLegendClickDetail) => void
+    onLayerOrderChange?: (detail: { names: string[] }) => void
 }
 
 export class MapService {
@@ -109,6 +113,8 @@ export class MapService {
     #map: OlMap
     #drawToolbarControl: DrawToolbarControl
     #layerPickerControl: LayerPickerControl
+    #mouseInfoElement?: HTMLElement
+    #mouseInfoControl?: Control
     #options: MapOptions
     #shapeLayer: VectorLayer
     #boundaryLayer: VectorLayer
@@ -656,6 +662,13 @@ export class MapService {
         })
     }
 
+    updateMouseCoordinatesVisibility(show: boolean) {
+        this.#options.showMouseCoordinates = show
+        if (this.#mouseInfoElement) {
+            this.#mouseInfoElement.style.display = show ? '' : 'none'
+        }
+    }
+
     async handleShapeSelect(event: Event) {
         const select = event.target as HTMLSelectElement
         const selectedShape = select.value
@@ -764,6 +777,11 @@ export class MapService {
 
         map.on('pointermove', (event: MapBrowserEvent) => {
             const coordinate = toLonLat(event.coordinate)
+            if (this.#options.showMouseCoordinates && this.#mouseInfoElement) {
+                const lng = coordinate[0] ?? 0
+                const lat = coordinate[1] ?? 0
+                this.#mouseInfoElement.innerHTML = `<div><strong>lat: ${lat.toFixed(2)}, lng: ${lng.toFixed(2)}</strong></div>`
+            }
             options.onMouseMove?.(
                 coordinate as [number, number],
                 event.pixel as [number, number]
@@ -825,9 +843,20 @@ export class MapService {
         this.#layerPickerControl = new LayerPickerControl({
             showLayerPicker: options.showLayerPicker,
             onLayerToggle: options.onLayerToggle,
+            onLegendClick: options.onLegendClick,
+            onLayerOrderChange: options.onLayerOrderChange,
             target: toolbar,
         })
         map.addControl(this.#layerPickerControl)
+
+        const mouseInfoEl = document.createElement('div')
+        mouseInfoEl.id = 'mouse-info'
+        mouseInfoEl.className = 'ol-unselectable'
+        mouseInfoEl.style.display = options.showMouseCoordinates ? '' : 'none'
+        mouseInfoEl.innerHTML = '<div><strong>lat: 0.00, lng: 0.00</strong></div>'
+        this.#mouseInfoElement = mouseInfoEl
+        this.#mouseInfoControl = new Control({ element: mouseInfoEl })
+        map.addControl(this.#mouseInfoControl)
 
         if (options.value !== undefined) {
             this.setValue(options.value)

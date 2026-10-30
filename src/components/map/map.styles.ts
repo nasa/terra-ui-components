@@ -53,7 +53,7 @@ export default css`
         box-shadow: none;
         border: 2px solid var(--terra-container-panel-border, rgba(0, 0, 0, 0.2));
         background-clip: padding-box;
-        z-index: 2;
+        pointer-events: none;
     }
 
     @media (max-width: 768px) {
@@ -99,7 +99,7 @@ export default css`
 
     .map-toolbar .draw-toolbar,
     .map-toolbar .layer-picker-control {
-        position: relative;
+        position: static;
         top: auto;
         left: auto;
     }
@@ -548,6 +548,8 @@ export default css`
     }
 
     .map {
+        anchor-name: --map-container;
+        container: terra-map / size;
         aspect-ratio: 4 / 3;
         border: solid 1px var(--terra-map-border-color);
     }
@@ -569,12 +571,19 @@ export default css`
         transform: scale(0.96) translateX(-6px);
         position: absolute;
         left: calc(100% + 0.5rem);
-        top: 0;
-        min-width: 13.5rem;
-        max-height: min(18rem, 80vh);
+        top: -4.18rem;
+        width: clamp(18rem, 80cqw, 32rem);
+        max-height: calc(100cqh - 1rem);
+        flex-direction: column;
         overflow-y: auto;
-        background: var(--terra-container-menu-bg, var(--ol-background-color));
-        color: var(--terra-checkbox-label-color, var(--ol-foreground-color));
+        background: var(
+            --terra-container-menu-bg,
+            var(--terra-container-panel-bg, #ffffff)
+        );
+        color: var(
+            --terra-checkbox-label-color,
+            var(--ol-foreground-color, #333333)
+        );
         border: solid var(--terra-container-menu-border-width, 1px)
             var(--terra-container-menu-border, rgba(0, 0, 0, 0.08));
         border-radius: var(--terra-border-radius-medium, 0.25rem);
@@ -583,8 +592,8 @@ export default css`
             0 10px 15px -3px rgba(0, 0, 0, 0.1),
             0 4px 6px -4px rgba(0, 0, 0, 0.1)
         );
-        padding: 0.75rem 1rem;
-        z-index: var(--terra-z-index-dropdown, 1000);
+        padding: 0;
+        z-index: var(--terra-z-index-tooltip, 1050);
         text-align: left;
         font-family: var(
             --terra-checkbox-label-font-family,
@@ -597,10 +606,17 @@ export default css`
             opacity 0.15s ease-out,
             transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
             display 0.15s allow-discrete;
+        overscroll-behavior: contain;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .layer-picker-panel {
+            transition: none;
+        }
     }
 
     .layer-picker-panel.open {
-        display: block;
+        display: flex;
         opacity: 1;
         transform: none;
 
@@ -610,18 +626,351 @@ export default css`
         }
     }
 
-    @media (prefers-reduced-motion: reduce) {
+    /* Default (Compact / short container): Unified scrolling across entire panel */
+    .layer-picker-body {
+        flex: none;
+        overflow: visible;
+        padding: var(--terra-spacing-small, 0.75rem) var(--terra-spacing-medium, 1rem)
+            var(--terra-spacing-x-small, 0.5rem);
+    }
+
+    .layer-picker-footer {
+        flex: none;
+        padding: var(--terra-spacing-x-small, 0.5rem) var(--terra-spacing-medium, 1rem)
+            var(--terra-spacing-small, 0.75rem);
+        border-top: 1px solid var(--terra-container-menu-border, rgba(0, 0, 0, 0.08));
+    }
+
+    /* Tall container: Pinned footer + independent visualizations scroll */
+    @container terra-map (min-height: 500px) {
         .layer-picker-panel {
-            transition: none;
+            overflow: hidden;
+            max-height: calc(100cqh - 1rem);
+        }
+
+        .layer-picker-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+        }
+
+        .layer-picker-footer {
+            flex: 1 0 auto;
         }
     }
 
-    @supports (anchor-name: --layer-picker-btn) {
-        .layer-picker-panel {
-            position-anchor: --layer-picker-btn;
-            top: anchor(top);
-            left: calc(anchor(right) + 0.5rem);
-            position-try-fallbacks: flip-block;
+    .layer-picker-body + .layer-picker-footer {
+        border-top: 1px solid var(--terra-container-menu-border, rgba(0, 0, 0, 0.08));
+    }
+
+    .layer-picker-footer:only-child {
+        border-top: none;
+        padding: var(--terra-spacing-small, 0.75rem) var(--terra-spacing-medium, 1rem);
+    }
+
+    .layer-picker-visualization-item {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: var(--terra-spacing-small, 0.75rem);
+        position: relative;
+        border-radius: var(--terra-border-radius-small, 2px);
+        transition:
+            opacity 0.15s ease,
+            background-color 0.15s ease;
+
+        &.is-dragging {
+            opacity: 0.45;
+            background: var(--terra-container-panel-bg-subtle, rgba(0, 0, 0, 0.03));
+            outline: 1px dashed var(--terra-border-neutral-default, rgba(0, 0, 0, 0.2));
+            outline-offset: 2px;
+        }
+
+        &.drop-target-above::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--terra-slider-connect-color, #1c67e3);
+            border-radius: 1px;
+            z-index: 10;
+        }
+
+        &.drop-target-below::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--terra-slider-connect-color, #1c67e3);
+            border-radius: 1px;
+            z-index: 10;
+        }
+    }
+
+    .layer-picker-viz-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--terra-spacing-x-small, 0.5rem);
+        /* Solid surface so setDragImage(header, ...) snapshots an opaque pill rather
+           than floating transparent text over the map canvas during drag-and-drop. */
+        background: var(
+            --terra-container-menu-bg,
+            var(--terra-container-panel-bg, #ffffff)
+        );
+        border-radius: var(--terra-border-radius-small, 2px);
+    }
+
+    .layer-picker-viz-header .layer-picker-item {
+        flex: 1 1 auto;
+        min-width: 0;
+        // overflow: hidden;
+    }
+
+    .layer-picker-viz-header .layer-picker-item span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .layer-picker-viz-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.125rem;
+        flex: 0 0 auto;
+    }
+
+    .layer-picker-settings-btn,
+    .layer-picker-drag-handle {
+        flex: 0 0 auto;
+        min-width: 1.5rem;
+        min-height: 1.5rem;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: var(--terra-border-radius-small, 2px);
+        color: var(--terra-text-secondary, var(--ol-subtle-foreground-color, #707070));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .layer-picker-drag-handle {
+        cursor: grab;
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    .layer-picker-settings-btn:hover,
+    .layer-picker-settings-btn.active,
+    .layer-picker-drag-handle:hover {
+        background: var(--ol-accent-background-color, #f0f0f0);
+        color: var(--terra-color-nasa-blue, var(--ol-brand-color, #1c67e3));
+    }
+
+    .layer-picker-settings-btn:focus-visible,
+    .layer-picker-drag-handle:focus-visible {
+        outline: var(--terra-focus-ring);
+        outline-offset: var(--terra-focus-ring-offset);
+    }
+
+    .layer-picker-settings-drawer {
+        margin-top: 0.375rem;
+        padding: 0.375rem 0.5rem;
+        background: var(--terra-container-panel-bg-subtle, rgba(0, 0, 0, 0.03));
+        border-radius: var(--terra-border-radius-medium, 0.25rem);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    .layer-picker-opacity-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--terra-font-size-x-small, 0.75rem);
+        color: var(--terra-slider-label-color, var(--terra-text-secondary, #707070));
+
+        label {
+            cursor: pointer;
+            user-select: none;
+        }
+    }
+
+    .layer-picker-opacity-value {
+        color: var(--terra-slider-range-color, var(--terra-text-secondary, #707070));
+        font-variant-numeric: tabular-nums;
+    }
+
+    .layer-picker-opacity-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 100%;
+        height: 1.25rem;
+        background: transparent;
+        cursor: pointer;
+        margin: 0;
+        padding: 0;
+
+        &:focus {
+            outline: none;
+        }
+
+        /* WebKit / Chromium Track */
+        &::-webkit-slider-runnable-track {
+            height: 4px;
+            border-radius: var(--terra-border-radius-small, 2px);
+            background: linear-gradient(
+                to right,
+                var(--terra-slider-connect-color, #1c67e3) 0%,
+                var(--terra-slider-connect-color, #1c67e3) var(--slider-percent, 100%),
+                var(--terra-slider-track-background-color, #ffffff) var(--slider-percent, 100%),
+                var(--terra-slider-track-background-color, #ffffff) 100%
+            );
+            border: 1px solid var(--terra-slider-track-border-color, rgba(0, 0, 0, 0.15));
+        }
+
+        /* WebKit / Chromium Thumb */
+        &::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--terra-slider-handle-background-color, #ffffff);
+            border: 2px solid var(--terra-slider-handle-border-color, #1c67e3);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+            margin-top: -7px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        &::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        &::-webkit-slider-thumb:active {
+            transform: scale(1.15);
+            background: var(--terra-slider-handle-background-color-active, #f0f0f0);
+        }
+
+        /* Firefox Track */
+        &::-moz-range-track {
+            height: 4px;
+            border-radius: var(--terra-border-radius-small, 2px);
+            background: var(--terra-slider-track-background-color, #ffffff);
+            border: 1px solid var(--terra-slider-track-border-color, rgba(0, 0, 0, 0.15));
+        }
+
+        /* Firefox Progress Fill */
+        &::-moz-range-progress {
+            height: 4px;
+            border-radius: var(--terra-border-radius-small, 2px) 0 0
+                var(--terra-border-radius-small, 2px);
+            background: var(--terra-slider-connect-color, #1c67e3);
+            border: 1px solid var(--terra-slider-track-border-color, rgba(0, 0, 0, 0.15));
+            border-right: none;
+        }
+
+        /* Firefox Thumb */
+        &::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--terra-slider-handle-background-color, #ffffff);
+            border: 2px solid var(--terra-slider-handle-border-color, #1c67e3);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            box-sizing: border-box;
+            transition: transform 0.1s ease;
+        }
+
+        &::-moz-range-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        &::-moz-range-thumb:active {
+            transform: scale(1.15);
+            background: var(--terra-slider-handle-background-color-active, #f0f0f0);
+        }
+
+        &:focus-visible::-webkit-slider-thumb,
+        &:focus-visible::-moz-range-thumb {
+            outline: var(--terra-focus-ring);
+            outline-offset: var(--terra-focus-ring-offset);
+        }
+    }
+
+    .layer-picker-legend {
+        margin-top: 0.375rem;
+    }
+
+    .layer-picker-legend-bar {
+        height: 0.625rem;
+        border-radius: var(--terra-border-radius-small, 2px);
+        cursor: pointer;
+        border: 1px solid var(--terra-border-neutral-default, rgba(0, 0, 0, 0.15));
+
+        &:focus-visible {
+            outline: var(--terra-focus-ring);
+            outline-offset: var(--terra-focus-ring-offset);
+        }
+    }
+
+    .layer-picker-legend-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--terra-font-size-2x-small, 0.688rem);
+        color: var(--terra-text-secondary, var(--ol-subtle-foreground-color, #707070));
+        margin-top: 2px;
+    }
+
+    .layer-picker-legend-gibs {
+        width: 100%;
+        cursor: crosshair;
+
+        svg {
+            width: 100%;
+            height: auto;
+            display: flex;
+            /* User-agent stylesheets default <svg> to overflow: hidden, which clips
+               GIBS' inline <g id="tooltip_..."> hover callouts when a bin's callout
+               box extends slightly past the SVG viewBox width (e.g. x = 310.2 on a
+               302.4pt viewBox). Allowing overflow lets those callouts paint into
+               .layer-picker-body's horizontal padding instead of being cut off. */
+            overflow: visible;
+        }
+    }
+
+    .layer-picker-legend-skeleton {
+        width: 100%;
+        pointer-events: none;
+
+        terra-skeleton {
+            /* Match GIBS horizontal legend SVG viewBox (302.4 x 50.4 = 6:1) */
+            aspect-ratio: 302.4 / 50.4;
+            width: 100%;
+            --terra-skeleton-background-color: var(
+                --terra-color-neutral-50,
+                #f5f5f5
+            );
+            --terra-skeleton-sheen-color: var(
+                --terra-color-neutral-100,
+                #e3e3e3
+            );
+            --terra-skeleton-border-radius: var(
+                --terra-border-radius-small,
+                0.1875rem
+            );
         }
     }
 
@@ -717,10 +1066,8 @@ export default css`
     }
 
     .layer-picker-item input:focus-visible {
-        outline: var(--terra-focus-ring-style, solid)
-            var(--terra-checkbox-focus-ring-width, 2px)
-            var(--terra-checkbox-focus-ring-color, #1c67e3);
-        outline-offset: var(--terra-checkbox-focus-ring-offset, 2px);
+        outline: var(--terra-focus-ring);
+        outline-offset: var(--terra-focus-ring-offset);
     }
 
     .form-control {

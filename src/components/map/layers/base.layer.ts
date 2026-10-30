@@ -1,6 +1,9 @@
 import TileLayer from 'ol/layer/Tile.js'
 import ImageTile from 'ol/source/ImageTile.js'
+import { GIBS_WMTS_ENDPOINT } from '../../../apis/gibs.api.js'
 import { getYesterdayIsoDate } from '../../../utilities/date.js'
+
+const ARCGIS_REST_ENDPOINT = 'https://server.arcgisonline.com/ArcGIS/rest/services'
 
 export type Options = {
     noWorldWrap?: boolean
@@ -41,9 +44,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'base',
             title: 'World Imagery',
-            url:
-                'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            url: `${ARCGIS_REST_ENDPOINT}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
             attributions: ['Esri', 'Vantor', 'Earthstar Geographics'],
             visible: true,
         }),
@@ -51,10 +52,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'true-color',
             title: 'Corrected Reflectance (True Color)',
-            url:
-                'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
-                `VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${yesterday}/` +
-                'GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+            url: `${GIBS_WMTS_ENDPOINT}/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${yesterday}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
             attributions: ['NASA EOSDIS GIBS'],
             visible: false,
         }),
@@ -62,10 +60,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'land-water',
             title: 'Land / Water Map',
-            url:
-                'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
-                'OSM_Land_Water_Map/default/default/' +
-                'GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
+            url: `${GIBS_WMTS_ENDPOINT}/epsg3857/best/OSM_Land_Water_Map/default/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
             attributions: ['© OpenStreetMap contributors', 'NASA EOSDIS GIBS'],
             visible: false,
         }),
@@ -73,9 +68,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'topo',
             title: 'Topographic',
-            url:
-                'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+            url: `${ARCGIS_REST_ENDPOINT}/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`,
             attributions: ['Esri', 'HERE', 'Garmin', 'USGS'],
             visible: false,
         }),
@@ -86,9 +79,7 @@ export class BaseLayer extends TileLayer {
     constructor(options: Options = {}) {
         super({
             source: new ImageTile({
-                url:
-                    'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                    'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                url: `${ARCGIS_REST_ENDPOINT}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
                 attributions: ['Esri', 'Vantor', 'Earthstar Geographics'],
                 ...(options.noWorldWrap ? { wrapX: false } : {}),
             }),
