@@ -1,5 +1,6 @@
 import type { QueryObserverOptions } from '@tanstack/query-core'
 import giovanniApi from '../apis/giovanni.api.js'
+import { duration } from '../constants.js'
 
 export function queryGiovanniConfiguredVariables(): QueryObserverOptions<Awaited<
     ReturnType<typeof giovanniApi.getConfiguredVariables>
@@ -24,6 +25,7 @@ export function queryGiovanniShapeFiles(): QueryObserverOptions<Awaited<
                 signal,
             })
         },
+        staleTime: duration.hours(1),
     }
 }
 
@@ -37,6 +39,7 @@ export function queryGiovanniGeoJsonShape(
                 signal,
             })
         },
+        staleTime: duration.hours(1),
     }
 }
 

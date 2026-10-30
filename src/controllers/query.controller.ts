@@ -1,9 +1,9 @@
-import { QueryObserver } from '@tanstack/query-core'
 import type {
     QueryKey,
     QueryObserverOptions,
     QueryObserverResult,
 } from '@tanstack/query-core'
+import { QueryObserver } from '@tanstack/query-core'
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
 import type { QueryClientHost } from '../mixins/query-client.mixin.js'
 
@@ -30,6 +30,28 @@ export class QueryController<
     protected unsubscribe?: () => void
 
     protected hostPropertyName?: string
+
+    #isConnected = false
+
+    #resolveDefaultedOptions(
+        options:
+            | QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>
+            | (() => QueryObserverOptions<
+                  TQueryFnData,
+                  TError,
+                  TData,
+                  TQueryData,
+                  TQueryKey
+              >)
+    ) {
+        return this.host.queryClient.defaultQueryOptions<
+            TQueryFnData,
+            TError,
+            TData,
+            TQueryData,
+            TQueryKey
+        >(typeof options === 'function' ? options() : options)
+    }
 
     constructor(
         protected host: ReactiveControllerHost & QueryClientHost,
@@ -64,15 +86,7 @@ export class QueryController<
         optimistic: boolean = true
     ) {
         const queryClient = this.host.queryClient
-        const resolvedOptions = typeof options === 'function' ? options() : options
-
-        const defaultedOptions = queryClient.defaultQueryOptions<
-            TQueryFnData,
-            TError,
-            TData,
-            TQueryData,
-            TQueryKey
-        >(resolvedOptions)
+        const defaultedOptions = this.#resolveDefaultedOptions(options)
 
         this.queryObserver = new QueryObserver(queryClient, defaultedOptions)
 
@@ -85,21 +99,37 @@ export class QueryController<
 
     hostUpdate() {
         if (!this.optionsFn || !this.queryObserver) return
-        const defaultedOptions = this.host.queryClient.defaultQueryOptions(
-            this.optionsFn()
-        )
+        const defaultedOptions = this.#resolveDefaultedOptions(this.optionsFn)
         this.queryObserver.setOptions(defaultedOptions)
     }
 
     hostConnected() {
+        this.#isConnected = true
         this.subscribe()
     }
 
     async subscribe() {
+        if (this.host.queryClientReady) {
+            await this.host.queryClientReady
+
+            if (!this.#isConnected) {
+                return
+            }
+        }
+
         if (!this.queryObserver) {
             // In case observeQuery wasn't called in ctor
-            if (this.optionsFn) this.observeQuery(this.optionsFn)
-            if (!this.queryObserver) return
+            if (this.optionsFn) {
+                this.observeQuery(this.optionsFn)
+            }
+
+            if (!this.queryObserver) {
+                return
+            }
+        } else if (this.optionsFn) {
+            this.queryObserver.setOptions(
+                this.#resolveDefaultedOptions(this.optionsFn)
+            )
         }
 
         this.unsubscribe?.()
@@ -111,15 +141,18 @@ export class QueryController<
                 if (this.hostPropertyName) {
                     ;(this.host as any)[this.hostPropertyName] = result
                 }
+
                 this.host.requestUpdate()
             }
         )
 
         this.queryObserver.updateResult()
+        this.result = this.queryObserver.getCurrentResult()
         this.host.requestUpdate()
     }
 
     hostDisconnected() {
+        this.#isConnected = false
         this.unsubscribe?.()
         this.unsubscribe = undefined
     }

@@ -1,5 +1,6 @@
 import type { QueryObserverOptions } from '@tanstack/query-core'
 import cmrApi from '../apis/cmr.api.js'
+import { duration } from '../constants.js'
 import type { RequestOptions } from '../lib/api.client.js'
 
 export function queryCmrCollection(
@@ -84,6 +85,7 @@ export function queryCmrCollectionTags(
             })
         },
         enabled: !!collectionId, // prevent firing when collectionId is undefined
+        staleTime: duration.hours(1),
     }
 }
 
