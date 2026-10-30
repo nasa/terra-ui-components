@@ -24,7 +24,9 @@ export function queryGibsLegendSvg(
     return {
         queryKey: ['gibs', 'legendSvg', urlOrLayer],
         queryFn: async ({ signal }) => {
-            if (!urlOrLayer) return null
+            if (!urlOrLayer) {
+                return null
+            }
             return gibsApi.getLegendSvg(urlOrLayer, { signal })
         },
         enabled: Boolean(urlOrLayer),

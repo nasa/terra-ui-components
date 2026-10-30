@@ -585,6 +585,117 @@ describe('LayerPickerControl', () => {
             expect(legendSpy.firstCall.args[0].valueChosen).to.equal('0.1 - 0.2')
         })
 
+        it('returns null from prepareGibsSvg for malformed XML', () => {
+            const malformedSvg = '<svg><unclosed></svg>'
+            expect(prepareGibsSvg(malformedSvg)).to.be.null
+        })
+
+        it('extracts bin values from <text> nodes when comments are absent', () => {
+            const svgWithText = `<svg xmlns="http://www.w3.org/2000/svg">
+                <g id="figure_1">
+                    <g id="tooltip_0" visibility="hidden"><text>10 - 20 mm</text></g>
+                    <rect onmouseover="ShowTooltip(0)" width="10" height="10"/>
+                </g>
+            </svg>`
+            const prepared = prepareGibsSvg(svgWithText)
+            expect(prepared).to.be.a('string')
+            expect(prepared).to.include('data-value="10 - 20 mm"')
+            expect(prepared).to.include('title="10 - 20 mm"')
+        })
+
+        it('extracts bin values from standard <rect><title> elements', () => {
+            const standardSvg = `<svg xmlns="http://www.w3.org/2000/svg">
+                <rect width="10" height="10"><title>0.5 - 1.0</title></rect>
+            </svg>`
+            const prepared = prepareGibsSvg(standardSvg)
+            expect(prepared).to.be.a('string')
+            expect(prepared).to.include('data-value="0.5 - 1.0"')
+            expect(prepared).to.include('title="0.5 - 1.0"')
+        })
+
+        it('gracefully returns sanitized SVG when tooltip markup is absent', () => {
+            const plainSvg = `<svg xmlns="http://www.w3.org/2000/svg">
+                <script>alert(1)</script>
+                <rect width="10" height="10"/>
+            </svg>`
+            const prepared = prepareGibsSvg(plainSvg)
+            expect(prepared).to.be.a('string')
+            expect(prepared).to.not.include('<script>')
+            expect(prepared).to.include('<rect')
+        })
+
+        it('falls back to rendering an img element when prepareGibsSvg returns null', async () => {
+            const malformedGibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            malformedGibsLayer.set('name', 'malformed-layer')
+            malformedGibsLayer.set('title', 'Malformed Layer')
+            malformedGibsLayer.set('type', 'visualization')
+            malformedGibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/malformed.svg' })
+            )
+
+            const ctrl = new LayerPickerControl({
+                showLayerPicker: true,
+                fetchLegendSvg: async () => '<svg><unclosed></svg>',
+            })
+            const localMap = new OlMap({
+                target: mapTarget,
+                layers: [malformedGibsLayer],
+                controls: [ctrl],
+            })
+
+            await new Promise(r => setTimeout(r, 50))
+
+            const img = ctrl.element.querySelector(
+                '.layer-picker-legend-img'
+            ) as HTMLImageElement
+            expect(img).to.exist
+            expect(img.src).to.equal('https://example.com/malformed.svg')
+            expect(img.alt).to.equal('Malformed Layer color map legend')
+
+            localMap.setTarget(undefined)
+        })
+
+        it('falls back to rendering an img element when fetchLegendSvg throws', async () => {
+            const failingGibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            failingGibsLayer.set('name', 'failing-layer')
+            failingGibsLayer.set('title', 'Failing Layer')
+            failingGibsLayer.set('type', 'visualization')
+            failingGibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/failing.svg' })
+            )
+
+            const ctrl = new LayerPickerControl({
+                showLayerPicker: true,
+                fetchLegendSvg: async () => {
+                    throw new Error('Network error')
+                },
+            })
+            const localMap = new OlMap({
+                target: mapTarget,
+                layers: [failingGibsLayer],
+                controls: [ctrl],
+            })
+
+            await new Promise(r => setTimeout(r, 50))
+
+            const img = ctrl.element.querySelector(
+                '.layer-picker-legend-img'
+            ) as HTMLImageElement
+            expect(img).to.exist
+            expect(img.src).to.equal('https://example.com/failing.svg')
+            expect(img.alt).to.equal('Failing Layer color map legend')
+
+            localMap.setTarget(undefined)
+        })
+
         it('renders a skeleton placeholder while GIBS legend is loading', () => {
             const pendingGibsLayer = new VectorLayer({
                 source: new VectorSource(),

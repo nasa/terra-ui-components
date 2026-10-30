@@ -98,7 +98,9 @@ export class QueryController<
     }
 
     hostUpdate() {
-        if (!this.optionsFn || !this.queryObserver) return
+        if (!this.optionsFn || !this.queryObserver) {
+            return
+        }
         const defaultedOptions = this.#resolveDefaultedOptions(this.optionsFn)
         this.queryObserver.setOptions(defaultedOptions)
     }

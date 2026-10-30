@@ -938,9 +938,13 @@ export default css`
         width: 100%;
         cursor: crosshair;
 
-        svg {
+        svg,
+        img {
             width: 100%;
             height: auto;
+        }
+
+        svg {
             display: flex;
             /* User-agent stylesheets default <svg> to overflow: hidden, which clips
                GIBS' inline <g id="tooltip_..."> hover callouts when a bin's callout
@@ -948,6 +952,10 @@ export default css`
                302.4pt viewBox). Allowing overflow lets those callouts paint into
                .layer-picker-body's horizontal padding instead of being cut off. */
             overflow: visible;
+        }
+
+        img {
+            display: block;
         }
     }
 

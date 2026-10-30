@@ -151,7 +151,9 @@ export class MapService {
      */
     #setBoundaryVisibility(name: string, show: boolean) {
         const source = this.#boundaryLayer.getSource()
-        if (!source) return
+        if (!source) {
+            return
+        }
 
         source
             .getFeatures()
@@ -159,7 +161,9 @@ export class MapService {
             .forEach(feature => {
                 if (show) {
                     const style = feature.get('boundaryStyle') as Style | undefined
-                    if (style) feature.setStyle(style)
+                    if (style) {
+                        feature.setStyle(style)
+                    }
                 } else {
                     // stash the real style (once) so it can be restored on show
                     if (!feature.get('boundaryStyle')) {
@@ -282,7 +286,9 @@ export class MapService {
     /** Removes any boundary feature(s) added via `addLayer(..., { extent })` for `name`. */
     #removeBoundary(name: string) {
         const source = this.#boundaryLayer.getSource()
-        if (!source) return
+        if (!source) {
+            return
+        }
 
         source
             .getFeatures()
@@ -680,7 +686,9 @@ export class MapService {
         const select = event.target as HTMLSelectElement
         const selectedShape = select.value
 
-        if (!selectedShape) return
+        if (!selectedShape) {
+            return
+        }
 
         // Clear any previously loaded shape
         const shapeSource = this.#shapeLayer.getSource()
@@ -691,7 +699,9 @@ export class MapService {
         try {
             const shapeGeoJson = await this.#options.getGeoJson?.(selectedShape)
 
-            if (!shapeGeoJson) return
+            if (!shapeGeoJson) {
+                return
+            }
 
             // Parse the GeoJSON into OpenLayers features, reprojecting from WGS84 to the map projection
             const format = new GeoJSON()
@@ -882,7 +892,9 @@ export class MapService {
                 }
 
                 const geometry = event.feature?.getGeometry()
-                if (!geometry) return
+                if (!geometry) {
+                    return
+                }
                 const viewProjection = map.getView().getProjection()
 
                 if (drawtool === 'bbox') {

@@ -98,7 +98,9 @@ export function queryCmrSampling(
     return {
         queryKey: ['cmr', 'sampling', collectionEntryId],
         queryFn: async ({ signal }) => {
-            if (!collectionEntryId) return null
+            if (!collectionEntryId) {
+                return null
+            }
             return cmrApi.getSamplingOfGranules(collectionEntryId, {
                 ...options,
                 signal,

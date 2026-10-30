@@ -16,14 +16,13 @@ Accordion tokens define the visual appearance of accordion elements in the desig
 
 Accordion layout tokens define the visual layout of accordion elements.
 
-| Token                                   | Value                                                    |
-| --------------------------------------- | -------------------------------------------------------- |
-| `--terra-accordion-border-width`        | `1px`                                                    |
-| `--terra-accordion-border-radius`       | `var(--terra-border-radius-large)`                       |
-| `--terra-accordion-content-padding`     | `var(--terra-spacing-medium)`                            |
-| `--terra-accordion-summary-font-size`   | `var(--terra-font-size-small)`                           |
-| `--terra-accordion-summary-font-weight` | `var(--terra-font-weight-semibold)`                      |
-| `--terra-accordion-summary-padding`     | `var(--terra-spacing-small) var(--terra-spacing-medium)` |
+| Token                                   | Value                               |
+| --------------------------------------- | ----------------------------------- |
+| `--terra-accordion-border-width`        | `1px`                               |
+| `--terra-accordion-border-radius`       | `var(--terra-border-radius-large)`  |
+| `--terra-accordion-content-padding`     | `var(--terra-spacing-medium)`       |
+| `--terra-accordion-summary-font-size`   | `var(--terra-font-size-small)`      |
+| `--terra-accordion-summary-font-weight` | `var(--terra-font-weight-semibold)` |
 
 ### Accordion Colors
 
@@ -388,26 +387,14 @@ Data grid tokens define the visual appearance of data grid elements.
 
 ### Spacing & Sizing
 
-| Token                                                   | Value                                                                           |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `--terra-data-grid-height`                              | `400px`                                                                         |
-| `--terra-data-grid-grid-size`                           | `var(--terra-spacing-x-small)`                                                  |
-| `--terra-data-grid-icon-size`                           | `var(--terra-icon-small)`                                                       |
-| `--terra-data-grid-row-height`                          | `calc(var(--terra-data-grid-grid-size) * 7)`                                    |
-| `--terra-data-grid-header-height`                       | `calc(var(--terra-data-grid-grid-size) * 8)`                                    |
-| `--terra-data-grid-list-item-height`                    | `calc(var(--terra-data-grid-grid-size) * 4)`                                    |
-| `--terra-data-grid-cell-horizontal-padding`             | `calc(var(--terra-data-grid-grid-size) * 3)`                                    |
-| `--terra-data-grid-cell-widget-spacing`                 | `calc(var(--terra-data-grid-grid-size) * 2)`                                    |
-| `--terra-data-grid-widget-container-vertical-padding`   | `calc(var(--terra-data-grid-grid-size) * 2)`                                    |
-| `--terra-data-grid-widget-container-horizontal-padding` | `calc(var(--terra-data-grid-grid-size) * 2)`                                    |
-| `--terra-data-grid-widget-vertical-spacing`             | `calc(var(--terra-data-grid-grid-size) * 1.5)`                                  |
-| `--terra-data-grid-column-select-indent-size`           | `var(--terra-data-grid-icon-size)`                                              |
-| `--terra-data-grid-set-filter-indent-size`              | `var(--terra-data-grid-icon-size)`                                              |
-| `--terra-data-grid-advanced-filter-builder-indent-size` | `calc(var(--terra-data-grid-icon-size) + var(--terra-data-grid-grid-size) * 2)` |
-| `--terra-data-grid-toggle-button-height`                | `18px`                                                                          |
-| `--terra-data-grid-toggle-button-width`                 | `28px`                                                                          |
-| `--terra-data-grid-tab-min-width`                       | `240px`                                                                         |
-| `--terra-data-grid-side-bar-panel-width`                | `250px`                                                                         |
+| Token                                | Value                                        |
+| ------------------------------------ | -------------------------------------------- |
+| `--terra-data-grid-height`           | `400px`                                      |
+| `--terra-data-grid-grid-size`        | `var(--terra-spacing-x-small)`               |
+| `--terra-data-grid-icon-size`        | `var(--terra-icon-small)`                    |
+| `--terra-data-grid-row-height`       | `calc(var(--terra-data-grid-grid-size) * 7)` |
+| `--terra-data-grid-header-height`    | `calc(var(--terra-data-grid-grid-size) * 8)` |
+| `--terra-data-grid-list-item-height` | `calc(var(--terra-data-grid-grid-size) * 4)` |
 
 ### Borders & Radius
 
@@ -1147,11 +1134,9 @@ Tag tokens define the visual appearance of Tag elements. Tags are simple labels 
 
 ### Padding
 
-| Token                        | Value                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------- |
-| `--terra-tag-padding-small`  | `0.25rem 0.5rem`                                                           |
-| `--terra-tag-padding-medium` | `var(--terra-spacing-x-small, 0.5rem) var(--terra-spacing-small, 0.75rem)` |
-| `--terra-tag-padding-large`  | `0.625rem 1rem`                                                            |
+| Token                       | Value            |
+| --------------------------- | ---------------- |
+| `--terra-tag-padding-small` | `0.25rem 0.5rem` |
 
 ### Icon Sizes
 
