@@ -32,19 +32,3 @@ export function queryGibsLegendSvg(
         gcTime: GIBS_STALE_TIME,
     }
 }
-
-export function queryGibsColormapXml(
-    layer?: string,
-    version = 'v1.3'
-): QueryObserverOptions<string | null> {
-    return {
-        queryKey: ['gibs', 'colormap', layer, version],
-        queryFn: async ({ signal }) => {
-            if (!layer) return null
-            return gibsApi.getColormapXml(layer, version, { signal })
-        },
-        enabled: Boolean(layer),
-        staleTime: GIBS_STALE_TIME,
-        gcTime: GIBS_STALE_TIME,
-    }
-}
