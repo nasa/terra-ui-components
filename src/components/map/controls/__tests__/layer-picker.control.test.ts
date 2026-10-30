@@ -440,6 +440,29 @@ describe('LayerPickerControl', () => {
             expect(openedDrawer.hasAttribute('hidden')).to.be.false
         })
 
+        it('auto-enables layer and emits onLayerToggle when opening opacity drawer for an unchecked layer', () => {
+            vizLayer.setVisible(false)
+            onLayerToggle.resetHistory()
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gearBtn = panel.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+
+            gearBtn.click()
+
+            expect(vizLayer.getVisible()).to.be.true
+            expect(
+                onLayerToggle.calledWithMatch({
+                    name: 'temp-anomaly',
+                    visible: true,
+                    type: 'visualization',
+                })
+            ).to.be.true
+        })
+
         it('updates opacity on input and announces aria-valuenow and aria-valuetext', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
@@ -692,6 +715,53 @@ describe('LayerPickerControl', () => {
             expect(img).to.exist
             expect(img.src).to.equal('https://example.com/failing.svg')
             expect(img.alt).to.equal('Failing Layer color map legend')
+
+            localMap.setTarget(undefined)
+        })
+
+        it('prefetches GIBS legend on pointerenter or focusin over layer-picker-viz-header', async () => {
+            let fetchCalled = false
+            const ctrl = new LayerPickerControl({
+                showLayerPicker: true,
+                fetchLegendSvg: async () => {
+                    fetchCalled = true
+                    return '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>'
+                },
+            })
+            const hiddenGibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: false,
+            })
+            hiddenGibsLayer.set('name', 'hidden-gibs')
+            hiddenGibsLayer.set('title', 'Hidden GIBS')
+            hiddenGibsLayer.set('type', 'visualization')
+            hiddenGibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/hidden.svg' })
+            )
+
+            const localMap = new OlMap({
+                target: mapTarget,
+                layers: [hiddenGibsLayer],
+                controls: [ctrl],
+            })
+
+            const toggle = ctrl.element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggle.click()
+
+            const header = ctrl.element.querySelector(
+                '.layer-picker-viz-header'
+            ) as HTMLElement
+            expect(header).to.exist
+            expect(fetchCalled).to.be.false
+
+            header.dispatchEvent(new Event('pointerenter', { bubbles: false }))
+            await new Promise(r => setTimeout(r, 50))
+
+            expect(fetchCalled).to.be.true
+            expect(hiddenGibsLayer.get('__gibsLegendSvg')).to.be.a('string')
 
             localMap.setTarget(undefined)
         })

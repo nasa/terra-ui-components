@@ -572,7 +572,7 @@ export default css`
         position: absolute;
         left: calc(100% + 0.5rem);
         top: -4.18rem;
-        width: clamp(18rem, 80cqw, 32rem);
+        width: clamp(16rem, 60cqw, 20rem);
         max-height: calc(100cqh - 1rem);
         flex-direction: column;
         overflow-y: auto;
@@ -605,8 +605,13 @@ export default css`
         transition:
             opacity 0.15s ease-out,
             transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+            width 0.2s cubic-bezier(0.16, 1, 0.3, 1),
             display 0.15s allow-discrete;
         overscroll-behavior: contain;
+    }
+
+    .layer-picker-panel:has(.layer-picker-legend) {
+        width: clamp(20rem, 80cqw, 32rem);
     }
 
     @media (prefers-reduced-motion: reduce) {

@@ -1,18 +1,19 @@
+import type { QueryClient } from '@tanstack/query-core'
 import type { Extent } from 'ol/extent.js'
 import WMTSCapabilities from 'ol/format/WMTSCapabilities.js'
 import TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
 import { transformExtent } from 'ol/proj.js'
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js'
-import { GIBS_WMTS_ENDPOINT, type Projection } from '../../../apis/gibs.api.js'
-import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
+import gibsApi, {
+    GIBS_WMTS_ENDPOINT,
+    type Projection,
+} from '../../../apis/gibs.api.js'
 import { queryGibsCapabilitiesXml } from '../../../queries/gibs.queries.js'
 import type { CommonConfig } from './common.js'
 import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
 import { XYZLayer } from './xyz.layer.js'
 import '../projections.js' // registers EPSG:3413/3031 with OpenLayers
-
-export type { Projection }
 
 const WMTS_NS = 'http://www.opengis.net/wmts/1.0'
 const OWS_NS = 'http://www.opengis.net/ows/1.1'
@@ -45,13 +46,17 @@ type CapabilitiesEntry = {
 
 const capabilitiesCache = new Map<string, { xml: string; entry: CapabilitiesEntry }>()
 
+export function clearGibsCapabilitiesCache(): void {
+    capabilitiesCache.clear()
+}
+
 /**
  * Extracts every layer's default `<Style>` horizontal/vertical `<LegendURL>` entries
  * from a parsed GIBS WMTS `GetCapabilities` XML document in a single pass.
  *
  * Why `GetCapabilities` is required instead of constructing legend URLs from the layer ID:
  * GIBS legend SVG filenames are keyed by shared GIBS ColorMap IDs (~413 unique files across
- * ~1,100 layers), not by the WMTS layer `Identifier`. Over 77% of layers use a legend
+ * ~1,100 layers), not by the WMTS layer `Identifier`. The vast majority of layers use a legend
  * filename that differs non-deterministically from the layer ID (e.g.
  * `AIRS_L2_Surface_Air_Temperature_Day` -> `AIRS_Temperature_H.svg`,
  * `MODIS_Aqua_Aerosol_Optical_Depth_3km` -> `MODIS_VIIRS_AOD_H.svg`), and neither GIBS
@@ -108,13 +113,25 @@ function indexGibsLegends(doc: Document): Map<string, GibsLegendUrls> {
     return legendsByLayer
 }
 
+export type GibsLayerBuildOptions = {
+    queryClient?: QueryClient
+}
+
 async function fetchGibsCapabilities(
-    projection: Projection
+    projection: Projection,
+    options?: GibsLayerBuildOptions
 ): Promise<CapabilitiesEntry> {
     const endpoint = projection.replace(':', '').toLowerCase() // e.g. 'epsg4326'
-    const xml = await sharedQueryClient.query(queryGibsCapabilitiesXml(projection))
 
     const cached = capabilitiesCache.get(endpoint)
+    if (cached && !options?.queryClient) {
+        return cached.entry
+    }
+
+    const xml = options?.queryClient
+        ? await options.queryClient.query(queryGibsCapabilitiesXml(projection))
+        : await gibsApi.getCapabilitiesXml(projection)
+
     if (cached && cached.xml === xml) {
         return cached.entry
     }
@@ -145,8 +162,13 @@ async function fetchGibsCapabilities(
  * caching the result (per projection) so repeated GibsLayer.forProjection()
  * calls don't refetch the (large) capabilities document every time.
  */
-export function getGibsCapabilities(projection: Projection): Promise<any> {
-    return fetchGibsCapabilities(projection).then(entry => entry.capabilities)
+export function getGibsCapabilities(
+    projection: Projection,
+    options?: GibsLayerBuildOptions
+): Promise<any> {
+    return fetchGibsCapabilities(projection, options).then(
+        entry => entry.capabilities
+    )
 }
 
 /**
@@ -156,9 +178,10 @@ export function getGibsCapabilities(projection: Projection): Promise<any> {
  */
 export async function getGibsLegendUrls(
     projection: Projection,
-    layer: string
+    layer: string,
+    options?: GibsLayerBuildOptions
 ): Promise<GibsLegendUrls | undefined> {
-    const { legends } = await fetchGibsCapabilities(projection)
+    const { legends } = await fetchGibsCapabilities(projection, options)
     return legends.get(layer)
 }
 
@@ -241,11 +264,23 @@ export class GibsLayer extends XYZLayer {
      * Async factory for non-Mercator GIBS imagery (EPSG:4326 / EPSG:3413 / EPSG:3031).
      */
     static async forProjection(
-        options: Options & { projection: Exclude<Projection, 'EPSG:3857'> }
+        options: Options & {
+            projection: Exclude<Projection, 'EPSG:3857'>
+            queryClient?: QueryClient
+        }
     ): Promise<TileLayer> {
-        const { layer, date = 'default', projection, tileMatrixSet, extent } = options
+        const {
+            layer,
+            date = 'default',
+            projection,
+            tileMatrixSet,
+            extent,
+            queryClient,
+        } = options
 
-        const capabilities = await getGibsCapabilities(projection)
+        const capabilities = await getGibsCapabilities(projection, {
+            queryClient,
+        })
         const wmtsOptions = optionsFromCapabilities(capabilities, {
             layer,
             matrixSet: tileMatrixSet ?? DEFAULT_MATRIX_SET_BY_PROJECTION[projection],
@@ -297,7 +332,8 @@ export type GibsLayerInfo = {
  * - the async `GibsLayer.forProjection()` factory for EPSG:4326/3413/3031 raster imagery
  */
 export async function buildGibsLayer(
-    config: GibsLayerConfig
+    config: GibsLayerConfig,
+    buildOptions?: GibsLayerBuildOptions
 ): Promise<GibsLayerInfo> {
     const { name, position, ...options } = config
 
@@ -310,7 +346,8 @@ export async function buildGibsLayer(
     const { type, projection, ...rasterOptions } = options
     const legend = getGibsLegendUrls(
         projection ?? 'EPSG:3857',
-        rasterOptions.layer
+        rasterOptions.layer,
+        buildOptions
     ).catch(() => undefined)
 
     if (!projection || projection === 'EPSG:3857') {
@@ -320,6 +357,7 @@ export async function buildGibsLayer(
     const layer = await GibsLayer.forProjection({
         ...rasterOptions,
         projection,
+        queryClient: buildOptions?.queryClient,
     })
     return { layer, legend }
 }

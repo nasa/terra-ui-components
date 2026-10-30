@@ -19,7 +19,6 @@ import {
 import componentStyles from '../../styles/component.styles.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
-import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
     layerRequiresAuthentication,
@@ -35,6 +34,7 @@ import {
 import styles from './map.styles.js'
 import type { LatLng } from './models/LatLng.js'
 import type { LatLngBounds } from './models/LatLngBounds.js'
+import type { MapProjection } from './type.js'
 
 const layersConverter = {
     fromAttribute: (value: string | null): MapLayerConfig[] => {
@@ -173,7 +173,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
      * This is a construction-time setting. Changing it after the map has rendered has no effect.
      */
     @property({ type: String })
-    projection: Projection = 'EPSG:3857'
+    projection: MapProjection = 'EPSG:3857'
 
     @property({ type: String })
     value?: string
@@ -260,6 +260,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             try {
                 const result = await buildMapLayer(config, {
                     bearerToken: this.bearerToken,
+                    queryClient: this.queryClient,
                 })
 
                 // bail if this layer was removed or superseded while it was building

@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/query-core'
 import type TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
 import {
@@ -27,20 +28,25 @@ export type MapLayerResult =
       }
     | { type: 'geotiff'; layer: GeoTiffLayerInfo['layer']; info: GeoTiffLayerInfo }
 
+export type BuildMapLayerOptions = {
+    bearerToken?: string
+    queryClient?: QueryClient
+}
+
 /**
  * Builds a layer from a `MapLayerConfig`, dispatching to `buildGibsLayer()` or
  * `buildGeoTiffLayer()` based on `config.type`.
  */
 export async function buildMapLayer(
     config: MapLayerConfig,
-    options?: { bearerToken?: string }
+    options?: BuildMapLayerOptions
 ): Promise<MapLayerResult> {
     if (config.type === 'geotiff') {
         const info = await buildGeoTiffLayer(config, options)
         return { type: 'geotiff', layer: info.layer, info }
     }
 
-    const { layer, legend } = await buildGibsLayer(config)
+    const { layer, legend } = await buildGibsLayer(config, options)
     return { type: config.type, layer, legend }
 }
 

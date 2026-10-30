@@ -10,10 +10,12 @@ Focus Ring Tokens are used to define the highlighted ring that surrounds interac
 
 ### Style And Layout
 
-| Token                      | Value   |
-| -------------------------- | ------- |
-| `--terra-focus-ring-style` | `solid` |
-| `--terra-focus-ring-width` | `3px`   |
+| Token                       | Value                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| `--terra-focus-ring-style`  | `solid`                                                                                     |
+| `--terra-focus-ring-width`  | `3px`                                                                                       |
+| `--terra-focus-ring`        | `var(--terra-focus-ring-style) var(--terra-focus-ring-width) var(--terra-focus-ring-color)` |
+| `--terra-focus-ring-offset` | `1px`                                                                                       |
 
 ### Color
 

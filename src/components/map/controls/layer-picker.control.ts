@@ -5,8 +5,7 @@ import type { Map as OlMap } from 'ol'
 import type { CollectionEvent } from 'ol/Collection.js'
 import { Control } from 'ol/control.js'
 import type BaseLayer from 'ol/layer/Base.js'
-import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
-import { queryGibsLegendSvg } from '../../../queries/gibs.queries.js'
+import gibsApi from '../../../apis/gibs.api.js'
 import type { MapLayerToggleDetail, MapLegendClickDetail } from '../type.js'
 
 export type LayerPickerControlOptions = {
@@ -301,8 +300,7 @@ export class LayerPickerControl extends Control {
                 try {
                     const fetchSvg =
                         this.#options?.fetchLegendSvg ??
-                        ((targetUrl: string) =>
-                            sharedQueryClient.query(queryGibsLegendSvg(targetUrl)))
+                        ((targetUrl: string) => gibsApi.getLegendSvg(targetUrl))
                     const raw = await fetchSvg(url)
                     const prepared = raw ? prepareGibsSvg(raw) : null
                     if (prepared) {
@@ -321,7 +319,7 @@ export class LayerPickerControl extends Control {
                 layer.set('__gibsLegendSvg', null)
             }
 
-            if (this.#isOpen && layer.getVisible()) {
+            if (layer.getVisible()) {
                 this.#renderPanel()
             }
         })
@@ -956,47 +954,7 @@ export class LayerPickerControl extends Control {
                 }
             }
 
-            // Guard with a `'loading'` sentinel while the legend URL and SVG fetch are
-            // in flight. Without this, multi-layer collections (which call `#renderPanel()`
-            // as each layer finishes building) would see `svgContent === undefined` on
-            // every intermediate render and attach duplicate `.then()` chains.
-            if (svgContent === undefined) {
-                layer.set('__gibsLegendSvg', 'loading')
-                legend.then(
-                    async (resolvedUrls: { horizontal?: string } | undefined) => {
-                        const url = resolvedUrls?.horizontal
-                        if (url) {
-                            try {
-                                const fetchSvg =
-                                    this.#options?.fetchLegendSvg ??
-                                    ((targetUrl: string) =>
-                                        sharedQueryClient.query(
-                                            queryGibsLegendSvg(targetUrl)
-                                        ))
-                                const raw = await fetchSvg(url)
-                                const prepared = raw ? prepareGibsSvg(raw) : null
-                                if (prepared) {
-                                    layer.set('__gibsLegendSvg', prepared)
-                                } else {
-                                    // Tier 3 fallback: render image element directly from url
-                                    layer.set('__gibsLegendSvg', {
-                                        fallbackImgUrl: url,
-                                    })
-                                }
-                            } catch {
-                                // Tier 3 fallback: network/CORS error or non-text response
-                                layer.set('__gibsLegendSvg', {
-                                    fallbackImgUrl: url,
-                                })
-                            }
-                        } else {
-                            layer.set('__gibsLegendSvg', null)
-                        }
-
-                        this.#renderPanel()
-                    }
-                )
-            }
+            this.#loadGibsLegend(layer)
 
             if (layer.get('__gibsLegendSvg') === 'loading') {
                 return this.#renderGibsLegendSkeleton(layer)
