@@ -379,13 +379,7 @@ Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set 
 **Caveat:** mixing imperative `removeLayer()`/`clearLayers()` calls with the declarative `layers` property for the same layer `name` is the consumer's responsibility - it isn't auto-synced. If you imperatively remove a layer whose `name` is still present in `layers`, the next time `layers` is diffed (e.g. any other change to the array) that entry will be treated as newly added and rebuilt.
 
 ```html:preview
-<terra-map
-    id="layer-management-map"
-    has-navigation
-    show-layer-picker
-    collection-id="AIRS2RET_NRT_7.0"
-></terra-map>
-
+<terra-map id="layer-management-map" has-navigation></terra-map>
 
 <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
     <terra-button id="layers-toggle">Toggle Visibility</terra-button>
