@@ -111,7 +111,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLng(45, 90),
-                    '-180, -90, 180, 90'
+                    [new LatLngBounds([-180, -90, 180, 90])]
                 )
             ).to.be.null
         })
@@ -120,7 +120,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLng(45, 90),
-                    '0, 0, 10, 10'
+                    [new LatLngBounds([0, 0, 10, 10])]
                 )
             ).to.include('outside the allowed spatial extent')
         })
@@ -129,7 +129,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLngBounds([0, 0, 5, 5]),
-                    '-180, -90, 180, 90'
+                    [new LatLngBounds([-180, -90, 180, 90])]
                 )
             ).to.be.null
         })
@@ -138,7 +138,7 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLngBounds([-10, -10, 5, 5]),
-                    '0, 0, 10, 10'
+                    [new LatLngBounds([0, 0, 10, 10])]
                 )
             ).to.include('outside the allowed spatial extent')
         })
@@ -147,7 +147,18 @@ describe('SpatialPickerService', () => {
             expect(
                 SpatialPickerService.validateConstraints(
                     new LatLng(45, 90),
-                    '-180, -90, 180, 90'
+                    [new LatLngBounds([-180, -90, 180, 90])]
+                )
+            ).to.be.null
+        })
+        it('returns null when bbox is inside one of multiple constraints', () => {
+            expect(
+                SpatialPickerService.validateConstraints(
+                    new LatLngBounds([-56.18, 57.44, -34.48, 68.12]),
+                    [
+                        new LatLngBounds([-180, -90, 180, -39.23]),
+                        new LatLngBounds([-180, 30.98, 180, 90]),
+                    ]
                 )
             ).to.be.null
         })
@@ -213,11 +224,27 @@ describe('SpatialPickerService', () => {
             const result = SpatialPickerService.validate(
                 '45, 90',
                 allowed,
-                '0, 0, 10, 10'
+                [new LatLngBounds([0, 0, 10, 10])]
             )
             expect(result.ok).to.be.false
             if (!result.ok)
                 expect(result.error).to.include('outside the allowed spatial extent')
+        })
+
+    })
+    describe('spatialConstraintIsGlobal', () => {
+        it('returns returns boolean true when spatial constraint is global', () => {
+            const global_result = SpatialPickerService.spatialConstraintIsGlobal(
+                new LatLngBounds([-180, -90, 180, 90])
+            )
+            expect(global_result).to.be.true
+        })
+
+        it('returns returns boolean false when spatial constraint is not global', () => {
+            const non_global_result = SpatialPickerService.spatialConstraintIsGlobal(
+                new LatLngBounds([0, 0, 10, 10])
+            )
+            expect(non_global_result).to.be.false
         })
     })
 })

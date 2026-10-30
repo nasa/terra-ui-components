@@ -103,47 +103,48 @@ export class SpatialPickerService {
         return null
     }
 
+    static spatialConstraintIsGlobal(bounding_rect: LatLngBounds): boolean | null {
+        // Skip check for global coverage
+        if (bounding_rect.getWest() === -180 && bounding_rect.getSouth() === -90 && bounding_rect.getEast() === 180 && bounding_rect.getNorth() === 90)
+            return true
+
+        return false
+    }
+
     /**
      * Validate the parsed value against a spatial constraints extent.
      * Constraints are in "west, south, east, north" format.
      */
     static validateConstraints(
         value: SpatialValue,
-        constraintsStr: string
+        spatial_constraints: LatLngBounds[],
     ): string | null {
-        if (!constraintsStr) return null
-        const parts = constraintsStr.split(',').map(p => parseFloat(p.trim()))
-        if (parts.length !== 4 || parts.some(isNaN)) return null
-
-        const [west, south, east, north] = parts
+        if (!spatial_constraints.length) return null
 
         // Skip check for global coverage
-        if (west === -180 && south === -90 && east === 180 && north === 90)
-            return null
+        if (spatial_constraints.length === 1 && this.spatialConstraintIsGlobal(spatial_constraints[0])) return null
 
-        if (value instanceof LatLng) {
-            const inside =
-                value.lat >= south &&
-                value.lat <= north &&
-                value.lng >= west &&
-                value.lng <= east
-            return inside
-                ? null
-                : 'Selected point is outside the allowed spatial extent.'
+        for (const spatial_constraint of spatial_constraints) {
+            if (value instanceof LatLng) {
+                const inside =
+                    value.lat >= spatial_constraint.getSouth() &&
+                    value.lat <= spatial_constraint.getNorth() &&
+                    value.lng >= spatial_constraint.getWest() &&
+                    value.lng <= spatial_constraint.getEast()
+                if (inside) return null
+            }
+
+            if (value instanceof LatLngBounds) {
+                const inside =
+                    value.getSouth() >= spatial_constraint.getSouth() &&
+                    value.getNorth() <= spatial_constraint.getNorth() &&
+                    value.getWest() >= spatial_constraint.getWest() &&
+                    value.getEast() <= spatial_constraint.getEast()
+                if (inside) return null
+            }
         }
 
-        if (value instanceof LatLngBounds) {
-            const inside =
-                value.getSouth() >= south &&
-                value.getNorth() <= north &&
-                value.getWest() >= west &&
-                value.getEast() <= east
-            return inside
-                ? null
-                : 'Selected area extends outside the allowed spatial extent.'
-        }
-
-        return null
+        return 'Selected area extends outside the allowed spatial extent.'
     }
 
     /**
@@ -171,7 +172,7 @@ export class SpatialPickerService {
     static validate(
         input: string,
         allowed: AllowedTypes,
-        constraintsStr?: string
+        spatial_constraints?: LatLngBounds[]
     ): ParseResult {
         let value: SpatialValue
 
@@ -188,10 +189,10 @@ export class SpatialPickerService {
         const typeError = SpatialPickerService.validateAllowedType(value, allowed)
         if (typeError) return { ok: false, error: typeError }
 
-        if (constraintsStr) {
+        if (spatial_constraints) {
             const constraintError = SpatialPickerService.validateConstraints(
                 value,
-                constraintsStr
+                spatial_constraints
             )
             if (constraintError) return { ok: false, error: constraintError }
         }
