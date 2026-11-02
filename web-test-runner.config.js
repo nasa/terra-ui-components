@@ -156,6 +156,11 @@ export default {
         playwrightLauncher({ product: 'firefox' }),
         playwrightLauncher({ product: 'webkit' }),
     ],
+    // The default finish timeout is 120s (2m). In resource-constrained CI environments
+    // (e.g. 2-core GitHub Actions runners), executing 60+ test suites across three browser
+    // engines concurrently requires ~2.5 to 3 minutes. Bumping this to 5 minutes prevents
+    // runner timeouts and abrupt browser session teardowns under high CPU load.
+    testsFinishTimeout: 300000,
     browserStartTimeout: 60000, // bumping this to 60s due to Firefox flakiness
     testRunnerHtml: testFramework => `
     <html lang="en-US">
