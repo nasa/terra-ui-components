@@ -1456,36 +1456,34 @@ describe('<terra-date-picker>', () => {
         })
 
         it('should correctly roll over the UTC day when local time plus offset exceeds midnight', async () => {
-            const el: any = await fixture(html`
+            const el = await fixture<TerraDatePicker>(html`
                 <terra-date-picker
                     enable-time
                     range
                     timezone="America/New_York"
+                    start-date="2025-02-24"
+                    end-date="2025-02-24"
                     inline
                 ></terra-date-picker>
             `)
             await elementUpdated(el)
 
+            const timeInputs = el.shadowRoot!.querySelectorAll<HTMLInputElement>(
+                '.date-picker__time-input'
+            )
+            const startHourInput = timeInputs[0]
+
             const eventPromise = oneEvent(el, 'terra-date-range-change')
 
-            // Simulate the user selecting Febuary 24, 2025 in local time (EST), which is UTC-5
-            el.selectedStart = new Date(Date.UTC(2025, 1, 24))
-            el.selectedEnd = new Date(Date.UTC(2025, 1, 24))
+            // Entering 22:00 in America/New_York (UTC-5) shifts UTC time to 03:00 the next day
+            startHourInput.value = '22'
+            startHourInput.dispatchEvent(new Event('input', { bubbles: true }))
 
-            // Simulate a UTC hour that corresponds to late night local time
-            // e.g., 02:30 AM UTC the next day translates to 10:30 PM EST
-            el.startHour = 2
-            el.startMinute = 30
-            el.startSecond = 0
-            el.endHour = 2
-            el.endMinute = 30
-            el.endSecond = 0
+            const event = (await eventPromise) as CustomEvent<{
+                startDate: string
+                endDate: string
+            }>
 
-            el.emitChange()
-
-            const event = await eventPromise
-
-            // The emitted UTC string should mathematically roll the calendar day over to the 25th
             expect(event.detail.startDate).to.include('2025-02-25')
             expect(event.detail.endDate).to.include('2025-02-25')
         })

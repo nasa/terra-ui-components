@@ -11,7 +11,7 @@ Tests run in **real headless browsers** (Chromium, Firefox, and WebKit) via [`@w
 ### Commands
 
 ```bash
-# Run typechecking (tsc --noEmit) followed by the full test suite across all 3 browsers
+# Run production typechecking (tsc --noEmit on tsconfig.prod.json) followed by the full test suite across all 3 browsers
 npm test
 
 # Run the full unit/component test suite without tsc
@@ -47,8 +47,8 @@ npm run test:component <group-name> -- --watch
     - **`horizonThemePlugin`**: Compiles `src/themes/horizon.scss` on the fly and injects `/dist/themes/horizon.css` into the test runner HTML so CSS custom properties and design tokens are present during tests.
     - **`resolveTestImages`**: Serves static test files from `src/test/fixtures/` when present, stubs `/assets/icons/*` and `*.svg` with an empty `<svg>`, and intercepts raster image URLs (`*.jpg|png|gif|webp`) with a 1×1 transparent GIF so tests never 404 or hit the network for images.
 4. **Execution Environment**:
-    - `@web/dev-server-esbuild` compiles TypeScript on the fly (`es2020`). Because esbuild strips types without typechecking, always ensure `npm run typecheck` passes alongside WTR.
-    - Mocha is configured with `timeout: 8000` and `retries: 1`, and `concurrentBrowsers: 1` to prevent CPU contention across Chromium, Firefox, and WebKit.
+    - `@web/dev-server-esbuild` compiles TypeScript on the fly (`es2020`). Because esbuild strips types without typechecking, always ensure `npm run typecheck` passes alongside WTR (note: `npm run typecheck` targets production code via `tsconfig.prod.json`; test-file typechecking against `./tsconfig.json` is tracked in Phase 1.1 of [`testing-plan.md`](./testing-plan.md)).
+    - Test runner timeouts, concurrency, and retry limits are tuned in [`web-test-runner.config.js`](../web-test-runner.config.js) to balance execution speed and prevent CPU contention across Chromium, Firefox, and WebKit.
 
 ---
 
@@ -353,4 +353,4 @@ Before considering any new component, controller, or bug fix complete:
 1. **Unique group name**: The test file is placed in `__tests__/<unique-name>.test.ts` and can be targeted individually via `npm run test:component <unique-name>`.
 2. **Contract coverage**: Public properties/converters, slots, user interactions (mouse & keyboard), custom events (`terra-*`), error/loading states, and accessibility (`to.be.accessible()`) are covered without reaching into private state.
 3. **Isolation**: `sinon.restore()` runs in `afterEach`, `QueryClient` instances are isolated with `retry: false`, and zero live network calls are made.
-4. **Verification**: Both `npm run typecheck` and `npm run test:component <unique-name>` pass across Chromium, Firefox, and WebKit.
+4. **Verification**: `npm run typecheck` (production types) and `npm run test:component <unique-name>` pass across Chromium, Firefox, and WebKit (for test-file typechecking against `tsconfig.json`, see [`testing-plan.md`](./testing-plan.md)).
