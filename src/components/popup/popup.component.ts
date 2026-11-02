@@ -71,7 +71,7 @@ export default class TerraPopup extends TerraElement {
     @state() 
     isMobile = false
 
-    private mediaQuery = window.matchMedia('(max-width: 600px)');
+    private mediaQuery = window.matchMedia('(max-width: 768px)');
     
     private handleMediaChange = (event: MediaQueryListEvent) => {
         this.isMobile = event.matches;
@@ -478,8 +478,6 @@ export default class TerraPopup extends TerraElement {
             )
         }
 
-        const strategy = this.isMobile ? 'fixed' : this.strategy
-
         //
         // Use custom positioning logic if the strategy is absolute. Otherwise, fall back to the default logic.
         //
@@ -492,7 +490,7 @@ export default class TerraPopup extends TerraElement {
         computePosition(this.anchorEl, this.popup, {
             placement: this.placement,
             middleware,
-            strategy,
+            strategy: this.isMobile ? 'fixed' : this.strategy,
             platform: {
                 ...platform,
                 getOffsetParent,
@@ -666,6 +664,8 @@ export default class TerraPopup extends TerraElement {
     }
 
     render() {
+        const strategy = this.isMobile ? 'fixed' : this.strategy
+        
         return html`
             <slot name="anchor" @slotchange=${this.handleAnchorChange}></slot>
 
@@ -682,7 +682,7 @@ export default class TerraPopup extends TerraElement {
                 class=${classMap({
                     popup: true,
                     'popup--active': this.active,
-                    'popup--fixed': this.strategy === 'fixed',
+                    'popup--fixed': strategy === 'fixed',
                     'popup--has-arrow': this.arrow,
                 })}
             >
