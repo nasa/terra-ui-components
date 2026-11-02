@@ -1,6 +1,7 @@
-import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { Extent } from 'ol/extent.js'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import type { ProjectionLike } from 'ol/proj.js'
+import { isHarmonyUrl } from '../../../apis/harmony.api.js'
 import type { CommonConfig } from './common.js'
 
 export type GeoTiffLayerConfig = CommonConfig & {
@@ -177,6 +178,10 @@ async function buildColorStops(
     return buildStopsFromColors(colors, min, max)
 }
 
+export function layerRequiresAuthentication(config: GeoTiffLayerConfig): boolean {
+    return isHarmonyUrl(config.url)
+}
+
 /**
  * Builds a `WebGLTileLayer` rendering a single-band GeoTIFF/COG from a URL,
  * with a colormap-based style computed from the raster's actual data range.
@@ -186,7 +191,8 @@ async function buildColorStops(
  * it came from (a public COG URL, or an object URL from a fetched `Blob`).
  */
 export async function buildGeoTiffLayer(
-    config: GeoTiffLayerConfig
+    config: GeoTiffLayerConfig,
+    options?: { bearerToken?: string }
 ): Promise<GeoTiffLayerInfo> {
     const {
         url,
@@ -200,8 +206,15 @@ export async function buildGeoTiffLayer(
 
     const { default: GeoTIFF } = await import('ol/source/GeoTIFF.js')
 
+    // adds the user's bearer token to harmony urls
+    const sourceOptions =
+        options?.bearerToken && isHarmonyUrl(url)
+            ? { headers: { Authorization: `Bearer ${options.bearerToken}` } }
+            : undefined
+
     const gtSource = new GeoTIFF({
         sources: [{ url, bands, nodata: noDataValue }],
+        sourceOptions,
         // Enable wrapping so the GeoTIFF is always visible when scrolling
         wrapX: true,
         interpolate: false,

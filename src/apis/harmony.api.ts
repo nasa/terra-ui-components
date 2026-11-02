@@ -29,6 +29,21 @@ export const CLOUD_GIOVANNI_URLS = {
     [Environments.UAT]: 'https://api.giovanni.uat.earthdata.nasa.gov',
 }
 
+/**
+ * Checks whether `url`'s origin is a real Harmony origin (PROD or UAT).
+ */
+export function isHarmonyUrl(url: string): boolean {
+    try {
+        const origin = new URL(url).origin
+        return (
+            origin === HARMONY_URLS[Environments.PROD] ||
+            origin === HARMONY_URLS[Environments.UAT]
+        )
+    } catch {
+        return false
+    }
+}
+
 export enum Status {
     FETCHING = 'fetching',
     PREVIEWING = 'previewing',

@@ -1,4 +1,4 @@
-import { harmonyApi } from '../harmony.api.js'
+import { harmonyApi, isHarmonyUrl } from '../harmony.api.js'
 import { expect } from '@open-wc/testing'
 import sinon from 'sinon'
 import { apiClient } from '../../lib/api.client.js'
@@ -6,6 +6,38 @@ import { onlyGiovanniServices } from './fixtures/only-giovanni-services.js'
 import { giovanniAndNetcdf } from './fixtures/giovanni-and-netcdf-services.js'
 import { onlyNetcdf } from './fixtures/only-netcdf-service.js'
 import { allServices } from './fixtures/all-services.js'
+
+describe('isHarmonyUrl', () => {
+    it('returns true for a PROD Harmony URL', () => {
+        expect(isHarmonyUrl('https://harmony.earthdata.nasa.gov/jobs/123')).to.be.true
+    })
+
+    it('returns true for a UAT Harmony URL', () => {
+        expect(
+            isHarmonyUrl('https://harmony.uat.earthdata.nasa.gov/data.tif?foo=bar')
+        ).to.be.true
+    })
+
+    it('returns false for an unrelated host', () => {
+        expect(isHarmonyUrl('https://example.com/data.tif')).to.be.false
+    })
+
+    it('returns false for the anonymous-access proxy', () => {
+        expect(
+            isHarmonyUrl(
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy'
+            )
+        ).to.be.false
+    })
+
+    it('returns false for a relative path', () => {
+        expect(isHarmonyUrl('/data.tif')).to.be.false
+    })
+
+    it('returns false for a malformed URL', () => {
+        expect(isHarmonyUrl('not a url')).to.be.false
+    })
+})
 
 describe('HarmonyAPI', () => {
     let apiGetStub: sinon.SinonStub
