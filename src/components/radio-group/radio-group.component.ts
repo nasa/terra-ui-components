@@ -158,6 +158,11 @@ export default class TerraRadioGroup
         }
 
         const radios = this.getAllRadios().filter(radio => !radio.disabled)
+
+        if (radios.length === 0) {
+            return
+        }
+
         const checkedRadio = radios.find(radio => radio.checked) ?? radios[0]
         const incr =
             event.key === ' '
