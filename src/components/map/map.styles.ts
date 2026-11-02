@@ -943,6 +943,12 @@ export default css`
         width: 100%;
         cursor: crosshair;
 
+        &:focus-visible {
+            outline: var(--terra-focus-ring);
+            outline-offset: var(--terra-focus-ring-offset);
+            border-radius: var(--terra-border-radius-small, 4px);
+        }
+
         svg,
         img {
             width: 100%;
@@ -951,17 +957,19 @@ export default css`
 
         svg {
             display: flex;
-            /* User-agent stylesheets default <svg> to overflow: hidden, which clips
-               GIBS' inline <g id="tooltip_..."> hover callouts when a bin's callout
-               box extends slightly past the SVG viewBox width (e.g. x = 310.2 on a
-               302.4pt viewBox). Allowing overflow lets those callouts paint into
-               .layer-picker-body's horizontal padding instead of being cut off. */
-            overflow: visible;
         }
 
         img {
             display: block;
         }
+    }
+
+    .layer-picker-legend-popup-content {
+        padding: var(--terra-spacing-3x-small, 2px) var(--terra-spacing-x-small, 6px);
+        font-size: var(--terra-font-size-2x-small, 0.688rem);
+        font-weight: var(--terra-font-weight-medium, 500);
+        white-space: nowrap;
+        user-select: none;
     }
 
     .layer-picker-legend-skeleton {

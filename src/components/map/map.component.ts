@@ -17,6 +17,7 @@ import {
     queryGiovanniShapeFiles,
 } from '../../queries/giovanni.queries.js'
 import componentStyles from '../../styles/component.styles.js'
+import TerraPopup from '../popup/popup.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
 import {
@@ -74,6 +75,7 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-skeleton': TerraSkeleton,
+        'terra-popup': TerraPopup,
     }
 
     /**

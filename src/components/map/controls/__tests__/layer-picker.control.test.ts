@@ -4,7 +4,11 @@ import { Map as OlMap, View } from 'ol'
 import TileLayer from 'ol/layer/Tile.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
-import { LayerPickerControl, prepareGibsSvg } from '../layer-picker.control.js'
+import {
+    LayerPickerControl,
+    extractGibsBins,
+    extractGibsLegendData,
+} from '../layer-picker.control.js'
 
 describe('LayerPickerControl', () => {
     let mapTarget: HTMLElement
@@ -556,17 +560,37 @@ describe('LayerPickerControl', () => {
             expect(call.valueChosen).to.exist
         })
 
-        it('sanitizes GIBS SVG via prepareGibsSvg, enhances bins with data-value, and only emits onLegendClick on bin click', () => {
+        it('extracts GIBS bin values and decodes entities in-memory via extractGibsBins', () => {
             const rawSvg = `<svg xmlns="http://www.w3.org/2000/svg">
-                <script>alert('xss')</script>
-                <g id="figure_1">
-                    <g id="tooltip_0" visibility="hidden"><!-- 0.1 - 0.2 --><text>0.1 - 0.2</text></g>
-                    <rect onmouseover="ShowTooltip(0)" onmouseout="HideTooltip(0)" width="10" height="10"/>
-                    <text class="axis-label">AOD</text>
-                </g>
+                <g id="tooltip_0"><!-- &lt; 200.00 K --></g>
+                <g id="tooltip_1"><!-- 200.00 - 200.56 K --></g>
+                <g id="tooltip_2"><text>200.56 - 201.12 K</text></g>
+                <g id="tooltip_3"><!-- &#8805; 350.0 ppbv --></g>
             </svg>`
-            const preparedSvg = prepareGibsSvg(rawSvg)
+            const bins = extractGibsBins(rawSvg)
+            expect(bins).to.deep.equal([
+                '< 200.00 K',
+                '200.00 - 200.56 K',
+                '200.56 - 201.12 K',
+                '≥ 350.0 ppbv',
+            ])
+        })
 
+        it('extracts GIBS legend ramp bounds and bins via extractGibsLegendData', () => {
+            const rawSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 302.4 68.4">
+                <image transform="scale(1 -1) translate(0 -13.68)" x="23.04" y="-23.76" width="257.04" height="13.68" />
+                <g id="tooltip_0"><!-- 0.0 ppbv --></g>
+                <g id="tooltip_1"><!-- &#8805; 350.0 ppbv --></g>
+            </svg>`
+            const data = extractGibsLegendData(rawSvg)
+            expect(data.bins).to.deep.equal(['0.0 ppbv', '≥ 350.0 ppbv'])
+            expect(data.rampStartPct).to.be.closeTo(23.04 / 302.4, 0.0001)
+            expect(data.rampEndPct).to.be.closeTo(280.08 / 302.4, 0.0001)
+            expect(data.rampTopPct).to.be.closeTo(23.76 / 68.4, 0.0001)
+            expect(data.rampBottomPct).to.be.closeTo(37.44 / 68.4, 0.0001)
+        })
+
+        it('renders GIBS legend as a sandboxed img within an accessible single-tab-stop slider and emits onLegendClick on click', async () => {
             const gibsLayer = new VectorLayer({
                 source: new VectorSource(),
                 visible: true,
@@ -574,9 +598,13 @@ describe('LayerPickerControl', () => {
             gibsLayer.set('name', 'modis-aod')
             gibsLayer.set('title', 'MODIS Aerosol Optical Depth')
             gibsLayer.set('type', 'visualization')
-            gibsLayer.set('legend', Promise.resolve({ horizontal: 'dummy.svg' }))
-            gibsLayer.set('__gibsLegendSvg', preparedSvg)
+            gibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/airs-temp.svg' })
+            )
             map.addLayer(gibsLayer)
+
+            await new Promise(r => setTimeout(r, 50))
 
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
@@ -585,149 +613,166 @@ describe('LayerPickerControl', () => {
                 '.layer-picker-legend-gibs'
             ) as HTMLElement
             expect(gibsLegend).to.exist
-            expect(gibsLegend.getAttribute('role')).to.equal('figure')
-            expect(gibsLegend.querySelector('script')).to.not.exist
+            expect(gibsLegend.getAttribute('role')).to.equal('slider')
+            expect(gibsLegend.getAttribute('tabindex')).to.equal('0')
+            expect(gibsLegend.getAttribute('aria-label')).to.equal(
+                'MODIS Aerosol Optical Depth color map legend'
+            )
+            expect(gibsLegend.getAttribute('aria-valuenow')).to.equal('0')
 
-            const rect = gibsLegend.querySelector('rect') as SVGElement
-            expect(rect.getAttribute('onmouseover')).to.be.null
-            expect(rect.getAttribute('onmouseout')).to.be.null
-            expect(rect.getAttribute('data-tooltip-idx')).to.equal('0')
-            expect(rect.getAttribute('data-value')).to.equal('0.1 - 0.2')
-            expect(rect.getAttribute('title')).to.equal('0.1 - 0.2')
-            expect(rect.getAttribute('aria-label')).to.equal('0.1 - 0.2')
-            expect(rect.hasAttribute('tabindex')).to.be.false
+            // Image is sandboxed by browser engine
+            const img = gibsLegend.querySelector(
+                '.layer-picker-legend-img'
+            ) as HTMLImageElement
+            expect(img).to.exist
+            expect(img.src).to.equal('https://example.com/airs-temp.svg')
+            expect(img.alt).to.equal('MODIS Aerosol Optical Depth color map legend')
+            expect(img.loading).to.equal('lazy')
 
-            // Clicking non-bin element inside legend does not emit onLegendClick
-            const axisLabel = gibsLegend.querySelector('.axis-label') as SVGElement
-            axisLabel.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-            expect(legendSpy.called).to.be.false
+            // Clicking emits onLegendClick with value
+            gibsLegend.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+            expect(legendSpy.calledOnce).to.be.true
+            const call = legendSpy.firstCall.args[0]
+            expect(call.name).to.equal('modis-aod')
+            expect(call.title).to.equal('MODIS Aerosol Optical Depth')
+            expect(call.type).to.equal('visualization')
+            expect(call.valueChosen).to.exist
+        })
 
-            // Clicking bin emits onLegendClick with valueChosen
-            rect.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+        it('supports keyboard slider navigation and popover on GIBS legend with bins', async () => {
+            const gibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            gibsLayer.set('name', 'modis-aod')
+            gibsLayer.set('title', 'MODIS Aerosol Optical Depth')
+            gibsLayer.set('type', 'visualization')
+            gibsLayer.set('__gibsLegendUrl', 'https://example.com/legend.svg')
+            gibsLayer.set('__gibsBins', ['< 0.1', '0.1 - 0.2', '0.2 - 0.3'])
+            gibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/legend.svg' })
+            )
+            map.addLayer(gibsLayer)
+
+            await new Promise(r => setTimeout(r, 50))
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gibsLegend = panel.querySelector(
+                '.layer-picker-legend-gibs'
+            ) as HTMLElement
+            expect(gibsLegend).to.exist
+            expect(gibsLegend.getAttribute('aria-valuenow')).to.equal('1')
+            expect(gibsLegend.getAttribute('aria-valuetext')).to.equal('0.1 - 0.2')
+
+            // Focusin activates popover
+            gibsLegend.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+            const popup = gibsLegend.querySelector('terra-popup') as any
+            expect(popup).to.exist
+            expect(popup.active).to.be.true
+            expect(popup.textContent).to.include('0.1 - 0.2')
+
+            // ArrowLeft decreases index
+            const arrowLeftEvent = new KeyboardEvent('keydown', {
+                key: 'ArrowLeft',
+                bubbles: true,
+                cancelable: true,
+            })
+            gibsLegend.dispatchEvent(arrowLeftEvent)
+            expect(arrowLeftEvent.defaultPrevented).to.be.true
+            expect(gibsLegend.getAttribute('aria-valuenow')).to.equal('0')
+            expect(gibsLegend.getAttribute('aria-valuetext')).to.equal('< 0.1')
+            expect(popup.textContent).to.include('< 0.1')
+
+            // ArrowRight increases index
+            const arrowRightEvent = new KeyboardEvent('keydown', {
+                key: 'ArrowRight',
+                bubbles: true,
+                cancelable: true,
+            })
+            gibsLegend.dispatchEvent(arrowRightEvent)
+            expect(arrowRightEvent.defaultPrevented).to.be.true
+            expect(gibsLegend.getAttribute('aria-valuenow')).to.equal('1')
+            expect(gibsLegend.getAttribute('aria-valuetext')).to.equal('0.1 - 0.2')
+
+            // Enter activates selection with exact scientific bin string
+            gibsLegend.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    bubbles: true,
+                    cancelable: true,
+                })
+            )
             expect(legendSpy.calledOnce).to.be.true
             expect(legendSpy.firstCall.args[0].valueChosen).to.equal('0.1 - 0.2')
+
+            // Space activates selection
+            gibsLegend.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: ' ',
+                    bubbles: true,
+                    cancelable: true,
+                })
+            )
+            expect(legendSpy.calledTwice).to.be.true
+            expect(legendSpy.secondCall.args[0].valueChosen).to.equal('0.1 - 0.2')
         })
 
-        it('returns null from prepareGibsSvg for malformed XML', () => {
-            const malformedSvg = '<svg><unclosed></svg>'
-            expect(prepareGibsSvg(malformedSvg)).to.be.null
-        })
-
-        it('extracts bin values from <text> nodes when comments are absent', () => {
-            const svgWithText = `<svg xmlns="http://www.w3.org/2000/svg">
-                <g id="figure_1">
-                    <g id="tooltip_0" visibility="hidden"><text>10 - 20 mm</text></g>
-                    <rect onmouseover="ShowTooltip(0)" width="10" height="10"/>
-                </g>
-            </svg>`
-            const prepared = prepareGibsSvg(svgWithText)
-            expect(prepared).to.be.a('string')
-            expect(prepared).to.include('data-value="10 - 20 mm"')
-            expect(prepared).to.include('title="10 - 20 mm"')
-        })
-
-        it('extracts bin values from standard <rect><title> elements', () => {
-            const standardSvg = `<svg xmlns="http://www.w3.org/2000/svg">
-                <rect width="10" height="10"><title>0.5 - 1.0</title></rect>
-            </svg>`
-            const prepared = prepareGibsSvg(standardSvg)
-            expect(prepared).to.be.a('string')
-            expect(prepared).to.include('data-value="0.5 - 1.0"')
-            expect(prepared).to.include('title="0.5 - 1.0"')
-        })
-
-        it('gracefully returns sanitized SVG when tooltip markup is absent', () => {
-            const plainSvg = `<svg xmlns="http://www.w3.org/2000/svg">
-                <script>alert(1)</script>
-                <rect width="10" height="10"/>
-            </svg>`
-            const prepared = prepareGibsSvg(plainSvg)
-            expect(prepared).to.be.a('string')
-            expect(prepared).to.not.include('<script>')
-            expect(prepared).to.include('<rect')
-        })
-
-        it('falls back to rendering an img element when prepareGibsSvg returns null', async () => {
-            const malformedGibsLayer = new VectorLayer({
+        it('handles special characters and quotes in layer names via CSS.escape() without throwing', async () => {
+            const specialLayer = new VectorLayer({
                 source: new VectorSource(),
                 visible: true,
             })
-            malformedGibsLayer.set('name', 'malformed-layer')
-            malformedGibsLayer.set('title', 'Malformed Layer')
-            malformedGibsLayer.set('type', 'visualization')
-            malformedGibsLayer.set(
-                'legend',
-                Promise.resolve({ horizontal: 'https://example.com/malformed.svg' })
-            )
+            specialLayer.set('name', 'temperature "day" / 3km')
+            specialLayer.set('title', 'Temperature "Day" (3km)')
+            specialLayer.set('type', 'visualization')
+            map.addLayer(specialLayer)
 
-            const ctrl = new LayerPickerControl({
-                showLayerPicker: true,
-                fetchLegendSvg: async () => '<svg><unclosed></svg>',
-            })
-            const localMap = new OlMap({
-                target: mapTarget,
-                layers: [malformedGibsLayer],
-                controls: [ctrl],
-            })
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
 
-            await new Promise(r => setTimeout(r, 50))
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            const specialItem = Array.from(items).find(
+                el => el.getAttribute('data-layer-name') === 'temperature "day" / 3km'
+            ) as HTMLElement
+            expect(specialItem).to.exist
 
-            const img = ctrl.element.querySelector(
-                '.layer-picker-legend-img'
-            ) as HTMLImageElement
-            expect(img).to.exist
-            expect(img.src).to.equal('https://example.com/malformed.svg')
-            expect(img.alt).to.equal('Malformed Layer color map legend')
-
-            localMap.setTarget(undefined)
-        })
-
-        it('falls back to rendering an img element when fetchLegendSvg throws', async () => {
-            const failingGibsLayer = new VectorLayer({
-                source: new VectorSource(),
-                visible: true,
-            })
-            failingGibsLayer.set('name', 'failing-layer')
-            failingGibsLayer.set('title', 'Failing Layer')
-            failingGibsLayer.set('type', 'visualization')
-            failingGibsLayer.set(
-                'legend',
-                Promise.resolve({ horizontal: 'https://example.com/failing.svg' })
-            )
-
-            const ctrl = new LayerPickerControl({
-                showLayerPicker: true,
-                fetchLegendSvg: async () => {
-                    throw new Error('Network error')
-                },
-            })
-            const localMap = new OlMap({
-                target: mapTarget,
-                layers: [failingGibsLayer],
-                controls: [ctrl],
-            })
+            // Click settings button to open drawer (tests CSS.escape(inputId))
+            const settingsBtn = specialItem.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            expect(settingsBtn).to.exist
+            settingsBtn.click()
 
             await new Promise(r => setTimeout(r, 50))
 
-            const img = ctrl.element.querySelector(
-                '.layer-picker-legend-img'
-            ) as HTMLImageElement
-            expect(img).to.exist
-            expect(img.src).to.equal('https://example.com/failing.svg')
-            expect(img.alt).to.equal('Failing Layer color map legend')
+            const drawer = specialItem.querySelector(
+                '.layer-picker-settings-drawer'
+            ) as HTMLElement
+            expect(drawer).to.exist
+            expect(drawer.hidden).to.be.false
 
-            localMap.setTarget(undefined)
+            // Press Escape to close drawer (tests CSS.escape(drawerId))
+            drawer.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+            )
+            expect(drawer.hidden).to.be.true
+
+            // Keyboard navigation on drag handle (tests CSS.escape(name))
+            const handle = specialItem.querySelector(
+                '.layer-picker-drag-handle'
+            ) as HTMLButtonElement
+            expect(handle).to.exist
+            handle.dispatchEvent(
+                new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
+            )
+            await new Promise(r => setTimeout(r, 50))
         })
 
         it('prefetches GIBS legend on pointerenter or focusin over layer-picker-viz-header', async () => {
-            let fetchCalled = false
-            const ctrl = new LayerPickerControl({
-                showLayerPicker: true,
-                fetchLegendSvg: async () => {
-                    fetchCalled = true
-                    return '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>'
-                },
-            })
             const hiddenGibsLayer = new VectorLayer({
                 source: new VectorSource(),
                 visible: false,
@@ -740,6 +785,9 @@ describe('LayerPickerControl', () => {
                 Promise.resolve({ horizontal: 'https://example.com/hidden.svg' })
             )
 
+            const ctrl = new LayerPickerControl({
+                showLayerPicker: true,
+            })
             const localMap = new OlMap({
                 target: mapTarget,
                 layers: [hiddenGibsLayer],
@@ -755,13 +803,14 @@ describe('LayerPickerControl', () => {
                 '.layer-picker-viz-header'
             ) as HTMLElement
             expect(header).to.exist
-            expect(fetchCalled).to.be.false
+            expect(hiddenGibsLayer.get('__gibsLegendUrl')).to.be.undefined
 
             header.dispatchEvent(new Event('pointerenter', { bubbles: false }))
             await new Promise(r => setTimeout(r, 50))
 
-            expect(fetchCalled).to.be.true
-            expect(hiddenGibsLayer.get('__gibsLegendSvg')).to.be.a('string')
+            expect(hiddenGibsLayer.get('__gibsLegendUrl')).to.equal(
+                'https://example.com/hidden.svg'
+            )
 
             localMap.setTarget(undefined)
         })
@@ -810,6 +859,11 @@ describe('LayerPickerControl', () => {
             const items = panel.querySelectorAll('.layer-picker-visualization-item')
             expect(items.length).to.equal(2)
 
+            // Because the list is presented in topmost-rendered-first order (.toReversed()),
+            // items[0] is second-viz (top of render stack) and items[1] is temp-anomaly.
+            expect(items[0].getAttribute('data-layer-name')).to.equal('second-viz')
+            expect(items[1].getAttribute('data-layer-name')).to.equal('temp-anomaly')
+
             const handle = items[0].querySelector(
                 '.layer-picker-drag-handle'
             ) as HTMLButtonElement
@@ -818,35 +872,51 @@ describe('LayerPickerControl', () => {
             expect(handle.getAttribute('aria-roledescription')).to.equal(
                 'sortable layer'
             )
-            expect(handle.getAttribute('title')).to.include('Drag to reorder')
+            expect(handle.getAttribute('title')).to.include(
+                'Reorder Second Visualization (Layer 1 of 2)'
+            )
+            expect(handle.getAttribute('aria-label')).to.include('Layer 1 of 2')
+            expect(handle.getAttribute('aria-label')).to.include(
+                'Press Up Arrow to move up, Down Arrow to move down'
+            )
 
-            // Press ArrowDown on the first layer handle to move it below
+            // Press ArrowDown on the second-viz handle (top item) to move it down visually
             handle.dispatchEvent(
                 new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true })
             )
 
             expect(reorderSpy.calledOnce).to.be.true
+            // Names emitted are bottom-to-top matching the map render stack order
             expect(reorderSpy.firstCall.args[0].names).to.deep.equal([
                 'second-viz',
                 'temp-anomaly',
             ])
 
-            // Verify DOM order updated
+            // Status message announced for screen readers
+            const statusEl = panel.querySelector('.sr-only[role="status"]')
+            expect(statusEl?.textContent).to.include(
+                'Moved Second Visualization to layer 2 of 2'
+            )
+
+            // Verify DOM order updated: temp-anomaly is now top, second-viz is bottom
             const reorderedItems = panel.querySelectorAll(
                 '.layer-picker-visualization-item'
             )
             expect(reorderedItems[0].getAttribute('data-layer-name')).to.equal(
-                'second-viz'
-            )
-            expect(reorderedItems[1].getAttribute('data-layer-name')).to.equal(
                 'temp-anomaly'
             )
+            expect(reorderedItems[1].getAttribute('data-layer-name')).to.equal(
+                'second-viz'
+            )
 
-            // Press ArrowUp on temp-anomaly handle to move it back up
-            const tempAnomalyHandle = reorderedItems[1].querySelector(
+            // Press ArrowUp on second-viz handle to move it back up
+            const secondVizHandle = reorderedItems[1].querySelector(
                 '.layer-picker-drag-handle'
             ) as HTMLButtonElement
-            tempAnomalyHandle.dispatchEvent(
+            expect(secondVizHandle.getAttribute('aria-label')).to.include(
+                'Layer 2 of 2'
+            )
+            secondVizHandle.dispatchEvent(
                 new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true })
             )
 
@@ -855,6 +925,58 @@ describe('LayerPickerControl', () => {
                 'temp-anomaly',
                 'second-viz',
             ])
+            expect(statusEl?.textContent).to.include(
+                'Moved Second Visualization to layer 1 of 2'
+            )
+        })
+
+        it('stops propagation of wheel events on the panel so map does not scroll/zoom', () => {
+            const element = pickerControl.element
+            const panel = element.querySelector('.layer-picker-panel') as HTMLElement
+            const wheelEvent = new WheelEvent('wheel', {
+                bubbles: true,
+                cancelable: true,
+            })
+            const stopPropagationSpy = sinon.spy(wheelEvent, 'stopPropagation')
+
+            panel.dispatchEvent(wheelEvent)
+
+            expect(stopPropagationSpy.calledOnce).to.be.true
+        })
+
+        it('scrolls to the first selected layer upon opening the panel', async () => {
+            const element = pickerControl.element
+            const panel = element.querySelector('.layer-picker-panel') as HTMLElement
+
+            const layer1 = new VectorLayer({
+                source: new VectorSource(),
+                visible: false,
+            })
+            layer1.set('name', 'l1')
+            layer1.set('title', 'Layer 1')
+            layer1.set('type', 'visualization')
+            map.addLayer(layer1)
+
+            const layer2 = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            layer2.set('name', 'l2')
+            layer2.set('title', 'Layer 2')
+            layer2.set('type', 'visualization')
+            map.addLayer(layer2)
+
+            const toggleBtn = element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggleBtn.click()
+
+            await new Promise(r => requestAnimationFrame(r))
+
+            const selectedCard = panel.querySelector(
+                '[data-layer-name="l2"]'
+            ) as HTMLElement
+            expect(selectedCard).to.exist
         })
     })
 })
