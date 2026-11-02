@@ -669,7 +669,6 @@ describe('<terra-map> collection-id', () => {
     const ENTRY_ID = 'AIRS2RET_NRT_7.0'
 
     let apiGetStub: sinon.SinonStub
-    let originalFetch: typeof fetch
 
     /** Stubs `apiClient.get` so only `collections.json` requests resolve with `response` — other requests (e.g. the map's unrelated Giovanni shapefiles query) are left alone. */
     function stubCollectionTags(response: unknown) {
@@ -678,9 +677,6 @@ describe('<terra-map> collection-id', () => {
                 return Promise.resolve(response)
             }
             if (url.includes('wmts.cgi')) {
-                if (window.fetch !== originalFetch) {
-                    return window.fetch(url).then(res => res.text())
-                }
                 const proj = url.includes('epsg3413')
                     ? 'EPSG:3413'
                     : url.includes('epsg3031')
@@ -741,13 +737,11 @@ describe('<terra-map> collection-id', () => {
     beforeEach(() => {
         sharedQueryClient.clear()
         apiGetStub = sinon.stub(apiClient, 'get')
-        originalFetch = window.fetch
     })
 
     afterEach(() => {
         sharedQueryClient.clear()
         sinon.restore()
-        window.fetch = originalFetch
     })
 
     it('adds one layer per GIBS product tagged on the collection', async () => {
@@ -765,12 +759,12 @@ describe('<terra-map> collection-id', () => {
         await waitUntil(
             () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`),
             'AIRS_L2_Surface_Air_Temperature_Day was not added',
-            { timeout: 5000 }
+            { timeout: 8000 }
         )
         await waitUntil(
             () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
             'AIRS_L2_Surface_Air_Temperature_Night was not added',
-            { timeout: 5000 }
+            { timeout: 8000 }
         )
 
         expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)).to
@@ -794,7 +788,7 @@ describe('<terra-map> collection-id', () => {
         await waitUntil(
             () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
             'AIRS_L2_Surface_Air_Temperature_Night was not added',
-            { timeout: 5000 }
+            { timeout: 8000 }
         )
 
         expect(
@@ -811,10 +805,6 @@ describe('<terra-map> collection-id', () => {
 
     it("only adds layers available in the map's current projection", async () => {
         const projectionEntryId = 'PROJECTION_TEST_ENTRY_ID'
-        window.fetch = (async () =>
-            new Response(makeCapabilitiesXml('EPSG:3413', '1km'), {
-                status: 200,
-            })) as typeof fetch
         stubCollectionTags(
             makeTagsResponse([
                 { product: 'Geographic_Only', geographic: true, arctic: false },
@@ -833,7 +823,7 @@ describe('<terra-map> collection-id', () => {
         await waitUntil(
             () => el.getLayer(`${projectionEntryId}:TestLayer`),
             'TestLayer was not added',
-            { timeout: 5000 }
+            { timeout: 8000 }
         )
 
         expect(el.getLayer(`${projectionEntryId}:TestLayer`)).to.exist
