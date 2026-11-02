@@ -437,9 +437,9 @@ Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set 
 When `show-layer-picker` is enabled, the built-in Layer Picker groups layers into **Visualizations** (layers added via `layers` or `collection-id`), **Base Maps** (mutually exclusive background imagery), and **Overlays** (boundaries, place labels, graticule, and custom overlays). Each visualization layer entry includes:
 
 - A visibility checkbox (emitting `terra-map-layer-toggle`).
-- An opacity settings drawer (`0%` - `100%`).
-- Drag-and-drop and keyboard (`ArrowUp` / `ArrowDown` on the reorder handle) layer reordering (emitting `terra-map-layer-reorder` with `{ names }`).
-- An interactive color-map legend (for GeoTIFF color ramps and GIBS horizontal SVG legends) that emits `terra-map-legend-click` when a color bin or ramp value is clicked.
+- An opacity settings drawer (`0%` - `100%`); opening opacity controls for an unchecked layer automatically makes it visible.
+- Drag-and-drop and keyboard (`ArrowUp` / `ArrowDown` on the reorder handle) layer reordering (emitting `terra-map-layer-reorder` with `{ names }` ordered bottom-to-top matching the map render stack).
+- An accessible, sandboxed color-map legend (for GeoTIFF color ramps and GIBS horizontal SVG legends) that emits `terra-map-legend-click` (detail includes `{ name, title, type, valueChosen, layer }`) when a value is selected via mouse click or keyboard (`Enter` / `Space`). If remote bin extraction fails, GIBS legends gracefully degrade to a static visual legend.
 
 ```html:preview
     <!-- collection-id="GPM_3IMERGHH_07" -->

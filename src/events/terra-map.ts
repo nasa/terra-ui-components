@@ -65,6 +65,9 @@ export type TerraMapLayerToggleEvent = CustomEvent<MapLayerToggleDetail>
 export type TerraMapLegendClickEvent = CustomEvent<MapLegendClickDetail>
 
 export type TerraMapLayerReorderEventDetail = {
+    /**
+     * Layer names ordered bottom-to-top matching the map render stack order.
+     */
     names: string[]
 }
 
