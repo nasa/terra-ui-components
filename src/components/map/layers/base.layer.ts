@@ -1,5 +1,5 @@
 import TileLayer from 'ol/layer/Tile.js'
-import ImageTile from 'ol/source/ImageTile.js'
+import XYZ from 'ol/source/XYZ.js'
 import { GIBS_WMTS_ENDPOINT } from '../../../apis/gibs.api.js'
 import { getYesterdayIsoDate } from '../../../utilities/date.js'
 
@@ -18,13 +18,22 @@ export type BaseLayerConfig = {
     noWorldWrap?: boolean
 }
 
-export function buildBaseLayer(config: BaseLayerConfig): TileLayer {
+/**
+ * Builds a base map tile layer using OpenLayers' `XYZ` source.
+ *
+ * `XYZ` (derived from `TileImage`) delegates projection transformations to
+ * `ol/reproj/Tile.js`, which renders reprojected raster tiles via 2D canvas.
+ * This ensures base layers reproject cleanly across non-Web Mercator views
+ * (such as polar stereographic EPSG:3413 / EPSG:3031 and geographic EPSG:4326)
+ * without depending on hardware WebGL context availability.
+ */
+export function buildBaseLayer(config: BaseLayerConfig): TileLayer<XYZ> {
     const layer = new TileLayer({
         visible: config.visible ?? false,
-        source: new ImageTile({
+        source: new XYZ({
             url: config.url,
             attributions: config.attributions,
-            ...(config.noWorldWrap ? { wrapX: false } : {}),
+            wrapX: !config.noWorldWrap,
         }),
     })
 
@@ -75,13 +84,13 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
     ]
 }
 
-export class BaseLayer extends TileLayer {
+export class BaseLayer extends TileLayer<XYZ> {
     constructor(options: Options = {}) {
         super({
-            source: new ImageTile({
+            source: new XYZ({
                 url: `${ARCGIS_REST_ENDPOINT}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
                 attributions: ['Esri', 'Vantor', 'Earthstar Geographics'],
-                ...(options.noWorldWrap ? { wrapX: false } : {}),
+                wrapX: !options.noWorldWrap,
             }),
         })
     }

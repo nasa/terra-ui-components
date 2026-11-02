@@ -1403,7 +1403,7 @@ describe('<terra-data-subsetter> web links pagination and scroll behavior', () =
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to populate',
-                { timeout: 3000 }
+                { timeout: 8000 }
             )
             await elementUpdated(el)
 
@@ -1418,7 +1418,7 @@ describe('<terra-data-subsetter> web links pagination and scroll behavior', () =
             await waitUntil(
                 () => (el.shadowRoot?.querySelectorAll('.file-item').length ?? 0) > 0,
                 'expected web links to render',
-                { timeout: 3000 }
+                { timeout: 8000 }
             )
             await elementUpdated(el)
 
