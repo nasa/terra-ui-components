@@ -35,7 +35,17 @@ function decodeXmlEntities(str: string): string {
     return doc.body.textContent ?? str
 }
 
+export type GibsRamp = {
+    title?: string
+    bins: string[]
+    rampStartPct: number
+    rampEndPct: number
+    rampTopPct: number
+    rampBottomPct: number
+}
+
 export type GibsLegendData = {
+    ramps: GibsRamp[]
     bins: string[]
     rampStartPct: number
     rampEndPct: number
@@ -78,29 +88,83 @@ function parseTransformedY(
     }
 }
 
+function findCommentText(node: Node): string {
+    for (const child of node.childNodes) {
+        if (child.nodeType === 8 && child.textContent?.trim()) {
+            return child.textContent.trim()
+        }
+        const found = findCommentText(child)
+        if (found) {
+            return found
+        }
+    }
+    return ''
+}
+
+function extractCandidateTitles(doc: Document): Array<{ text: string; y: number }> {
+    const candidateTitles: Array<{ text: string; y: number }> = []
+    doc.querySelectorAll('g[id^="text_"]').forEach(el => {
+        let text = findCommentText(el)
+        if (!text) {
+            const textEl = el.querySelector('text')
+            text = textEl?.textContent?.trim() ?? el.textContent?.trim() ?? ''
+        }
+        if (text) {
+            const decoded = decodeXmlEntities(text)
+            // Exclude numeric ticks and common unit strings
+            const isTick = /^[\d.\s&#;≥\-><+%/]+$/.test(decoded)
+            const isCommonUnit = /^(mm\/hr|K|%|degC|m|m\/s|hPa|kg\/m\^2)$/i.test(
+                decoded
+            )
+            if (!isTick && !isCommonUnit) {
+                const transform =
+                    el.getAttribute('transform') ??
+                    el.querySelector('g')?.getAttribute('transform') ??
+                    el.parentElement?.getAttribute('transform') ??
+                    ''
+                const transMatch = transform.match(
+                    /translate\s*\(\s*([-\d.]+)(?:[\s,]+([-\d.]+))?\s*\)/
+                )
+                const y = transMatch ? Number(transMatch[2]) || 0 : 0
+                candidateTitles.push({ text: decoded, y })
+            }
+        }
+    })
+    return candidateTitles
+}
+
 /**
  * Extracts raw scientific bin values and horizontal ramp boundaries from NASA GIBS SVGs.
+ * Supports multi-axis SVGs (such as GPM IMERG Precipitation Rate with Rain Rate & Snow Rate).
  *
  * GIBS Matplotlib SVGs store colormap bin ranges in hidden `<g id="tooltip_i">` groups
- * and place the color gradient inside an embedded `<image>` or `<rect>` strips inset
+ * and place the color gradient inside embedded `<image>` or `<rect>` strips inset
  * from the SVG's viewBox edges by left/right tick label margins.
  * This parser operates purely in-memory and never injects or executes the SVG in the DOM.
  */
 export function extractGibsLegendData(rawSvg: string): GibsLegendData {
-    const bins: string[] = []
-    let rampStartPct = 0
-    let rampEndPct = 1
-    let rampTopPct = 0.3474
-    let rampBottomPct = 0.5474
+    const defaultRamp: GibsRamp = {
+        bins: [],
+        rampStartPct: 0,
+        rampEndPct: 1,
+        rampTopPct: 0.3474,
+        rampBottomPct: 0.5474,
+    }
 
     let doc: Document
     try {
         doc = new DOMParser().parseFromString(rawSvg, 'image/svg+xml')
         if (doc.querySelector('parsererror')) {
-            return { bins, rampStartPct, rampEndPct, rampTopPct, rampBottomPct }
+            return {
+                ramps: [defaultRamp],
+                ...defaultRamp,
+            }
         }
     } catch {
-        return { bins, rampStartPct, rampEndPct, rampTopPct, rampBottomPct }
+        return {
+            ramps: [defaultRamp],
+            ...defaultRamp,
+        }
     }
 
     const viewBoxAttr = doc.querySelector('svg')?.getAttribute('viewBox')
@@ -117,39 +181,7 @@ export function extractGibsLegendData(rawSvg: string): GibsLegendData {
         }
     }
 
-    const img = doc.querySelector('image')
-    if (img && viewBoxWidth > 0 && viewBoxHeight > 0) {
-        const x = Number(img.getAttribute('x')) || 0
-        const width = Number(img.getAttribute('width')) || 0
-        if (width > 0) {
-            rampStartPct = Math.max(0, Math.min(1, x / viewBoxWidth))
-            rampEndPct = Math.max(
-                rampStartPct,
-                Math.min(1, (x + width) / viewBoxWidth)
-            )
-        }
-        const yBounds = parseTransformedY(img, viewBoxHeight)
-        rampTopPct = yBounds.topPct
-        rampBottomPct = yBounds.bottomPct
-    } else if (viewBoxWidth > 0 && viewBoxHeight > 0) {
-        const rects = doc.querySelectorAll('rect[onmouseover]')
-        if (rects.length > 0) {
-            const first = rects[0]
-            const last = rects[rects.length - 1]
-            const firstX = Number(first.getAttribute('x')) || 0
-            const lastX = Number(last.getAttribute('x')) || 0
-            const lastWidth = Number(last.getAttribute('width')) || 0
-            rampStartPct = Math.max(0, Math.min(1, firstX / viewBoxWidth))
-            rampEndPct = Math.max(
-                rampStartPct,
-                Math.min(1, (lastX + lastWidth) / viewBoxWidth)
-            )
-            const yBounds = parseTransformedY(first, viewBoxHeight)
-            rampTopPct = yBounds.topPct
-            rampBottomPct = yBounds.bottomPct
-        }
-    }
-
+    const allTips: string[] = []
     let idx = 0
     while (true) {
         const tooltip = doc.getElementById(`tooltip_${idx}`)
@@ -174,24 +206,219 @@ export function extractGibsLegendData(rawSvg: string): GibsLegendData {
             }
         }
         if (val) {
-            bins.push(decodeXmlEntities(val))
+            allTips.push(decodeXmlEntities(val))
         }
         idx++
     }
 
     // Fallback for standard SVGs with <rect><title> elements
-    if (bins.length === 0) {
+    if (allTips.length === 0) {
         doc.querySelectorAll('rect').forEach(rect => {
             const title =
                 rect.querySelector('title')?.textContent?.trim() ??
                 rect.getAttribute('title')
             if (title) {
-                bins.push(decodeXmlEntities(title))
+                allTips.push(decodeXmlEntities(title))
             }
         })
     }
 
-    return { bins, rampStartPct, rampEndPct, rampTopPct, rampBottomPct }
+    const candidateTitles = extractCandidateTitles(doc)
+    const axes = Array.from(doc.querySelectorAll('g[id^="axes_"]'))
+    const ramps: GibsRamp[] = []
+
+    if (axes.length > 0) {
+        axes.forEach((axis, axisIdx) => {
+            const img = axis.querySelector('image')
+            const rects = Array.from(axis.querySelectorAll('rect[onmouseover]'))
+            let rampStartPct = 0
+            let rampEndPct = 1
+            let rampTopPct = 0.3474
+            let rampBottomPct = 0.5474
+
+            if (img && viewBoxWidth > 0 && viewBoxHeight > 0) {
+                const x = Number(img.getAttribute('x')) || 0
+                const width = Number(img.getAttribute('width')) || 0
+                if (width > 0) {
+                    rampStartPct = Math.max(0, Math.min(1, x / viewBoxWidth))
+                    rampEndPct = Math.max(
+                        rampStartPct,
+                        Math.min(1, (x + width) / viewBoxWidth)
+                    )
+                }
+                const yBounds = parseTransformedY(img, viewBoxHeight)
+                rampTopPct = yBounds.topPct
+                rampBottomPct = yBounds.bottomPct
+            } else if (rects.length > 0 && viewBoxWidth > 0 && viewBoxHeight > 0) {
+                const first = rects[0]
+                const last = rects[rects.length - 1]
+                const firstX = Number(first.getAttribute('x')) || 0
+                const lastX = Number(last.getAttribute('x')) || 0
+                const lastWidth = Number(last.getAttribute('width')) || 0
+                rampStartPct = Math.max(0, Math.min(1, firstX / viewBoxWidth))
+                rampEndPct = Math.max(
+                    rampStartPct,
+                    Math.min(1, (lastX + lastWidth) / viewBoxWidth)
+                )
+                const yBounds = parseTransformedY(first, viewBoxHeight)
+                rampTopPct = yBounds.topPct
+                rampBottomPct = yBounds.bottomPct
+            }
+
+            const bins: string[] = []
+            rects.forEach(rect => {
+                const match = rect
+                    .getAttribute('onmouseover')
+                    ?.match(/ShowTooltip\((\d+)\)/)
+                if (match) {
+                    const tipIdx = Number(match[1])
+                    if (allTips[tipIdx]) {
+                        bins.push(allTips[tipIdx])
+                    }
+                }
+            })
+
+            let finalBins = bins
+            if (finalBins.length === 0) {
+                if (axes.length > 1 && allTips.length > 0) {
+                    const sliceSize = Math.floor(allTips.length / axes.length)
+                    const start = axisIdx * sliceSize
+                    const end =
+                        axisIdx === axes.length - 1
+                            ? allTips.length
+                            : start + sliceSize
+                    finalBins = allTips.slice(start, end)
+                } else {
+                    finalBins = allTips
+                }
+            }
+
+            const rampY = rampTopPct * viewBoxHeight
+            let bestTitle: string | undefined
+            let bestDist = Infinity
+            candidateTitles.forEach(c => {
+                const dist = Math.abs(c.y - rampY)
+                if (dist < bestDist) {
+                    bestDist = dist
+                    bestTitle = c.text
+                }
+            })
+
+            ramps.push({
+                title: bestTitle,
+                bins: finalBins,
+                rampStartPct,
+                rampEndPct,
+                rampTopPct,
+                rampBottomPct,
+            })
+        })
+    } else {
+        const images = Array.from(doc.querySelectorAll('image'))
+        if (images.length > 1 && viewBoxWidth > 0 && viewBoxHeight > 0) {
+            images.forEach((img, imgIdx) => {
+                const x = Number(img.getAttribute('x')) || 0
+                const width = Number(img.getAttribute('width')) || 0
+                let rampStartPct = 0
+                let rampEndPct = 1
+                if (width > 0) {
+                    rampStartPct = Math.max(0, Math.min(1, x / viewBoxWidth))
+                    rampEndPct = Math.max(
+                        rampStartPct,
+                        Math.min(1, (x + width) / viewBoxWidth)
+                    )
+                }
+                const yBounds = parseTransformedY(img, viewBoxHeight)
+                const sliceSize = Math.floor(allTips.length / images.length)
+                const start = imgIdx * sliceSize
+                const end =
+                    imgIdx === images.length - 1 ? allTips.length : start + sliceSize
+                const bins = allTips.slice(start, end)
+
+                const rampY = yBounds.topPct * viewBoxHeight
+                let bestTitle: string | undefined
+                let bestDist = Infinity
+                candidateTitles.forEach(c => {
+                    const dist = Math.abs(c.y - rampY)
+                    if (dist < bestDist) {
+                        bestDist = dist
+                        bestTitle = c.text
+                    }
+                })
+
+                ramps.push({
+                    title: bestTitle,
+                    bins,
+                    rampStartPct,
+                    rampEndPct,
+                    rampTopPct: yBounds.topPct,
+                    rampBottomPct: yBounds.bottomPct,
+                })
+            })
+        } else {
+            let rampStartPct = 0
+            let rampEndPct = 1
+            let rampTopPct = 0.3474
+            let rampBottomPct = 0.5474
+
+            const img = doc.querySelector('image')
+            if (img && viewBoxWidth > 0 && viewBoxHeight > 0) {
+                const x = Number(img.getAttribute('x')) || 0
+                const width = Number(img.getAttribute('width')) || 0
+                if (width > 0) {
+                    rampStartPct = Math.max(0, Math.min(1, x / viewBoxWidth))
+                    rampEndPct = Math.max(
+                        rampStartPct,
+                        Math.min(1, (x + width) / viewBoxWidth)
+                    )
+                }
+                const yBounds = parseTransformedY(img, viewBoxHeight)
+                rampTopPct = yBounds.topPct
+                rampBottomPct = yBounds.bottomPct
+            } else if (viewBoxWidth > 0 && viewBoxHeight > 0) {
+                const rects = doc.querySelectorAll('rect[onmouseover]')
+                if (rects.length > 0) {
+                    const first = rects[0]
+                    const last = rects[rects.length - 1]
+                    const firstX = Number(first.getAttribute('x')) || 0
+                    const lastX = Number(last.getAttribute('x')) || 0
+                    const lastWidth = Number(last.getAttribute('width')) || 0
+                    rampStartPct = Math.max(0, Math.min(1, firstX / viewBoxWidth))
+                    rampEndPct = Math.max(
+                        rampStartPct,
+                        Math.min(1, (lastX + lastWidth) / viewBoxWidth)
+                    )
+                    const yBounds = parseTransformedY(first, viewBoxHeight)
+                    rampTopPct = yBounds.topPct
+                    rampBottomPct = yBounds.bottomPct
+                }
+            }
+
+            let bestTitle: string | undefined
+            if (candidateTitles.length > 0) {
+                bestTitle = candidateTitles[0].text
+            }
+
+            ramps.push({
+                title: bestTitle,
+                bins: allTips,
+                rampStartPct,
+                rampEndPct,
+                rampTopPct,
+                rampBottomPct,
+            })
+        }
+    }
+
+    const primaryRamp = ramps[0] ?? defaultRamp
+    return {
+        ramps,
+        bins: primaryRamp.bins,
+        rampStartPct: primaryRamp.rampStartPct,
+        rampEndPct: primaryRamp.rampEndPct,
+        rampTopPct: primaryRamp.rampTopPct,
+        rampBottomPct: primaryRamp.rampBottomPct,
+    }
 }
 
 export function extractGibsBins(rawSvg: string): string[] {
@@ -217,12 +444,14 @@ export class LayerPickerControl extends Control {
         value: string
         x: number
         y: number
+        rampIdx?: number
     } = {
         layerName: null,
         active: false,
         value: '',
         x: 0,
         y: 0,
+        rampIdx: 0,
     }
 
     constructor(options?: LayerPickerControlOptions) {
@@ -324,6 +553,10 @@ export class LayerPickerControl extends Control {
                 this.#renderPanel()
             }
             if (url) {
+                // Pre-download and decode image asset in browser memory
+                const preloadImg = new Image()
+                preloadImg.src = url
+
                 try {
                     const fetchSvg =
                         this.#options?.fetchLegendSvg ??
@@ -331,6 +564,7 @@ export class LayerPickerControl extends Control {
                     const rawSvg = await fetchSvg(url)
                     if (rawSvg) {
                         const legendData = extractGibsLegendData(rawSvg)
+                        layer.set('__gibsRamps', legendData.ramps)
                         layer.set('__gibsBins', legendData.bins)
                         layer.set('__gibsRampStartPct', legendData.rampStartPct)
                         layer.set('__gibsRampEndPct', legendData.rampEndPct)
@@ -434,18 +668,49 @@ export class LayerPickerControl extends Control {
             const target = selectedViz?.closest<HTMLElement>(
                 '.layer-picker-visualization-item'
             )
-            // First selected layer (a bottom of scrollable list to correspond to underlying map layer order
-            if (target && typeof target.scrollIntoView === 'function') {
-                return target.scrollIntoView({ block: 'nearest' })
+            const body = this.#panel.querySelector<HTMLElement>('.layer-picker-body')
+            const isBodyScrollable = Boolean(
+                body && body.scrollHeight > body.clientHeight
+            )
+            const isPanelScrollable =
+                this.#panel.scrollHeight > this.#panel.clientHeight
+            // In tall viewports, .layer-picker-body scrolls; in compact viewports, .layer-picker-panel scrolls
+            const scrollContainer =
+                isPanelScrollable && !isBodyScrollable
+                    ? this.#panel
+                    : (body ?? this.#panel)
+
+            // Only scroll the internal visualization list container; never scroll the outer page
+            if (!target || !scrollContainer) {
+                return
             }
 
-            const selectedBase = this.#panel.querySelector<HTMLElement>(
-                '.layer-picker-footer input[type="radio"]:checked'
-            )
-            const baseItem = selectedBase?.closest<HTMLElement>('.layer-picker-item')
-            // Scroll to base layer picker options if no visualization layer
-            if (baseItem && typeof baseItem.scrollIntoView === 'function') {
-                baseItem.scrollIntoView({ block: 'nearest' })
+            const containerRect = scrollContainer.getBoundingClientRect()
+            const targetRect = target.getBoundingClientRect()
+
+            const targetRelativeTop =
+                targetRect.top - containerRect.top + scrollContainer.scrollTop
+            const targetRelativeBottom = targetRelativeTop + targetRect.height
+
+            const visibleTop = scrollContainer.scrollTop
+            const visibleBottom = visibleTop + scrollContainer.clientHeight
+
+            // Comfortable clearance so the entire colormap and labels stay in view
+            const offset = 16
+
+            if (targetRelativeTop < visibleTop + offset) {
+                scrollContainer.scrollTo({
+                    top: Math.max(0, targetRelativeTop - offset),
+                    behavior: 'smooth',
+                })
+            } else if (targetRelativeBottom > visibleBottom - offset) {
+                scrollContainer.scrollTo({
+                    top: Math.max(
+                        0,
+                        targetRelativeBottom - scrollContainer.clientHeight + offset
+                    ),
+                    behavior: 'smooth',
+                })
             }
         })
     }
@@ -1055,43 +1320,95 @@ export class LayerPickerControl extends Control {
     #renderGibsImgLegend(layer: BaseLayer, url: string) {
         const name = layer.get('name') ?? ''
         const title = layer.get('title') ?? ''
-        const bins: string[] = layer.get('__gibsBins') ?? []
-        const rampStartPct: number = layer.get('__gibsRampStartPct') ?? 0
-        const rampEndPct: number = layer.get('__gibsRampEndPct') ?? 1
-        const rampTopPct: number = layer.get('__gibsRampTopPct') ?? 0.3474
-        const rampBottomPct: number = layer.get('__gibsRampBottomPct') ?? 0.5474
-        const rampSpan = Math.max(0.001, rampEndPct - rampStartPct)
-        const maxIdx = Math.max(0, bins.length - 1)
-        const currentIdx = layer.get('__legendBinIdx') ?? Math.floor(bins.length / 2)
-        const currentValue =
-            bins.length > 0
-                ? bins[currentIdx]
+        const storedRamps: GibsRamp[] = layer.get('__gibsRamps') ?? []
+        const defaultRamp: GibsRamp = {
+            bins: layer.get('__gibsBins') ?? [],
+            rampStartPct: layer.get('__gibsRampStartPct') ?? 0,
+            rampEndPct: layer.get('__gibsRampEndPct') ?? 1,
+            rampTopPct: layer.get('__gibsRampTopPct') ?? 0.3474,
+            rampBottomPct: layer.get('__gibsRampBottomPct') ?? 0.5474,
+        }
+        const ramps: GibsRamp[] = storedRamps.length > 0 ? storedRamps : [defaultRamp]
+        const activeRampIdx = Math.min(
+            ramps.length - 1,
+            Math.max(0, layer.get('__legendActiveRampIdx') ?? 0)
+        )
+        const currentRamp = ramps[activeRampIdx]
+        const currentBins = currentRamp.bins
+        const maxIdx = Math.max(0, currentBins.length - 1)
+        const currentIdx = Math.min(
+            maxIdx,
+            Math.max(
+                0,
+                layer.get(`__legendBinIdx_${activeRampIdx}`) ??
+                    (activeRampIdx === 0
+                        ? (layer.get('__legendBinIdx') ??
+                          Math.floor(currentBins.length / 2))
+                        : Math.floor(currentBins.length / 2))
+            )
+        )
+        const currentRawValue =
+            currentBins.length > 0
+                ? currentBins[currentIdx]
                 : `${layer.get('__legendPercent') ?? 50}%`
+        const currentDisplayValue =
+            currentRamp.title && ramps.length > 1
+                ? `${currentRamp.title}: ${currentRawValue}`
+                : currentRawValue
 
-        const updateKeyboardPopover = (idx: number) => {
+        const getClosestRampIndex = (cursorYPct: number): number => {
+            if (ramps.length <= 1) {
+                return 0
+            }
+            let minDistance = Infinity
+            let closestIdx = 0
+            ramps.forEach((ramp, idx) => {
+                const rampCenterY = (ramp.rampTopPct + ramp.rampBottomPct) / 2
+                const dist = Math.abs(cursorYPct - rampCenterY)
+                if (dist < minDistance) {
+                    minDistance = dist
+                    closestIdx = idx
+                }
+            })
+            return closestIdx
+        }
+
+        const updateKeyboardPopover = (rampIdx: number, binIdx: number) => {
+            const activeRamp = ramps[rampIdx] ?? ramps[0]
             const container = this.#panel?.querySelector<HTMLElement>(
                 `[data-legend-container="${CSS.escape(name)}"]`
             )
             const rect = container?.getBoundingClientRect()
-            const total = Math.max(1, bins.length - 1)
-            const rampPct = rampStartPct + (idx / total) * rampSpan
+            const total = Math.max(1, activeRamp.bins.length - 1)
+            const rampSpan = Math.max(
+                0.001,
+                activeRamp.rampEndPct - activeRamp.rampStartPct
+            )
+            const rampPct = activeRamp.rampStartPct + (binIdx / total) * rampSpan
             const x = rect && rect.width > 0 ? rect.left + rampPct * rect.width : 0
             const y = rect ? rect.top : 0
-            const value =
-                bins.length > 0 ? bins[idx] : `${Math.round(rampPct * 100)}%`
+            const rawVal =
+                activeRamp.bins.length > 0
+                    ? activeRamp.bins[binIdx]
+                    : `${Math.round(rampPct * 100)}%`
+            const displayVal =
+                activeRamp.title && ramps.length > 1
+                    ? `${activeRamp.title}: ${rawVal}`
+                    : rawVal
 
             this.#activePopover = {
                 layerName: name,
                 active: true,
-                value,
+                value: displayVal,
                 x,
                 y,
+                rampIdx,
             }
             this.#renderPanel()
         }
 
         const handleFocusIn = () => {
-            updateKeyboardPopover(currentIdx)
+            updateKeyboardPopover(activeRampIdx, currentIdx)
         }
 
         const handleFocusOut = () => {
@@ -1102,6 +1419,7 @@ export class LayerPickerControl extends Control {
                     value: '',
                     x: 0,
                     y: 0,
+                    rampIdx: 0,
                 }
                 this.#renderPanel()
             }
@@ -1110,38 +1428,62 @@ export class LayerPickerControl extends Control {
         const handleMouseMove = (e: MouseEvent) => {
             const container = e.currentTarget as HTMLElement
             const rect = container.getBoundingClientRect()
-            if (rect.width > 0) {
+            if (rect.width > 0 && rect.height > 0) {
+                const cursorYPct = Math.max(
+                    0,
+                    Math.min(1, (e.clientY - rect.top) / rect.height)
+                )
+                const rampIdx = getClosestRampIndex(cursorYPct)
+                const targetRamp = ramps[rampIdx]
+                const rampSpan = Math.max(
+                    0.001,
+                    targetRamp.rampEndPct - targetRamp.rampStartPct
+                )
                 const rawPct = Math.max(
                     0,
                     Math.min(1, (e.clientX - rect.left) / rect.width)
                 )
                 const normalizedPct = Math.max(
                     0,
-                    Math.min(1, (rawPct - rampStartPct) / rampSpan)
+                    Math.min(1, (rawPct - targetRamp.rampStartPct) / rampSpan)
                 )
+
                 let value: string
-                if (bins.length > 0) {
+                if (targetRamp.bins.length > 0) {
                     const idx = Math.min(
-                        bins.length - 1,
-                        Math.floor(normalizedPct * bins.length)
+                        targetRamp.bins.length - 1,
+                        Math.floor(normalizedPct * targetRamp.bins.length)
                     )
-                    value = bins[idx]
-                    layer.set('__legendBinIdx', idx)
+                    value = targetRamp.bins[idx]
+                    layer.set(`__legendBinIdx_${rampIdx}`, idx)
+                    if (rampIdx === 0) {
+                        layer.set('__legendBinIdx', idx)
+                    }
                 } else {
                     const percent = Math.round(normalizedPct * 100)
                     value = `${percent}%`
-                    layer.set('__legendPercent', percent)
+                    layer.set(`__legendPercent_${rampIdx}`, percent)
                 }
+
+                layer.set('__legendActiveRampIdx', rampIdx)
+                const displayVal =
+                    targetRamp.title && ramps.length > 1
+                        ? `${targetRamp.title}: ${value}`
+                        : value
 
                 this.#activePopover = {
                     layerName: name,
                     active: true,
-                    value,
+                    value: displayVal,
                     x: Math.max(
-                        rect.left + rampStartPct * rect.width,
-                        Math.min(rect.left + rampEndPct * rect.width, e.clientX)
+                        rect.left + targetRamp.rampStartPct * rect.width,
+                        Math.min(
+                            rect.left + targetRamp.rampEndPct * rect.width,
+                            e.clientX
+                        )
                     ),
                     y: rect.top,
+                    rampIdx,
                 }
                 this.#renderPanel()
             }
@@ -1159,6 +1501,7 @@ export class LayerPickerControl extends Control {
                         value: '',
                         x: 0,
                         y: 0,
+                        rampIdx: 0,
                     }
                     this.#renderPanel()
                 }
@@ -1169,32 +1512,49 @@ export class LayerPickerControl extends Control {
             e.stopPropagation()
             const container = e.currentTarget as HTMLElement
             const rect = container.getBoundingClientRect()
+            const cursorYPct =
+                rect.height > 0
+                    ? Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height))
+                    : 0
+            const rampIdx = getClosestRampIndex(cursorYPct)
+            const targetRamp = ramps[rampIdx]
+            const rampSpan = Math.max(
+                0.001,
+                targetRamp.rampEndPct - targetRamp.rampStartPct
+            )
             const rawPct =
                 rect.width > 0 && e.clientX >= rect.left
                     ? Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
                     : 0.5
             const normalizedPct = Math.max(
                 0,
-                Math.min(1, (rawPct - rampStartPct) / rampSpan)
+                Math.min(1, (rawPct - targetRamp.rampStartPct) / rampSpan)
             )
+
             let valueChosen: string
-            if (bins.length > 0) {
+            if (targetRamp.bins.length > 0) {
                 const idx = Math.min(
-                    bins.length - 1,
-                    Math.floor(normalizedPct * bins.length)
+                    targetRamp.bins.length - 1,
+                    Math.floor(normalizedPct * targetRamp.bins.length)
                 )
-                valueChosen = bins[idx]
-                layer.set('__legendBinIdx', idx)
+                valueChosen = targetRamp.bins[idx]
+                layer.set(`__legendBinIdx_${rampIdx}`, idx)
+                if (rampIdx === 0) {
+                    layer.set('__legendBinIdx', idx)
+                }
             } else {
                 const percent = Math.round(normalizedPct * 100)
                 valueChosen = `${percent}%`
-                layer.set('__legendPercent', percent)
+                layer.set(`__legendPercent_${rampIdx}`, percent)
             }
+
+            layer.set('__legendActiveRampIdx', rampIdx)
 
             this.#options?.onLegendClick?.({
                 name,
                 title,
                 type: 'visualization',
+                scale: targetRamp.title,
                 valueChosen,
                 layer,
             })
@@ -1202,54 +1562,105 @@ export class LayerPickerControl extends Control {
 
         const handleKeyDown = (e: KeyboardEvent) => {
             switch (e.key) {
-                case 'ArrowLeft':
-                case 'ArrowDown': {
+                case 'ArrowLeft': {
                     e.preventDefault()
                     e.stopPropagation()
                     const nextIdx = Math.max(0, currentIdx - 1)
-                    layer.set('__legendBinIdx', nextIdx)
-                    updateKeyboardPopover(nextIdx)
+                    layer.set(`__legendBinIdx_${activeRampIdx}`, nextIdx)
+                    if (activeRampIdx === 0) {
+                        layer.set('__legendBinIdx', nextIdx)
+                    }
+                    updateKeyboardPopover(activeRampIdx, nextIdx)
                     break
                 }
-                case 'ArrowRight':
-                case 'ArrowUp': {
+                case 'ArrowRight': {
                     e.preventDefault()
                     e.stopPropagation()
                     const nextIdx = Math.min(maxIdx, currentIdx + 1)
-                    layer.set('__legendBinIdx', nextIdx)
-                    updateKeyboardPopover(nextIdx)
+                    layer.set(`__legendBinIdx_${activeRampIdx}`, nextIdx)
+                    if (activeRampIdx === 0) {
+                        layer.set('__legendBinIdx', nextIdx)
+                    }
+                    updateKeyboardPopover(activeRampIdx, nextIdx)
+                    break
+                }
+                case 'ArrowUp': {
+                    if (ramps.length > 1) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        const nextRampIdx = Math.max(0, activeRampIdx - 1)
+                        layer.set('__legendActiveRampIdx', nextRampIdx)
+                        const nextRampBins = ramps[nextRampIdx].bins
+                        const binIdx = Math.min(
+                            Math.max(0, nextRampBins.length - 1),
+                            layer.get(`__legendBinIdx_${nextRampIdx}`) ??
+                                Math.floor(nextRampBins.length / 2)
+                        )
+                        updateKeyboardPopover(nextRampIdx, binIdx)
+                    }
+                    break
+                }
+                case 'ArrowDown': {
+                    if (ramps.length > 1) {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        const nextRampIdx = Math.min(
+                            ramps.length - 1,
+                            activeRampIdx + 1
+                        )
+                        layer.set('__legendActiveRampIdx', nextRampIdx)
+                        const nextRampBins = ramps[nextRampIdx].bins
+                        const binIdx = Math.min(
+                            Math.max(0, nextRampBins.length - 1),
+                            layer.get(`__legendBinIdx_${nextRampIdx}`) ??
+                                Math.floor(nextRampBins.length / 2)
+                        )
+                        updateKeyboardPopover(nextRampIdx, binIdx)
+                    }
                     break
                 }
                 case 'Home': {
                     e.preventDefault()
                     e.stopPropagation()
-                    layer.set('__legendBinIdx', 0)
-                    updateKeyboardPopover(0)
+                    layer.set(`__legendBinIdx_${activeRampIdx}`, 0)
+                    if (activeRampIdx === 0) {
+                        layer.set('__legendBinIdx', 0)
+                    }
+                    updateKeyboardPopover(activeRampIdx, 0)
                     break
                 }
                 case 'End': {
                     e.preventDefault()
                     e.stopPropagation()
-                    layer.set('__legendBinIdx', maxIdx)
-                    updateKeyboardPopover(maxIdx)
+                    layer.set(`__legendBinIdx_${activeRampIdx}`, maxIdx)
+                    if (activeRampIdx === 0) {
+                        layer.set('__legendBinIdx', maxIdx)
+                    }
+                    updateKeyboardPopover(activeRampIdx, maxIdx)
                     break
                 }
                 case 'PageDown': {
                     e.preventDefault()
                     e.stopPropagation()
-                    const step = Math.max(1, Math.round(bins.length * 0.1))
+                    const step = Math.max(1, Math.round(currentBins.length * 0.1))
                     const nextIdx = Math.max(0, currentIdx - step)
-                    layer.set('__legendBinIdx', nextIdx)
-                    updateKeyboardPopover(nextIdx)
+                    layer.set(`__legendBinIdx_${activeRampIdx}`, nextIdx)
+                    if (activeRampIdx === 0) {
+                        layer.set('__legendBinIdx', nextIdx)
+                    }
+                    updateKeyboardPopover(activeRampIdx, nextIdx)
                     break
                 }
                 case 'PageUp': {
                     e.preventDefault()
                     e.stopPropagation()
-                    const step = Math.max(1, Math.round(bins.length * 0.1))
+                    const step = Math.max(1, Math.round(currentBins.length * 0.1))
                     const nextIdx = Math.min(maxIdx, currentIdx + step)
-                    layer.set('__legendBinIdx', nextIdx)
-                    updateKeyboardPopover(nextIdx)
+                    layer.set(`__legendBinIdx_${activeRampIdx}`, nextIdx)
+                    if (activeRampIdx === 0) {
+                        layer.set('__legendBinIdx', nextIdx)
+                    }
+                    updateKeyboardPopover(activeRampIdx, nextIdx)
                     break
                 }
                 case 'Escape': {
@@ -1261,6 +1672,7 @@ export class LayerPickerControl extends Control {
                         value: '',
                         x: 0,
                         y: 0,
+                        rampIdx: 0,
                     }
                     this.#renderPanel()
                     break
@@ -1270,13 +1682,14 @@ export class LayerPickerControl extends Control {
                     e.preventDefault()
                     e.stopPropagation()
                     const chosenValue =
-                        bins.length > 0
-                            ? bins[currentIdx]
-                            : `${layer.get('__legendPercent') ?? 50}%`
+                        currentBins.length > 0
+                            ? currentBins[currentIdx]
+                            : `${layer.get(`__legendPercent_${activeRampIdx}`) ?? 50}%`
                     this.#options?.onLegendClick?.({
                         name,
                         title,
                         type: 'visualization',
+                        scale: currentRamp.title,
                         valueChosen: chosenValue,
                         layer,
                     })
@@ -1303,11 +1716,21 @@ export class LayerPickerControl extends Control {
                         0
                     )
                 }
-                const top = rect.top + rampTopPct * rect.height
-                const height = Math.max(1, (rampBottomPct - rampTopPct) * rect.height)
+                const activeRamp =
+                    ramps[this.#activePopover.rampIdx ?? activeRampIdx] ?? ramps[0]
+                const top = rect.top + activeRamp.rampTopPct * rect.height
+                const height = Math.max(
+                    1,
+                    (activeRamp.rampBottomPct - activeRamp.rampTopPct) * rect.height
+                )
                 return new DOMRect(this.#activePopover.x, top, 0, height)
             },
         }
+
+        const sliderLabel =
+            ramps.length > 1 && currentRamp.title
+                ? `${title}: ${currentRamp.title} color map legend`
+                : `${title} color map legend`
 
         return html`
             <div
@@ -1315,11 +1738,11 @@ export class LayerPickerControl extends Control {
                 data-legend-container=${name}
                 role="slider"
                 tabindex="0"
-                aria-label="${title} color map legend"
+                aria-label="${sliderLabel}"
                 aria-valuemin="0"
                 aria-valuemax="${maxIdx}"
                 aria-valuenow="${currentIdx}"
-                aria-valuetext="${currentValue}"
+                aria-valuetext="${currentDisplayValue}"
                 @mousemove=${handleMouseMove}
                 @mouseleave=${handleMouseLeave}
                 @focusin=${handleFocusIn}
@@ -1332,6 +1755,11 @@ export class LayerPickerControl extends Control {
                     src=${url}
                     alt="${title} color map legend"
                     loading="lazy"
+                    @load=${() => {
+                        if (this.#isOpen) {
+                            this.#scrollToFirstSelectedLayer()
+                        }
+                    }}
                 />
 
                 <terra-popup

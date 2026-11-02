@@ -590,6 +590,38 @@ describe('LayerPickerControl', () => {
             expect(data.rampBottomPct).to.be.closeTo(37.44 / 68.4, 0.0001)
         })
 
+        it('extracts multi-axis GIBS legend ramps, titles, and bins via extractGibsLegendData', () => {
+            const rawSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+                <g id="axes_1">
+                    <image transform="scale(1 -1) translate(0 -20)" x="30" y="-30" width="240" height="20" />
+                    <rect onmouseover="ShowTooltip(0)" />
+                    <rect onmouseover="ShowTooltip(1)" />
+                </g>
+                <g id="axes_2">
+                    <image transform="scale(1 -1) translate(0 -120)" x="30" y="-30" width="240" height="20" />
+                    <rect onmouseover="ShowTooltip(2)" />
+                    <rect onmouseover="ShowTooltip(3)" />
+                </g>
+                <g id="text_1"><g transform="translate(100 10)"><!-- Rain Rate --></g></g>
+                <g id="text_2"><g transform="translate(100 110)"><!-- Snow Rate --></g></g>
+                <g id="tooltip_0"><!-- 0.1 mm/hr --></g>
+                <g id="tooltip_1"><!-- 5.0 mm/hr --></g>
+                <g id="tooltip_2"><!-- 0.05 mm/hr --></g>
+                <g id="tooltip_3"><!-- 2.5 mm/hr --></g>
+            </svg>`
+            const data = extractGibsLegendData(rawSvg)
+            expect(data.ramps).to.have.lengthOf(2)
+            expect(data.ramps[0].title).to.equal('Rain Rate')
+            expect(data.ramps[0].bins).to.deep.equal(['0.1 mm/hr', '5.0 mm/hr'])
+            expect(data.ramps[0].rampStartPct).to.equal(0.1)
+            expect(data.ramps[0].rampEndPct).to.equal(0.9)
+
+            expect(data.ramps[1].title).to.equal('Snow Rate')
+            expect(data.ramps[1].bins).to.deep.equal(['0.05 mm/hr', '2.5 mm/hr'])
+            expect(data.ramps[1].rampStartPct).to.equal(0.1)
+            expect(data.ramps[1].rampEndPct).to.equal(0.9)
+        })
+
         it('renders GIBS legend as a sandboxed img within an accessible single-tab-stop slider and emits onLegendClick on click', async () => {
             const gibsLayer = new VectorLayer({
                 source: new VectorSource(),
@@ -718,6 +750,112 @@ describe('LayerPickerControl', () => {
             )
             expect(legendSpy.calledTwice).to.be.true
             expect(legendSpy.secondCall.args[0].valueChosen).to.equal('0.1 - 0.2')
+        })
+
+        it('supports keyboard ArrowUp/ArrowDown scale switching and emits scale on Enter for multi-ramp GIBS legends', async () => {
+            const gibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            gibsLayer.set('name', 'precipitation')
+            gibsLayer.set('title', 'Precipitation')
+            gibsLayer.set('type', 'visualization')
+            gibsLayer.set('__gibsLegendUrl', 'https://example.com/precip.svg')
+            gibsLayer.set('__gibsRamps', [
+                {
+                    title: 'Rain Rate',
+                    bins: ['0.1 mm/hr', '1.0 mm/hr', '10.0 mm/hr'],
+                    rampStartPct: 0.1,
+                    rampEndPct: 0.9,
+                    rampTopPct: 0.1,
+                    rampBottomPct: 0.4,
+                },
+                {
+                    title: 'Snow Rate',
+                    bins: ['0.01 mm/hr', '0.5 mm/hr', '5.0 mm/hr'],
+                    rampStartPct: 0.1,
+                    rampEndPct: 0.9,
+                    rampTopPct: 0.6,
+                    rampBottomPct: 0.9,
+                },
+            ])
+            gibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/precip.svg' })
+            )
+            map.addLayer(gibsLayer)
+
+            await new Promise(r => setTimeout(r, 50))
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gibsLegend = panel.querySelector(
+                '.layer-picker-legend-gibs'
+            ) as HTMLElement
+            expect(gibsLegend).to.exist
+
+            // Focusin activates popover on initial scale (Rain Rate)
+            gibsLegend.dispatchEvent(new FocusEvent('focusin', { bubbles: true }))
+            const popup = pickerControl.element.querySelector(
+                'terra-popup'
+            ) as HTMLElement
+            expect(popup).to.exist
+            expect(popup.textContent).to.include('Rain Rate: 1.0 mm/hr')
+
+            // ArrowRight advances bin on Rain Rate
+            gibsLegend.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'ArrowRight',
+                    bubbles: true,
+                    cancelable: true,
+                })
+            )
+            expect(popup.textContent).to.include('Rain Rate: 10.0 mm/hr')
+
+            // ArrowDown switches scale to Snow Rate
+            const arrowDown = new KeyboardEvent('keydown', {
+                key: 'ArrowDown',
+                bubbles: true,
+                cancelable: true,
+            })
+            gibsLegend.dispatchEvent(arrowDown)
+            expect(arrowDown.defaultPrevented).to.be.true
+            expect(popup.textContent).to.include('Snow Rate: 0.5 mm/hr')
+
+            // Enter emits selection with Snow Rate scale
+            gibsLegend.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: 'Enter',
+                    bubbles: true,
+                    cancelable: true,
+                })
+            )
+            expect(legendSpy.calledOnce).to.be.true
+            expect(legendSpy.firstCall.args[0].scale).to.equal('Snow Rate')
+            expect(legendSpy.firstCall.args[0].valueChosen).to.equal('0.5 mm/hr')
+
+            // ArrowUp switches scale back to Rain Rate and restores its bin index
+            const arrowUp = new KeyboardEvent('keydown', {
+                key: 'ArrowUp',
+                bubbles: true,
+                cancelable: true,
+            })
+            gibsLegend.dispatchEvent(arrowUp)
+            expect(arrowUp.defaultPrevented).to.be.true
+            expect(popup.textContent).to.include('Rain Rate: 10.0 mm/hr')
+
+            // Space emits selection with Rain Rate scale
+            gibsLegend.dispatchEvent(
+                new KeyboardEvent('keydown', {
+                    key: ' ',
+                    bubbles: true,
+                    cancelable: true,
+                })
+            )
+            expect(legendSpy.calledTwice).to.be.true
+            expect(legendSpy.secondCall.args[0].scale).to.equal('Rain Rate')
+            expect(legendSpy.secondCall.args[0].valueChosen).to.equal('10.0 mm/hr')
         })
 
         it('handles special characters and quotes in layer names via CSS.escape() without throwing', async () => {
@@ -944,7 +1082,7 @@ describe('LayerPickerControl', () => {
             expect(stopPropagationSpy.calledOnce).to.be.true
         })
 
-        it('scrolls to the first selected layer upon opening the panel', async () => {
+        it('scrolls to the first selected layer upon opening the panel and re-scrolls on legend image load', async () => {
             const element = pickerControl.element
             const panel = element.querySelector('.layer-picker-panel') as HTMLElement
 
@@ -964,6 +1102,11 @@ describe('LayerPickerControl', () => {
             layer2.set('name', 'l2')
             layer2.set('title', 'Layer 2')
             layer2.set('type', 'visualization')
+            layer2.set('__gibsLegendUrl', 'https://example.com/airs-temp.svg')
+            layer2.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/airs-temp.svg' })
+            )
             map.addLayer(layer2)
 
             const toggleBtn = element.querySelector(
@@ -971,12 +1114,23 @@ describe('LayerPickerControl', () => {
             ) as HTMLButtonElement
             toggleBtn.click()
 
-            await new Promise(r => requestAnimationFrame(r))
+            await new Promise(r => setTimeout(r, 50))
 
             const selectedCard = panel.querySelector(
                 '[data-layer-name="l2"]'
             ) as HTMLElement
             expect(selectedCard).to.exist
+
+            const img = selectedCard.querySelector(
+                '.layer-picker-legend-img'
+            ) as HTMLImageElement
+            expect(img).to.exist
+            expect(img.getAttribute('loading')).to.equal('lazy')
+
+            // Dispatch load to exercise @load handler without throwing
+            img.dispatchEvent(new Event('load'))
+            await new Promise(r => setTimeout(r, 50))
+            expect(selectedCard.isConnected).to.be.true
         })
     })
 })

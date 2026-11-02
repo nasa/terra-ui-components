@@ -641,9 +641,8 @@ export default css`
 
     .layer-picker-footer {
         flex: none;
-        padding: var(--terra-spacing-x-small, 0.5rem) var(--terra-spacing-medium, 1rem)
-            var(--terra-spacing-small, 0.75rem);
-        border-top: 1px solid var(--terra-container-menu-border, rgba(0, 0, 0, 0.08));
+        padding: var(--terra-spacing-small, 0.75rem) var(--terra-spacing-medium, 1rem);
+        border-top: none;
     }
 
     /* Tall container: Pinned footer + independent visualizations scroll */
@@ -666,11 +665,8 @@ export default css`
 
     .layer-picker-body + .layer-picker-footer {
         border-top: 1px solid var(--terra-container-menu-border, rgba(0, 0, 0, 0.08));
-    }
-
-    .layer-picker-footer:only-child {
-        border-top: none;
-        padding: var(--terra-spacing-small, 0.75rem) var(--terra-spacing-medium, 1rem);
+        padding: var(--terra-spacing-x-small, 0.5rem) var(--terra-spacing-medium, 1rem)
+            var(--terra-spacing-small, 0.75rem);
     }
 
     .layer-picker-visualization-item {

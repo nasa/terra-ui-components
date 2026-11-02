@@ -41,6 +41,7 @@ export type MapLegendClickDetail = {
     name: string
     title: string
     type: 'base' | 'overlay' | 'visualization'
+    scale?: string
     valueChosen?: string | number
     rgbChosen?: number[]
     min?: number | string
