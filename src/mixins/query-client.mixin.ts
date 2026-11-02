@@ -84,8 +84,13 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
 
                 if (currentPromise) {
                     void currentPromise.then(() => {
-                        currentUnsubscribe?.()
-                        this.queryClient.unmount()
+                        // Only unmount and unsubscribe if all host elements remain disconnected.
+                        // If another component mounted while this promise was in flight, the
+                        // shared client is actively in use and must remain mounted.
+                        if (mountCount === 0) {
+                            currentUnsubscribe?.()
+                            this.queryClient.unmount()
+                        }
                     })
                 } else {
                     currentUnsubscribe?.()

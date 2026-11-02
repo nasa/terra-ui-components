@@ -540,8 +540,14 @@ export class LayerPickerControl extends Control {
             return
         }
 
-        const legendUrl = layer.get('__gibsLegendUrl') ?? layer.get('__gibsLegendSvg')
-        if (legendUrl !== undefined) {
+        // Invariant: `__gibsLegendUrl` and `__gibsLegendSvg` use `undefined` for unrequested,
+        // `'loading'` for in-flight, a string/object for resolved, and `null` for resolved-empty.
+        // Explicitly check `!== undefined` so `null` terminal states do not fall through to
+        // subsequent lookups and trigger infinite re-render loops.
+        if (
+            layer.get('__gibsLegendUrl') !== undefined ||
+            layer.get('__gibsLegendSvg') !== undefined
+        ) {
             return
         }
 
@@ -1288,20 +1294,30 @@ export class LayerPickerControl extends Control {
 
         const legend = layer.get('legend')
         if (legend) {
-            const legendUrl =
-                layer.get('__gibsLegendUrl') ?? layer.get('__gibsLegendSvg')
+            const rawLegendUrl = layer.get('__gibsLegendUrl')
+            const rawLegendSvg = layer.get('__gibsLegendSvg')
 
-            if (legendUrl && legendUrl !== 'loading') {
-                const url =
-                    typeof legendUrl === 'object' && 'fallbackImgUrl' in legendUrl
-                        ? legendUrl.fallbackImgUrl
-                        : typeof legendUrl === 'string'
-                          ? legendUrl
-                          : null
+            if (rawLegendUrl !== undefined || rawLegendSvg !== undefined) {
+                const legendUrl = rawLegendUrl ?? rawLegendSvg
 
-                if (url) {
-                    return this.#renderGibsImgLegend(layer, url)
+                if (legendUrl && legendUrl !== 'loading') {
+                    const url =
+                        typeof legendUrl === 'object' && 'fallbackImgUrl' in legendUrl
+                            ? legendUrl.fallbackImgUrl
+                            : typeof legendUrl === 'string'
+                              ? legendUrl
+                              : null
+
+                    if (url) {
+                        return this.#renderGibsImgLegend(layer, url)
+                    }
                 }
+
+                if (rawLegendUrl === 'loading' || rawLegendSvg === 'loading') {
+                    return this.#renderGibsLegendSkeleton(layer)
+                }
+
+                return nothing
             }
 
             this.#loadGibsLegend(layer)

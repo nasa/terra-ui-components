@@ -678,7 +678,23 @@ describe('<terra-map> collection-id', () => {
                 return Promise.resolve(response)
             }
             if (url.includes('wmts.cgi')) {
-                return window.fetch(url).then(res => res.text())
+                if (window.fetch !== originalFetch) {
+                    return window.fetch(url).then(res => res.text())
+                }
+                const proj = url.includes('epsg3413')
+                    ? 'EPSG:3413'
+                    : url.includes('epsg3031')
+                      ? 'EPSG:3031'
+                      : url.includes('epsg4326')
+                        ? 'EPSG:4326'
+                        : 'EPSG:3857'
+                const matrix =
+                    proj === 'EPSG:3857'
+                        ? 'GoogleMapsCompatible_Level9'
+                        : proj === 'EPSG:4326'
+                          ? '2km'
+                          : '1km'
+                return Promise.resolve(makeCapabilitiesXml(proj, matrix))
             }
             return Promise.resolve({ categories: [] })
         })
@@ -746,11 +762,15 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`),
+            'AIRS_L2_Surface_Air_Temperature_Day was not added',
+            { timeout: 5000 }
         )
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
+            'AIRS_L2_Surface_Air_Temperature_Night was not added',
+            { timeout: 5000 }
         )
 
         expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)).to
@@ -771,8 +791,10 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
+            'AIRS_L2_Surface_Air_Temperature_Night was not added',
+            { timeout: 5000 }
         )
 
         expect(
@@ -788,6 +810,7 @@ describe('<terra-map> collection-id', () => {
     })
 
     it("only adds layers available in the map's current projection", async () => {
+        const projectionEntryId = 'PROJECTION_TEST_ENTRY_ID'
         window.fetch = (async () =>
             new Response(makeCapabilitiesXml('EPSG:3413', '1km'), {
                 status: 200,
@@ -802,37 +825,43 @@ describe('<terra-map> collection-id', () => {
 
         const el = await fixture<TerraMap>(
             html`<terra-map
-                collection-id=${ENTRY_ID}
+                collection-id=${projectionEntryId}
                 projection="EPSG:3413"
             ></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${ENTRY_ID}:TestLayer`))
+        await waitUntil(
+            () => el.getLayer(`${projectionEntryId}:TestLayer`),
+            'TestLayer was not added',
+            { timeout: 5000 }
+        )
 
-        expect(el.getLayer(`${ENTRY_ID}:TestLayer`)).to.exist
-        expect(el.getLayer(`${ENTRY_ID}:Geographic_Only`)).to.not.exist
+        expect(el.getLayer(`${projectionEntryId}:TestLayer`)).to.exist
+        expect(el.getLayer(`${projectionEntryId}:Geographic_Only`)).to.not.exist
     })
 
     it('removes the collection layers when collection-id is cleared', async () => {
+        const clearEntryId = 'CLEAR_TEST_ENTRY_ID'
         stubCollectionTags(makeTagsResponse([{ product: 'Test_Layer' }]))
 
         const el = await fixture<TerraMap>(
-            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
+            html`<terra-map collection-id=${clearEntryId}></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${ENTRY_ID}:Test_Layer`))
+        await waitUntil(() => el.getLayer(`${clearEntryId}:Test_Layer`))
 
         el.collectionId = undefined
-        await waitUntil(() => !el.getLayer(`${ENTRY_ID}:Test_Layer`))
+        await waitUntil(() => !el.getLayer(`${clearEntryId}:Test_Layer`))
 
-        expect(el.getLayer(`${ENTRY_ID}:Test_Layer`)).to.not.exist
+        expect(el.getLayer(`${clearEntryId}:Test_Layer`)).to.not.exist
     })
 
     it('looks up by entry_id[] when given an entry-id', async () => {
+        const lookupEntryId = 'LOOKUP_TEST_ENTRY_ID'
         stubCollectionTags(makeTagsResponse([]))
 
         await fixture<TerraMap>(
-            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
+            html`<terra-map collection-id=${lookupEntryId}></terra-map>`
         )
 
         await waitUntil(() =>
@@ -843,7 +872,7 @@ describe('<terra-map> collection-id', () => {
         const call = apiGetStub
             .getCalls()
             .find(call => call.args[0].includes('collections.json'))
-        expect(call?.args[0]).to.include(`entry_id[]=${ENTRY_ID}`)
+        expect(call?.args[0]).to.include(`entry_id[]=${lookupEntryId}`)
     })
 
     it('looks up by concept-id when given a concept-id', async () => {
