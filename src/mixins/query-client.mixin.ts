@@ -77,13 +77,18 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
         disconnectedCallback() {
             super.disconnectedCallback()
             if (--mountCount === 0) {
-                if (mountPromise) {
-                    void mountPromise.then(() => {
-                        persistUnsubscribe?.()
+                const currentPromise = mountPromise
+                const currentUnsubscribe = persistUnsubscribe
+                mountPromise = undefined
+                persistUnsubscribe = undefined
+
+                if (currentPromise) {
+                    void currentPromise.then(() => {
+                        currentUnsubscribe?.()
                         this.queryClient.unmount()
                     })
                 } else {
-                    persistUnsubscribe?.()
+                    currentUnsubscribe?.()
                     this.queryClient.unmount()
                 }
             }
