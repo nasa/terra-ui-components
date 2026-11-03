@@ -48,6 +48,13 @@ let mountCount = 0
 let restorePromise: Promise<void> | undefined
 let persistUnsubscribe: (() => void) | undefined
 
+/**
+ * Subscribes to QueryClient cache mutations to persist state back to IndexedDB.
+ *
+ * NOTE: We attach the persistence subscriber only after `persistQueryClientRestore` settles.
+ * Attaching the subscriber prior to initial hydration would flush an incomplete or empty
+ * cache to IndexedDB, erasing valid persisted data.
+ */
 const syncPersistenceSubscription = (queryClient: QueryClient) => {
     if (mountCount > 0 && !persistUnsubscribe) {
         persistUnsubscribe = persistQueryClientSubscribe({
@@ -58,6 +65,12 @@ const syncPersistenceSubscription = (queryClient: QueryClient) => {
     }
 }
 
+/**
+ * Returns a cached promise for the initial IndexedDB restoration cycle.
+ *
+ * All `query()` and `fetchQuery()` calls gate on this promise to guarantee
+ * that offline cache entries populate the QueryClient before issuing network requests.
+ */
 const ensureRestored = (queryClient: QueryClient): Promise<void> => {
     if (!restorePromise) {
         const currentRestore = persistQueryClientRestore({
@@ -95,6 +108,13 @@ export function resetQueryClientPersistence() {
     restorePromise = undefined
 }
 
+/**
+ * Specialized QueryClient for Terra components that enforces two invariants:
+ * 1. Offline Hydration Gate: All `query()` and `fetchQuery()` calls await IndexedDB
+ *    restoration before evaluating cache hits or issuing network requests.
+ * 2. Per-Query Cache Busting: Injects `{ __buster }` into query keys when `buster`
+ *    is specified in query options.
+ */
 class TerraQueryClient extends QueryClient {
     override defaultQueryOptions<
         TQueryFnData = unknown,

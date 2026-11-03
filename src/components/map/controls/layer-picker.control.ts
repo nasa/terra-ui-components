@@ -480,6 +480,10 @@ export class LayerPickerControl extends Control {
 
         const panel = document.createElement('div')
         panel.className = 'layer-picker-panel'
+        // Stop event propagation on the popover panel. OpenLayers default map interactions
+        // (such as KeyboardPan and MouseWheelZoom) listen on the parent .ol-viewport. Halting
+        // propagation prevents popover keyboard or mouse actions (for example arrow keys on
+        // sliders or radios) from panning or zooming the underlying map.
         panel.addEventListener('click', e => e.stopPropagation())
         panel.addEventListener('wheel', e => e.stopPropagation())
         panel.addEventListener('keydown', e => {
@@ -745,6 +749,8 @@ export class LayerPickerControl extends Control {
             (layer: BaseLayer) => layer.get('type') === 'visualization'
         )
 
+        // Maintain the wider popover layout whenever any visualization layer supports a legend.
+        // This prevents jarring panel width collapse when a user unchecks all visualization layers.
         const hasLegends = visualizationLayers.some(layer =>
             this.#layerHasLegend(layer)
         )
@@ -1258,6 +1264,13 @@ export class LayerPickerControl extends Control {
         `
     }
 
+    /**
+     * Determines whether a layer supports or is currently resolving a colormap legend.
+     *
+     * In-flight GIBS legend resolution leaves `__gibsLegendUrl` and `__gibsLegendSvg`
+     * undefined, while confirmed resolution failure marks them null. We return false
+     * only when a layer definitively lacks a legend.
+     */
     #layerHasLegend(layer: BaseLayer): boolean {
         const info = layer.get('info')
         if (

@@ -193,6 +193,15 @@ export async function getGibsLegendUrls(
     return legends.get(layer)
 }
 
+/**
+ * Extracts the colormap base identifier from a UMM-Vis record.
+ *
+ * Cross-system convention:
+ * CMR UMM-Vis references colormaps through XML URLs (for example `.../colormaps/v1.3/{name}.xml`).
+ * GIBS publishes rendered vector legends at `GIBS_LEGENDS_ENDPOINT` using the same base name
+ * with orientation suffixes (`{name}_H.svg` and `{name}_V.svg`). Stripping the `.xml` extension
+ * yields the base name needed to construct both SVG endpoints.
+ */
 function extractColorMapBaseName(item: UmmResult<UmmVis>): string | undefined {
     const metadata = item.umm?.Specification?.ProductMetadata
     const colorMapUrl =
@@ -213,9 +222,16 @@ function extractColorMapBaseName(item: UmmResult<UmmVis>): string | undefined {
     return fileName.replace(/\.xml$/i, '') || undefined
 }
 
+/**
+ * Matches a UMM-Vis item to a GIBS layer identifier across disparate schema representations.
+ *
+ * Different DAACs and ingest pipelines populate identifiers under different properties
+ * (for example, NRT vs standard product identifiers, OWS identifiers, or top-level metadata names).
+ */
 function matchesUmmVisLayer(item: UmmResult<UmmVis>, layer: string): boolean {
     const pid = item.umm?.Specification?.ProductIdentification
     const pmeta = item.umm?.Specification?.ProductMetadata
+
     return (
         pid?.BestAvailableExternalIdentifier === layer ||
         pid?.StandardOrNRTExternalIdentifier === layer ||
