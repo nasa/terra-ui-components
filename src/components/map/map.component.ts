@@ -231,10 +231,6 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
         previous: MapLayerConfig[] = [],
         next: MapLayerConfig[] = []
     ) {
-        if (this.queryClientReady) {
-            await this.queryClientReady
-        }
-
         const previousByName = new Map(previous.map(config => [config.name, config]))
         const nextByName = new Map(next.map(config => [config.name, config]))
 
@@ -465,18 +461,9 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             noWorldWrap: this.noWorldWrap,
             value: this.value,
             fitToValue: this.fitToValue,
-            getGeoJson: async shapeId => {
-                if (this.queryClientReady) {
-                    await this.queryClientReady
-                }
-                return this.queryClient.query(queryGiovanniGeoJsonShape(shapeId))
-            },
-            fetchLegendSvg: async url => {
-                if (this.queryClientReady) {
-                    await this.queryClientReady
-                }
-                return this.queryClient.query(queryGibsLegendSvg(url))
-            },
+            getGeoJson: shapeId =>
+                this.queryClient.query(queryGiovanniGeoJsonShape(shapeId)),
+            fetchLegendSvg: url => this.queryClient.query(queryGibsLegendSvg(url)),
             onMouseMove: (coordinate, pixel) => {
                 this.cursorCoordinates = coordinate
                 this.emit('terra-map-pointer-move', {

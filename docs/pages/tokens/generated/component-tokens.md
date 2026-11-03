@@ -1094,11 +1094,9 @@ Tabs tokens define the visual appearance of Tabs elements. Tabs divide content i
 
 ### Spacing
 
-| Token                          | Value                                                      |
-| ------------------------------ | ---------------------------------------------------------- |
-| `--terra-tab-padding-large`    | `var(--terra-spacing-small) var(--terra-spacing-medium)`   |
-| `--terra-tab-padding-small`    | `var(--terra-spacing-2x-small) var(--terra-spacing-small)` |
-| `--terra-tab-padding-closable` | `var(--terra-spacing-2x-small)`                            |
+| Token                       | Value                                                    |
+| --------------------------- | -------------------------------------------------------- |
+| `--terra-tab-padding-large` | `var(--terra-spacing-small) var(--terra-spacing-medium)` |
 
 ### Close Button
 
@@ -1228,11 +1226,8 @@ Tooltip tokens define the visual appearance of Tooltip elements. Tooltips are sm
 
 ### Layout And Styling
 
-| Token                           | Value                                                        |
-| ------------------------------- | ------------------------------------------------------------ |
-| `--terra-tooltip-padding`       | `var(--terra-spacing-2x-small) var(--terra-spacing-x-small)` |
-| `--terra-tooltip-arrow-size`    | `6px`                                                        |
-| `--terra-tooltip-border-radius` | `var(--terra-border-radius-medium)`                          |
+| Token | Value |
+| ----- | ----- |
 
 ### Colors
 

@@ -9,7 +9,11 @@ import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import { apiClient } from '../../../lib/api.client.js'
 import { gibsApi } from '../../../apis/gibs.api.js'
-import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
+import {
+    queryClientPersister,
+    resetQueryClientPersistence,
+    sharedQueryClient,
+} from '../../../mixins/query-client.mixin.js'
 import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
 import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'
@@ -249,19 +253,30 @@ describe('<terra-map> layers (gibs)', () => {
         it('gates declarative GIBS layer builds on queryClientReady hydration', async () => {
             clearGibsCapabilitiesCache()
             sharedQueryClient.clear()
+            resetQueryClientPersistence()
 
-            let resolveReady!: () => void
-            const delayedReady = new Promise<void>(resolve => {
-                resolveReady = resolve
-            })
+            const capabilitiesXml = makeCapabilitiesXml('EPSG:3413', '1km')
+            let resolveRestore!: () => void
+            const restoreStub = sinon
+                .stub(queryClientPersister, 'restoreClient')
+                .returns(
+                    new Promise<undefined>(resolve => {
+                        resolveRestore = () => {
+                            sharedQueryClient.setQueryData(
+                                ['gibs', 'capabilities', 'epsg3413'],
+                                capabilitiesXml
+                            )
+                            resolve(undefined)
+                        }
+                    })
+                )
 
             const getCapStub = sinon
                 .stub(gibsApi, 'getCapabilitiesXml')
-                .resolves(makeCapabilitiesXml('EPSG:3413', '1km'))
+                .resolves(capabilitiesXml)
 
             try {
                 const el = document.createElement('terra-map') as TerraMap
-                el.queryClientReady = delayedReady
                 el.layers = [
                     {
                         type: 'gibs',
@@ -272,23 +287,25 @@ describe('<terra-map> layers (gibs)', () => {
                 ]
                 document.body.appendChild(el)
 
-                // Allow firstUpdated and initial tick to run
+                // Allow firstUpdated and initial tick to run while restoreClient is pending
                 await new Promise(r => setTimeout(r, 50))
 
                 // Capabilities fetch must NOT have been called while hydration is pending
                 expect(getCapStub.called).to.be.false
+                expect(el.getLayer('polar-gated')).to.be.undefined
 
-                // Resolve hydration gate
-                resolveReady()
+                // Resolve hydration gate (hydrating capabilities into sharedQueryClient)
+                resolveRestore()
                 await waitUntil(
                     () => el.getLayer('polar-gated') !== undefined,
-                    'layer added after hydration',
-                    { timeout: 8000 }
+                    'layer added after hydration'
                 )
 
-                expect(getCapStub.calledOnce).to.be.true
+                // Hydrated cache satisfied the query without hitting the network
+                expect(getCapStub.called).to.be.false
                 el.remove()
             } finally {
+                restoreStub.restore()
                 getCapStub.restore()
                 clearGibsCapabilitiesCache()
                 sharedQueryClient.clear()
@@ -807,15 +824,11 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(
-            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`),
-            'AIRS_L2_Surface_Air_Temperature_Day was not added',
-            { timeout: 8000 }
+        await waitUntil(() =>
+            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)
         )
-        await waitUntil(
-            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
-            'AIRS_L2_Surface_Air_Temperature_Night was not added',
-            { timeout: 8000 }
+        await waitUntil(() =>
+            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
         )
 
         expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)).to
@@ -836,10 +849,8 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(
-            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
-            'AIRS_L2_Surface_Air_Temperature_Night was not added',
-            { timeout: 8000 }
+        await waitUntil(() =>
+            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
         )
 
         expect(
@@ -855,7 +866,6 @@ describe('<terra-map> collection-id', () => {
     })
 
     it("only adds layers available in the map's current projection", async () => {
-        const projectionEntryId = 'PROJECTION_TEST_ENTRY_ID'
         stubCollectionTags(
             makeTagsResponse([
                 { product: 'Geographic_Only', geographic: true, arctic: false },
@@ -866,43 +876,37 @@ describe('<terra-map> collection-id', () => {
 
         const el = await fixture<TerraMap>(
             html`<terra-map
-                collection-id=${projectionEntryId}
+                collection-id=${ENTRY_ID}
                 projection="EPSG:3413"
             ></terra-map>`
         )
 
-        await waitUntil(
-            () => el.getLayer(`${projectionEntryId}:TestLayer`),
-            'TestLayer was not added',
-            { timeout: 8000 }
-        )
+        await waitUntil(() => el.getLayer(`${ENTRY_ID}:TestLayer`))
 
-        expect(el.getLayer(`${projectionEntryId}:TestLayer`)).to.exist
-        expect(el.getLayer(`${projectionEntryId}:Geographic_Only`)).to.not.exist
+        expect(el.getLayer(`${ENTRY_ID}:TestLayer`)).to.exist
+        expect(el.getLayer(`${ENTRY_ID}:Geographic_Only`)).to.not.exist
     })
 
     it('removes the collection layers when collection-id is cleared', async () => {
-        const clearEntryId = 'CLEAR_TEST_ENTRY_ID'
         stubCollectionTags(makeTagsResponse([{ product: 'Test_Layer' }]))
 
         const el = await fixture<TerraMap>(
-            html`<terra-map collection-id=${clearEntryId}></terra-map>`
+            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${clearEntryId}:Test_Layer`))
+        await waitUntil(() => el.getLayer(`${ENTRY_ID}:Test_Layer`))
 
         el.collectionId = undefined
-        await waitUntil(() => !el.getLayer(`${clearEntryId}:Test_Layer`))
+        await waitUntil(() => !el.getLayer(`${ENTRY_ID}:Test_Layer`))
 
-        expect(el.getLayer(`${clearEntryId}:Test_Layer`)).to.not.exist
+        expect(el.getLayer(`${ENTRY_ID}:Test_Layer`)).to.not.exist
     })
 
     it('looks up by entry_id[] when given an entry-id', async () => {
-        const lookupEntryId = 'LOOKUP_TEST_ENTRY_ID'
         stubCollectionTags(makeTagsResponse([]))
 
         await fixture<TerraMap>(
-            html`<terra-map collection-id=${lookupEntryId}></terra-map>`
+            html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
         await waitUntil(() =>
@@ -913,7 +917,7 @@ describe('<terra-map> collection-id', () => {
         const call = apiGetStub
             .getCalls()
             .find(call => call.args[0].includes('collections.json'))
-        expect(call?.args[0]).to.include(`entry_id[]=${lookupEntryId}`)
+        expect(call?.args[0]).to.include(`entry_id[]=${ENTRY_ID}`)
     })
 
     it('looks up by concept-id when given a concept-id', async () => {

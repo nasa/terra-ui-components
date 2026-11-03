@@ -129,7 +129,6 @@ export default {
     rootDir: '.',
     files: 'src/**/*.test.ts', // "default" group
     concurrentBrowsers: 3, // when more than one browser is running a time, we can hit core limits and cause test flakiness
-    testsFinishTimeout: 360000,
     nodeResolve: {
         exportConditions: ['production', 'default'],
     },

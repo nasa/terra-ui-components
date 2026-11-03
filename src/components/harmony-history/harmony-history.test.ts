@@ -1,5 +1,4 @@
 import { expect, fixture, html, elementUpdated, oneEvent } from '@open-wc/testing'
-import sinon from 'sinon'
 import { Status } from '../../apis/harmony.api.js'
 import type { SubsetJobStatus } from '../../apis/harmony.api.js'
 import './harmony-history.js'
@@ -367,10 +366,6 @@ describe('<terra-harmony-history>', () => {
     })
 
     describe('refresh()', () => {
-        afterEach(() => {
-            sinon.restore()
-        })
-
         it('should reset scroll index, loaded pages, pending pages, and total count', async () => {
             const el: any = await fixture(
                 html`<terra-harmony-history></terra-harmony-history>`
@@ -381,13 +376,12 @@ describe('<terra-harmony-history>', () => {
             el._pendingPages = new Set([2])
             el._lastPage1Data = { count: 20, jobs: [], links: [] }
 
-            // Stub invalidateQueries on the component's existing QueryClient instance rather
-            // than replacing queryClient with a partial mock. Preserving the real instance ensures
-            // QueryController and QueryClientMixin lifecycle invariants (defaultQueryOptions,
-            // unmount) remain satisfied throughout fixture execution and teardown.
-            const invalidateStub = sinon
-                .stub(el.queryClient, 'invalidateQueries')
-                .resolves()
+            let invalidateCalled = false
+            el.queryClient = {
+                invalidateQueries: async () => {
+                    invalidateCalled = true
+                },
+            }
 
             await el.refresh()
 
@@ -396,7 +390,7 @@ describe('<terra-harmony-history>', () => {
             expect(el._loadedPages.size).to.equal(0)
             expect(el._pendingPages.size).to.equal(0)
             expect(el._lastPage1Data).to.be.undefined
-            expect(invalidateStub).to.have.been.calledOnce
+            expect(invalidateCalled).to.be.true
         })
     })
 

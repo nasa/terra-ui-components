@@ -98,7 +98,11 @@ export class QueryController<
     }
 
     hostUpdate() {
-        if (!this.optionsFn || !this.queryObserver) {
+        if (
+            !this.optionsFn ||
+            !this.queryObserver ||
+            typeof this.host.queryClient?.defaultQueryOptions !== 'function'
+        ) {
             return
         }
         const defaultedOptions = this.#resolveDefaultedOptions(this.optionsFn)
@@ -121,14 +125,20 @@ export class QueryController<
 
         if (!this.queryObserver) {
             // In case observeQuery wasn't called in ctor
-            if (this.optionsFn) {
+            if (
+                this.optionsFn &&
+                typeof this.host.queryClient?.defaultQueryOptions === 'function'
+            ) {
                 this.observeQuery(this.optionsFn)
             }
 
             if (!this.queryObserver) {
                 return
             }
-        } else if (this.optionsFn) {
+        } else if (
+            this.optionsFn &&
+            typeof this.host.queryClient?.defaultQueryOptions === 'function'
+        ) {
             this.queryObserver.setOptions(
                 this.#resolveDefaultedOptions(this.optionsFn)
             )

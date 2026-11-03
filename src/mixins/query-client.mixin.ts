@@ -1,12 +1,111 @@
-import { QueryClient } from '@tanstack/query-core'
-import { persistQueryClient } from '@tanstack/query-persist-client-core'
+import {
+    type DefaultError,
+    type FetchQueryOptions,
+    QueryClient,
+    type QueryExecuteOptions,
+    type QueryKey,
+} from '@tanstack/query-core'
+import {
+    persistQueryClientRestore,
+    persistQueryClientSubscribe,
+} from '@tanstack/query-persist-client-core'
 import type { LitElement } from 'lit'
 import { duration } from '../constants.js'
 import { HttpException } from '../exceptions/http.exception.js'
 import { createIDBPersister } from '../lib/indexeddb-persister.js'
 import type { Constructor } from './mixin.types.js'
 
-export const sharedQueryClient = new QueryClient({
+export const queryClientPersister = createIDBPersister('terraQuery', {
+    dbName: 'terra-query',
+    storeName: 'query-client',
+})
+
+let mountCount = 0
+let restorePromise: Promise<void> | undefined
+let persistUnsubscribe: (() => void) | undefined
+
+const syncPersistenceSubscription = (queryClient: QueryClient) => {
+    if (mountCount > 0 && !persistUnsubscribe) {
+        persistUnsubscribe = persistQueryClientSubscribe({
+            queryClient,
+            persister: queryClientPersister,
+        })
+    }
+}
+
+const ensureRestored = (queryClient: QueryClient): Promise<void> => {
+    if (!restorePromise) {
+        const currentRestore = persistQueryClientRestore({
+            queryClient,
+            persister: queryClientPersister,
+            maxAge: duration.days(1),
+        })
+            .catch(() => undefined)
+            .then(() => {
+                if (restorePromise === currentRestore) {
+                    syncPersistenceSubscription(queryClient)
+                }
+            })
+        restorePromise = currentRestore
+    } else {
+        const currentRestore = restorePromise
+        void currentRestore.then(() => {
+            if (restorePromise === currentRestore) {
+                syncPersistenceSubscription(queryClient)
+            }
+        })
+    }
+
+    return restorePromise
+}
+
+/**
+ * Resets the one-time persistence restore state so tests can simulate a cold-start
+ * IndexedDB restoration cycle.
+ */
+export function resetQueryClientPersistence() {
+    persistUnsubscribe?.()
+    persistUnsubscribe = undefined
+    restorePromise = undefined
+}
+
+class TerraQueryClient extends QueryClient {
+    override async query<
+        TQueryFnData,
+        TError = DefaultError,
+        TData = TQueryFnData,
+        TQueryData = TQueryFnData,
+        TQueryKey extends QueryKey = QueryKey,
+        TPageParam = never,
+    >(
+        options: QueryExecuteOptions<
+            TQueryFnData,
+            TError,
+            TData,
+            TQueryData,
+            TQueryKey,
+            TPageParam
+        >
+    ): Promise<TData> {
+        await ensureRestored(this)
+        return super.query(options)
+    }
+
+    override async fetchQuery<
+        TQueryFnData,
+        TError = DefaultError,
+        TData = TQueryFnData,
+        TQueryKey extends QueryKey = QueryKey,
+        TPageParam = never,
+    >(
+        options: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey, TPageParam>
+    ): Promise<TData> {
+        await ensureRestored(this)
+        return super.fetchQuery(options)
+    }
+}
+
+export const sharedQueryClient: QueryClient = new TerraQueryClient({
     defaultOptions: {
         queries: {
             gcTime: duration.days(1),
@@ -27,39 +126,6 @@ export const sharedQueryClient = new QueryClient({
     },
 })
 
-let mountCount = 0
-let mountPromise: Promise<void> | undefined
-let persistUnsubscribe: (() => void) | undefined
-let activeLifecycleId = 0
-
-const ensureMounted = (queryClient: QueryClient) => {
-    if (!mountPromise) {
-        const lifecycleId = ++activeLifecycleId
-        const persister = createIDBPersister('terraQuery', {
-            dbName: 'terra-query',
-            storeName: 'query-client',
-        })
-
-        const [unsubscribe, restorePromise] = persistQueryClient({
-            queryClient,
-            persister,
-            maxAge: duration.days(1),
-        })
-        persistUnsubscribe = unsubscribe
-        mountPromise = restorePromise
-            .catch(() => undefined)
-            .then(() => {
-                if (lifecycleId !== activeLifecycleId) {
-                    unsubscribe()
-                    return
-                }
-                queryClient.mount()
-            })
-    }
-
-    return mountPromise
-}
-
 export interface QueryClientHost {
     queryClient: QueryClient
     queryClientReady?: Promise<void>
@@ -72,11 +138,9 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
 
         connectedCallback() {
             if (++mountCount === 1) {
-                this.queryClientReady ??= ensureMounted(this.queryClient)
-            } else {
-                this.queryClientReady ??= mountPromise
+                this.queryClient.mount()
             }
-
+            this.queryClientReady = ensureRestored(this.queryClient)
             super.connectedCallback()
         }
 
@@ -84,19 +148,9 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
             super.disconnectedCallback()
             this.queryClientReady = undefined
             if (--mountCount === 0) {
-                const currentPromise = mountPromise
-                if (currentPromise) {
-                    void currentPromise.then(() => {
-                        // Only unmount and unsubscribe if all host elements remain disconnected
-                        // and this is still the active lifecycle.
-                        if (mountCount === 0 && mountPromise === currentPromise) {
-                            persistUnsubscribe?.()
-                            persistUnsubscribe = undefined
-                            this.queryClient.unmount()
-                            mountPromise = undefined
-                        }
-                    })
-                }
+                persistUnsubscribe?.()
+                persistUnsubscribe = undefined
+                this.queryClient.unmount?.()
             }
         }
     }
