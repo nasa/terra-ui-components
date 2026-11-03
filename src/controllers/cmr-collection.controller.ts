@@ -1,10 +1,10 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
+import type { GibsLayerConfig } from '../components/map/layers/gibs.layer.js'
 import type { QueryClientHost } from '../mixins/query-client.mixin.js'
 import { queryCmrCollectionTags } from '../queries/cmr.queries.js'
-import { QueryController } from './query.controller.js'
 import cmrCollectionService from '../services/cmr-collection.service.js'
-import type { GibsLayerConfig } from '../components/map/layers/gibs.layer.js'
-import type { MapProjection } from '../components/map/type.js'
+import type { MapProjection } from '../types.js'
+import { QueryController } from './query.controller.js'
 
 const EMPTY: GibsLayerConfig[] = []
 

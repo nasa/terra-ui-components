@@ -1,11 +1,12 @@
 import type { QueryObserverOptions } from '@tanstack/query-core'
-import gibsApi, { type Projection } from '../apis/gibs.api.js'
+import gibsApi from '../apis/gibs.api.js'
 import { duration } from '../constants.js'
+import type { MapProjection } from '../types.js'
 
 const GIBS_STALE_TIME = duration.days(1)
 
 export function queryGibsCapabilitiesXml(
-    projection: Projection
+    projection: MapProjection
 ): QueryObserverOptions<string> {
     const endpoint = projection.replace(':', '').toLowerCase()
     return {

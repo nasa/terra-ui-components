@@ -1,6 +1,5 @@
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
-
-export type Projection = 'EPSG:3857' | 'EPSG:4326' | 'EPSG:3413' | 'EPSG:3031'
+import type { MapProjection } from '../types.js'
 
 export const GIBS_ROOT = 'https://gibs.earthdata.nasa.gov'
 export const GIBS_WMTS_ENDPOINT = `${GIBS_ROOT}/wmts`
@@ -11,7 +10,7 @@ export class GibsApi {
      * Fetches WMTS GetCapabilities XML for a given projection.
      */
     async getCapabilitiesXml(
-        projection: Projection,
+        projection: MapProjection,
         options?: RequestOptions
     ): Promise<string> {
         const endpoint = projection.replace(':', '').toLowerCase()

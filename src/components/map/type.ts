@@ -1,9 +1,6 @@
 import type { LatLng } from './models/LatLng.js'
 import type { LatLngBounds } from './models/LatLngBounds.js'
 
-export type MapProjection = 'EPSG:3857' | 'EPSG:4326' | 'EPSG:3413' | 'EPSG:3031'
-export type Projection = MapProjection
-
 export enum MapEventType {
     POINT = 'point',
     BBOX = 'bbox',

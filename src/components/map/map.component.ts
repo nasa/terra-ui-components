@@ -17,6 +17,7 @@ import {
     queryGiovanniShapeFiles,
 } from '../../queries/giovanni.queries.js'
 import componentStyles from '../../styles/component.styles.js'
+import type { MapProjection } from '../../types.js'
 import TerraPopup from '../popup/popup.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
@@ -35,7 +36,6 @@ import {
 import styles from './map.styles.js'
 import type { LatLng } from './models/LatLng.js'
 import type { LatLngBounds } from './models/LatLngBounds.js'
-import type { MapProjection } from './type.js'
 
 const layersConverter = {
     fromAttribute: (value: string | null): MapLayerConfig[] => {

@@ -9,7 +9,6 @@ import type { UmmResult } from '../../../apis/cmr.api.js'
 import gibsApi, {
     GIBS_LEGENDS_ENDPOINT,
     GIBS_WMTS_ENDPOINT,
-    type Projection,
 } from '../../../apis/gibs.api.js'
 import type { UmmVis } from '../../../apis/types/cmr/umm-vis.js'
 import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
@@ -18,6 +17,7 @@ import {
     queryCmrVisualizationsByLayer,
 } from '../../../queries/cmr.queries.js'
 import { queryGibsCapabilitiesXml } from '../../../queries/gibs.queries.js'
+import type { MapProjection } from '../../../types.js'
 import type { CommonConfig } from './common.js'
 import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
 import { XYZLayer } from './xyz.layer.js'
@@ -126,7 +126,7 @@ export type GibsLayerBuildOptions = {
 }
 
 async function fetchGibsCapabilities(
-    projection: Projection,
+    projection: MapProjection,
     options?: GibsLayerBuildOptions
 ): Promise<CapabilitiesEntry> {
     const endpoint = projection.replace(':', '').toLowerCase() // e.g. 'epsg4326'
@@ -171,7 +171,7 @@ async function fetchGibsCapabilities(
  * calls don't refetch the (large) capabilities document every time.
  */
 export function getGibsCapabilities(
-    projection: Projection,
+    projection: MapProjection,
     options?: GibsLayerBuildOptions
 ): Promise<any> {
     return fetchGibsCapabilities(projection, options).then(
@@ -185,7 +185,7 @@ export function getGibsCapabilities(
  * GetCapabilities document.
  */
 export async function getGibsLegendUrls(
-    projection: Projection,
+    projection: MapProjection,
     layer: string,
     options?: GibsLayerBuildOptions
 ): Promise<GibsLegendUrls | undefined> {
@@ -304,7 +304,7 @@ export type Options = {
 }
 
 const DEFAULT_MATRIX_SET_BY_PROJECTION: Record<
-    Exclude<Projection, 'EPSG:3857'>,
+    Exclude<MapProjection, 'EPSG:3857'>,
     string
 > = {
     'EPSG:4326': '2km',
@@ -359,7 +359,7 @@ export class GibsLayer extends XYZLayer {
      */
     static async forProjection(
         options: Options & {
-            projection: Exclude<Projection, 'EPSG:3857'>
+            projection: Exclude<MapProjection, 'EPSG:3857'>
             queryClient?: QueryClient
         }
     ): Promise<TileLayer> {
@@ -404,7 +404,7 @@ export class GibsLayer extends XYZLayer {
 }
 
 export type GibsLayerConfig =
-    | (Options & CommonConfig & { type: 'gibs'; projection?: Projection })
+    | (Options & CommonConfig & { type: 'gibs'; projection?: MapProjection })
     | (VectorOptions & CommonConfig & { type: 'gibs-vector' })
 
 export type GibsLayerInfo = {
