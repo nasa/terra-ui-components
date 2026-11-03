@@ -5,10 +5,18 @@ import TileLayer from 'ol/layer/Tile.js'
 import type VectorTileLayer from 'ol/layer/VectorTile.js'
 import { transformExtent } from 'ol/proj.js'
 import WMTS, { optionsFromCapabilities } from 'ol/source/WMTS.js'
+import type { UmmResult } from '../../../apis/cmr.api.js'
 import gibsApi, {
+    GIBS_LEGENDS_ENDPOINT,
     GIBS_WMTS_ENDPOINT,
     type Projection,
 } from '../../../apis/gibs.api.js'
+import type { UmmVis } from '../../../apis/types/cmr/umm-vis.js'
+import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
+import {
+    queryCmrVisualizations,
+    queryCmrVisualizationsByLayer,
+} from '../../../queries/cmr.queries.js'
 import { queryGibsCapabilitiesXml } from '../../../queries/gibs.queries.js'
 import type { CommonConfig } from './common.js'
 import { buildGibsVectorLayer, type VectorOptions } from './gibs-vector.layer.js'
@@ -185,6 +193,71 @@ export async function getGibsLegendUrls(
     return legends.get(layer)
 }
 
+function extractColorMapBaseName(item: UmmResult<UmmVis>): string | undefined {
+    const metadata = item.umm?.Specification?.ProductMetadata
+    const colorMapUrl =
+        metadata?.ColorMap ??
+        metadata?.['ows:Metadata']?.find(link =>
+            link['xlink:Role']?.includes('/colormap')
+        )?.['xlink:Href']
+
+    if (!colorMapUrl) {
+        return undefined
+    }
+
+    const fileName = colorMapUrl.split('/').pop()?.split('?')[0]
+    if (!fileName) {
+        return undefined
+    }
+
+    return fileName.replace(/\.xml$/i, '') || undefined
+}
+
+function matchesUmmVisLayer(item: UmmResult<UmmVis>, layer: string): boolean {
+    const pid = item.umm?.Specification?.ProductIdentification
+    const pmeta = item.umm?.Specification?.ProductMetadata
+    return (
+        pid?.BestAvailableExternalIdentifier === layer ||
+        pid?.StandardOrNRTExternalIdentifier === layer ||
+        pid?.InternalIdentifier === layer ||
+        pmeta?.['ows:Identifier'] === layer ||
+        pmeta?.InternalIdentifier === layer ||
+        item.umm?.Name === layer ||
+        item.umm?.Identifier === layer
+    )
+}
+
+/**
+ * Resolves a GIBS layer's horizontal and vertical color map legend SVG URLs via CMR's
+ * `visualizations.umm_json` endpoint (`Specification.ProductMetadata.ColorMap`) instead of
+ * downloading and parsing the ~5.7 MB GIBS WMTS `GetCapabilities` XML document.
+ */
+export async function getGibsLegendUrlsFromUmmVis(
+    layer: string,
+    options?: GibsLayerBuildOptions & { visualizationConceptIds?: string[] }
+): Promise<GibsLegendUrls | undefined> {
+    const queryClient = options?.queryClient ?? sharedQueryClient
+    const conceptIds = options?.visualizationConceptIds
+    const response = conceptIds?.length
+        ? await queryClient.query(queryCmrVisualizations(conceptIds))
+        : await queryClient.query(queryCmrVisualizationsByLayer(layer))
+
+    const match = response?.items?.find(item => matchesUmmVisLayer(item, layer))
+    if (!match) {
+        return undefined
+    }
+
+    const baseName = extractColorMapBaseName(match)
+    if (!baseName) {
+        return undefined
+    }
+
+    return {
+        horizontal: `${GIBS_LEGENDS_ENDPOINT}/${baseName}_H.svg`,
+        vertical: `${GIBS_LEGENDS_ENDPOINT}/${baseName}_V.svg`,
+    }
+}
+
 export type Options = {
     /** GIBS layer identifier, e.g. 'MODIS_Terra_CorrectedReflectance_TrueColor'. */
     layer: string
@@ -207,6 +280,11 @@ export type Options = {
     showBoundary?: boolean
     /** Palette index. Defaults to 0. */
     boundaryColorIndex?: number
+    /**
+     * Optional CMR visualization concept IDs (`associations.visualizations` from `collections.json`)
+     * used to batch-resolve GIBS colormap legend URLs via CMR UMM-Vis.
+     */
+    visualizationConceptIds?: string[]
 }
 
 const DEFAULT_MATRIX_SET_BY_PROJECTION: Record<
@@ -344,11 +422,12 @@ export async function buildGibsLayer(
     }
 
     const { type, projection, ...rasterOptions } = options
-    const legend = getGibsLegendUrls(
-        projection ?? 'EPSG:3857',
-        rasterOptions.layer,
-        buildOptions
-    ).catch(() => undefined)
+    // Non-destructive swap from `getGibsLegendUrls(projection ?? 'EPSG:3857', rasterOptions.layer, buildOptions)`
+    // to CMR UMM-Vis (`getGibsLegendUrlsFromUmmVis`) to avoid downloading/parsing the ~5.7 MB GIBS GetCapabilities XML.
+    const legend = getGibsLegendUrlsFromUmmVis(rasterOptions.layer, {
+        ...buildOptions,
+        visualizationConceptIds: rasterOptions.visualizationConceptIds,
+    }).catch(() => undefined)
 
     if (!projection || projection === 'EPSG:3857') {
         return { layer: new GibsLayer(rasterOptions), legend }

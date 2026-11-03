@@ -62,6 +62,7 @@ describe('<terra-map> layers (gibs)', () => {
 
     beforeEach(() => {
         originalFetch = window.fetch
+        stubFetch(makeCapabilitiesXml('EPSG:3857', 'GoogleMapsCompatible_Level9'))
     })
 
     afterEach(() => {
@@ -69,8 +70,15 @@ describe('<terra-map> layers (gibs)', () => {
     })
 
     function stubFetch(xml: string) {
-        window.fetch = (async () =>
-            new Response(xml, { status: 200 })) as typeof fetch
+        window.fetch = (async (input: RequestInfo | URL) => {
+            if (String(input).includes('visualizations.umm_json')) {
+                return new Response(JSON.stringify({ hits: 0, items: [] }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                })
+            }
+            return new Response(xml, { status: 200 })
+        }) as typeof fetch
     }
 
     describe('attribute parsing', () => {
@@ -375,9 +383,8 @@ describe('<terra-map> layers (gibs)', () => {
 
     describe('vector gibs layers (type: "gibs-vector")', () => {
         function stubVectorFetch() {
-            window.fetch = (async () =>
-                new Response(
-                    `<?xml version="1.0" encoding="UTF-8"?>
+            stubFetch(
+                `<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.0">
     <Contents>
         <Layer>
@@ -402,9 +409,8 @@ describe('<terra-map> layers (gibs)', () => {
             </TileMatrix>
         </TileMatrixSet>
     </Contents>
-</Capabilities>`,
-                    { status: 200 }
-                )) as typeof fetch
+</Capabilities>`
+            )
         }
 
         it('adds a VectorTileLayer for a type: "gibs-vector" entry', async () => {

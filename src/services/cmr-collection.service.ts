@@ -31,6 +31,15 @@ class CmrCollectionService {
     }
 
     /**
+     * Pulls the associated UMM-Vis concept IDs (`associations.visualizations`) out of a `collections.json` response.
+     */
+    extractVisualizationConceptIds(
+        response?: CmrCollectionsJsonResponse | null
+    ): string[] {
+        return response?.feed?.entry?.[0]?.associations?.visualizations ?? []
+    }
+
+    /**
      * Keeps only the entries actually available in the given map projection.
      */
     filterByProjection(
@@ -80,6 +89,7 @@ class CmrCollectionService {
             collectionId: string
             projection: Projection
             date?: string
+            visualizationConceptIds?: string[]
         }
     ): GibsLayerConfig[] {
         return entries.map((entry, index) => ({
@@ -94,6 +104,9 @@ class CmrCollectionService {
                 options.projection === 'EPSG:3857' ? undefined : options.projection,
             position: 'top',
             visible: index === 0,
+            ...(options.visualizationConceptIds?.length
+                ? { visualizationConceptIds: options.visualizationConceptIds }
+                : {}),
         }))
     }
 }

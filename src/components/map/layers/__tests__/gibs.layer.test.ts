@@ -2,11 +2,13 @@ import { expect } from '@open-wc/testing'
 import TileLayer from 'ol/layer/Tile.js'
 import ImageTile from 'ol/source/ImageTile.js'
 import WMTS from 'ol/source/WMTS.js'
+import { sharedQueryClient } from '../../../../mixins/query-client.mixin.js'
 import {
     buildGibsLayer,
     clearGibsCapabilitiesCache,
     GibsLayer,
     getGibsLegendUrls,
+    getGibsLegendUrlsFromUmmVis,
 } from '../gibs.layer.js'
 import '../../projections.js'
 
@@ -260,16 +262,50 @@ describe('GIBS color map legend URLs', () => {
     </Contents>
 </Capabilities>`
 
+    const UMM_VIS_JSON = JSON.stringify({
+        hits: 1,
+        items: [
+            {
+                meta: {
+                    'concept-id': 'VIS3974517774-ESDIS',
+                    'native-id': 'WithLegend',
+                    'provider-id': 'ESDIS',
+                },
+                umm: {
+                    Specification: {
+                        ProductIdentification: {
+                            BestAvailableExternalIdentifier: 'WithLegend',
+                        },
+                        ProductMetadata: {
+                            ColorMap:
+                                'https://gibs.earthdata.nasa.gov/colormaps/v1.3/AIRS_Temperature.xml',
+                        },
+                    },
+                },
+            },
+        ],
+    })
+
     let originalFetch: typeof fetch
 
     beforeEach(() => {
+        sharedQueryClient.clear()
         originalFetch = window.fetch
-        window.fetch = (async () =>
-            new Response(CAPABILITIES_XML, { status: 200 })) as typeof fetch
+        window.fetch = (async (input: RequestInfo | URL) => {
+            const url = String(input)
+            if (url.includes('visualizations.umm_json')) {
+                return new Response(UMM_VIS_JSON, {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                })
+            }
+            return new Response(CAPABILITIES_XML, { status: 200 })
+        }) as typeof fetch
     })
 
     afterEach(() => {
         window.fetch = originalFetch
+        sharedQueryClient.clear()
     })
 
     it('should read both the horizontal and vertical legend URLs for a layer that has them', async () => {
@@ -293,7 +329,20 @@ describe('GIBS color map legend URLs', () => {
         expect(legends).to.be.undefined
     })
 
-    it('should expose the legend on the result of buildGibsLayer() without blocking it', async () => {
+    it('should derive horizontal and vertical legend URLs from CMR UMM-Vis ColorMap metadata', async () => {
+        const legends = await getGibsLegendUrlsFromUmmVis('WithLegend', {
+            visualizationConceptIds: ['VIS3974517774-ESDIS'],
+        })
+
+        expect(legends).to.deep.equal({
+            horizontal:
+                'https://gibs.earthdata.nasa.gov/legends/AIRS_Temperature_H.svg',
+            vertical:
+                'https://gibs.earthdata.nasa.gov/legends/AIRS_Temperature_V.svg',
+        })
+    })
+
+    it('should expose the UMM-Vis legend on the result of buildGibsLayer() without blocking it', async () => {
         const result = await buildGibsLayer({
             type: 'gibs',
             name: 'with-legend',
@@ -303,8 +352,10 @@ describe('GIBS color map legend URLs', () => {
         expect(result.legend).to.be.instanceOf(Promise)
         const legends = await result.legend
         expect(legends).to.deep.equal({
-            horizontal: 'https://example.com/legend-h.svg',
-            vertical: 'https://example.com/legend-v.svg',
+            horizontal:
+                'https://gibs.earthdata.nasa.gov/legends/AIRS_Temperature_H.svg',
+            vertical:
+                'https://gibs.earthdata.nasa.gov/legends/AIRS_Temperature_V.svg',
         })
     })
 })

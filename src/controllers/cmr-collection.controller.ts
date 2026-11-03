@@ -74,12 +74,15 @@ export class CmrCollectionController implements ReactiveController {
             cmrCollectionService.extractGibsEntries(data),
             projection
         )
+        const visualizationConceptIds =
+            cmrCollectionService.extractVisualizationConceptIds(data)
 
         this.#gibsLayerConfigsCache = entries.length
             ? cmrCollectionService.buildGibsLayerConfigs(entries, {
                   collectionId,
                   projection,
                   date,
+                  visualizationConceptIds,
               })
             : EMPTY
 

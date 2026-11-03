@@ -7,6 +7,7 @@ import type { MapEventDetail } from '../components/map/type.js'
 import type { UmmC } from './types/cmr/umm-c.js'
 import type { UmmVar } from './types/cmr/umm-var.js'
 import type { UmmG } from './types/cmr/umm-g.js'
+import type { UmmVis } from './types/cmr/umm-vis.js'
 import type { CmrCollectionsJsonResponse } from './types/cmr/collection-tags.js'
 
 export type CmrCollectionCitationItem = {
@@ -222,6 +223,53 @@ class CmrApi {
 
         return this.#request<CmrCollectionsJsonResponse>(
             `collections.json?${queryParam}&include_tags=edsc*`,
+            options
+        )
+    }
+
+    /**
+     * Fetches UMM-Vis records by their CMR visualization concept-ids (e.g. from
+     * `collections.json`'s `associations.visualizations`).
+     */
+    async getVisualizationsByConceptIds(
+        conceptIds: string[],
+        options?: RequestOptions
+    ): Promise<UmmResponse<UmmVis>> {
+        if (!conceptIds.length) {
+            return { hits: 0, items: [] }
+        }
+
+        const params = new URLSearchParams({
+            page_size: String(Math.max(conceptIds.length, 100)),
+        })
+        for (const id of conceptIds) {
+            params.append('concept_id[]', id)
+        }
+
+        return this.#request<UmmResponse<UmmVis>>(
+            `visualizations.umm_json?${params.toString()}`,
+            options
+        )
+    }
+
+    /**
+     * Searches UMM-Vis records by keyword (e.g. a standalone GIBS WMTS layer identifier).
+     */
+    async searchVisualizationsByLayer(
+        layer: string,
+        options?: RequestOptions
+    ): Promise<UmmResponse<UmmVis>> {
+        if (!layer) {
+            return { hits: 0, items: [] }
+        }
+
+        const params = new URLSearchParams({
+            keyword: layer,
+            page_size: '50',
+        })
+
+        return this.#request<UmmResponse<UmmVis>>(
+            `visualizations.umm_json?${params.toString()}`,
             options
         )
     }

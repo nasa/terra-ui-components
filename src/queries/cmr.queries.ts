@@ -89,6 +89,50 @@ export function queryCmrCollectionTags(
     }
 }
 
+export function queryCmrVisualizations(
+    conceptIds?: string[],
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof cmrApi.getVisualizationsByConceptIds>
+> | null> {
+    return {
+        queryKey: ['cmr', 'visualizations', conceptIds],
+        queryFn: async ({ signal }) => {
+            if (!conceptIds?.length) {
+                return null
+            }
+            return cmrApi.getVisualizationsByConceptIds(conceptIds, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: Boolean(conceptIds?.length),
+        staleTime: duration.days(1),
+    }
+}
+
+export function queryCmrVisualizationsByLayer(
+    layer?: string,
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof cmrApi.searchVisualizationsByLayer>
+> | null> {
+    return {
+        queryKey: ['cmr', 'visualizations-by-layer', layer],
+        queryFn: async ({ signal }) => {
+            if (!layer) {
+                return null
+            }
+            return cmrApi.searchVisualizationsByLayer(layer, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: Boolean(layer),
+        staleTime: duration.days(1),
+    }
+}
+
 export function queryCmrSampling(
     collectionEntryId?: string,
     options?: RequestOptions
