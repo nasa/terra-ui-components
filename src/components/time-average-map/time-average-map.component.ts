@@ -1046,28 +1046,27 @@ export default class TerraTimeAverageMap extends AuthMixin(
                 )}
             </div>
 
-                <div class="map-container">
-                    <terra-map
-                        fill
-                        show-graticule
-                        .layers=${
-                            this.blobUrl
-                                ? [
-                                      {
-                                          type: 'geotiff',
-                                          name: 'geotiff',
-                                          url: this.blobUrl,
-                                          noDataValue: this.noDataValue,
-                                          colorMapName: this.colorMapName,
-                                          opacity: this.opacity,
-                                          fitView: true,
-                                      },
-                                  ]
-                                : []
-                        }
-                        @terra-map-layer-change=${this.#handleLayerChange}
-                    ></terra-map>
-                </div>
+            <div class="map-container">
+                <terra-map
+                    fill
+                    show-graticule
+                    .layers=${
+                        this.blobUrl
+                            ? [
+                                  {
+                                      type: 'geotiff',
+                                      name: 'geotiff',
+                                      url: this.blobUrl,
+                                      noDataValue: this.noDataValue,
+                                      colorMapName: this.colorMapName,
+                                      opacity: this.opacity,
+                                      fitView: true,
+                                  },
+                              ]
+                            : []
+                    }
+                    @terra-map-layer-change=${this.#handleLayerChange}
+                ></terra-map>
 
                 <div id="settings">
                     <div>
