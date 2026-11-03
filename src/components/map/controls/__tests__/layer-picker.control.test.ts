@@ -630,6 +630,7 @@ describe('LayerPickerControl', () => {
             gibsLayer.set('name', 'modis-aod')
             gibsLayer.set('title', 'MODIS Aerosol Optical Depth')
             gibsLayer.set('type', 'visualization')
+            gibsLayer.set('__gibsBins', ['0.0 ppbv', '100.0 ppbv', '200.0 ppbv'])
             gibsLayer.set(
                 'legend',
                 Promise.resolve({ horizontal: 'https://example.com/airs-temp.svg' })
@@ -650,7 +651,7 @@ describe('LayerPickerControl', () => {
             expect(gibsLegend.getAttribute('aria-label')).to.equal(
                 'MODIS Aerosol Optical Depth color map legend'
             )
-            expect(gibsLegend.getAttribute('aria-valuenow')).to.equal('0')
+            expect(gibsLegend.getAttribute('aria-valuenow')).to.equal('1')
 
             // Image is sandboxed by browser engine
             const img = gibsLegend.querySelector(
@@ -669,6 +670,45 @@ describe('LayerPickerControl', () => {
             expect(call.title).to.equal('MODIS Aerosol Optical Depth')
             expect(call.type).to.equal('visualization')
             expect(call.valueChosen).to.exist
+        })
+
+        it('gracefully degrades GIBS legend to a static visual legend without slider role or tabindex when bins are absent', async () => {
+            const gibsLayer = new VectorLayer({
+                source: new VectorSource(),
+                visible: true,
+            })
+            gibsLayer.set('name', 'modis-fallback')
+            gibsLayer.set('title', 'MODIS Fallback Layer')
+            gibsLayer.set('type', 'visualization')
+            gibsLayer.set(
+                'legend',
+                Promise.resolve({ horizontal: 'https://example.com/fallback.svg' })
+            )
+            map.addLayer(gibsLayer)
+
+            await new Promise(r => setTimeout(r, 50))
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gibsLegend = panel.querySelector(
+                '.layer-picker-legend-static'
+            ) as HTMLElement
+            expect(gibsLegend).to.exist
+            expect(gibsLegend.getAttribute('role')).to.be.null
+            expect(gibsLegend.getAttribute('tabindex')).to.be.null
+            expect(gibsLegend.classList.contains('layer-picker-legend-static')).to.be
+                .true
+
+            const img = gibsLegend.querySelector(
+                '.layer-picker-legend-img'
+            ) as HTMLImageElement
+            expect(img).to.exist
+            expect(img.src).to.equal('https://example.com/fallback.svg')
+            expect(img.alt).to.equal('MODIS Fallback Layer color map legend')
+            expect(img.loading).to.equal('lazy')
+
+            expect(gibsLegend.querySelector('terra-popup')).to.be.null
         })
 
         it('supports keyboard slider navigation and popover on GIBS legend with bins', async () => {

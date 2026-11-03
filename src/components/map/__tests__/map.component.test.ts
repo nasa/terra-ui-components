@@ -8,7 +8,9 @@ import VectorSource from 'ol/source/Vector.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import { apiClient } from '../../../lib/api.client.js'
+import { gibsApi } from '../../../apis/gibs.api.js'
 import { sharedQueryClient } from '../../../mixins/query-client.mixin.js'
+import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
 import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'
 import '../map.js'
@@ -242,6 +244,55 @@ describe('<terra-map> layers (gibs)', () => {
             const layer = el.getLayer('polar') as TileLayer | undefined
             expect(layer).to.exist
             expect(layer?.getSource()).to.be.instanceOf(WMTS)
+        })
+
+        it('gates declarative GIBS layer builds on queryClientReady hydration', async () => {
+            clearGibsCapabilitiesCache()
+            sharedQueryClient.clear()
+
+            let resolveReady!: () => void
+            const delayedReady = new Promise<void>(resolve => {
+                resolveReady = resolve
+            })
+
+            const getCapStub = sinon
+                .stub(gibsApi, 'getCapabilitiesXml')
+                .resolves(makeCapabilitiesXml('EPSG:3413', '1km'))
+
+            try {
+                const el = document.createElement('terra-map') as TerraMap
+                el.queryClientReady = delayedReady
+                el.layers = [
+                    {
+                        type: 'gibs',
+                        name: 'polar-gated',
+                        layer: 'TestLayer',
+                        projection: 'EPSG:3413',
+                    },
+                ]
+                document.body.appendChild(el)
+
+                // Allow firstUpdated and initial tick to run
+                await new Promise(r => setTimeout(r, 50))
+
+                // Capabilities fetch must NOT have been called while hydration is pending
+                expect(getCapStub.called).to.be.false
+
+                // Resolve hydration gate
+                resolveReady()
+                await waitUntil(
+                    () => el.getLayer('polar-gated') !== undefined,
+                    'layer added after hydration',
+                    { timeout: 8000 }
+                )
+
+                expect(getCapStub.calledOnce).to.be.true
+                el.remove()
+            } finally {
+                getCapStub.restore()
+                clearGibsCapabilitiesCache()
+                sharedQueryClient.clear()
+            }
         })
     })
 

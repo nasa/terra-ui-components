@@ -1333,6 +1333,27 @@ export class LayerPickerControl extends Control {
         return nothing
     }
 
+    #renderFallbackLegend(name: string, title: string, url: string) {
+        return html`
+            <div
+                class="layer-picker-legend layer-picker-legend-gibs layer-picker-legend-static"
+                data-legend-container=${name}
+            >
+                <img
+                    class="layer-picker-legend-img"
+                    src=${url}
+                    alt="${title} color map legend"
+                    loading="lazy"
+                    @load=${() => {
+                        if (this.#isOpen) {
+                            this.#scrollToFirstSelectedLayer()
+                        }
+                    }}
+                />
+            </div>
+        `
+    }
+
     #renderGibsImgLegend(layer: BaseLayer, url: string) {
         const name = layer.get('name') ?? ''
         const title = layer.get('title') ?? ''
@@ -1351,6 +1372,10 @@ export class LayerPickerControl extends Control {
         )
         const currentRamp = ramps[activeRampIdx]
         const currentBins = currentRamp.bins
+        if (currentBins.length === 0) {
+            return this.#renderFallbackLegend(name, title, url)
+        }
+
         const maxIdx = Math.max(0, currentBins.length - 1)
         const currentIdx = Math.min(
             maxIdx,
@@ -1363,10 +1388,7 @@ export class LayerPickerControl extends Control {
                         : Math.floor(currentBins.length / 2))
             )
         )
-        const currentRawValue =
-            currentBins.length > 0
-                ? currentBins[currentIdx]
-                : `${layer.get('__legendPercent') ?? 50}%`
+        const currentRawValue = currentBins[currentIdx]
         const currentDisplayValue =
             currentRamp.title && ramps.length > 1
                 ? `${currentRamp.title}: ${currentRawValue}`
@@ -1697,10 +1719,7 @@ export class LayerPickerControl extends Control {
                 case ' ': {
                     e.preventDefault()
                     e.stopPropagation()
-                    const chosenValue =
-                        currentBins.length > 0
-                            ? currentBins[currentIdx]
-                            : `${layer.get(`__legendPercent_${activeRampIdx}`) ?? 50}%`
+                    const chosenValue = currentBins[currentIdx]
                     this.#options?.onLegendClick?.({
                         name,
                         title,

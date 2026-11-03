@@ -939,6 +939,10 @@ export default css`
         width: 100%;
         cursor: crosshair;
 
+        &.layer-picker-legend-static {
+            cursor: default;
+        }
+
         &:focus-visible {
             outline: var(--terra-focus-ring);
             outline-offset: var(--terra-focus-ring-offset);

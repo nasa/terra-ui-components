@@ -30,9 +30,11 @@ export const sharedQueryClient = new QueryClient({
 let mountCount = 0
 let mountPromise: Promise<void> | undefined
 let persistUnsubscribe: (() => void) | undefined
+let activeLifecycleId = 0
 
 const ensureMounted = (queryClient: QueryClient) => {
     if (!mountPromise) {
+        const lifecycleId = ++activeLifecycleId
         const persister = createIDBPersister('terraQuery', {
             dbName: 'terra-query',
             storeName: 'query-client',
@@ -47,6 +49,10 @@ const ensureMounted = (queryClient: QueryClient) => {
         mountPromise = restorePromise
             .catch(() => undefined)
             .then(() => {
+                if (lifecycleId !== activeLifecycleId) {
+                    unsubscribe()
+                    return
+                }
                 queryClient.mount()
             })
     }
@@ -66,9 +72,9 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
 
         connectedCallback() {
             if (++mountCount === 1) {
-                this.queryClientReady = ensureMounted(this.queryClient)
+                this.queryClientReady ??= ensureMounted(this.queryClient)
             } else {
-                this.queryClientReady = mountPromise
+                this.queryClientReady ??= mountPromise
             }
 
             super.connectedCallback()
@@ -76,25 +82,20 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
 
         disconnectedCallback() {
             super.disconnectedCallback()
+            this.queryClientReady = undefined
             if (--mountCount === 0) {
                 const currentPromise = mountPromise
-                const currentUnsubscribe = persistUnsubscribe
-                mountPromise = undefined
-                persistUnsubscribe = undefined
-
                 if (currentPromise) {
                     void currentPromise.then(() => {
-                        // Only unmount and unsubscribe if all host elements remain disconnected.
-                        // If another component mounted while this promise was in flight, the
-                        // shared client is actively in use and must remain mounted.
-                        if (mountCount === 0) {
-                            currentUnsubscribe?.()
+                        // Only unmount and unsubscribe if all host elements remain disconnected
+                        // and this is still the active lifecycle.
+                        if (mountCount === 0 && mountPromise === currentPromise) {
+                            persistUnsubscribe?.()
+                            persistUnsubscribe = undefined
                             this.queryClient.unmount()
+                            mountPromise = undefined
                         }
                     })
-                } else {
-                    currentUnsubscribe?.()
-                    this.queryClient.unmount()
                 }
             }
         }
