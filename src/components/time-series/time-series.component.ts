@@ -2,9 +2,7 @@ import componentStyles from '../../styles/component.styles.js'
 import styles from './time-series.styles.js'
 import TerraButton from '../button/button.component.js'
 import TerraAlert from '../alert/alert.component.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraPlot from '../plot/plot.component.js'
@@ -21,7 +19,7 @@ import {
     formatHarmonyErrorMessage,
 } from '../../utilities/harmony.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { cache } from 'lit/directives/cache.js'
 import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
@@ -70,7 +68,9 @@ const variableEntryIdsConverter = {
  * @event terra-time-series-loading-change - Emitted whenever loading starts or ends
  * @event terra-time-series-chunk-progress-change - Emitted whenever chunked Harmony requests advance
  */
-export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
+export default class TerraTimeSeries extends AuthMixin(
+    QueryClientMixin(TerraElement)
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-plot': TerraPlot,
@@ -158,18 +158,6 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     @property({ type: Boolean, attribute: 'disable-auto-fetch' })
     disableAutoFetch = false
 
-    /**
-     * The token to be used for authentication with remote servers.
-     * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
-     * The property's value will be inserted after "Bearer" (the authentication scheme).
-     */
-    @property({
-        attribute: 'bearer-token',
-        reflect: false,
-        converter: undefinedStringConverter,
-    })
-    bearerToken?: string
-
     @property({
         attribute: 'mobile-view',
         type: Boolean,
@@ -249,8 +237,6 @@ export default class TerraTimeSeries extends QueryClientMixin(TerraElement) {
     }
 
     #isLoading = false
-
-    _authController = new AuthController(this)
 
     _fetchVariableTask = getFetchVariableTask(this)
 

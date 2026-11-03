@@ -10,13 +10,11 @@ import VectorLayer from 'ol/layer/Vector.js'
 import { toLonLat } from 'ol/proj.js'
 import VectorSource from 'ol/source/Vector.js'
 import { getLength } from 'ol/sphere.js'
-import { AuthController } from '../../auth/auth.controller.js'
 import type { TerraMapPointerMoveEvent } from '../../events/events.js'
 import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import { formatDate } from '../../utilities/date.js'
@@ -38,7 +36,9 @@ import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { TimeAvgMapController } from './time-average-map.controller.js'
 import styles from './time-average-map.styles.js'
 
-export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) {
+export default class TerraTimeAverageMap extends AuthMixin(
+    QueryClientMixin(TerraElement)
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-button': TerraButton,
@@ -55,12 +55,6 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
     @property({ attribute: 'start-date', reflect: true }) startDate?: string
     @property({ attribute: 'end-date', reflect: true }) endDate?: string
     @property({ reflect: true }) location?: string
-    @property({
-        attribute: 'bearer-token',
-        reflect: false,
-        converter: undefinedStringConverter,
-    })
-    bearerToken: string
     @property({ type: String }) long_name = ''
     @property({ type: String, attribute: 'color-map-name', reflect: true })
     colorMapName: string = 'viridis'
@@ -126,8 +120,6 @@ export default class TerraTimeAverageMap extends QueryClientMixin(TerraElement) 
     #draw: Draw | null = null
 
     @query('terra-map') innerMap: TerraMap
-
-    _authController = new AuthController(this)
 
     @state() private blobUrl?: string
     @state() colormaps = [

@@ -143,9 +143,7 @@ export default class TerraElement extends LitElement {
                     this.#io?.disconnect()
                     this.#io = undefined
                     this.isVisible = true
-
-                    // Give dialog animations time to finish
-                    setTimeout(() => this.firstVisible(), 500)
+                    this.firstVisible()
                 }
             },
             { root: null, threshold: 0 }

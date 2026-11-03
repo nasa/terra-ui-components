@@ -1,24 +1,22 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { QueryController } from '../../controllers/query.controller.js'
+import type { SubsetJobLink, SubsetJobStatus } from '../../apis/harmony.api.js'
+import { FINAL_STATUSES } from '../../apis/harmony.api.js'
 import { MutationController } from '../../controllers/mutation.controller.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
+import { QueryController } from '../../controllers/query.controller.js'
+import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import {
     mutationRemoveHarmonyJobLabels,
     queryHarmonyJobs,
 } from '../../queries/harmony.queries.js'
 import componentStyles from '../../styles/component.styles.js'
-import styles from './harmony-history.styles.js'
-import { AuthController } from '../../auth/auth.controller.js'
-import { FINAL_STATUSES } from '../../apis/harmony.api.js'
-import type { SubsetJobStatus, SubsetJobLink } from '../../apis/harmony.api.js'
+import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraTooltip from '../tooltip/tooltip.component.js'
-import TerraIcon from '../icon/icon.component.js'
+import styles from './harmony-history.styles.js'
 import '../../events/terra-harmony-job-select.js'
 import '../../events/terra-harmony-job-delete.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
@@ -63,7 +61,9 @@ function formatDatetimeUtc(dateStr: string | undefined): string {
  * @csspart track - The inner flex container that translates to implement scrolling.
  * @csspart thumbnail - Each individual job thumbnail wrapper.
  */
-export default class TerraHarmonyHistory extends QueryClientMixin(TerraElement) {
+export default class TerraHarmonyHistory extends AuthMixin(
+    QueryClientMixin(TerraElement)
+) {
     static styles: CSSResultGroup = [componentStyles, styles]
 
     static dependencies: Record<string, typeof TerraElement> = {
@@ -71,12 +71,6 @@ export default class TerraHarmonyHistory extends QueryClientMixin(TerraElement) 
         'terra-tooltip': TerraTooltip,
         'terra-icon': TerraIcon,
     }
-
-    @property({
-        attribute: 'bearer-token',
-        converter: undefinedStringConverter,
-    })
-    override bearerToken?: string
 
     @property({ type: Number })
     limit: number = 20
@@ -112,8 +106,6 @@ export default class TerraHarmonyHistory extends QueryClientMixin(TerraElement) 
     private _showTooltipTimer?: number
     private _refreshPage1Timer?: number
     private _resizeObserver?: ResizeObserver
-
-    _authController = new AuthController(this)
 
     _removeLabelsOnDeleteMutation = new MutationController(
         this,
@@ -339,7 +331,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(TerraElement) 
                     harmonyRequest.options.startDate && harmonyRequest.options.endDate
                         ? `
                     <div class="text-gray-300 tooltip-row">
-                        <terra-icon library="heroicons" name="solid-calendar-date-range"></terra-icon> 
+                        <terra-icon library="heroicons" name="solid-calendar-date-range"></terra-icon>
                         ${formatDatetimeUtc(harmonyRequest.options.startDate)} to ${formatDatetimeUtc(harmonyRequest.options.endDate)}
                     </div>
                 `
@@ -356,7 +348,7 @@ export default class TerraHarmonyHistory extends QueryClientMixin(TerraElement) 
                         </div>`
                         : `<div class="text-gray-300 tooltip-row">Status: ${job?.status}</div>`
                 }
-                
+
             `
         }
 

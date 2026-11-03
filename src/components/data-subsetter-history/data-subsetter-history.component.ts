@@ -1,19 +1,17 @@
-import { property, query, state } from 'lit/decorators.js'
-import { html, nothing } from 'lit'
-import componentStyles from '../../styles/component.styles.js'
-import TerraElement, {
-    undefinedStringConverter,
-} from '../../internal/terra-element.js'
-import styles from './data-subsetter-history.styles.js'
 import type { CSSResultGroup } from 'lit'
+import { html, nothing } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
+import { Status, type SubsetJobStatus } from '../../apis/harmony.api.js'
 import { QueryController } from '../../controllers/query.controller.js'
+import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
 import { queryHarmonyJobs } from '../../queries/harmony.queries.js'
-import TerraIcon from '../icon/icon.component.js'
+import componentStyles from '../../styles/component.styles.js'
 import TerraDataSubsetter from '../data-subsetter/data-subsetter.component.js'
 import TerraDialog from '../dialog/dialog.component.js'
-import { AuthController } from '../../auth/auth.controller.js'
-import { Status, type SubsetJobStatus } from '../../apis/harmony.api.js'
+import TerraIcon from '../icon/icon.component.js'
+import styles from './data-subsetter-history.styles.js'
 
 /**
  * @summary Shows a floating panel with a user's recent data subset requests and their status, with quick access to results and re-submission.
@@ -25,8 +23,8 @@ import { Status, type SubsetJobStatus } from '../../apis/harmony.api.js'
  * @dependency terra-data-subsetter
  * @dependency terra-dialog
  */
-export default class TerraDataSubsetterHistory extends QueryClientMixin(
-    TerraElement
+export default class TerraDataSubsetterHistory extends AuthMixin(
+    QueryClientMixin(TerraElement)
 ) {
     static dependencies: Record<string, typeof TerraElement> = {
         'terra-icon': TerraIcon,
@@ -37,12 +35,6 @@ export default class TerraDataSubsetterHistory extends QueryClientMixin(
 
     @property()
     label: string = 'History'
-
-    @property({
-        attribute: 'bearer-token',
-        converter: undefinedStringConverter,
-    })
-    bearerToken: string
 
     /**
      * if a user has never done a subset request, by default they don't see the history panel at all
@@ -72,7 +64,6 @@ export default class TerraDataSubsetterHistory extends QueryClientMixin(
     jobsQuery = new QueryController(this, () =>
         queryHarmonyJobs({ page: 1 }, { bearerToken: this.bearerToken })
     )
-    _authController = new AuthController(this)
 
     private toggleCollapsed() {
         this.collapsed = !this.collapsed
@@ -299,7 +290,7 @@ export default class TerraDataSubsetterHistory extends QueryClientMixin(
                     return [key.trim(), value]
                 })
             )
-        } catch (e) {
+        } catch {
             return {}
         }
     }

@@ -19,7 +19,7 @@ layout: component
 
 ```html:preview
 <div style="height: 300px;">
-<terra-spatial-picker has-navigation has-shape-selector has-coord-tracker></terra-spatial-picker>
+<terra-spatial-picker has-navigation has-shape-selector></terra-spatial-picker>
 </div>
 ```
 

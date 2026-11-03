@@ -113,3 +113,12 @@ export function isDateRangeContained(
 
     return startOfDay1 >= startOfDay2 && endOfDay1 <= endOfDay2
 }
+
+/**
+ * Returns yesterday's date in ISO format: YYYY-MM-DD.
+ */
+export function getYesterdayIsoDate(): string {
+    const yesterday = new Date(Date.now() - 86_400_000) // 24 * 60 * 60 * 1000 milliseconds in a day
+
+    return yesterday.toISOString().slice(0, 10)
+}
