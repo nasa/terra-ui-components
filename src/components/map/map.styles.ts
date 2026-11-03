@@ -610,8 +610,7 @@ export default css`
         overscroll-behavior: contain;
     }
 
-    .layer-picker-panel.has-legends,
-    .layer-picker-panel:has(.layer-picker-legend) {
+    .layer-picker-panel:has(.layer-picker-section--visualizations) {
         width: clamp(20rem, 80cqw, 32rem);
     }
 
@@ -729,7 +728,6 @@ export default css`
     .layer-picker-viz-header .layer-picker-item {
         flex: 1 1 auto;
         min-width: 0;
-        // overflow: hidden;
     }
 
     .layer-picker-viz-header .layer-picker-item span {

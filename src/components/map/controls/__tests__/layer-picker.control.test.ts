@@ -1,13 +1,13 @@
 import { expect } from '@open-wc/testing'
-import sinon from 'sinon'
 import { Map as OlMap, View } from 'ol'
 import TileLayer from 'ol/layer/Tile.js'
 import VectorLayer from 'ol/layer/Vector.js'
 import VectorSource from 'ol/source/Vector.js'
+import sinon from 'sinon'
 import {
-    LayerPickerControl,
     extractGibsBins,
     extractGibsLegendData,
+    LayerPickerControl,
 } from '../layer-picker.control.js'
 
 describe('LayerPickerControl', () => {
@@ -1163,6 +1163,80 @@ describe('LayerPickerControl', () => {
             )
         })
 
+        it('supports mouse drag-and-drop with eager adjacent targeting and edge auto-scrolling', () => {
+            const reorderSpy = sinon.spy()
+            pickerControl.setOptions({ onLayerOrderChange: reorderSpy })
+
+            const secondViz = new TileLayer({ visible: true })
+            secondViz.set('name', 'second-viz')
+            secondViz.set('title', 'Second Visualization')
+            secondViz.set('type', 'visualization')
+            map.addLayer(secondViz)
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            expect(items.length).to.equal(2)
+            // items[0] is second-viz, items[1] is temp-anomaly
+
+            const handle = items[0].querySelector(
+                '.layer-picker-drag-handle'
+            ) as HTMLButtonElement
+
+            // Start dragging top item (second-viz)
+            const dataTransfer = new DataTransfer()
+            handle.dispatchEvent(
+                new DragEvent('dragstart', {
+                    bubbles: true,
+                    cancelable: true,
+                    dataTransfer,
+                })
+            )
+
+            // Drag over the bottom item (temp-anomaly).
+            // Even if the cursor is near the top of temp-anomaly (e.clientY inside header),
+            // eager neighbor targeting marks drop-target-below because it is the adjacent card below.
+            const bottomCard = items[1] as HTMLElement
+            const bottomRect = bottomCard.getBoundingClientRect()
+            const dragOverEvt = new DragEvent('dragover', {
+                bubbles: true,
+                cancelable: true,
+                clientY: bottomRect.top + 5,
+                dataTransfer,
+            })
+            bottomCard.dispatchEvent(dragOverEvt)
+
+            expect(dragOverEvt.defaultPrevented).to.be.true
+            expect(bottomCard.classList.contains('drop-target-below')).to.be.true
+            expect(bottomCard.classList.contains('drop-target-above')).to.be.false
+
+            // Drop onto bottom item
+            const dropEvt = new DragEvent('drop', {
+                bubbles: true,
+                cancelable: true,
+                dataTransfer,
+            })
+            bottomCard.dispatchEvent(dropEvt)
+
+            expect(reorderSpy.calledOnce).to.be.true
+            expect(reorderSpy.firstCall.args[0].names).to.deep.equal([
+                'second-viz',
+                'temp-anomaly',
+            ])
+
+            // Verify DOM order updated
+            const reordered = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            expect(reordered[0].getAttribute('data-layer-name')).to.equal(
+                'temp-anomaly'
+            )
+            expect(reordered[1].getAttribute('data-layer-name')).to.equal(
+                'second-viz'
+            )
+        })
+
         it('stops propagation of wheel events on the panel so map does not scroll/zoom', () => {
             const element = pickerControl.element
             const panel = element.querySelector('.layer-picker-panel') as HTMLElement
@@ -1255,14 +1329,15 @@ describe('LayerPickerControl', () => {
             element.removeEventListener('keydown', elementKeydownSpy)
         })
 
-        it('keeps the panel wide (has-legends) when all visualization layers with colormap legends are unchecked', () => {
+        it('keeps the visualizations section rendered so CSS :has(.layer-picker-section--visualizations) maintains wide width when all visualization layers are unchecked', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
             ) as HTMLElement
 
             // Initially vizLayer is visible and has a colormap legend
             expect(vizLayer.getVisible()).to.be.true
-            expect(panel.classList.contains('has-legends')).to.be.true
+            expect(panel.querySelector('.layer-picker-section--visualizations')).to
+                .exist
             expect(panel.querySelector('.layer-picker-legend')).to.exist
 
             // Uncheck the visualization layer so no .layer-picker-legend is rendered
@@ -1274,7 +1349,8 @@ describe('LayerPickerControl', () => {
 
             expect(vizLayer.getVisible()).to.be.false
             expect(panel.querySelector('.layer-picker-legend')).to.be.null
-            expect(panel.classList.contains('has-legends')).to.be.true
+            expect(panel.querySelector('.layer-picker-section--visualizations')).to
+                .exist
         })
 
         it('scrolls to the first selected layer upon opening the panel and re-scrolls on legend image load', async () => {
@@ -1326,6 +1402,246 @@ describe('LayerPickerControl', () => {
             img.dispatchEvent(new Event('load'))
             await new Promise(r => setTimeout(r, 50))
             expect(selectedCard.isConnected).to.be.true
+        })
+
+        it('implements W3C APG roving tabindex starting at the first selected layer (layer 0 at bottom)', () => {
+            const secondViz = new TileLayer({ visible: false })
+            secondViz.set('name', 'second-viz')
+            secondViz.set('title', 'Second Visualization')
+            secondViz.set('type', 'visualization')
+            map.addLayer(secondViz)
+
+            // Close and reopen the panel to trigger fresh initialization
+            const toggleBtn = pickerControl.element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggleBtn.click() // close
+            toggleBtn.click() // open
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            expect(items.length).to.equal(2)
+            // In UI order (topmost first): items[0] is second-viz (unchecked), items[1] is temp-anomaly (checked layer 0)
+            expect(items[0].getAttribute('data-layer-name')).to.equal('second-viz')
+            expect(items[1].getAttribute('data-layer-name')).to.equal('temp-anomaly')
+
+            // Inactive layer (top item) controls must be tabindex="-1"
+            const topCheckbox = items[0].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            const topGear = items[0].querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            const topHandle = items[0].querySelector(
+                '.layer-picker-drag-handle'
+            ) as HTMLButtonElement
+            expect(topCheckbox.getAttribute('tabindex')).to.equal('-1')
+            expect(topGear.getAttribute('tabindex')).to.equal('-1')
+            expect(topHandle.getAttribute('tabindex')).to.equal('-1')
+
+            // Active selected layer (bottom item) controls must be tabindex="0"
+            const bottomCheckbox = items[1].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            const bottomGear = items[1].querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            const bottomHandle = items[1].querySelector(
+                '.layer-picker-drag-handle'
+            ) as HTMLButtonElement
+            expect(bottomCheckbox.getAttribute('tabindex')).to.equal('0')
+            expect(bottomGear.getAttribute('tabindex')).to.equal('0')
+            expect(bottomHandle.getAttribute('tabindex')).to.equal('0')
+        })
+
+        it('supports keyboard ArrowUp/ArrowDown, Home, End navigation and focusin sync across visualization checkboxes', () => {
+            const secondViz = new TileLayer({ visible: false })
+            secondViz.set('name', 'second-viz')
+            secondViz.set('title', 'Second Visualization')
+            secondViz.set('type', 'visualization')
+            map.addLayer(secondViz)
+
+            // Close and reopen to ensure roving target starts at the selected bottom layer
+            const toggleBtn = pickerControl.element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggleBtn.click() // close
+            toggleBtn.click() // open
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            const topCheckbox = items[0].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            const bottomCheckbox = items[1].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+
+            bottomCheckbox.focus()
+            expect(bottomCheckbox.getAttribute('tabindex')).to.equal('0')
+            expect(topCheckbox.getAttribute('tabindex')).to.equal('-1')
+
+            // ArrowUp from bottom checkbox moves visual focus UP to top checkbox
+            const arrowUp = new KeyboardEvent('keydown', {
+                key: 'ArrowUp',
+                bubbles: true,
+                cancelable: true,
+            })
+            bottomCheckbox.dispatchEvent(arrowUp)
+
+            expect(arrowUp.defaultPrevented).to.be.true
+            const updatedItems = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            const updatedTopCheckbox = updatedItems[0].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            const updatedBottomCheckbox = updatedItems[1].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            expect(updatedTopCheckbox.getAttribute('tabindex')).to.equal('0')
+            expect(updatedBottomCheckbox.getAttribute('tabindex')).to.equal('-1')
+            expect(document.activeElement).to.equal(updatedTopCheckbox)
+
+            // ArrowDown from top checkbox moves visual focus DOWN back to bottom checkbox
+            const arrowDown = new KeyboardEvent('keydown', {
+                key: 'ArrowDown',
+                bubbles: true,
+                cancelable: true,
+            })
+            updatedTopCheckbox.dispatchEvent(arrowDown)
+
+            expect(arrowDown.defaultPrevented).to.be.true
+            const itemsAfterDown = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            const topCheckboxAfterDown = itemsAfterDown[0].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            const bottomCheckboxAfterDown = itemsAfterDown[1].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            expect(bottomCheckboxAfterDown.getAttribute('tabindex')).to.equal('0')
+            expect(topCheckboxAfterDown.getAttribute('tabindex')).to.equal('-1')
+            expect(document.activeElement).to.equal(bottomCheckboxAfterDown)
+
+            // ArrowDown from bottom checkbox wraps around to top checkbox
+            const wrapDown = new KeyboardEvent('keydown', {
+                key: 'ArrowDown',
+                bubbles: true,
+                cancelable: true,
+            })
+            bottomCheckboxAfterDown.dispatchEvent(wrapDown)
+
+            expect(wrapDown.defaultPrevented).to.be.true
+            const itemsAfterWrap = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            expect(
+                itemsAfterWrap[0]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('0')
+            expect(document.activeElement).to.equal(
+                itemsAfterWrap[0].querySelector('input[type="checkbox"]')
+            )
+
+            // End key jumps directly to the bottom layer
+            const endEvent = new KeyboardEvent('keydown', {
+                key: 'End',
+                bubbles: true,
+                cancelable: true,
+            })
+            itemsAfterWrap[0]
+                .querySelector('input[type="checkbox"]')
+                ?.dispatchEvent(endEvent)
+            expect(endEvent.defaultPrevented).to.be.true
+            const itemsAfterEnd = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            expect(
+                itemsAfterEnd[1]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('0')
+            expect(document.activeElement).to.equal(
+                itemsAfterEnd[1].querySelector('input[type="checkbox"]')
+            )
+
+            // Home key jumps directly to the top layer
+            const homeEvent = new KeyboardEvent('keydown', {
+                key: 'Home',
+                bubbles: true,
+                cancelable: true,
+            })
+            itemsAfterEnd[1]
+                .querySelector('input[type="checkbox"]')
+                ?.dispatchEvent(homeEvent)
+            expect(homeEvent.defaultPrevented).to.be.true
+            const itemsAfterHome = panel.querySelectorAll(
+                '.layer-picker-visualization-item'
+            )
+            expect(
+                itemsAfterHome[0]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('0')
+            expect(document.activeElement).to.equal(
+                itemsAfterHome[0].querySelector('input[type="checkbox"]')
+            )
+
+            // Focusin on a card synchronizes the roving tab stop
+            itemsAfterHome[1].dispatchEvent(new Event('focusin', { bubbles: true }))
+            expect(
+                itemsAfterHome[1]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('0')
+            expect(
+                itemsAfterHome[0]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('-1')
+        })
+
+        it('falls back to the first visual item when all visualization layers are unchecked', () => {
+            vizLayer.setVisible(false)
+
+            const secondViz = new TileLayer({ visible: false })
+            secondViz.set('name', 'second-viz')
+            secondViz.set('title', 'Second Visualization')
+            secondViz.set('type', 'visualization')
+            map.addLayer(secondViz)
+
+            // Close and reopen with both layers hidden
+            const toggleBtn = pickerControl.element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggleBtn.click() // close
+            toggleBtn.click() // open
+
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            expect(items.length).to.equal(2)
+
+            // Top item defaults to tabindex="0" when no layer is selected
+            expect(
+                items[0]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('0')
+            expect(
+                items[1]
+                    .querySelector('input[type="checkbox"]')
+                    ?.getAttribute('tabindex')
+            ).to.equal('-1')
         })
     })
 })

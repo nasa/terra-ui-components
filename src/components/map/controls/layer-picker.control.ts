@@ -428,6 +428,18 @@ export function extractGibsBins(rawSvg: string): string[] {
 export class LayerPickerControl extends Control {
     declare public element: HTMLElement
 
+    /**
+     * Name of the visualization layer currently designated as the roving tab stop.
+     *
+     * In OpenLayers, layer 0 is the bottom render layer (`visualizationLayers[0]`).
+     * In the UI, layers are presented topmost-first (`.toReversed()`), placing layer 0
+     * at the visual bottom. In NASA CMR datasets, layer 0 is visible (the active colormap)
+     * while higher layers default to unchecked. Following the W3C ARIA APG Roving Tabindex
+     * pattern, we default this target to the first visible layer (layer 0) so tabbing into
+     * the panel lands directly on the selected layer that was auto-scrolled into view,
+     * while inactive layer items have `tabindex="-1"`.
+     */
+    #activeRovingLayerName: string | null = null
     #activeSettingsLayerName: string | null = null
     #draggedLayerName: string | null = null
     #isReorderingLayers = false
@@ -527,6 +539,9 @@ export class LayerPickerControl extends Control {
                 return
             }
             this.#watchLayer(e.element)
+            if (e.element.get('type') === 'visualization' && e.element.get('name')) {
+                this.#activeRovingLayerName = e.element.get('name')
+            }
             this.#renderPanel()
         })
         layers.on('remove', (e: CollectionEvent<BaseLayer>) => {
@@ -671,6 +686,9 @@ export class LayerPickerControl extends Control {
         if (this.#isOpen) {
             this.#renderPanel()
             this.#scrollToFirstSelectedLayer()
+        } else {
+            // Reset roving target when the panel closes so reopening starts fresh at the first selected layer
+            this.#activeRovingLayerName = null
         }
     }
 
@@ -749,12 +767,18 @@ export class LayerPickerControl extends Control {
             (layer: BaseLayer) => layer.get('type') === 'visualization'
         )
 
-        // Maintain the wider popover layout whenever any visualization layer supports a legend.
-        // This prevents jarring panel width collapse when a user unchecks all visualization layers.
-        const hasLegends = visualizationLayers.some(layer =>
-            this.#layerHasLegend(layer)
+        // Ensure active roving layer target is valid and initialized to the first selected (visible) layer.
+        // In OpenLayers, layer 0 is the bottom render layer (visualizationLayers[0]), which is typically
+        // the active/selected colormap and renders at the bottom of the reversed UI list.
+        const uiVizLayers = visualizationLayers.toReversed()
+        const hasValidTarget = uiVizLayers.some(
+            l => (l.get('name') ?? '') === this.#activeRovingLayerName
         )
-        this.#panel.classList.toggle('has-legends', hasLegends)
+        if (!hasValidTarget && uiVizLayers.length > 0) {
+            const firstSelected = visualizationLayers.find(l => l.getVisible())
+            this.#activeRovingLayerName =
+                (firstSelected ?? uiVizLayers[0]).get('name') ?? null
+        }
 
         const baseLayers = titledLayers.filter(
             (layer: BaseLayer) => layer.get('type') === 'base'
@@ -773,7 +797,15 @@ export class LayerPickerControl extends Control {
                 ${
                     visualizationLayers.length > 0
                         ? html`
-                          <div class="layer-picker-body">
+                          <div
+                              class="layer-picker-body"
+                              @dragover=${(e: DragEvent) => {
+                                  if (this.#draggedLayerName) {
+                                      e.preventDefault()
+                                      this.#handleDragAutoScroll(e.clientY)
+                                  }
+                              }}
+                          >
                               <div
                                   class="layer-picker-section layer-picker-section--visualizations"
                               >
@@ -823,6 +855,8 @@ export class LayerPickerControl extends Control {
         const name = layer.get('name') ?? ''
         const title = layer.get('title') ?? ''
         const isSettingsOpen = this.#activeSettingsLayerName === name
+        const isRovingTarget = name === this.#activeRovingLayerName
+        const rovingTabIndex = isRovingTarget ? 0 : -1
         const drawerId = `layer-settings-${name}`
         const inputId = `opacity-input-${name}`
         const positionLabel = `Layer ${index + 1} of ${total}`
@@ -831,6 +865,12 @@ export class LayerPickerControl extends Control {
             <div
                 class="layer-picker-visualization-item"
                 data-layer-name=${name}
+                @focusin=${() => {
+                    if (this.#activeRovingLayerName !== name) {
+                        this.#activeRovingLayerName = name
+                        this.#updateRovingTabindices()
+                    }
+                }}
                 @dragover=${(e: DragEvent) => {
                     if (!this.#draggedLayerName || this.#draggedLayerName === name) {
                         return
@@ -839,6 +879,8 @@ export class LayerPickerControl extends Control {
                     if (e.dataTransfer) {
                         e.dataTransfer.dropEffect = 'move'
                     }
+                    this.#handleDragAutoScroll(e.clientY)
+
                     const card = e.currentTarget as HTMLElement
                     this.#panel
                         .querySelectorAll('.layer-picker-visualization-item')
@@ -850,8 +892,46 @@ export class LayerPickerControl extends Control {
                                 )
                             }
                         })
-                    const rect = card.getBoundingClientRect()
-                    const isAbove = e.clientY < rect.top + rect.height / 2
+
+                    // Determine visual indices (in topmost-rendered-first order)
+                    const map = this.getMap()
+                    const vizLayers = map
+                        ? map
+                              .getLayers()
+                              .getArray()
+                              .filter(
+                                  (l: BaseLayer) =>
+                                      l.get('type') === 'visualization' &&
+                                      Boolean(l.get('title'))
+                              )
+                              .toReversed()
+                        : []
+                    const draggedIdx = vizLayers.findIndex(
+                        (l: BaseLayer) =>
+                            (l.get('name') ?? '') === this.#draggedLayerName
+                    )
+                    const targetIdx = index
+                    let isAbove: boolean
+
+                    if (draggedIdx !== -1 && targetIdx === draggedIdx + 1) {
+                        // Dragging downward onto the adjacent card below:
+                        // 'above' would reinsert at draggedIdx (no-op). Eagerly target 'below'.
+                        isAbove = false
+                    } else if (draggedIdx !== -1 && targetIdx === draggedIdx - 1) {
+                        // Dragging upward onto the adjacent card above:
+                        // 'below' would reinsert at draggedIdx (no-op). Eagerly target 'above'.
+                        isAbove = true
+                    } else {
+                        // For non-adjacent cards, check against the header midpoint for snappy handle-to-handle alignment
+                        const header = card.querySelector<HTMLElement>(
+                            '.layer-picker-viz-header'
+                        )
+                        const headerRect =
+                            header?.getBoundingClientRect() ??
+                            card.getBoundingClientRect()
+                        isAbove = e.clientY < headerRect.top + headerRect.height / 2
+                    }
+
                     card.classList.toggle('drop-target-above', isAbove)
                     card.classList.toggle('drop-target-below', !isAbove)
                 }}
@@ -899,10 +979,12 @@ export class LayerPickerControl extends Control {
                     <label class="layer-picker-item">
                         <input
                             type="checkbox"
+                            tabindex=${rovingTabIndex}
                             .checked=${layer.getVisible()}
                             @change=${(e: Event) => {
                                 const input = e.target as HTMLInputElement
                                 layer.setVisible(input.checked)
+                                this.#activeRovingLayerName = name
                                 this.#options?.onLayerToggle?.({
                                     name,
                                     title,
@@ -912,6 +994,9 @@ export class LayerPickerControl extends Control {
                                 })
                                 this.#renderPanel()
                             }}
+                            @keydown=${(e: KeyboardEvent) => {
+                                this.#handleVizCheckboxKeyDown(e, name)
+                            }}
                         />
                         <span title=${title}>${title}</span>
                     </label>
@@ -920,6 +1005,7 @@ export class LayerPickerControl extends Control {
                         <button
                             type="button"
                             class="layer-picker-settings-btn ${isSettingsOpen ? 'active' : ''}"
+                            tabindex=${rovingTabIndex}
                             title="Adjust opacity for ${title}"
                             aria-label="Adjust opacity for ${title}"
                             aria-expanded="${String(isSettingsOpen)}"
@@ -928,6 +1014,7 @@ export class LayerPickerControl extends Control {
         e.stopPropagation()
         const opening = !isSettingsOpen
         this.#activeSettingsLayerName = opening ? name : null
+        this.#activeRovingLayerName = name
 
         // If opening opacity controls for an unchecked layer, turn it on
         if (opening && !layer.getVisible()) {
@@ -958,6 +1045,7 @@ export class LayerPickerControl extends Control {
                         <button
                             type="button"
                             class="layer-picker-drag-handle"
+                            tabindex=${rovingTabIndex}
                             draggable="true"
                             data-drag-handle=${name}
                             title="Reorder ${title} (${positionLabel}). Use Up/Down arrow keys or drag."
@@ -1059,6 +1147,47 @@ export class LayerPickerControl extends Control {
                 ${layer.getVisible() ? this.#renderLegend(layer) : nothing}
             </div>
         `
+    }
+
+    /**
+     * Automatically scrolls the visualization container when dragging near the top or bottom edges.
+     *
+     * Provides a generous 48px trigger zone at both edges so users can smoothly navigate long layer
+     * lists without having to balance on the browser's narrow 10px native drag-scroll boundary.
+     */
+    #handleDragAutoScroll(clientY: number) {
+        if (!this.#panel) {
+            return
+        }
+        const body = this.#panel.querySelector<HTMLElement>('.layer-picker-body')
+        const isBodyScrollable = Boolean(
+            body && body.scrollHeight > body.clientHeight
+        )
+        const isPanelScrollable = this.#panel.scrollHeight > this.#panel.clientHeight
+        const scrollContainer =
+            isPanelScrollable && !isBodyScrollable
+                ? this.#panel
+                : (body ?? this.#panel)
+
+        if (!scrollContainer) {
+            return
+        }
+
+        const rect = scrollContainer.getBoundingClientRect()
+        const edgeZone = 48
+        let scrollSpeed = 0
+
+        if (clientY < rect.top + edgeZone) {
+            const dist = rect.top + edgeZone - clientY
+            scrollSpeed = -Math.min(14, Math.max(3, Math.round(dist / 3)))
+        } else if (clientY > rect.bottom - edgeZone) {
+            const dist = clientY - (rect.bottom - edgeZone)
+            scrollSpeed = Math.min(14, Math.max(3, Math.round(dist / 3)))
+        }
+
+        if (scrollSpeed !== 0) {
+            scrollContainer.scrollTop += scrollSpeed
+        }
     }
 
     #moveLayerByOffset(name: string, offset: number) {
@@ -1165,6 +1294,7 @@ export class LayerPickerControl extends Control {
             names: remainingOl.map(l => l.get('name') ?? ''),
         })
 
+        this.#activeRovingLayerName = draggedName
         this.#renderPanel()
     }
 
@@ -1245,6 +1375,7 @@ export class LayerPickerControl extends Control {
                 <input
                     id=${inputId}
                     type="range"
+                    tabindex=${layer.get('name') === this.#activeRovingLayerName ? 0 : -1}
                     min="0"
                     max="100"
                     step="1"
@@ -1264,47 +1395,12 @@ export class LayerPickerControl extends Control {
         `
     }
 
-    /**
-     * Determines whether a layer supports or is currently resolving a colormap legend.
-     *
-     * In-flight GIBS legend resolution leaves `__gibsLegendUrl` and `__gibsLegendSvg`
-     * undefined, while confirmed resolution failure marks them null. We return false
-     * only when a layer definitively lacks a legend.
-     */
-    #layerHasLegend(layer: BaseLayer): boolean {
-        const info = layer.get('info')
-        if (
-            info &&
-            Array.isArray(info.legendValues) &&
-            info.legendValues.length > 0
-        ) {
-            return true
-        }
-
-        const legend = layer.get('legend')
-        if (!legend) {
-            return false
-        }
-
-        const rawLegendUrl = layer.get('__gibsLegendUrl')
-        const rawLegendSvg = layer.get('__gibsLegendSvg')
-        if (rawLegendUrl === null && rawLegendSvg === undefined) {
-            return false
-        }
-        if (rawLegendSvg === null && rawLegendUrl === undefined) {
-            return false
-        }
-        if (rawLegendUrl === null && rawLegendSvg === null) {
-            return false
-        }
-
-        return true
-    }
-
     #renderLegend(layer: BaseLayer) {
         const info = layer.get('info')
         const name = layer.get('name') ?? ''
         const title = layer.get('title') ?? ''
+        const isRovingTarget = name === this.#activeRovingLayerName
+        const legendTabIndex = isRovingTarget ? 0 : -1
 
         if (
             info &&
@@ -1354,7 +1450,7 @@ export class LayerPickerControl extends Control {
                         class="layer-picker-legend-bar"
                         style="background: ${background}"
                         role="button"
-                        tabindex="0"
+                        tabindex="${legendTabIndex}"
                         aria-label="${title} color scale from ${info.min} to ${info.max}"
                         @mousemove=${handleMouseMove}
                         @click=${handleClick}
@@ -1446,6 +1542,8 @@ export class LayerPickerControl extends Control {
     #renderGibsImgLegend(layer: BaseLayer, url: string) {
         const name = layer.get('name') ?? ''
         const title = layer.get('title') ?? ''
+        const isRovingTarget = name === this.#activeRovingLayerName
+        const legendTabIndex = isRovingTarget ? 0 : -1
         const storedRamps: GibsRamp[] = layer.get('__gibsRamps') ?? []
         const defaultRamp: GibsRamp = {
             bins: layer.get('__gibsBins') ?? [],
@@ -1861,7 +1959,7 @@ export class LayerPickerControl extends Control {
                 class="layer-picker-legend layer-picker-legend-gibs"
                 data-legend-container=${name}
                 role="slider"
-                tabindex="0"
+                tabindex="${legendTabIndex}"
                 aria-label="${sliderLabel}"
                 aria-valuemin="0"
                 aria-valuemax="${maxIdx}"
@@ -2004,5 +2102,104 @@ export class LayerPickerControl extends Control {
                 )}
             </div>
         `
+    }
+
+    /**
+     * Synchronously updates the `tabindex` of all focusable controls across visualization cards
+     * to reflect the current `#activeRovingLayerName`.
+     *
+     * Used on `@focusin` so clicking or focusing into a card immediately updates DOM tabindices
+     * without triggering a full Lit template re-render.
+     */
+    #updateRovingTabindices() {
+        if (!this.#panel) {
+            return
+        }
+        const cards = this.#panel.querySelectorAll<HTMLElement>(
+            '.layer-picker-visualization-item'
+        )
+        cards.forEach(card => {
+            const isTarget = card.dataset.layerName === this.#activeRovingLayerName
+            const targetIndex = isTarget ? '0' : '-1'
+            const focusables = card.querySelectorAll<HTMLElement>(
+                'input[type="checkbox"], input[type="range"], .layer-picker-settings-btn, .layer-picker-drag-handle, .layer-picker-legend-bar, .layer-picker-legend-gibs'
+            )
+            focusables.forEach(el => {
+                el.setAttribute('tabindex', targetIndex)
+            })
+        })
+    }
+
+    /**
+     * Handles keyboard navigation on visualization layer checkboxes according to W3C ARIA APG
+     * roving tabindex guidelines.
+     *
+     * In the UI, visualization layers are displayed topmost-rendered-first (`.toReversed()`).
+     * `ArrowDown` moves visual focus down the list; `ArrowUp` moves visual focus up the list
+     * (with cyclic wrapping matching the Base Maps radio group). `Home` jumps to the topmost
+     * layer and `End` jumps to the bottommost layer. Crucially, navigation moves focus and updates
+     * the roving tab stop without altering layer visibility, which remains governed by Space.
+     */
+    #handleVizCheckboxKeyDown(e: KeyboardEvent, name: string) {
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) {
+            return
+        }
+
+        const map = this.getMap()
+        if (!map) {
+            return
+        }
+
+        const vizLayers = map
+            .getLayers()
+            .getArray()
+            .filter(
+                (l: BaseLayer) =>
+                    l.get('type') === 'visualization' && Boolean(l.get('title'))
+            )
+        const uiLayers = vizLayers.toReversed()
+        if (uiLayers.length === 0) {
+            return
+        }
+
+        const currentIndex = uiLayers.findIndex(
+            (l: BaseLayer) => (l.get('name') ?? '') === name
+        )
+        if (currentIndex === -1) {
+            return
+        }
+
+        let nextIndex = currentIndex
+        switch (e.key) {
+            case 'ArrowDown':
+                nextIndex = (currentIndex + 1) % uiLayers.length
+                break
+            case 'ArrowUp':
+                nextIndex = (currentIndex - 1 + uiLayers.length) % uiLayers.length
+                break
+            case 'Home':
+                nextIndex = 0
+                break
+            case 'End':
+                nextIndex = uiLayers.length - 1
+                break
+        }
+
+        e.preventDefault()
+        e.stopPropagation()
+
+        if (nextIndex === currentIndex) {
+            return
+        }
+
+        const targetLayer = uiLayers[nextIndex]
+        const targetName = targetLayer.get('name') ?? ''
+        this.#activeRovingLayerName = targetName
+        this.#renderPanel()
+
+        const targetInput = this.#panel.querySelector<HTMLInputElement>(
+            `.layer-picker-visualization-item[data-layer-name="${CSS.escape(targetName)}"] input[type="checkbox"]`
+        )
+        targetInput?.focus()
     }
 }
