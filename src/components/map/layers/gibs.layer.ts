@@ -438,12 +438,24 @@ export async function buildGibsLayer(
     }
 
     const { type, projection, ...rasterOptions } = options
-    // Non-destructive swap from `getGibsLegendUrls(projection ?? 'EPSG:3857', rasterOptions.layer, buildOptions)`
-    // to CMR UMM-Vis (`getGibsLegendUrlsFromUmmVis`) to avoid downloading/parsing the ~5.7 MB GIBS GetCapabilities XML.
+    // Attempt fast legend resolution via CMR UMM-Vis (~99% payload savings). If UMM-Vis yields
+    // no matching visualization or fails, fall back to GIBS WMTS GetCapabilities so standalone
+    // and non-standard layers do not lose their legends.
     const legend = getGibsLegendUrlsFromUmmVis(rasterOptions.layer, {
         ...buildOptions,
         visualizationConceptIds: rasterOptions.visualizationConceptIds,
-    }).catch(() => undefined)
+    })
+        .then(async urls => {
+            if (urls) {
+                return urls
+            }
+            return getGibsLegendUrls(
+                projection ?? 'EPSG:3857',
+                rasterOptions.layer,
+                buildOptions
+            )
+        })
+        .catch(() => undefined)
 
     if (!projection || projection === 'EPSG:3857') {
         return { layer: new GibsLayer(rasterOptions), legend }

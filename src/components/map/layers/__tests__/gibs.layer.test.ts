@@ -306,6 +306,7 @@ describe('GIBS color map legend URLs', () => {
     afterEach(() => {
         window.fetch = originalFetch
         sharedQueryClient.clear()
+        clearGibsCapabilitiesCache()
     })
 
     it('should read both the horizontal and vertical legend URLs for a layer that has them', async () => {
@@ -356,6 +357,32 @@ describe('GIBS color map legend URLs', () => {
                 'https://gibs.earthdata.nasa.gov/legends/AIRS_Temperature_H.svg',
             vertical:
                 'https://gibs.earthdata.nasa.gov/legends/AIRS_Temperature_V.svg',
+        })
+    })
+
+    it('should fall back to GetCapabilities legend URLs when CMR UMM-Vis returns no matching records', async () => {
+        window.fetch = (async (input: RequestInfo | URL) => {
+            const url = String(input)
+            if (url.includes('visualizations.umm_json')) {
+                return new Response(JSON.stringify({ hits: 0, items: [] }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                })
+            }
+            return new Response(CAPABILITIES_XML, { status: 200 })
+        }) as typeof fetch
+
+        const result = await buildGibsLayer({
+            type: 'gibs',
+            name: 'with-capabilities-fallback',
+            layer: 'WithLegend',
+        })
+
+        expect(result.legend).to.be.instanceOf(Promise)
+        const legends = await result.legend
+        expect(legends).to.deep.equal({
+            horizontal: 'https://example.com/legend-h.svg',
+            vertical: 'https://example.com/legend-v.svg',
         })
     })
 })
