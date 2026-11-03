@@ -10,7 +10,10 @@ import VectorLayer from 'ol/layer/Vector.js'
 import { toLonLat } from 'ol/proj.js'
 import VectorSource from 'ol/source/Vector.js'
 import { getLength } from 'ol/sphere.js'
-import type { TerraMapPointerMoveEvent } from '../../events/events.js'
+import type {
+    TerraMapClickEvent,
+    TerraMapPointerMoveEvent,
+} from '../../events/events.js'
 import type { TimeAverageMapOptions } from '../../events/terra-plot-options-change.js'
 import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
@@ -118,6 +121,7 @@ export default class TerraTimeAverageMap extends AuthMixin(
     #vectorSource: VectorSource | null = null
     #vectorLayer: VectorLayer | null = null
     #draw: Draw | null = null
+    #blob?: Blob
 
     @query('terra-map') innerMap: TerraMap
 
@@ -202,19 +206,27 @@ export default class TerraTimeAverageMap extends AuthMixin(
     connectedCallback(): void {
         super.connectedCallback()
 
+        // If the element was detached and reconnected, restore the object URL from the retained Blob
+        const blob = this.#blob ?? this.#controller?.blobUrl
+        if (!this.blobUrl && blob) {
+            this.blobUrl = URL.createObjectURL(blob)
+        }
+
         this.addEventListener(
             'terra-time-average-map-error',
             this.#handleMapError as EventListener
         )
-
         this.addEventListener(
             'terra-plot-toolbar-export-image',
             this.#handleExportImage as EventListener
         )
-
         this.addEventListener(
             'terra-map-pointer-move',
             this.#handlePointerMove as EventListener
+        )
+        this.addEventListener(
+            'terra-map-click',
+            this.#handleMapClick as EventListener
         )
     }
 
@@ -274,6 +286,10 @@ export default class TerraTimeAverageMap extends AuthMixin(
             'terra-map-pointer-move',
             this.#handlePointerMove as EventListener
         )
+        this.removeEventListener(
+            'terra-map-click',
+            this.#handleMapClick as EventListener
+        )
     }
 
     #handleMapError = (event: CustomEvent) => {
@@ -287,13 +303,38 @@ export default class TerraTimeAverageMap extends AuthMixin(
         }
     }
 
+    /**
+     * Updates hover coordinates and raster value on desktop mouse pointer movement.
+     */
     #handlePointerMove = (event: TerraMapPointerMoveEvent) => {
+        const [lon, lat] = event.detail.coordinate
+        this.#updatePixelReadout(event.detail.pixel, lon, lat)
+    }
+
+    /**
+     * Updates coordinates and raster value on mouse click or stationary touch tap.
+     * Touch devices do not fire `pointermove` for stationary taps, so listening to
+     * `terra-map-click` ensures mobile users can tap anywhere on the raster to inspect values.
+     */
+    #handleMapClick = (event: TerraMapClickEvent) => {
+        const { latLng, pixel } = event.detail
+        this.#updatePixelReadout(pixel, latLng.lng, latLng.lat)
+    }
+
+    /**
+     * Inspects the GeoTIFF raster at a given screen pixel and updates the value and coordinate display.
+     *
+     * 1. Reads the raw raster band array at `pixel` from the inner `<terra-map>`'s WebGL tile layer.
+     * 2. Validates that data was returned as a typed array (Float32Array, Uint8Array, etc.).
+     * 3. Checks for out-of-bounds, NaN, or configured `noDataValue` (fill value), falling back to 'N/A'.
+     * 4. Formats valid coordinates to 3 decimal places and numeric raster value to scientific notation.
+     */
+    #updatePixelReadout(pixel: [number, number], lon: number, lat: number) {
         if (!this.innerMap) {
             return
         }
 
-        let data = this.innerMap.getGeoTiffValueAtPixel('geotiff', event.detail.pixel)
-        const [lon, lat] = event.detail.coordinate
+        const data = this.innerMap.getGeoTiffValueAtPixel('geotiff', pixel)
 
         if (
             !data ||
@@ -303,13 +344,15 @@ export default class TerraTimeAverageMap extends AuthMixin(
                 data instanceof Float32Array
             ) ||
             Number.isNaN(data[0]) ||
-            data[0] === 0
+            data[0] === this.noDataValue
         ) {
-            data = null
+            this.pixelValue = 'N/A'
+            this.pixelCoordinates = 'N/A'
+            return
         }
 
-        this.pixelValue = data ? Number(data[0]).toExponential(3) : 'N/A'
-        this.pixelCoordinates = [lon, lat].map(c => c.toFixed(3)).join(', ')
+        this.pixelCoordinates = `${lon.toFixed(3)}, ${lat.toFixed(3)}`
+        this.pixelValue = `${data[0].toExponential(3)}`
     }
 
     #handleExportImage = async (event: CustomEvent<{ format: 'png' | 'jpg' }>) => {
@@ -718,6 +761,8 @@ export default class TerraTimeAverageMap extends AuthMixin(
     }
 
     updateGeoTIFFLayer(blob: Blob) {
+        this.#blob = blob
+
         if (this.blobUrl) {
             URL.revokeObjectURL(this.blobUrl)
         }
@@ -727,6 +772,7 @@ export default class TerraTimeAverageMap extends AuthMixin(
 
     #handleOpacityChange(e: any) {
         this.opacity = e.detail
+        this.innerMap?.getLayer('geotiff')?.setOpacity(this.opacity)
     }
 
     #handleColorMapChange(e: any) {
