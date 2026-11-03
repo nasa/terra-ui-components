@@ -1,9 +1,11 @@
 import {
+    type DefaultedQueryObserverOptions,
     type DefaultError,
     type FetchQueryOptions,
     QueryClient,
     type QueryExecuteOptions,
     type QueryKey,
+    type QueryObserverOptions,
 } from '@tanstack/query-core'
 import {
     persistQueryClientRestore,
@@ -14,6 +16,28 @@ import { duration } from '../constants.js'
 import { HttpException } from '../exceptions/http.exception.js'
 import { createIDBPersister } from '../lib/indexeddb-persister.js'
 import type { Constructor } from './mixin.types.js'
+
+declare module '@tanstack/query-core' {
+    interface QueryOptions<
+        TQueryFnData = unknown,
+        TError = DefaultError,
+        TData = TQueryFnData,
+        TQueryKey extends QueryKey = QueryKey,
+        TPageParam = never,
+    > {
+        /**
+         * Optional per-query cache buster. Changing this value invalidates
+         * previously cached in-memory and IndexedDB entries for this query.
+         */
+        buster?: string | number
+    }
+}
+
+/**
+ * Global cache buster for the persisted IndexedDB QueryClient state.
+ * Incrementing or changing this value invalidates the entire persisted cache on boot.
+ */
+export const QUERY_CACHE_BUSTER = 'v1'
 
 export const queryClientPersister = createIDBPersister('terraQuery', {
     dbName: 'terra-query',
@@ -29,6 +53,7 @@ const syncPersistenceSubscription = (queryClient: QueryClient) => {
         persistUnsubscribe = persistQueryClientSubscribe({
             queryClient,
             persister: queryClientPersister,
+            buster: QUERY_CACHE_BUSTER,
         })
     }
 }
@@ -39,6 +64,7 @@ const ensureRestored = (queryClient: QueryClient): Promise<void> => {
             queryClient,
             persister: queryClientPersister,
             maxAge: duration.days(1),
+            buster: QUERY_CACHE_BUSTER,
         })
             .catch(() => undefined)
             .then(() => {
@@ -70,6 +96,57 @@ export function resetQueryClientPersistence() {
 }
 
 class TerraQueryClient extends QueryClient {
+    override defaultQueryOptions<
+        TQueryFnData = unknown,
+        TError = DefaultError,
+        TData = TQueryFnData,
+        TQueryData = TQueryFnData,
+        TQueryKey extends QueryKey = QueryKey,
+        TPageParam = never,
+    >(
+        options:
+            | QueryObserverOptions<
+                  TQueryFnData,
+                  TError,
+                  TData,
+                  TQueryData,
+                  TQueryKey,
+                  TPageParam
+              >
+            | DefaultedQueryObserverOptions<
+                  TQueryFnData,
+                  TError,
+                  TData,
+                  TQueryData,
+                  TQueryKey
+              >
+    ): DefaultedQueryObserverOptions<
+        TQueryFnData,
+        TError,
+        TData,
+        TQueryData,
+        TQueryKey
+    > {
+        if (
+            !('_defaulted' in options && options._defaulted) &&
+            options.buster !== undefined &&
+            Array.isArray(options.queryKey) &&
+            !options.queryKey.some(
+                part =>
+                    typeof part === 'object' && part !== null && '__buster' in part
+            )
+        ) {
+            return super.defaultQueryOptions({
+                ...options,
+                queryKey: [
+                    ...options.queryKey,
+                    { __buster: options.buster },
+                ] as unknown as TQueryKey,
+            })
+        }
+        return super.defaultQueryOptions(options)
+    }
+
     override async query<
         TQueryFnData,
         TError = DefaultError,

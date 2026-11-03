@@ -2,6 +2,7 @@ import { expect, fixture, html } from '@open-wc/testing'
 import { LitElement, html as litHtml } from 'lit'
 import sinon from 'sinon'
 import {
+    QUERY_CACHE_BUSTER,
     QueryClientMixin,
     queryClientPersister,
     resetQueryClientPersistence,
@@ -115,6 +116,68 @@ describe('QueryClientMixin', () => {
             restoreStub.restore()
             mountSpy.restore()
             unmountSpy.restore()
+        }
+    })
+
+    it('invalidates cached queries when per-query buster changes', async () => {
+        sharedQueryClient.clear()
+        let fetchCount = 0
+
+        try {
+            const runWithBuster = (buster: string | number) =>
+                sharedQueryClient.query({
+                    queryKey: ['test-buster-key'],
+                    queryFn: async () => `value-${++fetchCount}`,
+                    staleTime: Number.POSITIVE_INFINITY,
+                    buster,
+                })
+
+            const first = await runWithBuster('v1')
+            const second = await runWithBuster('v1')
+            expect(first).to.equal('value-1')
+            expect(second).to.equal('value-1')
+            expect(fetchCount).to.equal(1)
+
+            // Changing the per-query buster invalidates the cached entry and re-runs queryFn
+            const busted = await runWithBuster('v2')
+            expect(busted).to.equal('value-2')
+            expect(fetchCount).to.equal(2)
+        } finally {
+            sharedQueryClient.clear()
+        }
+    })
+
+    it('discards persisted IndexedDB cache when client-wide buster does not match QUERY_CACHE_BUSTER', async () => {
+        sharedQueryClient.clear()
+        resetQueryClientPersistence()
+
+        const restoreStub = sinon
+            .stub(queryClientPersister, 'restoreClient')
+            .resolves({
+                timestamp: Date.now(),
+                buster: 'outdated-buster',
+                clientState: {
+                    mutations: [],
+                    queries: [],
+                },
+            })
+        const removeStub = sinon.stub(queryClientPersister, 'removeClient').resolves()
+
+        try {
+            expect(QUERY_CACHE_BUSTER).to.equal('v1')
+            const el = await fixture<TestQueryClientElement>(
+                html`<test-query-client-element></test-query-client-element>`
+            )
+            await el.queryClientReady
+
+            expect(restoreStub.calledOnce).to.be.true
+            expect(removeStub.calledOnce).to.be.true
+
+            el.remove()
+        } finally {
+            restoreStub.restore()
+            removeStub.restore()
+            sharedQueryClient.clear()
         }
     })
 })
