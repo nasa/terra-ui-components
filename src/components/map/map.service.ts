@@ -793,7 +793,10 @@ export class MapService {
         }
 
         map.on('pointermove', (event: MapBrowserEvent) => {
-            const coordinate = toLonLat(event.coordinate)
+            const coordinate = toLonLat(
+                event.coordinate,
+                map.getView().getProjection()
+            )
             if (this.#options.showMouseCoordinates && this.#mouseInfoElement) {
                 const lng = coordinate[0] ?? 0
                 const lat = coordinate[1] ?? 0

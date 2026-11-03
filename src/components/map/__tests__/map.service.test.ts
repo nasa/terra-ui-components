@@ -4,6 +4,7 @@ import sinon, { type SinonSpy } from 'sinon'
 import { LatLng } from '../models/LatLng.js'
 import { LatLngBounds } from '../models/LatLngBounds.js'
 import { Map as OlMap, View } from 'ol'
+import Observable from 'ol/Observable.js'
 import { DrawToolbarControl } from '../controls/draw-toolbar.control.js'
 import { LayerPickerControl } from '../controls/layer-picker.control.js'
 import { Layer } from 'ol/layer.js'
@@ -16,6 +17,7 @@ import { transformExtent, type Projection } from 'ol/proj.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import type { Stroke, Style } from 'ol/style.js'
+import '../projections.js'
 
 describe('Map Service', () => {
     let el: HTMLElement
@@ -190,8 +192,93 @@ describe('Map Service', () => {
         expect(setVisibleSpy.calledWith(false)).to.be.true
     })
 
-    it.skip('calls onMouseMove when pointer moves', () => {
-        // TODO
+    it('calls onMouseMove with correctly projected coordinates and updates mouse info on EPSG:3857, EPSG:4326, and EPSG:3413', () => {
+        const onInternalSpy = sinon.spy(Observable.prototype, 'onInternal')
+
+        // 1. Default EPSG:3857 map
+        const moveSpy3857 = sinon.spy()
+        const el3857 = document.createElement('div')
+        document.body.appendChild(el3857)
+        new MapService(el3857, {
+            projection: 'EPSG:3857',
+            showMouseCoordinates: true,
+            onMouseMove: moveSpy3857,
+        })
+        const map3857 = onInternalSpy.thisValues.find(
+            inst => inst instanceof OlMap
+        ) as OlMap
+
+        // Coordinate [0, 0] in EPSG:3857 -> lon: 0, lat: 0
+        map3857.dispatchEvent({
+            type: 'pointermove',
+            coordinate: [0, 0],
+            pixel: [50, 50],
+        } as any)
+
+        expect(moveSpy3857.calledOnce).to.be.true
+        const [coord3857, pixel3857] = moveSpy3857.firstCall.args
+        expect(coord3857[0]).to.be.closeTo(0, 0.01)
+        expect(coord3857[1]).to.be.closeTo(0, 0.01)
+        expect(pixel3857).to.deep.equal([50, 50])
+        const mouseInfo3857 = el3857.querySelector('#mouse-info')
+        expect(mouseInfo3857?.textContent).to.include('lat: 0.00, lng: 0.00')
+
+        // 2. EPSG:4326 geographic map
+        const moveSpy4326 = sinon.spy()
+        const el4326 = document.createElement('div')
+        document.body.appendChild(el4326)
+        onInternalSpy.resetHistory()
+        new MapService(el4326, {
+            projection: 'EPSG:4326',
+            showMouseCoordinates: true,
+            onMouseMove: moveSpy4326,
+        })
+        const map4326 = onInternalSpy.thisValues.find(
+            inst => inst instanceof OlMap
+        ) as OlMap
+
+        // Coordinate [-105, 40] in EPSG:4326 is lon -105, lat 40
+        map4326.dispatchEvent({
+            type: 'pointermove',
+            coordinate: [-105, 40],
+            pixel: [60, 40],
+        } as any)
+
+        expect(moveSpy4326.calledOnce).to.be.true
+        const [coord4326] = moveSpy4326.firstCall.args
+        expect(coord4326[0]).to.be.closeTo(-105, 0.01)
+        expect(coord4326[1]).to.be.closeTo(40, 0.01)
+        const mouseInfo4326 = el4326.querySelector('#mouse-info')
+        expect(mouseInfo4326?.textContent).to.include('lat: 40.00, lng: -105.00')
+
+        // 3. Polar stereographic map (EPSG:3413)
+        const moveSpy3413 = sinon.spy()
+        const el3413 = document.createElement('div')
+        document.body.appendChild(el3413)
+        onInternalSpy.resetHistory()
+        new MapService(el3413, {
+            projection: 'EPSG:3413',
+            showMouseCoordinates: true,
+            onMouseMove: moveSpy3413,
+        })
+        const map3413 = onInternalSpy.thisValues.find(
+            inst => inst instanceof OlMap
+        ) as OlMap
+
+        // Coordinate [0, 0] in EPSG:3413 polar stereographic represents the North Pole (lat: 90)
+        map3413.dispatchEvent({
+            type: 'pointermove',
+            coordinate: [0, 0],
+            pixel: [50, 50],
+        } as any)
+
+        expect(moveSpy3413.calledOnce).to.be.true
+        const [coord3413] = moveSpy3413.firstCall.args
+        expect(coord3413[1]).to.be.closeTo(90, 0.1)
+        const mouseInfo3413 = el3413.querySelector('#mouse-info')
+        expect(mouseInfo3413?.textContent).to.include('lat: 90.00')
+
+        onInternalSpy.restore()
     })
 
     describe('addLayer / removeLayer / getLayer', () => {
