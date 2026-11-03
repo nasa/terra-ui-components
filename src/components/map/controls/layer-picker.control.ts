@@ -433,7 +433,7 @@ export class LayerPickerControl extends Control {
      *
      * In OpenLayers, layer 0 is the bottom render layer (`visualizationLayers[0]`).
      * In the UI, layers are presented topmost-first (`.toReversed()`), placing layer 0
-     * at the visual bottom. In NASA CMR datasets, layer 0 is visible (the active colormap)
+     * at the visual bottom. In NASA CMR data sets, layer 0 is visible (the active colormap)
      * while higher layers default to unchecked. Following the W3C ARIA APG Roving Tabindex
      * pattern, we default this target to the first visible layer (layer 0) so tabbing into
      * the panel lands directly on the selected layer that was auto-scrolled into view,
