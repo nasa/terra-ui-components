@@ -49,6 +49,31 @@ const layersConverter = {
     },
 }
 
+function isPresentationOnlyChange(
+    previous: MapLayerConfig,
+    next: MapLayerConfig
+): boolean {
+    if (previous.type !== next.type) {
+        return false
+    }
+
+    const prevWithoutPresentation = {
+        ...previous,
+        opacity: undefined,
+        visible: undefined,
+    }
+    const nextWithoutPresentation = {
+        ...next,
+        opacity: undefined,
+        visible: undefined,
+    }
+
+    return (
+        JSON.stringify(prevWithoutPresentation) ===
+        JSON.stringify(nextWithoutPresentation)
+    )
+}
+
 /**
  * @summary A map component for visualizing and selecting coordinates.
  * @documentation https://terra-ui.netlify.app/components/map
@@ -239,6 +264,21 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                 JSON.stringify(previousConfig) === JSON.stringify(config)
             ) {
                 continue // unchanged
+            }
+
+            const existingLayer = previousConfig ? this.getLayer(name) : undefined
+            if (
+                previousConfig &&
+                existingLayer &&
+                isPresentationOnlyChange(previousConfig, config)
+            ) {
+                if ('opacity' in config && config.opacity !== undefined) {
+                    existingLayer.setOpacity(config.opacity)
+                }
+                if ('visible' in config && config.visible !== undefined) {
+                    existingLayer.setVisible(config.visible)
+                }
+                continue // updated in-place without rebuilding
             }
 
             this.#warnIfProjectionMismatch(name, config)
