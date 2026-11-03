@@ -610,6 +610,7 @@ export default css`
         overscroll-behavior: contain;
     }
 
+    .layer-picker-panel.has-legends,
     .layer-picker-panel:has(.layer-picker-legend) {
         width: clamp(20rem, 80cqw, 32rem);
     }
@@ -826,6 +827,12 @@ export default css`
             outline: none;
         }
 
+        &:focus-visible {
+            outline: var(--terra-focus-ring);
+            outline-offset: var(--terra-focus-ring-offset);
+            border-radius: var(--terra-border-radius-small, 4px);
+        }
+
         /* WebKit / Chromium Track */
         &::-webkit-slider-runnable-track {
             height: 4px;
@@ -902,12 +909,6 @@ export default css`
         &::-moz-range-thumb:active {
             transform: scale(1.15);
             background: var(--terra-slider-handle-background-color-active, #f0f0f0);
-        }
-
-        &:focus-visible::-webkit-slider-thumb,
-        &:focus-visible::-moz-range-thumb {
-            outline: var(--terra-focus-ring);
-            outline-offset: var(--terra-focus-ring-offset);
         }
     }
 

@@ -482,6 +482,14 @@ export class LayerPickerControl extends Control {
         panel.className = 'layer-picker-panel'
         panel.addEventListener('click', e => e.stopPropagation())
         panel.addEventListener('wheel', e => e.stopPropagation())
+        panel.addEventListener('keydown', e => {
+            e.stopPropagation()
+            if (e.key === 'Escape' && this.#isOpen) {
+                e.preventDefault()
+                this.#togglePanel(false)
+                this.#toggleBtn.focus()
+            }
+        })
         element.appendChild(panel)
 
         this.#toggleBtn = toggleBtn
@@ -736,6 +744,11 @@ export class LayerPickerControl extends Control {
         const visualizationLayers = titledLayers.filter(
             (layer: BaseLayer) => layer.get('type') === 'visualization'
         )
+
+        const hasLegends = visualizationLayers.some(layer =>
+            this.#layerHasLegend(layer)
+        )
+        this.#panel.classList.toggle('has-legends', hasLegends)
 
         const baseLayers = titledLayers.filter(
             (layer: BaseLayer) => layer.get('type') === 'base'
@@ -1164,6 +1177,38 @@ export class LayerPickerControl extends Control {
             layer.setOpacity(percent / 100)
         }
 
+        const handleSliderKeyDown = (e: KeyboardEvent) => {
+            let nextPercent: number | undefined
+            switch (e.key) {
+                case 'ArrowLeft':
+                case 'ArrowDown':
+                    nextPercent = Math.max(0, currentPercent - 1)
+                    break
+                case 'ArrowRight':
+                case 'ArrowUp':
+                    nextPercent = Math.min(100, currentPercent + 1)
+                    break
+                case 'PageDown':
+                    nextPercent = Math.max(0, currentPercent - 10)
+                    break
+                case 'PageUp':
+                    nextPercent = Math.min(100, currentPercent + 10)
+                    break
+                case 'Home':
+                    nextPercent = 0
+                    break
+                case 'End':
+                    nextPercent = 100
+                    break
+            }
+
+            if (nextPercent !== undefined) {
+                e.preventDefault()
+                e.stopPropagation()
+                layer.setOpacity(nextPercent / 100)
+            }
+        }
+
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 e.stopPropagation()
@@ -1207,9 +1252,40 @@ export class LayerPickerControl extends Control {
                     aria-valuetext="${currentPercent}%"
                     class="layer-picker-opacity-slider"
                     @input=${handleInput}
+                    @keydown=${handleSliderKeyDown}
                 />
             </div>
         `
+    }
+
+    #layerHasLegend(layer: BaseLayer): boolean {
+        const info = layer.get('info')
+        if (
+            info &&
+            Array.isArray(info.legendValues) &&
+            info.legendValues.length > 0
+        ) {
+            return true
+        }
+
+        const legend = layer.get('legend')
+        if (!legend) {
+            return false
+        }
+
+        const rawLegendUrl = layer.get('__gibsLegendUrl')
+        const rawLegendSvg = layer.get('__gibsLegendSvg')
+        if (rawLegendUrl === null && rawLegendSvg === undefined) {
+            return false
+        }
+        if (rawLegendSvg === null && rawLegendUrl === undefined) {
+            return false
+        }
+        if (rawLegendUrl === null && rawLegendSvg === null) {
+            return false
+        }
+
+        return true
     }
 
     #renderLegend(layer: BaseLayer) {
@@ -1831,11 +1907,24 @@ export class LayerPickerControl extends Control {
         `
     }
     #renderSection(heading: string, layers: BaseLayer[], type: 'base' | 'overlay') {
+        const selectBaseLayer = (targetLayer: BaseLayer) => {
+            layers.forEach(bLayer => {
+                bLayer.setVisible(bLayer === targetLayer)
+            })
+            this.#options?.onLayerToggle?.({
+                name: targetLayer.get('name') ?? '',
+                title: targetLayer.get('title') ?? '',
+                type,
+                visible: targetLayer.getVisible(),
+                layer: targetLayer,
+            })
+        }
+
         return html`
             <div class="layer-picker-section">
                 <div class="layer-picker-heading">${heading}</div>
                 ${layers.map(
-                    layer => html`
+                    (layer, idx) => html`
                         <label class="layer-picker-item">
                             <input
                                 type=${type === 'base' ? 'radio' : 'checkbox'}
@@ -1844,24 +1933,56 @@ export class LayerPickerControl extends Control {
                                         ? 'terra-map-base-layer'
                                         : undefined
                                 )}
+                                data-base-layer-index=${ifDefined(
+                                    type === 'base' ? String(idx) : undefined
+                                )}
                                 .checked=${layer.getVisible()}
                                 @change=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
                                     if (type === 'base') {
-                                        layers.forEach(bLayer => {
-                                            bLayer.setVisible(bLayer === layer)
-                                        })
+                                        selectBaseLayer(layer)
                                     } else {
                                         layer.setVisible(input.checked)
+                                        this.#options?.onLayerToggle?.({
+                                            name: layer.get('name') ?? '',
+                                            title: layer.get('title') ?? '',
+                                            type,
+                                            visible: layer.getVisible(),
+                                            layer,
+                                        })
                                     }
-
-                                    this.#options?.onLayerToggle?.({
-                                        name: layer.get('name') ?? '',
-                                        title: layer.get('title') ?? '',
-                                        type,
-                                        visible: layer.getVisible(),
-                                        layer,
-                                    })
+                                }}
+                                @keydown=${(e: KeyboardEvent) => {
+                                    if (type !== 'base' || layers.length === 0) {
+                                        return
+                                    }
+                                    let nextIdx: number | null = null
+                                    if (
+                                        e.key === 'ArrowDown' ||
+                                        e.key === 'ArrowRight'
+                                    ) {
+                                        nextIdx = (idx + 1) % layers.length
+                                    } else if (
+                                        e.key === 'ArrowUp' ||
+                                        e.key === 'ArrowLeft'
+                                    ) {
+                                        nextIdx =
+                                            (idx - 1 + layers.length) % layers.length
+                                    }
+                                    if (nextIdx === null) {
+                                        return
+                                    }
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    const targetLayer = layers[nextIdx]
+                                    if (targetLayer) {
+                                        selectBaseLayer(targetLayer)
+                                    }
+                                    this.#panel
+                                        .querySelector<HTMLInputElement>(
+                                            `input[name="terra-map-base-layer"][data-base-layer-index="${nextIdx}"]`
+                                        )
+                                        ?.focus()
                                 }}
                             />
                             <span>${layer.get('title')}</span>

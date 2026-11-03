@@ -451,8 +451,10 @@ When `show-layer-picker` is enabled, the built-in Layer Picker groups layers int
 ></terra-map>
 
 <script type="module">
-    document.addEventListener('terra-map-legend-click', (event) => {
-        console.log(event);
+    ['terra-map-layer-click', 'terra-map-layer-error','terra-map-layer-toggle', 'terra-map-layer-reorder', 'terra-map-legend-click'].forEach(eventName => {
+        document.addEventListener(eventName, ({detail}) => {
+            console.log(detail);
+        })
     })
 </script>
 ```

@@ -539,6 +539,61 @@ describe('LayerPickerControl', () => {
             expect(slider.getAttribute('aria-valuetext')).to.equal('65%')
         })
 
+        it('adjusts layer opacity via keyboard keys and prevents default/propagation so the map does not capture them', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const gearBtn = panel.querySelector(
+                '.layer-picker-settings-btn'
+            ) as HTMLButtonElement
+            gearBtn.click()
+
+            const drawer = panel.querySelector(
+                '#layer-settings-temp-anomaly'
+            ) as HTMLElement
+            const drawerKeydownSpy = sinon.spy()
+            drawer.addEventListener('keydown', drawerKeydownSpy)
+
+            const slider = panel.querySelector(
+                '#opacity-input-temp-anomaly'
+            ) as HTMLInputElement
+
+            const dispatchKey = (key: string) => {
+                const evt = new KeyboardEvent('keydown', {
+                    key,
+                    bubbles: true,
+                    cancelable: true,
+                })
+                slider.dispatchEvent(evt)
+                return evt
+            }
+
+            const leftEvt = dispatchKey('ArrowLeft')
+            expect(leftEvt.defaultPrevented).to.be.true
+            expect(drawerKeydownSpy.called).to.be.false
+            expect(vizLayer.getOpacity()).to.equal(0.99)
+
+            const pageDownEvt = dispatchKey('PageDown')
+            expect(pageDownEvt.defaultPrevented).to.be.true
+            expect(vizLayer.getOpacity()).to.equal(0.89)
+
+            const rightEvt = dispatchKey('ArrowRight')
+            expect(rightEvt.defaultPrevented).to.be.true
+            expect(vizLayer.getOpacity()).to.equal(0.9)
+
+            const homeEvt = dispatchKey('Home')
+            expect(homeEvt.defaultPrevented).to.be.true
+            expect(vizLayer.getOpacity()).to.equal(0)
+
+            const pageUpEvt = dispatchKey('PageUp')
+            expect(pageUpEvt.defaultPrevented).to.be.true
+            expect(vizLayer.getOpacity()).to.equal(0.1)
+
+            const endEvt = dispatchKey('End')
+            expect(endEvt.defaultPrevented).to.be.true
+            expect(vizLayer.getOpacity()).to.equal(1)
+        })
+
         it('allows activating GeoTIFF legend bar via Enter key with onLegendClick callback', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
@@ -1120,6 +1175,106 @@ describe('LayerPickerControl', () => {
             panel.dispatchEvent(wheelEvent)
 
             expect(stopPropagationSpy.calledOnce).to.be.true
+        })
+
+        it('stops propagation of keydown events on the panel and supports arrow-key selection on Base Maps radio buttons', () => {
+            const toggleSpy = sinon.spy()
+            pickerControl.setOptions({ onLayerToggle: toggleSpy })
+
+            const element = pickerControl.element
+            const panel = element.querySelector('.layer-picker-panel') as HTMLElement
+            const toggleBtn = element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+
+            // Ensure the panel is open (beforeEach in this suite already opens it)
+            if (!panel.classList.contains('open')) {
+                toggleBtn.click()
+            }
+            expect(panel.classList.contains('open')).to.be.true
+
+            // Any keydown inside the panel should not bubble up to pickerControl.element / map viewport
+            const elementKeydownSpy = sinon.spy()
+            element.addEventListener('keydown', elementKeydownSpy)
+
+            const radios = panel.querySelectorAll<HTMLInputElement>(
+                'input[name="terra-map-base-layer"]'
+            )
+            expect(radios.length).to.equal(2)
+            expect(worldImagery.getVisible()).to.be.true
+            expect(osmLayer.getVisible()).to.be.false
+
+            // ArrowDown on first radio selects second base layer, prevents default, and stops propagation
+            const arrowDown = new KeyboardEvent('keydown', {
+                key: 'ArrowDown',
+                bubbles: true,
+                cancelable: true,
+            })
+            radios[0].dispatchEvent(arrowDown)
+
+            expect(arrowDown.defaultPrevented).to.be.true
+            expect(elementKeydownSpy.called).to.be.false
+            expect(worldImagery.getVisible()).to.be.false
+            expect(osmLayer.getVisible()).to.be.true
+            expect(toggleSpy.calledOnce).to.be.true
+            expect(toggleSpy.firstCall.args[0].name).to.equal('osm')
+            expect(toggleSpy.firstCall.args[0].visible).to.be.true
+
+            // Re-query radios after panel render and verify focus moved to second radio
+            const updatedRadios = panel.querySelectorAll<HTMLInputElement>(
+                'input[name="terra-map-base-layer"]'
+            )
+            expect(document.activeElement).to.equal(updatedRadios[1])
+
+            // ArrowUp on second radio wraps back to first base layer
+            const arrowUp = new KeyboardEvent('keydown', {
+                key: 'ArrowUp',
+                bubbles: true,
+                cancelable: true,
+            })
+            updatedRadios[1].dispatchEvent(arrowUp)
+
+            expect(arrowUp.defaultPrevented).to.be.true
+            expect(elementKeydownSpy.called).to.be.false
+            expect(worldImagery.getVisible()).to.be.true
+            expect(osmLayer.getVisible()).to.be.false
+            expect(toggleSpy.calledTwice).to.be.true
+            expect(toggleSpy.secondCall.args[0].name).to.equal('base')
+
+            // Escape on the panel closes the popover and returns focus to toggleBtn
+            const escapeEvent = new KeyboardEvent('keydown', {
+                key: 'Escape',
+                bubbles: true,
+                cancelable: true,
+            })
+            panel.dispatchEvent(escapeEvent)
+            expect(escapeEvent.defaultPrevented).to.be.true
+            expect(panel.classList.contains('open')).to.be.false
+            expect(document.activeElement).to.equal(toggleBtn)
+
+            element.removeEventListener('keydown', elementKeydownSpy)
+        })
+
+        it('keeps the panel wide (has-legends) when all visualization layers with colormap legends are unchecked', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+
+            // Initially vizLayer is visible and has a colormap legend
+            expect(vizLayer.getVisible()).to.be.true
+            expect(panel.classList.contains('has-legends')).to.be.true
+            expect(panel.querySelector('.layer-picker-legend')).to.exist
+
+            // Uncheck the visualization layer so no .layer-picker-legend is rendered
+            const vizCheckbox = panel.querySelector(
+                '.layer-picker-visualization-item input[type="checkbox"]'
+            ) as HTMLInputElement
+            vizCheckbox.checked = false
+            vizCheckbox.dispatchEvent(new Event('change'))
+
+            expect(vizLayer.getVisible()).to.be.false
+            expect(panel.querySelector('.layer-picker-legend')).to.be.null
+            expect(panel.classList.contains('has-legends')).to.be.true
         })
 
         it('scrolls to the first selected layer upon opening the panel and re-scrolls on legend image load', async () => {
