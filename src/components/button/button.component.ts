@@ -142,9 +142,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     /** Used to override the form owner's `enctype` attribute.  */
     @property({ attribute: 'formenctype' })
     formEnctype:
-        | 'application/x-www-form-urlencoded'
-        | 'multipart/form-data'
-        | 'text/plain'
+        'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
 
     /** Used to override the form owner's `method` attribute.  */
     @property({ attribute: 'formmethod' }) formMethod: 'post' | 'get'
@@ -154,11 +152,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
     /** Used to override the form owner's `target` attribute. */
     @property({ attribute: 'formtarget' }) formTarget:
-        | '_self'
-        | '_blank'
-        | '_parent'
-        | '_top'
-        | string
+        '_self' | '_blank' | '_parent' | '_top' | string
 
     /** Used to connect this button to a dqialog on the page. Clicking the button will toggle the dialog's visiblity */
     @property({ attribute: 'for-dialog' })
@@ -385,12 +379,17 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     setPageLinkIcon(href: string): string {
         /* Set icon for pageLink button based on whether link is internal or external */
 
-        const parsedUrl = new URL(href)
-        const linkDomain = parsedUrl.hostname
-        const hostDomain = globalThis.location.hostname
-        return linkDomain === hostDomain
-            ? 'outline-arrow-right'
-            : 'outline-arrow-up-right'
+        try {
+            const base = globalThis.location?.href || 'http://localhost'
+            const parsedUrl = new URL(href, base)
+            const linkDomain = parsedUrl.hostname
+            const hostDomain = globalThis.location?.hostname || 'localhost'
+            return linkDomain === hostDomain
+                ? 'outline-arrow-right'
+                : 'outline-arrow-up-right'
+        } catch {
+            return 'outline-arrow-right'
+        }
     }
 
     setFontSize(size: string): string {
