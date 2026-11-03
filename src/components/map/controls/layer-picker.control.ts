@@ -539,9 +539,6 @@ export class LayerPickerControl extends Control {
                 return
             }
             this.#watchLayer(e.element)
-            if (e.element.get('type') === 'visualization' && e.element.get('name')) {
-                this.#activeRovingLayerName = e.element.get('name')
-            }
             this.#renderPanel()
         })
         layers.on('remove', (e: CollectionEvent<BaseLayer>) => {
@@ -683,12 +680,12 @@ export class LayerPickerControl extends Control {
         this.#toggleBtn.classList.toggle('active', this.#isOpen)
         this.#toggleBtn.setAttribute('aria-expanded', String(this.#isOpen))
 
+        // Reset roving target so opening starts fresh at the first selected layer
+        this.#activeRovingLayerName = null
+
         if (this.#isOpen) {
             this.#renderPanel()
             this.#scrollToFirstSelectedLayer()
-        } else {
-            // Reset roving target when the panel closes so reopening starts fresh at the first selected layer
-            this.#activeRovingLayerName = null
         }
     }
 

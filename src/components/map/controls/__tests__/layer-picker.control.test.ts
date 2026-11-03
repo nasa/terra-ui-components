@@ -697,6 +697,11 @@ describe('LayerPickerControl', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
             ) as HTMLElement
+            const modisCard = panel.querySelector(
+                '.layer-picker-visualization-item[data-layer-name="modis-aod"]'
+            ) as HTMLElement
+            modisCard.dispatchEvent(new Event('focusin', { bubbles: true }))
+
             const gibsLegend = panel.querySelector(
                 '.layer-picker-legend-gibs'
             ) as HTMLElement
@@ -787,6 +792,11 @@ describe('LayerPickerControl', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
             ) as HTMLElement
+            const modisCard = panel.querySelector(
+                '.layer-picker-visualization-item[data-layer-name="modis-aod"]'
+            ) as HTMLElement
+            modisCard.dispatchEvent(new Event('focusin', { bubbles: true }))
+
             const gibsLegend = panel.querySelector(
                 '.layer-picker-legend-gibs'
             ) as HTMLElement
@@ -885,6 +895,11 @@ describe('LayerPickerControl', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'
             ) as HTMLElement
+            const modisCard = panel.querySelector(
+                '.layer-picker-visualization-item[data-layer-name="precipitation"]'
+            ) as HTMLElement
+            modisCard.dispatchEvent(new Event('focusin', { bubbles: true }))
+
             const gibsLegend = panel.querySelector(
                 '.layer-picker-legend-gibs'
             ) as HTMLElement
@@ -1455,6 +1470,53 @@ describe('LayerPickerControl', () => {
             expect(bottomCheckbox.getAttribute('tabindex')).to.equal('0')
             expect(bottomGear.getAttribute('tabindex')).to.equal('0')
             expect(bottomHandle.getAttribute('tabindex')).to.equal('0')
+        })
+
+        it('starts roving tabindex at the selected layer when layers are added while panel is initially closed', () => {
+            const ctrl = new LayerPickerControl({ showLayerPicker: true })
+            const testMap = new OlMap({
+                target: mapTarget,
+                view: new View({ center: [0, 0], zoom: 2 }),
+                controls: [ctrl],
+            })
+
+            const selectedLayer = new TileLayer({ visible: true })
+            selectedLayer.set('name', 'first-selected')
+            selectedLayer.set('title', 'First Selected')
+            selectedLayer.set('type', 'visualization')
+
+            const laterAddedLayer = new TileLayer({ visible: false })
+            laterAddedLayer.set('name', 'later-added')
+            laterAddedLayer.set('title', 'Later Added')
+            laterAddedLayer.set('type', 'visualization')
+
+            // Add layers while panel is closed (simulating asynchronous CMR collection loading)
+            testMap.addLayer(selectedLayer)
+            testMap.addLayer(laterAddedLayer)
+
+            // Open the panel for the first time
+            const toggle = ctrl.element.querySelector(
+                '.layer-picker-toggle'
+            ) as HTMLButtonElement
+            toggle.click()
+
+            const panel = ctrl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+            const items = panel.querySelectorAll('.layer-picker-visualization-item')
+            expect(items.length).to.equal(2)
+            // items[0] is later-added (unchecked, top), items[1] is first-selected (checked, bottom)
+            const laterCheckbox = items[0].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+            const selectedCheckbox = items[1].querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement
+
+            expect(selectedCheckbox.getAttribute('tabindex')).to.equal('0')
+            expect(laterCheckbox.getAttribute('tabindex')).to.equal('-1')
+
+            testMap.setTarget(undefined)
         })
 
         it('supports keyboard ArrowUp/ArrowDown, Home, End navigation and focusin sync across visualization checkboxes', () => {
