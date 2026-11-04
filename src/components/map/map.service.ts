@@ -24,17 +24,17 @@ import { BadRequestException } from '../../exceptions/http.exception.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
 import { LayerPickerControl } from './controls/layer-picker.control.js'
-import {
-    MapEventType,
-    type MapEventDetail,
-    type MapLayerToggleDetail,
-} from './type.js'
-import { LatLngBounds } from './models/LatLngBounds.js'
-import { LatLng } from './models/LatLng.js'
 import { buildDefaultBaseLayers } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
 import { buildExtentFeature, getBoundaryStyle } from './layers/boundary.js'
 import { LabelsLayer } from './layers/labels.layer.js'
+import { LatLng } from './models/LatLng.js'
+import { LatLngBounds } from './models/LatLngBounds.js'
+import {
+    type MapEventDetail,
+    MapEventType,
+    type MapLayerToggleDetail,
+} from './type.js'
 
 export type AddLayerOptions = {
     name?: string
@@ -435,7 +435,7 @@ export class MapService {
             canvases: Array.from(
                 viewport?.querySelectorAll('canvas') ?? []
             ) as HTMLCanvasElement[],
-            svgs: Array.from(viewport?.querySelectorAll('svg') ?? []) as SVGElement[],
+            svgs: [] as SVGElement[],
         }
     }
 

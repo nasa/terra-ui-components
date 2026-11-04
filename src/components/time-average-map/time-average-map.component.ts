@@ -409,16 +409,11 @@ export default class TerraTimeAverageMap extends AuthMixin(
             const mapWidth = mapSize[0]
             const mapHeight = mapSize[1]
 
-            // Get all canvas and SVG elements (OpenLayers can have multiple canvases for
-            // different layers) in z-order (bottom to top)
-            const { canvases: allCanvases, svgs } =
-                this.innerMap.getCanvasElements() ?? {
-                    canvases: [],
-                    svgs: [],
-                }
+            // Get all canvas elements from the map in z-order (bottom to top)
+            const allCanvases = this.innerMap.getCanvasElements()?.canvases ?? []
 
-            if (allCanvases.length === 0 && svgs.length === 0) {
-                console.warn('Could not find map canvas or SVG elements')
+            if (allCanvases.length === 0) {
+                console.warn('Could not find map canvas elements')
                 return
             }
 
@@ -439,61 +434,26 @@ export default class TerraTimeAverageMap extends AuthMixin(
             ctx.fillStyle = '#ffffff'
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height)
 
-            // Draw all canvas layers in order (they should composite correctly)
-            // OpenLayers renders layers from bottom to top, so we draw them in the same order
+            // Draw all canvas layers in order (OpenLayers renders layers bottom to top)
             for (const canvas of allCanvases) {
-                // Ensure we're drawing at the correct size
-                ctx.drawImage(
-                    canvas,
-                    0,
-                    0,
-                    canvas.width,
-                    canvas.height,
-                    0,
-                    textHeight,
-                    mapWidth,
-                    mapHeight
-                )
-            }
-
-            // Convert SVG elements to images and draw them on top
-            for (const svg of svgs) {
-                try {
-                    // Clone the SVG to avoid modifying the original
-                    const clonedSvg = svg.cloneNode(true) as SVGElement
-
-                    // Set explicit dimensions on the cloned SVG
-                    if (!clonedSvg.hasAttribute('width')) {
-                        clonedSvg.setAttribute('width', String(mapWidth))
-                    }
-                    if (!clonedSvg.hasAttribute('height')) {
-                        clonedSvg.setAttribute('height', String(mapHeight))
-                    }
-
-                    const svgData = new XMLSerializer().serializeToString(clonedSvg)
-                    const svgBlob = new Blob([svgData], {
-                        type: 'image/svg+xml;charset=utf-8',
-                    })
-                    const url = URL.createObjectURL(svgBlob)
-
-                    const img = new Image()
-                    await new Promise<void>((resolve, reject) => {
-                        img.onload = () => {
-                            ctx.drawImage(img, 0, textHeight, mapWidth, mapHeight)
-                            URL.revokeObjectURL(url)
-                            resolve()
-                        }
-                        img.onerror = () => {
-                            URL.revokeObjectURL(url)
-                            reject(new Error('Failed to load SVG image'))
-                        }
-                        img.src = url
-                    })
-                } catch (error) {
-                    console.warn('Failed to render SVG layer:', error)
+                if (canvas.width > 0 && canvas.height > 0) {
+                    const opacity =
+                        canvas.parentElement?.style.opacity || canvas.style.opacity
+                    ctx.globalAlpha = opacity ? Number(opacity) : 1
+                    ctx.drawImage(
+                        canvas,
+                        0,
+                        0,
+                        canvas.width,
+                        canvas.height,
+                        0,
+                        textHeight,
+                        mapWidth,
+                        mapHeight
+                    )
                 }
             }
-
+            ctx.globalAlpha = 1
             // Prepare text overlay
             const textY = 30
             const lineHeight = 25
