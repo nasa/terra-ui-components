@@ -432,4 +432,31 @@ Beyond `addLayer()`/`removeLayer()`/`getLayer()`/`getAllLayers()`, a fuller set 
 </script>
 ```
 
+### Layer Picker
+
+When `show-layer-picker` is enabled, the built-in Layer Picker groups layers into **Visualizations** (layers added via `layers` or `collection-id`), **Base Maps** (mutually exclusive background imagery), and **Overlays** (boundaries, place labels, graticule, and custom overlays). Each visualization layer entry includes:
+
+- A visibility checkbox (emitting `terra-map-layer-toggle`).
+- An opacity settings drawer (`0%` - `100%`); opening opacity controls for an unchecked layer automatically makes it visible.
+- Drag-and-drop and keyboard (`ArrowUp` / `ArrowDown` on the reorder handle) layer reordering (emitting `terra-map-layer-reorder` with `{ names }` ordered bottom-to-top matching the map render stack).
+- An accessible, sandboxed color-map legend (for GeoTIFF color ramps and GIBS horizontal SVG legends) that emits `terra-map-legend-click` (detail includes `{ name, title, type, scale, valueChosen, layer }`) when a value is selected via mouse click or keyboard (`Enter` / `Space`). For composite GIBS legends with multiple value scales (such as GPM IMERG Precipitation Rate with distinct Rain Rate and Snow Rate ramps), each ramp is hit-tested independently via cursor Y-position or keyboard `ArrowUp` / `ArrowDown`, and the active ramp name is passed in `scale`. If remote bin extraction fails, GIBS legends gracefully degrade to a static visual legend.
+
+```html:preview
+    <!-- collection-id="GPM_3IMERGHH_07" -->
+<terra-map
+    id="layer-picker-map"
+    has-navigation
+    show-layer-picker
+    collection-id="AIRS2RET_NRT_7.0"
+></terra-map>
+
+<script type="module">
+    ['terra-map-layer-click', 'terra-map-layer-error','terra-map-layer-toggle', 'terra-map-layer-reorder', 'terra-map-legend-click'].forEach(eventName => {
+        document.addEventListener(eventName, ({detail}) => {
+            console.log(detail);
+        })
+    })
+</script>
+```
+
 [component-metadata:terra-map]

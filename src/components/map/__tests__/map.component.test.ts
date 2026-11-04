@@ -8,6 +8,13 @@ import VectorSource from 'ol/source/Vector.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
 import { apiClient } from '../../../lib/api.client.js'
+import { gibsApi } from '../../../apis/gibs.api.js'
+import {
+    queryClientPersister,
+    sharedQueryClient,
+    TerraQueryClient,
+} from '../../../mixins/query-client.mixin.js'
+import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
 import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'
 import '../map.js'
@@ -50,20 +57,33 @@ function makeCapabilitiesXml(projection: string, matrixSet: string) {
 </Capabilities>`
 }
 
+afterEach(() => {
+    sinon.restore()
+})
+
 describe('<terra-map> layers (gibs)', () => {
     let originalFetch: typeof fetch
 
     beforeEach(() => {
         originalFetch = window.fetch
+        stubFetch(makeCapabilitiesXml('EPSG:3857', 'GoogleMapsCompatible_Level9'))
     })
 
     afterEach(() => {
+        sinon.restore()
         window.fetch = originalFetch
     })
 
     function stubFetch(xml: string) {
-        window.fetch = (async () =>
-            new Response(xml, { status: 200 })) as typeof fetch
+        window.fetch = (async (input: RequestInfo | URL) => {
+            if (String(input).includes('visualizations.umm_json')) {
+                return new Response(JSON.stringify({ hits: 0, items: [] }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' },
+                })
+            }
+            return new Response(xml, { status: 200 })
+        }) as typeof fetch
     }
 
     describe('attribute parsing', () => {
@@ -242,6 +262,68 @@ describe('<terra-map> layers (gibs)', () => {
             expect(layer).to.exist
             expect(layer?.getSource()).to.be.instanceOf(WMTS)
         })
+
+        it('gates declarative GIBS layer builds on queryClientReady hydration', async () => {
+            clearGibsCapabilitiesCache()
+            sharedQueryClient.clear()
+            ;(sharedQueryClient as TerraQueryClient).resetPersistence()
+
+            const capabilitiesXml = makeCapabilitiesXml('EPSG:3413', '1km')
+            let resolveRestore!: () => void
+            const restoreStub = sinon
+                .stub(queryClientPersister, 'restoreClient')
+                .returns(
+                    new Promise<undefined>(resolve => {
+                        resolveRestore = () => {
+                            sharedQueryClient.setQueryData(
+                                ['gibs', 'capabilities', 'epsg3413'],
+                                capabilitiesXml
+                            )
+                            resolve(undefined)
+                        }
+                    })
+                )
+
+            const getCapStub = sinon
+                .stub(gibsApi, 'getCapabilitiesXml')
+                .resolves(capabilitiesXml)
+
+            try {
+                const el = document.createElement('terra-map') as TerraMap
+                el.layers = [
+                    {
+                        type: 'gibs',
+                        name: 'polar-gated',
+                        layer: 'TestLayer',
+                        projection: 'EPSG:3413',
+                    },
+                ]
+                document.body.appendChild(el)
+
+                // Allow firstUpdated and initial tick to run while restoreClient is pending
+                await new Promise(r => setTimeout(r, 50))
+
+                // Capabilities fetch must NOT have been called while hydration is pending
+                expect(getCapStub.called).to.be.false
+                expect(el.getLayer('polar-gated')).to.be.undefined
+
+                // Resolve hydration gate (hydrating capabilities into sharedQueryClient)
+                resolveRestore()
+                await waitUntil(
+                    () => el.getLayer('polar-gated') !== undefined,
+                    'layer added after hydration'
+                )
+
+                // Hydrated cache satisfied the query without hitting the network
+                expect(getCapStub.called).to.be.false
+                el.remove()
+            } finally {
+                restoreStub.restore()
+                getCapStub.restore()
+                clearGibsCapabilitiesCache()
+                sharedQueryClient.clear()
+            }
+        })
     })
 
     describe('projection', () => {
@@ -263,52 +345,63 @@ describe('<terra-map> layers (gibs)', () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
             const warnSpy = sinon.spy(console, 'warn')
 
-            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.layers = [
-                {
-                    type: 'gibs',
-                    name: 'polar',
-                    layer: 'TestLayer',
-                    projection: 'EPSG:3413',
-                },
-            ]
+            try {
+                const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+                el.layers = [
+                    {
+                        type: 'gibs',
+                        name: 'polar',
+                        layer: 'TestLayer',
+                        projection: 'EPSG:3413',
+                    },
+                ]
 
-            await waitUntil(() => el.getLayer('polar'))
+                await waitUntil(() => el.getLayer('polar'), 'polar layer was added', {
+                    timeout: 4000,
+                })
 
-            expect(
-                warnSpy.calledWith(sinon.match(/published in EPSG:3413.*EPSG:3857/))
-            ).to.be.true
-            warnSpy.restore()
+                expect(
+                    warnSpy.calledWith(
+                        sinon.match(/published in EPSG:3413.*EPSG:3857/)
+                    )
+                ).to.be.true
+            } finally {
+                warnSpy.restore()
+            }
         })
 
         it('does not warn when a gibs layers entry matches the configured projection', async () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
             const warnSpy = sinon.spy(console, 'warn')
 
-            const el = await fixture<TerraMap>(
-                html`<terra-map projection="EPSG:3413"></terra-map>`
-            )
-            el.layers = [
-                {
-                    type: 'gibs',
-                    name: 'polar',
-                    layer: 'TestLayer',
-                    projection: 'EPSG:3413',
-                },
-            ]
+            try {
+                const el = await fixture<TerraMap>(
+                    html`<terra-map projection="EPSG:3413"></terra-map>`
+                )
+                el.layers = [
+                    {
+                        type: 'gibs',
+                        name: 'polar',
+                        layer: 'TestLayer',
+                        projection: 'EPSG:3413',
+                    },
+                ]
 
-            await waitUntil(() => el.getLayer('polar'))
+                await waitUntil(() => el.getLayer('polar'), 'polar layer was added', {
+                    timeout: 4000,
+                })
 
-            expect(warnSpy.called).to.be.false
-            warnSpy.restore()
+                expect(warnSpy.called).to.be.false
+            } finally {
+                warnSpy.restore()
+            }
         })
     })
 
     describe('vector gibs layers (type: "gibs-vector")', () => {
         function stubVectorFetch() {
-            window.fetch = (async () =>
-                new Response(
-                    `<?xml version="1.0" encoding="UTF-8"?>
+            stubFetch(
+                `<?xml version="1.0" encoding="UTF-8"?>
 <Capabilities xmlns="http://www.opengis.net/wmts/1.0" xmlns:ows="http://www.opengis.net/ows/1.1" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.0.0">
     <Contents>
         <Layer>
@@ -333,9 +426,8 @@ describe('<terra-map> layers (gibs)', () => {
             </TileMatrix>
         </TileMatrixSet>
     </Contents>
-</Capabilities>`,
-                    { status: 200 }
-                )) as typeof fetch
+</Capabilities>`
+            )
         }
 
         it('adds a VectorTileLayer for a type: "gibs-vector" entry', async () => {
@@ -625,11 +717,11 @@ describe('<terra-map> layer picker', () => {
         const checkboxes = el.shadowRoot?.querySelectorAll(
             '.layer-picker-panel input[type="checkbox"]'
         ) as NodeListOf<HTMLInputElement>
-        // Graticule is the topmost overlay (first checkbox)
-        expect(checkboxes[0].checked).to.be.true
+        // Graticule is the third overlay (after International Boundaries and Place Labels)
+        expect(checkboxes[2].checked).to.be.true
 
-        checkboxes[0].checked = false
-        checkboxes[0].dispatchEvent(new Event('change'))
+        checkboxes[2].checked = false
+        checkboxes[2].dispatchEvent(new Event('change'))
 
         expect(el.showGraticule).to.be.false
         expect(el.getLayer('graticule')?.getVisible()).to.be.false
@@ -668,13 +760,28 @@ describe('<terra-map> collection-id', () => {
     const ENTRY_ID = 'AIRS2RET_NRT_7.0'
 
     let apiGetStub: sinon.SinonStub
-    let originalFetch: typeof fetch
 
     /** Stubs `apiClient.get` so only `collections.json` requests resolve with `response` — other requests (e.g. the map's unrelated Giovanni shapefiles query) are left alone. */
     function stubCollectionTags(response: unknown) {
         apiGetStub.callsFake((url: string) => {
             if (url.includes('collections.json')) {
                 return Promise.resolve(response)
+            }
+            if (url.includes('wmts.cgi')) {
+                const proj = url.includes('epsg3413')
+                    ? 'EPSG:3413'
+                    : url.includes('epsg3031')
+                      ? 'EPSG:3031'
+                      : url.includes('epsg4326')
+                        ? 'EPSG:4326'
+                        : 'EPSG:3857'
+                const matrix =
+                    proj === 'EPSG:3857'
+                        ? 'GoogleMapsCompatible_Level9'
+                        : proj === 'EPSG:4326'
+                          ? '2km'
+                          : '1km'
+                return Promise.resolve(makeCapabilitiesXml(proj, matrix))
             }
             return Promise.resolve({ categories: [] })
         })
@@ -719,13 +826,13 @@ describe('<terra-map> collection-id', () => {
     }
 
     beforeEach(() => {
+        sharedQueryClient.clear()
         apiGetStub = sinon.stub(apiClient, 'get')
-        originalFetch = window.fetch
     })
 
     afterEach(() => {
+        sharedQueryClient.clear()
         sinon.restore()
-        window.fetch = originalFetch
     })
 
     it('adds one layer per GIBS product tagged on the collection', async () => {
@@ -740,11 +847,15 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`),
+            'first collection layer was added',
+            { timeout: 4000 }
         )
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
+            'second collection layer was added',
+            { timeout: 4000 }
         )
 
         expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)).to
@@ -765,8 +876,10 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
+            'collection layer was added',
+            { timeout: 4000 }
         )
 
         expect(
@@ -782,10 +895,6 @@ describe('<terra-map> collection-id', () => {
     })
 
     it("only adds layers available in the map's current projection", async () => {
-        window.fetch = (async () =>
-            new Response(makeCapabilitiesXml('EPSG:3413', '1km'), {
-                status: 200,
-            })) as typeof fetch
         stubCollectionTags(
             makeTagsResponse([
                 { product: 'Geographic_Only', geographic: true, arctic: false },
@@ -801,7 +910,11 @@ describe('<terra-map> collection-id', () => {
             ></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${ENTRY_ID}:TestLayer`))
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:TestLayer`),
+            'collection layer was added',
+            { timeout: 4000 }
+        )
 
         expect(el.getLayer(`${ENTRY_ID}:TestLayer`)).to.exist
         expect(el.getLayer(`${ENTRY_ID}:Geographic_Only`)).to.not.exist
@@ -814,10 +927,18 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${ENTRY_ID}:Test_Layer`))
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:Test_Layer`),
+            'collection layer was added',
+            { timeout: 4000 }
+        )
 
         el.collectionId = undefined
-        await waitUntil(() => !el.getLayer(`${ENTRY_ID}:Test_Layer`))
+        await waitUntil(
+            () => !el.getLayer(`${ENTRY_ID}:Test_Layer`),
+            'collection layer was removed',
+            { timeout: 4000 }
+        )
 
         expect(el.getLayer(`${ENTRY_ID}:Test_Layer`)).to.not.exist
     })
@@ -829,10 +950,13 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            apiGetStub
-                .getCalls()
-                .some(call => call.args[0].includes('collections.json'))
+        await waitUntil(
+            () =>
+                apiGetStub
+                    .getCalls()
+                    .some(call => call.args[0].includes('collections.json')),
+            'collections.json was fetched',
+            { timeout: 4000 }
         )
         const call = apiGetStub
             .getCalls()
@@ -848,10 +972,13 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${CONCEPT_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            apiGetStub
-                .getCalls()
-                .some(call => call.args[0].includes('collections.json'))
+        await waitUntil(
+            () =>
+                apiGetStub
+                    .getCalls()
+                    .some(call => call.args[0].includes('collections.json')),
+            'collections.json was fetched',
+            { timeout: 4000 }
         )
         const call = apiGetStub
             .getCalls()

@@ -1,5 +1,6 @@
 import type { QueryObserverOptions } from '@tanstack/query-core'
 import cmrApi from '../apis/cmr.api.js'
+import { duration } from '../constants.js'
 import type { RequestOptions } from '../lib/api.client.js'
 
 export function queryCmrCollection(
@@ -84,6 +85,51 @@ export function queryCmrCollectionTags(
             })
         },
         enabled: !!collectionId, // prevent firing when collectionId is undefined
+        staleTime: duration.hours(1),
+    }
+}
+
+export function queryCmrVisualizations(
+    conceptIds?: string[],
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof cmrApi.getVisualizationsByConceptIds>
+> | null> {
+    return {
+        queryKey: ['cmr', 'visualizations', conceptIds],
+        queryFn: async ({ signal }) => {
+            if (!conceptIds?.length) {
+                return null
+            }
+            return cmrApi.getVisualizationsByConceptIds(conceptIds, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: Boolean(conceptIds?.length),
+        staleTime: duration.days(1),
+    }
+}
+
+export function queryCmrVisualizationsByLayer(
+    layer?: string,
+    options?: RequestOptions
+): QueryObserverOptions<Awaited<
+    ReturnType<typeof cmrApi.searchVisualizationsByLayer>
+> | null> {
+    return {
+        queryKey: ['cmr', 'visualizations-by-layer', layer],
+        queryFn: async ({ signal }) => {
+            if (!layer) {
+                return null
+            }
+            return cmrApi.searchVisualizationsByLayer(layer, {
+                ...options,
+                signal,
+            })
+        },
+        enabled: Boolean(layer),
+        staleTime: duration.days(1),
     }
 }
 
@@ -96,7 +142,9 @@ export function queryCmrSampling(
     return {
         queryKey: ['cmr', 'sampling', collectionEntryId],
         queryFn: async ({ signal }) => {
-            if (!collectionEntryId) return null
+            if (!collectionEntryId) {
+                return null
+            }
             return cmrApi.getSamplingOfGranules(collectionEntryId, {
                 ...options,
                 signal,

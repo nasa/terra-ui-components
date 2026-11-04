@@ -14,7 +14,9 @@ export type {
     TerraMapZoomChangeEvent,
     TerraMapLayerClickEvent,
     TerraMapLayerErrorEvent,
+    TerraMapLayerReorderEvent,
     TerraMapLayerToggleEvent,
+    TerraMapLegendClickEvent,
 } from './terra-map.js'
 export type { TerraRemoveEvent } from './terra-remove.js'
 export type { TerraSearchEvent } from './terra-search.js'

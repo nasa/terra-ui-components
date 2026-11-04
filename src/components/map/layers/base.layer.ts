@@ -1,6 +1,9 @@
 import TileLayer from 'ol/layer/Tile.js'
-import ImageTile from 'ol/source/ImageTile.js'
+import XYZ from 'ol/source/XYZ.js'
+import { GIBS_WMTS_ENDPOINT } from '../../../apis/gibs.api.js'
 import { getYesterdayIsoDate } from '../../../utilities/date.js'
+
+const ARCGIS_REST_ENDPOINT = 'https://server.arcgisonline.com/ArcGIS/rest/services'
 
 export type Options = {
     noWorldWrap?: boolean
@@ -15,13 +18,22 @@ export type BaseLayerConfig = {
     noWorldWrap?: boolean
 }
 
-export function buildBaseLayer(config: BaseLayerConfig): TileLayer {
+/**
+ * Builds a base map tile layer using OpenLayers' `XYZ` source.
+ *
+ * `XYZ` (derived from `TileImage`) delegates projection transformations to
+ * `ol/reproj/Tile.js`, which renders reprojected raster tiles via 2D canvas.
+ * This ensures base layers reproject cleanly across non-Web Mercator views
+ * (such as polar stereographic EPSG:3413 / EPSG:3031 and geographic EPSG:4326)
+ * without depending on hardware WebGL context availability.
+ */
+export function buildBaseLayer(config: BaseLayerConfig): TileLayer<XYZ> {
     const layer = new TileLayer({
         visible: config.visible ?? false,
-        source: new ImageTile({
+        source: new XYZ({
             url: config.url,
             attributions: config.attributions,
-            ...(config.noWorldWrap ? { wrapX: false } : {}),
+            wrapX: !config.noWorldWrap,
         }),
     })
 
@@ -41,9 +53,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'base',
             title: 'World Imagery',
-            url:
-                'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            url: `${ARCGIS_REST_ENDPOINT}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
             attributions: ['Esri', 'Vantor', 'Earthstar Geographics'],
             visible: true,
         }),
@@ -51,10 +61,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'true-color',
             title: 'Corrected Reflectance (True Color)',
-            url:
-                'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
-                `VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${yesterday}/` +
-                'GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+            url: `${GIBS_WMTS_ENDPOINT}/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${yesterday}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
             attributions: ['NASA EOSDIS GIBS'],
             visible: false,
         }),
@@ -62,10 +69,7 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'land-water',
             title: 'Land / Water Map',
-            url:
-                'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/' +
-                'OSM_Land_Water_Map/default/default/' +
-                'GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
+            url: `${GIBS_WMTS_ENDPOINT}/epsg3857/best/OSM_Land_Water_Map/default/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
             attributions: ['© OpenStreetMap contributors', 'NASA EOSDIS GIBS'],
             visible: false,
         }),
@@ -73,24 +77,20 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'topo',
             title: 'Topographic',
-            url:
-                'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                'World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+            url: `${ARCGIS_REST_ENDPOINT}/World_Topo_Map/MapServer/tile/{z}/{y}/{x}`,
             attributions: ['Esri', 'HERE', 'Garmin', 'USGS'],
             visible: false,
         }),
     ]
 }
 
-export class BaseLayer extends TileLayer {
+export class BaseLayer extends TileLayer<XYZ> {
     constructor(options: Options = {}) {
         super({
-            source: new ImageTile({
-                url:
-                    'https://server.arcgisonline.com/ArcGIS/rest/services/' +
-                    'World_Imagery/MapServer/tile/{z}/{y}/{x}',
+            source: new XYZ({
+                url: `${ARCGIS_REST_ENDPOINT}/World_Imagery/MapServer/tile/{z}/{y}/{x}`,
                 attributions: ['Esri', 'Vantor', 'Earthstar Geographics'],
-                ...(options.noWorldWrap ? { wrapX: false } : {}),
+                wrapX: !options.noWorldWrap,
             }),
         })
     }

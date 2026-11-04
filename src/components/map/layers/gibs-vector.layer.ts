@@ -6,9 +6,9 @@ import { transformExtent } from 'ol/proj.js'
 import { Circle, Fill, Style } from 'ol/style.js'
 import { stylefunction } from 'ol-mapbox-style'
 import type { Extent } from 'ol/extent.js'
+import { GIBS_WMTS_ENDPOINT } from '../../../apis/gibs.api.js'
 import { getGibsCapabilities } from './gibs.layer.js'
 
-const GIBS_WMTS_ROOT = 'https://gibs.earthdata.nasa.gov/wmts'
 const MVT_FORMAT = 'application/vnd.mapbox-vector-tile'
 
 export type VectorOptions = {
@@ -83,12 +83,7 @@ export async function buildGibsVectorLayer(
         )
     }
 
-    const url =
-        `${GIBS_WMTS_ROOT}/epsg4326/best/wmts.cgi?TIME=${date}` +
-        `&layer=${layer}&tilematrixset=${tileMatrixSet}` +
-        `&Service=WMTS&Request=GetTile&Version=1.0.0` +
-        `&FORMAT=${encodeURIComponent(MVT_FORMAT)}` +
-        `&TileMatrix={z}&TileCol={x}&TileRow={y}`
+    const url = `${GIBS_WMTS_ENDPOINT}/epsg4326/best/wmts.cgi?TIME=${date}&layer=${layer}&tilematrixset=${tileMatrixSet}&Service=WMTS&Request=GetTile&Version=1.0.0&FORMAT=${encodeURIComponent(MVT_FORMAT)}&TileMatrix={z}&TileCol={x}&TileRow={y}`
 
     const source = new VectorTileSource({
         format: new MVT(),

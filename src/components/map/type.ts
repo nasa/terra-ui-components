@@ -29,7 +29,20 @@ export type MapEventDetail = BaseMapEventDetail &
 export type MapLayerToggleDetail = {
     name: string
     title: string
-    type: 'base' | 'overlay'
+    type: 'base' | 'overlay' | 'visualization'
     visible: boolean
+    layer: unknown
+}
+
+export type MapLegendClickDetail = {
+    name: string
+    title: string
+    type: 'base' | 'overlay' | 'visualization'
+    scale?: string
+    valueChosen?: string | number
+    rgbChosen?: number[]
+    min?: number | string
+    max?: number | string
+    legendValues?: Array<{ value: string; rgb: number[] }>
     layer: unknown
 }
