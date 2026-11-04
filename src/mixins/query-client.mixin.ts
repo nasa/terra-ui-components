@@ -99,13 +99,15 @@ const ensureRestored = (queryClient: QueryClient): Promise<void> => {
 }
 
 /**
- * Resets the one-time persistence restore state so tests can simulate a cold-start
- * IndexedDB restoration cycle.
+ * @internal Test-only escape hatch for resetting the module-scoped persistence restore state.
+ * Prefer importing `resetQueryClientPersistence` from `src/testing/query-client.utils.ts` in tests.
  */
-export function resetQueryClientPersistence() {
-    persistUnsubscribe?.()
-    persistUnsubscribe = undefined
-    restorePromise = undefined
+export const _testing = {
+    resetPersistence() {
+        persistUnsubscribe?.()
+        persistUnsubscribe = undefined
+        restorePromise = undefined
+    },
 }
 
 /**

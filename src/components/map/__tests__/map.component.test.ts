@@ -11,9 +11,9 @@ import { apiClient } from '../../../lib/api.client.js'
 import { gibsApi } from '../../../apis/gibs.api.js'
 import {
     queryClientPersister,
-    resetQueryClientPersistence,
     sharedQueryClient,
 } from '../../../mixins/query-client.mixin.js'
+import { resetQueryClientPersistence } from '../../../testing/query-client.utils.js'
 import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
 import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'

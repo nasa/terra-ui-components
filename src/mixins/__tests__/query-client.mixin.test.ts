@@ -5,9 +5,9 @@ import {
     QUERY_CACHE_BUSTER,
     QueryClientMixin,
     queryClientPersister,
-    resetQueryClientPersistence,
     sharedQueryClient,
 } from '../query-client.mixin.js'
+import { resetQueryClientPersistence } from '../../testing/query-client.utils.js'
 
 class TestQueryClientElement extends QueryClientMixin(LitElement) {
     override render() {
