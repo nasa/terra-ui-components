@@ -30,6 +30,11 @@ export type GeoTiffLayerConfig = CommonConfig & {
      * desirable when multiple layers are present.
      */
     fitView?: boolean
+    /**
+     * Coordinate projection of the raster (e.g. 'EPSG:4326').
+     * If not provided, it will be read from the GeoTIFF metadata or default to 'EPSG:4326'.
+     */
+    projection?: ProjectionLike
 }
 
 export type GeoTiffLegendEntry = {
@@ -41,7 +46,7 @@ export type GeoTiffLayerInfo = {
     layer: WebGLTileLayer
     /** The GeoTIFF's native extent, in `projection`, when it could be determined. */
     extent?: Extent
-    projection: ProjectionLike
+    projection: GeoTiffLayerConfig['projection']
     min: number
     max: number
     /**
@@ -51,30 +56,130 @@ export type GeoTiffLayerInfo = {
     colorStops: Array<number | number[]>
     /** Convenience legend entries (highest value first), ready to render a color-ramp legend. */
     legendValues: GeoTiffLegendEntry[]
+    /** Parsed GDAL_METADATA key-value tags (e.g. units, long_name), if present. */
+    gdalMetadata?: Record<string, string>
+    noDataValue: GeoTiffLayerConfig['noDataValue']
 }
 
 /**
- * Reads the `GDAL_NODATA` tag off the GeoTIFF's first image, falling back
- * to the configured `noDataValue` if the tag isn't present.
+ * Reads the nodata value from the GeoTIFF image metadata, falling back to the
+ * configured value or the default NASA Giovanni fill value (-9999).
+ *
+ * Note: `geotiff.js` treats TIFF tag 42113 (GDAL_NODATA) as deferred, meaning
+ * `gtImage.fileDirectory.GDAL_NODATA` is unpopulated until asynchronously read.
+ * We invoke `getGDALNoData()` directly to ensure deferred tag resolution.
+ * If the GeoTIFF file lacks embedded nodata metadata (common in raw Giovanni grids),
+ * we fall back to -9999 so fill values are not factored into min/max calculations,
+ * which would otherwise distort the color scale and render valid data uniformly.
  */
-async function getNoDataValue(
+export async function getNoDataValue(
     gtSource: InstanceType<typeof import('ol/source/GeoTIFF.js').default>,
-    fallback?: number
+    fallback: number = -9999
 ): Promise<number | undefined> {
     await gtSource.getView()
     try {
         // `sourceImagery_` is an undocumented internal of OL's `GeoTIFF` source
-        // if it doesn't exist, we'll fall back to the configured noDataValue
         const gtImage = (gtSource as any).sourceImagery_?.[0]?.[0]
-        const tagValue = gtImage?.fileDirectory?.GDAL_NODATA
+        if (!gtImage) {
+            return fallback
+        }
 
-        return tagValue !== undefined ? parseFloat(tagValue) : fallback
+        // geotiff.js provides an async helper that resolves deferred tag 42113 (GDAL_NODATA)
+        if (typeof gtImage.getGDALNoData === 'function') {
+            const nodata = await gtImage.getGDALNoData()
+            if (nodata !== null && nodata !== undefined && !Number.isNaN(nodata)) {
+                return nodata
+            }
+        }
+
+        const tagValue = gtImage?.fileDirectory?.GDAL_NODATA
+        if (tagValue !== undefined && tagValue !== null) {
+            const parsed = parseFloat(tagValue)
+            if (!Number.isNaN(parsed)) {
+                return parsed
+            }
+        }
+
+        return fallback
     } catch (error) {
         console.warn(
             'Failed to read GDAL_NODATA tag from GeoTIFF source; falling back to configured noDataValue.',
             error
         )
         return fallback
+    }
+}
+
+/**
+ * Parses GDAL_METADATA XML into a key-value record.
+ */
+export function parseGdalMetadataXml(
+    text?: string | null
+): GeoTiffLayerInfo['gdalMetadata'] {
+    if (!text || typeof text !== 'string') {
+        return {}
+    }
+
+    try {
+        const parser = new DOMParser()
+        const xmlDoc = parser.parseFromString(text, 'application/xml')
+        const items = xmlDoc.querySelectorAll('Item')
+        const dataObj: GeoTiffLayerInfo['gdalMetadata'] = {}
+
+        for (const item of items) {
+            const name = item.getAttribute('name')
+            const value = item.textContent ? item.textContent.trim() : ''
+
+            if (name) {
+                dataObj[name] = value
+            }
+        }
+
+        return dataObj
+    } catch (error) {
+        console.warn('Failed to parse GDAL_METADATA XML:', error)
+        return {}
+    }
+}
+
+/**
+ * Reads and parses the XML `GDAL_METADATA` tag off the GeoTIFF's first image,
+ * returning a key-value record of metadata items (such as units, long_name, etc.).
+ */
+export async function getGdalMetadata(
+    gtSource: InstanceType<typeof import('ol/source/GeoTIFF.js').default>
+): Promise<GeoTiffLayerInfo['gdalMetadata']> {
+    await gtSource.getView()
+
+    try {
+        const gtImage = (gtSource as any).sourceImagery_?.[0]?.[0]
+
+        if (!gtImage) {
+            return {}
+        }
+
+        // geotiff.js provides an async helper that resolves deferred tag 42112 (GDAL_METADATA)
+        if (typeof gtImage.getGDALMetadata === 'function') {
+            const metadata = await gtImage.getGDALMetadata()
+
+            if (metadata && typeof metadata === 'object') {
+                return Object.fromEntries(
+                    Object.entries(metadata).map(([k, v]) => [k, String(v ?? '')])
+                )
+            }
+        }
+
+        // Fallback: check fileDirectory or loadValue directly if available
+        const tagValue =
+            gtImage.fileDirectory?.GDAL_METADATA ??
+            (typeof gtImage.fileDirectory?.loadValue === 'function'
+                ? await gtImage.fileDirectory.loadValue('GDAL_METADATA')
+                : undefined)
+
+        return parseGdalMetadataXml(tagValue)
+    } catch (error) {
+        console.warn('Failed to read GDAL_METADATA from GeoTIFF source:', error)
+        return {}
     }
 }
 
@@ -202,6 +307,7 @@ export async function buildGeoTiffLayer(
         colorMapName = 'viridis',
         colorSteps = 72,
         reverseColors = false,
+        projection: configProjection,
     } = config
 
     const { default: GeoTIFF } = await import('ol/source/GeoTIFF.js')
@@ -214,6 +320,7 @@ export async function buildGeoTiffLayer(
 
     const gtSource = new GeoTIFF({
         sources: [{ url, bands, nodata: noDataValue }],
+        projection: configProjection,
         sourceOptions,
         // Enable wrapping so the GeoTIFF is always visible when scrolling
         wrapX: true,
@@ -227,7 +334,7 @@ export async function buildGeoTiffLayer(
         layer.setOpacity(opacity)
     }
 
-    const resolvedNoDataValue = await getNoDataValue(gtSource, noDataValue)
+    const resolvedNoDataValue = await getNoDataValue(gtSource, noDataValue ?? -9999)
     const { min, max } = await getMinMax(gtSource, resolvedNoDataValue)
     const { stops: colorStops, legendValues } = await buildColorStops(
         colorMapName,
@@ -236,25 +343,87 @@ export async function buildGeoTiffLayer(
         colorSteps,
         reverseColors
     )
+    const gdalMetadata = await getGdalMetadata(gtSource)
 
-    layer.setStyle({
-        color: [
-            'case',
-            ['==', ['band', 2], 0],
-            [0, 0, 0, 0],
-            ['interpolate', ['linear'], ['band', 1], ...colorStops],
-        ],
-    })
+    layer.setStyle(buildGeoTiffStyle(colorStops, resolvedNoDataValue))
 
     const view = await gtSource.getView()
 
     return {
         layer,
         extent: view.extent as Extent,
-        projection: view.projection as ProjectionLike,
+        projection:
+            (view.projection as ProjectionLike) ?? configProjection ?? 'EPSG:4326',
+
         min,
         max,
         colorStops,
         legendValues,
+        gdalMetadata,
+        noDataValue: resolvedNoDataValue,
     }
+}
+
+/**
+ * Builds the WebGL color expression for rendering GeoTIFF rasters with colormap stops.
+ *
+ * OpenLayers GeoTIFF sources automatically generate a synthetic alpha mask on band 2
+ * if nodata was explicitly known at source instantiation or resolved by OL's parser.
+ * However, if nodata was resolved via metadata fallback after source creation, band 2
+ * may not mask those pixels. Explicitly testing `['==', ['band', 1], resolvedNoDataValue]`
+ * guarantees nodata/fill pixels render completely transparent regardless of source timing.
+ */
+function buildGeoTiffStyle(
+    colorStops: Array<number | number[]>,
+    noDataValue?: number
+) {
+    const nodataClause =
+        noDataValue !== undefined
+            ? [
+                  ['==', ['band', 1], noDataValue],
+                  [0, 0, 0, 0],
+              ]
+            : []
+
+    return {
+        color: [
+            'case',
+            ['==', ['band', 2], 0],
+            [0, 0, 0, 0],
+            ...nodataClause,
+            ['interpolate', ['linear'], ['band', 1], ...colorStops],
+        ],
+    }
+}
+
+/**
+ * Updates the colormap-based style and legend values on an existing GeoTIFF layer in-place
+ * without reconstructing the OpenLayers layer or re-fetching/re-reading raster data.
+ */
+export async function updateGeoTiffStyle(
+    info: GeoTiffLayerInfo,
+    config: Pick<GeoTiffLayerConfig, 'colorMapName' | 'colorSteps' | 'reverseColors'>
+): Promise<GeoTiffLayerInfo> {
+    const colorMapName = config.colorMapName ?? 'viridis'
+    const colorSteps = config.colorSteps ?? 72
+    const reverseColors = config.reverseColors ?? false
+
+    const { stops: colorStops, legendValues } = await buildColorStops(
+        colorMapName,
+        info.min,
+        info.max,
+        colorSteps,
+        reverseColors
+    )
+
+    info.layer.setStyle(buildGeoTiffStyle(colorStops, info.noDataValue))
+
+    const updatedInfo: GeoTiffLayerInfo = {
+        ...info,
+        colorStops,
+        legendValues,
+    }
+
+    info.layer.set('info', updatedInfo)
+    return updatedInfo
 }

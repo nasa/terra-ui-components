@@ -7,4 +7,6 @@ export type CommonConfig = {
     position?: 'below-borders' | 'top'
     /** Whether the layer appears or not */
     visible?: boolean
+    /** Opacity of the layer, from 0 to 1. */
+    opacity?: number
 }

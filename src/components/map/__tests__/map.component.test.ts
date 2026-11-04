@@ -410,6 +410,41 @@ describe('<terra-map> layers (gibs)', () => {
 
             expect(el.getLayer('imagery')).to.equal(firstLayer)
         })
+
+        it('updates opacity on an existing layer in-place without rebuilding it', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer', opacity: 1 },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+            const firstLayer = el.getLayer('imagery')
+
+            // Update opacity only
+            el.layers = [
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer', opacity: 0.5 },
+            ]
+            await el.updateComplete
+
+            // The layer instance should be the exact same object (not rebuilt)
+            expect(el.getLayer('imagery')).to.equal(firstLayer)
+            expect(firstLayer?.getOpacity()).to.equal(0.5)
+        })
+
+        it('does not re-trigger layersChanged when layers is set to an equivalent array', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            const spy = sinon.spy(el, 'layersChanged')
+
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+            expect(spy.callCount).to.equal(1)
+
+            // Set to a new array instance with identical configuration
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+
+            // hasChanged returns false, so layersChanged is not called again
+            expect(spy.callCount).to.equal(1)
+        })
     })
 })
 

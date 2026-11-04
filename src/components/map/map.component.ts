@@ -17,6 +17,7 @@ import {
 } from '../../queries/giovanni.queries.js'
 import componentStyles from '../../styles/component.styles.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
+import { updateGeoTiffStyle } from './layers/geotiff.layer.js'
 import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
@@ -47,6 +48,47 @@ const layersConverter = {
             return []
         }
     },
+}
+
+function isPresentationOnlyChange(
+    previous: MapLayerConfig,
+    next: MapLayerConfig
+): boolean {
+    if (previous.type !== next.type) {
+        return false
+    }
+
+    const prevWithoutPresentation = {
+        ...previous,
+        opacity: undefined,
+        visible: undefined,
+    }
+    const nextWithoutPresentation = {
+        ...next,
+        opacity: undefined,
+        visible: undefined,
+    }
+
+    return (
+        JSON.stringify(prevWithoutPresentation) ===
+        JSON.stringify(nextWithoutPresentation)
+    )
+}
+
+function isGeoTiffStyleOnlyChange(
+    previous: MapLayerConfig,
+    next: MapLayerConfig
+): boolean {
+    if (previous.type !== 'geotiff' || next.type !== 'geotiff') {
+        return false
+    }
+
+    return (
+        previous.url === next.url &&
+        previous.projection === next.projection &&
+        previous.noDataValue === next.noDataValue &&
+        JSON.stringify(previous.bands ?? [1]) === JSON.stringify(next.bands ?? [1])
+    )
 }
 
 /**
@@ -189,7 +231,21 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
      * ]'></terra-map>
      * ```
      */
-    @property({ attribute: 'layers', converter: layersConverter })
+    @property({
+        attribute: 'layers',
+        converter: layersConverter,
+        hasChanged(newVal?: MapLayerConfig[], oldVal?: MapLayerConfig[]) {
+            if (newVal === oldVal) {
+                return false
+            }
+
+            if (!newVal || !oldVal || newVal.length !== oldVal.length) {
+                return true
+            }
+
+            return JSON.stringify(newVal) !== JSON.stringify(oldVal)
+        },
+    })
     layers: MapLayerConfig[] = []
 
     /**
@@ -241,6 +297,53 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                 continue // unchanged
             }
 
+            const existingLayer = previousConfig ? this.getLayer(name) : undefined
+            if (previousConfig && existingLayer) {
+                if (isPresentationOnlyChange(previousConfig, config)) {
+                    if ('opacity' in config && config.opacity !== undefined) {
+                        existingLayer.setOpacity(config.opacity)
+                    }
+
+                    if ('visible' in config && config.visible !== undefined) {
+                        existingLayer.setVisible(config.visible)
+                    }
+
+                    continue // updated in-place without rebuilding
+                }
+
+                if (
+                    previousConfig.type === 'geotiff' &&
+                    config.type === 'geotiff' &&
+                    isGeoTiffStyleOnlyChange(previousConfig, config)
+                ) {
+                    const info = existingLayer.get('info') as
+                        | GeoTiffLayerInfo
+                        | undefined
+                    if (info) {
+                        if (config.opacity !== undefined) {
+                            existingLayer.setOpacity(config.opacity)
+                        }
+
+                        if (config.visible !== undefined) {
+                            existingLayer.setVisible(config.visible)
+                        }
+
+                        if (
+                            previousConfig.colorMapName !== config.colorMapName ||
+                            previousConfig.colorSteps !== config.colorSteps ||
+                            previousConfig.reverseColors !== config.reverseColors
+                        ) {
+                            const updatedInfo = await updateGeoTiffStyle(info, config)
+                            this.emit('terra-map-layer-change', {
+                                detail: { name, type: 'geotiff', info: updatedInfo },
+                            })
+                        }
+
+                        continue // updated in-place without rebuilding
+                    }
+                }
+            }
+
             this.#warnIfProjectionMismatch(name, config)
 
             const requestId = (this.#layerRequestIds.get(name) ?? 0) + 1
@@ -260,7 +363,12 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                     continue
                 }
 
-                this.#handleLayerBuilt(name, config, result)
+                const isNewDataSource =
+                    !previousConfig ||
+                    ('url' in previousConfig &&
+                        (previousConfig as any).url !== (config as any).url)
+
+                this.#handleLayerBuilt(name, config, result, isNewDataSource)
             } catch (error) {
                 // bail if this layer was removed or superseded while it was building
                 if (this.#layerRequestIds.get(name) !== requestId) {
@@ -331,7 +439,12 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
      * Adds a successfully-built `layers` entry to the map and fires
      * `terra-map-layer-change` with its type-specific detail.
      */
-    #handleLayerBuilt(name: string, config: MapLayerConfig, result: MapLayerResult) {
+    #handleLayerBuilt(
+        name: string,
+        config: MapLayerConfig,
+        result: MapLayerResult,
+        isNewDataSource: boolean
+    ) {
         this.addLayer(result.layer, {
             name,
             position: config.position,
@@ -349,9 +462,9 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             // stash the computed info directly on the OL layer
             result.layer.set('info', result.info)
 
-            if (config.fitView && result.info.extent) {
+            if (config.fitView && result.info.extent && isNewDataSource) {
                 this.fitToExtent(result.info.extent, {
-                    projection: result.info.projection,
+                    projection: result.info.projection ?? 'EPSG:4326',
                     padding: [50, 50, 50, 50],
                     duration: 300,
                 })

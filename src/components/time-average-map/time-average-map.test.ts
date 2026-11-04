@@ -1,9 +1,9 @@
 import { expect, fixture, html } from '@open-wc/testing'
 import sinon from 'sinon'
 import './time-average-map.js'
-import TerraMap from '../map/map.component.js'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import TerraMap from '../map/map.component.js'
 
 const testVariable = {
     dataFieldId: 'AIRX3STD_Temperature_A',
@@ -403,5 +403,82 @@ describe('<terra-time-average-map>', () => {
 
         const colorBoxes = el.shadowRoot?.querySelectorAll('#legend .color-box')
         expect(colorBoxes?.length).to.equal(2)
+    })
+
+    it('restores blobUrl and layers when disconnected and reconnected to the DOM', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`
+        )
+
+        const testBlob = new Blob(['test-geotiff-content'], { type: 'image/tiff' })
+        el.updateGeoTIFFLayer(testBlob)
+        await el.updateComplete
+
+        expect(el.blobUrl).to.be.a('string')
+        const initialUrl = el.blobUrl
+
+        const parent = el.parentNode
+        // Disconnect element from DOM
+        parent.removeChild(el)
+        expect(el.blobUrl).to.be.undefined
+
+        // Reconnect element to DOM
+        parent.appendChild(el)
+        await el.updateComplete
+
+        expect(el.blobUrl).to.be.a('string')
+        expect(el.blobUrl).to.not.equal(initialUrl)
+        expect(el.innerMap.layers).to.have.lengthOf(1)
+        expect(el.innerMap.layers[0].url).to.equal(el.blobUrl)
+    })
+
+    it('updates noDataValue when layer info contains resolved noDataValue', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`
+        )
+
+        expect(el.noDataValue).to.equal(-9999)
+
+        const innerMap = el.shadowRoot?.querySelector('terra-map')
+        innerMap?.dispatchEvent(
+            new CustomEvent('terra-map-layer-change', {
+                detail: {
+                    name: 'geotiff',
+                    type: 'geotiff',
+                    info: {
+                        noDataValue: 0,
+                        min: 10,
+                        max: 20,
+                        legendValues: [],
+                        gdalMetadata: { long_name: 'Test Variable' },
+                    },
+                },
+                bubbles: true,
+                composed: true,
+            })
+        )
+        await el.updateComplete
+
+        expect(el.noDataValue).to.equal(0)
+    })
+
+    it('memoizes the layers configuration across re-renders when data inputs do not change', async () => {
+        const el: any = await fixture(
+            html`<terra-time-average-map></terra-time-average-map>`
+        )
+
+        const testBlob = new Blob(['test-geotiff-content'], { type: 'image/tiff' })
+        el.updateGeoTIFFLayer(testBlob)
+        await el.updateComplete
+
+        const initialLayers = el.innerMap.layers
+
+        // Simulate pointer movement updating hover readout
+        el.pixelCoordinates = '10.000, 20.000'
+        el.pixelValue = '1.234e+02'
+        await el.updateComplete
+
+        // The layers array reference passed to innerMap should remain identical
+        expect(el.innerMap.layers).to.equal(initialLayers)
     })
 })

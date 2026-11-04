@@ -24,17 +24,17 @@ import { BadRequestException } from '../../exceptions/http.exception.js'
 import { isResizeObserverSupported } from '../../utilities/feature.js'
 import { DrawToolbarControl } from './controls/draw-toolbar.control.js'
 import { LayerPickerControl } from './controls/layer-picker.control.js'
-import {
-    MapEventType,
-    type MapEventDetail,
-    type MapLayerToggleDetail,
-} from './type.js'
-import { LatLngBounds } from './models/LatLngBounds.js'
-import { LatLng } from './models/LatLng.js'
 import { buildDefaultBaseLayers } from './layers/base.layer.js'
 import { BordersLayer } from './layers/borders.layer.js'
 import { buildExtentFeature, getBoundaryStyle } from './layers/boundary.js'
 import { LabelsLayer } from './layers/labels.layer.js'
+import { LatLng } from './models/LatLng.js'
+import { LatLngBounds } from './models/LatLngBounds.js'
+import {
+    type MapEventDetail,
+    MapEventType,
+    type MapLayerToggleDetail,
+} from './type.js'
 
 export type AddLayerOptions = {
     name?: string
@@ -115,6 +115,7 @@ export class MapService {
     #onDraw: MapOptions['onDraw']
     #onShapeLoading: MapOptions['onShapeLoading']
     #initialView: { center: Coordinate; zoom: number; rotation: number }
+    #pendingFitToExtent?: () => void
 
     constructor(el: HTMLElement, options: MapOptions) {
         this.#el = el
@@ -123,6 +124,14 @@ export class MapService {
         this.#map = this.#createMap(options)
 
         this.#updateMapSizeOnResize()
+
+        this.#map.on('change:size', () => {
+            if (this.#pendingFitToExtent) {
+                const fit = this.#pendingFitToExtent
+                this.#pendingFitToExtent = undefined
+                fit()
+            }
+        })
 
         options.onReady?.(this)
     }
@@ -406,6 +415,19 @@ export class MapService {
      * `options.projection` to the map's view projection if provided.
      */
     fitToExtent(extent: Extent, options: FitToExtentOptions = {}) {
+        this.#map.updateSize()
+        const size = this.#map.getSize()
+        const padding = options.padding ?? [0, 0, 0, 0]
+        const minWidth = padding[1] + padding[3]
+        const minHeight = padding[0] + padding[2]
+
+        if (!size || size[0] <= minWidth || size[1] <= minHeight) {
+            this.#pendingFitToExtent = () => this.fitToExtent(extent, options)
+            return
+        }
+
+        this.#pendingFitToExtent = undefined
+
         const { projection, ...fitOptions } = options
 
         const targetExtent = projection
@@ -435,7 +457,7 @@ export class MapService {
             canvases: Array.from(
                 viewport?.querySelectorAll('canvas') ?? []
             ) as HTMLCanvasElement[],
-            svgs: Array.from(viewport?.querySelectorAll('svg') ?? []) as SVGElement[],
+            svgs: [] as SVGElement[],
         }
     }
 
