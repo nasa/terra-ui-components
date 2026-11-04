@@ -45,70 +45,6 @@ export const queryClientPersister = createIDBPersister('terraQuery', {
 })
 
 let mountCount = 0
-let restorePromise: Promise<void> | undefined
-let persistUnsubscribe: (() => void) | undefined
-
-/**
- * Subscribes to QueryClient cache mutations to persist state back to IndexedDB.
- *
- * NOTE: We attach the persistence subscriber only after `persistQueryClientRestore` settles.
- * Attaching the subscriber prior to initial hydration would flush an incomplete or empty
- * cache to IndexedDB, erasing valid persisted data.
- */
-const syncPersistenceSubscription = (queryClient: QueryClient) => {
-    if (mountCount > 0 && !persistUnsubscribe) {
-        persistUnsubscribe = persistQueryClientSubscribe({
-            queryClient,
-            persister: queryClientPersister,
-            buster: QUERY_CACHE_BUSTER,
-        })
-    }
-}
-
-/**
- * Returns a cached promise for the initial IndexedDB restoration cycle.
- *
- * All `query()` and `fetchQuery()` calls gate on this promise to guarantee
- * that offline cache entries populate the QueryClient before issuing network requests.
- */
-const ensureRestored = (queryClient: QueryClient): Promise<void> => {
-    if (!restorePromise) {
-        const currentRestore = persistQueryClientRestore({
-            queryClient,
-            persister: queryClientPersister,
-            maxAge: duration.days(1),
-            buster: QUERY_CACHE_BUSTER,
-        })
-            .catch(() => undefined)
-            .then(() => {
-                if (restorePromise === currentRestore) {
-                    syncPersistenceSubscription(queryClient)
-                }
-            })
-        restorePromise = currentRestore
-    } else {
-        const currentRestore = restorePromise
-        void currentRestore.then(() => {
-            if (restorePromise === currentRestore) {
-                syncPersistenceSubscription(queryClient)
-            }
-        })
-    }
-
-    return restorePromise
-}
-
-/**
- * @internal Test-only escape hatch for resetting the module-scoped persistence restore state.
- * Prefer importing `resetQueryClientPersistence` from `src/testing/query-client.utils.ts` in tests.
- */
-export const _testing = {
-    resetPersistence() {
-        persistUnsubscribe?.()
-        persistUnsubscribe = undefined
-        restorePromise = undefined
-    },
-}
 
 /**
  * Specialized QueryClient for Terra components that enforces two invariants:
@@ -118,6 +54,75 @@ export const _testing = {
  *    is specified in query options.
  */
 class TerraQueryClient extends QueryClient {
+    #restorePromise?: Promise<void>
+    #persistUnsubscribe?: () => void
+
+    /**
+     * Returns a cached promise for the initial IndexedDB restoration cycle.
+     * All `query()` and `fetchQuery()` calls gate on this promise to guarantee
+     * that offline cache entries populate the QueryClient before issuing network requests.
+     */
+    ensureRestored(): Promise<void> {
+        if (!this.#restorePromise) {
+            const currentRestore = persistQueryClientRestore({
+                queryClient: this,
+                persister: queryClientPersister,
+                maxAge: duration.days(1),
+                buster: QUERY_CACHE_BUSTER,
+            })
+                .catch(() => undefined)
+                .then(() => {
+                    if (this.#restorePromise === currentRestore) {
+                        this.syncPersistenceSubscription()
+                    }
+                })
+            this.#restorePromise = currentRestore
+        } else {
+            const currentRestore = this.#restorePromise
+            void currentRestore.then(() => {
+                if (this.#restorePromise === currentRestore) {
+                    this.syncPersistenceSubscription()
+                }
+            })
+        }
+
+        return this.#restorePromise
+    }
+
+    /**
+     * Subscribes to QueryClient cache mutations to persist state back to IndexedDB.
+     *
+     * NOTE: We attach the persistence subscriber only after `persistQueryClientRestore` settles.
+     * Attaching the subscriber prior to initial hydration would flush an incomplete or empty
+     * cache to IndexedDB, erasing valid persisted data.
+     */
+    syncPersistenceSubscription(): void {
+        if (mountCount > 0 && !this.#persistUnsubscribe) {
+            this.#persistUnsubscribe = persistQueryClientSubscribe({
+                queryClient: this,
+                persister: queryClientPersister,
+                buster: QUERY_CACHE_BUSTER,
+            })
+        }
+    }
+
+    /**
+     * Unsubscribes from persistence cache mutations when all host components disconnect.
+     */
+    stopPersistenceSubscription(): void {
+        this.#persistUnsubscribe?.()
+        this.#persistUnsubscribe = undefined
+    }
+
+    /**
+     * Clears all in-memory query caches and resets the persistence restore state so
+     * subsequent mounts can re-hydrate cleanly.
+     */
+    override clear(): void {
+        super.clear()
+        this.stopPersistenceSubscription()
+        this.#restorePromise = undefined
+    }
     override defaultQueryOptions<
         TQueryFnData = unknown,
         TError = DefaultError,
@@ -186,7 +191,7 @@ class TerraQueryClient extends QueryClient {
             TPageParam
         >
     ): Promise<TData> {
-        await ensureRestored(this)
+        await this.ensureRestored()
         return super.query(options)
     }
 
@@ -199,9 +204,16 @@ class TerraQueryClient extends QueryClient {
     >(
         options: FetchQueryOptions<TQueryFnData, TError, TData, TQueryKey, TPageParam>
     ): Promise<TData> {
-        await ensureRestored(this)
+        await this.ensureRestored()
         return super.fetchQuery(options)
     }
+}
+
+const ensureRestored = (queryClient: QueryClient): Promise<void> => {
+    if (queryClient instanceof TerraQueryClient) {
+        return queryClient.ensureRestored()
+    }
+    return Promise.resolve()
 }
 
 export const sharedQueryClient: QueryClient = new TerraQueryClient({
@@ -247,8 +259,9 @@ export const QueryClientMixin = <T extends Constructor<LitElement>>(Base: T) => 
             super.disconnectedCallback()
             this.queryClientReady = undefined
             if (--mountCount === 0) {
-                persistUnsubscribe?.()
-                persistUnsubscribe = undefined
+                if (this.queryClient instanceof TerraQueryClient) {
+                    this.queryClient.stopPersistenceSubscription()
+                }
                 this.queryClient.unmount?.()
             }
         }

@@ -7,7 +7,6 @@ import {
     queryClientPersister,
     sharedQueryClient,
 } from '../query-client.mixin.js'
-import { resetQueryClientPersistence } from '../../testing/query-client.utils.js'
 
 class TestQueryClientElement extends QueryClientMixin(LitElement) {
     override render() {
@@ -33,7 +32,7 @@ describe('QueryClientMixin', () => {
     })
 
     it('restores persisted cache once per session and manages mount lifecycle across disconnect/reconnect', async () => {
-        resetQueryClientPersistence()
+        sharedQueryClient.clear()
         const restoreStub = sinon
             .stub(queryClientPersister, 'restoreClient')
             .resolves(undefined)
@@ -66,7 +65,7 @@ describe('QueryClientMixin', () => {
     })
 
     it('handles rapid disconnect and reconnect while restore is pending without leaking subscriptions or unbalancing mounts', async () => {
-        resetQueryClientPersistence()
+        sharedQueryClient.clear()
 
         let resolveRestore!: () => void
         const restoreStub = sinon.stub(queryClientPersister, 'restoreClient').returns(
@@ -149,7 +148,6 @@ describe('QueryClientMixin', () => {
 
     it('discards persisted IndexedDB cache when client-wide buster does not match QUERY_CACHE_BUSTER', async () => {
         sharedQueryClient.clear()
-        resetQueryClientPersistence()
 
         const restoreStub = sinon
             .stub(queryClientPersister, 'restoreClient')

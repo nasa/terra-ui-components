@@ -13,7 +13,6 @@ import {
     queryClientPersister,
     sharedQueryClient,
 } from '../../../mixins/query-client.mixin.js'
-import { resetQueryClientPersistence } from '../../../testing/query-client.utils.js'
 import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
 import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'
@@ -261,7 +260,6 @@ describe('<terra-map> layers (gibs)', () => {
         it('gates declarative GIBS layer builds on queryClientReady hydration', async () => {
             clearGibsCapabilitiesCache()
             sharedQueryClient.clear()
-            resetQueryClientPersistence()
 
             const capabilitiesXml = makeCapabilitiesXml('EPSG:3413', '1km')
             let resolveRestore!: () => void
