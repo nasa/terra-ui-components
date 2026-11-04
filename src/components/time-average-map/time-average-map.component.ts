@@ -37,6 +37,7 @@ import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
 import TerraMap from '../map/map.component.js'
 import TerraPlot from '../plot/plot.component.js'
+import { isNotebookEnv } from '../../utilities/isNotebook.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
 import { TimeAvgMapController } from './time-average-map.controller.js'
 import styles from './time-average-map.styles.js'
@@ -223,7 +224,16 @@ export default class TerraTimeAverageMap extends AuthMixin(
         )
     }
 
+    /**
+     * Show or hide the Jupyter notebook button in the plot toolbar.
+     */
+    showJupyter?: boolean
+
     async firstUpdated() {
+        //* Detect if time avg map component is running in a Jupyter notebook.
+        if (this.showJupyter === undefined) {
+            this.showJupyter = !isNotebookEnv()
+        }
         this._fetchVariableTask.run()
     }
 
@@ -1234,6 +1244,7 @@ export default class TerraTimeAverageMap extends AuthMixin(
                               @show-opacity-value=${this.#handleOpacityChange}
                               @show-color-map=${this.#handleColorMapChange}
                               @show-check-box-toggle=${this.#handleCheckBoxToggle}
+                              .showJupyter=${this.showJupyter}
                               .pixelValue=${this.pixelValue}
                               .pixelCoordinates=${this.pixelCoordinates}
                               show-date-range
