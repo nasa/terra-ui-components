@@ -33,6 +33,7 @@ import type { Variable } from '../browse-variables/browse-variables.types.js'
 import TerraButton from '../button/button.component.js'
 import TerraIcon from '../icon/icon.component.js'
 import TerraLoader from '../loader/loader.component.js'
+import type { MapLayerConfig } from '../map/layers/layer.js'
 import TerraMap from '../map/map.component.js'
 import TerraPlot from '../plot/plot.component.js'
 import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
@@ -203,6 +204,36 @@ export default class TerraTimeAverageMap extends AuthMixin(
             } as TimeAverageMapOptions,
         })
     }
+
+    static #emptyLayers: MapLayerConfig[] = []
+    #cachedLayers: MapLayerConfig[] = []
+    #lastLayerKey = ''
+
+    get #layers(): MapLayerConfig[] {
+        if (!this.blobUrl) {
+            this.#lastLayerKey = ''
+            return TerraTimeAverageMap.#emptyLayers
+        }
+
+        const key = `${this.blobUrl}|${this.noDataValue}|${this.colorMapName}|${this.opacity}`
+        if (key !== this.#lastLayerKey) {
+            this.#lastLayerKey = key
+            this.#cachedLayers = [
+                {
+                    type: 'geotiff',
+                    name: 'geotiff',
+                    url: this.blobUrl,
+                    noDataValue: this.noDataValue,
+                    colorMapName: this.colorMapName,
+                    opacity: this.opacity,
+                    fitView: true,
+                },
+            ]
+        }
+
+        return this.#cachedLayers
+    }
+
     connectedCallback(): void {
         super.connectedCallback()
 
@@ -788,6 +819,10 @@ export default class TerraTimeAverageMap extends AuthMixin(
             this.legendValues = info.legendValues ?? []
             this.metadata = info.gdalMetadata ?? {}
             this.long_name = this.metadata.long_name ?? ''
+
+            if (typeof info.noDataValue === 'number') {
+                this.noDataValue = info.noDataValue
+            }
         }
     }
 
@@ -1096,21 +1131,7 @@ export default class TerraTimeAverageMap extends AuthMixin(
                 <terra-map
                     fill
                     show-graticule
-                    .layers=${
-                        this.blobUrl
-                            ? [
-                                  {
-                                      type: 'geotiff',
-                                      name: 'geotiff',
-                                      url: this.blobUrl,
-                                      noDataValue: this.noDataValue,
-                                      colorMapName: this.colorMapName,
-                                      opacity: this.opacity,
-                                      fitView: true,
-                                  },
-                              ]
-                            : []
-                    }
+                    .layers=${this.#layers}
                     @terra-map-layer-change=${this.#handleLayerChange}
                 ></terra-map>
 

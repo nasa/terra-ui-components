@@ -429,6 +429,22 @@ describe('<terra-map> layers (gibs)', () => {
             expect(el.getLayer('imagery')).to.equal(firstLayer)
             expect(firstLayer?.getOpacity()).to.equal(0.5)
         })
+
+        it('does not re-trigger layersChanged when layers is set to an equivalent array', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            const spy = sinon.spy(el, 'layersChanged')
+
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+            expect(spy.callCount).to.equal(1)
+
+            // Set to a new array instance with identical configuration
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+
+            // hasChanged returns false, so layersChanged is not called again
+            expect(spy.callCount).to.equal(1)
+        })
     })
 })
 

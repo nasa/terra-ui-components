@@ -46,7 +46,7 @@ export type GeoTiffLayerInfo = {
     layer: WebGLTileLayer
     /** The GeoTIFF's native extent, in `projection`, when it could be determined. */
     extent?: Extent
-    projection: ProjectionLike
+    projection: GeoTiffLayerConfig['projection']
     min: number
     max: number
     /**
@@ -58,6 +58,7 @@ export type GeoTiffLayerInfo = {
     legendValues: GeoTiffLegendEntry[]
     /** Parsed GDAL_METADATA key-value tags (e.g. units, long_name), if present. */
     gdalMetadata?: Record<string, string>
+    noDataValue: GeoTiffLayerConfig['noDataValue']
 }
 
 /**
@@ -342,5 +343,45 @@ export async function buildGeoTiffLayer(
         colorStops,
         legendValues,
         gdalMetadata,
+        noDataValue: resolvedNoDataValue,
     }
+}
+
+/**
+ * Updates the colormap-based style and legend values on an existing GeoTIFF layer in-place
+ * without reconstructing the OpenLayers layer or re-fetching/re-reading raster data.
+ */
+export async function updateGeoTiffStyle(
+    info: GeoTiffLayerInfo,
+    config: Pick<GeoTiffLayerConfig, 'colorMapName' | 'colorSteps' | 'reverseColors'>
+): Promise<GeoTiffLayerInfo> {
+    const colorMapName = config.colorMapName ?? 'viridis'
+    const colorSteps = config.colorSteps ?? 72
+    const reverseColors = config.reverseColors ?? false
+
+    const { stops: colorStops, legendValues } = await buildColorStops(
+        colorMapName,
+        info.min,
+        info.max,
+        colorSteps,
+        reverseColors
+    )
+
+    info.layer.setStyle({
+        color: [
+            'case',
+            ['==', ['band', 2], 0],
+            [0, 0, 0, 0],
+            ['interpolate', ['linear'], ['band', 1], ...colorStops],
+        ],
+    })
+
+    const updatedInfo: GeoTiffLayerInfo = {
+        ...info,
+        colorStops,
+        legendValues,
+    }
+
+    info.layer.set('info', updatedInfo)
+    return updatedInfo
 }
