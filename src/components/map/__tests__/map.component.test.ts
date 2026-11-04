@@ -12,6 +12,7 @@ import { gibsApi } from '../../../apis/gibs.api.js'
 import {
     queryClientPersister,
     sharedQueryClient,
+    TerraQueryClient,
 } from '../../../mixins/query-client.mixin.js'
 import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
 import { LatLng } from '../models/LatLng.js'
@@ -260,6 +261,7 @@ describe('<terra-map> layers (gibs)', () => {
         it('gates declarative GIBS layer builds on queryClientReady hydration', async () => {
             clearGibsCapabilitiesCache()
             sharedQueryClient.clear()
+            ;(sharedQueryClient as TerraQueryClient).resetPersistence()
 
             const capabilitiesXml = makeCapabilitiesXml('EPSG:3413', '1km')
             let resolveRestore!: () => void
@@ -338,44 +340,52 @@ describe('<terra-map> layers (gibs)', () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
             const warnSpy = sinon.spy(console, 'warn')
 
-            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-            el.layers = [
-                {
-                    type: 'gibs',
-                    name: 'polar',
-                    layer: 'TestLayer',
-                    projection: 'EPSG:3413',
-                },
-            ]
+            try {
+                const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+                el.layers = [
+                    {
+                        type: 'gibs',
+                        name: 'polar',
+                        layer: 'TestLayer',
+                        projection: 'EPSG:3413',
+                    },
+                ]
 
-            await waitUntil(() => el.getLayer('polar'))
+                await waitUntil(() => el.getLayer('polar'))
 
-            expect(
-                warnSpy.calledWith(sinon.match(/published in EPSG:3413.*EPSG:3857/))
-            ).to.be.true
-            warnSpy.restore()
+                expect(
+                    warnSpy.calledWith(
+                        sinon.match(/published in EPSG:3413.*EPSG:3857/)
+                    )
+                ).to.be.true
+            } finally {
+                warnSpy.restore()
+            }
         })
 
         it('does not warn when a gibs layers entry matches the configured projection', async () => {
             stubFetch(makeCapabilitiesXml('EPSG:3413', '1km'))
             const warnSpy = sinon.spy(console, 'warn')
 
-            const el = await fixture<TerraMap>(
-                html`<terra-map projection="EPSG:3413"></terra-map>`
-            )
-            el.layers = [
-                {
-                    type: 'gibs',
-                    name: 'polar',
-                    layer: 'TestLayer',
-                    projection: 'EPSG:3413',
-                },
-            ]
+            try {
+                const el = await fixture<TerraMap>(
+                    html`<terra-map projection="EPSG:3413"></terra-map>`
+                )
+                el.layers = [
+                    {
+                        type: 'gibs',
+                        name: 'polar',
+                        layer: 'TestLayer',
+                        projection: 'EPSG:3413',
+                    },
+                ]
 
-            await waitUntil(() => el.getLayer('polar'))
+                await waitUntil(() => el.getLayer('polar'))
 
-            expect(warnSpy.called).to.be.false
-            warnSpy.restore()
+                expect(warnSpy.called).to.be.false
+            } finally {
+                warnSpy.restore()
+            }
         })
     })
 

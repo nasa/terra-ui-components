@@ -53,7 +53,7 @@ let mountCount = 0
  * 2. Per-Query Cache Busting: Injects `{ __buster }` into query keys when `buster`
  *    is specified in query options.
  */
-class TerraQueryClient extends QueryClient {
+export class TerraQueryClient extends QueryClient {
     #restorePromise?: Promise<void>
     #persistUnsubscribe?: () => void
 
@@ -115,11 +115,10 @@ class TerraQueryClient extends QueryClient {
     }
 
     /**
-     * Clears all in-memory query caches and resets the persistence restore state so
-     * subsequent mounts can re-hydrate cleanly.
+     * Resets the one-time persistence restore state so callers can trigger a fresh
+     * hydration cycle (e.g. for cold-start testing or session restart).
      */
-    override clear(): void {
-        super.clear()
+    resetPersistence(): void {
         this.stopPersistenceSubscription()
         this.#restorePromise = undefined
     }

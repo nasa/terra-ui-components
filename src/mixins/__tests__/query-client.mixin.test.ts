@@ -6,6 +6,7 @@ import {
     QueryClientMixin,
     queryClientPersister,
     sharedQueryClient,
+    TerraQueryClient,
 } from '../query-client.mixin.js'
 
 class TestQueryClientElement extends QueryClientMixin(LitElement) {
@@ -32,7 +33,7 @@ describe('QueryClientMixin', () => {
     })
 
     it('restores persisted cache once per session and manages mount lifecycle across disconnect/reconnect', async () => {
-        sharedQueryClient.clear()
+        ;(sharedQueryClient as TerraQueryClient).resetPersistence()
         const restoreStub = sinon
             .stub(queryClientPersister, 'restoreClient')
             .resolves(undefined)
@@ -65,7 +66,7 @@ describe('QueryClientMixin', () => {
     })
 
     it('handles rapid disconnect and reconnect while restore is pending without leaking subscriptions or unbalancing mounts', async () => {
-        sharedQueryClient.clear()
+        ;(sharedQueryClient as TerraQueryClient).resetPersistence()
 
         let resolveRestore!: () => void
         const restoreStub = sinon.stub(queryClientPersister, 'restoreClient').returns(
@@ -147,7 +148,7 @@ describe('QueryClientMixin', () => {
     })
 
     it('discards persisted IndexedDB cache when client-wide buster does not match QUERY_CACHE_BUSTER', async () => {
-        sharedQueryClient.clear()
+        ;(sharedQueryClient as TerraQueryClient).resetPersistence()
 
         const restoreStub = sinon
             .stub(queryClientPersister, 'restoreClient')
