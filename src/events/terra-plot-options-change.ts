@@ -3,9 +3,7 @@ export interface TimeAverageMapOptions {
     opacity: number
 }
 
-export interface TimeSeriesOptions {
-    // TODO: add time series options
-}
+export type TimeSeriesOptions = {}
 
 export interface TerraPlotOptionsChangeEvent extends CustomEvent {
     detail: TimeAverageMapOptions | TimeSeriesOptions

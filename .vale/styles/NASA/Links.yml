@@ -1,0 +1,7 @@
+extends: existence
+message: "Use descriptive anchor text instead of generic '%s' (NASA Stylebook & Digital.gov)."
+level: error
+scope: raw
+ignorecase: true
+tokens:
+  - '\[(?:click here|read more|here|link|this link)\]\([^\)]+\)'

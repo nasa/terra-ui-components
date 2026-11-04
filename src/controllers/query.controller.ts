@@ -40,7 +40,7 @@ export class QueryController<
             TQueryData,
             TQueryKey
         >,
-        hostPropertyName?: string,
+        hostPropertyName?: string
     ) {
         this.host.addController(this)
         this.hostPropertyName = hostPropertyName
@@ -53,13 +53,7 @@ export class QueryController<
 
     observeQuery(
         options:
-            | QueryObserverOptions<
-                  TQueryFnData,
-                  TError,
-                  TData,
-                  TQueryData,
-                  TQueryKey
-              >
+            | QueryObserverOptions<TQueryFnData, TError, TData, TQueryData, TQueryKey>
             | (() => QueryObserverOptions<
                   TQueryFnData,
                   TError,
@@ -67,11 +61,10 @@ export class QueryController<
                   TQueryData,
                   TQueryKey
               >),
-        optimistic: boolean = true,
+        optimistic: boolean = true
     ) {
         const queryClient = this.host.queryClient
-        const resolvedOptions =
-            typeof options === 'function' ? options() : options
+        const resolvedOptions = typeof options === 'function' ? options() : options
 
         const defaultedOptions = queryClient.defaultQueryOptions<
             TQueryFnData,
@@ -93,7 +86,7 @@ export class QueryController<
     hostUpdate() {
         if (!this.optionsFn || !this.queryObserver) return
         const defaultedOptions = this.host.queryClient.defaultQueryOptions(
-            this.optionsFn(),
+            this.optionsFn()
         )
         this.queryObserver.setOptions(defaultedOptions)
     }
@@ -119,7 +112,7 @@ export class QueryController<
                     ;(this.host as any)[this.hostPropertyName] = result
                 }
                 this.host.requestUpdate()
-            },
+            }
         )
 
         this.queryObserver.updateResult()

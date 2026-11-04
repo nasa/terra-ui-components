@@ -90,20 +90,20 @@ Radio buttons work seamlessly with native HTML forms.
 
 ## Best Practices
 
--   **Always include labels**: Radio buttons should always have a clear, descriptive label that explains what the option does.
--   **Stack vertically or horizontally**: Radio buttons can be arranged vertically (most common) or horizontally for simple yes/no choices.
--   **Default selection**: Any list of radio buttons should appear with a default selection already made.
--   **Use for single selection**: Radio buttons allow users to select only one option from a list. For multiple selections, use Checkboxes instead.
--   **Limit options**: When there are 7 or more options to choose from, use a Select Field instead of radio buttons.
--   **Group related options**: Use a fieldset and legend to group related radio buttons, especially in forms.
--   **Mutually exclusive**: Radio buttons are for mutually exclusive choices. If choices are not mutually exclusive, use checkboxes.
+- **Always include labels**: Radio buttons should always have a clear, descriptive label that explains what the option does.
+- **Stack vertically or horizontally**: Radio buttons can be arranged vertically (most common) or horizontally for simple yes/no choices.
+- **Default selection**: Any list of radio buttons should appear with a default selection already made.
+- **Use for single selection**: Radio buttons allow users to select only one option from a list. For multiple selections, use Checkboxes instead.
+- **Limit options**: When there are 7 or more options to choose from, use a Select Field instead of radio buttons.
+- **Group related options**: Use a fieldset and legend to group related radio buttons, especially in forms.
+- **Mutually exclusive**: Radio buttons are for mutually exclusive choices. If choices are not mutually exclusive, use checkboxes.
 
 ## Accessibility
 
--   Radio buttons are keyboard accessible and can be activated with the Space or Arrow keys
--   The component properly associates labels with the radio input
--   Focus states are clearly visible with a focus ring
--   Radio buttons are properly grouped using `aria-checked` and `role="radio"`
--   When used in a radio group, keyboard navigation between options is handled automatically
+- Radio buttons are keyboard accessible and can be activated with the Space or Arrow keys
+- The component properly associates labels with the radio input
+- Focus states are clearly visible with a focus ring
+- Radio buttons are properly grouped using `aria-checked` and `role="radio"`
+- When used in a radio group, keyboard navigation between options is handled automatically
 
 [component-metadata:terra-radio]

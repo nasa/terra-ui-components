@@ -1,4 +1,4 @@
-import TerraDropdown from '../components/dropdown/dropdown.component.js'
+import type TerraDropdown from '../components/dropdown/dropdown.component.js'
 
 export type TerraDropdownAfterShowEvent = CustomEvent<Record<PropertyKey, never>> & {
     target: TerraDropdown

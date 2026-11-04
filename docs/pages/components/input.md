@@ -227,10 +227,10 @@ When `resettable` is true, a clear icon appears in the suffix when the input has
 
 ## Accessibility
 
--   Label is automatically associated with the input via `for` attribute
--   Required fields show a visual indicator (asterisk) and have the `required` attribute
--   Help text is associated with the input for screen readers
--   Disabled state is properly conveyed to assistive technologies
--   Hidden labels remain accessible to screen readers
+- Label is automatically associated with the input via `for` attribute
+- Required fields show a visual indicator (asterisk) and have the `required` attribute
+- Help text is associated with the input for screen readers
+- Disabled state is properly conveyed to assistive technologies
+- Hidden labels remain accessible to screen readers
 
 [component-metadata:terra-input]

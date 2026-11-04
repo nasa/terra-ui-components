@@ -29,8 +29,8 @@ Use `terra-breadcrumbs` with one or more `terra-breadcrumb` items to show the pa
 
 Always mark the last breadcrumb as current in your app:
 
--   This ensures the current page is styled correctly.
--   It also applies `aria-current="page"` to the active breadcrumb for screen readers. Omitting `current` means assistive technologies can’t reliably identify the current location.
+- This ensures the current page is styled correctly.
+- It also applies `aria-current="page"` to the active breadcrumb for screen readers. Omitting `current` means assistive technologies can’t reliably identify the current location.
 
 ### With longer hierarchies
 
@@ -46,7 +46,7 @@ Breadcrumbs should not display more than three levels of hierarchy. For deeper p
 
 In this example, your application is responsible for:
 
--   **Truncation logic**: choosing when to show the `...` breadcrumb and which levels to omit.
--   **Current page**: setting `current` on the last breadcrumb, which applies `aria-current="page"` for accessibility.
+- **Truncation logic**: choosing when to show the `...` breadcrumb and which levels to omit.
+- **Current page**: setting `current` on the last breadcrumb, which applies `aria-current="page"` for accessibility.
 
 [component-metadata:terra-breadcrumbs]

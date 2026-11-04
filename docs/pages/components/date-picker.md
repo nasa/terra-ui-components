@@ -70,15 +70,16 @@ Use help text to display the desired date formatting, in case visitors choose to
 | `showClose`     | `closable`       | `boolean`       | `false`                               | Optional close button to close date picker                                                                 |
 | `timezone`      | `timezone`       | `string`        | -                                     | IANA timezone identifier (e.g., `America/New_York`). Affects time display only; emitted values remain UTC. |
 | `twelveHour`    | `twelve-hour`    | `boolean`       | `false`                               | Display time in 12-hour format with AM/PM toggle. Requires `enable-time`. Emitted values remain UTC 24h.   |
+
 ## Events
 
 The component emits:
 
--   `terra-date-range-change`: Fired when a selection is made or changed
-    -   Event `detail`: `{ startDate: string, endDate: string }`
-        -   If `enable-time` is off, values are `YYYY-MM-DD`
-        -   If `enable-time` is on, values are ISO strings (e.g., `2024-03-20T10:00:00.000Z`)
-        -   When using time with ranges, the end time defaults to 23:59:59 (end of day) while start time defaults to 00:00:00
+- `terra-date-range-change`: Fired when a selection is made or changed
+    - Event `detail`: `{ startDate: string, endDate: string }`
+        - If `enable-time` is off, values are `YYYY-MM-DD`
+        - If `enable-time` is on, values are ISO strings (e.g., `2024-03-20T10:00:00.000Z`)
+        - When using time with ranges, the end time defaults to 23:59:59 (end of day) while start time defaults to 00:00:00
 
 ## Examples
 
@@ -101,6 +102,7 @@ The component emits:
   end-date="2024-03-25"
 ></terra-date-picker>
 ```
+
 ### Closable Date Picker
 
 ```html:preview
@@ -246,8 +248,8 @@ Note: Presets are shown if any part of the preset range overlaps the `min-date`/
   id="preset-bounded-picker"
   range
   show-presets
-  min-date="2024-03-15"
-  max-date="2024-03-20"
+  min-date="2020-01-01"
+  max-date="2030-12-31"
 ></terra-date-picker>
 ```
 
@@ -338,9 +340,9 @@ When `inline` is enabled, the calendar is always visible and displayed as part o
 
 The date picker is built with accessibility in mind:
 
--   Keyboard navigation support
--   ARIA attributes for screen readers
--   Focus management
--   Clear visual indicators for selected date
+- Keyboard navigation support
+- ARIA attributes for screen readers
+- Focus management
+- Clear visual indicators for selected date
 
 [component-metadata:terra-date-picker]

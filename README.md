@@ -7,7 +7,7 @@ Intro
 Start by [forking the repo](https://github.com/nasa/terra-ui-components/fork) on GitHub, then clone it locally and install dependencies.
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/components terra-ui-components
+git clone https://github.com/nasa/terra-ui-components
 cd terra-ui-components
 npm install
 ```

@@ -12,9 +12,7 @@ export class FetchController {
     #query: QueryController<SearchKeywords | null>
 
     constructor(host: ReactiveControllerHost & QueryClientHost) {
-        this.#query = new QueryController(host, () =>
-            queryGiovanniSearchKeywords(),
-        )
+        this.#query = new QueryController(host, () => queryGiovanniSearchKeywords())
     }
 
     get taskComplete() {

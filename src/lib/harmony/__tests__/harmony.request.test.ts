@@ -15,7 +15,7 @@ describe('HarmonyRequest', () => {
         it('throws error when no collectionConceptId is provided', () => {
             const request = new HarmonyRequest()
             expect(() => request.baseUrl).to.throw(
-                'Collection concept id is required',
+                'Collection concept id is required'
             )
         })
 
@@ -23,9 +23,7 @@ describe('HarmonyRequest', () => {
             const request = new HarmonyRequest({
                 collectionConceptId: COLLECTION_CONCEPT_ID,
             })
-            expect(request.baseUrl).to.include(
-                'https://harmony.earthdata.nasa.gov',
-            )
+            expect(request.baseUrl).to.include('https://harmony.earthdata.nasa.gov')
         })
 
         it('uses the UAT harmony URL when environment is UAT', () => {
@@ -34,7 +32,7 @@ describe('HarmonyRequest', () => {
                 environment: Environments.UAT,
             })
             expect(request.baseUrl).to.include(
-                'https://harmony.uat.earthdata.nasa.gov',
+                'https://harmony.uat.earthdata.nasa.gov'
             )
         })
 
@@ -45,7 +43,7 @@ describe('HarmonyRequest', () => {
                 variableConceptIds: [VARIABLE_CONCEPT_ID],
             })
             expect(request.baseUrl).to.equal(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/${VARIABLE_CONCEPT_ID}/coverage/rangeset`,
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/${VARIABLE_CONCEPT_ID}/coverage/rangeset`
             )
         })
 
@@ -64,7 +62,7 @@ describe('HarmonyRequest', () => {
                 variables: [VARIABLE_ENTRY_ID],
             })
             expect(request.baseUrl).to.equal(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset`,
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}/ogc-api-coverages/1.0.0/collections/parameter_vars/coverage/rangeset`
             )
         })
 
@@ -119,9 +117,7 @@ describe('HarmonyRequest', () => {
             })
             const params = decodeURIComponent(request.params)
             // startDate should appear twice
-            expect(
-                params.split('2026-01-01T00:00:00.000Z').length - 1,
-            ).to.equal(2)
+            expect(params.split('2026-01-01T00:00:00.000Z').length - 1).to.equal(2)
         })
 
         it('does not append a time subset when startDate is not provided', () => {
@@ -246,6 +242,35 @@ describe('HarmonyRequest', () => {
             })
             expect(request.params).to.not.include('subset=lev')
         })
+
+        it('always appends forceAsync and does not append skipPreview by default', () => {
+            // Preview should not be skipped by default — jobs are allowed to
+            // start in the PREVIEWING state so large requests can pause for review.
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+            expect(request.params).to.include('forceAsync=true')
+            expect(request.params).to.not.include('skipPreview')
+        })
+
+        it('appends skipPreview=true when explicitly requested via .skipPreview(true)', () => {
+            // time-series and time-average-map opt into this so Harmony never
+            // pauses their jobs in a PREVIEWING state.
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            }).skipPreview(true)
+            expect(request.params).to.include('skipPreview=true')
+        })
+
+        it('appends skipPreview=false when explicitly requested via .skipPreview(false)', () => {
+            const request = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            }).skipPreview(false)
+            expect(request.params).to.include('skipPreview=false')
+        })
     })
 
     describe('requestUrl', () => {
@@ -260,7 +285,7 @@ describe('HarmonyRequest', () => {
             })
             const url = decodeURIComponent(request.requestUrl)
             expect(url).to.include(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`,
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`
             )
             expect(url).to.include(`/collections/${VARIABLE_CONCEPT_ID}/`)
             expect(url).to.include('subset=lat(5.29:37.49)')
@@ -281,7 +306,7 @@ describe('HarmonyRequest', () => {
             })
             const url = decodeURIComponent(request.requestUrl)
             expect(url).to.include(
-                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`,
+                `https://harmony.earthdata.nasa.gov/${COLLECTION_CONCEPT_ID}`
             )
             expect(url).to.include('/collections/parameter_vars/')
             expect(url).to.include('subset=lat(5.29:37.49)')
@@ -304,9 +329,7 @@ describe('HarmonyRequest', () => {
                 format: 'application/x-netcdf4',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include(
-                'harmony.earthdata.nasa.gov/C1276812863-GES_DISC',
-            )
+            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812863-GES_DISC')
             expect(url).to.include('/collections/V2296950155-GES_DISC/')
             expect(url).to.include('subset=lat(14.85:27.92)')
             expect(url).to.include('subset=lon(65.74:91.76)')
@@ -329,9 +352,7 @@ describe('HarmonyRequest', () => {
                 average: 'time',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include(
-                'harmony.earthdata.nasa.gov/C1276812863-GES_DISC',
-            )
+            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812863-GES_DISC')
             expect(url).to.include('/collections/parameter_vars/')
             expect(url).to.include('subset=lat(5.29:37.49)')
             expect(url).to.include('subset=lon(62.23:94.57)')
@@ -355,18 +376,14 @@ describe('HarmonyRequest', () => {
                 format: 'application/x-netcdf4;profile=opendap_url',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include(
-                'harmony.earthdata.nasa.gov/C1276812863-GES_DISC',
-            )
+            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812863-GES_DISC')
             expect(url).to.include('/collections/V2296950155-GES_DISC/')
             expect(url).to.include('subset=lat(-12.16:31.74)')
             expect(url).to.include('subset=lon(63.63:101.6)')
             expect(url).to.include('subset=time(')
             expect(url).to.include('2025-09-02T00:00:00.000Z')
             expect(url).to.include('2025-09-04T00:00:00.000Z')
-            expect(url).to.include(
-                'format=application/x-netcdf4;profile=opendap_url',
-            )
+            expect(url).to.include('format=application/x-netcdf4;profile=opendap_url')
         })
 
         it('PODAAC L2 subsetter request with a different collection', () => {
@@ -381,9 +398,7 @@ describe('HarmonyRequest', () => {
                 format: 'application/x-netcdf4',
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include(
-                'harmony.earthdata.nasa.gov/C1239966755-GES_DISC',
-            )
+            expect(url).to.include('harmony.earthdata.nasa.gov/C1239966755-GES_DISC')
             expect(url).to.include('/collections/V2778423892-GES_DISC/')
             expect(url).to.include('subset=lat(12.32:47.86)')
             expect(url).to.include('subset=lon(45:85.08)')
@@ -396,9 +411,7 @@ describe('HarmonyRequest', () => {
 
     describe('builder methods', () => {
         it('collection() sets the collectionConceptId', () => {
-            const request = new HarmonyRequest().collection(
-                COLLECTION_CONCEPT_ID,
-            )
+            const request = new HarmonyRequest().collection(COLLECTION_CONCEPT_ID)
             expect(request.baseUrl).to.include(COLLECTION_CONCEPT_ID)
         })
 
@@ -539,9 +552,7 @@ describe('HarmonyRequest', () => {
                 labels: ['harmony-py'],
             })
             const url = decodeURIComponent(request.requestUrl)
-            expect(url).to.include(
-                'harmony.earthdata.nasa.gov/C1276812882-GES_DISC',
-            )
+            expect(url).to.include('harmony.earthdata.nasa.gov/C1276812882-GES_DISC')
             expect(url).to.include('/collections/parameter_vars/')
             expect(url).to.include('subset=lat(0:90)')
             expect(url).to.include('subset=lon(-180:180)')
@@ -563,7 +574,7 @@ describe('HarmonyRequest', () => {
                     .dateRange(START_DATE, END_DATE)
                     .format('application/x-netcdf4')
                     .label(`collectionConceptId: ${COLLECTION_CONCEPT_ID}`)
-                    .average('time').requestUrl,
+                    .average('time').requestUrl
             )
 
             expect(url).to.include('harmony.earthdata.nasa.gov')
@@ -580,13 +591,9 @@ describe('HarmonyRequest', () => {
     describe('isVariableConceptId', () => {
         it('valid cases', () => {
             const request = new HarmonyRequest()
-            expect(
-                request.isVariableConceptId('V2621793629-GES_DISC'),
-            ).to.equal(true)
+            expect(request.isVariableConceptId('V2621793629-GES_DISC')).to.equal(true)
             expect(request.isVariableConceptId('V1-foo')).to.equal(true)
-            expect(request.isVariableConceptId('V123-abc-def-123')).to.equal(
-                true,
-            )
+            expect(request.isVariableConceptId('V123-abc-def-123')).to.equal(true)
             expect(request.isVariableConceptId('V999-!@#$%^&*')).to.equal(true)
         })
 
@@ -610,9 +617,7 @@ describe('HarmonyRequest', () => {
 
         it('sets environment to PROD for the production harmony URL', () => {
             const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
-            expect(request.baseUrl).to.include(
-                'https://harmony.earthdata.nasa.gov',
-            )
+            expect(request.baseUrl).to.include('https://harmony.earthdata.nasa.gov')
             expect(request.baseUrl).to.not.include('uat')
         })
 
@@ -621,7 +626,7 @@ describe('HarmonyRequest', () => {
                 'https://harmony.uat.earthdata.nasa.gov/C2723754847-GES_DISC/ogc-api-coverages/1.0.0/collections/all/coverage/rangeset?subset=lat(5:40)&subset=lon(62:95)'
             const request = HarmonyRequest.fromUrl(uatUrl)
             expect(request.baseUrl).to.include(
-                'https://harmony.uat.earthdata.nasa.gov',
+                'https://harmony.uat.earthdata.nasa.gov'
             )
         })
 
@@ -683,7 +688,7 @@ describe('HarmonyRequest', () => {
         it('parses variable query params', () => {
             const request = HarmonyRequest.fromUrl(EXAMPLE_URL)
             expect(request.params).to.include(
-                'variable=GPM_3IMERGHH_07_precipitation',
+                'variable=GPM_3IMERGHH_07_precipitation'
             )
         })
 
@@ -850,9 +855,7 @@ describe('HarmonyRequest', () => {
             })
             const formData = request.buildFormData()
             const subsets = formData.getAll('subset')
-            const timeSubset = subsets.find((s) =>
-                (s as string).startsWith('time('),
-            )
+            const timeSubset = subsets.find(s => (s as string).startsWith('time('))
             expect(timeSubset).to.exist
         })
 
@@ -864,9 +867,214 @@ describe('HarmonyRequest', () => {
             const formData = request.buildFormData()
             const subsets = formData.getAll('subset') as string[]
             const hasSpatialSubset = subsets.some(
-                (s) => s.startsWith('lat(') || s.startsWith('lon('),
+                s => s.startsWith('lat(') || s.startsWith('lon(')
             )
             expect(hasSpatialSubset).to.equal(false)
+        })
+    })
+
+    describe('isEquivalentTo', () => {
+        const baseOptions = {
+            collectionConceptId: COLLECTION_CONCEPT_ID,
+            location: BBOX,
+            startDate: START_DATE,
+            endDate: END_DATE,
+            format: 'application/x-netcdf4',
+            average: 'time',
+            variables: [VARIABLE_ENTRY_ID],
+        }
+
+        it('returns true for identical requests', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({ ...baseOptions })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('ignores labels', () => {
+            const a = new HarmonyRequest({ ...baseOptions }).label('one')
+            const b = new HarmonyRequest({ ...baseOptions }).label('two')
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('ignores skipPreview', () => {
+            const a = new HarmonyRequest({ ...baseOptions }).skipPreview(true)
+            const b = new HarmonyRequest({ ...baseOptions })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when collectionConceptId differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                collectionConceptId: 'C9999999999-GES_DISC',
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when environment differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                environment: Environments.UAT,
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when format differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({ ...baseOptions, format: 'image/tiff' })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when average differs (including unset vs set)', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({ ...baseOptions, average: undefined })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns false when startDate or endDate differ', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                endDate: '2026-02-01T00:00:00.000Z',
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('treats anonymous undefined and false as equivalent', () => {
+            const a = new HarmonyRequest({ ...baseOptions, anonymous: false })
+            const b = new HarmonyRequest({ ...baseOptions, anonymous: undefined })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when anonymous differs', () => {
+            const a = new HarmonyRequest({ ...baseOptions, anonymous: true })
+            const b = new HarmonyRequest({ ...baseOptions, anonymous: false })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('treats variables as order-independent', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                variables: ['foo', 'bar'],
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                variables: ['bar', 'foo'],
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when variables differ', () => {
+            const a = new HarmonyRequest({ ...baseOptions, variables: ['foo'] })
+            const b = new HarmonyRequest({ ...baseOptions, variables: ['bar'] })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('treats variableConceptIds as order-independent', () => {
+            const a = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+                .variable(VARIABLE_CONCEPT_ID)
+                .variable('V0000000001-GES_DISC')
+            const b = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+                location: BBOX,
+            })
+                .variable('V0000000001-GES_DISC')
+                .variable(VARIABLE_CONCEPT_ID)
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('treats dimensions as order-independent', () => {
+            const a = new HarmonyRequest({ ...baseOptions })
+                .dimension({ name: 'lev', min: 0, max: 10 })
+                .dimension({ name: 'time', min: 1, max: 2 })
+            const b = new HarmonyRequest({ ...baseOptions })
+                .dimension({ name: 'time', min: 1, max: 2 })
+                .dimension({ name: 'lev', min: 0, max: 10 })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when dimensions differ', () => {
+            const a = new HarmonyRequest({ ...baseOptions }).dimension({
+                name: 'lev',
+                min: 0,
+                max: 10,
+            })
+            const b = new HarmonyRequest({ ...baseOptions }).dimension({
+                name: 'lev',
+                min: 0,
+                max: 20,
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns true for equal LatLngBounds locations', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false for different LatLngBounds locations', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([0, 0, 10, 10]),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns true for equal LatLng point locations', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLng(10, 20),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLng(10, 20),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('returns false when location types differ (point vs bounds)', () => {
+            const a = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLng(10, 20),
+            })
+            const b = new HarmonyRequest({
+                ...baseOptions,
+                location: new LatLngBounds([62.23, 5.29, 94.57, 37.49]),
+            })
+            expect(a.isEquivalentTo(b)).to.equal(false)
+        })
+
+        it('returns true when both locations are undefined', () => {
+            const a = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+            })
+            const b = new HarmonyRequest({
+                collectionConceptId: COLLECTION_CONCEPT_ID,
+            })
+            expect(a.isEquivalentTo(b)).to.equal(true)
+        })
+
+        it('round-trips through requestUrl/fromUrl and still matches', () => {
+            const original = new HarmonyRequest({ ...baseOptions }).label(
+                'terra-time-average-map'
+            )
+            const roundtripped = HarmonyRequest.fromUrl(original.requestUrl)
+            expect(original.isEquivalentTo(roundtripped)).to.equal(true)
         })
     })
 })

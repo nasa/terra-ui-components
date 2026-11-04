@@ -4,10 +4,12 @@
 import commandLineArgs from 'command-line-args'
 import copy from 'recursive-copy'
 import { deleteAsync } from 'del'
-import download from 'download'
+import { createWriteStream } from 'fs'
 import fs from 'fs/promises'
 import { globby } from 'globby'
 import path from 'path'
+import { pipeline } from 'stream/promises'
+import yauzl from 'yauzl'
 
 const { outdir } = commandLineArgs({ name: 'outdir', type: String })
 const iconDir = path.join(outdir, '/assets/icons')
@@ -17,18 +19,41 @@ const iconPackageData = JSON.parse(
 )
 
 const version = iconPackageData.version
-const srcPath = `./.cache/icons/heroicons-${version}`
+const cacheDir = './.cache/icons'
+const srcPath = `${cacheDir}/heroicons-${version}`
 
 //* Hit cache at versioned `srcPath` to determine if we need to download.
 try {
     await fs.stat(`${srcPath}/LICENSE`)
 } catch {
-    // Download the source from GitHub (since not everything is published to npm)
-    await download(
-        `https://github.com/tailwindlabs/heroicons/archive/v${version}.zip`,
-        './.cache/icons',
-        { extract: true }
-    )
+    // Download the source from GitHub (since not everything is published to npm) and extract it
+    const zipUrl = `https://github.com/tailwindlabs/heroicons/archive/v${version}.zip`
+    const response = await fetch(zipUrl)
+
+    if (!response.ok) {
+        throw new Error(
+            `Failed to download ${zipUrl}: ${response.status} ${response.statusText}`
+        )
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer())
+
+    await fs.mkdir(cacheDir, { recursive: true })
+
+    const zipfile = await yauzl.fromBufferPromise(buffer)
+    for await (const entry of zipfile.eachEntry()) {
+        const entryPath = path.join(cacheDir, entry.fileName)
+
+        if (entry.fileName.endsWith('/')) {
+            await fs.mkdir(entryPath, { recursive: true })
+            continue
+        }
+
+        await fs.mkdir(path.dirname(entryPath), { recursive: true })
+
+        const readStream = await zipfile.openReadStreamPromise(entry)
+        await pipeline(readStream, createWriteStream(entryPath))
+    }
 }
 
 // Copy icons

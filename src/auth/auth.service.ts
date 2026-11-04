@@ -51,7 +51,7 @@ class AuthService {
         window.history.replaceState(
             {},
             '',
-            `${window.location.pathname}${urlParams.size > 0 ? '?' + urlParams.toString() : ''}`,
+            `${window.location.pathname}${urlParams.size > 0 ? '?' + urlParams.toString() : ''}`
         )
 
         const url = `${AUTH_URL}/callback?code=${code}${getEnvironment() === Environment.UAT ? '&environment=uat' : ''}`
@@ -68,7 +68,7 @@ class AuthService {
 
     subscribe(
         listener: (state: AuthState) => void,
-        bearerToken?: string,
+        bearerToken?: string
     ): () => void {
         this.listeners.add(listener)
 
@@ -89,7 +89,7 @@ class AuthService {
     }
 
     private notifyListeners() {
-        this.listeners.forEach((listener) => listener(this.authState))
+        this.listeners.forEach(listener => listener(this.authState))
     }
 
     private setState(updates: Partial<AuthState>) {
@@ -159,9 +159,7 @@ class AuthService {
             })
 
             if (!response.ok) {
-                throw new Error(
-                    response.statusText ?? 'Failed to get user info',
-                )
+                throw new Error(response.statusText ?? 'Failed to get user info')
             }
 
             const userResponse = await response.json()
@@ -228,9 +226,7 @@ class AuthService {
                 const errorData = await response.json()
                 // Prefer error_description if available, otherwise use error field
                 errorMessage =
-                    errorData.error_description ||
-                    errorData.error ||
-                    errorMessage
+                    errorData.error_description || errorData.error || errorMessage
             } catch {
                 // If JSON parsing fails, use the status text
             }

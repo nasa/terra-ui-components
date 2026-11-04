@@ -16,9 +16,9 @@ This is a community-maintained document. Please [ask the community](/resources/c
 
 This integration has been tested with the following:
 
--   Node: 16.13.1
--   NextJS: 12.1.6
--   Terra: 2.0.0-beta.74
+- Node: 16.13.1
+- NextJS: 12.1.6
+- Terra: 2.0.0-beta.74
 
 ## Instructions
 

@@ -7,7 +7,7 @@ import TerraIcon from '../icon/icon.js'
 import TerraLoader from '../loader/loader.js'
 import styles from './login.styles.js'
 import { property } from 'lit/decorators.js'
-import { AuthController } from '../../auth/auth.controller.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 
 /**
  * @summary A form that logs in to Earthdata Login (EDL) and returns a bearer token.
@@ -17,7 +17,7 @@ import { AuthController } from '../../auth/auth.controller.js'
  *
  * @event terra-login - Emitted when a bearer token has been received from EDL.
  */
-export default class TerraLogin extends TerraElement {
+export default class TerraLogin extends AuthMixin(TerraElement) {
     static dependencies = {
         'terra-button': TerraButton,
         'terra-icon': TerraIcon,
@@ -47,8 +47,6 @@ export default class TerraLogin extends TerraElement {
     @property({ attribute: false })
     onLoginClick?: () => void
 
-    #authController = new AuthController(this)
-
     login() {
         if (this.onLoginClick) {
             // call the login handler instead of handling login ourselves
@@ -57,31 +55,31 @@ export default class TerraLogin extends TerraElement {
             return
         }
 
-        this.#authController.login()
+        super.login()
     }
 
     logout() {
-        this.#authController.logout()
+        super.logout()
     }
 
     render() {
-        if (this.#authController.state.user?.uid) {
+        if (this.authState.user?.uid) {
             // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
             const template = this.querySelector<HTMLTemplateElement>(
-                'template[slot="logged-in"]',
+                'template[slot="logged-in"]'
             )
 
             return html`${
                 template
                     ? template.content.cloneNode(true)
-                    : html`<slot name="logged-in" .user=${this.#authController.state.user}
+                    : html`<slot name="logged-in" .user=${this.authState.user}
                       >${this.#applyUserToMessage(this.loggedInMessage)}</slot
                   >`
             }`
         }
 
-        if (this.#authController.state.isLoading) {
+        if (this.authState.isLoading) {
             // we don't know yet if the user is logged in or out, so show the loading slot
             return html`<slot name="loading">${this.loadingMessage}</slot>`
         }
@@ -93,14 +91,8 @@ export default class TerraLogin extends TerraElement {
 
     #applyUserToMessage(message?: string) {
         return (message ?? '')
-            .replace('{username}', this.#authController.state.user?.uid ?? '')
-            .replace(
-                '{first_name}',
-                this.#authController.state.user?.first_name ?? '',
-            )
-            .replace(
-                '{last_name}',
-                this.#authController.state.user?.last_name ?? '',
-            )
+            .replace('{username}', this.authState.user?.uid ?? '')
+            .replace('{first_name}', this.authState.user?.first_name ?? '')
+            .replace('{last_name}', this.authState.user?.last_name ?? '')
     }
 }

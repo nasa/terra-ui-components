@@ -168,15 +168,15 @@ terra-pagination {
 
 The following design tokens are available for customization:
 
--   `--terra-pagination-button-color`: Text color of page buttons (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-60` in dark mode)
--   `--terra-pagination-button-background-color`: Background color of page buttons (default: `--terra-color-spacesuit-white` in light mode, `--terra-color-carbon-10` in dark mode)
--   `--terra-pagination-button-border-color`: Border color of page buttons (default: `--terra-color-carbon-20`)
--   `--terra-pagination-button-color-hover`: Text color of page buttons on hover (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-80` in dark mode)
--   `--terra-pagination-button-background-color-hover`: Background color of page buttons on hover (default: `--terra-color-carbon-5`)
--   `--terra-pagination-button-border-color-hover`: Border color of page buttons on hover (default: `--terra-color-carbon-30`)
--   `--terra-pagination-button-color-current`: Text color of the current page button (default: `--terra-color-spacesuit-white`)
--   `--terra-pagination-button-background-color-current`: Background color of the current page button (default: `--terra-color-nasa-blue` in light mode, `--terra-color-nasa-blue-tint` in dark mode)
--   `--terra-pagination-button-border-color-current`: Border color of the current page button (default: `--terra-color-nasa-blue` in light mode, `--terra-color-nasa-blue-tint` in dark mode)
+- `--terra-pagination-button-color`: Text color of page buttons (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-60` in dark mode)
+- `--terra-pagination-button-background-color`: Background color of page buttons (default: `--terra-color-spacesuit-white` in light mode, `--terra-color-carbon-10` in dark mode)
+- `--terra-pagination-button-border-color`: Border color of page buttons (default: `--terra-color-carbon-20`)
+- `--terra-pagination-button-color-hover`: Text color of page buttons on hover (default: `--terra-color-carbon-90` in light mode, `--terra-color-carbon-80` in dark mode)
+- `--terra-pagination-button-background-color-hover`: Background color of page buttons on hover (default: `--terra-color-carbon-5`)
+- `--terra-pagination-button-border-color-hover`: Border color of page buttons on hover (default: `--terra-color-carbon-30`)
+- `--terra-pagination-button-color-current`: Text color of the current page button (default: `--terra-color-spacesuit-white`)
+- `--terra-pagination-button-background-color-current`: Background color of the current page button (default: `--terra-color-nasa-blue` in light mode, `--terra-color-nasa-blue-tint` in dark mode)
+- `--terra-pagination-button-border-color-current`: Border color of the current page button (default: `--terra-color-nasa-blue` in light mode, `--terra-color-nasa-blue-tint` in dark mode)
 
 All tokens automatically adapt to dark mode when dark mode is active.
 

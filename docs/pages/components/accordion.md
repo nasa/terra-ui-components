@@ -60,10 +60,10 @@ Accordions stack nicely when used together, with consistent spacing between them
 
 ## Features
 
--   Large, bold summary with chevron icon
--   Smooth expand/collapse animation
--   Keyboard accessible (Enter/Space to toggle)
--   Divider lines above and below
--   Customizable summary via slot or property
+- Large, bold summary with chevron icon
+- Smooth expand/collapse animation
+- Keyboard accessible (Enter/Space to toggle)
+- Divider lines above and below
+- Customizable summary via slot or property
 
 [component-metadata:terra-accordion]

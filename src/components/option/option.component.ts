@@ -106,7 +106,7 @@ export default class TerraOption extends TerraElement {
         const nodes = this.childNodes
         let label = ''
 
-        ;[...nodes].forEach((node) => {
+        ;[...nodes].forEach(node => {
             if (node.nodeType === Node.ELEMENT_NODE) {
                 if (!(node as HTMLElement).hasAttribute('slot')) {
                     label += (node as HTMLElement).textContent

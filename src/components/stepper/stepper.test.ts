@@ -147,7 +147,7 @@ describe('<terra-stepper>', () => {
     })
 
     describe('Layout', () => {
-        it('should use flexbox layout', async () => {
+        it('should use block layout', async () => {
             const el: any = await fixture(html`
                 <terra-stepper>
                     <terra-stepper-step title="Step 1"></terra-stepper-step>
@@ -158,7 +158,7 @@ describe('<terra-stepper>', () => {
 
             const base = el.shadowRoot?.querySelector('[part~="base"]')
             const computedStyle = getComputedStyle(base)
-            expect(computedStyle.display).to.equal('flex')
+            expect(computedStyle.display).to.equal('block')
         })
 
         it('should fill 100% width', async () => {

@@ -42,9 +42,7 @@ import { getSortLabel, SortOrder } from '../../utilities/sort.js'
  * @dependency terra-divider
  * @dependency terra-accordion
  */
-export default class TerraBrowseVariables extends QueryClientMixin(
-    TerraElement,
-) {
+export default class TerraBrowseVariables extends QueryClientMixin(TerraElement) {
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-variable-keyword-search': TerraVariableKeywordSearch,
@@ -59,28 +57,27 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
     /** Screen size detection use to determine layout for mobile devices */
 
-    @state() 
+    @state()
     isMobile = false
 
-    private mediaQuery = window.matchMedia('(max-width: 600px)');
-    
-    connectedCallback() {
-        super.connectedCallback();
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
 
-        this.isMobile = this.mediaQuery.matches;
-        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
     }
 
     disconnectedCallback() {
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
 
-        super.disconnectedCallback();
+        super.disconnectedCallback()
     }
 
     private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches;
-    };
-
+        this.isMobile = event.matches
+    }
 
     /**
      * Allows the user to switch the catalog between different providers
@@ -134,7 +131,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     handleObservationChange() {
         const selectedObservation =
             this.shadowRoot?.querySelector<HTMLInputElement>(
-                'input[name="observation"]:checked',
+                'input[name="observation"]:checked'
             )?.value ?? 'All'
 
         if (selectedObservation === 'All') {
@@ -171,7 +168,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     #selectFacetField(
         facet: string,
         field: string,
-        selectOneFieldAtATime: boolean = false,
+        selectOneFieldAtATime: boolean = false
     ) {
         const existingFields = this.selectedFacets[facet] || []
 
@@ -183,9 +180,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
         this.selectedFacets = {
             ...this.selectedFacets,
-            [facet]: selectOneFieldAtATime
-                ? [field]
-                : [...existingFields, field],
+            [facet]: selectOneFieldAtATime ? [field] : [...existingFields, field],
         }
     }
 
@@ -200,9 +195,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             return // facet has no fields that have been selected
         }
 
-        const filteredFields = this.selectedFacets[facet].filter(
-            (f) => f !== field,
-        ) // remove the given field
+        const filteredFields = this.selectedFacets[facet].filter(f => f !== field) // remove the given field
 
         if (!filteredFields.length) {
             // no fields left, just clear the facet
@@ -216,31 +209,32 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         }
     }
 
-    #handleVariableSelection(variable: Variable, checked: Boolean) {
+    #handleVariableSelection(variable: Variable, checked: boolean) {
         const variableIsSelected = this.selectedVariables.find(
-            (v) => v.dataFieldLongName === variable.dataFieldLongName,
+            v => v.dataFieldLongName === variable.dataFieldLongName
         )
 
         if (checked && !variableIsSelected) {
             // need to add variable to list of selected variables
             this.selectedVariables = ([] as Variable[]).concat(
                 this.selectedVariables,
-                variable,
+                variable
             )
         } else if (!checked && variableIsSelected) {
             // need to remove variable from list of selected variables
             this.selectedVariables = this.selectedVariables.filter(
-                (v) => v.dataFieldLongName !== variable.dataFieldLongName,
+                v => v.dataFieldLongName !== variable.dataFieldLongName
             )
         }
     }
 
     private handleMobileVariableClick(index: number) {
-        if (this.mobileDetailsIndex === index) {    // Close the details panel if it's already open for this variable
+        if (this.mobileDetailsIndex === index) {
+            // Close the details panel if it's already open for this variable
             this.mobileDetailsIndex = undefined
             return
         }
-        this.mobileDetailsIndex = index             // Open the details panel for this variable
+        this.mobileDetailsIndex = index // Open the details panel for this variable
     }
 
     private handleDetailClose() {
@@ -262,7 +256,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
             requestAnimationFrame(() => {
                 const menu = event.target as HTMLElement
                 const allItems = menu.querySelectorAll('terra-menu-item')
-                allItems.forEach((item) => {
+                allItems.forEach(item => {
                     const itemValue = item.value
                     if (itemValue === this.sortOrder) {
                         item.checked = true
@@ -291,7 +285,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     #getBrowsingText(): string {
         // Collect all selected facet field names
         const selectedFacetNames: string[] = []
-        Object.values(this.selectedFacets).forEach((fields) => {
+        Object.values(this.selectedFacets).forEach(fields => {
             selectedFacetNames.push(...fields)
         })
 
@@ -361,7 +355,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                               >
 
                               ${this.#controller.facetsByCategory?.observations.map(
-                                  (field) =>
+                                  field =>
                                       html`<label>
                                           <input
                                               type="radio"
@@ -370,7 +364,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                               @change=${this.handleObservationChange}
                                           />
                                           ${field.name}
-                                      </label>`,
+                                      </label>`
                               )}
                           `
                             : html`<terra-skeleton
@@ -389,7 +383,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
                 <main>
                     ${columns.map(
-                        (column) => html`
+                        column => html`
                             <div class="column">
                                 <h3>${column.title}</h3>
                                 <ul role="list">
@@ -397,9 +391,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                         this.#controller.facetsByCategory?.[
                                             column.facetKey
                                         ]
-                                            ?.filter((field) => field.count > 0)
+                                            ?.filter(field => field.count > 0)
                                             .map(
-                                                (field) =>
+                                                field =>
                                                     html`<li
                                                     role="button"
                                                     tabindex="0"
@@ -408,7 +402,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                                     @click=${this.toggleFacetSelect}
                                                 >
                                                     ${field.name}
-                                                </li>`,
+                                                </li>`
                                             ) ??
                                         html`<terra-skeleton
                                         rows=${getRandomIntInclusive(8, 12)}
@@ -417,7 +411,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                     }
                                 </ul>
                             </div>
-                        `,
+                        `
                     )}
                 </main>
             </div>
@@ -428,10 +422,10 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         facetKey: string,
         title: string,
         fields?: FacetField[],
-        open?: boolean,
+        open?: boolean
     ) {
         // Check if there are any fields with count > 0
-        const hasValidFields = (fields ?? []).some((field) => field.count > 0)
+        const hasValidFields = (fields ?? []).some(field => field.count > 0)
 
         if (!hasValidFields) {
             return nothing
@@ -440,7 +434,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
         return html`<details ?open=${open}>
             <summary>${title}</summary>
 
-            ${(fields ?? []).map((field) =>
+            ${(fields ?? []).map(field =>
                 field.count > 0
                     ? html`
                           <div class="facet">
@@ -450,7 +444,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                       @change=${() =>
                                           this.#selectFacetField(
                                               facetKey,
-                                              field.name,
+                                              field.name
                                           )}
                                       ?checked=${this.selectedFacets[
                                           facetKey
@@ -461,13 +455,12 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                               >
                           </div>
                       `
-                    : nothing,
+                    : nothing
             )}
         </details>`
     }
 
     #renderVariableDetails(index: number) {
-
         const variables = this.#getSortedVariables()
         const variable = variables[index]
 
@@ -477,9 +470,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <label
                             ><strong>Name in Data File:</strong></label
                         >
-                        ${
-                            variable.dataFieldShortName
-                        }
+                        ${variable.dataFieldShortName}
                     </p>
                     <p>
                         <label><strong>Units:</strong></label>
@@ -489,13 +480,9 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <label
                             ><strong>Temporal Coverage:</strong></label
                         >
-                        ${
-                            variable.dataProductBeginDateTime
-                        }
+                        ${variable.dataProductBeginDateTime}
                         –
-                        ${
-                            variable.dataProductEndDateTime
-                        }
+                        ${variable.dataProductEndDateTime}
                     </p>
                     <p>
                         <label><strong>Region Coverage:</strong></label>
@@ -508,15 +495,11 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         <label
                             ><strong>Spatial Resolution:</strong></label
                         >
-                        ${
-                            variable.dataProductSpatialResolution
-                        }
+                        ${variable.dataProductSpatialResolution}
                     </p>
                     <p>
-                        <label><strong>Dataset:</strong></label>
-                        ${
-                            variable.dataProductShortName
-                        }_${
+                        <label><strong>Data Set:</strong></label>
+                        ${variable.dataProductShortName}_${
                             variable.dataProductVersion
                         }
                     </p>
@@ -619,17 +602,20 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                 </menu>
             </header>
 
-            ${this.isMobile
-                ? html `
+            ${
+                this.isMobile
+                    ? html`
                     <aside>
                         <terra-accordion summary="Filter Results">
-                            ${facets.map((facet) =>
+                            ${facets.map(facet =>
                                 this.#renderFacet(
                                     facet.facetKey,
                                     facet.title,
-                                    this.#controller.facetsByCategory?.[facet.facetKey],
-                                    facet.open,
-                                ),
+                                    this.#controller.facetsByCategory?.[
+                                        facet.facetKey
+                                    ],
+                                    facet.open
+                                )
                             )}
                         </terra-accordion>
                     </aside>
@@ -637,24 +623,24 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                     <main>
                         ${this.#renderMobileVariablesList(Boolean(loading))}
                     </main>`
-                : html `
+                    : html`
                     <aside>
                         <h3>Filter</h3>
 
-                        ${facets.map((facet) =>
+                        ${facets.map(facet =>
                             this.#renderFacet(
                                 facet.facetKey,
                                 facet.title,
                                 this.#controller.facetsByCategory?.[facet.facetKey],
-                                facet.open,
-                            ),
+                                facet.open
+                            )
                         )}
                     </aside>
 
                     <main>
                         ${this.#renderVariablesList(Boolean(loading))}
                     </main>`
-                }
+            }
 
         </div> `
     }
@@ -683,17 +669,15 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                 aria-selected="false"
                                 class="variable-list-item"
                                 @mouseenter=${() => (this.activeIndex = index)}
-                                @mouseleave=${() =>
-                                    (this.activeIndex = undefined)}
+                                @mouseleave=${() => (this.activeIndex = undefined)}
                                 @focusin=${() => (this.activeIndex = index)}
                                 @focusout=${() => (this.activeIndex = undefined)}
                                 @click=${(event: Event) => {
                                     const target =
                                         event.currentTarget as HTMLLIElement
-                                    const targetCheckbox =
-                                        target.querySelector(
-                                            'input[type="checkbox"]',
-                                        ) as HTMLInputElement | null
+                                    const targetCheckbox = target.querySelector(
+                                        'input[type="checkbox"]'
+                                    ) as HTMLInputElement | null
 
                                     if (!targetCheckbox) {
                                         return
@@ -701,7 +685,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
                                     target?.setAttribute(
                                         'aria-selected',
-                                        `${targetCheckbox.checked}`,
+                                        `${targetCheckbox.checked}`
                                     )
                                 }}
                             >
@@ -715,7 +699,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                                     e.currentTarget as HTMLInputElement
                                                 this.#handleVariableSelection(
                                                     variable,
-                                                    input.checked,
+                                                    input.checked
                                                 )
                                             }}
                                         />
@@ -732,7 +716,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                     </label>
                                 </div>
                             </li>
-                        `,
+                        `
                     )}
                 </ul>
             </section>
@@ -757,7 +741,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
     }
 
     #renderMobileVariablesList(loading?: boolean) {
-
         const variables = this.#getSortedVariables()
 
         return html`
@@ -771,7 +754,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                             <p>Please note: This is a beta release and may not have the full Giovanni catalog available yet. We are working on adding more variables and improving the search and filter capabilities, so please check back soon!</p>
                         </terra-alert>
                     `
-                        : nothing
+                            : nothing
                     }
 
                     ${variables.map(
@@ -792,7 +775,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
 
                                             this.#handleVariableSelection(
                                                 variable,
-                                                input.checked,
+                                                input.checked
                                             )
                                         }}
                                     />
@@ -820,11 +803,10 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                     <span>
                                         <terra-divider></terra-divider>
                                         <terra-button outline circle size="small"
-                                            @click=${(event: Event) =>
-                                                {
-                                                    event.stopPropagation()
-                                                    this.handleDetailClose()
-                                                }}
+                                            @click=${(event: Event) => {
+                                                event.stopPropagation()
+                                                this.handleDetailClose()
+                                            }}
                                         >
                                         <slot name="label">
                                             <terra-icon name="outline-x-mark" library="heroicons" font-size="1.5em"></terra-icon>
@@ -833,7 +815,7 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                                     ${this.#renderVariableDetails(index)}
                                 </div>
                             </li>
-                        `,
+                        `
                     )}
                 </ul>
             </section>
@@ -866,12 +848,6 @@ export default class TerraBrowseVariables extends QueryClientMixin(
                         @terra-search=${this.handleSearch}
                     ></terra-variable-keyword-search>
                 </header>
-
-                ${
-                    this.isMobile
-                        ? console.log('Mobile view')
-                        : console.log('Desktop view')
-                }
 
                 ${
                     this.showVariablesBrowse

@@ -17,7 +17,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
  */
 async function request<T>(
     url: string,
-    { method = 'GET', body, headers = {}, signal }: RequestOptions = {},
+    { method = 'GET', body, headers = {}, signal }: RequestOptions = {}
 ): Promise<T> {
     try {
         const res = await fetch(url, {
@@ -104,8 +104,7 @@ export const apiClient = {
         request<T>(url, { ...options }),
     post: <T>(url: string, body: unknown, options?: RequestOptions) =>
         request<T>(url, { method: 'POST', body, ...options }),
-    put: <T>(url: string, body: unknown) =>
-        request<T>(url, { method: 'PUT', body }),
+    put: <T>(url: string, body: unknown) => request<T>(url, { method: 'PUT', body }),
     patch: <T>(url: string, body: unknown) =>
         request<T>(url, { method: 'PATCH', body }),
     delete: <T>(url: string, options?: RequestOptions) =>

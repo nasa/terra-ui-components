@@ -416,19 +416,21 @@ export default class TerraSlider extends TerraElement {
 
         return html`
             <div class="slider">
-                ${!this.hasTooltips
-                    ? html`
+                ${
+                    !this.hasTooltips
+                        ? html`
                           <div class="slider__header">
                               <label
                                   for="slider-control"
-                                  class=${this.hideLabel
-                                      ? 'sr-only'
-                                      : 'slider__label'}
+                                  class=${
+                                      this.hideLabel ? 'sr-only' : 'slider__label'
+                                  }
                                   >${this.label}</label
                               >
                               <div class="slider__header-right">
-                                  ${this.hasBeenManipulated
-                                      ? html`
+                                  ${
+                                      this.hasBeenManipulated
+                                          ? html`
                                             <button
                                                 class="slider__clear"
                                                 @click="${this.handleClear}"
@@ -437,20 +439,22 @@ export default class TerraSlider extends TerraElement {
                                                 Clear
                                             </button>
                                         `
-                                      : ''}
+                                          : ''
+                                  }
                                   <span class="slider__current-range"
                                       >${currentRangeDisplay}</span
                                   >
                               </div>
                           </div>
                       `
-                    : html`
+                        : html`
                           <label
                               for="slider-control"
                               class=${this.hideLabel ? 'sr-only' : 'slider__label'}
                               >${this.label}</label
                           >
-                      `}
+                      `
+                }
                 <div class="${containerClass}">
                     <div part="slider" id="slider-control"></div>
                     ${this.showInputs ? this._renderInputFields() : ''}

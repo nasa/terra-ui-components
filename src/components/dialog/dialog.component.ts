@@ -333,14 +333,17 @@ export default class TerraDialog extends TerraElement {
                     aria-labelledby=${ifDefined(!this.noHeader ? 'title' : undefined)}
                     tabindex="-1"
                 >
-                    ${!this.noHeader
-                        ? html`
+                    ${
+                        !this.noHeader
+                            ? html`
                               <header part="header" class="dialog__header">
                                   <h2 part="title" class="dialog__title" id="title">
                                       <slot name="label">
-                                          ${this.label.length > 0
-                                              ? this.label
-                                              : String.fromCharCode(65279)}
+                                          ${
+                                              this.label.length > 0
+                                                  ? this.label
+                                                  : String.fromCharCode(65279)
+                                          }
                                       </slot>
                                   </h2>
                                   <div
@@ -367,7 +370,8 @@ export default class TerraDialog extends TerraElement {
                                   </div>
                               </header>
                           `
-                        : ''}
+                            : ''
+                    }
                     <div part="body" class="dialog__body" tabindex="-1">
                         <slot></slot>
                     </div>

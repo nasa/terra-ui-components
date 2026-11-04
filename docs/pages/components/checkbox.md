@@ -117,19 +117,19 @@ Checkboxes work seamlessly with native HTML forms.
 
 ## Best Practices
 
--   **Always include labels**: Checkboxes should always have a clear, descriptive label that explains what the option does.
--   **Stack vertically**: When multiple checkboxes are used together, stack them vertically to form a clear list of options.
--   **Use for multiple selections**: Checkboxes allow users to select zero, one, or multiple options. For mutually exclusive choices, use Radio Buttons instead.
--   **Group related options**: Use a fieldset and legend to group related checkboxes, especially in forms.
--   **Indicate required fields**: If only some fields in a form are required, indicate required checkbox fields with an asterisk. If most fields are required, indicate optional fields by displaying "(optional)" next to the label.
--   **Provide help text when needed**: Use help text to clarify what selecting an option will do, especially for filtering or settings.
+- **Always include labels**: Checkboxes should always have a clear, descriptive label that explains what the option does.
+- **Stack vertically**: When multiple checkboxes are used together, stack them vertically to form a clear list of options.
+- **Use for multiple selections**: Checkboxes allow users to select zero, one, or multiple options. For mutually exclusive choices, use Radio Buttons instead.
+- **Group related options**: Use a fieldset and legend to group related checkboxes, especially in forms.
+- **Indicate required fields**: If only some fields in a form are required, indicate required checkbox fields with an asterisk. If most fields are required, indicate optional fields by displaying "(optional)" next to the label.
+- **Provide help text when needed**: Use help text to clarify what selecting an option will do, especially for filtering or settings.
 
 ## Accessibility
 
--   Checkboxes are keyboard accessible and can be activated with the Space key
--   The component properly associates labels with the checkbox input
--   Focus states are clearly visible with a focus ring
--   Required fields are indicated with an asterisk
--   Help text is properly associated with the checkbox using `aria-describedby`
+- Checkboxes are keyboard accessible and can be activated with the Space key
+- The component properly associates labels with the checkbox input
+- Focus states are clearly visible with a focus ring
+- Required fields are indicated with an asterisk
+- Help text is properly associated with the checkbox using `aria-describedby`
 
 [component-metadata:terra-checkbox]

@@ -12,7 +12,7 @@ const pendingRequests = new Map<string, Promise<Variable | null>>()
 function adaptVariable(
     variable: Awaited<
         ReturnType<typeof giovanniApi.searchVariables>
-    >['variables'][number],
+    >['variables'][number]
 ): Variable {
     let exampleInitialStartDate: Date | undefined
     let exampleInitialEndDate: Date | undefined
@@ -20,12 +20,11 @@ function adaptVariable(
     if (variable.dataProductBeginDateTime && variable.dataProductEndDateTime) {
         const diff = Math.abs(
             new Date(variable.dataProductEndDateTime).getTime() -
-                new Date(variable.dataProductBeginDateTime).getTime(),
+                new Date(variable.dataProductBeginDateTime).getTime()
         )
         const threeQuarterRange = Math.floor(diff * 0.75)
         const startMs = Math.abs(
-            new Date(variable.dataProductBeginDateTime).getTime() +
-                threeQuarterRange,
+            new Date(variable.dataProductBeginDateTime).getTime() + threeQuarterRange
         )
         exampleInitialStartDate = getUTCDate(startMs)
         exampleInitialEndDate = getUTCDate(variable.dataProductEndDateTime)
@@ -47,14 +46,12 @@ function sameVariableIds(a: Variable[] | undefined, b: Variable[]): boolean {
         return false
     }
 
-    return a.every(
-        (variable, index) => variable.dataFieldId === b[index].dataFieldId,
-    )
+    return a.every((variable, index) => variable.dataFieldId === b[index].dataFieldId)
 }
 
 function setHostPropertiesFromVariable(
     host: HostWithMaybeProperties,
-    variables: Variable[],
+    variables: Variable[]
 ) {
     const primaryVariable = variables[0]
 
@@ -75,10 +72,10 @@ function setHostPropertiesFromVariable(
 
 export function getFetchVariableTask(
     host: HostWithMaybeProperties,
-    autoRun: boolean = true,
+    autoRun: boolean = true
 ) {
     return new Task(host, {
-        task: async (_args) => {
+        task: async _args => {
             const variableEntryIds = getVariableEntryIds(host)
 
             console.debug('Fetch variables ', variableEntryIds)
@@ -89,13 +86,10 @@ export function getFetchVariableTask(
 
             const variables = (
                 await Promise.all(
-                    variableEntryIds.map(async (variableEntryId) => {
+                    variableEntryIds.map(async variableEntryId => {
                         // Check if we already have this variable cached
                         if (variableCache.has(variableEntryId)) {
-                            console.debug(
-                                'Using cached variable ',
-                                variableEntryId,
-                            )
+                            console.debug('Using cached variable ', variableEntryId)
                             return variableCache.get(variableEntryId)!
                         }
 
@@ -103,7 +97,7 @@ export function getFetchVariableTask(
                         if (pendingRequests.has(variableEntryId)) {
                             console.debug(
                                 'Waiting for pending request for variable ',
-                                variableEntryId,
+                                variableEntryId
                             )
                             const pendingVariable =
                                 await pendingRequests.get(variableEntryId)!
@@ -113,15 +107,15 @@ export function getFetchVariableTask(
                         // Create a new request and cache the promise
                         const requestPromise = giovanniApi
                             .getVariable(variableEntryId)
-                            .then((variable) => {
+                            .then(variable => {
                                 if (!variable) return null
                                 return adaptVariable(variable)
                             })
-                            .catch((error) => {
+                            .catch(error => {
                                 console.warn(
                                     'Failed to fetch variable',
                                     variableEntryId,
-                                    error,
+                                    error
                                 )
                                 return null
                             })
@@ -144,7 +138,7 @@ export function getFetchVariableTask(
                             // Clean up the pending request
                             pendingRequests.delete(variableEntryId)
                         }
-                    }),
+                    })
                 )
             ).filter(Boolean) as Variable[]
 

@@ -44,4 +44,18 @@ export class LatLngBounds {
     toString() {
         return this.toBBoxString()
     }
+
+    /**
+     * Compares bounds against another LatLngBounds within a small tolerance (to account
+     * for floating point imprecision, e.g. after round-tripping through a URL and back).
+     */
+    equals(other?: LatLngBounds, epsilon = 1e-9): boolean {
+        if (!other) return false
+        return (
+            Math.abs(this.getWest() - other.getWest()) <= epsilon &&
+            Math.abs(this.getSouth() - other.getSouth()) <= epsilon &&
+            Math.abs(this.getEast() - other.getEast()) <= epsilon &&
+            Math.abs(this.getNorth() - other.getNorth()) <= epsilon
+        )
+    }
 }

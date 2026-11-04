@@ -11,21 +11,19 @@ export default class DataAccessService {
     getEstimatedGranuleSize(
         firstGranule?: UmmG,
         lastGranule?: UmmG,
-        totalGranules?: number,
+        totalGranules?: number
     ) {
         if (!firstGranule || !lastGranule || !totalGranules) {
             return null
         }
 
         return this.formatGranuleSize(
-            this.calculateMeanGranuleSize([firstGranule, lastGranule]) *
-                totalGranules,
+            this.calculateMeanGranuleSize([firstGranule, lastGranule]) * totalGranules
         )
     }
 
     calculateGranuleSize(granule: UmmG, unit: 'MB' | 'GB' | 'TB' | 'PB') {
-        const archiveInfo =
-            granule.DataGranule?.ArchiveAndDistributionInformation
+        const archiveInfo = granule.DataGranule?.ArchiveAndDistributionInformation
 
         if (!archiveInfo || !Array.isArray(archiveInfo)) {
             return 0
@@ -62,7 +60,7 @@ export default class DataAccessService {
         }
 
         function processFilePackageOrFile(
-            item: ArchiveAndDistributionInformationType,
+            item: ArchiveAndDistributionInformationType
         ) {
             let itemBytes = processItem(item)
 
@@ -100,15 +98,15 @@ export default class DataAccessService {
     }
 
     calculateMeanGranuleSize(granules: UmmG[]) {
-        const sizes = granules.map((granule) =>
-            this.calculateGranuleSize(granule, 'MB'),
+        const sizes = granules.map(granule =>
+            this.calculateGranuleSize(granule, 'MB')
         )
         return sizes.reduce((a, b) => a + b, 0) / sizes.length
     }
 
     formatAvailableRangeDate(
         dateStr: Date | string | null,
-        isSubDaily: boolean,
+        isSubDaily: boolean
     ): string {
         if (!dateStr) return ''
 

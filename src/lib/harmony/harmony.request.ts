@@ -20,15 +20,50 @@ export type HarmonyRequestOptions = {
     format?: string
     average?: string
     labels?: Array<string>
-    skipPreview?: boolean
     anonymous?: boolean
     dimensions?: Array<RangeDimension>
+    /** When explicitly set, forces Harmony to skip (or not skip) the PREVIEWING state for this job. Left unset by default so Harmony's preview/resume flow is used. */
+    skipPreview?: boolean
 }
 
 export type RangeDimension = {
     name: string
     min: number
     max: number
+}
+
+/** Order-independent equality check for two optional string arrays. */
+function sameStringSet(a?: Array<string>, b?: Array<string>): boolean {
+    const aList = a ?? []
+    const bList = b ?? []
+    if (aList.length !== bList.length) return false
+    const sortedA = [...aList].sort()
+    const sortedB = [...bList].sort()
+    return sortedA.every((value, index) => value === sortedB[index])
+}
+
+/** Order-independent equality check for two optional RangeDimension arrays. */
+function sameDimensions(
+    a?: Array<RangeDimension>,
+    b?: Array<RangeDimension>
+): boolean {
+    const aList = a ?? []
+    const bList = b ?? []
+    if (aList.length !== bList.length) return false
+    const key = (dimension: RangeDimension) =>
+        `${dimension.name}:${dimension.min}:${dimension.max}`
+    const sortedA = aList.map(key).sort()
+    const sortedB = bList.map(key).sort()
+    return sortedA.every((value, index) => value === sortedB[index])
+}
+
+/** Equality check for two optional locations, which may be a LatLng, a LatLngBounds, or undefined. */
+function sameLocation(a?: LatLng | LatLngBounds, b?: LatLng | LatLngBounds): boolean {
+    if (!a && !b) return true
+    if (!a || !b) return false
+    if (a instanceof LatLng && b instanceof LatLng) return a.equals(b)
+    if (a instanceof LatLngBounds && b instanceof LatLngBounds) return a.equals(b)
+    return false
 }
 
 /**
@@ -47,7 +82,7 @@ export class HarmonyRequest {
 
         // variables might have been passed in as concept ids, use the helper method to ensure we add them in the right spot
         this.#options.variables = undefined // clear out variables first
-        options?.variables?.forEach((v) => {
+        options?.variables?.forEach(v => {
             this.variable(v)
         })
 
@@ -95,12 +130,8 @@ export class HarmonyRequest {
     }
 
     get baseUrl() {
-        const {
-            environment,
-            collectionConceptId,
-            variableConceptIds,
-            variables,
-        } = this.#options
+        const { environment, collectionConceptId, variableConceptIds, variables } =
+            this.#options
 
         if (!collectionConceptId) {
             throw new BadRequestException({
@@ -142,11 +173,11 @@ export class HarmonyRequest {
         } else if (location instanceof LatLngBounds) {
             params.append(
                 'subset',
-                `lat(${location.getSouth()}:${location.getNorth()})`,
+                `lat(${location.getSouth()}:${location.getNorth()})`
             )
             params.append(
                 'subset',
-                `lon(${location.getWest()}:${location.getEast()})`,
+                `lon(${location.getWest()}:${location.getEast()})`
             )
         }
 
@@ -154,14 +185,11 @@ export class HarmonyRequest {
 
         if (startDate) {
             // at least start date is required
-            params.append(
-                'subset',
-                `time("${startDate}":"${endDate ?? startDate}")`,
-            )
+            params.append('subset', `time("${startDate}":"${endDate ?? startDate}")`)
         }
 
         if (dimensions && dimensions.length > 0) {
-            dimensions.forEach((dim) => {
+            dimensions.forEach(dim => {
                 params.append('subset', `${dim.name}(${dim.min}:${dim.max})`)
             })
         }
@@ -170,11 +198,11 @@ export class HarmonyRequest {
             params.append('format', format)
         }
 
-        labels?.forEach((label) => {
+        labels?.forEach(label => {
             params.append('label', label)
         })
 
-        variables?.forEach((v) => {
+        variables?.forEach(v => {
             params.append('variable', v)
         })
 
@@ -186,10 +214,10 @@ export class HarmonyRequest {
             params.append('maxResults', '10')
         }
 
-        if (typeof skipPreview === 'boolean' && !skipPreview) {
-            params.append('skipPreview', 'false')
-        } else {
-            params.append('skipPreview', 'true')
+        // left unset by default so Harmony's preview/resume flow (PREVIEWING state) is used;
+        // only forced when a caller explicitly opts in/out via .skipPreview()
+        if (typeof skipPreview === 'boolean') {
+            params.append('skipPreview', skipPreview ? 'true' : 'false')
         }
 
         //! force async responses. We ALWAYS want a job returned, never a redirect
@@ -211,9 +239,7 @@ export class HarmonyRequest {
      * Helper method to get a label value by prefix, e.g. getLabelByPrefix('instrument-short-name') will return the value of the label that starts with 'instrument-short-name:'
      */
     getLabelByPrefix(prefix: string) {
-        const label = this.#options.labels?.find((l) =>
-            l.startsWith(`${prefix}:`),
-        )
+        const label = this.#options.labels?.find(l => l.startsWith(`${prefix}:`))
 
         const value = label ? label.split(':')[1].trim() : undefined
 
@@ -278,13 +304,13 @@ export class HarmonyRequest {
 
     addLabelsFromVariable(variable: Variable) {
         this.label(
-            `collection: ${variable.dataProductShortName}_${variable.dataProductVersion}`,
+            `collection: ${variable.dataProductShortName}_${variable.dataProductVersion}`
         )
         this.label(
-            `variable-display-name: ${variable.dataFieldLongName || variable.dataFieldId}`,
+            `variable-display-name: ${variable.dataFieldLongName || variable.dataFieldId}`
         )
         this.label(
-            `instrument-short-name: ${variable.dataProductInstrumentShortName}`,
+            `instrument-short-name: ${variable.dataProductInstrumentShortName}`
         )
         this.label(`time-interval: ${variable.dataProductTimeInterval}`)
         this.label(`units: ${variable.dataFieldUnits}`)
@@ -304,6 +330,37 @@ export class HarmonyRequest {
 
     skipPreview(skipPreview: boolean) {
         return this.set({ skipPreview })
+    }
+
+    /**
+     * Compares this request against another for semantic equivalence — i.e. whether they'd
+     * produce the same Harmony subset job.
+     *
+     * Only compares fields that `fromUrl` can actually recover from a request URL. `labels`,
+     * `skipPreview`, `shape`, and `forceAsync` are intentionally excluded — they don't affect
+     * the resulting data, and/or don't round-trip through a request URL.
+     */
+    isEquivalentTo(other: HarmonyRequest): boolean {
+        const a = this.#options
+        const b = other.#options
+
+        const environmentsMatch =
+            (a.environment ?? Environments.PROD) ===
+            (b.environment ?? Environments.PROD)
+
+        return (
+            environmentsMatch &&
+            a.collectionConceptId === b.collectionConceptId &&
+            a.format === b.format &&
+            a.average === b.average &&
+            a.startDate === b.startDate &&
+            a.endDate === b.endDate &&
+            !!a.anonymous === !!b.anonymous &&
+            sameStringSet(a.variableConceptIds, b.variableConceptIds) &&
+            sameStringSet(a.variables, b.variables) &&
+            sameDimensions(a.dimensions, b.dimensions) &&
+            sameLocation(a.location, b.location)
+        )
     }
 
     isVariableConceptId(value: string) {

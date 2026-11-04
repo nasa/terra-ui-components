@@ -1,0 +1,9 @@
+extends: substitution
+message: "Avoid 'shall' in plain language; use '%s' instead of '%s' to express a requirement (Digital.gov)."
+level: warning
+ignorecase: true
+action:
+  name: replace
+swap:
+  '\bshall not\b': must not
+  '\bshall\b': must

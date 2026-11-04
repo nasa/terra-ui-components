@@ -1,4 +1,4 @@
-import '../../../dist/terra-ui-components.js'
+import './slider.js'
 import { expect, fixture, html } from '@open-wc/testing'
 
 describe('<terra-slider>', () => {

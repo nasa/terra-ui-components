@@ -1,0 +1,16 @@
+extends: substitution
+message: "Avoid hidden verb/nominalization: use '%s' instead of '%s' (Digital.gov)."
+level: suggestion
+ignorecase: true
+action:
+  name: replace
+swap:
+  '\b(?:conduct|perform) an analysis of\b': analyze
+  '\b(?:conduct|perform) an investigation of\b': investigate
+  '\b(?:make|reach) a determination\b': determine
+  '\b(?:make|reach) a decision\b': decide
+  '\bprovide assistance\b': help
+  '\bis responsible for (?:the )?management of\b': manages
+  '\btake into consideration\b': consider
+  '\bgive consideration to\b': consider
+  '\bmake an application\b': apply

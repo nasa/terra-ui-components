@@ -1,0 +1,6 @@
+extends: occurrence
+message: "Sentence is over 30 words (%d words); consider breaking it into shorter sentences (Digital.gov)."
+level: suggestion
+scope: sentence
+max: 30
+token: \b\w+\b

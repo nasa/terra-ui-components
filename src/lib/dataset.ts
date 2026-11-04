@@ -28,7 +28,7 @@ function getIntervalMs(timeInterval: TimeInterval): number {
 export function calculateDataPoints(
     timeInterval: TimeInterval,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
 ) {
     const diffMs = endDate.getTime() - startDate.getTime()
 
@@ -65,14 +65,10 @@ export function calculateDataPoints(
 export function calculateDateChunks(
     timeInterval: TimeInterval,
     startDate: Date,
-    endDate: Date,
+    endDate: Date
 ): Array<{ start: Date; end: Date }> {
     // Get total data points for the full range
-    const totalDataPoints = calculateDataPoints(
-        timeInterval,
-        startDate,
-        endDate,
-    )
+    const totalDataPoints = calculateDataPoints(timeInterval, startDate, endDate)
 
     if (totalDataPoints <= MAX_DATAPOINTS_PER_REQUEST) {
         // Within the allowed number of data points, return the whole range

@@ -4,7 +4,9 @@ import TimeAvgMapCacheService, {
 } from './time-average-map-cache.service.js'
 import type { TimeAvgMapCacheEntry } from './time-average-map-cache.service.js'
 
-const makeEntry = (overrides: Partial<TimeAvgMapCacheEntry> = {}): TimeAvgMapCacheEntry => ({
+const makeEntry = (
+    overrides: Partial<TimeAvgMapCacheEntry> = {}
+): TimeAvgMapCacheEntry => ({
     key: 'map_AIRX3STD_Temperature_A_2024-01-01_2024-01-31_-180,-90,180,90_prod',
     cachedAt: Date.now(),
     environment: 'prod',
@@ -27,10 +29,10 @@ describe('TimeAvgMapCacheService', () => {
             '2024-01-01',
             '2024-01-31',
             '-180,-90,180,90',
-            'prod',
+            'prod'
         )
         expect(key).to.equal(
-            'map_AIRX3STD_Temperature_A_2024-01-01_2024-01-31_-180,-90,180,90_prod',
+            'map_AIRX3STD_Temperature_A_2024-01-01_2024-01-31_-180,-90,180,90_prod'
         )
     })
 
@@ -40,7 +42,7 @@ describe('TimeAvgMapCacheService', () => {
             'Temperature_A',
             '2024-01-01',
             '2024-01-31',
-            '-180,-90,180,90',
+            '-180,-90,180,90'
         )
         expect(key).to.include('_prod')
     })

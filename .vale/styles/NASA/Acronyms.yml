@@ -1,0 +1,28 @@
+extends: substitution
+message: "Spell out or use '%s' instead of NASA-internal acronym '%s' in public content (NASA Stylebook)."
+level: warning
+ignorecase: false
+action:
+  name: replace
+swap:
+  '\bASCAN\b': astronaut candidate
+  '\bC3PO\b': Commercial Crew and Cargo Program Office
+  '\bEUS\b': exploration upper stage
+  '\bEVA\b': spacewalk
+  '\bHST\b': Hubble Space Telescope
+  '\bICPS\b': interim cryogenic propulsion stage
+  '\bISRU\b': in-situ resource utilization
+  '\bISS\b': International Space Station
+  '\bJWST\b': James Webb Space Telescope
+  '\bLEO\b': low Earth orbit
+  '\bLH2\b': liquid hydrogen
+  '\bLOX\b': liquid oxygen
+  '\bM2MPO\b': Moon to Mars Program Office
+  '\bMAF\b': Michoud Assembly Facility
+  '\bRPA\b': remotely piloted aircraft
+  '\bSAA\b': Space Act Agreement
+  '\bSAF\b': sustainable aviation fuel
+  '\bSRB\b': solid rocket booster
+  '\bVAB\b': Vehicle Assembly Building
+  '\bWLTR\b': wet-lease testing laboratory
+  '\bZGI\b': zero gravity indicator

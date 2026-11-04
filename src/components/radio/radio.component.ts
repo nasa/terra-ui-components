@@ -218,8 +218,9 @@ export default class TerraRadio extends TerraElement implements TerraFormControl
                     part="${`control${this.checked ? ' control--checked' : ''}`}"
                     class="radio__control"
                 >
-                    ${this.checked
-                        ? html`
+                    ${
+                        this.checked
+                            ? html`
                               <svg
                                   part="checked-icon"
                                   class="radio__checked-icon"
@@ -230,7 +231,8 @@ export default class TerraRadio extends TerraElement implements TerraFormControl
                                   <circle cx="12" cy="12" r="6" fill="currentColor" />
                               </svg>
                           `
-                        : ''}
+                            : ''
+                    }
                 </span>
 
                 <slot part="label" class="radio__label"></slot>

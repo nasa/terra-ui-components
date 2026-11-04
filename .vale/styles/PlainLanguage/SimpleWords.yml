@@ -1,0 +1,23 @@
+extends: substitution
+message: "Prefer plain language: use '%s' instead of '%s' (Digital.gov)."
+level: warning
+ignorecase: true
+action:
+  name: replace
+swap:
+  '\baddressee\b': you
+  '\bassist(?:ance)?\b': help
+  '\bcommence\b': start
+  '\bpromulgate\b': publish
+  '\bin order to\b': to
+  '\bin order that\b': so
+  '\bin the amount of\b': for
+  '\bin the event of\b': if
+  '\bat this point in time\b': now
+  '\ba number of\b': several
+  '\ba sufficient number of\b': enough
+  '\bon a (daily|weekly|monthly|yearly) basis\b': '$1'
+  '\bon the ground that\b': because
+  '\bis able to\b': can
+  '\bbe responsible for\b': must
+  '\bno fewer than\b': at least

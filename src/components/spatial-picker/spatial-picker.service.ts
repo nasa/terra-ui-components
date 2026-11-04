@@ -22,7 +22,7 @@ export class SpatialPickerService {
      *   "west, south, east, north"   → LatLngBounds
      */
     static parse(input: string): LatLng | LatLngBounds {
-        const parts = input.split(',').map((p) => p.trim())
+        const parts = input.split(',').map(p => p.trim())
         const nums = parts.map(Number)
 
         if (nums.some(isNaN)) {
@@ -38,7 +38,7 @@ export class SpatialPickerService {
         }
 
         throw new Error(
-            'Input must contain exactly 2 values (point) or 4 values (bounding box).',
+            'Input must contain exactly 2 values (point) or 4 values (bounding box).'
         )
     }
 
@@ -83,7 +83,7 @@ export class SpatialPickerService {
      */
     static validateAllowedType(
         value: SpatialValue,
-        allowed: AllowedTypes,
+        allowed: AllowedTypes
     ): string | null {
         const isPoint = value instanceof LatLng
         const isBbox = value instanceof LatLngBounds
@@ -109,10 +109,10 @@ export class SpatialPickerService {
      */
     static validateConstraints(
         value: SpatialValue,
-        constraintsStr: string,
+        constraintsStr: string
     ): string | null {
         if (!constraintsStr) return null
-        const parts = constraintsStr.split(',').map((p) => parseFloat(p.trim()))
+        const parts = constraintsStr.split(',').map(p => parseFloat(p.trim()))
         if (parts.length !== 4 || parts.some(isNaN)) return null
 
         const [west, south, east, north] = parts
@@ -160,13 +160,8 @@ export class SpatialPickerService {
             return `${value.lat.toFixed(2)}, ${value.lng.toFixed(2)}`
         }
         // LatLngBounds: west, south, east, north
-        return [
-            value.getWest(),
-            value.getSouth(),
-            value.getEast(),
-            value.getNorth(),
-        ]
-            .map((n) => n.toFixed(2))
+        return [value.getWest(), value.getSouth(), value.getEast(), value.getNorth()]
+            .map(n => n.toFixed(2))
             .join(', ')
     }
 
@@ -176,7 +171,7 @@ export class SpatialPickerService {
     static validate(
         input: string,
         allowed: AllowedTypes,
-        constraintsStr?: string,
+        constraintsStr?: string
     ): ParseResult {
         let value: SpatialValue
 
@@ -190,16 +185,13 @@ export class SpatialPickerService {
         const rangeError = SpatialPickerService.validateRanges(value)
         if (rangeError) return { ok: false, error: rangeError }
 
-        const typeError = SpatialPickerService.validateAllowedType(
-            value,
-            allowed,
-        )
+        const typeError = SpatialPickerService.validateAllowedType(value, allowed)
         if (typeError) return { ok: false, error: typeError }
 
         if (constraintsStr) {
             const constraintError = SpatialPickerService.validateConstraints(
                 value,
-                constraintsStr,
+                constraintsStr
             )
             if (constraintError) return { ok: false, error: constraintError }
         }

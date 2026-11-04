@@ -1,6 +1,8 @@
+import { authService } from '../auth/auth.service.js'
+import { BadRequestException, HttpException } from '../exceptions/http.exception.js'
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
 import type { HarmonyRequest } from '../lib/harmony/harmony.request.js'
-import { BadRequestException } from '../exceptions/http.exception.js'
+import { invertObject } from '../utilities/object.js'
 
 const API_VERSION = '3'
 
@@ -27,6 +29,21 @@ export const CLOUD_GIOVANNI_URLS = {
     [Environments.UAT]: 'https://api.giovanni.uat.earthdata.nasa.gov',
 }
 
+/**
+ * Checks whether `url`'s origin is a real Harmony origin (PROD or UAT).
+ */
+export function isHarmonyUrl(url: string): boolean {
+    try {
+        const origin = new URL(url).origin
+        return (
+            origin === HARMONY_URLS[Environments.PROD] ||
+            origin === HARMONY_URLS[Environments.UAT]
+        )
+    } catch {
+        return false
+    }
+}
+
 export enum Status {
     FETCHING = 'fetching',
     PREVIEWING = 'previewing',
@@ -46,22 +63,41 @@ export const FINAL_STATUSES = new Set<Status>([
     Status.COMPLETE_WITH_ERRORS,
 ])
 
+// Jobs in these statuses are still working toward a result
+export const IN_FLIGHT_STATUSES = new Set<Status>([
+    Status.PREVIEWING,
+    Status.RUNNING,
+    Status.RUNNING_WITH_ERRORS,
+    Status.PAUSED,
+])
+
+// Mirrors Harmony's canonical MIME-type-to-name mapping and alias table:
+// https://github.com/nasa/harmony/blob/0f82b4f405373fe8c07eaa41a3840b0554356504/services/harmony/app/util/file-formats.ts
 export const OUTPUT_FORMATS = {
-    'application/x-netcdf4': 'X-NETCDF-4',
-    'application/netcdf4': 'NETCDF-4',
-    'application/x-netcdf4;profile=opendap_url': 'X-NETCDF-4 (OPeNDAP URL)',
-    'application/netcdf': 'NETCDF',
-    'application/x-hdf': 'X-HDF',
-    'image/tiff': 'GEOTIFF',
+    'application/netcdf': 'NETCDF-4',
+    'application/x-hdf': 'HDF',
+    'application/x-netcdf4;profile=opendap_url': 'NETCDF-4 (OPeNDAP URL)',
+    'application/x-zarr': 'ZARR',
     'image/gif': 'GIF',
-    'image/png': 'PNG',
     'image/jpeg': 'JPEG',
+    'image/png': 'PNG',
+    'image/tiff': 'GEOTIFF',
     'text/csv': 'CSV',
     'application/shapefile+zip': 'Shapefile+zip',
-    'application/x-zarr': 'ZARR',
 } as const
 
+export const MIME_TYPE_ALIASES: Record<string, keyof typeof OUTPUT_FORMATS> = {
+    'application/netcdf4': 'application/netcdf',
+    'application/x-netcdf': 'application/netcdf',
+    'application/x-netcdf4': 'application/netcdf',
+    'application/octet-stream': 'application/x-hdf',
+    'image/tif': 'image/tiff',
+    'image/jpg': 'image/jpeg',
+}
+
 export type OutputFormats = (typeof OUTPUT_FORMATS)[keyof typeof OUTPUT_FORMATS]
+
+export const OUTPUT_MIME_TYPES = invertObject(OUTPUT_FORMATS)
 
 export interface HarmonyCapabilitiesResponse {
     conceptId: string
@@ -191,10 +227,7 @@ class HarmonyApi {
      * Returns collection capabilities including available services, output formats, subsetting options, etc.
      * from the Harmony /capabilities endpoint
      */
-    async getCollectionCapabilities(
-        conceptId?: string,
-        options?: RequestOptions,
-    ) {
+    async getCollectionCapabilities(conceptId?: string, options?: RequestOptions) {
         if (!conceptId) {
             throw new BadRequestException({
                 message: '`collectionConceptId` is required',
@@ -203,14 +236,12 @@ class HarmonyApi {
 
         const capabilities = await this.#request<HarmonyCapabilitiesResponse>(
             `capabilities?collectionId=${conceptId}&version=${API_VERSION}`,
-            options,
+            options
         )
 
         // the variables returned from the Harmony capabilities endpoint don't include the concept ID
         // but we can extract it from the href property and add it to each variable for easier reference later
-        capabilities.variables = this.addConceptIdToVariables(
-            capabilities.variables,
-        )
+        capabilities.variables = this.addConceptIdToVariables(capabilities.variables)
 
         // add a custom property to the capabilities response that provides a better list of output formats to present to the user
         // including labels and descriptions
@@ -236,7 +267,7 @@ class HarmonyApi {
             // Filters jobs to those which include at least one of the labels specified. Multiple labels can be specified using a comma-separated list.
             label?: string
         },
-        options?: SearchOptions,
+        options?: SearchOptions
     ) {
         const queryParams = new URLSearchParams()
         if (params?.page) queryParams.append('page', params.page.toString())
@@ -258,36 +289,148 @@ class HarmonyApi {
      */
     async createJob(
         harmonyRequest: HarmonyRequest,
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<SubsetJobStatus> {
         if (harmonyRequest.hasShape) {
-            return this.#request<SubsetJobStatus>(
+            return this.#createJobRequest(
                 harmonyRequest.baseUrl,
                 options,
-                harmonyRequest.buildFormData(),
+                harmonyRequest.buildFormData()
             )
         }
-        return this.#request<SubsetJobStatus>(
-            harmonyRequest.requestUrl,
-            options,
+        return this.#createJobRequest(harmonyRequest.requestUrl, options)
+    }
+
+    /**
+     * Sends the actual job-creation request to Harmony. Normally Harmony responds with
+     * the new job's JSON body directly, but it will sometimes instead respond with a
+     * 3xx redirect pointing at the job it just created (observed once preview was
+     * re-enabled via `skipPreview` removal — see UXD-220). Since that behavior is
+     * specific to job creation, we fetch directly here (rather than going through
+     * `#request`/`apiClient`) so we can inspect the raw response for a redirect before
+     * deciding how to handle it: if it points at a job, fetch that job's status and
+     * return it as if it had been returned directly; otherwise fall back to the same
+     * response handling `apiClient` would normally provide.
+     */
+    async #createJobRequest(
+        url: string,
+        options?: SearchOptions,
+        body?: FormData
+    ): Promise<SubsetJobStatus> {
+        const { url: resolvedUrl, headers } = this.#resolveRequest(url, options)
+
+        const res = await fetch(resolvedUrl, {
+            method: body ? 'POST' : 'GET',
+            headers,
+            body,
+            signal: options?.signal,
+        })
+
+        if (res.status >= 300 && res.status < 400) {
+            const location = res.headers.get('Location')
+            const jobId = location?.match(/\/jobs\/([^/?#]+)\/?$/)?.[1]
+
+            if (jobId) {
+                return this.getJobStatus(jobId, options)
+            }
+        }
+
+        if (!res.ok) {
+            if (res.status === 401) {
+                authService.logout() // clear any existing auth state since our token is no longer valid
+            }
+
+            if (!res.headers.get('Content-Type')?.includes('json')) {
+                const text = await res.text()
+                throw new HttpException({
+                    status: res.status,
+                    message: text || `HTTP ${res.status}`,
+                })
+            }
+
+            const json = await res.json()
+            throw new HttpException({
+                status: res.status,
+                message:
+                    json.message ??
+                    json.description ??
+                    json.errors?.[0] ??
+                    `HTTP ${res.status}`,
+            })
+        }
+
+        return res.json() as Promise<SubsetJobStatus>
+    }
+
+    /**
+     * Fetches a specific page of job results from a full URL (such as a `rel: "next"` link).
+     */
+    async getJobPage(url: string, options?: SearchOptions): Promise<SubsetJobStatus> {
+        const status = await this.#request<SubsetJobStatus>(url, options)
+        status.links = (status.links || []).map(link =>
+            HarmonyApi.normalizeJobLink(link)
         )
+        return status
     }
 
     /**
      * Get the current status of an existing subset job.
      * Intended for polling until the job reaches a final state.
+     * Final state triggers a check for a "next" link to support paginated responses.
      */
     async getJobStatus(
         jobId: string,
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<SubsetJobStatus> {
-        const status = await this.#request<SubsetJobStatus>(
-            `jobs/${jobId}`,
-            options,
+        const status = await this.#request<SubsetJobStatus>(`jobs/${jobId}`, options)
+        status.links = (status.links || []).map(link =>
+            HarmonyApi.normalizeJobLink(link)
         )
-        status.links = status.links.map((link) =>
-            HarmonyApi.normalizeJobLink(link),
-        )
+
+        // Only fetch subsequent link pages once the job has completed processing.
+        // NOTE: Eagerly paginating terminal jobs ensures export actions (e.g. text file,
+        // python script) have all links in memory. For extremely large requests (>100k links),
+        // this can require many sequential roundtrips (at 2,000 links/page). If this causes
+        // performance bottlenecks in practice, consider deferring pagination to on-demand export/download.
+        if (
+            status.status === Status.SUCCESSFUL ||
+            status.status === Status.COMPLETE_WITH_ERRORS
+        ) {
+            try {
+                const visited = new Set<string>()
+                let nextLink = status.links.find(link => link.rel === 'next')
+
+                while (nextLink?.href && !visited.has(nextLink.href)) {
+                    visited.add(nextLink.href)
+
+                    const pageData = await this.getJobPage(nextLink.href, options)
+
+                    // Only append data links from subsequent pages to avoid duplicate metadata stubs
+                    const dataLinks = (pageData.links || []).filter(
+                        link => link.rel === 'data'
+                    )
+                    status.links.push(...dataLinks)
+
+                    // Find next link from the newly fetched page
+                    nextLink = (pageData.links || []).find(
+                        link => link.rel === 'next'
+                    )
+                }
+            } catch (error) {
+                if (options?.signal?.aborted) {
+                    throw error
+                }
+
+                console.warn(
+                    `Failed to fetch all paginated links for job ${jobId}; returning available links:`,
+                    error
+                )
+            } finally {
+                // Always remove remaning 'next' links so terminal-state jobs don't cache pagination links, which could be state.
+                status.links = status.links.filter(link => link.rel !== 'next')
+            }
+        }
+
         return status
     }
 
@@ -321,7 +464,7 @@ class HarmonyApi {
      */
     async removeJobLabels(
         params: { jobIDs: string[]; labels: string[] },
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<void> {
         const url = `${HARMONY_URLS[Environments.PROD]}/labels`
         return apiClient.delete<void>(url, {
@@ -342,9 +485,21 @@ class HarmonyApi {
      */
     async cancelJob(
         jobId: string,
-        options?: SearchOptions,
+        options?: SearchOptions
     ): Promise<SubsetJobStatus> {
         return this.#request<SubsetJobStatus>(`jobs/${jobId}/cancel`, options)
+    }
+
+    /**
+     * Given a jobId for a job that's paused for preview, send a resume request to the
+     * Harmony API so it continues processing the remainder of the job.
+     * Returns the updated job status after resuming.
+     */
+    async resumeJob(
+        jobId: string,
+        options?: SearchOptions
+    ): Promise<SubsetJobStatus> {
+        return this.#request<SubsetJobStatus>(`jobs/${jobId}/resume`, options)
     }
 
     /**
@@ -359,7 +514,12 @@ class HarmonyApi {
         return this.#request(relativeUrl, options)
     }
 
-    #request<T>(url: string, options?: SearchOptions, body?: FormData) {
+    /**
+     * Resolves the final request URL (substituting in the anonymous proxy when no
+     * bearer token is present) and the auth headers for a Harmony request. Shared by
+     * `#request` and `#createJobRequest` so both route through the proxy consistently.
+     */
+    #resolveRequest(url: string, options?: SearchOptions) {
         let environmentUrl = HARMONY_URLS[Environments.PROD] // TODO: support for UAT
 
         if (!options?.bearerToken) {
@@ -376,11 +536,11 @@ class HarmonyApi {
             url = url
                 .replace(
                     HARMONY_URLS[Environments.PROD],
-                    HARMONY_URLS.ANONYMOUS_ACCESS,
+                    HARMONY_URLS.ANONYMOUS_ACCESS
                 )
                 .replace(
                     HARMONY_URLS[Environments.UAT],
-                    HARMONY_URLS.ANONYMOUS_ACCESS,
+                    HARMONY_URLS.ANONYMOUS_ACCESS
                 )
         }
 
@@ -390,14 +550,20 @@ class HarmonyApi {
             }),
         }
 
+        return { url, headers }
+    }
+
+    #request<T>(url: string, options?: SearchOptions, body?: FormData) {
+        const { url: resolvedUrl, headers } = this.#resolveRequest(url, options)
+
         if (body) {
-            return apiClient.post<T>(url, body, {
+            return apiClient.post<T>(resolvedUrl, body, {
                 signal: options?.signal,
                 headers,
             })
         }
 
-        return apiClient.get<T>(url, {
+        return apiClient.get<T>(resolvedUrl, {
             signal: options?.signal,
             headers,
         })
@@ -407,7 +573,7 @@ class HarmonyApi {
      * Extracts the variable concept ID from the variable's href and adds it as a property on the variable object.
      */
     addConceptIdToVariables(variables: Variable[]) {
-        return variables.map((v) => {
+        return variables.map(v => {
             const match = v.href.match(/\/concepts\/(V\d+-\w+)$/)
             if (match) {
                 v.conceptId = match[1]
@@ -423,8 +589,7 @@ class HarmonyApi {
      * If Giovanni is not present, return only non-Giovanni formats.
      */
     getOutputFormatOptions(capabilities: HarmonyCapabilitiesResponse) {
-        const hasNonGiovanniServices =
-            this.#hasNonGiovanniServices(capabilities)
+        const hasNonGiovanniServices = this.#hasNonGiovanniServices(capabilities)
         const hasGiovanniServices = this.#hasGiovanniServices(capabilities)
         const giovanniFormats = hasGiovanniServices
             ? this.#getGiovanniFormats(capabilities)
@@ -441,27 +606,35 @@ class HarmonyApi {
         const nonGiovanniFormats = this.#getNonGiovanniFormats(capabilities)
 
         // Process non-Giovanni output formats
-        nonGiovanniFormats.forEach((format) => {
+        nonGiovanniFormats.forEach(format => {
             let label = format
             let description = `Download data in ${format} format`
 
+            // MIME types are de-duplicated before this point, so this list is canonical
             switch (format) {
                 case 'application/x-hdf':
-                case 'application/octet-stream':
                     label = 'HDF-EOS5'
                     description = 'Download data in HDF-EOS5 format'
                     break
 
-                case 'application/x-netcdf4':
                 case 'application/netcdf':
                     label = 'NetCDF'
                     description = 'Download data in NetCDF format'
                     break
 
+                case 'application/shapefile+zip':
+                    label = 'Shapefile+zip'
+                    description = 'Download data in Shapefile+zip format'
+                    break
+
                 case 'application/x-netcdf4;profile=opendap_url':
                     label = 'OPeNDAP URL (x-netcdf4)'
-                    description =
-                        'Download data in OPeNDAP URL (x-netcdf4) format'
+                    description = 'Download data in OPeNDAP URL (x-netcdf4) format'
+                    break
+
+                case 'application/x-zarr':
+                    label = 'ZARR'
+                    description = 'Download data in ZARR format'
                     break
 
                 case 'text/csv':
@@ -470,7 +643,6 @@ class HarmonyApi {
                     break
 
                 case 'image/tiff':
-                case 'image/tif':
                     label = 'TIFF'
                     description = 'Download data in TIFF format'
                     break
@@ -480,20 +652,9 @@ class HarmonyApi {
                     description = 'Download data in PNG format'
                     break
 
-                case 'image/jpg':
                 case 'image/jpeg':
                     label = 'JPEG'
                     description = 'Download data in JPEG format'
-                    break
-
-                case 'application/shapefile+zip':
-                    label = 'Shapefile+zip'
-                    description = 'Download data in Shapefile+zip format'
-                    break
-
-                case 'application/x-zarr':
-                    label = 'ZARR'
-                    description = 'Download data in ZARR format'
                     break
 
                 default:
@@ -519,67 +680,53 @@ class HarmonyApi {
 
     #hasGiovanniServices(capabilities: HarmonyCapabilitiesResponse): boolean {
         return (
-            capabilities?.services?.some((service) =>
-                service.name.toLowerCase().includes('giovanni'),
+            capabilities?.services?.some(service =>
+                service.name.toLowerCase().includes('giovanni')
             ) ?? false
         )
     }
 
-    #hasNonGiovanniServices(
-        capabilities: HarmonyCapabilitiesResponse,
-    ): boolean {
+    #hasNonGiovanniServices(capabilities: HarmonyCapabilitiesResponse): boolean {
         return (
             capabilities?.services?.some(
-                (service) => !service.name.toLowerCase().includes('giovanni'),
+                service => !service.name.toLowerCase().includes('giovanni')
             ) ?? false
         )
     }
 
-    #getNonGiovanniFormats(
-        capabilities: HarmonyCapabilitiesResponse,
-    ): string[] {
+    #getNonGiovanniFormats(capabilities: HarmonyCapabilitiesResponse): string[] {
         if (!capabilities?.services) {
             return []
         }
 
         const nonGiovanniServices = capabilities.services.filter(
-            (service) => !service.name.toLowerCase().includes('giovanni'),
+            service => !service.name.toLowerCase().includes('giovanni')
         )
 
-        // Collect all unique output formats from non-Giovanni services
+        // Collect all unique output formats from non-Giovanni services,
+        // normalizing aliased MIME types to their canonical key
         const formats = new Set<string>()
-        nonGiovanniServices.forEach((service) => {
+
+        nonGiovanniServices.forEach(service => {
             service.capabilities.outputFormats?.forEach((format: any) => {
-                if (typeof format !== 'string' && 'mimeType' in format) {
-                    formats.add(format.mimeType)
-                } else {
-                    formats.add(format)
-                }
+                const rawMimeType =
+                    typeof format !== 'string' && 'mimeType' in format
+                        ? format.mimeType
+                        : format
+
+                formats.add(MIME_TYPE_ALIASES[rawMimeType] ?? rawMimeType)
             })
         })
 
-        const formatArray = Array.from(formats)
-
-        // If both application/netcdf and application/x-netcdf4 are present,
-        // only use application/x-netcdf4
-        if (
-            formatArray.includes('application/netcdf') &&
-            formatArray.includes('application/x-netcdf4')
-        ) {
-            return formatArray.filter(
-                (format) => format !== 'application/netcdf',
-            )
-        }
-
-        return formatArray
+        return Array.from(formats)
     }
 
     #getGiovanniFormats(
-        capabilities: HarmonyCapabilitiesResponse,
+        capabilities: HarmonyCapabilitiesResponse
     ): ConfiguredOutputFormat[] {
         const giovanniFormats: ConfiguredOutputFormat[] = []
 
-        capabilities.services.forEach((service) => {
+        capabilities.services.forEach(service => {
             const serviceName = service.name.toLowerCase()
 
             if (serviceName.includes('giovanni-time-series')) {
@@ -604,16 +751,15 @@ class HarmonyApi {
                         label: 'CSV (area-averaged time series; one file)',
                         description: 'Area averaged data over time',
                         isGiovanniFormat: true,
-                    },
+                    }
                 )
             }
         })
 
         return giovanniFormats.filter(
             (format, index, formats) =>
-                formats.findIndex(
-                    (existing) => existing.label === format.label,
-                ) === index,
+                formats.findIndex(existing => existing.label === format.label) ===
+                index
         )
     }
 }

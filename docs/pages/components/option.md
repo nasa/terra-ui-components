@@ -63,16 +63,16 @@ Options are used within `terra-select` components to define the available choice
 
 ## Best Practices
 
--   **Unique values**: Each option must have a unique `value` attribute. Values cannot contain spaces.
--   **Clear labels**: Use clear, descriptive text for option labels that help users understand their choices.
--   **Disabled options**: Use the `disabled` attribute to prevent selection of options that are currently unavailable, rather than hiding them.
--   **Selected state**: Use the `selected` attribute to set the default selected option, or let the `terra-select` component manage selection via its `value` property.
+- **Unique values**: Each option must have a unique `value` attribute. Values cannot contain spaces.
+- **Clear labels**: Use clear, descriptive text for option labels that help users understand their choices.
+- **Disabled options**: Use the `disabled` attribute to prevent selection of options that are currently unavailable, rather than hiding them.
+- **Selected state**: Use the `selected` attribute to set the default selected option, or let the `terra-select` component manage selection via its `value` property.
 
 ## Accessibility
 
--   Options automatically receive proper ARIA attributes (`role="option"`, `aria-selected`, `aria-disabled`).
--   Keyboard navigation is fully supported (arrow keys to navigate, Enter/Space to select).
--   Screen readers are properly notified of option states and selections.
--   Disabled options are clearly indicated to assistive technologies.
+- Options automatically receive proper ARIA attributes (`role="option"`, `aria-selected`, `aria-disabled`).
+- Keyboard navigation is fully supported (arrow keys to navigate, Enter/Space to select).
+- Screen readers are properly notified of option states and selections.
+- Disabled options are clearly indicated to assistive technologies.
 
 [component-metadata:terra-option]

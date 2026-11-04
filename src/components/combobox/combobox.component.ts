@@ -414,8 +414,9 @@ export default class TerraCombobox extends TerraElement {
                     type="button"
                     @click=${this.#handleButtonClick}
                 >
-                    ${['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
-                        ? html`<svg
+                    ${
+                        ['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
+                            ? html`<svg
                               aria-hidden="true"
                               class="button-icon chevron"
                               focusable="false"
@@ -427,7 +428,7 @@ export default class TerraCombobox extends TerraElement {
                                   d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
                               ></path>
                           </svg> `
-                        : html`<svg
+                            : html`<svg
                               class="button-icon spinner"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -440,12 +441,14 @@ export default class TerraCombobox extends TerraElement {
                                   fill="none"
                                   stroke-width="3"
                               ></circle>
-                          </svg>`}
+                          </svg>`
+                    }
                 </terra-button>
 
-                ${this.hideHelp
-                    ? nothing
-                    : html`<p class="search-help">
+                ${
+                    this.hideHelp
+                        ? nothing
+                        : html`<p class="search-help">
                           See
                           <a
                               href="https://www.fusejs.io/examples.html#extended-search"
@@ -464,7 +467,8 @@ export default class TerraCombobox extends TerraElement {
                                       d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
                                   /></svg></a
                           >.
-                      </p>`}
+                      </p>`
+                }
             </div>
 
             <ul
@@ -488,9 +492,9 @@ export default class TerraCombobox extends TerraElement {
                 ?inert=${!this.isExpanded}
                 ?open=${this.isExpanded}
                 @click=${this.#handleOptionClick}
-                aria-label=${this.query
-                    ? `${this.name} Matching ${this.query}`
-                    : this.name}
+                aria-label=${
+                    this.query ? `${this.name} Matching ${this.query}` : this.name
+                }
                 id="listbox"
                 part="listbox"
                 role="listbox"

@@ -1,0 +1,12 @@
+extends: existence
+message: "Consider omitting excess modifier '%s' (Digital.gov Plain Language)."
+level: suggestion
+ignorecase: true
+tokens:
+  - absolutely
+  - actually
+  - completely
+  - really
+  - quite
+  - totally
+  - very

@@ -1,12 +1,12 @@
-import TerraHarmonyHistory from './harmony-history.component.js';
+import TerraHarmonyHistory from './harmony-history.component.js'
 
-export * from './harmony-history.component.js';
-export default TerraHarmonyHistory;
+export * from './harmony-history.component.js'
+export default TerraHarmonyHistory
 
-TerraHarmonyHistory.define('terra-harmony-history');
+TerraHarmonyHistory.define('terra-harmony-history')
 
 declare global {
     interface HTMLElementTagNameMap {
-      'terra-harmony-history': TerraHarmonyHistory;
+        'terra-harmony-history': TerraHarmonyHistory
     }
 }

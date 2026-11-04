@@ -16,8 +16,8 @@ This is a community-maintained document. Please [ask the community](/resources/c
 
 This integration has been tested with the following:
 
--   Laravel 9.1
--   Vite 3.0
+- Laravel 9.1
+- Vite 3.0
 
 ## Instructions
 

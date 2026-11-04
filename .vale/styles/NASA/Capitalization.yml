@@ -1,0 +1,16 @@
+extends: substitution
+message: "Use NASA Stylebook capitalization: '%s' instead of '%s'."
+level: warning
+ignorecase: false
+action:
+  name: replace
+swap:
+  '\b(?:cubesat|Cubesat)\b': CubeSat
+  '\b(?:cubesats|Cubesats)\b': CubeSats
+  '\b(?:smallsat|Smallsat)\b': SmallSat
+  '\b(?:smallsats|Smallsats)\b': SmallSats
+  '\bthe Agency\b': the agency
+  '\bthe Center\b': the center
+  '\bthe Universe\b': the universe
+  '\bred planet\b': Red Planet
+  '\bArtemis Campaign\b': Artemis campaign

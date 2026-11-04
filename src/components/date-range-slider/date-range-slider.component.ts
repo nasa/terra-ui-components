@@ -103,10 +103,10 @@ export default class TerraDateRangeSlider extends TerraElement {
         const minDate = new Date(this.minDate)
         const maxDate = new Date(this.maxDate)
         const startDate = new Date(
-            isValidDate(this.startDate) ? this.startDate : this.minDate,
+            isValidDate(this.startDate) ? this.startDate : this.minDate
         )
         const endDate = new Date(
-            isValidDate(this.endDate) ? this.endDate : this.maxDate,
+            isValidDate(this.endDate) ? this.endDate : this.maxDate
         )
 
         // adjust dates to be beginning and end of the day
