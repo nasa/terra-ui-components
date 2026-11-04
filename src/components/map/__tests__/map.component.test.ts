@@ -57,6 +57,10 @@ function makeCapabilitiesXml(projection: string, matrixSet: string) {
 </Capabilities>`
 }
 
+afterEach(() => {
+    sinon.restore()
+})
+
 describe('<terra-map> layers (gibs)', () => {
     let originalFetch: typeof fetch
 
@@ -66,6 +70,7 @@ describe('<terra-map> layers (gibs)', () => {
     })
 
     afterEach(() => {
+        sinon.restore()
         window.fetch = originalFetch
     })
 
@@ -351,7 +356,9 @@ describe('<terra-map> layers (gibs)', () => {
                     },
                 ]
 
-                await waitUntil(() => el.getLayer('polar'))
+                await waitUntil(() => el.getLayer('polar'), 'polar layer was added', {
+                    timeout: 4000,
+                })
 
                 expect(
                     warnSpy.calledWith(
@@ -380,7 +387,9 @@ describe('<terra-map> layers (gibs)', () => {
                     },
                 ]
 
-                await waitUntil(() => el.getLayer('polar'))
+                await waitUntil(() => el.getLayer('polar'), 'polar layer was added', {
+                    timeout: 4000,
+                })
 
                 expect(warnSpy.called).to.be.false
             } finally {
@@ -838,11 +847,15 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`),
+            'first collection layer was added',
+            { timeout: 4000 }
         )
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
+            'second collection layer was added',
+            { timeout: 4000 }
         )
 
         expect(el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Day`)).to
@@ -863,8 +876,10 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`)
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:AIRS_L2_Surface_Air_Temperature_Night`),
+            'collection layer was added',
+            { timeout: 4000 }
         )
 
         expect(
@@ -895,7 +910,11 @@ describe('<terra-map> collection-id', () => {
             ></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${ENTRY_ID}:TestLayer`))
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:TestLayer`),
+            'collection layer was added',
+            { timeout: 4000 }
+        )
 
         expect(el.getLayer(`${ENTRY_ID}:TestLayer`)).to.exist
         expect(el.getLayer(`${ENTRY_ID}:Geographic_Only`)).to.not.exist
@@ -908,10 +927,18 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() => el.getLayer(`${ENTRY_ID}:Test_Layer`))
+        await waitUntil(
+            () => el.getLayer(`${ENTRY_ID}:Test_Layer`),
+            'collection layer was added',
+            { timeout: 4000 }
+        )
 
         el.collectionId = undefined
-        await waitUntil(() => !el.getLayer(`${ENTRY_ID}:Test_Layer`))
+        await waitUntil(
+            () => !el.getLayer(`${ENTRY_ID}:Test_Layer`),
+            'collection layer was removed',
+            { timeout: 4000 }
+        )
 
         expect(el.getLayer(`${ENTRY_ID}:Test_Layer`)).to.not.exist
     })
@@ -923,10 +950,13 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${ENTRY_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            apiGetStub
-                .getCalls()
-                .some(call => call.args[0].includes('collections.json'))
+        await waitUntil(
+            () =>
+                apiGetStub
+                    .getCalls()
+                    .some(call => call.args[0].includes('collections.json')),
+            'collections.json was fetched',
+            { timeout: 4000 }
         )
         const call = apiGetStub
             .getCalls()
@@ -942,10 +972,13 @@ describe('<terra-map> collection-id', () => {
             html`<terra-map collection-id=${CONCEPT_ID}></terra-map>`
         )
 
-        await waitUntil(() =>
-            apiGetStub
-                .getCalls()
-                .some(call => call.args[0].includes('collections.json'))
+        await waitUntil(
+            () =>
+                apiGetStub
+                    .getCalls()
+                    .some(call => call.args[0].includes('collections.json')),
+            'collections.json was fetched',
+            { timeout: 4000 }
         )
         const call = apiGetStub
             .getCalls()
