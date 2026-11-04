@@ -31,7 +31,6 @@ export default css`
         .popup {
             max-width: calc(100vw - 1rem);
             max-height: calc(100vh - 1rem);
-            overflow: auto;
             box-sizing: border-box;
         }
     }
