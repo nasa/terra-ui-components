@@ -115,6 +115,7 @@ export class MapService {
     #drawToolbarControl: DrawToolbarControl
     #layerPickerControl: LayerPickerControl
     #mouseInfoElement?: HTMLElement
+    #mouseInfoContent?: HTMLElement
     #mouseInfoControl?: Control
     #options: MapOptions
     #shapeLayer: VectorLayer
@@ -797,11 +798,7 @@ export class MapService {
                 event.coordinate,
                 map.getView().getProjection()
             )
-            if (this.#options.showMouseCoordinates && this.#mouseInfoElement) {
-                const lng = coordinate[0] ?? 0
-                const lat = coordinate[1] ?? 0
-                this.#mouseInfoElement.innerHTML = `<div><strong>lat: ${lat.toFixed(2)}, lng: ${lng.toFixed(2)}</strong></div>`
-            }
+            this.#updateMouseCoordinates(coordinate)
             options.onMouseMove?.(
                 coordinate as [number, number],
                 event.pixel as [number, number]
@@ -870,13 +867,9 @@ export class MapService {
         })
         map.addControl(this.#layerPickerControl)
 
-        const mouseInfoEl = document.createElement('div')
-        mouseInfoEl.id = 'mouse-info'
-        mouseInfoEl.className = 'ol-unselectable'
-        mouseInfoEl.style.display = options.showMouseCoordinates ? '' : 'none'
-        mouseInfoEl.innerHTML = '<div><strong>lat: 0.00, lng: 0.00</strong></div>'
-        this.#mouseInfoElement = mouseInfoEl
-        this.#mouseInfoControl = new Control({ element: mouseInfoEl })
+        this.#mouseInfoControl = this.#createMouseInfoControl(
+            Boolean(options.showMouseCoordinates)
+        )
         map.addControl(this.#mouseInfoControl)
 
         if (options.value !== undefined) {
@@ -1020,6 +1013,42 @@ export class MapService {
         layer.set('__builtin', true)
 
         return layer
+    }
+
+    /**
+     * Constructs the mouse info OpenLayers control and caches references to the
+     * container and inner text node. Caching the text node avoids re-parsing HTML
+     * strings via innerHTML at 60Hz during pointer movement.
+     */
+    #createMouseInfoControl(visible: boolean): Control {
+        const mouseInfoEl = document.createElement('div')
+        mouseInfoEl.id = 'mouse-info'
+        mouseInfoEl.className = 'ol-unselectable'
+        mouseInfoEl.style.display = visible ? '' : 'none'
+
+        const inner = document.createElement('div')
+        const strong = document.createElement('strong')
+        strong.textContent = 'lat: 0.00, lng: 0.00'
+        inner.appendChild(strong)
+        mouseInfoEl.appendChild(inner)
+
+        this.#mouseInfoElement = mouseInfoEl
+        this.#mouseInfoContent = strong
+
+        return new Control({ element: mouseInfoEl })
+    }
+
+    /**
+     * Updates the mouse coordinates text node with the current longitude and latitude.
+     */
+    #updateMouseCoordinates(coordinate: Coordinate): void {
+        if (!this.#options.showMouseCoordinates || !this.#mouseInfoContent) {
+            return
+        }
+
+        const lng = coordinate[0] ?? 0
+        const lat = coordinate[1] ?? 0
+        this.#mouseInfoContent.textContent = `lat: ${lat.toFixed(2)}, lng: ${lng.toFixed(2)}`
     }
 
     #updateMapSizeOnResize() {
