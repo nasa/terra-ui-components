@@ -215,7 +215,7 @@ export default class TerraTimeAverageMap extends AuthMixin(
             return TerraTimeAverageMap.#emptyLayers
         }
 
-        const key = `${this.blobUrl}|${this.noDataValue}|${this.colorMapName}|${this.opacity}`
+        const key = `${this.blobUrl}|${this.colorMapName}|${this.opacity}`
         if (key !== this.#lastLayerKey) {
             this.#lastLayerKey = key
             this.#cachedLayers = [
@@ -223,7 +223,6 @@ export default class TerraTimeAverageMap extends AuthMixin(
                     type: 'geotiff',
                     name: 'geotiff',
                     url: this.blobUrl,
-                    noDataValue: this.noDataValue,
                     colorMapName: this.colorMapName,
                     opacity: this.opacity,
                     fitView: true,

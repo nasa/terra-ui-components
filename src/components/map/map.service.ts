@@ -115,6 +115,7 @@ export class MapService {
     #onDraw: MapOptions['onDraw']
     #onShapeLoading: MapOptions['onShapeLoading']
     #initialView: { center: Coordinate; zoom: number; rotation: number }
+    #pendingFitToExtent?: () => void
 
     constructor(el: HTMLElement, options: MapOptions) {
         this.#el = el
@@ -123,6 +124,14 @@ export class MapService {
         this.#map = this.#createMap(options)
 
         this.#updateMapSizeOnResize()
+
+        this.#map.on('change:size', () => {
+            if (this.#pendingFitToExtent) {
+                const fit = this.#pendingFitToExtent
+                this.#pendingFitToExtent = undefined
+                fit()
+            }
+        })
 
         options.onReady?.(this)
     }
@@ -406,6 +415,19 @@ export class MapService {
      * `options.projection` to the map's view projection if provided.
      */
     fitToExtent(extent: Extent, options: FitToExtentOptions = {}) {
+        this.#map.updateSize()
+        const size = this.#map.getSize()
+        const padding = options.padding ?? [0, 0, 0, 0]
+        const minWidth = padding[1] + padding[3]
+        const minHeight = padding[0] + padding[2]
+
+        if (!size || size[0] <= minWidth || size[1] <= minHeight) {
+            this.#pendingFitToExtent = () => this.fitToExtent(extent, options)
+            return
+        }
+
+        this.#pendingFitToExtent = undefined
+
         const { projection, ...fitOptions } = options
 
         const targetExtent = projection
