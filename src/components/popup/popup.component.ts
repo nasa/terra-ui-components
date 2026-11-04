@@ -248,6 +248,35 @@ export default class TerraPopup extends TerraElement {
         this.stop()
     }
 
+    private anchorScrollHandler?: () => void
+
+    private observeAnchor() {
+        if (!this.isMobile || !this.anchorEl) return
+
+        const anchor =
+            this.anchorEl instanceof Element
+                ? this.anchorEl
+                : this.anchorEl.contextElement
+
+        if (!anchor) return
+
+        this.anchorScrollHandler = () => {
+            const rect = anchor.getBoundingClientRect()
+
+            const outsideViewport =
+                rect.bottom <= 0 ||
+                rect.top >= window.innerHeight ||
+                rect.right <= 0 ||
+                rect.left >= window.innerWidth
+
+            if (outsideViewport) {
+                this.active = false
+            }
+        }
+
+        window.addEventListener('scroll', this.anchorScrollHandler, true)
+    }
+
     async updated(changedProps: Map<string, unknown>) {
         super.updated(changedProps)
 
@@ -307,12 +336,19 @@ export default class TerraPopup extends TerraElement {
             return
         }
 
+        this.observeAnchor()
+
         this.cleanup = autoUpdate(this.anchorEl, this.popup, () => {
             this.reposition()
         })
     }
 
     private async stop(): Promise<void> {
+        if (this.anchorScrollHandler) {
+            window.removeEventListener('scroll', this.anchorScrollHandler, true)
+            this.anchorScrollHandler = undefined
+        }
+
         return new Promise(resolve => {
             if (this.cleanup) {
                 this.cleanup()
