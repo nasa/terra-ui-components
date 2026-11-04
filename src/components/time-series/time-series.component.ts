@@ -258,8 +258,6 @@ export default class TerraTimeSeries extends AuthMixin(
         if (this.showJupyter === undefined) {
             this.showJupyter = !isNotebookEnv()
         }
-        //* instantiate the time series contoller maybe with a token
-        this.#timeSeriesController = new TimeSeriesController(this)
 
         this.addEventListener(
             'terra-time-series-chunk-progress-change',
