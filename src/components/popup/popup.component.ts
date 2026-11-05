@@ -271,6 +271,12 @@ export default class TerraPopup extends TerraElement {
 
             if (outsideViewport) {
                 this.active = false
+                this.dispatchEvent(
+                    new CustomEvent('terra-popup-dismiss', {
+                        bubbles: true,
+                        composed: true,
+                    }),
+                )
             }
         }
 
