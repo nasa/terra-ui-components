@@ -79,6 +79,34 @@ const App = () => (
 );
 ```
 
+### Sizes
+
+Use the `size` attribute to set the badge's size: `small`, `medium` (default), or `large`.
+
+```html:preview
+<terra-badge size="small" variant="neutral" pill>Small</terra-badge>
+<terra-badge size="medium" variant="neutral" pill>Medium</terra-badge>
+<terra-badge size="large" variant="neutral" pill>Large</terra-badge>
+```
+
+```jsx:react
+import TerraBadge from '@nasa-terra/components/dist/react/badge';
+
+const App = () => (
+  <>
+    <TerraBadge size="small" variant="neutral" pill>
+      Small
+    </TerraBadge>
+    <TerraBadge size="medium" variant="neutral" pill>
+      Medium
+    </TerraBadge>
+    <TerraBadge size="large" variant="neutral" pill>
+      Large
+    </TerraBadge>
+  </>
+);
+```
+
 ### Pulsating Badges
 
 Use the `pulse` attribute to draw attention to the badge with a subtle animation.

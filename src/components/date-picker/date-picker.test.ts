@@ -2216,4 +2216,85 @@ describe('<terra-date-picker>', () => {
             expect(detail.startDate).to.match(/T15:30:00\.000Z$/)
         })
     })
+
+    describe('timezone signifier badge', () => {
+        it('does not display badge when enable-time is false', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker start-date="2024-03-20"></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const badge = el.shadowRoot?.querySelector('.date-picker__timezone-badge')
+            expect(badge).to.be.null
+        })
+
+        it('displays UTC badge by default when enable-time is true', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    start-date="2024-03-20T10:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const badge = el.shadowRoot?.querySelector('.date-picker__timezone-badge')
+            expect(badge).to.exist
+            expect(badge?.tagName.toLowerCase()).to.equal('terra-badge')
+            expect(badge?.getAttribute('size')).to.equal('small')
+            expect(badge?.getAttribute('variant')).to.equal('neutral')
+            expect(badge?.hasAttribute('pill')).to.be.true
+            expect(badge?.getAttribute('role')).to.equal('presentation')
+            expect(badge?.textContent?.trim()).to.equal('UTC')
+            expect(badge?.getAttribute('title')).to.equal(
+                'Coordinated Universal Time (UTC)'
+            )
+        })
+
+        it('displays configured timezone abbreviation when timezone is set', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-07-20T10:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const badge = el.shadowRoot?.querySelector('.date-picker__timezone-badge')
+            expect(badge).to.exist
+            expect(badge?.textContent?.trim()).to.equal('EDT')
+            expect(badge?.getAttribute('title')).to.contain('America/New_York')
+        })
+
+        it('does not display badge when hide-timezone is set', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    hide-timezone
+                    timezone="America/New_York"
+                    start-date="2024-03-20T10:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const badge = el.shadowRoot?.querySelector('.date-picker__timezone-badge')
+            expect(badge).to.be.null
+        })
+
+        it('displays timezone badges on both inputs when split-inputs is true', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    range
+                    split-inputs
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-07-20T10:00:00Z"
+                    end-date="2024-07-25T15:00:00Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+            const badges = el.shadowRoot?.querySelectorAll(
+                '.date-picker__timezone-badge'
+            )
+            expect(badges?.length).to.equal(2)
+            expect(badges?.[0].textContent?.trim()).to.equal('EDT')
+            expect(badges?.[1].textContent?.trim()).to.equal('EDT')
+        })
+    })
 })
