@@ -1649,3 +1649,131 @@ describe('<terra-data-subsetter> web links pagination and scroll behavior', () =
         expect(jobALink).to.not.exist
     })
 })
+
+describe('<terra-data-subsetter> collection search without a pre-selected collection', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const baseCaps = {
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: false,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        capabilitiesVersion: '1',
+        configuredOutputFormats: [],
+        services: [],
+        variables: [],
+    }
+
+    const baseCollectionUmm = {
+        ShortName: 'S1',
+        Version: '1',
+        EntryTitle: 'Test',
+        SpatialExtent: {
+            GranuleSpatialRepresentation: 'N/A',
+            HorizontalSpatialDomain: {
+                Geometry: {
+                    CoordinateSystem: 'EPSG:4326',
+                    BoundingRectangles: {
+                        WestBoundingCoordinate: 0,
+                        NorthBoundingCoordinate: 0,
+                        EastBoundingCoordinate: 0,
+                        SouthBoundingCoordinate: 0,
+                    },
+                },
+            },
+        },
+        TemporalExtents: [],
+    }
+
+    it('shows the "Select Data Collection" search UI when no collection-entry-id, short-name, or version is provided', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        expect(el.shadowRoot?.textContent).to.include('Select Data Collection')
+
+        const searchInput = el.shadowRoot?.querySelector(
+            '#search-input'
+        ) as HTMLInputElement | null
+        expect(searchInput).to.exist
+    })
+
+    it('renders the collection search field as a terra-input with example help text', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input')
+
+        expect(searchInput?.tagName.toLowerCase()).to.equal('terra-input')
+        expect(searchInput?.getAttribute('help-text')).to.include('AQUA')
+        expect(searchInput?.getAttribute('help-text')).to.include('rainfall')
+        expect(searchInput?.getAttribute('help-text')).to.include('GPM_3IMERG')
+        expect(searchInput?.getAttribute('help-text')).to.include('hurricanes')
+    })
+
+    it('triggers a collection search when the user types into the collection search terra-input', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input') as any
+        await searchInput.updateComplete
+
+        const innerInput = searchInput.shadowRoot?.querySelector('.input__control')
+        innerInput.value = 'rainfall'
+        innerInput.dispatchEvent(
+            new Event('input', { bubbles: true, composed: true })
+        )
+
+        await waitUntil(
+            () => el.collectionSearchQuery === 'rainfall',
+            'expected collectionSearchQuery to be updated after the debounced search handler runs',
+            { timeout: 2000 }
+        )
+    })
+
+    it('hides the collection search once a collection has been resolved', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'S1_1',
+            caps: { conceptId: 'C1-TEST', ...baseCaps },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter
+                collection-entry-id="S1_1"
+            ></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated by CollectionController',
+            { timeout: 3000 }
+        )
+        await elementUpdated(el)
+
+        expect(el.shadowRoot?.querySelector('#search-input')).to.not.exist
+    })
+})

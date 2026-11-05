@@ -217,9 +217,6 @@ export default class TerraDataSubsetter extends AuthMixin(
     refineParameters: boolean = false
 
     @state()
-    collectionSearchType: 'collection' | 'variable' | 'all' = 'all'
-
-    @state()
     collectionSearchQuery?: string
 
     @state()
@@ -458,6 +455,21 @@ export default class TerraDataSubsetter extends AuthMixin(
         this.dialogElement?.show()
     }
 
+    /**
+     * True once a collection has been identified (directly, via shortName/version,
+     * or because it's already loaded). "Original" data-access mode only makes sense
+     * once a collection is known — otherwise we fall through to the collection
+     * search UI in #renderSubsetOptions().
+     */
+    #hasSelectedCollection() {
+        return !!(
+            this.collectionEntryId ||
+            this.shortName ||
+            this.version ||
+            this.collectionWithServices
+        )
+    }
+
     render() {
         const showJobStatus =
             (this.#harmonyRequestController.jobId || this.harmonyRequestError) &&
@@ -523,7 +535,8 @@ export default class TerraDataSubsetter extends AuthMixin(
                                       : nothing
                               }
                               ${
-                                  this.dataAccessMode === 'original'
+                                  this.dataAccessMode === 'original' &&
+                                  this.#hasSelectedCollection()
                                       ? html`
                                             <div class="section">
                                                 <terra-data-access
@@ -648,7 +661,8 @@ export default class TerraDataSubsetter extends AuthMixin(
                                       : nothing
                               }
                               ${
-                                  this.dataAccessMode === 'original'
+                                  this.dataAccessMode === 'original' &&
+                                  this.#hasSelectedCollection()
                                       ? html`
                                             <div class="section">
                                                 <terra-data-access
@@ -919,6 +933,15 @@ export default class TerraDataSubsetter extends AuthMixin(
 
         return html`
             ${
+                this.showCollectionSearch
+                    ? html`
+                          <div class="section">
+                              ${this.#renderSearchForCollection()}
+                          </div>
+                      `
+                    : nothing
+            }
+            ${
                 this.dataAccessMode === 'original'
                     ? nothing
                     : hasSubsetOption
@@ -926,19 +949,6 @@ export default class TerraDataSubsetter extends AuthMixin(
                             ${
                                 hasSubsetOption && estimates
                                     ? this.#renderSizeInfo(estimates)
-                                    : nothing
-                            }
-                            ${
-                                this.showCollectionSearch
-                                    ? html`
-                                          <div class="section">
-                                              <h2 class="section-title">
-                                                  Select Data Collection
-                                              </h2>
-
-                                              ${this.#renderSearchForCollection()}
-                                          </div>
-                                      `
                                     : nothing
                             }
                             ${
@@ -1087,21 +1097,10 @@ export default class TerraDataSubsetter extends AuthMixin(
     }
 
     #renderSearchForCollection() {
-        let placeholder =
-            'Search all types of resources (e.g. rainfall, GPM, hurricanes, etc.)'
-
-        if (this.collectionSearchType === 'collection') {
-            placeholder = 'Search collections (e.g. AQUA, GPM_3IMERGH, etc.)'
-        }
-
-        if (this.collectionSearchType === 'variable') {
-            placeholder = 'Search variables (e.g. rainfall, hurricanes, etc.)'
-        }
-
         return html`
             <terra-accordion .open=${this.collectionAccordionOpen}>
                 <div slot="summary">
-                    <span class="accordion-title">Collection:</span>
+                    <span class="accordion-title">Search for Collection:</span>
                 </div>
 
                 <div
@@ -1126,78 +1125,22 @@ export default class TerraDataSubsetter extends AuthMixin(
                     }
                 </div>
 
-                <div class="search-tabs-mini">
-                    <button
-                        class="search-tab-mini ${
-                            this.collectionSearchType === 'all' ? 'active' : ''
-                        }"
-                        @click=${() => (this.collectionSearchType = 'all')}
-                    >
-                        All
-                    </button>
-                    <button
-                        class="search-tab-mini ${
-                            this.collectionSearchType === 'collection' ? 'active' : ''
-                        }"
-                        @click=${() => (this.collectionSearchType = 'collection')}
-                    >
-                        Collections
-                    </button>
-                    <button
-                        class="search-tab-mini ${
-                            this.collectionSearchType === 'variable' ? 'active' : ''
-                        }"
-                        @click=${() => (this.collectionSearchType = 'variable')}
-                    >
-                        Variables
-                    </button>
-                </div>
-
                 <div class="search-container-mini">
-                    <input
-                        type="text"
+                    <terra-input
+                        type="search"
                         class="search-input-mini"
                         id="search-input"
-                        placeholder=${placeholder}
-                        @input="${(e: InputEvent) =>
+                        label="Search collections"
+                        hide-label
+                        placeholder="Search using keywords, variables, dataset name, and more..."
+                        @terra-input="${(e: Event) =>
                             this.handleCollectionSearch(
-                                (e.target as HTMLInputElement).value
+                                (e.target as TerraInput).value
                             )}"
-                    />
-
-                    <button class="search-button-mini">
-                        <svg
-                            class="search-icon-mini"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                        >
-                            <path
-                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
-                            />
-                        </svg>
-                        Search
-                    </button>
+                    >
+                        <terra-icon name="solid-magnifying-glass" library="heroicons" slot="suffix"></terra-icon>
+                    </terra-input>
                 </div>
-
-                <!-- TODO: it may be nice to have a quick search, perhaps by recent trends?
-                <div class="quick-links-mini">
-                    <a href="#" class="quick-link-mini" onclick="quickSearch('GPM')"
-                        >GPM Precipitation</a
-                    >
-                    <a href="#" class="quick-link-mini" onclick="quickSearch('MODIS')"
-                        >MODIS Data</a
-                    >
-                    <a
-                        href="#"
-                        class="quick-link-mini"
-                        onclick="quickSearch('Landsat')"
-                        >Landsat Imagery</a
-                    >
-                    <a href="#" class="quick-link-mini" onclick="quickSearch('AIRS')"
-                        >Atmospheric Data</a
-                    >
-                </div>
-                -->
 
                 <div id="search-results-section" class="search-results-section">
                     ${
@@ -1318,6 +1261,7 @@ export default class TerraDataSubsetter extends AuthMixin(
 
     @debounce(500)
     handleCollectionSearch(searchTerm: string) {
+        console.log('handle collection search ', searchTerm)
         this.collectionSearchQuery = searchTerm
     }
 
