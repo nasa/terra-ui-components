@@ -5,11 +5,7 @@ import { property, query, state } from 'lit/decorators.js'
 import { createRef, ref } from 'lit/directives/ref.js'
 import TerraElement from '../../internal/terra-element.js'
 import componentStyles from '../../styles/component.styles.js'
-import TerraButton from '../button/button.component.js'
-import TerraDropdown from '../dropdown/dropdown.component.js'
-import TerraAccordion from '../accordion/accordion.component.js'
-import TerraInput from '../input/input.component.js'
-import TerraBadge from '../badge/badge.component.js'
+import type { TimeComponents } from '../../utilities/date.js'
 import {
     getDisplayTimeComponents,
     getTimezoneInfo,
@@ -18,7 +14,11 @@ import {
     to12Hour,
     to24Hour,
 } from '../../utilities/date.js'
-import type { TimeComponents, TwelveHourTime } from '../../utilities/date.js'
+import TerraAccordion from '../accordion/accordion.component.js'
+import TerraBadge from '../badge/badge.component.js'
+import TerraButton from '../button/button.component.js'
+import TerraDropdown from '../dropdown/dropdown.component.js'
+import TerraInput from '../input/input.component.js'
 import styles from './date-picker.styles.js'
 
 interface DateRange {
@@ -139,15 +139,15 @@ export default class TerraDatePicker extends TerraElement {
         this.isMobile = event.matches
     }
 
-    private getDefaultEndHour() {
+    #getDefaultEndHour() {
         return this.useEndOfDay ? 23 : 0
     }
 
-    private getDefaultEndMinute() {
+    #getDefaultEndMinute() {
         return this.useEndOfDay ? 59 : 0
     }
 
-    private getDefaultEndSecond() {
+    #getDefaultEndSecond() {
         return this.useEndOfDay ? 59 : 0
     }
 
@@ -180,24 +180,16 @@ export default class TerraDatePicker extends TerraElement {
         return getUtcTimeFromDisplay(dispH, dispM, dispS, ref, this.timezone)
     }
 
-    private to12Hour(hour24: number): TwelveHourTime {
-        return to12Hour(hour24)
-    }
-
-    private to24Hour(hour12: number, period: 'AM' | 'PM'): number {
-        return to24Hour(hour12, period)
-    }
-
     /** Toggle the AM/PM period for the start or end time picker. */
-    private togglePeriod(isStart: boolean) {
+    #togglePeriod(isStart: boolean) {
         const utcH = isStart ? this.startHour : this.endHour
         const utcM = isStart ? this.startMinute : this.endMinute
         const utcS = isStart ? this.startSecond : this.endSecond
         const ref = isStart ? this.selectedStart : this.selectedEnd
         const display = this.#getDisplayTimeComponents(utcH, utcM, utcS, ref)
-        const d12 = this.to12Hour(display.hour)
+        const d12 = to12Hour(display.hour)
         const newPeriod: 'AM' | 'PM' = d12.period === 'AM' ? 'PM' : 'AM'
-        const newDisplayH = this.to24Hour(d12.hour, newPeriod)
+        const newDisplayH = to24Hour(d12.hour, newPeriod)
         const utc = this.#getUtcTimeFromDisplay(
             newDisplayH,
             display.minute,
@@ -399,9 +391,9 @@ export default class TerraDatePicker extends TerraElement {
         this.startHour = 0
         this.startMinute = 0
         this.startSecond = 0
-        this.endHour = this.getDefaultEndHour()
-        this.endMinute = this.getDefaultEndMinute()
-        this.endSecond = this.getDefaultEndSecond()
+        this.endHour = this.#getDefaultEndHour()
+        this.endMinute = this.#getDefaultEndMinute()
+        this.endSecond = this.#getDefaultEndSecond()
 
         this.clearInputValidation()
 
@@ -424,9 +416,9 @@ export default class TerraDatePicker extends TerraElement {
         // Handle useEndOfDay property changes
         if (changedProperties.has('useEndOfDay')) {
             // Reset end times to match the new useEndOfDay setting
-            this.endHour = this.getDefaultEndHour()
-            this.endMinute = this.getDefaultEndMinute()
-            this.endSecond = this.getDefaultEndSecond()
+            this.endHour = this.#getDefaultEndHour()
+            this.endMinute = this.#getDefaultEndMinute()
+            this.endSecond = this.#getDefaultEndSecond()
         }
 
         // Handle inline property changes
@@ -467,7 +459,7 @@ export default class TerraDatePicker extends TerraElement {
                 if (!isNaN(start.getTime())) {
                     this.selectedStart = start
                     if (this.enableTime) {
-                        this.initializeTimeFromDate(start, true)
+                        this.#initializeTimeFromDate(start, true)
                     }
                 }
             } else {
@@ -480,7 +472,7 @@ export default class TerraDatePicker extends TerraElement {
                     if (!isNaN(end.getTime())) {
                         this.selectedEnd = end
                         if (this.enableTime) {
-                            this.initializeTimeFromDate(end, false)
+                            this.#initializeTimeFromDate(end, false)
                         }
                     }
                 } else {
@@ -611,14 +603,14 @@ export default class TerraDatePicker extends TerraElement {
             this.selectedStart = this.parseLocalDate(timeStartParam)
             this.leftMonth = new Date(this.selectedStart)
             if (this.enableTime) {
-                this.initializeTimeFromDate(this.selectedStart, true)
+                this.#initializeTimeFromDate(this.selectedStart, true)
             }
         }
 
         if (this.range && timeEndParam) {
             this.selectedEnd = this.parseLocalDate(timeEndParam)
             if (this.enableTime) {
-                this.initializeTimeFromDate(this.selectedEnd, false)
+                this.#initializeTimeFromDate(this.selectedEnd, false)
             }
 
             // Apply the same month synchronization logic as handleStartEndDateChange
@@ -690,7 +682,7 @@ export default class TerraDatePicker extends TerraElement {
             )
             // When twelveHour is enabled and no custom displayFormat, use 12h format with AM/PM
             if (this.twelveHour && !this.displayFormat) {
-                const d12 = this.to12Hour(display.hour)
+                const d12 = to12Hour(display.hour)
                 const hours = String(d12.hour).padStart(2, '0')
                 const minutes = String(display.minute).padStart(2, '0')
                 const seconds = String(display.second).padStart(2, '0')
@@ -778,7 +770,7 @@ export default class TerraDatePicker extends TerraElement {
             const seconds = timeComponents[2] || 0
             // Convert 12-hour input to 24-hour display time
             if (amPm) {
-                hours = this.to24Hour(hours, amPm)
+                hours = to24Hour(hours, amPm)
             }
             date = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
         } else {
@@ -1708,7 +1700,7 @@ export default class TerraDatePicker extends TerraElement {
         })
     }
 
-    private initializeTimeFromDate(date: Date, isStart: boolean) {
+    #initializeTimeFromDate(date: Date, isStart: boolean) {
         const hours = date.getUTCHours()
         const minutes = date.getUTCMinutes()
         const seconds = date.getUTCSeconds()
@@ -1724,11 +1716,7 @@ export default class TerraDatePicker extends TerraElement {
         }
     }
 
-    private changeTime(
-        type: 'hour' | 'minute' | 'second',
-        delta: number,
-        isStart: boolean
-    ) {
+    #changeTime(type: 'hour' | 'minute' | 'second', delta: number, isStart: boolean) {
         const utcH = isStart ? this.startHour : this.endHour
         const utcM = isStart ? this.startMinute : this.endMinute
         const utcS = isStart ? this.startSecond : this.endSecond
@@ -1742,9 +1730,9 @@ export default class TerraDatePicker extends TerraElement {
         if (type === 'hour') {
             if (this.twelveHour) {
                 // Spin within 1–12, preserving the current AM/PM period
-                const d12 = this.to12Hour(display.hour)
+                const d12 = to12Hour(display.hour)
                 const newHour12 = ((((d12.hour - 1 + delta) % 12) + 12) % 12) + 1
-                newDisplayH = this.to24Hour(newHour12, d12.period)
+                newDisplayH = to24Hour(newHour12, d12.period)
             } else {
                 newDisplayH = (((display.hour + delta) % 24) + 24) % 24
             }
@@ -1773,7 +1761,7 @@ export default class TerraDatePicker extends TerraElement {
         this.requestUpdate()
     }
 
-    private handleTimeInput(
+    #handleTimeInput(
         event: Event,
         type: 'hour' | 'minute' | 'second',
         isStart: boolean
@@ -1786,7 +1774,7 @@ export default class TerraDatePicker extends TerraElement {
         const utcS = isStart ? this.startSecond : this.endSecond
         const ref = isStart ? this.selectedStart : this.selectedEnd
         const display = this.#getDisplayTimeComponents(utcH, utcM, utcS, ref)
-        const d12 = this.twelveHour ? this.to12Hour(display.hour) : null
+        const d12 = this.twelveHour ? to12Hour(display.hour) : null
 
         let newDisplayH = display.hour
         let newDisplayM = display.minute
@@ -1801,7 +1789,7 @@ export default class TerraDatePicker extends TerraElement {
                     .padStart(2, '0')
                 return
             }
-            newDisplayH = this.twelveHour ? this.to24Hour(value, d12!.period) : value
+            newDisplayH = this.twelveHour ? to24Hour(value, d12!.period) : value
         } else if (type === 'minute') {
             if (isNaN(value) || value < 0 || value >= 60) {
                 input.value = display.minute.toString().padStart(2, '0')
@@ -2066,7 +2054,7 @@ export default class TerraDatePicker extends TerraElement {
         `
     }
 
-    private renderTimePicker() {
+    #renderTimePicker() {
         if (!this.enableTime) return ''
 
         const startDisplay = this.#getDisplayTimeComponents(
@@ -2081,8 +2069,8 @@ export default class TerraDatePicker extends TerraElement {
             this.endSecond,
             this.selectedEnd
         )
-        const startD12 = this.twelveHour ? this.to12Hour(startDisplay.hour) : null
-        const endD12 = this.twelveHour ? this.to12Hour(endDisplay.hour) : null
+        const startD12 = this.twelveHour ? to12Hour(startDisplay.hour) : null
+        const endD12 = this.twelveHour ? to12Hour(endDisplay.hour) : null
         const hourMin = this.twelveHour ? '1' : '0'
         const hourMax = this.twelveHour ? '12' : '23'
 
@@ -2101,7 +2089,7 @@ export default class TerraDatePicker extends TerraElement {
                                     .toString()
                                     .padStart(2, '0')}
                                 @input=${(e: Event) =>
-                                    this.handleTimeInput(e, 'hour', true)}
+                                    this.#handleTimeInput(e, 'hour', true)}
                                 @blur=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
                                     const d = this.#getDisplayTimeComponents(
@@ -2111,7 +2099,7 @@ export default class TerraDatePicker extends TerraElement {
                                         this.selectedStart
                                     )
                                     const d12 = this.twelveHour
-                                        ? this.to12Hour(d.hour)
+                                        ? to12Hour(d.hour)
                                         : null
                                     input.value = (d12 ? d12.hour : d.hour)
                                         .toString()
@@ -2124,7 +2112,7 @@ export default class TerraDatePicker extends TerraElement {
                                 <button
                                     type="button"
                                     class="date-picker__time-spinner"
-                                    @click=${() => this.changeTime('hour', 1, true)}
+                                    @click=${() => this.#changeTime('hour', 1, true)}
                                 >
                                     <svg
                                         width="10"
@@ -2144,7 +2132,7 @@ export default class TerraDatePicker extends TerraElement {
                                 <button
                                     type="button"
                                     class="date-picker__time-spinner"
-                                    @click=${() => this.changeTime('hour', -1, true)}
+                                    @click=${() => this.#changeTime('hour', -1, true)}
                                 >
                                     <svg
                                         width="10"
@@ -2174,7 +2162,7 @@ export default class TerraDatePicker extends TerraElement {
                                     .toString()
                                     .padStart(2, '0')}
                                 @input=${(e: Event) =>
-                                    this.handleTimeInput(e, 'minute', true)}
+                                    this.#handleTimeInput(e, 'minute', true)}
                                 @blur=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
                                     const d = this.#getDisplayTimeComponents(
@@ -2192,7 +2180,7 @@ export default class TerraDatePicker extends TerraElement {
                                 <button
                                     type="button"
                                     class="date-picker__time-spinner"
-                                    @click=${() => this.changeTime('minute', 1, true)}
+                                    @click=${() => this.#changeTime('minute', 1, true)}
                                 >
                                     <svg
                                         width="10"
@@ -2213,7 +2201,7 @@ export default class TerraDatePicker extends TerraElement {
                                     type="button"
                                     class="date-picker__time-spinner"
                                     @click=${() =>
-                                        this.changeTime('minute', -1, true)}
+                                        this.#changeTime('minute', -1, true)}
                                 >
                                     <svg
                                         width="10"
@@ -2243,7 +2231,7 @@ export default class TerraDatePicker extends TerraElement {
                                     .toString()
                                     .padStart(2, '0')}
                                 @input=${(e: Event) =>
-                                    this.handleTimeInput(e, 'second', true)}
+                                    this.#handleTimeInput(e, 'second', true)}
                                 @blur=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
                                     const d = this.#getDisplayTimeComponents(
@@ -2261,7 +2249,7 @@ export default class TerraDatePicker extends TerraElement {
                                 <button
                                     type="button"
                                     class="date-picker__time-spinner"
-                                    @click=${() => this.changeTime('second', 1, true)}
+                                    @click=${() => this.#changeTime('second', 1, true)}
                                 >
                                     <svg
                                         width="10"
@@ -2282,7 +2270,7 @@ export default class TerraDatePicker extends TerraElement {
                                     type="button"
                                     class="date-picker__time-spinner"
                                     @click=${() =>
-                                        this.changeTime('second', -1, true)}
+                                        this.#changeTime('second', -1, true)}
                                 >
                                     <svg
                                         width="10"
@@ -2308,7 +2296,7 @@ export default class TerraDatePicker extends TerraElement {
                                   <button
                                       type="button"
                                       class="date-picker__time-period"
-                                      @click=${() => this.togglePeriod(true)}
+                                      @click=${() => this.#togglePeriod(true)}
                                   >
                                       ${startD12!.period}
                                   </button>
@@ -2336,7 +2324,7 @@ export default class TerraDatePicker extends TerraElement {
                                               .toString()
                                               .padStart(2, '0')}
                                           @input=${(e: Event) =>
-                                              this.handleTimeInput(e, 'hour', false)}
+                                              this.#handleTimeInput(e, 'hour', false)}
                                           @blur=${(e: Event) => {
                                               const input =
                                                   e.target as HTMLInputElement
@@ -2348,7 +2336,7 @@ export default class TerraDatePicker extends TerraElement {
                                                       this.selectedEnd
                                                   )
                                               const d12 = this.twelveHour
-                                                  ? this.to12Hour(d.hour)
+                                                  ? to12Hour(d.hour)
                                                   : null
                                               input.value = (d12 ? d12.hour : d.hour)
                                                   .toString()
@@ -2362,7 +2350,7 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('hour', 1, false)}
+                                                  this.#changeTime('hour', 1, false)}
                                           >
                                               <svg
                                                   width="10"
@@ -2383,7 +2371,7 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('hour', -1, false)}
+                                                  this.#changeTime('hour', -1, false)}
                                           >
                                               <svg
                                                   width="10"
@@ -2413,7 +2401,7 @@ export default class TerraDatePicker extends TerraElement {
                                               .toString()
                                               .padStart(2, '0')}
                                           @input=${(e: Event) =>
-                                              this.handleTimeInput(
+                                              this.#handleTimeInput(
                                                   e,
                                                   'minute',
                                                   false
@@ -2440,7 +2428,11 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('minute', 1, false)}
+                                                  this.#changeTime(
+                                                      'minute',
+                                                      1,
+                                                      false
+                                                  )}
                                           >
                                               <svg
                                                   width="10"
@@ -2461,7 +2453,7 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime(
+                                                  this.#changeTime(
                                                       'minute',
                                                       -1,
                                                       false
@@ -2495,7 +2487,7 @@ export default class TerraDatePicker extends TerraElement {
                                               .toString()
                                               .padStart(2, '0')}
                                           @input=${(e: Event) =>
-                                              this.handleTimeInput(
+                                              this.#handleTimeInput(
                                                   e,
                                                   'second',
                                                   false
@@ -2522,7 +2514,11 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime('second', 1, false)}
+                                                  this.#changeTime(
+                                                      'second',
+                                                      1,
+                                                      false
+                                                  )}
                                           >
                                               <svg
                                                   width="10"
@@ -2543,7 +2539,7 @@ export default class TerraDatePicker extends TerraElement {
                                               type="button"
                                               class="date-picker__time-spinner"
                                               @click=${() =>
-                                                  this.changeTime(
+                                                  this.#changeTime(
                                                       'second',
                                                       -1,
                                                       false
@@ -2575,7 +2571,7 @@ export default class TerraDatePicker extends TerraElement {
                                                 type="button"
                                                 class="date-picker__time-period"
                                                 @click=${() =>
-                                                    this.togglePeriod(false)}
+                                                    this.#togglePeriod(false)}
                                             >
                                                 ${endD12!.period}
                                             </button>
@@ -2742,7 +2738,7 @@ export default class TerraDatePicker extends TerraElement {
                     </div>
                 </div>
 
-                ${this.enableTime ? this.renderTimePicker() : ''}
+                ${this.enableTime ? this.#renderTimePicker() : ''}
             </div>
         `
     }
@@ -2841,7 +2837,7 @@ export default class TerraDatePicker extends TerraElement {
                                 </div>
                             </div>
 
-                            ${this.enableTime ? this.renderTimePicker() : ''}
+                            ${this.enableTime ? this.#renderTimePicker() : ''}
                         </div>
                     </div>
                 </div>

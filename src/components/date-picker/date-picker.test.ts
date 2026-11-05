@@ -2095,49 +2095,21 @@ describe('<terra-date-picker>', () => {
             expect(displayDate).to.include('03:30:00')
         })
 
-        it('to12Hour converts midnight (0) to 12 AM', async () => {
-            const el: TerraDatePicker = await fixture(html`
-                <terra-date-picker enable-time twelve-hour></terra-date-picker>
-            `)
-            const result = (el as any).to12Hour(0)
-            expect(result.hour).to.equal(12)
-            expect(result.period).to.equal('AM')
-        })
-
-        it('to12Hour converts noon (12) to 12 PM', async () => {
-            const el: TerraDatePicker = await fixture(html`
-                <terra-date-picker enable-time twelve-hour></terra-date-picker>
-            `)
-            const result = (el as any).to12Hour(12)
-            expect(result.hour).to.equal(12)
-            expect(result.period).to.equal('PM')
-        })
-
-        it('to24Hour converts 12 AM to 0', async () => {
-            const el: TerraDatePicker = await fixture(html`
-                <terra-date-picker enable-time twelve-hour></terra-date-picker>
-            `)
-            expect((el as any).to24Hour(12, 'AM')).to.equal(0)
-        })
-
-        it('to24Hour converts 12 PM to 12', async () => {
-            const el: TerraDatePicker = await fixture(html`
-                <terra-date-picker enable-time twelve-hour></terra-date-picker>
-            `)
-            expect((el as any).to24Hour(12, 'PM')).to.equal(12)
-        })
-
         it('togglePeriod flips start AM to PM and keeps UTC correct', async () => {
             // UTC 09:00 → AM in 12h; toggle → PM → UTC 21:00
             const el: TerraDatePicker = await fixture(html`
                 <terra-date-picker
+                    inline
                     enable-time
                     twelve-hour
                     start-date="2024-03-20T09:00:00Z"
                 ></terra-date-picker>
             `)
             await elementUpdated(el)
-            ;(el as any).togglePeriod(true)
+            const periodBtn = el.shadowRoot?.querySelector<HTMLButtonElement>(
+                '.date-picker__time-period'
+            )
+            periodBtn?.click()
             await elementUpdated(el)
             expect((el as any).startHour).to.equal(21)
         })
