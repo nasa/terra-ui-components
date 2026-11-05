@@ -69,6 +69,7 @@ Use help text to display the desired date formatting, in case visitors choose to
 | `splitInputs`   | `split-inputs`   | `boolean`       | `false`                               | When `range` is true, displays two separate inputs side by side (one for start, one for end)               |
 | `showClose`     | `closable`       | `boolean`       | `false`                               | Optional close button to close date picker                                                                 |
 | `timezone`      | `timezone`       | `string`        | -                                     | IANA timezone identifier (e.g., `America/New_York`). Affects time display only; emitted values remain UTC. |
+| `hideTimezone`  | `hide-timezone`  | `boolean`       | `false`                               | Hides the timezone pill badge displayed in the input suffix when `enable-time` is active.                  |
 | `twelveHour`    | `twelve-hour`    | `boolean`       | `false`                               | Display time in 12-hour format with AM/PM toggle. Requires `enable-time`. Emitted values remain UTC 24h.   |
 
 ## Events
@@ -134,7 +135,7 @@ The component emits:
 
 ### Timezone Display
 
-When `timezone` is set to a valid IANA identifier, times are displayed in that timezone in the input and time picker. Emitted `terra-date-range-change` values remain UTC.
+When `enable-time` is active, a compact timezone pill is displayed in the input suffix (`UTC` by default, or the configured timezone abbreviation such as `EDT` or `EST`). When `timezone` is set to a valid IANA identifier, times are displayed in that timezone in the input and time picker. Emitted `terra-date-range-change` values remain UTC. The pill can be hidden with `hide-timezone`.
 
 ```html:preview
 <terra-date-picker

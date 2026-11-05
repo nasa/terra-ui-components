@@ -58,6 +58,25 @@ export default css`
         border-radius: 999px;
     }
 
+    /* Size modifiers */
+    .badge--small {
+        font-size: var(--terra-font-size-x-small);
+        padding: 0.125rem 0.4rem;
+        line-height: 1.2;
+    }
+
+    .badge--medium {
+        font-size: max(12px, 0.75em);
+        padding: 0.35em 0.6em;
+        line-height: 1;
+    }
+
+    .badge--large {
+        font-size: var(--terra-font-size-small);
+        padding: 0.4em 0.75em;
+        line-height: 1.2;
+    }
+
     /* Pulse modifier */
     .badge--pulse {
         animation: pulse 1.5s infinite;
