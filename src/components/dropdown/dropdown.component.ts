@@ -577,10 +577,7 @@ export default class TerraDropdown extends TerraElement {
         }
         document.addEventListener('keydown', this.handleDocumentKeyDown)
         document.addEventListener('mousedown', this.handleDocumentMouseDown)
-        this.popup.addEventListener(
-            'terra-popup-dismiss',
-            this.handlePopupDismiss,
-        )
+        this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
     }
 
     removeOpenListeners() {
@@ -590,10 +587,7 @@ export default class TerraDropdown extends TerraElement {
         }
         document.removeEventListener('keydown', this.handleDocumentKeyDown)
         document.removeEventListener('mousedown', this.handleDocumentMouseDown)
-        this.popup.removeEventListener(
-            'terra-popup-dismiss',
-            this.handlePopupDismiss,
-        )
+        this.popup.removeEventListener('terra-popup-dismiss', this.handlePopupDismiss)
         this.closeWatcher?.destroy()
     }
 

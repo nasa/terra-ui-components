@@ -68,14 +68,14 @@ export default class TerraPopup extends TerraElement {
 
     /** Screen size detection use to determine layout for mobile devices */
 
-    @state() 
+    @state()
     isMobile = false
 
-    private mediaQuery = window.matchMedia('(max-width: 768px)');
-    
+    private mediaQuery = window.matchMedia('(max-width: 768px)')
+
     private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches;
-    };
+        this.isMobile = event.matches
+    }
 
     /** A reference to the internal popup container. Useful for animating and styling the popup with JavaScript. */
     @query('.popup') popup: HTMLElement
@@ -234,8 +234,8 @@ export default class TerraPopup extends TerraElement {
     async connectedCallback() {
         super.connectedCallback()
 
-        this.isMobile = this.mediaQuery.matches;
-        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
 
         // Start the positioner after the first update
         await this.updateComplete
@@ -244,7 +244,7 @@ export default class TerraPopup extends TerraElement {
 
     disconnectedCallback() {
         super.disconnectedCallback()
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
         this.stop()
     }
 
@@ -275,7 +275,7 @@ export default class TerraPopup extends TerraElement {
                     new CustomEvent('terra-popup-dismiss', {
                         bubbles: true,
                         composed: true,
-                    }),
+                    })
                 )
             }
         }
@@ -409,11 +409,10 @@ export default class TerraPopup extends TerraElement {
         }
 
         const isVerticalPlacement =
-            this.placement.startsWith('top') ||
-            this.placement.startsWith('bottom')
+            this.placement.startsWith('top') || this.placement.startsWith('bottom')
 
         const allowMainAxisShift = this.shift
-        
+
         if (this.isMobile) {
             middleware.push(
                 flip({
@@ -432,18 +431,17 @@ export default class TerraPopup extends TerraElement {
                     apply: ({ availableWidth, availableHeight }) => {
                         this.style.setProperty(
                             '--auto-size-available-width',
-                            `${availableWidth}px`,
+                            `${availableWidth}px`
                         )
 
                         this.style.setProperty(
                             '--auto-size-available-height',
-                            `${availableHeight}px`,
+                            `${availableHeight}px`
                         )
                     },
-                }),
+                })
             )
         } else {
-
             // Then we flip
             if (this.flip) {
                 middleware.push(
@@ -486,7 +484,9 @@ export default class TerraPopup extends TerraElement {
                                     `${availableHeight}px`
                                 )
                             } else {
-                                this.style.removeProperty('--auto-size-available-height')
+                                this.style.removeProperty(
+                                    '--auto-size-available-height'
+                                )
                             }
 
                             if (
@@ -498,7 +498,9 @@ export default class TerraPopup extends TerraElement {
                                     `${availableWidth}px`
                                 )
                             } else {
-                                this.style.removeProperty('--auto-size-available-width')
+                                this.style.removeProperty(
+                                    '--auto-size-available-width'
+                                )
                             }
                         },
                     })
@@ -507,7 +509,7 @@ export default class TerraPopup extends TerraElement {
                 // Cleanup styles if we're no longer using auto-size
                 this.style.removeProperty('--auto-size-available-width')
                 this.style.removeProperty('--auto-size-available-height')
-            }    
+            }
         }
 
         // Finally, we add an arrow
@@ -707,7 +709,7 @@ export default class TerraPopup extends TerraElement {
 
     render() {
         const strategy = this.isMobile ? 'fixed' : this.strategy
-        
+
         return html`
             <slot name="anchor" @slotchange=${this.handleAnchorChange}></slot>
 
