@@ -204,6 +204,10 @@ export default class TerraDropdown extends TerraElement {
             | undefined
     }
 
+    private handlePopupDismiss = () => {
+        this.hide()
+    }
+
     private handleKeyDown = (event: KeyboardEvent) => {
         // Close when escape is pressed inside an open dropdown. We need to listen on the panel itself and stop propagation
         // in case any ancestors are also listening for this key.
@@ -573,6 +577,7 @@ export default class TerraDropdown extends TerraElement {
         }
         document.addEventListener('keydown', this.handleDocumentKeyDown)
         document.addEventListener('mousedown', this.handleDocumentMouseDown)
+        this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
     }
 
     removeOpenListeners() {
@@ -582,6 +587,7 @@ export default class TerraDropdown extends TerraElement {
         }
         document.removeEventListener('keydown', this.handleDocumentKeyDown)
         document.removeEventListener('mousedown', this.handleDocumentMouseDown)
+        this.popup.removeEventListener('terra-popup-dismiss', this.handlePopupDismiss)
         this.closeWatcher?.destroy()
     }
 

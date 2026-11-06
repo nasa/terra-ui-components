@@ -183,7 +183,7 @@
     .code-preview {
         border: 2px, solid, var(--terra-border-neutral-default);
         border-radius: 30px;
-        overflow-y: scroll;    
+        overflow-y: scroll;
     }
 
     .code-preview__preview {

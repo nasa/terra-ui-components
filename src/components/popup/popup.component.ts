@@ -11,7 +11,7 @@ import {
 import { classMap } from 'lit/directives/class-map.js'
 import { html } from 'lit'
 import { offsetParent } from 'composed-offset-position'
-import { property, query } from 'lit/decorators.js'
+import { property, query, state } from 'lit/decorators.js'
 import componentStyles from '../../styles/component.styles.js'
 import styles from './popup.styles.js'
 import type { CSSResultGroup } from 'lit'
@@ -65,6 +65,17 @@ export default class TerraPopup extends TerraElement {
 
     private anchorEl: Element | VirtualElement | null
     private cleanup: ReturnType<typeof autoUpdate> | undefined
+
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state()
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 768px)')
+
+    private handleMediaChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches
+    }
 
     /** A reference to the internal popup container. Useful for animating and styling the popup with JavaScript. */
     @query('.popup') popup: HTMLElement
@@ -223,6 +234,9 @@ export default class TerraPopup extends TerraElement {
     async connectedCallback() {
         super.connectedCallback()
 
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
+
         // Start the positioner after the first update
         await this.updateComplete
         this.start()
@@ -230,7 +244,43 @@ export default class TerraPopup extends TerraElement {
 
     disconnectedCallback() {
         super.disconnectedCallback()
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
         this.stop()
+    }
+
+    private anchorScrollHandler?: () => void
+
+    private observeAnchor() {
+        if (!this.isMobile || !this.anchorEl) return
+
+        const anchor =
+            this.anchorEl instanceof Element
+                ? this.anchorEl
+                : this.anchorEl.contextElement
+
+        if (!anchor) return
+
+        this.anchorScrollHandler = () => {
+            const rect = anchor.getBoundingClientRect()
+
+            const outsideViewport =
+                rect.bottom <= 0 ||
+                rect.top >= window.innerHeight ||
+                rect.right <= 0 ||
+                rect.left >= window.innerWidth
+
+            if (outsideViewport) {
+                this.active = false
+                this.dispatchEvent(
+                    new CustomEvent('terra-popup-dismiss', {
+                        bubbles: true,
+                        composed: true,
+                    })
+                )
+            }
+        }
+
+        window.addEventListener('scroll', this.anchorScrollHandler, true)
     }
 
     async updated(changedProps: Map<string, unknown>) {
@@ -292,12 +342,19 @@ export default class TerraPopup extends TerraElement {
             return
         }
 
+        this.observeAnchor()
+
         this.cleanup = autoUpdate(this.anchorEl, this.popup, () => {
             this.reposition()
         })
     }
 
     private async stop(): Promise<void> {
+        if (this.anchorScrollHandler) {
+            window.removeEventListener('scroll', this.anchorScrollHandler, true)
+            this.anchorScrollHandler = undefined
+        }
+
         return new Promise(resolve => {
             if (this.cleanup) {
                 this.cleanup()
@@ -351,69 +408,108 @@ export default class TerraPopup extends TerraElement {
             this.popup.style.height = ''
         }
 
-        // Then we flip
-        if (this.flip) {
+        const isVerticalPlacement =
+            this.placement.startsWith('top') || this.placement.startsWith('bottom')
+
+        const allowMainAxisShift = this.shift
+
+        if (this.isMobile) {
             middleware.push(
                 flip({
                     boundary: this.flipBoundary,
-                    // @ts-expect-error - We're converting a string attribute to an array here
-                    fallbackPlacements: this.flipFallbackPlacements,
-                    fallbackStrategy:
-                        this.flipFallbackStrategy === 'best-fit'
-                            ? 'bestFit'
-                            : 'initialPlacement',
-                    padding: this.flipPadding,
-                })
-            )
-        }
-
-        // Then we shift
-        if (this.shift) {
-            middleware.push(
+                    fallbackStrategy: 'bestFit',
+                    padding: 8,
+                }),
                 shift({
                     boundary: this.shiftBoundary,
-                    padding: this.shiftPadding,
-                })
-            )
-        }
-
-        // Now we adjust the size as needed
-        if (this.autoSize) {
-            middleware.push(
+                    padding: 8,
+                    mainAxis: allowMainAxisShift || isVerticalPlacement,
+                    crossAxis: !isVerticalPlacement,
+                }),
                 size({
-                    boundary: this.autoSizeBoundary,
-                    padding: this.autoSizePadding,
+                    padding: 8,
                     apply: ({ availableWidth, availableHeight }) => {
-                        if (
-                            this.autoSize === 'vertical' ||
-                            this.autoSize === 'both'
-                        ) {
-                            this.style.setProperty(
-                                '--auto-size-available-height',
-                                `${availableHeight}px`
-                            )
-                        } else {
-                            this.style.removeProperty('--auto-size-available-height')
-                        }
+                        this.style.setProperty(
+                            '--auto-size-available-width',
+                            `${availableWidth}px`
+                        )
 
-                        if (
-                            this.autoSize === 'horizontal' ||
-                            this.autoSize === 'both'
-                        ) {
-                            this.style.setProperty(
-                                '--auto-size-available-width',
-                                `${availableWidth}px`
-                            )
-                        } else {
-                            this.style.removeProperty('--auto-size-available-width')
-                        }
+                        this.style.setProperty(
+                            '--auto-size-available-height',
+                            `${availableHeight}px`
+                        )
                     },
                 })
             )
         } else {
-            // Cleanup styles if we're no longer using auto-size
-            this.style.removeProperty('--auto-size-available-width')
-            this.style.removeProperty('--auto-size-available-height')
+            // Then we flip
+            if (this.flip) {
+                middleware.push(
+                    flip({
+                        boundary: this.flipBoundary,
+                        // @ts-expect-error - We're converting a string attribute to an array here
+                        fallbackPlacements: this.flipFallbackPlacements,
+                        fallbackStrategy:
+                            this.flipFallbackStrategy === 'best-fit'
+                                ? 'bestFit'
+                                : 'initialPlacement',
+                        padding: this.flipPadding,
+                    })
+                )
+            }
+
+            // Then we shift
+            if (this.shift) {
+                middleware.push(
+                    shift({
+                        boundary: this.shiftBoundary,
+                        padding: this.shiftPadding,
+                    })
+                )
+            }
+
+            // Now we adjust the size as needed
+            if (this.autoSize) {
+                middleware.push(
+                    size({
+                        boundary: this.autoSizeBoundary,
+                        padding: this.autoSizePadding,
+                        apply: ({ availableWidth, availableHeight }) => {
+                            if (
+                                this.autoSize === 'vertical' ||
+                                this.autoSize === 'both'
+                            ) {
+                                this.style.setProperty(
+                                    '--auto-size-available-height',
+                                    `${availableHeight}px`
+                                )
+                            } else {
+                                this.style.removeProperty(
+                                    '--auto-size-available-height'
+                                )
+                            }
+
+                            if (
+                                this.autoSize === 'horizontal' ||
+                                this.autoSize === 'both'
+                            ) {
+                                this.style.setProperty(
+                                    '--auto-size-available-width',
+                                    `${availableWidth}px`
+                                )
+                            } else {
+                                this.style.removeProperty(
+                                    '--auto-size-available-width'
+                                )
+                            }
+                        },
+                    })
+                )
+            } else {
+                // Cleanup styles if we're no longer using auto-size
+                this.style.removeProperty('--auto-size-available-width')
+                this.style.removeProperty('--auto-size-available-height')
+            }
         }
 
         // Finally, we add an arrow
@@ -438,7 +534,7 @@ export default class TerraPopup extends TerraElement {
         computePosition(this.anchorEl, this.popup, {
             placement: this.placement,
             middleware,
-            strategy: this.strategy,
+            strategy: this.isMobile ? 'fixed' : this.strategy,
             platform: {
                 ...platform,
                 getOffsetParent,
@@ -612,6 +708,8 @@ export default class TerraPopup extends TerraElement {
     }
 
     render() {
+        const strategy = this.isMobile ? 'fixed' : this.strategy
+
         return html`
             <slot name="anchor" @slotchange=${this.handleAnchorChange}></slot>
 
@@ -628,7 +726,7 @@ export default class TerraPopup extends TerraElement {
                 class=${classMap({
                     popup: true,
                     'popup--active': this.active,
-                    'popup--fixed': this.strategy === 'fixed',
+                    'popup--fixed': strategy === 'fixed',
                     'popup--has-arrow': this.arrow,
                 })}
             >
