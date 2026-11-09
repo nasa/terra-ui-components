@@ -18,6 +18,7 @@ export default css`
         inline-size: var(--terra-inline-size, 100%);
         position: relative;
         z-index: 10;
+        margin-top: 0.35rem;
     }
 
     :host([hide-help]) {
@@ -54,6 +55,7 @@ export default css`
         padding-inline-start: 0.5rem;
         max-inline-size: 60%;
         overflow: hidden;
+        margin-top: -5px;
     }
 
     .tag {
@@ -103,6 +105,8 @@ export default css`
         max-inline-size: 100%;
         margin-top: 0.5rem;
         height: var(--terra-block-size, 3rem);
+        border: 1px solid #aaa;
+        border-radius: 5px;
     }
 
     .combobox::part(input) {
@@ -131,6 +135,7 @@ export default css`
         block-size: 100%;
         display: flex;
         flex-wrap: wrap;
+        margin-top: -6px;
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {
@@ -140,7 +145,7 @@ export default css`
     .combobox-button {
         position: absolute;
         right: 0;
-        bottom: 5px;
+        bottom: 0.69em;
         z-index: 2;
         margin-block: 0;
         margin-inline: 0;
