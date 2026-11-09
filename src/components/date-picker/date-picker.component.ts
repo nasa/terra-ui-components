@@ -329,8 +329,29 @@ export default class TerraDatePicker extends TerraElement {
             return new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds))
         }
 
-        // For ISO strings with time (including UTC 'Z' suffix), use standard Date parsing
-        return new Date(dateString)
+        // For full ISO instants (e.g. "2026-11-10T05:59:59.000Z"), unpack into
+        // TerraDatePicker's internal hybrid Date representation when time + timezone
+        // are active:
+        //   - UTC date slots (getUTCFullYear/Month/Date) hold the PlainDate in `this.timezone`
+        //   - UTC time slots (getUTCHours/Minutes/Seconds) hold the UTC PlainTime (00:00–23:59)
+        // This is the inverse of emitChange(), which combines the timezone's PlainDate
+        // and PlainTime back into a true UTC Instant.
+        const parsed = new Date(dateString)
+        if (this.enableTime && this.timezone && !isNaN(parsed.getTime())) {
+            const offsetMinutes = this.getTimezoneOffsetMinutes(parsed)
+            const localDate = new Date(parsed.getTime() + offsetMinutes * 60000)
+            return new Date(
+                Date.UTC(
+                    localDate.getUTCFullYear(),
+                    localDate.getUTCMonth(),
+                    localDate.getUTCDate(),
+                    parsed.getUTCHours(),
+                    parsed.getUTCMinutes(),
+                    parsed.getUTCSeconds()
+                )
+            )
+        }
+        return parsed
     }
 
     /**
@@ -603,16 +624,22 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     #getDefaultPresets(): PresetRange[] {
+        const normalizePresetDate = (d: Date): Date =>
+            this.enableTime
+                ? new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+                : new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
         const dayPreset = (label: string, dayOffset = 0): PresetRange => ({
             label,
             getValue: () => {
                 const now = new Date()
 
                 now.setDate(now.getDate() - dayOffset)
+                const normalized = normalizePresetDate(now)
 
                 return {
-                    startDate: now,
-                    endDate: this.range ? new Date(now) : null,
+                    startDate: normalized,
+                    endDate: this.range ? new Date(normalized) : null,
                 }
             },
         })
@@ -628,7 +655,10 @@ export default class TerraDatePicker extends TerraElement {
 
                 shiftFn(start)
 
-                return { startDate: start, endDate: end }
+                return {
+                    startDate: normalizePresetDate(start),
+                    endDate: normalizePresetDate(end),
+                }
             },
         })
 
@@ -1648,24 +1678,17 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         if (this.selectedStart) {
-            this.leftMonth = new Date(this.selectedStart)
-            if (this.range && this.selectedEnd) {
-                this.rightMonth = new Date(this.selectedEnd)
-            }
+            this.updateMonthViews()
         }
 
         if (this.enableTime) {
             if (startDate) {
-                // Normalize local date to UTC midnight to match manual date parsing
-                // startDate = new Date(Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()))
                 const startUtc = this.getUtcTimeFromDisplay(0, 0, 0, startDate)
                 this.startHour = startUtc.hour
                 this.startMinute = startUtc.minute
                 this.startSecond = startUtc.second
             }
             if (endDate) {
-                // Normalize local date to UTC midnight to match manual date parsing
-                // endDate = new Date(Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate()))
                 const endUtc = this.getUtcTimeFromDisplay(23, 59, 59, endDate)
                 this.endHour = endUtc.hour
                 this.endMinute = endUtc.minute
