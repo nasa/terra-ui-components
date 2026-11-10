@@ -187,8 +187,13 @@
     }
 
     .code-preview__preview {
-        border: none;
+        border: 0px ;
     }
+
+    .code-preview__preview-content {
+        height: fit-content;
+        padding-bottom: 2rem;
+    }   
 }
 
 .code-preview__preview-content:not([data-flavor='html']):not(
