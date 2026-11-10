@@ -2,8 +2,8 @@ import { expect, fixture, html } from '@open-wc/testing'
 import { elementUpdated, oneEvent } from '@open-wc/testing-helpers'
 import { Temporal } from 'temporal-polyfill'
 import '../date-picker.js'
-import type TerraDatePicker from '../date-picker.js'
 import { to12Hour, to24Hour } from '../../../utilities/date.js'
+import type TerraDatePicker from '../date-picker.js'
 
 // Helper to get a date string in YYYY-MM-DD format
 function formatDate(date: any): string {
@@ -2005,13 +2005,30 @@ describe('<terra-date-picker>', () => {
             const el: TerraDatePicker = await fixture(html`
                 <terra-date-picker
                     enable-time
+                    show-presets
+                    inline
+                    range
                     timezone="Not/AValid/Timezone"
                     start-date="2024-03-20T15:00:00Z"
+                    end-date="2024-03-22T18:00:00Z"
                 ></terra-date-picker>
             `)
             await elementUpdated(el)
-            // Component should still render; offset falls back to 0
+
+            // Component should render; offset safely falls back to UTC (offset 0)
             expect(el).to.exist
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.include('2024-03-20 15:00:00')
+
+            // Presets should render without throwing RangeError
+            const presets = el.shadowRoot?.querySelectorAll('.date-picker__preset')
+            expect(presets?.length).to.be.greaterThan(0)
+
+            // Selecting a date / triggering change should safely emit UTC ISO strings
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            input?.dispatchEvent(new CustomEvent('terra-blur'))
+            const event = await eventPromise
+            expect(event.detail.startDate).to.equal('2024-03-20T15:00:00.000Z')
         })
 
         it('should shift displayed time by timezone offset', async () => {
@@ -2355,6 +2372,28 @@ describe('<terra-date-picker>', () => {
             const { detail } = await listener
 
             expect(detail.startDate).to.equal('2024-11-03T05:30:00.000Z')
+        })
+
+        it('Finding 1 (DST Fall Back second 1:30 EST): 06:30 UTC converts to 01:30 EST and round-trips exactly', async () => {
+            // In America/New_York on 2024-11-03, DST ends at 02:00 (repeating 01:00-02:00 as EST).
+            // 2024-11-03T06:30:00.000Z is the SECOND occurrence of 01:30:00 (EST, UTC-5).
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-11-03T06:30:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.equal('2024-11-03 01:30:00')
+
+            const listener = oneEvent(el, 'terra-date-range-change')
+            input?.dispatchEvent(new CustomEvent('terra-blur'))
+            const { detail } = await listener
+
+            expect(detail.startDate).to.equal('2024-11-03T06:30:00.000Z')
         })
 
         it('Finding 2 (Custom Presets): accepts custom presets returning native Date objects and updates selection without throwing', async () => {
