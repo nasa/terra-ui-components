@@ -3,7 +3,7 @@ import { elementUpdated, oneEvent } from '@open-wc/testing-helpers'
 import { Temporal } from 'temporal-polyfill'
 import '../date-picker.js'
 import type TerraDatePicker from '../date-picker.js'
-import { to12Hour, to24Hour } from '../date-picker.utils.js'
+import { to12Hour, to24Hour } from '../../../utilities/date.js'
 
 // Helper to get a date string in YYYY-MM-DD format
 function formatDate(date: any): string {

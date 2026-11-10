@@ -10,7 +10,7 @@ import TerraButton from '../button/button.component.js'
 import TerraDropdown from '../dropdown/dropdown.component.js'
 import TerraInput from '../input/input.component.js'
 import styles from './date-picker.styles.js'
-import { to12Hour, to24Hour } from './date-picker.utils.js'
+import { to12Hour, to24Hour } from '../../utilities/date.js'
 
 interface DateRange {
     startDate: Temporal.PlainDate | null
