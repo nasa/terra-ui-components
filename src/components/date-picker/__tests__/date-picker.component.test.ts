@@ -2312,5 +2312,130 @@ describe('<terra-date-picker>', () => {
             expect(getMonthYear(el.leftMonth)).to.equal('2024-05')
             expect(getMonthYear(el.rightMonth)).to.equal('2024-06')
         })
+
+        it('Finding 1 (DST Spring Forward early morning): 06:30 UTC converts to 01:30 EST and round-trips exactly', async () => {
+            // In America/New_York on 2024-03-10, DST starts at 02:00 (skipping to 03:00).
+            // 2024-03-10T06:30:00.000Z is 01:30:00 EST (UTC-5), occurring BEFORE the 02:00 switch.
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-03-10T06:30:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.equal('2024-03-10 01:30:00')
+
+            const listener = oneEvent(el, 'terra-date-range-change')
+            input?.dispatchEvent(new CustomEvent('terra-blur'))
+            const { detail } = await listener
+
+            expect(detail.startDate).to.equal('2024-03-10T06:30:00.000Z')
+        })
+
+        it('Finding 1 (DST Fall Back early morning): 05:30 UTC converts to 01:30 EDT and round-trips exactly', async () => {
+            // In America/New_York on 2024-11-03, DST ends at 02:00 (repeating 01:00-02:00 as EST).
+            // 2024-11-03T05:30:00.000Z is 01:30:00 EDT (UTC-4), occurring BEFORE the 02:00 fall back.
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="America/New_York"
+                    start-date="2024-11-03T05:30:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.equal('2024-11-03 01:30:00')
+
+            const listener = oneEvent(el, 'terra-date-range-change')
+            input?.dispatchEvent(new CustomEvent('terra-blur'))
+            const { detail } = await listener
+
+            expect(detail.startDate).to.equal('2024-11-03T05:30:00.000Z')
+        })
+
+        it('Finding 2 (Custom Presets): accepts custom presets returning native Date objects and updates selection without throwing', async () => {
+            const customPresets = [
+                {
+                    label: 'Mission Window',
+                    getValue: () => ({
+                        startDate: new Date('2024-06-01T00:00:00Z'),
+                        endDate: new Date('2024-06-15T00:00:00Z'),
+                    }),
+                },
+            ]
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    show-presets
+                    inline
+                    range
+                    .presets=${customPresets}
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const presetBtn = Array.from(
+                el.shadowRoot?.querySelectorAll('.date-picker__preset') || []
+            ).find(
+                (btn: any) => btn.textContent?.trim() === 'Mission Window'
+            ) as HTMLElement
+
+            expect(presetBtn, 'Custom preset button should be rendered').to.exist
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            presetBtn.click()
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('2024-06-01')
+            expect(event.detail.endDate).to.equal('2024-06-15')
+            expect(formatDate(el.selectedStart)).to.equal('2024-06-01')
+            expect(formatDate(el.selectedEnd)).to.equal('2024-06-15')
+        })
+
+        it('Finding 3 (Reactive Timezone): changing timezone dynamically recalculates the selected calendar day and display value across midnight', async () => {
+            // In UTC, 2024-01-01T02:00:00.000Z is Jan 1, 02:00.
+            // In America/Los_Angeles (UTC-8), it corresponds to Dec 31, 2023 at 18:00.
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="UTC"
+                    start-date="2024-01-01T02:00:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(formatDate(el.selectedStart)).to.equal('2024-01-01')
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.equal('2024-01-01 02:00:00')
+
+            // Dynamically change timezone to America/Los_Angeles
+            el.timezone = 'America/Los_Angeles'
+            await elementUpdated(el)
+
+            expect(formatDate(el.selectedStart)).to.equal('2023-12-31')
+            expect(input?.value).to.equal('2023-12-31 18:00:00')
+        })
+
+        it('Finding 3 (Reactive enableTime): toggling enableTime dynamically synchronizes time picker and display value', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    start-date="2024-01-01T15:30:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            expect(formatDate(el.selectedStart)).to.equal('2024-01-01')
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.equal('2024-01-01')
+
+            // Dynamically enable time
+            el.enableTime = true
+            await elementUpdated(el)
+
+            expect(input?.value).to.equal('2024-01-01 15:30:00')
+        })
     })
 })

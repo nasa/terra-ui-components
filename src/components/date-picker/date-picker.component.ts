@@ -12,12 +12,12 @@ import TerraInput from '../input/input.component.js'
 import styles from './date-picker.styles.js'
 import { to12Hour, to24Hour } from '../../utilities/date.js'
 
-interface DateRange {
-    startDate: Temporal.PlainDate | null
-    endDate: Temporal.PlainDate | null
+export interface DateRange {
+    startDate: Temporal.PlainDate | Date | string | null
+    endDate: Temporal.PlainDate | Date | string | null
 }
 
-interface PresetRange {
+export interface PresetRange {
     label: string
     getValue: () => DateRange
 }
@@ -141,105 +141,16 @@ export default class TerraDatePicker extends TerraElement {
         return this.useEndOfDay ? 59 : 0
     }
 
-    /**
-     * Get the display timezone offset in minutes relative to UTC for a given reference date.
-     * Returns a positive value for timezones ahead of UTC (e.g. Asia/Kolkata = +330),
-     * and a negative value for timezones behind UTC (e.g. America/New_York EST = -300).
-     * Returns 0 if no timezone is configured or if the identifier is invalid.
-     */
-    #getTimezoneOffsetMinutes(ref: Temporal.PlainDate | null): number {
-        if (!this.timezone || !ref) {
-            return 0
-        }
-
-        try {
-            const zdt = ref.toZonedDateTime({
-                timeZone: this.timezone,
-                plainTime: '12:00',
-            })
-
-            const NANOSECONDS_PER_MINUTE = 60 * 1_000_000_000 // 60e9
-
-            return Math.round(zdt.offsetNanoseconds / NANOSECONDS_PER_MINUTE)
-        } catch {
-            return 0
-        }
-    }
-
-    /**
-     * Convert UTC time components to display time in the configured timezone.
-     * When no timezone is set, returns the input values unchanged.
-     */
-    #getDisplayTimeComponents(
-        utcH: number,
-        utcM: number,
-        utcS: number,
-        ref: Temporal.PlainDate | null
-    ): { hour: number; minute: number; second: number } {
-        if (!this.timezone || !ref) {
-            return { hour: utcH, minute: utcM, second: utcS }
-        }
-
-        const offsetMinutes = this.#getTimezoneOffsetMinutes(ref)
-        let totalMinutes = utcH * 60 + utcM + offsetMinutes
-        totalMinutes = ((totalMinutes % 1440) + 1440) % 1440
-
-        return {
-            hour: Math.floor(totalMinutes / 60),
-            minute: totalMinutes % 60,
-            second: utcS,
-        }
-    }
-
-    /**
-     * Convert display time (in the configured timezone) back to UTC time components.
-     * When no timezone is set, returns the input values unchanged.
-     */
-    #getUtcTimeFromDisplay(
-        dispH: number,
-        dispM: number,
-        dispS: number,
-        ref: Temporal.PlainDate | null
-    ): { hour: number; minute: number; second: number } {
-        if (!this.timezone || !ref) {
-            return { hour: dispH, minute: dispM, second: dispS }
-        }
-
-        const offsetMinutes = this.#getTimezoneOffsetMinutes(ref)
-        let totalMinutes = dispH * 60 + dispM - offsetMinutes
-        totalMinutes = ((totalMinutes % 1440) + 1440) % 1440
-
-        return {
-            hour: Math.floor(totalMinutes / 60),
-            minute: totalMinutes % 60,
-            second: dispS,
-        }
-    }
-
     /** Toggle the AM/PM period for the start or end time picker. */
     #togglePeriod(isStart: boolean) {
-        const utcH = isStart ? this.startHour : this.endHour
-        const utcM = isStart ? this.startMinute : this.endMinute
-        const utcS = isStart ? this.startSecond : this.endSecond
-        const ref = isStart ? this.selectedStart : this.selectedEnd
-        const display = this.#getDisplayTimeComponents(utcH, utcM, utcS, ref)
-        const d12 = to12Hour(display.hour)
+        const h = isStart ? this.startHour : this.endHour
+        const d12 = to12Hour(h)
         const newPeriod: 'AM' | 'PM' = d12.period === 'AM' ? 'PM' : 'AM'
-        const newDisplayH = to24Hour(d12.hour, newPeriod)
-        const utc = this.#getUtcTimeFromDisplay(
-            newDisplayH,
-            display.minute,
-            display.second,
-            ref
-        )
+        const newH = to24Hour(d12.hour, newPeriod)
         if (isStart) {
-            this.startHour = utc.hour
-            this.startMinute = utc.minute
-            this.startSecond = utc.second
+            this.startHour = newH
         } else {
-            this.endHour = utc.hour
-            this.endMinute = utc.minute
-            this.endSecond = utc.second
+            this.endHour = newH
         }
         this.#emitChange()
         this.requestUpdate()
@@ -309,16 +220,16 @@ export default class TerraDatePicker extends TerraElement {
         try {
             if (dateString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateString)) {
                 const instant = Temporal.Instant.from(dateString)
-                const utc = instant.toZonedDateTimeISO('UTC')
+                const zdt = instant.toZonedDateTimeISO(this.timezone || 'UTC')
 
                 if (isStart) {
-                    this.startHour = utc.hour
-                    this.startMinute = utc.minute
-                    this.startSecond = utc.second
+                    this.startHour = zdt.hour
+                    this.startMinute = zdt.minute
+                    this.startSecond = zdt.second
                 } else {
-                    this.endHour = utc.hour
-                    this.endMinute = utc.minute
-                    this.endSecond = utc.second
+                    this.endHour = zdt.hour
+                    this.endMinute = zdt.minute
+                    this.endSecond = zdt.second
                 }
             } else if (dateString.includes('T') || dateString.includes(' ')) {
                 const isoNaive = dateString.includes(' ')
@@ -341,19 +252,25 @@ export default class TerraDatePicker extends TerraElement {
         }
     }
 
+    /**
+     * Normalizes a date representation (Temporal.PlainDate, Date object, or date/datetime string)
+     * into a Temporal.PlainDate. Returns null if the date is falsy or cannot be parsed.
+     */
     #toPlainDate(
-        date: Temporal.PlainDate | Date | null | undefined
+        date: Temporal.PlainDate | Date | string | null | undefined
     ): Temporal.PlainDate | null {
         if (!date) {
             return null
         }
 
+        if (typeof date === 'string') {
+            return this.#parseLocalDate(date)
+        }
+
         if (date instanceof Date) {
-            return Temporal.PlainDate.from({
-                year: date.getFullYear(),
-                month: date.getMonth() + 1,
-                day: date.getDate(),
-            })
+            return Temporal.Instant.fromEpochMilliseconds(date.getTime())
+                .toZonedDateTimeISO(this.timezone || 'UTC')
+                .toPlainDate()
         }
 
         return date
@@ -405,7 +322,8 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     #doesRangeOverlapBounds(range: DateRange): boolean {
-        const { startDate, endDate } = range
+        const startDate = this.#toPlainDate(range.startDate)
+        const endDate = this.#toPlainDate(range.endDate)
         const { min, max } = this.#getBounds()
 
         if (!this.range) {
@@ -564,8 +482,14 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
-        // Handle startDate/endDate changes
-        if (changedProperties.has('startDate') || changedProperties.has('endDate')) {
+        // Handle startDate/endDate/timezone/enableTime changes
+        const datePropsChanged =
+            changedProperties.has('startDate') ||
+            changedProperties.has('endDate') ||
+            changedProperties.has('timezone') ||
+            changedProperties.has('enableTime')
+
+        if (datePropsChanged) {
             // Sync internal state with props when they change
             if (this.startDate) {
                 const start = this.#parseLocalDate(this.startDate)
@@ -577,7 +501,7 @@ export default class TerraDatePicker extends TerraElement {
                         this.initializeTimeFromDateString(this.startDate, true)
                     }
                 }
-            } else {
+            } else if (changedProperties.has('startDate')) {
                 this.selectedStart = null
             }
 
@@ -591,7 +515,7 @@ export default class TerraDatePicker extends TerraElement {
                             this.initializeTimeFromDateString(this.endDate, false)
                         }
                     }
-                } else {
+                } else if (changedProperties.has('endDate')) {
                     this.selectedEnd = null
                 }
 
@@ -781,27 +705,25 @@ export default class TerraDatePicker extends TerraElement {
         const month = String(plainDate.month).padStart(2, '0')
         const day = String(plainDate.day).padStart(2, '0')
 
-        // When time is enabled, convert UTC state values to display timezone
+        // When time is enabled, format using the configured display format
         if (this.enableTime) {
-            const display = this.#getDisplayTimeComponents(
-                isStart ? this.startHour : this.endHour,
-                isStart ? this.startMinute : this.endMinute,
-                isStart ? this.startSecond : this.endSecond,
-                plainDate
-            )
+            const hour = isStart ? this.startHour : this.endHour
+            const minute = isStart ? this.startMinute : this.endMinute
+            const second = isStart ? this.startSecond : this.endSecond
+
             // When twelveHour is enabled and no custom displayFormat, use 12h format with AM/PM
             if (this.twelveHour && !this.displayFormat) {
-                const d12 = to12Hour(display.hour)
+                const d12 = to12Hour(hour)
                 const hours = String(d12.hour).padStart(2, '0')
-                const minutes = String(display.minute).padStart(2, '0')
-                const seconds = String(display.second).padStart(2, '0')
+                const minutes = String(minute).padStart(2, '0')
+                const seconds = String(second).padStart(2, '0')
 
                 return `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${d12.period}`
             }
 
-            const hours = String(display.hour).padStart(2, '0')
-            const minutes = String(display.minute).padStart(2, '0')
-            const seconds = String(display.second).padStart(2, '0')
+            const hours = String(hour).padStart(2, '0')
+            const minutes = String(minute).padStart(2, '0')
+            const seconds = String(second).padStart(2, '0')
             const effectiveFormat = this.displayFormat || 'YYYY-MM-DD HH:mm:ss'
 
             return effectiveFormat
@@ -986,16 +908,9 @@ export default class TerraDatePicker extends TerraElement {
                 start = this.#parseLocalDate(sdp)
 
                 const stc = stp.split(':').map(Number)
-                const sUtc = this.#getUtcTimeFromDisplay(
-                    stc[0] || 0,
-                    stc[1] || 0,
-                    stc[2] || 0,
-                    start
-                )
-
-                this.startHour = sUtc.hour
-                this.startMinute = sUtc.minute
-                this.startSecond = sUtc.second
+                this.startHour = stc[0] || 0
+                this.startMinute = stc[1] || 0
+                this.startSecond = stc[2] || 0
             } else {
                 start = this.#parseLocalDate(startFormatted)
             }
@@ -1006,16 +921,9 @@ export default class TerraDatePicker extends TerraElement {
                 end = this.#parseLocalDate(edp)
 
                 const etc = etp.split(':').map(Number)
-                const eUtc = this.#getUtcTimeFromDisplay(
-                    etc[0] || 0,
-                    etc[1] || 0,
-                    etc[2] || 0,
-                    end
-                )
-
-                this.endHour = eUtc.hour
-                this.endMinute = eUtc.minute
-                this.endSecond = eUtc.second
+                this.endHour = etc[0] || 0
+                this.endMinute = etc[1] || 0
+                this.endSecond = etc[2] || 0
             } else {
                 end = this.#parseLocalDate(endFormatted)
             }
@@ -1067,15 +975,9 @@ export default class TerraDatePicker extends TerraElement {
                 const [dp, tp] = formatted.split(/[T\s]+/)
                 date = this.#parseLocalDate(dp)
                 const tc = tp.split(':').map(Number)
-                const utc = this.#getUtcTimeFromDisplay(
-                    tc[0] || 0,
-                    tc[1] || 0,
-                    tc[2] || 0,
-                    date
-                )
-                this.startHour = utc.hour
-                this.startMinute = utc.minute
-                this.startSecond = utc.second
+                this.startHour = tc[0] || 0
+                this.startMinute = tc[1] || 0
+                this.startSecond = tc[2] || 0
             } else {
                 date = this.#parseLocalDate(formatted)
             }
@@ -1145,16 +1047,9 @@ export default class TerraDatePicker extends TerraElement {
             date = this.#parseLocalDate(dp)
 
             const tc = tp.split(':').map(Number)
-            const utc = this.#getUtcTimeFromDisplay(
-                tc[0] || 0,
-                tc[1] || 0,
-                tc[2] || 0,
-                date
-            )
-
-            this.startHour = utc.hour
-            this.startMinute = utc.minute
-            this.startSecond = utc.second
+            this.startHour = tc[0] || 0
+            this.startMinute = tc[1] || 0
+            this.startSecond = tc[2] || 0
         } else {
             date = this.#parseLocalDate(formatted)
         }
@@ -1228,15 +1123,9 @@ export default class TerraDatePicker extends TerraElement {
             date = this.#parseLocalDate(dp)
 
             const tc = tp.split(':').map(Number)
-            const utc = this.#getUtcTimeFromDisplay(
-                tc[0] || 0,
-                tc[1] || 0,
-                tc[2] || 0,
-                date
-            )
-            this.endHour = utc.hour
-            this.endMinute = utc.minute
-            this.endSecond = utc.second
+            this.endHour = tc[0] || 0
+            this.endMinute = tc[1] || 0
+            this.endSecond = tc[2] || 0
         } else {
             date = this.#parseLocalDate(formatted)
         }
@@ -1628,7 +1517,9 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     #selectPreset(preset: PresetRange) {
-        const { startDate, endDate } = preset.getValue()
+        const raw = preset.getValue()
+        const startDate = this.#toPlainDate(raw.startDate)
+        const endDate = this.#toPlainDate(raw.endDate)
 
         if (!this.#isPresetWithinBounds({ startDate, endDate })) {
             this.emit('terra-date-selection-invalid', {
@@ -1688,20 +1579,12 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         if (this.enableTime) {
-            if (startDate) {
-                const startUtc = this.#getUtcTimeFromDisplay(0, 0, 0, startDate)
-
-                this.startHour = startUtc.hour
-                this.startMinute = startUtc.minute
-                this.startSecond = startUtc.second
-            }
-            if (endDate) {
-                const endUtc = this.#getUtcTimeFromDisplay(23, 59, 59, endDate)
-
-                this.endHour = endUtc.hour
-                this.endMinute = endUtc.minute
-                this.endSecond = endUtc.second
-            }
+            this.startHour = 0
+            this.startMinute = 0
+            this.startSecond = 0
+            this.endHour = this.getDefaultEndHour()
+            this.endMinute = this.getDefaultEndMinute()
+            this.endSecond = this.getDefaultEndSecond()
         }
 
         this.#emitChange()
@@ -1718,18 +1601,12 @@ export default class TerraDatePicker extends TerraElement {
         if (this.selectedStart) {
             if (this.enableTime) {
                 const timeZone = this.timezone || 'UTC'
-                const display = this.#getDisplayTimeComponents(
-                    this.startHour,
-                    this.startMinute,
-                    this.startSecond,
-                    this.selectedStart
-                )
                 const zdt = this.selectedStart.toZonedDateTime({
                     timeZone,
                     plainTime: {
-                        hour: display.hour,
-                        minute: display.minute,
-                        second: display.second,
+                        hour: this.startHour,
+                        minute: this.startMinute,
+                        second: this.startSecond,
                     },
                 })
                 startDateTime = new Date(
@@ -1743,18 +1620,12 @@ export default class TerraDatePicker extends TerraElement {
         if (this.selectedEnd) {
             if (this.enableTime) {
                 const timeZone = this.timezone || 'UTC'
-                const display = this.#getDisplayTimeComponents(
-                    this.endHour,
-                    this.endMinute,
-                    this.endSecond,
-                    this.selectedEnd
-                )
                 const zdt = this.selectedEnd.toZonedDateTime({
                     timeZone,
                     plainTime: {
-                        hour: display.hour,
-                        minute: display.minute,
-                        second: display.second,
+                        hour: this.endHour,
+                        minute: this.endMinute,
+                        second: this.endSecond,
                     },
                 })
                 endDateTime = new Date(
@@ -1774,45 +1645,33 @@ export default class TerraDatePicker extends TerraElement {
     }
 
     #changeTime(type: 'hour' | 'minute' | 'second', delta: number, isStart: boolean) {
-        const utcH = isStart ? this.startHour : this.endHour
-        const utcM = isStart ? this.startMinute : this.endMinute
-        const utcS = isStart ? this.startSecond : this.endSecond
-        const ref = isStart ? this.selectedStart : this.selectedEnd
-        const display = this.#getDisplayTimeComponents(utcH, utcM, utcS, ref)
-
-        let newDisplayH = display.hour
-        let newDisplayM = display.minute
-        let newDisplayS = display.second
+        let hour = isStart ? this.startHour : this.endHour
+        let minute = isStart ? this.startMinute : this.endMinute
+        let second = isStart ? this.startSecond : this.endSecond
 
         if (type === 'hour') {
             if (this.twelveHour) {
                 // Spin within 1–12, preserving the current AM/PM period
-                const d12 = to12Hour(display.hour)
+                const d12 = to12Hour(hour)
                 const newHour12 = ((((d12.hour - 1 + delta) % 12) + 12) % 12) + 1
-                newDisplayH = to24Hour(newHour12, d12.period)
+                hour = to24Hour(newHour12, d12.period)
             } else {
-                newDisplayH = (((display.hour + delta) % 24) + 24) % 24
+                hour = (((hour + delta) % 24) + 24) % 24
             }
         } else if (type === 'minute') {
-            newDisplayM = (((display.minute + delta) % 60) + 60) % 60
+            minute = (((minute + delta) % 60) + 60) % 60
         } else {
-            newDisplayS = (((display.second + delta) % 60) + 60) % 60
+            second = (((second + delta) % 60) + 60) % 60
         }
 
-        const utc = this.#getUtcTimeFromDisplay(
-            newDisplayH,
-            newDisplayM,
-            newDisplayS,
-            ref
-        )
         if (isStart) {
-            this.startHour = utc.hour
-            this.startMinute = utc.minute
-            this.startSecond = utc.second
+            this.startHour = hour
+            this.startMinute = minute
+            this.startSecond = second
         } else {
-            this.endHour = utc.hour
-            this.endMinute = utc.minute
-            this.endSecond = utc.second
+            this.endHour = hour
+            this.endMinute = minute
+            this.endSecond = second
         }
 
         this.#emitChange()
@@ -1827,57 +1686,50 @@ export default class TerraDatePicker extends TerraElement {
         const input = event.target as HTMLInputElement
         const value = parseInt(input.value, 10)
 
-        const utcH = isStart ? this.startHour : this.endHour
-        const utcM = isStart ? this.startMinute : this.endMinute
-        const utcS = isStart ? this.startSecond : this.endSecond
-        const ref = isStart ? this.selectedStart : this.selectedEnd
-        const display = this.#getDisplayTimeComponents(utcH, utcM, utcS, ref)
-        const d12 = this.twelveHour ? to12Hour(display.hour) : null
+        const currentHour = isStart ? this.startHour : this.endHour
+        const currentMinute = isStart ? this.startMinute : this.endMinute
+        const currentSecond = isStart ? this.startSecond : this.endSecond
+        const d12 = this.twelveHour ? to12Hour(currentHour) : null
 
-        let newDisplayH = display.hour
-        let newDisplayM = display.minute
-        let newDisplayS = display.second
+        let newH = currentHour
+        let newM = currentMinute
+        let newS = currentSecond
 
         if (type === 'hour') {
             const min = this.twelveHour ? 1 : 0
             const max = this.twelveHour ? 12 : 23
 
             if (Number.isNaN(value) || value < min || value > max) {
-                input.value = (d12 ? d12.hour : display.hour)
+                input.value = (d12 ? d12.hour : currentHour)
                     .toString()
                     .padStart(2, '0')
                 return
             }
-            newDisplayH = this.twelveHour ? to24Hour(value, d12!.period) : value
+            newH = this.twelveHour ? to24Hour(value, d12!.period) : value
         } else if (type === 'minute') {
             if (Number.isNaN(value) || value < 0 || value >= 60) {
-                input.value = display.minute.toString().padStart(2, '0')
+                input.value = currentMinute.toString().padStart(2, '0')
                 return
             }
-            newDisplayM = value
+            newM = value
         } else {
             if (Number.isNaN(value) || value < 0 || value >= 60) {
-                input.value = display.second.toString().padStart(2, '0')
+                input.value = currentSecond.toString().padStart(2, '0')
                 return
             }
-            newDisplayS = value
+            newS = value
         }
 
-        const utc = this.#getUtcTimeFromDisplay(
-            newDisplayH,
-            newDisplayM,
-            newDisplayS,
-            ref
-        )
         if (isStart) {
-            this.startHour = utc.hour
-            this.startMinute = utc.minute
-            this.startSecond = utc.second
+            this.startHour = newH
+            this.startMinute = newM
+            this.startSecond = newS
         } else {
-            this.endHour = utc.hour
-            this.endMinute = utc.minute
-            this.endSecond = utc.second
+            this.endHour = newH
+            this.endMinute = newM
+            this.endSecond = newS
         }
+
         this.#emitChange()
         this.requestUpdate()
     }
@@ -2112,20 +1964,8 @@ export default class TerraDatePicker extends TerraElement {
     #renderTimePicker() {
         if (!this.enableTime) return ''
 
-        const startDisplay = this.#getDisplayTimeComponents(
-            this.startHour,
-            this.startMinute,
-            this.startSecond,
-            this.selectedStart
-        )
-        const endDisplay = this.#getDisplayTimeComponents(
-            this.endHour,
-            this.endMinute,
-            this.endSecond,
-            this.selectedEnd
-        )
-        const startD12 = this.twelveHour ? to12Hour(startDisplay.hour) : null
-        const endD12 = this.twelveHour ? to12Hour(endDisplay.hour) : null
+        const startD12 = this.twelveHour ? to12Hour(this.startHour) : null
+        const endD12 = this.twelveHour ? to12Hour(this.endHour) : null
         const hourMin = this.twelveHour ? '1' : '0'
         const hourMax = this.twelveHour ? '12' : '23'
 
@@ -2137,26 +1977,17 @@ export default class TerraDatePicker extends TerraElement {
                             <input
                                 type="number"
                                 class="date-picker__time-input"
-                                .value=${(startD12
-                                    ? startD12.hour
-                                    : startDisplay.hour
-                                )
+                                .value=${(startD12 ? startD12.hour : this.startHour)
                                     .toString()
                                     .padStart(2, '0')}
                                 @input=${(e: Event) =>
                                     this.#handleTimeInput(e, 'hour', true)}
                                 @blur=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
-                                    const d = this.#getDisplayTimeComponents(
-                                        this.startHour,
-                                        this.startMinute,
-                                        this.startSecond,
-                                        this.selectedStart
-                                    )
                                     const d12 = this.twelveHour
-                                        ? to12Hour(d.hour)
+                                        ? to12Hour(this.startHour)
                                         : null
-                                    input.value = (d12 ? d12.hour : d.hour)
+                                    input.value = (d12 ? d12.hour : this.startHour)
                                         .toString()
                                         .padStart(2, '0')
                                 }}
@@ -2213,20 +2044,14 @@ export default class TerraDatePicker extends TerraElement {
                             <input
                                 type="number"
                                 class="date-picker__time-input"
-                                .value=${startDisplay.minute
-                                    .toString()
-                                    .padStart(2, '0')}
+                                .value=${this.startMinute.toString().padStart(2, '0')}
                                 @input=${(e: Event) =>
                                     this.#handleTimeInput(e, 'minute', true)}
                                 @blur=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
-                                    const d = this.#getDisplayTimeComponents(
-                                        this.startHour,
-                                        this.startMinute,
-                                        this.startSecond,
-                                        this.selectedStart
-                                    )
-                                    input.value = d.minute.toString().padStart(2, '0')
+                                    input.value = this.startMinute
+                                        .toString()
+                                        .padStart(2, '0')
                                 }}
                                 min="0"
                                 max="59"
@@ -2282,20 +2107,14 @@ export default class TerraDatePicker extends TerraElement {
                             <input
                                 type="number"
                                 class="date-picker__time-input"
-                                .value=${startDisplay.second
-                                    .toString()
-                                    .padStart(2, '0')}
+                                .value=${this.startSecond.toString().padStart(2, '0')}
                                 @input=${(e: Event) =>
                                     this.#handleTimeInput(e, 'second', true)}
                                 @blur=${(e: Event) => {
                                     const input = e.target as HTMLInputElement
-                                    const d = this.#getDisplayTimeComponents(
-                                        this.startHour,
-                                        this.startMinute,
-                                        this.startSecond,
-                                        this.selectedStart
-                                    )
-                                    input.value = d.second.toString().padStart(2, '0')
+                                    input.value = this.startSecond
+                                        .toString()
+                                        .padStart(2, '0')
                                 }}
                                 min="0"
                                 max="59"
@@ -2374,7 +2193,7 @@ export default class TerraDatePicker extends TerraElement {
                                           class="date-picker__time-input"
                                           .value=${(endD12
                                               ? endD12.hour
-                                              : endDisplay.hour
+                                              : this.endHour
                                           )
                                               .toString()
                                               .padStart(2, '0')}
@@ -2383,17 +2202,12 @@ export default class TerraDatePicker extends TerraElement {
                                           @blur=${(e: Event) => {
                                               const input =
                                                   e.target as HTMLInputElement
-                                              const d =
-                                                  this.#getDisplayTimeComponents(
-                                                      this.endHour,
-                                                      this.endMinute,
-                                                      this.endSecond,
-                                                      this.selectedEnd
-                                                  )
                                               const d12 = this.twelveHour
-                                                  ? to12Hour(d.hour)
+                                                  ? to12Hour(this.endHour)
                                                   : null
-                                              input.value = (d12 ? d12.hour : d.hour)
+                                              input.value = (
+                                                  d12 ? d12.hour : this.endHour
+                                              )
                                                   .toString()
                                                   .padStart(2, '0')
                                           }}
@@ -2452,7 +2266,7 @@ export default class TerraDatePicker extends TerraElement {
                                       <input
                                           type="number"
                                           class="date-picker__time-input"
-                                          .value=${endDisplay.minute
+                                          .value=${this.endMinute
                                               .toString()
                                               .padStart(2, '0')}
                                           @input=${(e: Event) =>
@@ -2464,14 +2278,7 @@ export default class TerraDatePicker extends TerraElement {
                                           @blur=${(e: Event) => {
                                               const input =
                                                   e.target as HTMLInputElement
-                                              const d =
-                                                  this.#getDisplayTimeComponents(
-                                                      this.endHour,
-                                                      this.endMinute,
-                                                      this.endSecond,
-                                                      this.selectedEnd
-                                                  )
-                                              input.value = d.minute
+                                              input.value = this.endMinute
                                                   .toString()
                                                   .padStart(2, '0')
                                           }}
@@ -2538,7 +2345,7 @@ export default class TerraDatePicker extends TerraElement {
                                       <input
                                           type="number"
                                           class="date-picker__time-input"
-                                          .value=${endDisplay.second
+                                          .value=${this.endSecond
                                               .toString()
                                               .padStart(2, '0')}
                                           @input=${(e: Event) =>
@@ -2550,14 +2357,7 @@ export default class TerraDatePicker extends TerraElement {
                                           @blur=${(e: Event) => {
                                               const input =
                                                   e.target as HTMLInputElement
-                                              const d =
-                                                  this.#getDisplayTimeComponents(
-                                                      this.endHour,
-                                                      this.endMinute,
-                                                      this.endSecond,
-                                                      this.selectedEnd
-                                                  )
-                                              input.value = d.second
+                                              input.value = this.endSecond
                                                   .toString()
                                                   .padStart(2, '0')
                                           }}
