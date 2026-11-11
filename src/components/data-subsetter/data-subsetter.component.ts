@@ -1,7 +1,6 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import type { CmrSearchResult } from '../../apis/cmr.api.js'
 import {
     type ConfiguredOutputFormat,
     harmonyApi,
@@ -10,11 +9,13 @@ import {
     type SubsetJobLink,
     type Variable,
 } from '../../apis/harmony.api.js'
+import type { UmmC } from '../../apis/types/cmr/umm-c.js'
 import {
     CollectionController,
     type CollectionWithAvailableServices,
 } from '../../controllers/collection.controller.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
+import { QueryController } from '../../controllers/query.controller.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
 import type { TerraMapChangeEvent } from '../../events/terra-map.js'
 import type { TerraSelectEvent } from '../../events/terra-select.js'
@@ -29,6 +30,7 @@ import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
 import { sendDataToJupyterNotebook } from '../../lib/jupyter.js'
 import { AuthMixin } from '../../mixins/auth.mixin.js'
 import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import { queryCmrCollectionSearch } from '../../queries/cmr.queries.js'
 import cmrVariableService from '../../services/cmr-variable.service.js'
 import componentStyles from '../../styles/component.styles.js'
 import { getBasePath } from '../../utilities/base-path.js'
@@ -220,16 +222,7 @@ export default class TerraDataSubsetter extends AuthMixin(
     collectionSearchQuery?: string
 
     @state()
-    collectionSearchLoading: boolean = false
-
-    @state()
-    collectionSearchResults?: Array<CmrSearchResult>
-
-    @state()
     collectionLoading: boolean = false
-
-    @state()
-    collectionAccordionOpen: boolean = true
 
     @state()
     dataAccessMode: 'original' | 'subset' = 'original'
@@ -281,6 +274,26 @@ export default class TerraDataSubsetter extends AuthMixin(
 
     #harmonyRequestController = new HarmonyRequestController(this)
 
+    // Backs the "Select Data Collection" search UI (#renderSearchForCollection)
+    #collectionSearchController = new QueryController(this, () =>
+        queryCmrCollectionSearch(
+            {
+                keyword: this.collectionSearchQuery,
+                consortium: 'EOSDIS',
+                hasGranulesOrOpenSearch: true,
+                pageSize: 50,
+                // With no search term, default to the most-used EOSDIS collections.
+                // Once the user types a keyword, let CMR sort by relevance instead.
+                ...(this.collectionSearchQuery
+                    ? {}
+                    : { sortBy: 'usage_score', sortDirection: 'desc' }),
+            },
+            {
+                enabled: this.showCollectionSearch,
+            }
+        )
+    )
+
     @watch(['jobId'], { waitUntilFirstUpdate: true })
     jobIdChanged() {
         if (this.jobId) {
@@ -307,9 +320,7 @@ export default class TerraDataSubsetter extends AuthMixin(
 
     @watch('collectionEntryId', { waitUntilFirstUpdate: true })
     collectionEntryIdChanged() {
-        if (this.collectionEntryId) {
-            this.showCollectionSearch = false
-        } else {
+        if (!this.collectionEntryId) {
             this.showCollectionSearch = true
         }
     }
@@ -429,7 +440,6 @@ export default class TerraDataSubsetter extends AuthMixin(
         this.#resetFormatSelection()
 
         this.collectionLoading = false
-        this.collectionAccordionOpen = false
     }
 
     @watch(['granuleMinDate', 'granuleMaxDate'])
@@ -520,6 +530,15 @@ export default class TerraDataSubsetter extends AuthMixin(
                                                           </button>`
                                                         : nothing
                                                 }
+                                            </div>
+                                        `
+                                      : nothing
+                              }
+                              ${
+                                  this.showCollectionSearch
+                                      ? html`
+                                            <div class="section">
+                                                ${this.#renderSearchForCollection()}
                                             </div>
                                         `
                                       : nothing
@@ -650,6 +669,15 @@ export default class TerraDataSubsetter extends AuthMixin(
                               </terra-alert>
                           `
                         : html`
+                              ${
+                                  this.showCollectionSearch
+                                      ? html`
+                                            <div class="section">
+                                                ${this.#renderSearchForCollection()}
+                                            </div>
+                                        `
+                                      : nothing
+                              }
                               ${
                                   !this.isHistoryView &&
                                   this.collectionWithServices?.services?.length
@@ -933,15 +961,6 @@ export default class TerraDataSubsetter extends AuthMixin(
 
         return html`
             ${
-                this.showCollectionSearch
-                    ? html`
-                          <div class="section">
-                              ${this.#renderSearchForCollection()}
-                          </div>
-                      `
-                    : nothing
-            }
-            ${
                 this.dataAccessMode === 'original'
                     ? nothing
                     : hasSubsetOption
@@ -1096,139 +1115,173 @@ export default class TerraDataSubsetter extends AuthMixin(
         this.requestUpdate()
     }
 
+    /** Formats a search result's overall date coverage, e.g. "2015-01-01 - ongoing". */
+    #formatCollectionTemporalRange(
+        temporalExtents?: UmmC['TemporalExtents']
+    ): string | undefined {
+        if (!temporalExtents?.length) return undefined
+
+        let minStart: Date | null = null
+        let maxEnd: Date | null = null
+        let endsAtPresent = false
+
+        for (const temporal of temporalExtents) {
+            if (temporal.EndsAtPresentFlag) endsAtPresent = true
+
+            for (const range of temporal.RangeDateTimes ?? []) {
+                const start = new Date(range.BeginningDateTime)
+                if (!minStart || start < minStart) minStart = start
+
+                if (range.EndingDateTime) {
+                    const end = new Date(range.EndingDateTime)
+                    if (!maxEnd || end > maxEnd) maxEnd = end
+                }
+            }
+
+            for (const singleDate of temporal.SingleDateTimes ?? []) {
+                const date = new Date(singleDate)
+                if (!minStart || date < minStart) minStart = date
+                if (!maxEnd || date > maxEnd) maxEnd = date
+            }
+        }
+
+        if (!minStart) return undefined
+
+        const endLabel = endsAtPresent || !maxEnd ? 'ongoing' : formatDate(maxEnd)
+        return `${formatDate(minStart)} - ${endLabel}`
+    }
+
+    /** Formats a search result's spatial coverage, e.g. "Global" or a lat/lon bounding box. */
+    #formatCollectionSpatialArea(
+        spatialExtent?: UmmC['SpatialExtent']
+    ): string | undefined {
+        const boundingRects =
+            spatialExtent?.HorizontalSpatialDomain?.Geometry?.BoundingRectangles
+        if (!boundingRects?.length) return undefined
+
+        const isGlobal = boundingRects.some(
+            rect =>
+                rect.WestBoundingCoordinate <= -179 &&
+                rect.EastBoundingCoordinate >= 179 &&
+                rect.SouthBoundingCoordinate <= -89 &&
+                rect.NorthBoundingCoordinate >= 89
+        )
+        if (isGlobal) return 'Global'
+
+        const round = (n: number) => Math.round(n * 10) / 10
+        const rect = boundingRects[0]
+        return (
+            `${round(rect.SouthBoundingCoordinate)}° to ${round(rect.NorthBoundingCoordinate)}° lat, ` +
+            `${round(rect.WestBoundingCoordinate)}° to ${round(rect.EastBoundingCoordinate)}° lon`
+        )
+    }
+
     #renderSearchForCollection() {
+        const searchResults = this.#collectionSearchController.result?.data?.items
+        const searchLoading = this.#collectionSearchController.result?.isFetching
+
         return html`
-            <terra-accordion .open=${this.collectionAccordionOpen}>
-                <div slot="summary">
-                    <span class="accordion-title">Search for Collection:</span>
-                </div>
+            <h2 class="section-title">Search for Collection</h2>
 
-                <div
-                    slot="summary-right"
-                    style="display: flex; align-items: center; gap: 10px"
+            <div class="search-container-mini">
+                <terra-input
+                    type="search"
+                    class="search-input-mini"
+                    id="search-input"
+                    label="Search collections"
+                    hide-label
+                    placeholder="Search using keywords, variables, dataset name, and more..."
+                    @terra-input="${(e: Event) =>
+                        this.handleCollectionSearch((e.target as TerraInput).value)}"
                 >
-                    ${
-                        this.collectionEntryId
-                            ? html` <span
-                                      class="accordion-value"
-                                      id="selected-collection-display"
-                                      >${this.collectionEntryId}</span
-                                  >
+                    <terra-icon
+                        name="solid-magnifying-glass"
+                        library="heroicons"
+                        slot="suffix"
+                    ></terra-icon>
+                </terra-input>
+            </div>
 
-                                  <button
-                                      class="reset-btn"
-                                      @click=${() => (this.collectionEntryId = undefined)}
-                                  >
-                                      Reset
-                                  </button>`
-                            : nothing
-                    }
-                </div>
+            <div id="search-results-section" class="search-results-section">
+                ${
+                    searchLoading
+                        ? html`
+                              <div id="loading-mini" class="loading-mini">
+                                  <div class="spinner-mini"></div>
+                                  <div>Searching NASA CMR...</div>
+                              </div>
+                          `
+                        : searchResults?.length
+                          ? html` <div
+                                id="results-container-mini"
+                                class="results-container-mini"
+                            >
+                                ${searchResults?.map(item => {
+                                    const temporalRange =
+                                        this.#formatCollectionTemporalRange(
+                                            item.umm.TemporalExtents
+                                        )
+                                    const spatialArea =
+                                        this.#formatCollectionSpatialArea(
+                                            item.umm.SpatialExtent
+                                        )
 
-                <div class="search-container-mini">
-                    <terra-input
-                        type="search"
-                        class="search-input-mini"
-                        id="search-input"
-                        label="Search collections"
-                        hide-label
-                        placeholder="Search using keywords, variables, dataset name, and more..."
-                        @terra-input="${(e: Event) =>
-                            this.handleCollectionSearch(
-                                (e.target as TerraInput).value
-                            )}"
-                    >
-                        <terra-icon name="solid-magnifying-glass" library="heroicons" slot="suffix"></terra-icon>
-                    </terra-input>
-                </div>
-
-                <div id="search-results-section" class="search-results-section">
-                    ${
-                        this.collectionSearchLoading
-                            ? html`
-                                  <div id="loading-mini" class="loading-mini">
-                                      <div class="spinner-mini"></div>
-                                      <div>Searching NASA CMR...</div>
-                                  </div>
-                              `
-                            : this.collectionSearchResults?.length
-                              ? html` <div
-                                    id="results-container-mini"
-                                    class="results-container-mini"
-                                >
-                                    ${this.collectionSearchResults?.map(
-                                        item => html`
-                                            <div
-                                                class="result-item-mini"
-                                                @click=${() => {
-                                                    this.collectionEntryId =
-                                                        item.collectionEntryId
-                                                    this.collectionAccordionOpen = false
-                                                    this.collectionLoading = true
-
-                                                    // if this item is a variable, we'll also go ahead and select the variable
-                                                    if (item.type === 'variable') {
-                                                        this.selectedVariables = [
-                                                            {
-                                                                name: item.entryId,
-                                                                href: '',
-                                                                conceptId:
-                                                                    item.conceptId,
-                                                            },
-                                                        ]
-                                                    }
-
-                                                    this.requestUpdate()
-                                                }}
-                                                style="cursor: pointer;"
-                                            >
-                                                <div class="result-title-mini">
-                                                    ${item.title}
-                                                </div>
-                                                <div class="result-id-mini">
-                                                    ${item.entryId}
-                                                </div>
-                                                <div class="result-description-mini">
-                                                    ${item.summary || item.title}
-                                                </div>
-                                                <div class="result-meta-mini">
-                                                    <span
-                                                        >📅 2000-02-24 - ongoing</span
-                                                    >
-                                                    <span>🌍 Global</span>
-                                                    <span>🏢 ${item.provider}</span>
-                                                    ${
-                                                        item.type === 'variable'
-                                                            ? html` <span
-                                                                  >📊
-                                                                  ${item.collectionEntryId}</span
-                                                              >`
-                                                            : nothing
-                                                    }
-                                                    <span class="tag-mini"
-                                                        >${item.type.toUpperCase()}</span
-                                                    >
-                                                </div>
+                                    return html`
+                                        <div
+                                            class="result-item-mini"
+                                            @click=${() => {
+                                                this.collectionEntryId =
+                                                    item.meta['native-id']
+                                                this.collectionLoading = true
+                                                this.requestUpdate()
+                                            }}
+                                            style="cursor: pointer;"
+                                        >
+                                            <div class="result-title-mini">
+                                                ${item.umm.EntryTitle}
                                             </div>
-                                        `
-                                    )}
-                                </div>`
-                              : this.collectionSearchResults &&
-                                  this.collectionSearchResults.length === 0
-                                ? html`<div
-                                      id="no-results-mini"
-                                      class="no-results-mini"
-                                  >
-                                      <p>
-                                          No results found for
-                                          '${this.collectionSearchQuery}'. Try
-                                          adjusting your search term.
-                                      </p>
-                                  </div>`
-                                : nothing
-                    }
-                </div>
-            </terra-accordion>
+                                            <div class="result-id-mini">
+                                                ${item.meta['native-id']}
+                                            </div>
+                                            <div class="result-description-mini">
+                                                ${
+                                                    item.umm.Abstract ||
+                                                    item.umm.EntryTitle
+                                                }
+                                            </div>
+                                            <div class="result-meta-mini">
+                                                ${
+                                                    temporalRange
+                                                        ? html`<span
+                                                              >📅
+                                                              ${temporalRange}</span
+                                                          >`
+                                                        : nothing
+                                                }
+                                                ${
+                                                    spatialArea
+                                                        ? html`<span
+                                                              >🌍
+                                                              ${spatialArea}</span
+                                                          >`
+                                                        : nothing
+                                                }
+                                            </div>
+                                        </div>
+                                    `
+                                })}
+                            </div>`
+                          : searchResults && searchResults.length === 0
+                            ? html`<div id="no-results-mini" class="no-results-mini">
+                                  <p>
+                                      No results found for
+                                      '${this.collectionSearchQuery}'. Try adjusting
+                                      your search term.
+                                  </p>
+                              </div>`
+                            : nothing
+                }
+            </div>
 
             ${
                 this.collectionLoading
@@ -1261,7 +1314,6 @@ export default class TerraDataSubsetter extends AuthMixin(
 
     @debounce(500)
     handleCollectionSearch(searchTerm: string) {
-        console.log('handle collection search ', searchTerm)
         this.collectionSearchQuery = searchTerm
     }
 

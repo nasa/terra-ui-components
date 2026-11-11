@@ -71,6 +71,24 @@ export function queryCmrVariables(
     }
 }
 
+export function queryCmrCollectionSearch(
+    searchParams: Parameters<typeof cmrApi.searchCollections>[0],
+    options?: RequestOptions & { enabled?: boolean }
+): QueryObserverOptions<Awaited<ReturnType<typeof cmrApi.searchCollections>> | null> {
+    const { enabled = true, ...requestOptions } = options ?? {}
+
+    return {
+        queryKey: ['cmr', 'collection-search', searchParams],
+        queryFn: async ({ signal }) => {
+            return cmrApi.searchCollections(searchParams, {
+                ...requestOptions,
+                signal,
+            })
+        },
+        enabled,
+    }
+}
+
 export function queryCmrCollectionTags(
     collectionId?: string,
     options?: RequestOptions
