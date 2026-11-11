@@ -25,6 +25,15 @@ export default css`
         border-radius: var(--terra-border-radius-medium);
         border: 1px solid var(--terra-popup-border-color);
         box-shadow: var(--terra-shadow-large);
+        z-index: var(--terra-z-index-dropdown);
+    }
+
+    @media (max-width: 768px) {
+        .popup {
+            max-width: calc(100vw - 1rem);
+            max-height: calc(100vh - 1rem);
+            box-sizing: border-box;
+        }
     }
 
     .popup--fixed {
