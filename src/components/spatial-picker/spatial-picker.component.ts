@@ -392,8 +392,9 @@ export default class TerraSpatialPicker extends TerraElement {
             .label=${this.label}
             .hideLabel=${this.hideLabel}
             .value=${SpatialPickerService.serialize(this.initialValue)}
-            placeholder="${this.spatialConstraints}"
+            placeholder="${this.showBoundingBoxSelection ? this.spatialConstraints : 'Please enter point'}"
             aria-controls="map"
+            exportparts="clear-btn:spatial-picker__clear-btn, form-control-label:spatial-picker__form-control-label"
             aria-expanded=${this.inline ? true : this.isExpanded}
             @terra-input=${this._input}
             @terra-change=${this._change}
@@ -414,6 +415,7 @@ export default class TerraSpatialPicker extends TerraElement {
                           type="button"
                           class="spatial-picker__clear-btn"
                           aria-label="Clear input"
+                          part="clear-btn"
                           tabindex="-1"
                           @click=${(e: Event) => {
                               e.stopPropagation()
@@ -423,7 +425,8 @@ export default class TerraSpatialPicker extends TerraElement {
                           <svg
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
-                              fill="currentColor"
+                              fill="var(--terra-color-bg-surface-neutral-primary)"
+                              stroke="currentColor"
                           >
                               <path
                                   fill-rule="evenodd"

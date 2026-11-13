@@ -14,6 +14,7 @@ export default css`
 
     terra-spatial-picker {
         grid-column: 2 / 3;
+        padding-block-start: 0.35rem;
     }
 
     terra-date-range-slider {
