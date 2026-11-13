@@ -1995,4 +1995,70 @@ describe('<terra-data-subsetter> collection search without a pre-selected collec
 
         expect(el.shadowRoot?.querySelector('#search-input')).to.not.exist
     })
+
+    it('hides the results list after a collection is selected, and shows it again when the search input is refocused', async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                return okJson({
+                    hits: 1,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'DEFAULT_COL_1',
+                                'provider-id': 'TEST_PROVIDER',
+                            },
+                            umm: {
+                                EntryTitle: 'Default Most-Used Collection',
+                                Abstract: 'A commonly used collection',
+                            },
+                        },
+                    ],
+                })
+            }
+
+            // collection capabilities/umm lookups triggered once a collection is selected
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Default Most-Used Collection'
+                    )
+                ),
+            'expected the default collection search results to populate',
+            { timeout: 3000 }
+        )
+
+        expect(el.collectionSearchResultsVisible).to.be.true
+
+        el.shadowRoot?.querySelector<HTMLElement>('.result-item-mini')?.click()
+
+        await elementUpdated(el)
+
+        expect(el.collectionSearchResultsVisible).to.be.false
+        expect(el.shadowRoot?.querySelector('.result-item-mini')).to.not.exist
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input') as any
+        searchInput.dispatchEvent(new CustomEvent('terra-focus'))
+
+        await elementUpdated(el)
+
+        expect(el.collectionSearchResultsVisible).to.be.true
+
+        await waitUntil(
+            () => Boolean(el.shadowRoot?.querySelector('.result-item-mini')),
+            'expected the results list to reappear once the search input regains focus',
+            { timeout: 3000 }
+        )
+    })
 })

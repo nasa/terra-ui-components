@@ -222,6 +222,9 @@ export default class TerraDataSubsetter extends AuthMixin(
     collectionSearchQuery?: string
 
     @state()
+    collectionSearchResultsVisible: boolean = true
+
+    @state()
     collectionLoading: boolean = false
 
     @state()
@@ -1193,6 +1196,9 @@ export default class TerraDataSubsetter extends AuthMixin(
                     placeholder="Search using keywords, variables, dataset name, and more..."
                     @terra-input="${(e: Event) =>
                         this.handleCollectionSearch((e.target as TerraInput).value)}"
+                    @terra-focus="${() => {
+                        this.collectionSearchResultsVisible = true
+                    }}"
                 >
                     <terra-icon
                         name="solid-magnifying-glass"
@@ -1204,15 +1210,17 @@ export default class TerraDataSubsetter extends AuthMixin(
 
             <div id="search-results-section" class="search-results-section">
                 ${
-                    searchLoading
-                        ? html`
+                    !this.collectionSearchResultsVisible
+                        ? nothing
+                        : searchLoading
+                          ? html`
                               <div id="loading-mini" class="loading-mini">
                                   <div class="spinner-mini"></div>
                                   <div>Searching NASA CMR...</div>
                               </div>
                           `
-                        : searchResults?.length
-                          ? html` <div
+                          : searchResults?.length
+                            ? html` <div
                                 id="results-container-mini"
                                 class="results-container-mini"
                             >
@@ -1230,9 +1238,9 @@ export default class TerraDataSubsetter extends AuthMixin(
                                         <div
                                             class="result-item-mini"
                                             @click=${() => {
-                                                this.collectionEntryId =
-                                                    item.meta['native-id']
+                                                this.collectionEntryId = `${item.umm.ShortName}_${item.umm.Version}`
                                                 this.collectionLoading = true
+                                                this.collectionSearchResultsVisible = false
                                                 this.requestUpdate()
                                             }}
                                             style="cursor: pointer;"
@@ -1241,7 +1249,7 @@ export default class TerraDataSubsetter extends AuthMixin(
                                                 ${item.umm.EntryTitle}
                                             </div>
                                             <div class="result-id-mini">
-                                                ${item.meta['native-id']}
+                                                ${item.umm.ShortName}_${item.umm.Version}
                                             </div>
                                             <div class="result-description-mini">
                                                 ${
@@ -1271,15 +1279,15 @@ export default class TerraDataSubsetter extends AuthMixin(
                                     `
                                 })}
                             </div>`
-                          : searchResults && searchResults.length === 0
-                            ? html`<div id="no-results-mini" class="no-results-mini">
+                            : searchResults && searchResults.length === 0
+                              ? html`<div id="no-results-mini" class="no-results-mini">
                                   <p>
                                       No results found for
                                       '${this.collectionSearchQuery}'. Try adjusting
                                       your search term.
                                   </p>
                               </div>`
-                            : nothing
+                              : nothing
                 }
             </div>
 
