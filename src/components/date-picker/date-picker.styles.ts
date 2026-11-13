@@ -30,6 +30,11 @@ export default css`
         margin: 0;
     }
 
+    .date-picker__timezone-badge {
+        flex-shrink: 0;
+        cursor: default;
+    }
+
     .date-picker__icon {
         display: var(--terra-datepicker-icon-display, block);
         flex-shrink: 0;

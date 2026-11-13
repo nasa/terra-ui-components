@@ -86,6 +86,65 @@ describe('<terra-badge>', () => {
             const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
             expect(el.pulse).to.be.false
         })
+
+        it('should accept size property', async () => {
+            const el: any = await fixture(html`
+                <terra-badge size="small">Badge</terra-badge>
+            `)
+            expect(el.size).to.equal('small')
+        })
+
+        it('should reflect size as attribute', async () => {
+            const el: any = await fixture(html`
+                <terra-badge size="large">Badge</terra-badge>
+            `)
+            expect(el.getAttribute('size')).to.equal('large')
+        })
+
+        it('should default size to medium', async () => {
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
+            expect(el.size).to.equal('medium')
+        })
+
+        it('should accept role property', async () => {
+            const el: any = await fixture(html`
+                <terra-badge role="presentation">Badge</terra-badge>
+            `)
+            expect(el.role).to.equal('presentation')
+            const base = el.shadowRoot?.querySelector('[part~="base"]')
+            expect(base?.getAttribute('role')).to.equal('presentation')
+        })
+
+        it('should default role to status', async () => {
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
+            expect(el.role).to.equal('status')
+            const base = el.shadowRoot?.querySelector('[part~="base"]')
+            expect(base?.getAttribute('role')).to.equal('status')
+        })
+    })
+
+    describe('Sizes', () => {
+        it('should apply medium size class by default', async () => {
+            const el: any = await fixture(html` <terra-badge>Badge</terra-badge> `)
+            const base = el.shadowRoot?.querySelector('[part~="base"]')
+            expect(base?.classList.contains('badge--medium')).to.be.true
+        })
+
+        it('should apply small size class', async () => {
+            const el: any = await fixture(html`
+                <terra-badge size="small">Badge</terra-badge>
+            `)
+            const base = el.shadowRoot?.querySelector('[part~="base"]')
+            expect(base?.classList.contains('badge--small')).to.be.true
+        })
+
+        it('should apply large size class', async () => {
+            const el: any = await fixture(html`
+                <terra-badge size="large">Badge</terra-badge>
+            `)
+            const base = el.shadowRoot?.querySelector('[part~="base"]')
+            expect(base?.classList.contains('badge--large')).to.be.true
+        })
     })
 
     describe('Variants', () => {
