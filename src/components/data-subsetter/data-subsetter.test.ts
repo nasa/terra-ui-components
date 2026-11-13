@@ -78,6 +78,9 @@ function stubCollectionFetch({
         const url = typeof input === 'string' ? input : (input?.url ?? String(input))
 
         if (url.includes('collections.umm_json')) {
+            if (!url.includes('entry_id=') && !url.includes('concept-id=')) {
+                return okJson({ hits: 0, items: [] })
+            }
             return okJson(cmrCollectionResponse)
         }
         if (url.includes('variables.umm_json')) {
@@ -812,6 +815,9 @@ describe('<terra-data-subsetter> recent date range default', () => {
                 typeof input === 'string' ? input : (input?.url ?? String(input))
 
             if (url.includes('collections.umm_json')) {
+                if (!url.includes('entry_id=') && !url.includes('concept-id=')) {
+                    return okJson({ hits: 0, items: [] })
+                }
                 return okJson(cmrCollectionResponse)
             }
             if (url.includes('variables.umm_json')) {
@@ -1647,5 +1653,412 @@ describe('<terra-data-subsetter> web links pagination and scroll behavior', () =
         // Verify that Job A's stale links were NOT appended
         const jobALink = el.shadowRoot?.querySelector('a[href*="stale-job-A-link"]')
         expect(jobALink).to.not.exist
+    })
+})
+
+describe('<terra-data-subsetter> collection search without a pre-selected collection', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const baseCaps = {
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: false,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        capabilitiesVersion: '1',
+        configuredOutputFormats: [],
+        services: [],
+        variables: [],
+    }
+
+    const baseCollectionUmm = {
+        ShortName: 'S1',
+        Version: '1',
+        EntryTitle: 'Test',
+        SpatialExtent: {
+            GranuleSpatialRepresentation: 'N/A',
+            HorizontalSpatialDomain: {
+                Geometry: {
+                    CoordinateSystem: 'EPSG:4326',
+                    BoundingRectangles: {
+                        WestBoundingCoordinate: 0,
+                        NorthBoundingCoordinate: 0,
+                        EastBoundingCoordinate: 0,
+                        SouthBoundingCoordinate: 0,
+                    },
+                },
+            },
+        },
+        TemporalExtents: [],
+    }
+
+    it('shows the collection search UI when no collection-entry-id, short-name, or version is provided', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        expect(el.shadowRoot?.textContent).to.include('Search for Collection')
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input')
+        expect(searchInput).to.exist
+    })
+
+    it('triggers a collection search when the user types into the collection search terra-input', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input') as any
+        await searchInput.updateComplete
+
+        const innerInput = searchInput.shadowRoot?.querySelector('.input__control')
+        innerInput.value = 'rainfall'
+        innerInput.dispatchEvent(
+            new Event('input', { bubbles: true, composed: true })
+        )
+
+        await waitUntil(
+            () => el.collectionSearchQuery === 'rainfall',
+            'expected collectionSearchQuery to be updated after the debounced search handler runs',
+            { timeout: 2000 }
+        )
+    })
+
+    it('fetches the most-used EOSDIS collections by default (no search term yet)', async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                expect(url).to.include('consortium=EOSDIS')
+                expect(url).to.include('has_granules_or_opensearch=true')
+                expect(url).to.include('sort_key')
+                expect(url).to.include('usage_score')
+                expect(url).to.not.include('keyword=')
+
+                return okJson({
+                    hits: 1,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'DEFAULT_COL_1',
+                                'provider-id': 'TEST_PROVIDER',
+                            },
+                            umm: {
+                                EntryTitle: 'Default Most-Used Collection',
+                                Abstract: 'A commonly used collection',
+                            },
+                        },
+                    ],
+                })
+            }
+
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Default Most-Used Collection'
+                    )
+                ),
+            'expected the default (by-usage) collection search results to populate',
+            { timeout: 3000 }
+        )
+    })
+
+    it("populates each result's date range and spatial area from TemporalExtents/SpatialExtent, and omits provider/type", async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                return okJson({
+                    hits: 2,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'GLOBAL_COL_1',
+                                'provider-id': 'TEST_PROVIDER_1',
+                            },
+                            umm: {
+                                EntryTitle: 'Global Coverage Collection',
+                                Abstract: 'Covers the whole globe',
+                                TemporalExtents: [
+                                    {
+                                        RangeDateTimes: [
+                                            {
+                                                BeginningDateTime:
+                                                    '2015-06-01T00:00:00Z',
+                                            },
+                                        ],
+                                        EndsAtPresentFlag: true,
+                                    },
+                                ],
+                                SpatialExtent: {
+                                    HorizontalSpatialDomain: {
+                                        Geometry: {
+                                            BoundingRectangles: [
+                                                {
+                                                    WestBoundingCoordinate: -180,
+                                                    EastBoundingCoordinate: 180,
+                                                    NorthBoundingCoordinate: 90,
+                                                    SouthBoundingCoordinate: -90,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            meta: {
+                                'concept-id': 'C2-TEST',
+                                'native-id': 'REGIONAL_COL_1',
+                                'provider-id': 'TEST_PROVIDER_2',
+                            },
+                            umm: {
+                                EntryTitle: 'Regional Coverage Collection',
+                                Abstract: 'Covers a region',
+                                TemporalExtents: [
+                                    {
+                                        RangeDateTimes: [
+                                            {
+                                                BeginningDateTime:
+                                                    '2010-01-01T00:00:00Z',
+                                                EndingDateTime:
+                                                    '2012-12-31T00:00:00Z',
+                                            },
+                                        ],
+                                    },
+                                ],
+                                SpatialExtent: {
+                                    HorizontalSpatialDomain: {
+                                        Geometry: {
+                                            BoundingRectangles: [
+                                                {
+                                                    WestBoundingCoordinate: -20,
+                                                    EastBoundingCoordinate: 20,
+                                                    NorthBoundingCoordinate: 10,
+                                                    SouthBoundingCoordinate: -10,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                })
+            }
+
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes('Global Coverage Collection')
+                ),
+            'expected search results to populate',
+            { timeout: 3000 }
+        )
+
+        const text = el.shadowRoot?.textContent ?? ''
+
+        // date range + spatial area are populated from the real metadata
+        expect(text).to.include('2015-06-01 - ongoing')
+        expect(text).to.include('Global')
+        expect(text).to.include('2010-01-01 - 2012-12-31')
+        expect(text).to.include('lat')
+        expect(text).to.include('lon')
+
+        // provider and the (worthless) type tag are no longer shown
+        expect(text).to.not.include('TEST_PROVIDER_1')
+        expect(text).to.not.include('TEST_PROVIDER_2')
+        expect(el.shadowRoot?.querySelector('.tag-mini')).to.not.exist
+    })
+
+    it('searches CMR by keyword (relevance) once the user enters a search term', async () => {
+        let sawKeywordRequest = false
+
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                if (url.includes('keyword=')) {
+                    sawKeywordRequest = true
+                    // keyword is wrapped in wildcards (`*rainfall*`) by
+                    // #toCollectionsSearchParams for substring matching
+                    expect(url).to.include('keyword=*rainfall*')
+                    // keyword searches rely on CMR's default relevance sort —
+                    // usage_score sorting is only for the no-keyword default view
+                    expect(url).to.not.include('sort_key')
+
+                    return okJson({
+                        hits: 1,
+                        items: [
+                            {
+                                meta: {
+                                    'concept-id': 'C2-TEST',
+                                    'native-id': 'RAINFALL_COL_1',
+                                    'provider-id': 'TEST_PROVIDER',
+                                },
+                                umm: {
+                                    EntryTitle: 'Rainfall Measurement Collection',
+                                    Abstract: 'Rainfall data',
+                                },
+                            },
+                        ],
+                    })
+                }
+
+                // initial default (by-usage) request before the user types anything
+                return okJson({ hits: 0, items: [] })
+            }
+
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        el.handleCollectionSearch('rainfall')
+
+        await waitUntil(
+            () => sawKeywordRequest,
+            'expected a keyword-based CMR search request to be sent',
+            { timeout: 3000 }
+        )
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Rainfall Measurement Collection'
+                    )
+                ),
+            'expected the keyword search results to populate',
+            { timeout: 3000 }
+        )
+    })
+
+    it('hides the collection search once a collection has been resolved', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'S1_1',
+            caps: { conceptId: 'C1-TEST', ...baseCaps },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter
+                collection-entry-id="S1_1"
+            ></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated by CollectionController',
+            { timeout: 3000 }
+        )
+        await elementUpdated(el)
+
+        expect(el.shadowRoot?.querySelector('#search-input')).to.not.exist
+    })
+
+    it('hides the results list after a collection is selected, and shows it again when the search input is refocused', async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                return okJson({
+                    hits: 1,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'DEFAULT_COL_1',
+                                'provider-id': 'TEST_PROVIDER',
+                            },
+                            umm: {
+                                EntryTitle: 'Default Most-Used Collection',
+                                Abstract: 'A commonly used collection',
+                            },
+                        },
+                    ],
+                })
+            }
+
+            // collection capabilities/umm lookups triggered once a collection is selected
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Default Most-Used Collection'
+                    )
+                ),
+            'expected the default collection search results to populate',
+            { timeout: 3000 }
+        )
+
+        expect(el.collectionSearchResultsVisible).to.be.true
+
+        el.shadowRoot?.querySelector<HTMLElement>('.result-item-mini')?.click()
+
+        await elementUpdated(el)
+
+        expect(el.collectionSearchResultsVisible).to.be.false
+        expect(el.shadowRoot?.querySelector('.result-item-mini')).to.not.exist
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input') as any
+        searchInput.dispatchEvent(new CustomEvent('terra-focus'))
+
+        await elementUpdated(el)
+
+        expect(el.collectionSearchResultsVisible).to.be.true
+
+        await waitUntil(
+            () => Boolean(el.shadowRoot?.querySelector('.result-item-mini')),
+            'expected the results list to reappear once the search input regains focus',
+            { timeout: 3000 }
+        )
     })
 })

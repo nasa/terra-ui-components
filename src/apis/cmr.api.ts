@@ -1,13 +1,13 @@
+import type { MapEventDetail } from '../components/map/type.js'
 import {
     BadRequestException,
     NotFoundException,
 } from '../exceptions/http.exception.js'
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
-import type { MapEventDetail } from '../components/map/type.js'
-import type { UmmC } from './types/cmr/umm-c.js'
-import type { UmmVar } from './types/cmr/umm-var.js'
-import type { UmmG } from './types/cmr/umm-g.js'
 import type { CmrCollectionsJsonResponse } from './types/cmr/collection-tags.js'
+import type { UmmC } from './types/cmr/umm-c.js'
+import type { UmmG } from './types/cmr/umm-g.js'
+import type { UmmVar } from './types/cmr/umm-var.js'
 
 export type CmrCollectionCitationItem = {
     doi: {
@@ -29,17 +29,6 @@ export type CmrCollectionCitation = {
     releaseDate: string
     version: string
     releasePlace: string
-}
-
-export type CmrSearchResult = {
-    type: 'collection' | 'variable'
-    collectionConceptId: string
-    collectionEntryId: string
-    summary: string
-    conceptId: string
-    entryId: string
-    provider: string
-    title: string
 }
 
 export type CmrGranule = {
@@ -125,6 +114,14 @@ export type SearchVariablesParams = SearchParams & {
     collectionConceptId?: string
 }
 
+// a partial list of CMR search params (only listing the ones we're using)
+// for more: https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#collection-search-by-parameters
+export type SearchCollectionsParams = SearchParams & {
+    keyword?: string
+    consortium?: string // https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-consortium
+    hasGranulesOrOpenSearch?: boolean // https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-has-granules-or-opensearch
+}
+
 class CmrApi {
     async getCollection(
         shortName: string,
@@ -202,6 +199,69 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmVar>>(
             `variables.umm_json?keyword=${searchParams.collectionConceptId}&page_size=${searchParams.pageSize ?? 200}`,
+            options
+        )
+    }
+
+    #toApiSearchParams(params: SearchParams): URLSearchParams {
+        const searchParams = new URLSearchParams()
+
+        if (params.pageNum !== undefined) {
+            searchParams.set('page_num', String(params.pageNum))
+        }
+
+        if (params.pageSize !== undefined) {
+            searchParams.set('page_size', String(params.pageSize))
+        }
+
+        if (params.offset !== undefined) {
+            searchParams.set('offset', String(params.offset))
+        }
+
+        if (params.search) {
+            searchParams.set('search', params.search)
+        }
+
+        if (params.searchFields?.length) {
+            params.searchFields.forEach(field => {
+                searchParams.append('search_fields[]', field)
+            })
+        }
+
+        if (params.sortBy) {
+            searchParams.append(
+                'sort_key[]',
+                this.#getSortKey(params.sortBy, params.sortDirection ?? 'asc')
+            )
+        }
+
+        return searchParams
+    }
+
+    #toCollectionsSearchParams(params: SearchCollectionsParams): URLSearchParams {
+        const searchParams = this.#toApiSearchParams(params)
+
+        if (params.keyword) {
+            searchParams.set('keyword', `*${params.keyword}*`)
+        }
+
+        if (params.consortium) {
+            searchParams.set('consortium', params.consortium)
+        }
+
+        if (params.hasGranulesOrOpenSearch) {
+            searchParams.set('has_granules_or_opensearch', 'true')
+        }
+
+        return searchParams
+    }
+
+    async searchCollections(
+        searchParams: SearchCollectionsParams,
+        options?: RequestOptions
+    ) {
+        return this.#request<UmmResponse<UmmC>>(
+            `collections.umm_json?${this.#toCollectionsSearchParams(searchParams).toString()}`,
             options
         )
     }
@@ -301,7 +361,7 @@ class CmrApi {
             ...(params.pageNum && { page_num: params.pageNum.toString() }),
             ...(params.offset && { offset: params.offset.toString() }),
             ...(params.sortBy && {
-                'sort_key[]': this.#getGranuleSortKey(
+                'sort_key[]': this.#getSortKey(
                     params.sortBy,
                     params.sortDirection ?? 'asc'
                 ),
@@ -378,8 +438,7 @@ class CmrApi {
         })
     }
 
-    // TODO: replace references to these old columns with these names and remove this method (data access may be the only location)
-    #getGranuleSortKey(sortBy: string, sortDirection: string) {
+    #getSortKey(sortBy: string, sortDirection: string) {
         let sortKey = sortBy
 
         switch (sortBy) {
