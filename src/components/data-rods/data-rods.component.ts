@@ -86,6 +86,16 @@ export default class TerraDataRods extends TerraElement {
     location?: string
 
     /**
+     * The location in a 4-value bbox to satisfy
+     * the validateConstraints routine in 
+     * spatial-picker
+     */
+    @property({
+        reflect: true,
+    })
+    locationBbox?: string
+
+    /**
      * The token to be used for authentication with remote servers.
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
@@ -212,8 +222,8 @@ export default class TerraDataRods extends TerraElement {
             }
             <terra-spatial-picker
                 initial-value=${this.location}
-                .spatialConstraints=${this.location}
-                exportparts="map:spatial-picker__map, clear-btn:spatial-picker__clear-btn, form-control-label:spatial-picker__form-control-label"
+                .spatialConstraints=${this.locationBbox}
+                exportparts="map:spatial-picker__map, clear-btn:spatial-picker__clear-btn"
                 label="Select Point (lat/lon)"
                 @terra-map-change=${this.#handleMapChange}
                 .showBoundingBoxSelection=${false}
@@ -324,6 +334,11 @@ export default class TerraDataRods extends TerraElement {
         if (event.detail.type === MapEventType.POINT) {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
+            this.locationBbox =
+                `${
+                    event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4),
+                    event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)
+                }`
             this.lastChanged = 'location'
 
             this.compatibilityWarning()
