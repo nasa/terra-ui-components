@@ -420,7 +420,7 @@ export default class TerraSpatialPicker extends TerraElement {
             .label=${this.label}
             .hideLabel=${this.hideLabel}
             .value=${SpatialPickerService.serialize(this.initialValue)}
-            placeholder="${this.showBoundingBoxSelection ? this.spatialConstraints : 'Please enter point'}"
+            placeholder=${SpatialPickerService.defaultConstraints(this._allowedTypes)}
             aria-controls="map"
             exportparts="form-control-label:spatial-picker__form-control-label"
             aria-expanded=${this.inline ? true : this.isExpanded}

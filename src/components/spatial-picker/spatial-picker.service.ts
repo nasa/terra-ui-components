@@ -15,6 +15,12 @@ export type ParseResult =
 
 export class SpatialPickerService {
     /**
+     *  Get spatial constraints placeholder based on allowed types
+     * */ 
+    static defaultConstraints(allowed: AllowedTypes): string {
+        return this.placeholder(allowed)
+    }
+    /**
      * Parse a raw coordinate string into a typed LatLng or LatLngBounds.
      *
      * Accepted formats:
@@ -210,6 +216,15 @@ export class SpatialPickerService {
         if (allowed.allowPoint) return 'Enter a point (lat, lng).'
         if (allowed.allowBbox)
             return 'Enter a bounding box (west, south, east, north).'
+        return ''
+    }
+
+    private static placeholder(allowed: AllowedTypes): string {
+        if (allowed.allowPoint && allowed.allowBbox) {
+            return '-180,-90,180,90'
+        }
+        if (allowed.allowPoint) return 'Enter a point (lat, lng)'
+        if (allowed.allowBbox) return '-180,-90,180,90'
         return ''
     }
 }
