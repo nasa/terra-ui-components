@@ -1,31 +1,31 @@
-import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
-import { initialState, Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
+import { initialState, Task } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 // @ts-expect-error
 import type { Data, PlotData } from 'plotly.js-dist-min'
+import * as Plotly from 'plotly.js-dist-min'
+import type { SubsetJobError, SubsetJobStatus } from '../../apis/harmony.api.js'
+import { FINAL_STATUSES, harmonyApi, Status } from '../../apis/harmony.api.js'
+import { CollectionController } from '../../controllers/collection.controller.js'
+import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
+import { calculateDataPoints, calculateDateChunks } from '../../lib/dataset.js'
+import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
+import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
+import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
+import { TimeInterval } from '../../types.js'
+import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
+import { extractHarmonyError } from '../../utilities/harmony.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import { LatLng } from '../map/models/LatLng.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
+import type TerraTimeSeries from './time-series.component.js'
 import type {
     TimeSeriesData,
     TimeSeriesDataRow,
     TimeSeriesMetadata,
     VariableDbEntry,
 } from './time-series.types.js'
-import type TerraTimeSeries from './time-series.component.js'
-import { TimeInterval } from '../../types.js'
-import { formatDate, getUTCDate, isDateRangeContained } from '../../utilities/date.js'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
-import type { SubsetJobStatus, SubsetJobError } from '../../apis/harmony.api.js'
-import { extractHarmonyError } from '../../utilities/harmony.js'
-import { FINAL_STATUSES, Status, harmonyApi } from '../../apis/harmony.api.js'
-import { CollectionController } from '../../controllers/collection.controller.js'
-import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
-import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
-import { LatLng } from '../map/models/LatLng.js'
-import { LatLngBounds } from '../map/models/LatLngBounds.js'
-import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
 import TimeSeriesCacheService from './time-series-cache.service.js'
-import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
-import * as Plotly from 'plotly.js-dist-min'
 
 const NUM_DATAPOINTS_TO_WARN_USER = 50000
 const HARMONY_LINK_PROXY_URL =
@@ -146,20 +146,12 @@ export class TimeSeriesController {
         this.task = new Task(host, {
             // passing the signal in so the fetch request will be aborted when the task is aborted
             task: async (_args, { signal }) => {
-                console.log('Fetching time series data', {
-                    variables: this.#getRequestedVariables(),
-                    startDate: this.host.startDate,
-                    endDate: this.host.endDate,
-                    location: this.host.location,
-                })
-
                 if (
                     !this.#getRequestedVariables().length ||
                     !this.host.startDate ||
                     !this.host.endDate ||
                     !this.host.location
                 ) {
-                    console.log('Requirements not met to fetch the time series data ')
                     const currentVariableIds = this.#getRequestedVariables()
                         .map(v => v.dataFieldId)
                         .join('|')
@@ -279,14 +271,6 @@ export class TimeSeriesController {
         const cacheKey = this.getCacheKeyForVariable(catalogVariable)
         const variableEntryId = catalogVariable.dataFieldId
 
-        console.log(
-            'Loading time series for variable',
-            catalogVariable,
-            this.host.startDate,
-            this.host.endDate,
-            this.host.location
-        )
-
         // If a job ID is provided, skip cache/chunking and directly wait for that job
         if (this.host.jobId) {
             const jobStatus = await this.#waitForHarmonyJob(this.host.jobId, signal)
@@ -336,23 +320,6 @@ export class TimeSeriesController {
             ? getUTCDate(existingTerraData.endDate, true)
             : undefined
 
-        console.log('Existing data?', existingTerraData ? 'Yes' : 'No')
-        console.log(
-            'Is date range contained?',
-            existingStartDate && existingEndDate
-                ? isDateRangeContained(
-                      startDate,
-                      endDate,
-                      existingStartDate,
-                      existingEndDate
-                  )
-                : false
-        )
-        console.log(
-            'Is cache valid?',
-            this.#cacheService.isCacheValid(existingTerraData)
-        )
-
         if (
             existingTerraData &&
             existingStartDate &&
@@ -365,8 +332,6 @@ export class TimeSeriesController {
             ) &&
             this.#cacheService.isCacheValid(existingTerraData)
         ) {
-            console.log('Returning existing data from cache ', this.getCacheKey())
-
             // Filter fill values from cached data (in case old cached data contains fill values)
             const fillValue = existingTerraData.metadata?.undef
             const filteredData = this.#filterFillValues(
