@@ -422,7 +422,7 @@ export default class TerraSpatialPicker extends TerraElement {
             .value=${SpatialPickerService.serialize(this.initialValue)}
             placeholder="${this.showBoundingBoxSelection ? this.spatialConstraints : 'Please enter point'}"
             aria-controls="map"
-            exportparts="clear-btn:spatial-picker__clear-btn, form-control-label:spatial-picker__form-control-label"
+            exportparts="form-control-label:spatial-picker__form-control-label"
             aria-expanded=${this.inline ? true : this.isExpanded}
             @terra-input=${this._input}
             @terra-change=${this._change}
@@ -487,7 +487,7 @@ export default class TerraSpatialPicker extends TerraElement {
     render() {
         if (this.inline) {
             return html`
-                <div class="spatial-picker">
+                <div class="spatial-picker" exportparts="clear-btn:spatial-picker__clear-btn">
                     ${this._inputTemplate()}
                     <slot name="additional-text"></slot>
                     <div
