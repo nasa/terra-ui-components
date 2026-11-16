@@ -86,16 +86,6 @@ export default class TerraDataRods extends TerraElement {
     location?: string
 
     /**
-     * The location in a 4-value bbox to satisfy
-     * the validateConstraints routine in 
-     * spatial-picker
-     */
-    @property({
-        reflect: true,
-    })
-    locationBbox?: string
-
-    /**
      * The token to be used for authentication with remote servers.
      * The component provides the header "Authorization: Bearer" (the request header and authentication scheme).
      * The property's value will be inserted after "Bearer" (the authentication scheme).
@@ -222,7 +212,7 @@ export default class TerraDataRods extends TerraElement {
             }
             <terra-spatial-picker
                 initial-value=${this.location}
-                .spatialConstraints=${this.locationBbox}
+                .spatialConstraints=${this.variableBoundingBox}
                 exportparts="map:spatial-picker__map, clear-btn:spatial-picker__clear-btn"
                 label="Select Point (lat/lon)"
                 @terra-map-change=${this.#handleMapChange}
