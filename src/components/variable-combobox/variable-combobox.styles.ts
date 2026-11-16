@@ -135,7 +135,6 @@ export default css`
         block-size: 100%;
         display: flex;
         flex-wrap: wrap;
-        margin-top: -6px;
     }
 
     .search-input-group:has(.combobox:not(:focus)) + .search-results[open] {

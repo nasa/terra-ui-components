@@ -407,6 +407,7 @@ export default class TerraVariableCombobox extends TerraElement {
                 variant="default"
                 outline
                 class="tag"
+                part="tag"
                 title=${tag}
                 aria-label=${`Clear tag ${tag}`}
                 @click=${() => {
@@ -502,11 +503,11 @@ export default class TerraVariableCombobox extends TerraElement {
                     ${this.#renderInfoPanel(this.variableInfo)}
                 </div>
             </terra-popup>
-        `
+        ` 
     }
 
     render() {
-        return html`<search part="base" title="Search through the list.">
+        return html`<search part="base" exportparts="tag" title="Search through the list.">
             <label for="combobox" class=${this.hideLabel ? 'sr-only' : 'input-label'}
                 >${this.label}</label
             >

@@ -10,6 +10,12 @@ export default css`
 
     terra-variable-combobox {
         grid-column: 1 / 2;
+        margin-top: -1px;
+    }
+
+    terra-variable-combobox::part(tag) {
+        margin-top: 0.75em;
+        margin-left: 0.25em;
     }
 
     terra-spatial-picker {
