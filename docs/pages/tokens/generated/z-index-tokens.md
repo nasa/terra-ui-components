@@ -10,11 +10,10 @@ Z-index tokens are used to control the stacking order of elements on the page.
 
 ### Z-Index
 
-| Token | Value |
-|-------|-------|
-| `--terra-z-index-drawer` | `700` |
-| `--terra-z-index-dialog` | `1000` |
-| `--terra-z-index-dropdown` | `900` |
-| `--terra-z-index-toast` | `950` |
-| `--terra-z-index-tooltip` | `1000` |
-
+| Token                      | Value  |
+| -------------------------- | ------ |
+| `--terra-z-index-drawer`   | `700`  |
+| `--terra-z-index-dialog`   | `1000` |
+| `--terra-z-index-dropdown` | `900`  |
+| `--terra-z-index-toast`    | `950`  |
+| `--terra-z-index-tooltip`  | `1000` |
