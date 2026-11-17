@@ -13,7 +13,7 @@ describe('<terra-radio-group>', () => {
     })
 
     describe('Keyboard Navigation', () => {
-        it('should not throw TypeError on arrow keys when all radios are disabled (Issue #78)', async () => {
+        it('should not throw TypeError on arrow keys when all radios are disabled', async () => {
             const el: any = await fixture(html`
                 <terra-radio-group label="Select option">
                     <terra-radio value="1" disabled>Option 1</terra-radio>
