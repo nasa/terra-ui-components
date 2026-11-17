@@ -219,11 +219,21 @@ Use a `"type": "geotiff"` entry in `layers` to load any standalone GeoTIFF or Cl
 
 ```html:preview
 <terra-map
-    layers='[{ "type": "geotiff", "name": "my-data", "url": "/assets/examples/giovanni.tif", "colorMapName": "viridis", "fitView": true }]'
+    layers='[{ "type": "geotiff", "name": "my-data", "url": "/assets/examples/giovanni.tif", "colorMapName": "viridis", "opacity": 0.9, "projection": "EPSG:4326", "fitView": true }]'
 ></terra-map>
 ```
 
-Once built, the layer's computed data range, colormap stops, and legend entries are available via `getGeoTiffLayerInfo(name)` — handy for rendering a legend:
+Configurable options on a GeoTIFF layer entry include:
+
+- `url`: Direct URL to a GeoTIFF or blob object URL (`URL.createObjectURL(blob)`).
+- `projection`: Coordinate projection of the raster (e.g. `'EPSG:4326'`). If omitted, read from GeoTIFF metadata or defaults to `'EPSG:4326'`.
+- `opacity`: Number from `0` to `1`. Changes to opacity update the layer in-place without reloading the raster.
+- `colorMapName`: Colormap name (e.g. `'viridis'`, `'jet'`, `'cool'`). Defaults to `'viridis'`.
+- `noDataValue`: Fill value to exclude from min/max statistics and rendering.
+- `bands`: Array of 1-based band indexes to read. Defaults to `[1]`.
+- `fitView`: Fits map view to the GeoTIFF extent when loaded.
+
+Once built, the layer's computed data range, colormap stops, legend entries, and GDAL tags are available via `getGeoTiffLayerInfo(name)` or the `terra-map-layer-change` event:
 
 ```ts
 map.addEventListener('terra-map-layer-change', event => {
@@ -233,7 +243,7 @@ map.addEventListener('terra-map-layer-change', event => {
         console.error(`Failed to load GeoTIFF layer "${name}":`, error)
         return
     }
-    // info.min, info.max, info.legendValues - build a legend from these
+    // info.min, info.max, info.legendValues, info.gdalMetadata (units, long_name, etc.)
 })
 ```
 
