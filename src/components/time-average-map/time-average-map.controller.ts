@@ -66,6 +66,8 @@ export class TimeAvgMapController {
                         await this.#cacheService.getValidCacheEntry(cacheKey)
 
                     if (existing) {
+                        console.debug('Existing map geotiff found in cache', cacheKey)
+
                         this.#host.harmonyJobId = existing.harmonyJobId
                         this.#updateGeoTIFFLayer(existing.blob)
                         return existing.blob

@@ -332,6 +332,11 @@ export class TimeSeriesController {
             ) &&
             this.#cacheService.isCacheValid(existingTerraData)
         ) {
+            console.debug(
+                'Returning existing time series data from cache ',
+                this.getCacheKey()
+            )
+
             // Filter fill values from cached data (in case old cached data contains fill values)
             const fillValue = existingTerraData.metadata?.undef
             const filteredData = this.#filterFillValues(
