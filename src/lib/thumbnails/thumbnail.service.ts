@@ -12,7 +12,7 @@ export type ThumbnailRecord = {
  */
 export class ThumbnailService {
     async store(harmonyJobId: string, blob: Blob): Promise<void> {
-        await withDb(async (db) => {
+        await withDb(async db => {
             const record: ThumbnailRecord = {
                 harmonyJobId,
                 blob,
@@ -23,17 +23,17 @@ export class ThumbnailService {
     }
 
     async get(harmonyJobId: string): Promise<Blob | undefined> {
-        return withDb(async (db) => {
+        return withDb(async db => {
             const record: ThumbnailRecord | undefined = await db.get(
                 IndexedDbStores.THUMBNAILS,
-                harmonyJobId,
+                harmonyJobId
             )
             return record?.blob
         })
     }
 
     async delete(harmonyJobId: string): Promise<void> {
-        await withDb(async (db) => {
+        await withDb(async db => {
             await db.delete(IndexedDbStores.THUMBNAILS, harmonyJobId)
         })
     }

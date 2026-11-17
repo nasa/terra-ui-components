@@ -244,14 +244,14 @@ export default class TerraCheckbox extends TerraElement implements TerraFormCont
                     />
 
                     <span
-                        part="control${this.checked ? ' control--checked' : ''}${this
-                            .indeterminate
-                            ? ' control--indeterminate'
-                            : ''}"
+                        part="control${this.checked ? ' control--checked' : ''}${
+                            this.indeterminate ? ' control--indeterminate' : ''
+                        }"
                         class="checkbox__control"
                     >
-                        ${this.checked
-                            ? html`
+                        ${
+                            this.checked
+                                ? html`
                                   <terra-icon
                                       part="checked-icon"
                                       class="checkbox__checked-icon"
@@ -259,9 +259,11 @@ export default class TerraCheckbox extends TerraElement implements TerraFormCont
                                       name="outline-check"
                                   ></terra-icon>
                               `
-                            : ''}
-                        ${!this.checked && this.indeterminate
-                            ? html`
+                                : ''
+                        }
+                        ${
+                            !this.checked && this.indeterminate
+                                ? html`
                                   <terra-icon
                                       part="indeterminate-icon"
                                       class="checkbox__indeterminate-icon"
@@ -269,7 +271,8 @@ export default class TerraCheckbox extends TerraElement implements TerraFormCont
                                       name="outline-minus"
                                   ></terra-icon>
                               `
-                            : ''}
+                                : ''
+                        }
                     </span>
 
                     <div part="label" class="checkbox__label">

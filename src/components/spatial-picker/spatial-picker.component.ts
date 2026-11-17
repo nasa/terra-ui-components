@@ -53,38 +53,10 @@ export default class TerraSpatialPicker extends TerraElement {
     showPolygonSelection: boolean = false
 
     /**
-     * @deprecated Use show-bounding-box-selection instead.
-     */
-    @property({ attribute: 'hide-bounding-box-selection', type: Boolean })
-    set hideBoundingBoxSelection(value: boolean) {
-        console.warn(
-            '"hide-bounding-box-selection" is deprecated. Use "show-bounding-box-selection" instead.',
-        )
-        this.showBoundingBoxSelection = !value
-    }
-    get hideBoundingBoxSelection() {
-        return !this.showBoundingBoxSelection
-    }
-
-    /**
      * Whether point selection is allowed via the draw toolbar.
      */
     @property({ attribute: 'show-point-selection', type: Boolean })
     showPointSelection: boolean = true
-
-    /**
-     * @deprecated Use show-point-selection instead.
-     */
-    @property({ attribute: 'hide-point-selection', type: Boolean })
-    set hidePointSelection(value: boolean) {
-        console.warn(
-            '"hide-point-selection" is deprecated. Use "show-point-selection" instead.',
-        )
-        this.showPointSelection = !value
-    }
-    get hidePointSelection() {
-        return !this.showPointSelection
-    }
 
     /** Initial/current value of the picker. */
     @property({ attribute: 'initial-value' }) initialValue:
@@ -110,8 +82,7 @@ export default class TerraSpatialPicker extends TerraElement {
     @property({ type: Boolean }) inline: boolean = false
     @property({ attribute: 'show-map-on-focus', type: Boolean })
     showMapOnFocus: boolean = false
-    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean =
-        false
+    @property({ attribute: 'url-state', type: Boolean }) urlState: boolean = false
     @property({ attribute: 'help-text' }) helpText = ''
 
     /**
@@ -142,8 +113,7 @@ export default class TerraSpatialPicker extends TerraElement {
     firstUpdated() {
         const urlParams = new URLSearchParams(window.location.search)
         const spatialParam = urlParams.get('spatial')
-        const seed =
-            this.urlState && spatialParam ? spatialParam : this.initialValue
+        const seed = this.urlState && spatialParam ? spatialParam : this.initialValue
 
         if (seed) {
             if (typeof seed === 'string') {
@@ -254,7 +224,7 @@ export default class TerraSpatialPicker extends TerraElement {
         // Validate against constraints before accepting the draw
         const constraintError = SpatialPickerService.validateConstraints(
             value,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
         if (constraintError) {
             this.error = constraintError
@@ -291,7 +261,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
 
         if (!result.ok) {
@@ -310,7 +280,7 @@ export default class TerraSpatialPicker extends TerraElement {
      */
     private _applyValue(
         raw: string | LatLng | LatLngBounds,
-        { emit }: { emit: boolean },
+        { emit }: { emit: boolean }
     ) {
         if (typeof raw !== 'string') {
             // Already a typed value — serialize and commit directly
@@ -325,7 +295,7 @@ export default class TerraSpatialPicker extends TerraElement {
         const result = SpatialPickerService.validate(
             raw,
             this._allowedTypes,
-            this.spatialConstraints,
+            this.spatialConstraints
         )
 
         if (!result.ok) {

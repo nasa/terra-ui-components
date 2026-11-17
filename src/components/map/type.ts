@@ -25,3 +25,11 @@ export type MapEventDetail = BaseMapEventDetail &
         | { type: MapEventType.CIRCLE; center: LatLng; radius: number }
         | { type?: undefined }
     )
+
+export type MapLayerToggleDetail = {
+    name: string
+    title: string
+    type: 'base' | 'overlay'
+    visible: boolean
+    layer: unknown
+}

@@ -1,0 +1,16 @@
+extends: substitution
+message: "Use '%s' instead of '%s' for clearer, more concise writing (Digital.gov & NASA Stylebook)."
+level: suggestion
+ignorecase: true
+action:
+  name: replace
+swap:
+  '\band/or\b': "'and' or 'or'"
+  '\be\.g\.,?\b': for example
+  '\bi\.e\.,?\b': that is
+  '\bcease and desist\b': stop
+  '\bdue and payable\b': due
+  '\bfull and complete\b': complete
+  '\beach and every\b': each
+  '\bfirst and foremost\b': first
+  '\bnull and void\b': void

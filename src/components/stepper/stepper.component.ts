@@ -21,30 +21,30 @@ export default class TerraStepper extends TerraElement {
 
     /** Screen size detection use to determine layout for mobile devices */
 
-    @state() 
+    @state()
     isMobile = false
 
     @state()
     private steps: Element[] = []
 
-    private mediaQuery = window.matchMedia('(max-width: 600px)');
-    
-    connectedCallback() {
-        super.connectedCallback();
+    private mediaQuery = window.matchMedia('(max-width: 600px)')
 
-        this.isMobile = this.mediaQuery.matches;
-        this.mediaQuery.addEventListener('change', this.handleMediaChange);
+    connectedCallback() {
+        super.connectedCallback()
+
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMediaChange)
     }
 
     disconnectedCallback() {
-        this.mediaQuery.removeEventListener('change', this.handleMediaChange);
+        this.mediaQuery.removeEventListener('change', this.handleMediaChange)
 
-        super.disconnectedCallback();
+        super.disconnectedCallback()
     }
 
     private handleMediaChange = (event: MediaQueryListEvent) => {
-        this.isMobile = event.matches;
-    };
+        this.isMobile = event.matches
+    }
 
     private getStepProgress(): {
         current: number
@@ -53,7 +53,7 @@ export default class TerraStepper extends TerraElement {
         content?: string
     } {
         const currentIndex = this.steps.findIndex(
-            (step) => step.getAttribute('state') === 'current'
+            step => step.getAttribute('state') === 'current'
         )
 
         const currentStep = this.steps[currentIndex]
@@ -81,11 +81,9 @@ export default class TerraStepper extends TerraElement {
 
         const slot = event.target as HTMLSlotElement
 
-        this.steps = slot.assignedElements().filter(
-            (element) =>
-                element.tagName.toLowerCase() === 'terra-stepper-step'
-        )
-
+        this.steps = slot
+            .assignedElements()
+            .filter(element => element.tagName.toLowerCase() === 'terra-stepper-step')
 
         slottedElements.forEach((el, index) => {
             const step = findStep(el)
@@ -109,15 +107,15 @@ export default class TerraStepper extends TerraElement {
                 part="base"
                 class=${classMap({
                     stepper: true,
-                    'stepper--default':
-                        this.variant === 'default' && !this.isMobile,
+                    'stepper--default': this.variant === 'default' && !this.isMobile,
                     'stepper--condensed':
                         this.variant === 'condensed' || this.isMobile,
                 })}
             >
                 <slot @slotchange=${this.handleSlotChange}></slot>
-                ${this.variant === 'condensed' || this.isMobile
-                    ? html `
+                ${
+                    this.variant === 'condensed' || this.isMobile
+                        ? html`
                         <div class="stepper-step__title">
                             ${title}
                         </div>
@@ -128,7 +126,8 @@ export default class TerraStepper extends TerraElement {
                             Step ${current} of ${total}
                         </div>                   
                     `
-                    : ''}
+                        : ''
+                }
 
             </div>
         `

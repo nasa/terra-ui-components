@@ -49,7 +49,7 @@ The simplest way to use the data grid is with client-side row data:
 
 ### Infinite Scroll Grid
 
-For large datasets, use the infinite scroll row model with a datasource:
+For large data sets, use the infinite scroll row model with a datasource:
 
 ```html:preview
 <terra-data-grid id="grid-infinite" row-model-type="infinite" height="600px"></terra-data-grid>

@@ -1,0 +1,31 @@
+extends: substitution
+message: "Use '%s' instead of '%s' per the NASA Stylebook."
+level: warning
+ignorecase: true
+action:
+  name: replace
+swap:
+  '\bon-orbit\b': in-orbit
+  '\bonboard\b': aboard
+  '\b(?:artist''s conception|artist''s rendering)\b': "artist's concept"
+  '\b(?:dark|night) side of the Moon\b': far side of the Moon
+  '\bbright side of the Moon\b': near side of the Moon
+  '\bextravehicular activity\b': spacewalk
+  '\bin-situ\b': in position
+  '\blaunch vehicle\b': rocket
+  '\bman-made\b': human-made
+  '\b(?:mankind|humankind)\b': humanity
+  '\bmann?ed\b': crewed
+  '\bunmanned\b': uncrewed
+  '\bnominal\b': normal
+  '\boff-nominal\b': unexpected
+  '\bouter space\b': space
+  '\bpress conference\b': news conference
+  '\bpress release\b': news release
+  '\bgeneral public\b': public
+  '\btelecon\b': teleconference
+  '\butilize(?:s|d|ing)?\b': use
+  '\bwildland fire\b': wildfire
+  '\bzero gravity\b': microgravity
+  '\bthe Earth\b': Earth
+  '\bthe Gateway\b': Gateway

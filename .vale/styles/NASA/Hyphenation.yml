@@ -1,0 +1,32 @@
+extends: substitution
+message: "NASA Stylebook prefers '%s' instead of '%s'."
+level: error
+ignorecase: true
+action:
+  name: replace
+swap:
+  '\b3-D\b': 3D
+  '\baero-?shell\b': aeroshell
+  '\bback-?shell\b': backshell
+  '\bspace suit\b': spacesuit
+  '\bspace walk\b': spacewalk
+  '\bspace flight\b': spaceflight
+  '\bcis-lunar\b': cislunar
+  '\bdeep-space\b': deep space
+  '\bfree-fall\b': free fall
+  '\bhybrid-electric\b': hybrid electric
+  '\bmain-belt\b': main belt
+  '\bmulti-messenger\b': multimessenger
+  '\bmulti-wavelength\b': multiwavelength
+  '\bmultiuser\b': multi-user
+  '\bdata-?set\b': data set
+  '\bdata-sets\b': data sets
+  '\bdatasets\b': data sets
+  '\blight ?year\b': light-year
+  '\blight ?years\b': light-years
+  '\bnear Earth object\b': near-Earth object
+  '\blow-Earth orbit\b': low Earth orbit
+  '\bshock-?wave\b': shock wave
+  '\bwind-tunnel\b': wind tunnel
+  '\bEl Nino\b': El Niño
+  '\bLa Nina\b': La Niña

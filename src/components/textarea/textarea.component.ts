@@ -179,24 +179,30 @@ export default class TerraTextarea extends TerraElement implements TerraFormCont
                     'form-control--has-help-text': hasHelpText,
                 })}
             >
-                ${this.label
-                    ? html`
+                ${
+                    this.label
+                        ? html`
                           <label
                               for="textarea"
                               part="form-control-label"
-                              class=${this.hideLabel
-                                  ? 'textarea__label textarea__label--hidden'
-                                  : 'textarea__label'}
+                              class=${
+                                  this.hideLabel
+                                      ? 'textarea__label textarea__label--hidden'
+                                      : 'textarea__label'
+                              }
                           >
                               ${this.label}
-                              ${this.required
-                                  ? html`<span class="textarea__required-indicator"
+                              ${
+                                  this.required
+                                      ? html`<span class="textarea__required-indicator"
                                         >*</span
                                     >`
-                                  : ''}
+                                      : ''
+                              }
                           </label>
                       `
-                    : ''}
+                        : ''
+                }
 
                 <div
                     part="base"

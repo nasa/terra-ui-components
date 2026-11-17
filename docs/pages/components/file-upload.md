@@ -102,22 +102,22 @@ Use file upload fields when files are required as part of a form submission for 
 
 ## Best Practices
 
--   **Labels**: Always include a clear and concise label for each file upload field.
--   **Help text**: Use the `help-text` attribute to clearly explain which file formats are allowed and any size or quantity restrictions.
--   **File types**: Unless totally necessary, it is recommended to accept multiple file formats to avoid unnecessary software requirements for users.
--   **File size**: Be careful when requesting large files, as some visitors might have limited connectivity or data plans. Use the `max-file-size` attribute to set reasonable limits.
--   **Multiple files**: Use the `multiple` attribute when users need to upload several related files. Consider using the `max-files` attribute to limit the number of files.
--   **Single vs. multiple**: Using one file per field is recommended when each file has a distinct purpose, to make it clear for NASA team members who are receiving and reviewing form submissions.
--   **Progressive enhancement**: This field should be used as a progressive enhancement of the standard HTML field. The browser-default input field should be the fallback if any issues occur with this custom field.
+- **Labels**: Always include a clear and concise label for each file upload field.
+- **Help text**: Use the `help-text` attribute to clearly explain which file formats are allowed and any size or quantity restrictions.
+- **File types**: Unless totally necessary, it is recommended to accept multiple file formats to avoid unnecessary software requirements for users.
+- **File size**: Be careful when requesting large files, as some visitors might have limited connectivity or data plans. Use the `max-file-size` attribute to set reasonable limits.
+- **Multiple files**: Use the `multiple` attribute when users need to upload several related files. Consider using the `max-files` attribute to limit the number of files.
+- **Single vs. multiple**: Using one file per field is recommended when each file has a distinct purpose, to make it clear for NASA team members who are receiving and reviewing form submissions.
+- **Progressive enhancement**: This field should be used as a progressive enhancement of the standard HTML field. The browser-default input field should be the fallback if any issues occur with this custom field.
 
 ## Accessibility
 
--   The `terra-file-upload` component is built with accessibility in mind, using native `<input type="file">` under the hood.
--   Labels are properly associated with the file input using the `for` attribute.
--   Required fields are indicated with an asterisk.
--   Help text is provided below the file upload field for additional context.
--   The component supports keyboard navigation (Tab to focus, Enter/Space to activate).
--   Focus states are clearly visible with a focus ring.
--   Screen readers are properly notified of file selections.
+- The `terra-file-upload` component is built with accessibility in mind, using native `<input type="file">` under the hood.
+- Labels are properly associated with the file input using the `for` attribute.
+- Required fields are indicated with an asterisk.
+- Help text is provided below the file upload field for additional context.
+- The component supports keyboard navigation (Tab to focus, Enter/Space to activate).
+- Focus states are clearly visible with a focus ring.
+- Screen readers are properly notified of file selections.
 
 [component-metadata:terra-file-upload]

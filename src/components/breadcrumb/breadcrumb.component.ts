@@ -46,8 +46,9 @@ export default class TerraBreadcrumb extends TerraElement {
                     'breadcrumb--link': isLink,
                 })}
             >
-                ${isLink
-                    ? html`
+                ${
+                    isLink
+                        ? html`
                           <a
                               part="link"
                               class="breadcrumb__link"
@@ -57,7 +58,7 @@ export default class TerraBreadcrumb extends TerraElement {
                               <slot></slot>
                           </a>
                       `
-                    : html`
+                        : html`
                           <span
                               part="label"
                               class="breadcrumb__label"
@@ -65,7 +66,8 @@ export default class TerraBreadcrumb extends TerraElement {
                           >
                               <slot></slot>
                           </span>
-                      `}
+                      `
+                }
             </span>
         `
     }
