@@ -32,7 +32,7 @@ Your main goals:
 
 1. **MUST read the relevant `docs/pages/components/<component>.md` first.**
 2. **MUST review its implementation in `src/components/<component>/<component>.component.ts` (and related controller/utility files).**
-3. **MUST ensure proper tests exist** in `src/components/<component>/<component>.test.ts` covering:
+3. **MUST ensure proper tests exist** in `src/components/<component>/__tests__/<component>.component.test.ts` adhering to [`context/testing-guidelines.md`](./context/testing-guidelines.md) covering:
     - Component rendering
     - Property changes
     - Event emission
@@ -152,47 +152,7 @@ Then open `notebooks/playground.ipynb` to test components in Jupyter.
 
 **REQUIRED:** **ALL components MUST have comprehensive tests.** This is NOT optional.
 
-- **Component Testing Requirements**
-    - **MUST create or update test files** (`*.test.ts`) for every component you create or modify.
-    - **MUST use `@open-wc/testing`** utilities (`fixture`, `expect`, `html`, `waitUntil`, etc.) following existing test patterns.
-    - **MUST test:**
-        - Component rendering
-        - Property changes and attribute reflection
-        - Event emission
-        - User interactions (clicks, keyboard navigation, form inputs)
-        - Edge cases and error states
-        - Accessibility features (ARIA attributes, keyboard navigation, focus management)
-    - **MUST follow existing test patterns** found in components like `accordion.test.ts`, `badge.test.ts`, etc.
-    - **MUST ensure all tests pass** before considering work complete.
-
-- **JS tests**
-
-```bash
-npm test                        # web-test-runner, default group
-npm run test:watch              # watch mode
-npm run test:component <name>   # test specific component in watch mode (e.g., npm run test:component data-access)
-```
-
-**REQUIRED:** **MUST use `npm run test:component <name>` when testing a specific component** (e.g., `npm run test:component data-access`). This runs tests in watch mode for faster iteration.
-
-**MUST run tests when making ANY changes** to component behavior, properties, events, or data services.
-
-- **Static checks**
-
-```bash
-npm run format:check
-npm run lint
-```
-
-- **Verification before publish (for maintainers)**
-
-```bash
-npm run verify      # format:check + lint + typecheck + test
-```
-
-**REQUIRED:** If you introduce or modify tests, **MUST keep them aligned with web-test-runner** and **MUST follow existing test patterns** in the repo.
-
----
+- **REQUIRED:** When creating, modifying, or debugging tests, **MUST read and follow [`context/testing-guidelines.md`](./context/testing-guidelines.md)** for testing architecture, WTR execution commands, canonical patterns, and pre-commit requirements.
 
 ## Git & Repository Etiquette (for AI Agents)
 
@@ -266,9 +226,9 @@ If behavior seems “magical,” look for:
 - **REQUIRED:** **MUST prefer minimal, targeted edits** over large refactors unless the user explicitly asks for a redesign.
 - **REQUIRED:** **MUST explain your reasoning briefly** when making substantial code changes, and **MUST point to the specific files you touched** so the user can review.
 - **REQUIRED:** **MUST ensure proper testing** for all components:
-    - When creating a new component, **MUST create comprehensive tests** in `*.test.ts` covering all functionality.
+    - When creating a new component, **MUST create comprehensive tests** in `__tests__/<name>.<type>.test.ts` covering all functionality adhering to [`context/testing-guidelines.md`](./context/testing-guidelines.md).
     - When modifying a component, **MUST update or add tests** to cover the new/changed behavior.
     - **MUST NOT** submit components without tests or with incomplete test coverage.
-    - **MUST verify tests pass** using `npm test` or `npm run test:watch` before considering work complete.
+    - **MUST verify tests pass** using `npm test` or `npm run test:component <name>` before considering work complete.
 
 **REQUIRED:** If you're ever uncertain, **MUST ask the human developer for clarification** rather than guessing about user-facing behavior.
