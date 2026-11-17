@@ -98,8 +98,9 @@ export default class TerraTag extends TerraElement {
         }
 
         const content = html`
-            ${isContent
-                ? html`
+            ${
+                isContent
+                    ? html`
                       <span
                           part="icon"
                           class="${classMap({
@@ -110,18 +111,21 @@ export default class TerraTag extends TerraElement {
                           })}"
                       >
                           <slot name="icon">
-                              ${this.icon
-                                  ? html`
+                              ${
+                                  this.icon
+                                      ? html`
                                         <terra-icon
                                             name="${this.icon}"
                                             library="${this.iconLibrary}"
                                         ></terra-icon>
                                     `
-                                  : nothing}
+                                      : nothing
+                              }
                           </slot>
                       </span>
                   `
-                : nothing}
+                    : nothing
+            }
             <span part="label" class="tag__label">
                 <slot></slot>
             </span>

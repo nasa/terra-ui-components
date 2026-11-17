@@ -94,28 +94,28 @@ The slider supports two display modes for showing selected values:
 
 **Default (Selected Values in Header):**
 
--   Selected values are displayed in the top right corner of the component
--   This is the recommended HDS pattern and provides a clean, unobtrusive display
--   Example: `<terra-slider label="Year" min="1920" max="2020" mode="range"></terra-slider>`
+- Selected values are displayed in the top right corner of the component
+- This is the recommended HDS pattern and provides a clean, unobtrusive display
+- Example: `<terra-slider label="Year" min="1920" max="2020" mode="range"></terra-slider>`
 
 **Tooltips:**
 
--   Use the `has-tooltips` prop to show tooltips on the slider handles
--   Tooltips automatically merge when handles get close together (within 15% proximity)
--   Example: `<terra-slider has-tooltips mode="range" min="0" max="100"></terra-slider>`
+- Use the `has-tooltips` prop to show tooltips on the slider handles
+- Tooltips automatically merge when handles get close together (within 15% proximity)
+- Example: `<terra-slider has-tooltips mode="range" min="0" max="100"></terra-slider>`
 
 ### Default Values
 
 **Single Mode:**
 
--   If no `value` is provided, defaults to `min` value
--   Example: `<terra-slider min="0" max="100"></terra-slider>` starts at 0
+- If no `value` is provided, defaults to `min` value
+- Example: `<terra-slider min="0" max="100"></terra-slider>` starts at 0
 
 **Range Mode:**
 
--   If no `start-value` is provided, defaults to `min` value
--   If no `end-value` is provided, defaults to `max` value
--   Example: `<terra-slider mode="range" min="0" max="100"></terra-slider>` starts at [0, 100]
+- If no `start-value` is provided, defaults to `min` value
+- If no `end-value` is provided, defaults to `max` value
+- Example: `<terra-slider mode="range" min="0" max="100"></terra-slider>` starts at [0, 100]
 
 ### Listen for changes
 

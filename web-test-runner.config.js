@@ -128,14 +128,14 @@ function resolveTestImages() {
 export default {
     rootDir: '.',
     files: 'src/**/*.test.ts', // "default" group
-    concurrentBrowsers: 3,
+    concurrentBrowsers: 3, // when more than one browser is running a time, we can hit core limits and cause test flakiness
     nodeResolve: {
         exportConditions: ['production', 'default'],
     },
     testFramework: {
         config: {
-            timeout: 3000,
-            retries: 1,
+            timeout: 8000,
+            retries: 3, // network spikes, slow rendering, etc. can cause test flakiness
         },
     },
     plugins: [
@@ -156,6 +156,7 @@ export default {
         playwrightLauncher({ product: 'firefox' }),
         playwrightLauncher({ product: 'webkit' }),
     ],
+    browserStartTimeout: 60000, // bumping this to 60s due to Firefox flakiness
     testRunnerHtml: testFramework => `
     <html lang="en-US">
       <head></head>

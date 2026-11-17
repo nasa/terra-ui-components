@@ -46,7 +46,7 @@ function formatUtcWithPattern(date: Date, pattern: string): string {
         mm: pad2(date.getUTCMinutes()),
     }
 
-    return pattern.replace(/yyyy|MM|dd|HH|mm/g, (token) => replacements[token])
+    return pattern.replace(/yyyy|MM|dd|HH|mm/g, token => replacements[token])
 }
 
 /**
@@ -79,21 +79,13 @@ export function isDateRangeContained(
     start1: Date,
     end1: Date,
     start2: Date,
-    end2: Date,
+    end2: Date
 ): boolean {
     const startOfDay1 = new Date(
-        Date.UTC(
-            start1.getUTCFullYear(),
-            start1.getUTCMonth(),
-            start1.getUTCDate(),
-        ),
+        Date.UTC(start1.getUTCFullYear(), start1.getUTCMonth(), start1.getUTCDate())
     )
     const startOfDay2 = new Date(
-        Date.UTC(
-            start2.getUTCFullYear(),
-            start2.getUTCMonth(),
-            start2.getUTCDate(),
-        ),
+        Date.UTC(start2.getUTCFullYear(), start2.getUTCMonth(), start2.getUTCDate())
     )
 
     const endOfDay1 = new Date(
@@ -104,8 +96,8 @@ export function isDateRangeContained(
             23,
             59,
             59,
-            999,
-        ),
+            999
+        )
     )
     const endOfDay2 = new Date(
         Date.UTC(
@@ -115,9 +107,18 @@ export function isDateRangeContained(
             23,
             59,
             59,
-            999,
-        ),
+            999
+        )
     )
 
     return startOfDay1 >= startOfDay2 && endOfDay1 <= endOfDay2
+}
+
+/**
+ * Returns yesterday's date in ISO format: YYYY-MM-DD.
+ */
+export function getYesterdayIsoDate(): string {
+    const yesterday = new Date(Date.now() - 86_400_000) // 24 * 60 * 60 * 1000 milliseconds in a day
+
+    return yesterday.toISOString().slice(0, 10)
 }

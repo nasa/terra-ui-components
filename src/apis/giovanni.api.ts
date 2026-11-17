@@ -92,19 +92,19 @@ class GiovanniApi {
     async getShapeFiles(options?: RequestOptions) {
         const shapeFiles = await this.#onPremRequest<ShapeFilesResponse>(
             'daac-bin/getProvisionedShapefiles.py',
-            options,
+            options
         )
 
         // the giovanni response is very suited to on-prem Giovanni, but not for our usage
         // so we need to map it to a more friendly format
-        return Object.keys(shapeFiles.info).map((shapefileID) => ({
+        return Object.keys(shapeFiles.info).map(shapefileID => ({
             shapefileID,
             title: shapeFiles.info[shapefileID].title,
             sourceName: shapeFiles.info[shapefileID].sourceName,
             sourceURL: shapeFiles.info[shapefileID].sourceURL,
             shapes: this.#transformShapeData(
                 shapeFiles.info[shapefileID].shapes,
-                shapefileID,
+                shapefileID
             ),
         }))
     }
@@ -112,7 +112,7 @@ class GiovanniApi {
     async getGeoJson(shapeFileId: string, options?: RequestOptions) {
         return this.#onPremRequest(
             `daac-bin/getGeoJSON.py?shape=${shapeFileId}`,
-            options,
+            options
         )
     }
 
@@ -126,7 +126,7 @@ class GiovanniApi {
             variableEntryIds?: string[]
             rows?: string
         },
-        options?: RequestOptions,
+        options?: RequestOptions
     ): Promise<{
         count: number
         total: number
@@ -144,7 +144,7 @@ class GiovanniApi {
 
         if (params?.variableEntryIds?.length) {
             const orQuery = params.variableEntryIds
-                .map((id) => `dataFieldId:"${id.replace(/\./g, '_')}"`)
+                .map(id => `dataFieldId:"${id.replace(/\./g, '_')}"`)
                 .join(' OR ')
             queryParams.append('q', `(${orQuery}) AND dataFieldActive:true`)
             queryParams.append('q.op', 'AND')
@@ -152,7 +152,7 @@ class GiovanniApi {
         } else if (params?.q) {
             queryParams.append(
                 'q',
-                `dataFieldActive:true AND dataFieldKeywordsText:(${params.q})`,
+                `dataFieldActive:true AND dataFieldKeywordsText:(${params.q})`
             )
             queryParams.append('q.op', 'AND')
         } else {
@@ -165,7 +165,7 @@ class GiovanniApi {
                 if (solrField) {
                     queryParams.append(
                         'fq',
-                        `${solrField}:(${values.map((v) => `"${v}"`).join(' OR ')})`,
+                        `${solrField}:(${values.map(v => `"${v}"`).join(' OR ')})`
                     )
                 }
             }
@@ -184,30 +184,27 @@ class GiovanniApi {
 
         const result = await this.#onPremRequest<SolrCatalogResponse>(
             `${SOLR_CATALOG_PATH}?${queryParams.toString()}`,
-            options,
+            options
         )
 
         let variables = result.response.docs
 
         if (!params?.variableEntryIds?.length) {
-            const configuredVariables =
-                await this.getConfiguredVariables(options)
+            const configuredVariables = await this.getConfiguredVariables(options)
             if (configuredVariables.length > 0) {
                 const configuredVarsSet = new Set(configuredVariables)
                 variables = variables.filter(
-                    (v) =>
-                        v.dataFieldId && configuredVarsSet.has(v.dataFieldId),
+                    v => v.dataFieldId && configuredVarsSet.has(v.dataFieldId)
                 )
             }
         }
 
         const facets: GiovanniFacet[] = Object.entries(
-            result.facet_counts.facet_fields,
+            result.facet_counts.facet_fields
         ).map(([solrName, rawValues]) => {
             const category =
-                Object.entries(solrFieldMap).find(
-                    ([, v]) => v === solrName,
-                )?.[0] ?? solrName
+                Object.entries(solrFieldMap).find(([, v]) => v === solrName)?.[0] ??
+                solrName
             const values: GiovanniFacetValue[] = []
             for (let i = 0; i < rawValues.length; i += 2) {
                 values.push({
@@ -232,11 +229,11 @@ class GiovanniApi {
      */
     async getVariable(
         variableEntryId: string,
-        options?: RequestOptions,
+        options?: RequestOptions
     ): Promise<GiovanniVariable | null> {
         const result = await this.searchVariables(
             { variableEntryIds: [variableEntryId] },
-            options,
+            options
         )
         return result.variables[0] ?? null
     }
@@ -247,13 +244,13 @@ class GiovanniApi {
      * shape expected by the variable-keyword-search component.
      */
     async getSearchKeywords(
-        options?: RequestOptions,
+        options?: RequestOptions
     ): Promise<Array<{ id: string }>> {
         const result = await this.#onPremRequest<{
             terms: Record<string, Array<any>>
         }>(
             'daac-bin/aesir_proxy.pl/terms?terms.fl=dataFieldKeywords&terms.limit=-1&wt=json&terms.sort=count',
-            options,
+            options
         )
 
         return result.terms?.dataFieldKeywords.flatMap((doc, index) => {
@@ -268,15 +265,12 @@ class GiovanniApi {
     #onPremRequest<T>(path: string, requestOptions?: RequestOptions) {
         return apiClient.get<T>(
             `${onPremProxy}/giovanni.gsfc.nasa.gov/giovanni/${path}`,
-            requestOptions,
+            requestOptions
         )
     }
 
-    #transformShapeData(
-        shapes: Record<string, ShapeFileShape>,
-        shapefileID: string,
-    ) {
-        return Object.keys(shapes).map((key) => {
+    #transformShapeData(shapes: Record<string, ShapeFileShape>, shapefileID: string) {
+        return Object.keys(shapes).map(key => {
             const shape = shapes[key]
             let name: string | number | null | undefined = null
 
@@ -287,8 +281,7 @@ class GiovanniApi {
                 shapefileID === 'gpmSeaMask'
             ) {
                 name = shape.values.find(
-                    (value) =>
-                        typeof value === 'string' && value.includes('deg'),
+                    value => typeof value === 'string' && value.includes('deg')
                 )
             } else if (
                 shapefileID === 'state_dept_countries_2017' ||

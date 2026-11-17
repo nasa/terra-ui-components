@@ -28,22 +28,24 @@ describe('DrawToolbarControl', () => {
         })
 
         it('should have a DOM element', () => {
-            const element = (control as any).element
+            const element = control.element
             expect(element).to.exist
             expect(element.className).to.include('draw-toolbar')
         })
 
         it('should create buttons in the toolbar', () => {
-            const element = (control as any).element
+            const element = control.element
             const buttons = element.querySelectorAll('button')
-            expect(buttons.length).to.be.greaterThan(0)
+            expect(buttons.length).to.equal(5)
         })
 
-        it('should create a cancel button', () => {
-            const element = (control as any).element
-            const buttons = element.querySelectorAll('button')
-            const lastButton = buttons[buttons.length - 1]
-            expect(lastButton.innerHTML).to.include('✕')
+        it('should create a cancel button with an inline SVG icon', () => {
+            const element = control.element
+            const cancelBtn = element.querySelector(
+                'button[title="Cancel drawing"]'
+            ) as HTMLButtonElement
+            expect(cancelBtn).to.exist
+            expect(cancelBtn.querySelector('svg')).to.exist
         })
     })
 
@@ -62,10 +64,10 @@ describe('DrawToolbarControl', () => {
             const ctrl = new DrawToolbarControl(vectorLayer, options)
             ctrl.toggleButtonVisibility('bbox')
 
-            const btn = (ctrl as any).element.querySelector(
+            const btn = ctrl.element.querySelector(
                 'button:nth-child(1)'
             ) as HTMLButtonElement
-            expect(btn.style.display).to.equal('inline-block')
+            expect(btn.style.display).to.equal('flex')
         })
 
         it('should hide button when option is false', () => {
@@ -73,7 +75,7 @@ describe('DrawToolbarControl', () => {
             const ctrl = new DrawToolbarControl(vectorLayer, options)
             ctrl.toggleButtonVisibility('bbox')
 
-            const btn = (ctrl as any).element.querySelector(
+            const btn = ctrl.element.querySelector(
                 'button:nth-child(1)'
             ) as HTMLButtonElement
             expect(btn.style.display).to.equal('none')
@@ -81,7 +83,10 @@ describe('DrawToolbarControl', () => {
 
         it('should update options with setOptions', () => {
             control.setOptions({ showPointTool: true })
-            expect(control).to.exist
+            const btn = control.element.querySelector(
+                'button[title="Choose a point"]'
+            ) as HTMLButtonElement
+            expect(btn.style.display).to.equal('flex')
         })
 
         it('should toggle visibility for all tools', () => {
@@ -92,11 +97,11 @@ describe('DrawToolbarControl', () => {
                 showCircleTool: true,
             })
 
-            const buttons = (control as any).element.querySelectorAll('button')
-            // Exclude cancel button (last one)
+            const buttons = control.element.querySelectorAll('button')
+            // Check the 4 draw tool buttons
             for (let i = 0; i < 4; i++) {
                 expect((buttons[i] as HTMLButtonElement).style.display).to.equal(
-                    'inline-block'
+                    'flex'
                 )
             }
         })
@@ -278,12 +283,28 @@ describe('DrawToolbarControl', () => {
     })
 
     describe('Tool information methods', () => {
-        it('should have bbox tool title', () => {
-            expect(control).to.exist
+        it('should assign descriptive titles to all toolbar buttons', () => {
+            const buttons = Array.from(
+                control.element.querySelectorAll('button')
+            ) as HTMLButtonElement[]
+
+            expect(buttons.map(btn => btn.title)).to.deep.equal([
+                'Draw a rectangle',
+                'Draw a polygon',
+                'Choose a point',
+                'Draw a circle',
+                'Cancel drawing',
+            ])
         })
 
-        it('should provide icon HTML for each tool', () => {
-            expect(control).to.exist
+        it('should render an inline SVG icon inside every toolbar button', () => {
+            const buttons = Array.from(
+                control.element.querySelectorAll('button')
+            ) as HTMLButtonElement[]
+
+            for (const btn of buttons) {
+                expect(btn.querySelector('svg')).to.exist
+            }
         })
     })
 
@@ -333,7 +354,9 @@ describe('DrawToolbarControl', () => {
 
     describe('Edge cases', () => {
         it('should handle setValue when source is null', () => {
-            const emptyLayer = new VectorLayer({ source: undefined as any })
+            const emptyLayer = new VectorLayer({
+                source: null as unknown as VectorSource,
+            })
             const ctrl = new DrawToolbarControl(emptyLayer)
 
             const latLng = new LatLng(40.7128, -74.006)
@@ -342,10 +365,10 @@ describe('DrawToolbarControl', () => {
         })
 
         it('should maintain control element on multiple operations', () => {
-            const element1 = (control as any).element
+            const element1 = control.element
             control.setValue(new LatLng(40.7128, -74.006))
             control.setOptions({ showBboxTool: true })
-            const element2 = (control as any).element
+            const element2 = control.element
 
             expect(element1).to.equal(element2)
         })

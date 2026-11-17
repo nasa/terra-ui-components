@@ -144,10 +144,12 @@ module.exports = function (eleventyConfig) {
     // Filters
     //
     eleventyConfig.addFilter('markdown', content => {
+        if (!content) return ''
         return shoelaceFlavoredMarkdown.render(content)
     })
 
     eleventyConfig.addFilter('markdownInline', content => {
+        if (!content) return ''
         return shoelaceFlavoredMarkdown.renderInline(content)
     })
 

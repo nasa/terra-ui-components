@@ -3,7 +3,7 @@ import './combobox.js'
 
 describe('<terra-combobox>', () => {
     describe('Lifecycle and Event Cleanup', () => {
-        it('should remove window click event listener on disconnectedCallback (Issue #75)', async () => {
+        it('should remove window click event listener on disconnectedCallback', async () => {
             let addCount = 0
             let removeCount = 0
 

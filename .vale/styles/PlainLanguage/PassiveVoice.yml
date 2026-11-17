@@ -1,0 +1,6 @@
+extends: existence
+message: "Consider using active voice instead of '%s' (NASA Stylebook & Digital.gov)."
+level: suggestion
+ignorecase: true
+tokens:
+  - '\b(?:am|is|are|was|were|be|been|being)\s+\w+ed\b'

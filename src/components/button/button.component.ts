@@ -243,12 +243,12 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
     private handleClick() {
         if (this.type === 'submit') {
-            // @ts-ignore
+            // @ts-expect-error
             this.formControlController.submit(this)
         }
 
         if (this.type === 'reset') {
-            // @ts-ignore
+            // @ts-expect-error
             this.formControlController.reset(this)
         }
 

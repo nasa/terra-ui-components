@@ -1,28 +1,62 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.4.11/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
     "vcs": {
         "enabled": true,
         "clientKind": "git",
         "useIgnoreFile": true
     },
     "files": {
-        "includes": ["**", "!!**/dist"]
+        "includes": [
+            "src/**",
+            "!src/react/index.ts",
+            "!src/themes/Figma_Export_Variables.json",
+            "!src/components/map/layers/labelsStyleConfig.ts",
+            "!src/components/map/layers/bordersStyleConfig.ts",
+            "!src/components/icon/icons",
+            "!**/dist",
+            "!**/cdn",
+            "!**/_site"
+        ]
     },
     "formatter": {
         "enabled": true,
         "indentStyle": "space",
-        "indentWidth": 4
+        "indentWidth": 4,
+        "lineWidth": 86
     },
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true
+            "preset": "recommended",
+            "style": {
+                "noNonNullAssertion": "off"
+            },
+            "suspicious": {
+                "noExplicitAny": "off",
+                "useIterableCallbackReturn": "off",
+                "noDoubleEquals": "warn",
+                "noAssignInExpressions": "warn",
+                "noTsIgnore": "warn",
+                "noShadowRestrictedNames": "off",
+                "noMisleadingInstantiator": "off",
+                "noAsyncPromiseExecutor": "warn",
+                "noEmptyInterface": "warn"
+            },
+            "correctness": {
+                "noEmptyPattern": "off",
+                "noInnerDeclarations": "off"
+            },
+            "complexity": {
+                "noBannedTypes": "warn"
+            }
         }
     },
     "javascript": {
         "formatter": {
             "quoteStyle": "single",
-            "semicolons": "asNeeded"
+            "semicolons": "asNeeded",
+            "trailingCommas": "es5",
+            "arrowParentheses": "asNeeded"
         }
     },
     "assist": {

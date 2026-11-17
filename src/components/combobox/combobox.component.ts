@@ -1,22 +1,21 @@
 import Fuse from 'fuse.js'
-import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
+import { type CSSResultGroup, html, LitElement, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { ref } from 'lit/directives/ref.js'
-import { repeat } from 'lit/directives/repeat.js'
-import TerraElement from '../../internal/terra-element.js'
-import componentStyles from '../../styles/component.styles.js'
-import styles from './combobox.styles.js'
-
 import { cache } from 'lit/directives/cache.js'
 import { choose } from 'lit/directives/choose.js'
 import { map } from 'lit/directives/map.js'
+import { ref } from 'lit/directives/ref.js'
+import { repeat } from 'lit/directives/repeat.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
 import { clearSelection, walkToOption } from '../combobox/lib.js'
+import styles from './combobox.styles.js'
 import {
-    SearchableListType,
     type Content,
     type GroupedListItem,
     type ListItem,
+    SearchableListType,
 } from './type.js'
 
 /**
@@ -417,31 +416,31 @@ export default class TerraCombobox extends TerraElement {
                     ${
                         ['COMPLETE', 'ERROR', 'INITIAL'].includes(this.status)
                             ? html`<svg
-                                  aria-hidden="true"
-                                  class="button-icon chevron"
-                                  focusable="false"
-                                  viewBox="0 0 400 400"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="currentColor"
-                              >
-                                  <path
-                                      d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
-                                  ></path>
-                              </svg> `
+                              aria-hidden="true"
+                              class="button-icon chevron"
+                              focusable="false"
+                              viewBox="0 0 400 400"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="currentColor"
+                          >
+                              <path
+                                  d="m4.2 122.2 195.1 195.1 196.5-196.6-37.9-38-157.8 157.8-156.8-156.8z"
+                              ></path>
+                          </svg> `
                             : html`<svg
-                                  class="button-icon spinner"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                  xmlns="http://www.w3.org/2000/svg"
-                              >
-                                  <circle
-                                      cx="12"
-                                      cy="12"
-                                      r="9.5"
-                                      fill="none"
-                                      stroke-width="3"
-                                  ></circle>
-                              </svg>`
+                              class="button-icon spinner"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                          >
+                              <circle
+                                  cx="12"
+                                  cy="12"
+                                  r="9.5"
+                                  fill="none"
+                                  stroke-width="3"
+                              ></circle>
+                          </svg>`
                     }
                 </terra-button>
 
@@ -449,25 +448,25 @@ export default class TerraCombobox extends TerraElement {
                     this.hideHelp
                         ? nothing
                         : html`<p class="search-help">
-                              See
-                              <a
-                                  href="https://www.fusejs.io/examples.html#extended-search"
-                                  rel="noopener noreferrer"
-                                  target="_blank"
-                                  >extended search syntax
-                                  <svg
-                                      aria-hidden="true"
-                                      class="external-link"
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="14"
-                                      height="14"
-                                      viewBox="0 0 24 24"
-                                  >
-                                      <path
-                                          d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
-                                      /></svg></a
-                              >.
-                          </p>`
+                          See
+                          <a
+                              href="https://www.fusejs.io/examples.html#extended-search"
+                              rel="noopener noreferrer"
+                              target="_blank"
+                              >extended search syntax
+                              <svg
+                                  aria-hidden="true"
+                                  class="external-link"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="14"
+                                  height="14"
+                                  viewBox="0 0 24 24"
+                              >
+                                  <path
+                                      d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"
+                                  /></svg></a
+                          >.
+                      </p>`
                 }
             </div>
 

@@ -455,24 +455,30 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                     'form-control--has-error-text': hasError,
                 })}
             >
-                ${this.label
-                    ? html`
+                ${
+                    this.label
+                        ? html`
                           <label
                               for="input"
                               part="form-control-label"
-                              class=${this.hideLabel
-                                  ? 'input__label input__label--hidden'
-                                  : 'input__label'}
+                              class=${
+                                  this.hideLabel
+                                      ? 'input__label input__label--hidden'
+                                      : 'input__label'
+                              }
                           >
                               ${this.label}
-                              ${this.required
-                                  ? html`<span class="input__required-indicator"
+                              ${
+                                  this.required
+                                      ? html`<span class="input__required-indicator"
                                         >*</span
                                     >`
-                                  : ''}
+                                      : ''
+                              }
                           </label>
                       `
-                    : ''}
+                        : ''
+                }
 
                 <div part="form-control-input" class="form-control-input">
                     <div
@@ -495,21 +501,25 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                             'input--has-suffix': hasSuffix,
                         })}
                     >
-                        ${hasPrefix
-                            ? html`
+                        ${
+                            hasPrefix
+                                ? html`
                                   <span part="prefix" class="input__prefix">
                                       <slot name="prefix"></slot>
                                   </span>
                               `
-                            : ''}
+                                : ''
+                        }
 
                         <input
                             part="input"
                             id="input"
                             class="input__control"
-                            type=${this.type === 'password' && this.passwordVisible
-                                ? 'text'
-                                : this.type}
+                            type=${
+                                this.type === 'password' && this.passwordVisible
+                                    ? 'text'
+                                    : this.type
+                            }
                             title=${
                                 this
                                     .title /* An empty title prevents browser validation tooltips from appearing on hover */
@@ -547,11 +557,13 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                             pattern=${ifDefined(this.pattern)}
                             enterkeyhint=${ifDefined(this.enterkeyhint)}
                             inputmode=${ifDefined(this.inputMode)}
-                            aria-describedby=${hasError
-                                ? 'error-text'
-                                : hasHelpText
-                                  ? 'help-text'
-                                  : undefined}
+                            aria-describedby=${
+                                hasError
+                                    ? 'error-text'
+                                    : hasHelpText
+                                      ? 'help-text'
+                                      : undefined
+                            }
                             aria-invalid=${hasError ? 'true' : undefined}
                             @input=${this.handleInput}
                             @change=${this.handleChange}
@@ -561,8 +573,9 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                             @keydown=${this.handleKeyDown}
                         />
 
-                        ${isClearIconVisible
-                            ? html`
+                        ${
+                            isClearIconVisible
+                                ? html`
                                   <button
                                       part="clear-button"
                                       class="input__clear"
@@ -580,23 +593,28 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                                       </slot>
                                   </button>
                               `
-                            : ''}
-                        ${this.passwordToggle &&
-                        this.type === 'password' &&
-                        !this.disabled
-                            ? html`
+                                : ''
+                        }
+                        ${
+                            this.passwordToggle &&
+                            this.type === 'password' &&
+                            !this.disabled
+                                ? html`
                                   <button
                                       part="password-toggle-button"
                                       class="input__password-toggle"
                                       type="button"
-                                      aria-label=${this.passwordVisible
-                                          ? 'Hide password'
-                                          : 'Show password'}
+                                      aria-label=${
+                                          this.passwordVisible
+                                              ? 'Hide password'
+                                              : 'Show password'
+                                      }
                                       @click=${this.handlePasswordToggle}
                                       tabindex="-1"
                                   >
-                                      ${this.passwordVisible
-                                          ? html`
+                                      ${
+                                          this.passwordVisible
+                                              ? html`
                                                 <slot name="show-password-icon">
                                                     <terra-icon
                                                         name="solid-eye-slash"
@@ -604,19 +622,22 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                                                     ></terra-icon>
                                                 </slot>
                                             `
-                                          : html`
+                                              : html`
                                                 <slot name="hide-password-icon">
                                                     <terra-icon
                                                         name="solid-eye"
                                                         library="heroicons"
                                                     ></terra-icon>
                                                 </slot>
-                                            `}
+                                            `
+                                      }
                                   </button>
                               `
-                            : ''}
-                        ${showResetIcon
-                            ? html`
+                                : ''
+                        }
+                        ${
+                            showResetIcon
+                                ? html`
                                   <button
                                       type="button"
                                       class="input__reset"
@@ -632,22 +653,26 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                                       ></terra-icon>
                                   </button>
                               `
-                            : ''}
-                        ${hasSuffixSlot &&
-                        !isClearIconVisible &&
-                        !showResetIcon &&
-                        !(this.passwordToggle && this.type === 'password')
-                            ? html`
+                                : ''
+                        }
+                        ${
+                            hasSuffixSlot &&
+                            !isClearIconVisible &&
+                            !showResetIcon &&
+                            !(this.passwordToggle && this.type === 'password')
+                                ? html`
                                   <span part="suffix" class="input__suffix">
                                       <slot name="suffix"></slot>
                                   </span>
                               `
-                            : ''}
+                                : ''
+                        }
                     </div>
                 </div>
 
-                ${hasError
-                    ? html`
+                ${
+                    hasError
+                        ? html`
                           <div
                               aria-live="polite"
                               aria-hidden="false"
@@ -658,8 +683,8 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                               <slot name="error">${errorMessage}</slot>
                           </div>
                       `
-                    : hasHelpText
-                      ? html`
+                        : hasHelpText
+                          ? html`
                             <div
                                 aria-hidden="false"
                                 class="form-control__help-text"
@@ -669,7 +694,8 @@ export default class TerraInput extends TerraElement implements TerraFormControl
                                 <slot name="help-text">${this.helpText}</slot>
                             </div>
                         `
-                      : ''}
+                          : ''
+                }
             </div>
         `
     }

@@ -209,14 +209,16 @@ export default class TerraMenuItem extends TerraElement {
                 </span>
 
                 ${this.submenuController.renderSubmenu()}
-                ${this.loading
-                    ? html`
+                ${
+                    this.loading
+                        ? html`
                           <terra-loader
                               part="spinner"
                               exportparts="base:spinner__base"
                           ></terra-loader>
                       `
-                    : ''}
+                        : ''
+                }
             </div>
         `
     }

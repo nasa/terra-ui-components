@@ -34,12 +34,10 @@ describe('TimeSeriesCacheService', () => {
         const key = service.getCacheKeyForVariable(
             'GPM_3IMERGHH_07_precipitation',
             '33.9375,-86.9375',
-            'prod',
+            'prod'
         )
 
-        expect(key).to.equal(
-            'GPM_3IMERGHH_07_precipitation_33.94,%20-86.94_prod',
-        )
+        expect(key).to.equal('GPM_3IMERGHH_07_precipitation_33.94,%20-86.94_prod')
     })
 
     it('returns full gap when no cached entry exists', () => {
@@ -136,10 +134,10 @@ describe('TimeSeriesCacheService', () => {
                 ],
             },
             new Date('2024-01-01T00:00:00.000Z'),
-            new Date('2024-01-10T23:59:59.999Z'),
+            new Date('2024-01-10T23:59:59.999Z')
         )
 
-        expect(result.data.map((row) => row.value)).to.deep.equal(['1', '2'])
+        expect(result.data.map(row => row.value)).to.deep.equal(['1', '2'])
     })
 
     it('treats missing cachedAt as invalid cache', () => {

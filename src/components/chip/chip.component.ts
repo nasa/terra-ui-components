@@ -56,8 +56,9 @@ export default class TerraChip extends TerraElement {
                 >
                     <slot part="content" class="tag__content"></slot>
                 </div>
-                ${this.closeable
-                    ? html`
+                ${
+                    this.closeable
+                        ? html`
                           <button
                               class="chip-close"
                               @click="${this.#handleRemoveClick}"
@@ -82,7 +83,8 @@ export default class TerraChip extends TerraElement {
                               </svg>
                           </button>
                       `
-                    : nothing}
+                        : nothing
+                }
             </div>
         `
     }
