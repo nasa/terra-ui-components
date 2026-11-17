@@ -16,8 +16,6 @@ export type GeoTiffLayerConfig = CommonConfig & {
     bands?: number[]
     /** Pixel value that should be treated as "no data" and excluded from rendering/min-max. */
     noDataValue?: number
-    /** Layer opacity, 0-1. Defaults to 1. */
-    opacity?: number
     /** Name of a `colormap` package colormap, e.g. 'viridis', 'jet'. Defaults to 'viridis'. */
     colorMapName?: string
     /** Number of discrete color stops to interpolate between. Defaults to 72. */
