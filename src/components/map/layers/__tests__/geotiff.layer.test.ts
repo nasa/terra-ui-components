@@ -1,5 +1,9 @@
 import { expect } from '@open-wc/testing'
-import { computeMinMax, buildStopsFromColors } from '../geotiff.layer.js'
+import {
+    buildStopsFromColors,
+    computeMinMax,
+    parseGdalMetadataXml,
+} from '../geotiff.layer.js'
 
 // NOTE: `buildGeoTiffLayer()` and `buildColorStops()` (the parts that import
 // `ol/source/GeoTIFF.js` and the `colormap` package) aren't covered here.
@@ -74,5 +78,30 @@ describe('buildStopsFromColors', () => {
             expect(entry).to.have.keys(['value', 'rgb'])
             expect(parseFloat(entry.value)).to.be.within(0, 9)
         }
+    })
+})
+
+describe('parseGdalMetadataXml', () => {
+    it('parses XML items into key-value pairs', () => {
+        const xml = `
+            <GDALMetadata>
+                <Item name="units">m/s</Item>
+                <Item name="long_name">Surface Wind Speed</Item>
+            </GDALMetadata>
+        `
+        expect(parseGdalMetadataXml(xml)).to.deep.equal({
+            units: 'm/s',
+            long_name: 'Surface Wind Speed',
+        })
+    })
+
+    it('returns an empty object for null, undefined, or empty string', () => {
+        expect(parseGdalMetadataXml(null)).to.deep.equal({})
+        expect(parseGdalMetadataXml(undefined)).to.deep.equal({})
+        expect(parseGdalMetadataXml('')).to.deep.equal({})
+    })
+
+    it('returns an empty object for invalid XML', () => {
+        expect(parseGdalMetadataXml('<invalid xml')).to.deep.equal({})
     })
 })

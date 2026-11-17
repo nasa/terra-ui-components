@@ -668,6 +668,7 @@ export default css`
 
     .search-container-mini {
         display: flex;
+        align-items: flex-start;
         gap: 0;
         margin-bottom: 15px;
         border-radius: 4px;
@@ -677,33 +678,6 @@ export default css`
 
     .search-input-mini {
         flex: 1;
-        padding: 10px 12px;
-        border: none;
-        font-size: 14px;
-        outline: none;
-        background: white;
-    }
-
-    .search-input-mini::placeholder {
-        color: #999;
-    }
-
-    .search-button-mini {
-        background: #0066cc;
-        color: white;
-        border: none;
-        padding: 10px 16px;
-        font-size: 14px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .search-button-mini:hover {
-        background: #0056b3;
     }
 
     .search-icon-mini {

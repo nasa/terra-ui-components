@@ -102,6 +102,22 @@ describe('<terra-data-access>', () => {
         expect(el.loading).to.be.false
     })
 
+    it('recomputes collectionEntryId when short-name/version change after the first collection has already loaded', async () => {
+        const el: any = await fixture(html`<terra-data-access></terra-data-access>`)
+
+        el.shortName = 'FIRST_COLLECTION'
+        el.version = '1'
+        await el.updateComplete
+
+        expect(el.collectionEntryId).to.equal('FIRST_COLLECTION_1')
+
+        el.shortName = 'SECOND_COLLECTION'
+        el.version = '2'
+        await el.updateComplete
+
+        expect(el.collectionEntryId).to.equal('SECOND_COLLECTION_2')
+    })
+
     it('should render footer content in footer slot when footerSlot is enabled', async () => {
         const el: any = await fixture(html`<terra-data-access></terra-data-access>`)
 

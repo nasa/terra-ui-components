@@ -94,12 +94,22 @@ export class HarmonyRequestController implements ReactiveController {
             const existingJob = await this.#findReusableJob(variables)
 
             if (existingJob) {
+                console.debug(
+                    'Returning existing job matching the same request parameters ',
+                    existingJob
+                )
+
                 this.#jobId = existingJob.jobID
                 this.host.queryClient?.invalidateQueries({
                     queryKey: ['harmony', 'jobs', existingJob.jobID],
                 })
                 return existingJob
             }
+
+            console.debug(
+                'Creating Harmony request ',
+                variables.harmonyRequest.requestUrl
+            )
 
             const result = await this.#createJob.mutate(variables)
 

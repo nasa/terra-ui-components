@@ -1,22 +1,22 @@
-import { Task } from '@lit/task'
 import type { StatusRenderer } from '@lit/task'
+import { Task } from '@lit/task'
 import type { ReactiveControllerHost } from 'lit'
 import {
-    type SubsetJobStatus,
-    type SubsetJobError,
+    FINAL_STATUSES,
     Status,
+    type SubsetJobError,
+    type SubsetJobStatus,
 } from '../../apis/harmony.api.js'
-import { FINAL_STATUSES } from '../../apis/harmony.api.js'
-import type TerraTimeAvgMap from './time-average-map.component.js'
-import { formatDate } from '../../utilities/date.js'
-import { extractHarmonyError } from '../../utilities/harmony.js'
 import { CollectionController } from '../../controllers/collection.controller.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HarmonyRequest } from '../../lib/harmony/harmony.request.js'
-import { LatLngBounds } from '../map/models/LatLngBounds.js'
-import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
-import TimeAvgMapCacheService from './time-average-map-cache.service.js'
 import { ThumbnailService } from '../../lib/thumbnails/thumbnail.service.js'
+import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
+import { formatDate } from '../../utilities/date.js'
+import { extractHarmonyError } from '../../utilities/harmony.js'
+import { LatLngBounds } from '../map/models/LatLngBounds.js'
+import type TerraTimeAvgMap from './time-average-map.component.js'
+import TimeAvgMapCacheService from './time-average-map-cache.service.js'
 
 const HARMONY_LINK_PROXY_URL =
     'https://lpo4uv7f0h.execute-api.us-east-1.amazonaws.com/default/harmony-link-proxy'
@@ -66,10 +66,8 @@ export class TimeAvgMapController {
                         await this.#cacheService.getValidCacheEntry(cacheKey)
 
                     if (existing) {
-                        console.log(
-                            'Returning existing map blob from cache',
-                            cacheKey
-                        )
+                        console.debug('Existing map geotiff found in cache', cacheKey)
+
                         this.#host.harmonyJobId = existing.harmonyJobId
                         this.#updateGeoTIFFLayer(existing.blob)
                         return existing.blob
@@ -78,7 +76,6 @@ export class TimeAvgMapController {
 
                 // If a specific jobId is provided, skip request building and poll directly
                 if (this.#host.jobId) {
-                    console.log('Using provided jobId, waiting for harmony job...')
                     const jobStatus = await this.#waitForHarmonyJob(
                         this.#host.jobId,
                         signal
@@ -152,8 +149,6 @@ export class TimeAvgMapController {
                 // add some helpful labels to the request for user experience so users don't just see concept ids
                 harmonyRequest.addLabelsFromVariable(catalogVariable)
 
-                console.log('Creating time average map job...')
-
                 let jobId: string
                 try {
                     const job = await this.#harmonyRequestController.startJob({
@@ -175,7 +170,6 @@ export class TimeAvgMapController {
                     throw error
                 }
 
-                console.log('Waiting for harmony job...')
                 const jobStatus = await this.#waitForHarmonyJob(jobId, signal)
 
                 if (jobStatus.status === Status.FAILED) {
