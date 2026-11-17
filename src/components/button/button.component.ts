@@ -1,20 +1,25 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './button.styles.js'
-import { classMap } from 'lit/directives/class-map.js'
-import { FormControlController, validValidityState } from '../../internal/form.js'
-import { HasSlotController } from '../../internal/slot.js'
-import { html, literal } from 'lit/static-html.js'
-import { ifDefined } from 'lit/directives/if-defined.js'
-import { property, query, state } from 'lit/decorators.js'
-import { watch } from '../../internal/watch.js'
-import TerraElement, { type TerraFormControl } from '../../internal/terra-element.js'
 import type { CSSResultGroup } from 'lit'
-import type TerraDialog from '../dialog/dialog.component.js'
+import { property, query, state } from 'lit/decorators.js'
+import { classMap } from 'lit/directives/class-map.js'
+import { ifDefined } from 'lit/directives/if-defined.js'
+import { html, literal } from 'lit/static-html.js'
+import {
+    FormControlController,
+    validValidityState,
+} from '../../internal/form.js'
+import { HasSlotController } from '../../internal/slot.js'
+import TerraElement, {
+    type TerraFormControl,
+} from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
 import type {
     TerraDialogHideEvent,
     TerraDialogShowEvent,
 } from '../../terra-ui-components.js'
+import type TerraDialog from '../dialog/dialog.component.js'
 import TerraIcon from '../icon/icon.component.js'
+import styles from './button.styles.js'
 
 /**
  * @summary Buttons represent actions that are available to the user.
@@ -36,7 +41,10 @@ import TerraIcon from '../icon/icon.component.js'
  * @csspart caret - The button's caret icon, an `<terra-icon>` element.
  * @csspart spinner - The spinner that shows when the button is in the loading state.
  */
-export default class TerraButton extends TerraElement implements TerraFormControl {
+export default class TerraButton
+    extends TerraElement
+    implements TerraFormControl
+{
     static styles: CSSResultGroup = [componentStyles, styles]
     static dependencies = {
         'terra-icon': TerraIcon,
@@ -50,7 +58,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         this,
         '[default]',
         'prefix',
-        'suffix'
+        'suffix',
     )
 
     @query('.button') button: HTMLButtonElement | HTMLLinkElement
@@ -78,7 +86,10 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     @property({ type: Boolean, reflect: true }) caret = false
 
     /** The button's shape. Used to control the radius edge shape when button is not in a terra-button-group. */
-    @property({ reflect: true }) shape: 'square' | 'square-left' | 'square-right'
+    @property({ reflect: true }) shape:
+        | 'square'
+        | 'square-left'
+        | 'square-right'
 
     /** Disables the button. */
     @property({ type: Boolean, reflect: true }) disabled = false
@@ -142,17 +153,24 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     /** Used to override the form owner's `enctype` attribute.  */
     @property({ attribute: 'formenctype' })
     formEnctype:
-        'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain'
+        | 'application/x-www-form-urlencoded'
+        | 'multipart/form-data'
+        | 'text/plain'
 
     /** Used to override the form owner's `method` attribute.  */
     @property({ attribute: 'formmethod' }) formMethod: 'post' | 'get'
 
     /** Used to override the form owner's `novalidate` attribute. */
-    @property({ attribute: 'formnovalidate', type: Boolean }) formNoValidate: boolean
+    @property({ attribute: 'formnovalidate', type: Boolean })
+    formNoValidate: boolean
 
     /** Used to override the form owner's `target` attribute. */
     @property({ attribute: 'formtarget' }) formTarget:
-        '_self' | '_blank' | '_parent' | '_top' | string
+        | '_self'
+        | '_blank'
+        | '_parent'
+        | '_top'
+        | string
 
     /** Used to connect this button to a dqialog on the page. Clicking the button will toggle the dialog's visiblity */
     @property({ attribute: 'for-dialog' })
@@ -195,11 +213,11 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         if (this.forDialog) {
             document.addEventListener(
                 'terra-dialog-show',
-                this.#handleDialogStateChange.bind(this)
+                this.#handleDialogStateChange.bind(this),
             )
             document.addEventListener(
                 'terra-dialog-hide',
-                this.#handleDialogStateChange.bind(this)
+                this.#handleDialogStateChange.bind(this),
             )
         }
     }
@@ -209,11 +227,11 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
         document.removeEventListener(
             'terra-dialog-show',
-            this.#handleDialogStateChange.bind(this)
+            this.#handleDialogStateChange.bind(this),
         )
         document.removeEventListener(
             'terra-dialog-hide',
-            this.#handleDialogStateChange.bind(this)
+            this.#handleDialogStateChange.bind(this),
         )
     }
 
@@ -237,12 +255,12 @@ export default class TerraButton extends TerraElement implements TerraFormContro
 
     private handleClick() {
         if (this.type === 'submit') {
-            // @ts-ignore
+            // @ts-expect-error
             this.formControlController.submit(this)
         }
 
         if (this.type === 'reset') {
-            // @ts-ignore
+            // @ts-expect-error
             this.formControlController.reset(this)
         }
 
@@ -255,7 +273,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
             if (!el) {
                 // Helper function to recursively search shadow roots
                 const findInShadowRoots = (
-                    root: Document | ShadowRoot
+                    root: Document | ShadowRoot,
                 ): TerraDialog | null => {
                     // Try getElementById if available (Document has it, ShadowRoot doesn't)
                     if (
@@ -376,20 +394,20 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         }
     }
 
+    /* Set icon for pageLink button based on whether link is internal or external */
     setPageLinkIcon(href: string): string {
-        /* Set icon for pageLink button based on whether link is internal or external */
+        const base = globalThis.location?.href
 
-        try {
-            const base = globalThis.location?.href || 'http://localhost'
-            const parsedUrl = new URL(href, base)
-            const linkDomain = parsedUrl.hostname
-            const hostDomain = globalThis.location?.hostname || 'localhost'
-            return linkDomain === hostDomain
-                ? 'outline-arrow-right'
-                : 'outline-arrow-up-right'
-        } catch {
+        if (!URL.canParse(href, base)) {
             return 'outline-arrow-right'
         }
+
+        const linkDomain = new URL(href, base).hostname
+        const hostDomain = globalThis.location?.hostname
+
+        return linkDomain === hostDomain
+            ? 'outline-arrow-right'
+            : 'outline-arrow-up-right'
     }
 
     setFontSize(size: string): string {
@@ -462,7 +480,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         @focus=${this.handleFocus}
         @invalid=${this.isButton() ? this.handleInvalid : null}
         @click=${this.handleClick}
-        aria-controls=${ifDefined(this.forDialog || undefined)} 
+        aria-controls=${ifDefined(this.forDialog || undefined)}
         ?aria-haspopup=${this.forDialog ? 'dialog' : undefined}
         aria-expanded=${ifDefined(this.forDialog ? this.expanded : undefined)}
       >
