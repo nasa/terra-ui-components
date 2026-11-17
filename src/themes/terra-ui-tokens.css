@@ -2,7 +2,7 @@
 /* Light Theme */
 /***************/
 
-:root[data-mode='Light'] {
+:root[data-mode="Light"] {
     /* Primitive Tokens 
     */
 
@@ -288,7 +288,7 @@
 /* Dark Theme */
 /**************/
 
-:root[data-mode='Dark'] {
+:root[data-mode="Dark"] {
     /* Primitive Tokens */
 
     /* Red color palette
@@ -569,7 +569,7 @@
     --terra-border-action-disabled: var(--terra-color-neutral-200);
 }
 
-:root[data-mode='Value'] {
+:root[data-mode="Value"] {
     /* Horizon Design System Colors
 
     /* Primary Palette

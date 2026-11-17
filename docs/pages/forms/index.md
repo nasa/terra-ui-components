@@ -13,14 +13,14 @@ Forms are essential for collecting user input in web applications. Terra UI prov
 
 Terra UI includes the following form components:
 
--   **[Input](/components/input)** - Text inputs, email, password, number, and more
--   **[Textarea](/components/textarea)** - Multi-line text input for longer content
--   **[Select](/components/select)** - Dropdown select fields with single or multiple selection
--   **[Checkbox](/components/checkbox)** - Checkboxes for multiple selections
--   **[Radio](/components/radio)** - Radio buttons for single selection from a group
--   **[Radio Group](/components/radio-group)** - Groups radio buttons together
--   **[Date Picker](/components/date-picker)** - Date and date range selection
--   **[File Upload](/components/file-upload)** - File upload with drag-and-drop support
+- **[Input](/components/input)** - Text inputs, email, password, number, and more
+- **[Textarea](/components/textarea)** - Multi-line text input for longer content
+- **[Select](/components/select)** - Dropdown select fields with single or multiple selection
+- **[Checkbox](/components/checkbox)** - Checkboxes for multiple selections
+- **[Radio](/components/radio)** - Radio buttons for single selection from a group
+- **[Radio Group](/components/radio-group)** - Groups radio buttons together
+- **[Date Picker](/components/date-picker)** - Date and date range selection
+- **[File Upload](/components/file-upload)** - File upload with drag-and-drop support
 
 ## Basic Form Structure
 
@@ -281,12 +281,12 @@ You can implement custom validation logic using the `setCustomValidity()` method
 
 Form controls automatically receive data attributes that reflect their validation state:
 
--   `data-required` - The field is required
--   `data-optional` - The field is optional
--   `data-invalid` - The field is currently invalid
--   `data-valid` - The field is currently valid
--   `data-user-invalid` - The field is invalid and the user has interacted with it
--   `data-user-valid` - The field is valid and the user has interacted with it
+- `data-required` - The field is required
+- `data-optional` - The field is optional
+- `data-invalid` - The field is currently invalid
+- `data-valid` - The field is currently valid
+- `data-user-invalid` - The field is invalid and the user has interacted with it
+- `data-user-valid` - The field is valid and the user has interacted with it
 
 These attributes can be used to style validation states:
 
@@ -400,10 +400,10 @@ Here's a complete example showing various form components working together:
 
 All Terra form components are built with accessibility in mind:
 
--   Labels are properly associated with inputs
--   Required fields are clearly indicated
--   Error states are announced to screen readers
--   Keyboard navigation is fully supported
--   Focus indicators are visible and clear
+- Labels are properly associated with inputs
+- Required fields are clearly indicated
+- Error states are announced to screen readers
+- Keyboard navigation is fully supported
+- Focus indicators are visible and clear
 
 For more information on individual form components, see their respective documentation pages.

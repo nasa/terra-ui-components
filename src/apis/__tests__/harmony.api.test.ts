@@ -1,4 +1,4 @@
-import { harmonyApi } from '../harmony.api.js'
+import { harmonyApi, isHarmonyUrl } from '../harmony.api.js'
 import { expect } from '@open-wc/testing'
 import sinon from 'sinon'
 import { apiClient } from '../../lib/api.client.js'
@@ -6,6 +6,38 @@ import { onlyGiovanniServices } from './fixtures/only-giovanni-services.js'
 import { giovanniAndNetcdf } from './fixtures/giovanni-and-netcdf-services.js'
 import { onlyNetcdf } from './fixtures/only-netcdf-service.js'
 import { allServices } from './fixtures/all-services.js'
+
+describe('isHarmonyUrl', () => {
+    it('returns true for a PROD Harmony URL', () => {
+        expect(isHarmonyUrl('https://harmony.earthdata.nasa.gov/jobs/123')).to.be.true
+    })
+
+    it('returns true for a UAT Harmony URL', () => {
+        expect(
+            isHarmonyUrl('https://harmony.uat.earthdata.nasa.gov/data.tif?foo=bar')
+        ).to.be.true
+    })
+
+    it('returns false for an unrelated host', () => {
+        expect(isHarmonyUrl('https://example.com/data.tif')).to.be.false
+    })
+
+    it('returns false for the anonymous-access proxy', () => {
+        expect(
+            isHarmonyUrl(
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy'
+            )
+        ).to.be.false
+    })
+
+    it('returns false for a relative path', () => {
+        expect(isHarmonyUrl('/data.tif')).to.be.false
+    })
+
+    it('returns false for a malformed URL', () => {
+        expect(isHarmonyUrl('not a url')).to.be.false
+    })
+})
 
 describe('HarmonyAPI', () => {
     let apiGetStub: sinon.SinonStub
@@ -24,9 +56,7 @@ describe('HarmonyAPI', () => {
                 await harmonyApi.getCollectionCapabilities()
                 expect.fail('Expected getCollectionCapabilities to throw')
             } catch (err: any) {
-                expect(err?.message).to.equal(
-                    '`collectionConceptId` is required',
-                )
+                expect(err?.message).to.equal('`collectionConceptId` is required')
             }
         })
 
@@ -35,12 +65,12 @@ describe('HarmonyAPI', () => {
 
             const result = await harmonyApi.getCollectionCapabilities(
                 onlyNetcdf.conceptId,
-                { bearerToken: 'test-token' },
+                { bearerToken: 'test-token' }
             )
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                `https://harmony.earthdata.nasa.gov/capabilities?collectionId=${onlyNetcdf.conceptId}&version=3`,
+                `https://harmony.earthdata.nasa.gov/capabilities?collectionId=${onlyNetcdf.conceptId}&version=3`
             )
             expect(apiGetStub.firstCall.args[1]).to.deep.equal({
                 signal: undefined,
@@ -50,7 +80,7 @@ describe('HarmonyAPI', () => {
             })
             expect(result.configuredOutputFormats).to.deep.equal([
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -64,7 +94,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                `https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/capabilities?collectionId=${allServices.conceptId}&version=3`,
+                `https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/capabilities?collectionId=${allServices.conceptId}&version=3`
             )
             expect(apiGetStub.firstCall.args[1]).to.deep.equal({
                 signal: undefined,
@@ -75,7 +105,7 @@ describe('HarmonyAPI', () => {
         it('should add conceptId to variables based on href when missing', async () => {
             const responseWithoutConceptIds = {
                 ...onlyNetcdf,
-                variables: onlyNetcdf.variables.map((variable) => ({
+                variables: onlyNetcdf.variables.map(variable => ({
                     ...variable,
                     conceptId: '',
                 })),
@@ -85,15 +115,11 @@ describe('HarmonyAPI', () => {
 
             const result = await harmonyApi.getCollectionCapabilities(
                 onlyNetcdf.conceptId,
-                { bearerToken: 'token' },
+                { bearerToken: 'token' }
             )
 
-            expect(result.variables[0].conceptId).to.equal(
-                'V2778423892-GES_DISC',
-            )
-            expect(result.variables[1].conceptId).to.equal(
-                'V2778427374-GES_DISC',
-            )
+            expect(result.variables[0].conceptId).to.equal('V2778423892-GES_DISC')
+            expect(result.variables[1].conceptId).to.equal('V2778427374-GES_DISC')
         })
     })
 
@@ -105,7 +131,7 @@ describe('HarmonyAPI', () => {
                 new Response(JSON.stringify(body), {
                     status: 200,
                     headers: { 'Content-Type': 'application/json' },
-                }),
+                })
             )
         }
 
@@ -117,12 +143,12 @@ describe('HarmonyAPI', () => {
                     requestUrl:
                         'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
                 } as any,
-                { bearerToken: 'test-token' },
+                { bearerToken: 'test-token' }
             )
 
             expect(fetchStub.calledOnce).to.be.true
             expect(fetchStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)'
             )
             expect(fetchStub.firstCall.args[1]).to.deep.equal({
                 method: 'GET',
@@ -145,7 +171,7 @@ describe('HarmonyAPI', () => {
 
             expect(fetchStub.calledOnce).to.be.true
             expect(fetchStub.firstCall.args[0]).to.equal(
-                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)'
             )
             expect(fetchStub.firstCall.args[1]).to.deep.equal({
                 method: 'GET',
@@ -161,10 +187,9 @@ describe('HarmonyAPI', () => {
                 new Response(null, {
                     status: 303,
                     headers: {
-                        Location:
-                            'https://harmony.earthdata.nasa.gov/jobs/job-1',
+                        Location: 'https://harmony.earthdata.nasa.gov/jobs/job-1',
                     },
-                }),
+                })
             )
             apiGetStub.resolves({
                 jobID: 'job-1',
@@ -178,14 +203,14 @@ describe('HarmonyAPI', () => {
                     requestUrl:
                         'https://harmony.earthdata.nasa.gov/C123/ogc-api-coverages/1.0.0/rangeset?subset=lat(0:1)',
                 } as any,
-                { bearerToken: 'test-token' },
+                { bearerToken: 'test-token' }
             )
 
             expect(fetchStub.calledOnce).to.be.true
             // falls through to getJobStatus, which goes through apiClient.get
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/jobs/job-1',
+                'https://harmony.earthdata.nasa.gov/jobs/job-1'
             )
             expect(result).to.deep.equal({
                 jobID: 'job-1',
@@ -199,7 +224,7 @@ describe('HarmonyAPI', () => {
                 new Response(null, {
                     status: 303,
                     headers: { Location: 'https://example.com/not-a-job' },
-                }),
+                })
             )
 
             try {
@@ -223,8 +248,8 @@ describe('HarmonyAPI', () => {
                     {
                         status: 400,
                         headers: { 'Content-Type': 'application/json' },
-                    },
-                ),
+                    }
+                )
             )
 
             try {
@@ -249,7 +274,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/jobs/abc123',
+                'https://harmony.earthdata.nasa.gov/jobs/abc123'
             )
         })
 
@@ -260,7 +285,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/cancel',
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/cancel'
             )
         })
 
@@ -271,7 +296,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://harmony.earthdata.nasa.gov/jobs/abc123/resume',
+                'https://harmony.earthdata.nasa.gov/jobs/abc123/resume'
             )
         })
 
@@ -282,7 +307,7 @@ describe('HarmonyAPI', () => {
 
             expect(apiGetStub.calledOnce).to.be.true
             expect(apiGetStub.firstCall.args[0]).to.equal(
-                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/resume',
+                'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs/abc123/resume'
             )
         })
 
@@ -294,7 +319,7 @@ describe('HarmonyAPI', () => {
 
                 expect(apiGetStub.calledOnce).to.be.true
                 expect(apiGetStub.firstCall.args[0]).to.equal(
-                    'https://harmony.earthdata.nasa.gov/jobs?',
+                    'https://harmony.earthdata.nasa.gov/jobs?'
                 )
             })
 
@@ -303,12 +328,12 @@ describe('HarmonyAPI', () => {
 
                 await harmonyApi.getJobs(
                     { page: 2, limit: 50, label: 'terra-time-average-map' },
-                    { bearerToken: 'token' },
+                    { bearerToken: 'token' }
                 )
 
                 expect(apiGetStub.calledOnce).to.be.true
                 expect(apiGetStub.firstCall.args[0]).to.equal(
-                    'https://harmony.earthdata.nasa.gov/jobs?page=2&limit=50&label=terra-time-average-map',
+                    'https://harmony.earthdata.nasa.gov/jobs?page=2&limit=50&label=terra-time-average-map'
                 )
             })
 
@@ -319,8 +344,103 @@ describe('HarmonyAPI', () => {
 
                 expect(apiGetStub.calledOnce).to.be.true
                 expect(apiGetStub.firstCall.args[0]).to.equal(
-                    'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs?limit=10',
+                    'https://sjldutoe6c.execute-api.us-east-1.amazonaws.com/default/harmony-proxy/jobs?limit=10'
                 )
+            })
+        })
+
+        describe('job endpoint pagination', () => {
+            it('should follow next links when job status is successful', async () => {
+                // Page 1 response
+                apiGetStub.onFirstCall().resolves({
+                    jobID: 'job-123',
+                    status: 'successful',
+                    links: [
+                        {
+                            href: 'https://example.com/file1.nc',
+                            rel: 'data',
+                            title: 'file1.nc',
+                        },
+                        {
+                            href: 'https://harmony.earthdata.nasa.gov/jobs/job-123?page=2',
+                            rel: 'next',
+                        },
+                    ],
+                })
+
+                // Page 2 response (last page)
+                apiGetStub.onSecondCall().resolves({
+                    jobID: 'job-123',
+                    status: 'successful',
+                    links: [
+                        {
+                            href: 'https://example.com/file2.nc',
+                            rel: 'data',
+                            title: 'file2.nc',
+                        },
+                    ],
+                })
+
+                const status = await harmonyApi.getJobStatus('job-123', {
+                    bearerToken: 'token',
+                })
+
+                expect(apiGetStub.calledTwice).to.be.true
+                expect(status.links.filter(l => l.rel === 'data')).to.have.lengthOf(2)
+                expect(status.links.find(l => l.rel === 'next')).to.be.undefined
+            })
+
+            it('should not follow next links while job is running', async () => {
+                apiGetStub.resolves({
+                    jobID: 'job-123',
+                    status: 'running',
+                    links: [
+                        {
+                            href: 'https://example.com/file1.nc',
+                            rel: 'data',
+                            title: 'file1.nc',
+                        },
+                        {
+                            href: 'https://harmony.earthdata.nasa.gov/jobs/job-123?page=2',
+                            rel: 'next',
+                        },
+                    ],
+                })
+
+                const status = await harmonyApi.getJobStatus('job-123', {
+                    bearerToken: 'token',
+                })
+
+                expect(apiGetStub.calledOnce).to.be.true
+                expect(status.links.filter(l => l.rel === 'data')).to.have.lengthOf(1)
+            })
+
+            it('should handle subsequent page failure gracefully and return available links', async () => {
+                apiGetStub.onFirstCall().resolves({
+                    jobID: 'job-123',
+                    status: 'successful',
+                    links: [
+                        {
+                            href: 'https://example.com/file1.nc',
+                            rel: 'data',
+                            title: 'file1.nc',
+                        },
+                        {
+                            href: 'https://harmony.earthdata.nasa.gov/jobs/job-123?page=2',
+                            rel: 'next',
+                        },
+                    ],
+                })
+                apiGetStub
+                    .onSecondCall()
+                    .rejects(new Error('Network error on page 2'))
+
+                const status = await harmonyApi.getJobStatus('job-123', {
+                    bearerToken: 'token',
+                })
+
+                expect(status.status).to.equal('successful')
+                expect(status.links.filter(l => l.rel === 'data')).to.have.lengthOf(1)
             })
         })
     })
@@ -328,10 +448,10 @@ describe('HarmonyAPI', () => {
     describe('output format options', () => {
         it('should return NetCDF output formats if only NetCDF services available', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(onlyNetcdf as any),
+                harmonyApi.getOutputFormatOptions(onlyNetcdf as any)
             ).to.deep.equal([
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -340,10 +460,10 @@ describe('HarmonyAPI', () => {
 
         it('should include non-Giovanni formats when both Giovanni and non-Giovanni services are available', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(giovanniAndNetcdf as any),
+                harmonyApi.getOutputFormatOptions(giovanniAndNetcdf as any)
             ).to.deep.equal([
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -370,7 +490,7 @@ describe('HarmonyAPI', () => {
 
         it('should include only Giovanni output formats when only Giovanni services are available', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(onlyGiovanniServices as any),
+                harmonyApi.getOutputFormatOptions(onlyGiovanniServices as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -397,13 +517,12 @@ describe('HarmonyAPI', () => {
             const onlyTimeSeriesAdapter = {
                 ...onlyGiovanniServices,
                 services: onlyGiovanniServices.services.filter(
-                    (service) =>
-                        service.name === 'giovanni-time-series-adapter',
+                    service => service.name === 'giovanni-time-series-adapter'
                 ),
             }
 
             expect(
-                harmonyApi.getOutputFormatOptions(onlyTimeSeriesAdapter as any),
+                harmonyApi.getOutputFormatOptions(onlyTimeSeriesAdapter as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -418,12 +537,12 @@ describe('HarmonyAPI', () => {
             const onlyAveragingAdapter = {
                 ...onlyGiovanniServices,
                 services: onlyGiovanniServices.services.filter(
-                    (service) => service.name === 'giovanni-averaging-service',
+                    service => service.name === 'giovanni-averaging-service'
                 ),
             }
 
             expect(
-                harmonyApi.getOutputFormatOptions(onlyAveragingAdapter as any),
+                harmonyApi.getOutputFormatOptions(onlyAveragingAdapter as any)
             ).to.deep.equal([
                 {
                     key: 'image/tiff',
@@ -444,13 +563,12 @@ describe('HarmonyAPI', () => {
             const nonGiovanniServices = {
                 ...allServices,
                 services: allServices.services.filter(
-                    (service) =>
-                        !service.name.toLowerCase().includes('giovanni'),
+                    service => !service.name.toLowerCase().includes('giovanni')
                 ),
             }
 
             expect(
-                harmonyApi.getOutputFormatOptions(nonGiovanniServices as any),
+                harmonyApi.getOutputFormatOptions(nonGiovanniServices as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -458,7 +576,7 @@ describe('HarmonyAPI', () => {
                     description: 'Download data in CSV format',
                 },
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -467,7 +585,7 @@ describe('HarmonyAPI', () => {
 
         it('should include csv from non-Giovanni service and CSV from Giovanni and deduplicate netcdf variants', () => {
             expect(
-                harmonyApi.getOutputFormatOptions(allServices as any),
+                harmonyApi.getOutputFormatOptions(allServices as any)
             ).to.deep.equal([
                 {
                     key: 'text/csv',
@@ -475,7 +593,7 @@ describe('HarmonyAPI', () => {
                     description: 'Download data in CSV format',
                 },
                 {
-                    key: 'application/x-netcdf4',
+                    key: 'application/netcdf',
                     label: 'NetCDF',
                     description: 'Download data in NetCDF format',
                 },
@@ -496,6 +614,51 @@ describe('HarmonyAPI', () => {
                     label: 'CSV (area-averaged time series; one file)',
                     description: 'Area averaged data over time',
                     isGiovanniFormat: true,
+                },
+            ])
+        })
+
+        it('should normalize and deduplicate aliased MIME types to their canonical keys', () => {
+            const aliasedCapabilities = {
+                services: [
+                    {
+                        name: 'test-service',
+                        capabilities: {
+                            outputFormats: [
+                                'application/x-netcdf4',
+                                'application/netcdf4',
+                                'application/x-netcdf',
+                                'application/octet-stream',
+                                'image/tif',
+                                'image/jpg',
+                            ],
+                        },
+                    },
+                ],
+            }
+
+            expect(
+                harmonyApi.getOutputFormatOptions(aliasedCapabilities as any)
+            ).to.deep.equal([
+                {
+                    key: 'application/netcdf',
+                    label: 'NetCDF',
+                    description: 'Download data in NetCDF format',
+                },
+                {
+                    key: 'application/x-hdf',
+                    label: 'HDF-EOS5',
+                    description: 'Download data in HDF-EOS5 format',
+                },
+                {
+                    key: 'image/tiff',
+                    label: 'TIFF',
+                    description: 'Download data in TIFF format',
+                },
+                {
+                    key: 'image/jpeg',
+                    label: 'JPEG',
+                    description: 'Download data in JPEG format',
                 },
             ])
         })

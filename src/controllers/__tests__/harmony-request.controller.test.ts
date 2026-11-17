@@ -43,7 +43,7 @@ function makeJob(overrides: Partial<SubsetJobStatus> = {}): SubsetJobStatus {
 function makeHost(): ReactiveControllerHost & QueryClientHost {
     const controllers: ReactiveController[] = []
     return {
-        addController: (controller) => controllers.push(controller),
+        addController: controller => controllers.push(controller),
         removeController: () => {},
         requestUpdate: () => {},
         get updateComplete() {
@@ -97,7 +97,10 @@ describe('HarmonyRequestController', () => {
         })
 
         it('reuses an in-flight job with an equivalent request instead of creating a new one', async () => {
-            const existing = makeJob({ jobID: 'in-flight-job', status: Status.RUNNING })
+            const existing = makeJob({
+                jobID: 'in-flight-job',
+                status: Status.RUNNING,
+            })
             getJobsStub.resolves({ count: 1, jobs: [existing], links: [] })
             const controller = new HarmonyRequestController(makeHost())
 

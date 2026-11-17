@@ -27,11 +27,8 @@ export type { MutationObserverOptions, MutationObserverResult }
  *   }
  * }
  */
-export class MutationController<
-    TData = unknown,
-    TError = Error,
-    TVariables = void,
-> implements ReactiveController
+export class MutationController<TData = unknown, TError = Error, TVariables = void>
+    implements ReactiveController
 {
     result?: MutationObserverResult<TData, TError, TVariables>
 
@@ -40,7 +37,7 @@ export class MutationController<
 
     constructor(
         protected host: ReactiveControllerHost & QueryClientHost,
-        options: MutationObserverOptions<TData, TError, TVariables>,
+        options: MutationObserverOptions<TData, TError, TVariables>
     ) {
         this.host.addController(this)
         this.#observer = new MutationObserver(host.queryClient, options)
@@ -63,7 +60,7 @@ export class MutationController<
     }
 
     hostConnected() {
-        this.#unsubscribe = this.#observer.subscribe((result) => {
+        this.#unsubscribe = this.#observer.subscribe(result => {
             this.result = result
             this.host.requestUpdate()
         })

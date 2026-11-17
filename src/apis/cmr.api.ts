@@ -1,12 +1,13 @@
+import type { MapEventDetail } from '../components/map/type.js'
 import {
     BadRequestException,
     NotFoundException,
 } from '../exceptions/http.exception.js'
 import { apiClient, type RequestOptions } from '../lib/api.client.js'
-import type { MapEventDetail } from '../components/map/type.js'
+import type { CmrCollectionsJsonResponse } from './types/cmr/collection-tags.js'
 import type { UmmC } from './types/cmr/umm-c.js'
-import type { UmmVar } from './types/cmr/umm-var.js'
 import type { UmmG } from './types/cmr/umm-g.js'
+import type { UmmVar } from './types/cmr/umm-var.js'
 
 export type CmrCollectionCitationItem = {
     doi: {
@@ -28,17 +29,6 @@ export type CmrCollectionCitation = {
     releaseDate: string
     version: string
     releasePlace: string
-}
-
-export type CmrSearchResult = {
-    type: 'collection' | 'variable'
-    collectionConceptId: string
-    collectionEntryId: string
-    summary: string
-    conceptId: string
-    entryId: string
-    provider: string
-    title: string
 }
 
 export type CmrGranule = {
@@ -94,6 +84,10 @@ export interface UmmMeta {
     'granule-count'?: number
 }
 
+// CMR concept-ids look like 'C1234567890-PROVIDER_ID'; entry-ids don't follow
+// this shape (e.g. 'M2T1NXAER_5_12_4'), so this is enough to tell them apart.
+export const CONCEPT_ID_PATTERN = /^[A-Z]\d+-[A-Z0-9_]+$/i
+
 export type SearchParams = {
     pageSize?: number
     pageNum?: number
@@ -120,18 +114,26 @@ export type SearchVariablesParams = SearchParams & {
     collectionConceptId?: string
 }
 
+// a partial list of CMR search params (only listing the ones we're using)
+// for more: https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#collection-search-by-parameters
+export type SearchCollectionsParams = SearchParams & {
+    keyword?: string
+    consortium?: string // https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-consortium
+    hasGranulesOrOpenSearch?: boolean // https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#c-has-granules-or-opensearch
+}
+
 class CmrApi {
     async getCollection(
         shortName: string,
         version: string,
-        options?: RequestOptions,
+        options?: RequestOptions
     ) {
         return this.getCollectionByEntryId(`${shortName}_${version}`, options)
     }
 
     async getCollectionByEntryId(
         collectionEntryId?: string,
-        options?: RequestOptions,
+        options?: RequestOptions
     ) {
         if (!collectionEntryId) {
             throw new BadRequestException({
@@ -139,16 +141,45 @@ class CmrApi {
             })
         }
 
+        return this.#getCollection(
+            `entry_id=${collectionEntryId}`,
+            collectionEntryId,
+            options
+        )
+    }
+
+    async getCollectionByConceptId(
+        collectionConceptId?: string,
+        options?: RequestOptions
+    ) {
+        if (!collectionConceptId) {
+            throw new BadRequestException({
+                message: '`collectionConceptId` is required',
+            })
+        }
+
+        return this.#getCollection(
+            `concept-id=${collectionConceptId}`,
+            collectionConceptId,
+            options
+        )
+    }
+
+    async #getCollection(
+        queryParam: string,
+        collectionId: string,
+        options?: RequestOptions
+    ) {
         // CMR has a search-based API, so you always get back an items[] array
         // we'll grab the first item to represent the collection
         const ummResponse = await this.#request<UmmResponse<UmmC>>(
-            `collections.umm_json?entry_id=${collectionEntryId}&include_granule_counts=true`,
-            options,
+            `collections.umm_json?${queryParam}&include_granule_counts=true`,
+            options
         )
 
         if (!ummResponse.items.length) {
             throw new NotFoundException({
-                message: `Collection ${collectionEntryId} was not found`,
+                message: `Collection ${collectionId} was not found`,
             })
         }
 
@@ -158,7 +189,7 @@ class CmrApi {
 
     async searchVariables(
         searchParams: SearchVariablesParams,
-        options?: RequestOptions,
+        options?: RequestOptions
     ) {
         if (!searchParams.collectionConceptId) {
             throw new BadRequestException({
@@ -168,13 +199,96 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmVar>>(
             `variables.umm_json?keyword=${searchParams.collectionConceptId}&page_size=${searchParams.pageSize ?? 200}`,
-            options,
+            options
+        )
+    }
+
+    #toApiSearchParams(params: SearchParams): URLSearchParams {
+        const searchParams = new URLSearchParams()
+
+        if (params.pageNum !== undefined) {
+            searchParams.set('page_num', String(params.pageNum))
+        }
+
+        if (params.pageSize !== undefined) {
+            searchParams.set('page_size', String(params.pageSize))
+        }
+
+        if (params.offset !== undefined) {
+            searchParams.set('offset', String(params.offset))
+        }
+
+        if (params.search) {
+            searchParams.set('search', params.search)
+        }
+
+        if (params.searchFields?.length) {
+            params.searchFields.forEach(field => {
+                searchParams.append('search_fields[]', field)
+            })
+        }
+
+        if (params.sortBy) {
+            searchParams.append(
+                'sort_key[]',
+                this.#getSortKey(params.sortBy, params.sortDirection ?? 'asc')
+            )
+        }
+
+        return searchParams
+    }
+
+    #toCollectionsSearchParams(params: SearchCollectionsParams): URLSearchParams {
+        const searchParams = this.#toApiSearchParams(params)
+
+        if (params.keyword) {
+            searchParams.set('keyword', `*${params.keyword}*`)
+        }
+
+        if (params.consortium) {
+            searchParams.set('consortium', params.consortium)
+        }
+
+        if (params.hasGranulesOrOpenSearch) {
+            searchParams.set('has_granules_or_opensearch', 'true')
+        }
+
+        return searchParams
+    }
+
+    async searchCollections(
+        searchParams: SearchCollectionsParams,
+        options?: RequestOptions
+    ) {
+        return this.#request<UmmResponse<UmmC>>(
+            `collections.umm_json?${this.#toCollectionsSearchParams(searchParams).toString()}`,
+            options
+        )
+    }
+
+    /**
+     * Looks up a collection's curated tags (GIBS imagery, products, collection capabilities, etc.)
+     * via CMR's `collections.json` search.
+     *
+     * Unlike the UMM-JSON endpoints used elsewhere in this class, `collections.json` is what exposes EDSC's curated tag data.
+     */
+    async getCollectionTags(
+        collectionId: string,
+        options?: RequestOptions
+    ): Promise<CmrCollectionsJsonResponse> {
+        const queryParam = CONCEPT_ID_PATTERN.test(collectionId)
+            ? `concept-id=${collectionId}`
+            : `entry_id[]=${collectionId}`
+
+        return this.#request<CmrCollectionsJsonResponse>(
+            `collections.json?${queryParam}&include_tags=edsc*`,
+            options
         )
     }
 
     async getSamplingOfGranules(
         collectionEntryId: string,
-        options?: RequestOptions,
+        options?: RequestOptions
     ): Promise<{
         minDate?: string
         maxDate?: string
@@ -191,7 +305,7 @@ class CmrApi {
                     sortBy: 'umm.TemporalExtent.RangeDateTime.BeginningDateTime',
                     sortDirection: 'asc',
                 },
-                options,
+                options
             ),
             this.searchGranules(
                 {
@@ -200,7 +314,7 @@ class CmrApi {
                     sortBy: 'umm.TemporalExtent.RangeDateTime.BeginningDateTime',
                     sortDirection: 'desc',
                 },
-                options,
+                options
             ),
         ])
 
@@ -227,10 +341,7 @@ class CmrApi {
         }
     }
 
-    async searchGranules(
-        params: SearchGranulesParams,
-        options?: RequestOptions,
-    ) {
+    async searchGranules(params: SearchGranulesParams, options?: RequestOptions) {
         if (!params.collectionEntryId && !params.collectionConceptId) {
             throw new BadRequestException({
                 message:
@@ -250,9 +361,9 @@ class CmrApi {
             ...(params.pageNum && { page_num: params.pageNum.toString() }),
             ...(params.offset && { offset: params.offset.toString() }),
             ...(params.sortBy && {
-                'sort_key[]': this.#getGranuleSortKey(
+                'sort_key[]': this.#getSortKey(
                     params.sortBy,
-                    params.sortDirection ?? 'asc',
+                    params.sortDirection ?? 'asc'
                 ),
             }),
             ...(params.search && {
@@ -276,31 +387,29 @@ class CmrApi {
 
         return this.#request<UmmResponse<UmmG>>(
             `granules.umm_json?${searchParams.toString()}`,
-            options,
+            options
         )
     }
 
     async getCollectionCitation(
         collectionEntryId: string,
-        options?: RequestOptions,
+        options?: RequestOptions
     ): Promise<CmrCollectionCitationItem> {
         const collection = await this.getCollectionByEntryId(
             collectionEntryId,
-            options,
+            options
         )
         const umm = collection.umm
 
         if (!umm.CollectionCitations?.length) {
-            throw new Error(
-                `No collection citations found for ${collectionEntryId}`,
-            )
+            throw new Error(`No collection citations found for ${collectionEntryId}`)
         }
 
         return {
             doi: {
                 doi: umm.DOI?.DOI ?? '',
             },
-            collectionCitations: umm.CollectionCitations.map((citation) => ({
+            collectionCitations: umm.CollectionCitations.map(citation => ({
                 creator: citation.Creator ?? '',
                 editor: citation.Editor ?? '',
                 dataPresentationForm: citation.DataPresentationForm ?? '',
@@ -310,9 +419,7 @@ class CmrApi {
                 publisher: citation.Publisher ?? '',
                 title: citation.Title ?? '',
                 seriesName: citation.SeriesName ?? '',
-                releaseDate: citation.ReleaseDate
-                    ? String(citation.ReleaseDate)
-                    : '',
+                releaseDate: citation.ReleaseDate ? String(citation.ReleaseDate) : '',
                 version: citation.Version ?? '',
                 releasePlace: citation.ReleasePlace ?? '',
             })),
@@ -331,8 +438,7 @@ class CmrApi {
         })
     }
 
-    // TODO: replace references to these old columns with these names and remove this method (data access may be the only location)
-    #getGranuleSortKey(sortBy: string, sortDirection: string) {
+    #getSortKey(sortBy: string, sortDirection: string) {
         let sortKey = sortBy
 
         switch (sortBy) {

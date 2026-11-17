@@ -1,11 +1,6 @@
-import {
-    elementUpdated,
-    expect,
-    fixture,
-    html,
-    waitUntil,
-} from '@open-wc/testing'
+import { elementUpdated, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import sinon from 'sinon'
+import { harmonyApi } from '../../apis/harmony.api.js'
 import { authService } from '../../auth/auth.service.js'
 import { HarmonyRequestController } from '../../controllers/harmony-request.controller.js'
 import { HttpException } from '../../exceptions/http.exception.js'
@@ -16,11 +11,11 @@ import './data-subsetter.js'
 
 const getAccordionContent = (el: any) => {
     const accordions = Array.from(
-        el.shadowRoot?.querySelectorAll('terra-accordion') ?? [],
+        el.shadowRoot?.querySelectorAll('terra-accordion') ?? []
     ) as Element[]
 
-    const dimensionsAccordion = accordions.find((acc) =>
-        acc.textContent?.includes('Select Dimensions:'),
+    const dimensionsAccordion = accordions.find(acc =>
+        acc.textContent?.includes('Select Dimensions:')
     )
 
     return dimensionsAccordion?.querySelector('.accordion-content')
@@ -33,7 +28,7 @@ function okJson(body: unknown) {
         new Response(JSON.stringify(body), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-        }),
+        })
     )
 }
 
@@ -80,10 +75,12 @@ function stubCollectionFetch({
     }
 
     return sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
-        const url =
-            typeof input === 'string' ? input : (input?.url ?? String(input))
+        const url = typeof input === 'string' ? input : (input?.url ?? String(input))
 
         if (url.includes('collections.umm_json')) {
+            if (!url.includes('entry_id=') && !url.includes('concept-id=')) {
+                return okJson({ hits: 0, items: [] })
+            }
             return okJson(cmrCollectionResponse)
         }
         if (url.includes('variables.umm_json')) {
@@ -201,7 +198,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         el.dataAccessMode = 'subset'
@@ -211,13 +208,12 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         await waitUntil(
             () => Boolean(el.collectionWithServices),
             'expected collectionWithServices to be populated by CollectionController',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
         await waitUntil(
-            () =>
-                Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
+            () => Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
             'expected the dimensions accordion to render',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         const accordionContent = getAccordionContent(el)
@@ -245,9 +241,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
                     {
                         umm: {
                             Name: 'var2',
-                            Dimensions: [
-                                { Name: 'DimA', Size: 4, Type: 'OTHER' },
-                            ],
+                            Dimensions: [{ Name: 'DimA', Size: 4, Type: 'OTHER' }],
                         },
                     },
                 ],
@@ -255,7 +249,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         el.dataAccessMode = 'subset'
@@ -265,7 +259,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         await waitUntil(
             () => Boolean(el.collectionWithServices),
             'expected collectionWithServices to be populated by CollectionController',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         el.selectedVariables = [
@@ -274,10 +268,9 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         ]
 
         await waitUntil(
-            () =>
-                Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
+            () => Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
             'expected the dimensions accordion to render',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         const accordionContent = getAccordionContent(el)
@@ -325,7 +318,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         el.dataAccessMode = 'subset'
@@ -335,7 +328,7 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         await waitUntil(
             () => Boolean(el.collectionWithServices),
             'expected collectionWithServices to be populated by CollectionController',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         el.selectedVariables = [
@@ -344,10 +337,9 @@ describe('<terra-data-subsetter> dimension intersection support', () => {
         ]
 
         await waitUntil(
-            () =>
-                Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
+            () => Boolean(getAccordionContent(el)?.textContent?.includes('DimA')),
             'expected the dimensions accordion to render',
-            { timeout: 3000 },
+            { timeout: 3000 }
         )
 
         const accordionContent = getAccordionContent(el)
@@ -421,7 +413,7 @@ describe('<terra-data-subsetter> harmony request errors', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -430,13 +422,13 @@ describe('<terra-data-subsetter> harmony request errors', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
 
             const getDataButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
                 | HTMLButtonElement
                 | undefined
 
@@ -447,7 +439,7 @@ describe('<terra-data-subsetter> harmony request errors', () => {
             await elementUpdated(el)
 
             await waitUntil(() =>
-                Boolean(el.shadowRoot?.textContent?.includes('Results:')),
+                Boolean(el.shadowRoot?.textContent?.includes('Results:'))
             )
 
             // the error message is rendered across multiple text nodes (it wraps a
@@ -457,16 +449,16 @@ describe('<terra-data-subsetter> harmony request errors', () => {
                 (text ?? '').replace(/\s+/g, ' ').trim()
 
             const errorAlert = Array.from(
-                el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
+                el.shadowRoot?.querySelectorAll('terra-alert') ?? []
             ).find((alert: any) =>
                 normalizeWhitespace(alert.textContent).includes(
-                    'No matching granules were found for your subset request. Please try expanding your search',
-                ),
+                    'No matching granules were found for your subset request. Please try expanding your search'
+                )
             )
 
             expect(errorAlert).to.exist
             expect(el.shadowRoot?.textContent).to.not.include(
-                'No matching granules found.',
+                'No matching granules found.'
             )
         } finally {
             HarmonyRequestController.prototype.startJob = originalStartJob
@@ -521,9 +513,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
         let capturedHarmonyRequest: any
         const originalStartJob = HarmonyRequestController.prototype.startJob
 
-        HarmonyRequestController.prototype.startJob = (async (
-            variables: any,
-        ) => {
+        HarmonyRequestController.prototype.startJob = (async (variables: any) => {
             capturedHarmonyRequest = variables.harmonyRequest
             throw new HttpException({ status: 400, message: 'stop' })
         }) as typeof HarmonyRequestController.prototype.startJob
@@ -536,7 +526,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -545,15 +535,15 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
 
             setup?.(el)
             await elementUpdated(el)
 
             const getDataButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
                 | HTMLButtonElement
                 | undefined
 
@@ -602,7 +592,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
             error: null,
         })
 
-        const harmonyRequest = await submitAndCaptureRequest((el) => {
+        const harmonyRequest = await submitAndCaptureRequest(el => {
             el.selectedFormat = { key: 'text/csv', isGiovanniFormat: true }
             el.selectedVariables = [{ conceptId: 'V1', name: 'Variable 1' }]
             el.spatialSelection = new LatLng(10, 20)
@@ -619,7 +609,7 @@ describe('<terra-data-subsetter> anonymous access limiting', () => {
             error: null,
         })
 
-        const harmonyRequest = await submitAndCaptureRequest((el) => {
+        const harmonyRequest = await submitAndCaptureRequest(el => {
             el.selectedFormat = { key: 'text/csv', isGiovanniFormat: true }
             el.selectedVariables = [{ conceptId: 'V1', name: 'Variable 1' }]
             el.spatialSelection = new LatLngBounds([-10, -10, 10, 10])
@@ -679,7 +669,7 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
 
         HarmonyRequestController.prototype.startJob = (async () => {
             startJobCallCount++
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 resolveStartJob = resolve
             })
         }) as typeof HarmonyRequestController.prototype.startJob
@@ -692,7 +682,7 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
 
         try {
             const el: any = await fixture(
-                html`<terra-data-subsetter></terra-data-subsetter>`,
+                html`<terra-data-subsetter></terra-data-subsetter>`
             )
 
             el.dataAccessMode = 'subset'
@@ -701,15 +691,13 @@ describe('<terra-data-subsetter> duplicate submission prevention', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
 
             const getDataButton = () =>
-                Array.from(
-                    el.shadowRoot?.querySelectorAll('button') ?? [],
-                ).find((button: any) =>
-                    button.textContent?.trim().startsWith('Get Data'),
+                Array.from(el.shadowRoot?.querySelectorAll('button') ?? []).find(
+                    (button: any) => button.textContent?.trim().startsWith('Get Data')
                 ) as HTMLButtonElement | undefined
 
             const button = getDataButton()
@@ -792,7 +780,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
     // collection meta, since both drive #getDefaultRecentDateRange's cadence math.
     function stubCollectionFetchWithGranules(
         granuleCount: number,
-        collectionEntryId: string,
+        collectionEntryId: string
     ) {
         const cmrCollectionResponse = {
             hits: 1,
@@ -824,11 +812,12 @@ describe('<terra-data-subsetter> recent date range default', () => {
 
         return sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
             const url =
-                typeof input === 'string'
-                    ? input
-                    : (input?.url ?? String(input))
+                typeof input === 'string' ? input : (input?.url ?? String(input))
 
             if (url.includes('collections.umm_json')) {
+                if (!url.includes('entry_id=') && !url.includes('concept-id=')) {
+                    return okJson({ hits: 0, items: [] })
+                }
                 return okJson(cmrCollectionResponse)
             }
             if (url.includes('variables.umm_json')) {
@@ -840,9 +829,7 @@ describe('<terra-data-subsetter> recent date range default', () => {
                 // fetches the last/latest granule
                 const isDescending = url.includes('-startDate')
                 return okJson(
-                    granuleResponse(
-                        isDescending ? lastGranuleDate : firstGranuleDate,
-                    ),
+                    granuleResponse(isDescending ? lastGranuleDate : firstGranuleDate)
                 )
             }
             if (url.includes('/capabilities')) {
@@ -861,15 +848,18 @@ describe('<terra-data-subsetter> recent date range default', () => {
         stubCollectionFetchWithGranules(granuleCount, collectionEntryId)
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
         el.dataAccessMode = 'subset'
         el.collectionEntryId = collectionEntryId
 
         await waitUntil(
-            () => Boolean(el.granuleMinDate) && Boolean(el.granuleMaxDate),
-            'expected granule sampling dates to be populated',
-            { timeout: 3000 },
+            () =>
+                Boolean(el.granuleMinDate) &&
+                Boolean(el.granuleMaxDate) &&
+                Boolean(el.collectionWithServices),
+            'expected granule sampling dates and collection capabilities to be populated',
+            { timeout: 3000 }
         )
         await elementUpdated(el)
 
@@ -919,11 +909,11 @@ describe('<terra-data-subsetter> recent date range default', () => {
         await elementUpdated(el)
 
         const dateRangeResetButton = Array.from(
-            el.shadowRoot?.querySelectorAll('.reset-btn') ?? [],
+            el.shadowRoot?.querySelectorAll('.reset-btn') ?? []
         ).find((button: any) =>
             button
                 .closest('terra-accordion')
-                ?.textContent?.includes('Refine Date Range'),
+                ?.textContent?.includes('Refine Date Range')
         ) as HTMLButtonElement | undefined
 
         expect(dateRangeResetButton).to.exist
@@ -946,8 +936,8 @@ describe('<terra-data-subsetter> recent date range default', () => {
         await elementUpdated(el)
 
         const resetAllButton = Array.from(
-            el.shadowRoot?.querySelectorAll('button') ?? [],
-        ).find((button) => button.textContent?.trim() === 'Reset All') as
+            el.shadowRoot?.querySelectorAll('button') ?? []
+        ).find(button => button.textContent?.trim() === 'Reset All') as
             | HTMLButtonElement
             | undefined
 
@@ -1006,8 +996,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
     const pausedJobStatus = {
         jobID: 'job-paused',
         status: 'paused',
-        message:
-            'The job is paused and may be resumed using the provided link.',
+        message: 'The job is paused and may be resumed using the provided link.',
         progress: 15,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -1032,7 +1021,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
         })
 
         const el: any = await fixture(
-            html`<terra-data-subsetter></terra-data-subsetter>`,
+            html`<terra-data-subsetter></terra-data-subsetter>`
         )
 
         try {
@@ -1042,13 +1031,13 @@ describe('<terra-data-subsetter> paused job handling', () => {
             await waitUntil(
                 () => Boolean(el.collectionWithServices),
                 'expected collectionWithServices to be populated by CollectionController',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
 
             const getDataButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Get Data') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
                 | HTMLButtonElement
                 | undefined
 
@@ -1058,7 +1047,7 @@ describe('<terra-data-subsetter> paused job handling', () => {
             await waitUntil(
                 () => el.shadowRoot?.textContent?.includes('Paused for review'),
                 'expected the job status section to show the paused status',
-                { timeout: 3000 },
+                { timeout: 3000 }
             )
             await elementUpdated(el)
         } finally {
@@ -1072,25 +1061,24 @@ describe('<terra-data-subsetter> paused job handling', () => {
         const el = await startPausedJob()
 
         const alertText = Array.from(
-            el.shadowRoot?.querySelectorAll('terra-alert') ?? [],
+            el.shadowRoot?.querySelectorAll('terra-alert') ?? []
         )
             .map((alert: any) => alert.textContent)
             .join(' ')
+            .replace(/\s+/g, ' ')
 
         expect(alertText).to.include(
-            'This is a large request, so processing paused after the first few files so you can review the results.',
+            'This is a large request, so processing paused after the first few files so you can review the results.'
         )
 
         const buttons = Array.from(
-            el.shadowRoot?.querySelectorAll('button') ?? [],
+            el.shadowRoot?.querySelectorAll('button') ?? []
         ) as HTMLButtonElement[]
 
-        expect(
-            buttons.some((button) => button.textContent?.trim() === 'Resume'),
-        ).to.be.true
-        expect(
-            buttons.some((button) => button.textContent?.trim() === 'Cancel'),
-        ).to.be.true
+        expect(buttons.some(button => button.textContent?.trim() === 'Resume')).to.be
+            .true
+        expect(buttons.some(button => button.textContent?.trim() === 'Cancel')).to.be
+            .true
     })
 
     it('calls HarmonyRequestController.resumeJob with the job ID when Resume Job is clicked', async () => {
@@ -1099,17 +1087,15 @@ describe('<terra-data-subsetter> paused job handling', () => {
         const originalResumeJob = HarmonyRequestController.prototype.resumeJob
         let resumeJobArgs: any
 
-        HarmonyRequestController.prototype.resumeJob = (async (
-            options: any,
-        ) => {
+        HarmonyRequestController.prototype.resumeJob = (async (options: any) => {
             resumeJobArgs = options
             return pausedJobStatus
         }) as typeof HarmonyRequestController.prototype.resumeJob
 
         try {
             const resumeButton = Array.from(
-                el.shadowRoot?.querySelectorAll('button') ?? [],
-            ).find((button) => button.textContent?.trim() === 'Resume') as
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Resume') as
                 | HTMLButtonElement
                 | undefined
 
@@ -1122,5 +1108,957 @@ describe('<terra-data-subsetter> paused job handling', () => {
         } finally {
             HarmonyRequestController.prototype.resumeJob = originalResumeJob
         }
+    })
+})
+
+describe('<terra-data-subsetter> output format priority ordering and default selection', () => {
+    afterEach(() => {
+        sinon.restore()
+        sharedQueryClient.clear()
+    })
+
+    const baseCollectionUmm = {
+        ShortName: 'FMT',
+        Version: '1',
+        EntryTitle: 'Format Test Collection',
+        SpatialExtent: {
+            GranuleSpatialRepresentation: 'CARTESIAN',
+            HorizontalSpatialDomain: {
+                Geometry: {
+                    CoordinateSystem: 'CARTESIAN',
+                    BoundingRectangles: [
+                        {
+                            WestBoundingCoordinate: -180,
+                            NorthBoundingCoordinate: 90,
+                            EastBoundingCoordinate: 180,
+                            SouthBoundingCoordinate: -90,
+                        },
+                    ],
+                },
+            },
+        },
+        TemporalExtents: [
+            {
+                EndsAtPresentFlag: false,
+                RangeDateTimes: [
+                    {
+                        BeginningDateTime: '2020-01-01T00:00:00.000Z',
+                        EndingDateTime: '2020-01-10T00:00:00.000Z',
+                    },
+                ],
+            },
+        ],
+    }
+
+    it('orders OPeNDAP first, NetCDF second, and remaining formats after, selecting OPeNDAP by default', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'FMT_1',
+            caps: {
+                conceptId: 'C-FMT-1',
+                shortName: 'FMT',
+                capabilitiesVersion: '3',
+                summary: {
+                    subsetting: {
+                        bbox: true,
+                        dimension: false,
+                        shape: false,
+                        temporal: true,
+                        variable: true,
+                    },
+                    reprojection: {
+                        supported: false,
+                        supportedProjections: [],
+                        interpolationMethods: [],
+                    },
+                    averaging: { time: false, area: false },
+                    concatenation: false,
+                    outputFormats: [
+                        'text/csv',
+                        'image/tiff',
+                        'application/x-netcdf4',
+                        'application/x-netcdf4;profile=opendap_url',
+                    ],
+                },
+                services: [
+                    {
+                        name: 'harmony-service',
+                        href: 'https://harmony.earthdata.nasa.gov/service',
+                        capabilities: {
+                            subsetting: {
+                                bbox: true,
+                                variable: true,
+                                multipleVariables: true,
+                            },
+                            outputFormats: [
+                                'text/csv',
+                                'image/tiff',
+                                'application/x-netcdf4',
+                                'application/x-netcdf4;profile=opendap_url',
+                            ],
+                        },
+                    },
+                ],
+                variables: [],
+                configuredOutputFormats: [],
+            },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+        el.dataAccessMode = 'subset'
+        el.collectionEntryId = 'FMT_1'
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated',
+            { timeout: 3000 }
+        )
+
+        const formatKeys = el.collectionWithServices.configuredOutputFormats.map(
+            (f: any) => f.key
+        )
+
+        expect(formatKeys).to.deep.equal([
+            'application/x-netcdf4;profile=opendap_url',
+            'application/netcdf',
+            'text/csv',
+            'image/tiff',
+        ])
+
+        expect(el.selectedFormat.key).to.equal(
+            'application/x-netcdf4;profile=opendap_url'
+        )
+    })
+
+    it('orders NetCDF first and selects it by default when OPeNDAP is not available', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'FMT_2',
+            caps: {
+                conceptId: 'C-FMT-2',
+                shortName: 'FMT',
+                capabilitiesVersion: '3',
+                summary: {
+                    subsetting: {
+                        bbox: true,
+                        dimension: false,
+                        shape: false,
+                        temporal: true,
+                        variable: true,
+                    },
+                    reprojection: {
+                        supported: false,
+                        supportedProjections: [],
+                        interpolationMethods: [],
+                    },
+                    averaging: { time: false, area: false },
+                    concatenation: false,
+                    outputFormats: [
+                        'text/csv',
+                        'image/tiff',
+                        'application/x-netcdf4',
+                    ],
+                },
+                services: [
+                    {
+                        name: 'harmony-service',
+                        href: 'https://harmony.earthdata.nasa.gov/service',
+                        capabilities: {
+                            subsetting: {
+                                bbox: true,
+                                variable: true,
+                                multipleVariables: true,
+                            },
+                            outputFormats: [
+                                'text/csv',
+                                'image/tiff',
+                                'application/x-netcdf4',
+                            ],
+                        },
+                    },
+                ],
+                variables: [],
+                configuredOutputFormats: [],
+            },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+        el.dataAccessMode = 'subset'
+        el.collectionEntryId = 'FMT_2'
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated',
+            { timeout: 3000 }
+        )
+
+        const formatKeys = el.collectionWithServices.configuredOutputFormats.map(
+            (f: any) => f.key
+        )
+
+        expect(formatKeys).to.deep.equal([
+            'application/netcdf',
+            'text/csv',
+            'image/tiff',
+        ])
+
+        expect(el.selectedFormat.key).to.equal('application/netcdf')
+    })
+})
+
+describe('<terra-data-subsetter> web links pagination and scroll behavior', () => {
+    let getJobPageStub: sinon.SinonStub
+
+    afterEach(() => {
+        sinon.restore()
+        sharedQueryClient.clear()
+    })
+
+    const baseCaps = {
+        conceptId: 'C123-TEST',
+        shortName: 'PAG_COL',
+        summary: {
+            subsetting: {
+                bbox: true,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: false,
+            },
+            outputFormats: ['application/x-netcdf4'],
+        },
+        services: [
+            {
+                name: 'harmony',
+                capabilities: {
+                    subsetting: {
+                        bbox: true,
+                    },
+                    outputFormats: ['application/x-netcdf4'],
+                },
+            },
+        ],
+        variables: [],
+        configuredOutputFormats: [],
+    }
+
+    const baseCollectionUmm = {
+        EntryTitle: 'Pagination Test Collection',
+        ShortName: 'PAG_COL',
+        Version: '1',
+        TemporalExtents: [],
+        SpatialExtent: {},
+    }
+
+    function createJobStatus(options: {
+        jobID: string
+        status?: string
+        linkCount: number
+        numInputGranules?: number
+        hasNextLink?: boolean
+    }) {
+        const links: any[] = Array.from({ length: options.linkCount }, (_, i) => ({
+            href: `https://example.com/file_${options.jobID}_${i + 1}.nc`,
+            rel: 'data',
+            title: `file_${options.jobID}_${i + 1}.nc`,
+        }))
+
+        if (options.hasNextLink) {
+            links.push({
+                href: `https://harmony.earthdata.nasa.gov/jobs/${options.jobID}?page=2`,
+                rel: 'next',
+            })
+        }
+
+        return {
+            jobID: options.jobID,
+            status: options.status ?? 'running',
+            message: 'The job is running.',
+            progress: 50,
+            numInputGranules: options.numInputGranules ?? 200,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            links,
+        }
+    }
+
+    async function mountSubsetterWithJob(jobId: string, jobStatus: any) {
+        stubCollectionFetch({
+            collectionEntryId: 'PAG_1',
+            caps: baseCaps,
+            collectionUmm: baseCollectionUmm,
+            jobStatuses: { [jobId]: jobStatus },
+        })
+
+        const originalStartJob = HarmonyRequestController.prototype.startJob
+        HarmonyRequestController.prototype.startJob = (async () => {
+            return { jobID: jobId } as any
+        }) as typeof HarmonyRequestController.prototype.startJob
+
+        try {
+            const el: any = await fixture(
+                html`<terra-data-subsetter></terra-data-subsetter>`
+            )
+            el.dataAccessMode = 'subset'
+            el.collectionEntryId = 'PAG_1'
+
+            await waitUntil(
+                () => Boolean(el.collectionWithServices),
+                'expected collectionWithServices to populate',
+                { timeout: 3000 }
+            )
+            await elementUpdated(el)
+
+            const getDataButton = Array.from(
+                el.shadowRoot?.querySelectorAll('button') ?? []
+            ).find(button => button.textContent?.trim() === 'Get Data') as
+                | HTMLButtonElement
+                | undefined
+
+            getDataButton?.click()
+
+            await waitUntil(
+                () => (el.shadowRoot?.querySelectorAll('.file-item').length ?? 0) > 0,
+                'expected web links to render',
+                { timeout: 3000 }
+            )
+            await elementUpdated(el)
+
+            return el
+        } finally {
+            HarmonyRequestController.prototype.startJob = originalStartJob
+        }
+    }
+
+    it('slices initial web links display to 100 items and increments on scroll', async () => {
+        const jobStatus = createJobStatus({
+            jobID: 'job-slice-test',
+            linkCount: 150,
+            numInputGranules: 200,
+        })
+        const el = await mountSubsetterWithJob('job-slice-test', jobStatus)
+
+        const fileItemsBefore = el.shadowRoot?.querySelectorAll('.file-item')
+        expect(fileItemsBefore?.length).to.equal(100)
+
+        const summary = el.shadowRoot?.querySelector('#web-links-summary')
+        expect(summary?.textContent).to.include('Showing 100 of estimated 200 files.')
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        fileList.dispatchEvent(new Event('scroll'))
+        await elementUpdated(el)
+
+        const fileItemsAfter = el.shadowRoot?.querySelectorAll('.file-item')
+        expect(fileItemsAfter?.length).to.equal(150)
+        expect(summary?.textContent).to.include(
+            'Showing all 150 currently loaded files of estimated 200.'
+        )
+    })
+
+    it('dynamically fetches next page from Harmony when user scrolls to end of loaded links', async () => {
+        getJobPageStub = sinon.stub(harmonyApi, 'getJobPage').resolves({
+            jobID: 'job-fetch-test',
+            status: 'running',
+            progress: 60,
+            links: [
+                {
+                    href: 'https://example.com/file_page2_1.nc',
+                    rel: 'data',
+                    title: 'file_page2_1.nc',
+                },
+                {
+                    href: 'https://example.com/file_page2_2.nc',
+                    rel: 'data',
+                    title: 'file_page2_2.nc',
+                },
+            ],
+        } as any)
+
+        const jobStatus = createJobStatus({
+            jobID: 'job-fetch-test',
+            linkCount: 100,
+            numInputGranules: 200,
+            hasNextLink: true,
+        })
+        const el = await mountSubsetterWithJob('job-fetch-test', jobStatus)
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        fileList.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(
+            () => getJobPageStub.calledOnce,
+            'expected harmonyApi.getJobPage to be called'
+        )
+        await elementUpdated(el)
+
+        expect(getJobPageStub.firstCall.args[0]).to.equal(
+            'https://harmony.earthdata.nasa.gov/jobs/job-fetch-test?page=2'
+        )
+
+        const fileItems = el.shadowRoot?.querySelectorAll('.file-item')
+        expect(fileItems?.length).to.equal(102)
+    })
+
+    it('exhausts pagination and prevents repeated fetch calls when subsequent page has no next link', async () => {
+        getJobPageStub = sinon.stub(harmonyApi, 'getJobPage').resolves({
+            jobID: 'job-exhaust-test',
+            status: 'running',
+            progress: 70,
+            links: [
+                {
+                    href: 'https://example.com/file_exhaust_1.nc',
+                    rel: 'data',
+                    title: 'file_exhaust_1.nc',
+                },
+            ],
+        } as any)
+
+        const jobStatus = createJobStatus({
+            jobID: 'job-exhaust-test',
+            linkCount: 100,
+            numInputGranules: 200,
+            hasNextLink: true,
+        })
+        const el = await mountSubsetterWithJob('job-exhaust-test', jobStatus)
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        // First scroll: triggers fetch
+        fileList.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(() => getJobPageStub.calledOnce)
+        await elementUpdated(el)
+
+        // Second scroll: pagination is exhausted, should not call getJobPage again
+        fileList.dispatchEvent(new Event('scroll'))
+        await elementUpdated(el)
+
+        expect(getJobPageStub.callCount).to.equal(1)
+    })
+
+    it('aborts in-flight pagination request and discards results when switching jobs', async () => {
+        let abortSignalObserved: AbortSignal | undefined
+        let resolveJobPage: (value: any) => void
+
+        const pagePromise = new Promise(resolve => {
+            resolveJobPage = resolve
+        })
+
+        getJobPageStub = sinon
+            .stub(harmonyApi, 'getJobPage')
+            .callsFake((_url, options) => {
+                abortSignalObserved = options?.signal
+                return pagePromise as any
+            })
+
+        const jobStatusA = createJobStatus({
+            jobID: 'job-A',
+            linkCount: 100,
+            numInputGranules: 200,
+            hasNextLink: true,
+        })
+
+        const el = await mountSubsetterWithJob('job-A', jobStatusA)
+
+        const fileList = el.shadowRoot?.querySelector(
+            '#web-links-list'
+        ) as HTMLElement
+        Object.defineProperty(fileList, 'scrollHeight', {
+            value: 1000,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'scrollTop', {
+            value: 800,
+            configurable: true,
+        })
+        Object.defineProperty(fileList, 'clientHeight', {
+            value: 200,
+            configurable: true,
+        })
+
+        // Trigger in-flight scroll on Job A
+        fileList.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(() => Boolean(abortSignalObserved))
+        expect(abortSignalObserved?.aborted).to.be.false
+
+        // Switch to Job B while Job A fetch is in flight
+        el.jobId = 'job-B'
+        await elementUpdated(el)
+
+        // Verify the abort signal was triggered
+        expect(abortSignalObserved?.aborted).to.be.true
+
+        // Now resolve the in-flight promise for Job A with stale data
+        resolveJobPage!({
+            jobID: 'job-A',
+            links: [
+                {
+                    href: 'https://example.com/stale-job-A-link.nc',
+                    rel: 'data',
+                    title: 'stale-job-A-link.nc',
+                },
+            ],
+        })
+        await elementUpdated(el)
+
+        // Verify that Job A's stale links were NOT appended
+        const jobALink = el.shadowRoot?.querySelector('a[href*="stale-job-A-link"]')
+        expect(jobALink).to.not.exist
+    })
+})
+
+describe('<terra-data-subsetter> collection search without a pre-selected collection', () => {
+    afterEach(() => {
+        sinon.restore()
+    })
+
+    const baseCaps = {
+        summary: {
+            subsetting: {
+                bbox: false,
+                dimension: false,
+                shape: false,
+                temporal: false,
+                variable: false,
+            },
+            reprojection: {
+                supported: false,
+                supportedProjections: [],
+                interpolationMethods: [],
+            },
+            averaging: { time: false, area: false },
+            concatenation: false,
+            outputFormats: [],
+        },
+        capabilitiesVersion: '1',
+        configuredOutputFormats: [],
+        services: [],
+        variables: [],
+    }
+
+    const baseCollectionUmm = {
+        ShortName: 'S1',
+        Version: '1',
+        EntryTitle: 'Test',
+        SpatialExtent: {
+            GranuleSpatialRepresentation: 'N/A',
+            HorizontalSpatialDomain: {
+                Geometry: {
+                    CoordinateSystem: 'EPSG:4326',
+                    BoundingRectangles: {
+                        WestBoundingCoordinate: 0,
+                        NorthBoundingCoordinate: 0,
+                        EastBoundingCoordinate: 0,
+                        SouthBoundingCoordinate: 0,
+                    },
+                },
+            },
+        },
+        TemporalExtents: [],
+    }
+
+    it('shows the collection search UI when no collection-entry-id, short-name, or version is provided', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        expect(el.shadowRoot?.textContent).to.include('Search for Collection')
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input')
+        expect(searchInput).to.exist
+    })
+
+    it('triggers a collection search when the user types into the collection search terra-input', async () => {
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await elementUpdated(el)
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input') as any
+        await searchInput.updateComplete
+
+        const innerInput = searchInput.shadowRoot?.querySelector('.input__control')
+        innerInput.value = 'rainfall'
+        innerInput.dispatchEvent(
+            new Event('input', { bubbles: true, composed: true })
+        )
+
+        await waitUntil(
+            () => el.collectionSearchQuery === 'rainfall',
+            'expected collectionSearchQuery to be updated after the debounced search handler runs',
+            { timeout: 2000 }
+        )
+    })
+
+    it('fetches the most-used EOSDIS collections by default (no search term yet)', async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                expect(url).to.include('consortium=EOSDIS')
+                expect(url).to.include('has_granules_or_opensearch=true')
+                expect(url).to.include('sort_key')
+                expect(url).to.include('usage_score')
+                expect(url).to.not.include('keyword=')
+
+                return okJson({
+                    hits: 1,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'DEFAULT_COL_1',
+                                'provider-id': 'TEST_PROVIDER',
+                            },
+                            umm: {
+                                EntryTitle: 'Default Most-Used Collection',
+                                Abstract: 'A commonly used collection',
+                            },
+                        },
+                    ],
+                })
+            }
+
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Default Most-Used Collection'
+                    )
+                ),
+            'expected the default (by-usage) collection search results to populate',
+            { timeout: 3000 }
+        )
+    })
+
+    it("populates each result's date range and spatial area from TemporalExtents/SpatialExtent, and omits provider/type", async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                return okJson({
+                    hits: 2,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'GLOBAL_COL_1',
+                                'provider-id': 'TEST_PROVIDER_1',
+                            },
+                            umm: {
+                                EntryTitle: 'Global Coverage Collection',
+                                Abstract: 'Covers the whole globe',
+                                TemporalExtents: [
+                                    {
+                                        RangeDateTimes: [
+                                            {
+                                                BeginningDateTime:
+                                                    '2015-06-01T00:00:00Z',
+                                            },
+                                        ],
+                                        EndsAtPresentFlag: true,
+                                    },
+                                ],
+                                SpatialExtent: {
+                                    HorizontalSpatialDomain: {
+                                        Geometry: {
+                                            BoundingRectangles: [
+                                                {
+                                                    WestBoundingCoordinate: -180,
+                                                    EastBoundingCoordinate: 180,
+                                                    NorthBoundingCoordinate: 90,
+                                                    SouthBoundingCoordinate: -90,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            meta: {
+                                'concept-id': 'C2-TEST',
+                                'native-id': 'REGIONAL_COL_1',
+                                'provider-id': 'TEST_PROVIDER_2',
+                            },
+                            umm: {
+                                EntryTitle: 'Regional Coverage Collection',
+                                Abstract: 'Covers a region',
+                                TemporalExtents: [
+                                    {
+                                        RangeDateTimes: [
+                                            {
+                                                BeginningDateTime:
+                                                    '2010-01-01T00:00:00Z',
+                                                EndingDateTime:
+                                                    '2012-12-31T00:00:00Z',
+                                            },
+                                        ],
+                                    },
+                                ],
+                                SpatialExtent: {
+                                    HorizontalSpatialDomain: {
+                                        Geometry: {
+                                            BoundingRectangles: [
+                                                {
+                                                    WestBoundingCoordinate: -20,
+                                                    EastBoundingCoordinate: 20,
+                                                    NorthBoundingCoordinate: 10,
+                                                    SouthBoundingCoordinate: -10,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                })
+            }
+
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes('Global Coverage Collection')
+                ),
+            'expected search results to populate',
+            { timeout: 3000 }
+        )
+
+        const text = el.shadowRoot?.textContent ?? ''
+
+        // date range + spatial area are populated from the real metadata
+        expect(text).to.include('2015-06-01 - ongoing')
+        expect(text).to.include('Global')
+        expect(text).to.include('2010-01-01 - 2012-12-31')
+        expect(text).to.include('lat')
+        expect(text).to.include('lon')
+
+        // provider and the (worthless) type tag are no longer shown
+        expect(text).to.not.include('TEST_PROVIDER_1')
+        expect(text).to.not.include('TEST_PROVIDER_2')
+        expect(el.shadowRoot?.querySelector('.tag-mini')).to.not.exist
+    })
+
+    it('searches CMR by keyword (relevance) once the user enters a search term', async () => {
+        let sawKeywordRequest = false
+
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                if (url.includes('keyword=')) {
+                    sawKeywordRequest = true
+                    // keyword is wrapped in wildcards (`*rainfall*`) by
+                    // #toCollectionsSearchParams for substring matching
+                    expect(url).to.include('keyword=*rainfall*')
+                    // keyword searches rely on CMR's default relevance sort —
+                    // usage_score sorting is only for the no-keyword default view
+                    expect(url).to.not.include('sort_key')
+
+                    return okJson({
+                        hits: 1,
+                        items: [
+                            {
+                                meta: {
+                                    'concept-id': 'C2-TEST',
+                                    'native-id': 'RAINFALL_COL_1',
+                                    'provider-id': 'TEST_PROVIDER',
+                                },
+                                umm: {
+                                    EntryTitle: 'Rainfall Measurement Collection',
+                                    Abstract: 'Rainfall data',
+                                },
+                            },
+                        ],
+                    })
+                }
+
+                // initial default (by-usage) request before the user types anything
+                return okJson({ hits: 0, items: [] })
+            }
+
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        el.handleCollectionSearch('rainfall')
+
+        await waitUntil(
+            () => sawKeywordRequest,
+            'expected a keyword-based CMR search request to be sent',
+            { timeout: 3000 }
+        )
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Rainfall Measurement Collection'
+                    )
+                ),
+            'expected the keyword search results to populate',
+            { timeout: 3000 }
+        )
+    })
+
+    it('hides the collection search once a collection has been resolved', async () => {
+        stubCollectionFetch({
+            collectionEntryId: 'S1_1',
+            caps: { conceptId: 'C1-TEST', ...baseCaps },
+            collectionUmm: baseCollectionUmm,
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter
+                collection-entry-id="S1_1"
+            ></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () => Boolean(el.collectionWithServices),
+            'expected collectionWithServices to be populated by CollectionController',
+            { timeout: 3000 }
+        )
+        await elementUpdated(el)
+
+        expect(el.shadowRoot?.querySelector('#search-input')).to.not.exist
+    })
+
+    it('hides the results list after a collection is selected, and shows it again when the search input is refocused', async () => {
+        sinon.stub(globalThis, 'fetch').callsFake((input: any) => {
+            const url =
+                typeof input === 'string' ? input : (input?.url ?? String(input))
+
+            if (url.includes('collections.umm_json')) {
+                return okJson({
+                    hits: 1,
+                    items: [
+                        {
+                            meta: {
+                                'concept-id': 'C1-TEST',
+                                'native-id': 'DEFAULT_COL_1',
+                                'provider-id': 'TEST_PROVIDER',
+                            },
+                            umm: {
+                                EntryTitle: 'Default Most-Used Collection',
+                                Abstract: 'A commonly used collection',
+                            },
+                        },
+                    ],
+                })
+            }
+
+            // collection capabilities/umm lookups triggered once a collection is selected
+            return okJson({})
+        })
+
+        const el: any = await fixture(
+            html`<terra-data-subsetter></terra-data-subsetter>`
+        )
+
+        await waitUntil(
+            () =>
+                Boolean(
+                    el.shadowRoot?.textContent?.includes(
+                        'Default Most-Used Collection'
+                    )
+                ),
+            'expected the default collection search results to populate',
+            { timeout: 3000 }
+        )
+
+        expect(el.collectionSearchResultsVisible).to.be.true
+
+        el.shadowRoot?.querySelector<HTMLElement>('.result-item-mini')?.click()
+
+        await elementUpdated(el)
+
+        expect(el.collectionSearchResultsVisible).to.be.false
+        expect(el.shadowRoot?.querySelector('.result-item-mini')).to.not.exist
+
+        const searchInput = el.shadowRoot?.querySelector('#search-input') as any
+        searchInput.dispatchEvent(new CustomEvent('terra-focus'))
+
+        await elementUpdated(el)
+
+        expect(el.collectionSearchResultsVisible).to.be.true
+
+        await waitUntil(
+            () => Boolean(el.shadowRoot?.querySelector('.result-item-mini')),
+            'expected the results list to reappear once the search input regains focus',
+            { timeout: 3000 }
+        )
     })
 })

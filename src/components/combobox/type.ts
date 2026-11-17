@@ -21,7 +21,7 @@ export interface SearchableList<T> {
     type: SearchableListType
     data: T[]
     error?: ListError
-    loading?: Boolean
+    loading?: boolean
 }
 
 export interface Content {

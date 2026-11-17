@@ -321,12 +321,12 @@ Custom validation can be applied to any form control that supports the `setCusto
 
 Due to the many ways form controls are used, Terra doesn't provide out of the box validation styles for form controls as part of its default theme. Instead, the following attributes will be applied to reflect a control's validity as users interact with it. You can use them to create custom styles for any of the validation states you're interested in.
 
--   `data-required` - the form control is required
--   `data-optional` - the form control is optional
--   `data-invalid` - the form control is currently invalid
--   `data-valid` - the form control is currently valid
--   `data-user-invalid` - the form control is currently invalid and the user has interacted with it
--   `data-user-valid` - the form control is currently valid and the user has interacted with it
+- `data-required` - the form control is required
+- `data-optional` - the form control is optional
+- `data-invalid` - the form control is currently invalid
+- `data-valid` - the form control is currently valid
+- `data-user-invalid` - the form control is currently invalid and the user has interacted with it
+- `data-user-valid` - the form control is currently valid and the user has interacted with it
 
 These attributes map to the browser's built-in pseudo classes for validation: [`:required`](https://developer.mozilla.org/en-US/docs/Web/CSS/:required), [`:optional`](https://developer.mozilla.org/en-US/docs/Web/CSS/:optional), [`:invalid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:invalid), [`:valid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:valid), and the proposed [`:user-invalid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:user-invalid) and [`:user-valid`](https://developer.mozilla.org/en-US/docs/Web/CSS/:user-valid).
 

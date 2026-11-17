@@ -1,0 +1,6 @@
+extends: existence
+message: "Limit heading levels to three or fewer (Digital.gov Design for Understanding)."
+level: suggestion
+scope: raw
+tokens:
+  - '^#{4,6}\s+.+'

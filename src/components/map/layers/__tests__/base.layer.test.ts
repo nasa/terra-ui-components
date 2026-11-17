@@ -1,43 +1,64 @@
 import { expect } from '@open-wc/testing'
-import ImageTile from 'ol/source/ImageTile.js'
-import { BaseLayer } from '../base.layer.js'
+import type ImageTile from 'ol/source/ImageTile.js'
+import { buildBaseLayer, buildDefaultBaseLayers } from '../base.layer.js'
 
-describe('BaseLayer', () => {
-    it('should create a TileLayer with an ImageTile source', () => {
-        const layer = new BaseLayer()
+describe('base.layer', () => {
+    it('builds the default base layers with World Imagery visible and alternatives hidden', () => {
+        const layers = buildDefaultBaseLayers({})
 
-        expect(layer.getSource()).to.be.instanceOf(ImageTile)
+        expect(
+            layers.map(layer => ({
+                name: layer.get('name'),
+                title: layer.get('title'),
+                type: layer.get('type'),
+                visible: layer.getVisible(),
+            }))
+        ).to.deep.equal([
+            {
+                name: 'base',
+                title: 'World Imagery',
+                type: 'base',
+                visible: true,
+            },
+            {
+                name: 'true-color',
+                title: 'Corrected Reflectance (True Color)',
+                type: 'base',
+                visible: false,
+            },
+            {
+                name: 'land-water',
+                title: 'Land / Water Map',
+                type: 'base',
+                visible: false,
+            },
+            {
+                name: 'topo',
+                title: 'Topographic',
+                type: 'base',
+                visible: false,
+            },
+        ])
     })
 
-    it('should point the source at the Esri World_Imagery layer', () => {
-        const layer = new BaseLayer()
-        const source = layer.getSource() as ImageTile
+    it('passes noWorldWrap through to the underlying ImageTile source', () => {
+        const wrappedLayer = buildBaseLayer({
+            name: 'osm',
+            title: 'OpenStreetMap',
+            url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            noWorldWrap: false,
+        })
+        const unwrappedLayer = buildBaseLayer({
+            name: 'osm',
+            title: 'OpenStreetMap',
+            url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            noWorldWrap: true,
+        })
 
-        const url = source.getKey()
-        expect(url).to.include('server.arcgisonline.com')
-        expect(url).to.include('World_Imagery')
-    })
+        const wrappedSource = wrappedLayer.getSource() as ImageTile
+        const unwrappedSource = unwrappedLayer.getSource() as ImageTile
 
-    it('should leave wrapX unset by default', () => {
-        const layer = new BaseLayer()
-        const source = layer.getSource() as ImageTile
-
-        expect(source.getWrapX()).to.be.true
-    })
-
-    it('should propagate noWorldWrap to wrapX: false on the source', () => {
-        const layer = new BaseLayer({ noWorldWrap: true })
-        const source = layer.getSource() as ImageTile
-
-        expect(source.getWrapX()).to.be.false
-    })
-
-    it('should provide non-empty attributions', () => {
-        const layer = new BaseLayer()
-        const source = layer.getSource() as ImageTile
-
-        const attributions = source.getAttributions()
-        expect(attributions).to.exist
-        expect(attributions!({} as any)).to.not.be.empty
+        expect(wrappedSource.getWrapX()).to.be.true
+        expect(unwrappedSource.getWrapX()).to.be.false
     })
 })

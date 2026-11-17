@@ -5,7 +5,7 @@ import type { ReactiveControllerHost } from 'lit'
 import type { ListItem, ReadableTaskStatus } from './variable-combobox.types.js'
 
 const apiError = new Error(
-    'Failed to fetch the data required to make a list of searchable items.',
+    'Failed to fetch the data required to make a list of searchable items.'
 )
 
 export class FetchController {
@@ -28,7 +28,7 @@ export class FetchController {
                                   }
                                 : {}),
                         },
-                    },
+                    }
                 )
 
                 if (!response.ok) {
@@ -42,9 +42,8 @@ export class FetchController {
                 return cherryPickDocInfo(docs).sort(
                     (a, b) =>
                         // sort by collection short name, then by long name if variables are in the same collection
-                        a.collectionShortName.localeCompare(
-                            b.collectionShortName,
-                        ) || a.longName.localeCompare(b.longName),
+                        a.collectionShortName.localeCompare(b.collectionShortName) ||
+                        a.longName.localeCompare(b.longName)
                 )
             },
             args: (): any => [],
