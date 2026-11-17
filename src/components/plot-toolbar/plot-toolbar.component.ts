@@ -192,7 +192,10 @@ export default class TerraPlotToolbar extends TerraElement {
                                       ${
                                           this.showLocation
                                               ? html`• ${this.#getLocationIcon()}
-                                            <terra-dropdown hover placement="bottom-start" distance="10">
+                                            <terra-dropdown 
+                                                hover 
+                                                placement="bottom-start" 
+                                                distance="10">
                                                 <span slot="trigger" class="location-text">
                                                     ${(this.location ?? '').replace(
                                                         /,/g,
@@ -203,7 +206,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                                     .value=${this.location}
                                                     .fitToValue=${true}
                                                     .staticMode=${true}
-                                                    style="width: 300px; height: 200px;"
+                                                    style="width: 300px;"
                                                 ></terra-map>
                                             </terra-dropdown>
                                             `
