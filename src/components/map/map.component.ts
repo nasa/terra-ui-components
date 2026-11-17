@@ -50,45 +50,42 @@ const layersConverter = {
     },
 }
 
-function isPresentationOnlyChange(
+const PRESENTATION_KEYS = ['opacity', 'visible'] as const
+const GEOTIFF_STYLE_KEYS = [
+    ...PRESENTATION_KEYS,
+    'colorMapName',
+    'colorSteps',
+    'reverseColors',
+] as const
+
+function configsMatchIgnoring(
     previous: MapLayerConfig,
-    next: MapLayerConfig
+    next: MapLayerConfig,
+    ignoredKeys: readonly string[]
 ): boolean {
     if (previous.type !== next.type) {
         return false
     }
 
-    const prevWithoutPresentation = {
-        ...previous,
-        opacity: undefined,
-        visible: undefined,
-    }
-    const nextWithoutPresentation = {
-        ...next,
-        opacity: undefined,
-        visible: undefined,
-    }
+    const ignored = Object.fromEntries(ignoredKeys.map(key => [key, undefined]))
 
     return (
-        JSON.stringify(prevWithoutPresentation) ===
-        JSON.stringify(nextWithoutPresentation)
+        JSON.stringify({ ...previous, ...ignored }) ===
+        JSON.stringify({ ...next, ...ignored })
     )
 }
 
-function isGeoTiffStyleOnlyChange(
-    previous: MapLayerConfig,
-    next: MapLayerConfig
-): boolean {
-    if (previous.type !== 'geotiff' || next.type !== 'geotiff') {
-        return false
+function applyPresentationUpdate(
+    layer: NonNullable<ReturnType<TerraMap['getLayer']>>,
+    config: MapLayerConfig
+) {
+    if (config.opacity !== undefined) {
+        layer.setOpacity(config.opacity)
     }
 
-    return (
-        previous.url === next.url &&
-        previous.projection === next.projection &&
-        previous.noDataValue === next.noDataValue &&
-        JSON.stringify(previous.bands ?? [1]) === JSON.stringify(next.bands ?? [1])
-    )
+    if (config.visible !== undefined) {
+        layer.setVisible(config.visible)
+    }
 }
 
 /**
@@ -299,34 +296,21 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
 
             const existingLayer = previousConfig ? this.getLayer(name) : undefined
             if (previousConfig && existingLayer) {
-                if (isPresentationOnlyChange(previousConfig, config)) {
-                    if ('opacity' in config && config.opacity !== undefined) {
-                        existingLayer.setOpacity(config.opacity)
-                    }
-
-                    if ('visible' in config && config.visible !== undefined) {
-                        existingLayer.setVisible(config.visible)
-                    }
-
+                if (configsMatchIgnoring(previousConfig, config, PRESENTATION_KEYS)) {
+                    applyPresentationUpdate(existingLayer, config)
                     continue // updated in-place without rebuilding
                 }
 
                 if (
                     previousConfig.type === 'geotiff' &&
                     config.type === 'geotiff' &&
-                    isGeoTiffStyleOnlyChange(previousConfig, config)
+                    configsMatchIgnoring(previousConfig, config, GEOTIFF_STYLE_KEYS)
                 ) {
                     const info = existingLayer.get('info') as
                         | GeoTiffLayerInfo
                         | undefined
                     if (info) {
-                        if (config.opacity !== undefined) {
-                            existingLayer.setOpacity(config.opacity)
-                        }
-
-                        if (config.visible !== undefined) {
-                            existingLayer.setVisible(config.visible)
-                        }
+                        applyPresentationUpdate(existingLayer, config)
 
                         if (
                             previousConfig.colorMapName !== config.colorMapName ||
@@ -457,6 +441,9 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             title: config.title,
         })
         result.layer.setVisible(config.visible ?? true)
+        if (config.opacity !== undefined) {
+            result.layer.setOpacity(config.opacity)
+        }
 
         if (config.type === 'geotiff' && result.type === 'geotiff') {
             // stash the computed info directly on the OL layer
