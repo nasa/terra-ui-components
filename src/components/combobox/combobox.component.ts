@@ -1,22 +1,21 @@
 import Fuse from 'fuse.js'
-import { LitElement, html, nothing, type CSSResultGroup } from 'lit'
+import { type CSSResultGroup, html, LitElement, nothing } from 'lit'
 import { property, state } from 'lit/decorators.js'
-import { ref } from 'lit/directives/ref.js'
-import { repeat } from 'lit/directives/repeat.js'
-import TerraElement from '../../internal/terra-element.js'
-import componentStyles from '../../styles/component.styles.js'
-import styles from './combobox.styles.js'
-
 import { cache } from 'lit/directives/cache.js'
 import { choose } from 'lit/directives/choose.js'
 import { map } from 'lit/directives/map.js'
+import { ref } from 'lit/directives/ref.js'
+import { repeat } from 'lit/directives/repeat.js'
+import TerraElement from '../../internal/terra-element.js'
 import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
 import { clearSelection, walkToOption } from '../combobox/lib.js'
+import styles from './combobox.styles.js'
 import {
-    SearchableListType,
     type Content,
     type GroupedListItem,
     type ListItem,
+    SearchableListType,
 } from './type.js'
 
 /**
@@ -142,7 +141,7 @@ export default class TerraCombobox extends TerraElement {
     disconnectedCallback() {
         super.disconnectedCallback()
 
-        globalThis.addEventListener('click', this.#manageListboxVisibility)
+        globalThis.removeEventListener('click', this.#manageListboxVisibility)
     }
 
     @watch('content')

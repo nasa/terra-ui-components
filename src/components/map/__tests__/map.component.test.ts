@@ -1,22 +1,22 @@
 import { expect, fixture, html, waitUntil } from '@open-wc/testing'
-import sinon from 'sinon'
-import ImageTile from 'ol/source/ImageTile.js'
-import WMTS from 'ol/source/WMTS.js'
-import type TileLayer from 'ol/layer/Tile.js'
-import VectorLayer from 'ol/layer/Vector.js'
-import VectorSource from 'ol/source/Vector.js'
 import Feature from 'ol/Feature.js'
 import Point from 'ol/geom/Point.js'
-import { apiClient } from '../../../lib/api.client.js'
+import type TileLayer from 'ol/layer/Tile.js'
+import VectorLayer from 'ol/layer/Vector.js'
+import ImageTile from 'ol/source/ImageTile.js'
+import VectorSource from 'ol/source/Vector.js'
+import WMTS from 'ol/source/WMTS.js'
+import sinon from 'sinon'
 import { gibsApi } from '../../../apis/gibs.api.js'
+import { apiClient } from '../../../lib/api.client.js'
 import {
     queryClientPersister,
     sharedQueryClient,
-    TerraQueryClient,
+    type TerraQueryClient,
 } from '../../../mixins/query-client.mixin.js'
 import { clearGibsCapabilitiesCache } from '../layers/gibs.layer.js'
-import { LatLng } from '../models/LatLng.js'
 import type TerraMap from '../map.component.js'
+import { LatLng } from '../models/LatLng.js'
 import '../map.js'
 
 function makeCapabilitiesXml(projection: string, matrixSet: string) {
@@ -502,6 +502,51 @@ describe('<terra-map> layers (gibs)', () => {
 
             expect(el.getLayer('imagery')).to.equal(firstLayer)
         })
+
+        it('updates opacity on an existing layer in-place without rebuilding it', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer', opacity: 1 },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+            const firstLayer = el.getLayer('imagery')
+
+            // Update opacity only
+            el.layers = [
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer', opacity: 0.5 },
+            ]
+            await el.updateComplete
+
+            // The layer instance should be the exact same object (not rebuilt)
+            expect(el.getLayer('imagery')).to.equal(firstLayer)
+            expect(firstLayer?.getOpacity()).to.equal(0.5)
+        })
+
+        it('applies initial opacity when building a layer', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                { type: 'gibs', name: 'imagery', layer: 'TestLayer', opacity: 0.4 },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+
+            expect(el.getLayer('imagery')?.getOpacity()).to.equal(0.4)
+        })
+
+        it('does not re-trigger layersChanged when layers is set to an equivalent array', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            const spy = sinon.spy(el, 'layersChanged')
+
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+            expect(spy.callCount).to.equal(1)
+
+            // Set to a new array instance with identical configuration
+            el.layers = [{ type: 'gibs', name: 'imagery', layer: 'TestLayer' }]
+            await el.updateComplete
+
+            // hasChanged returns false, so layersChanged is not called again
+            expect(spy.callCount).to.equal(1)
+        })
     })
 })
 
@@ -659,6 +704,73 @@ describe('<terra-map> layers (geotiff)', () => {
         await el.updateComplete
 
         expect(removeLayerSpy.called).to.be.false
+    })
+
+    it('updates GeoTIFF opacity in-place without rebuilding when only presentation fields change', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        const layer = new VectorLayer({ source: new VectorSource() })
+        layer.set('info', {
+            layer,
+            min: 0,
+            max: 1,
+            colorStops: [],
+            legendValues: [],
+            projection: 'EPSG:4326',
+            noDataValue: -9999,
+        })
+        el.addLayer(layer, { name: 'my-data', title: 'Initial Title' })
+
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
+        const prev = [
+            {
+                type: 'geotiff' as const,
+                name: 'my-data',
+                url: 'https://example.com/data.tif',
+                title: 'Initial Title',
+                opacity: 1,
+            },
+        ]
+        const next = [{ ...prev[0], opacity: 0.4 }]
+
+        await el.layersChanged(prev, next)
+
+        expect(removeLayerSpy.called).to.be.false
+        expect(layer.getOpacity()).to.equal(0.4)
+    })
+
+    it('rebuilds a GeoTIFF layer when title or position changes instead of ignoring it', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        const layer = new VectorLayer({ source: new VectorSource() })
+        layer.set('info', {
+            layer,
+            min: 0,
+            max: 1,
+            colorStops: [],
+            legendValues: [],
+            projection: 'EPSG:4326',
+            noDataValue: -9999,
+        })
+        el.addLayer(layer, { name: 'my-data', title: 'Initial Title' })
+
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
+        const errorStub = sinon.stub(console, 'error')
+        try {
+            const prev = [
+                {
+                    type: 'geotiff' as const,
+                    name: 'my-data',
+                    url: 'https://example.com/data.tif',
+                    title: 'Initial Title',
+                },
+            ]
+            const next = [{ ...prev[0], title: 'Updated Title' }]
+
+            await el.layersChanged(prev, next)
+
+            expect(removeLayerSpy.calledWith('my-data')).to.be.true
+        } finally {
+            errorStub.restore()
+        }
     })
 })
 
