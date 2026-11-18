@@ -68,9 +68,9 @@
     /**
      * @tokens Horizon Design System Color Tokens
      * @description
-     * The Horizon Design System colors are organized into a primary palette, an extended palette, 
-     * and a set of neutrals. The primary palette consists of the core brand colors, while the extended palette includes 
-     * tints and shades of those colors for added flexibility. The neutrals provide a range of values for text and backgrounds 
+     * The Horizon Design System colors are organized into a primary palette, an extended palette,
+     * and a set of neutrals. The primary palette consists of the core brand colors, while the extended palette includes
+     * tints and shades of those colors for added flexibility. The neutrals provide a range of values for text and backgrounds
      *to ensure appropriate contrast across the system.
      */
 
@@ -90,9 +90,9 @@
     /**
      * @tokens-subgroup Extended Palette
      * @description
-     * The extended palette consists of a tint and shade for the brand colors in the primary palette. 
-     * Usage of these colors varies depending on the touch point, but they come in handy to ensure that your 
-     *combinations are always AAA accessible. 
+     * The extended palette consists of a tint and shade for the brand colors in the primary palette.
+     * Usage of these colors varies depending on the touch point, but they come in handy to ensure that your
+     * combinations are always AAA accessible. 
      * @layout swatch
      */
     --terra-color-nasa-red-shade: hsla(3, 87%, 39%, 1);
@@ -112,7 +112,7 @@
     /**
      * @tokens-subgroup Neutrals
      * @description
-     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system. 
+     * Neutrals have varying degrees of value that allow for the appropriate levels of contrast across the system.
      * Typically, they are used for text and subtle backgrounds to de-emphasize a piece of secondary content. 
      * @layout swatch
      */
@@ -131,9 +131,9 @@
 
     /* Figma Design System Tokens ------------------------------------------------- START
     /*
-    /* The Primitive, Foundation, and Semantic tokens below originate from the Figma Design System file. 
-    /* A custom Figma plugin called "Terra Color Exporter" generates the CSS tokens directly from the Figma 
-    /* color variables that are used in the design system. If the colors in the design system are updated, 
+    /* The Primitive, Foundation, and Semantic tokens below originate from the Figma Design System file.
+    /* A custom Figma plugin called "Terra Color Exporter" generates the CSS tokens directly from the Figma
+    /* color variables that are used in the design system. If the colors in the design system are updated,
     /* the plugin needs to rerun, and the token values copied back into the horizon.scss file.  
     */
 
@@ -144,9 +144,9 @@
     /**
      * @tokens Primitive Tokens
      * @description
-     * Primitive tokens are the most basic level of tokens in the design system. Primitive tokens are expanded color palettes of the <a href="/tokens/generated/horizon-design-system-color-tokens">Horizon Design System</a> colors. 
+     * Primitive tokens are the most basic level of tokens in the design system. Primitive tokens are expanded color palettes of the <a href="/tokens/generated/horizon-design-system-color-tokens">Horizon Design System</a> colors.
      * Shade 500 from each palette equates to the base HDS color. A wider selection of color shades is needed to represent component states, and to ensure there are enough options to maintain accessible color combinations across the system.
-     * The primitive tokens are organized by color family (e.g. red, blue, neutral) and by hue/saturation/value. 
+     * The primitive tokens are organized by color family (e.g. red, blue, neutral) and by hue/saturation/value.
      * The primitive tokens are used directly in the <a href="/tokens/generated/foundation-tokens">Foundation tokens</a> which define the use of color based on roles.
      */
 
@@ -293,16 +293,18 @@
     /**
      * @tokens Foundation Tokens
      * @description
-     * The Foundation token layer is where we select which <a href="/tokens/generated/primitive-tokens">Primitive colors</a> will be used for the theme, 
-     * and define the color usage, such as which colors will be used for surfaces, text, borders, etc. These tokens are the building blocks for all other tokens in the system. 
-     * The Foundation tokens are organized by color role (e.g. surface, text, border). 
-     * The Foundation tokens reference the <a href="/tokens/generated/primitive-tokens">Primitives tokens</a> directly, which allows for easy updates 
-     * to the color palettes without having to update every single token in the system. The <a href="/tokens/generated/semantic-tokens">Semantic</a> level UI role tokens are build on the  
-     * Foundation-level tokens (rather than primitives) for the most-part so that changes to the theme Foundation are reflected in the <a href="/tokens/generated/semantic-tokens">Semantic tokens</a>. 
+     * The Foundation token layer is where we select which <a href="/tokens/generated/primitive-tokens">Primitive colors</a> will be used for the theme,
+     * and define the color usage, such as which colors will be used for surfaces, text, borders, etc. These tokens are the building blocks for all other tokens in the system.
+     * The Foundation tokens are organized by color role (e.g. surface, text, border).
+     * The Foundation tokens reference the <a href="/tokens/generated/primitive-tokens">Primitives tokens</a> directly, which allows for easy updates
+     * to the color palettes without having to update every single token in the system. The <a href="/tokens/generated/semantic-tokens">Semantic</a> level UI role tokens are build on the 
+     * Foundation-level tokens (rather than primitives) for the most-part so that changes to the theme Foundation are reflected in the <a href="/tokens/generated/semantic-tokens">Semantic tokens</a>.
      */
 
     /**
      * @tokens-subsection Surface Color Tokens
+     * @description
+     * Surface color tokens are used for backgrounds and surfaces such as pages, side bars, dialog boxes, cards, buttons, inputs, popovers, tooltips, etc.
      */
 
     /**
@@ -316,6 +318,14 @@
     --terra-color-bg-surface-neutral-primary: var(--terra-color-neutral-50);
     --terra-color-bg-surface-neutral-secondary: var(--terra-color-neutral-100);
     --terra-color-bg-surface-neutral-tertiary: var(--terra-color-neutral-200);
+    /**
+     * @tokens-subgroup Inverse Neutral Surface colors
+     * @description 
+     * Neutral Inverse Surface color tokens are for special cases and local contrast needs of side bars, dialog boxes, cards, inputs, popovers, tooltips,
+     * etc. They let you swap the Neutral Surface colors so content remains legible. Use sparingly as needed, only when a surface sits on top of something with the opposite polarity. 
+     * If you only had neutral background tokens, you’d have mismatched contrast.
+     * @layout table-swatch
+     */
     --terra-color-bg-surface-neutral-inverse-primary: var(--terra-color-neutral-900);
     --terra-color-bg-surface-neutral-inverse-secondary: var(
         --terra-color-neutral-800
@@ -324,6 +334,8 @@
 
     /**
      * @tokens-subgroup Neutral Surface Interactive colors
+     * @description
+     * Neutral Surface Interactive states for neutral surfaces (base, primary) that are used for inputs fields and form controls like checkboxes, radio buttons, toggles and sliders.
      * @layout table-swatch
      */
     --terra-color-bg-surface-interactive-default: var(--terra-color-neutral-0);
@@ -333,6 +345,8 @@
 
     /**
      * @tokens-subgroup Brand Surface colors
+     * @description
+     * Brand surfacecolors to be used sparingly for the background surfaces of header and footer regions, hero sections, and splash pages.
      * @layout table-swatch
      */
     --terra-color-bg-surface-brand-primary: var(--terra-color-nasa-blue);
@@ -341,6 +355,9 @@
 
     /**
      * @tokens-subgroup Brand Selected Surface Interactive colors
+     * @description
+     * Brand Surface colors are used for selected states for input field backgrounds and surfaces, tabs, and form controls like checkboxes, radio buttons, toggles, and sliders.
+     * These use the brand color and have interactions.
      * @layout table-swatch
      */
     --terra-color-bg-surface-brand-selected-default: var(--terra-color-blue-500);
@@ -350,6 +367,11 @@
 
     /**
      * @tokens-subgroup Semantic background colors
+     * @description
+     * Semantic background surfaces that appear or change to give feedback or status. Use subtle when you want the content message (text/icon) to carry the meaning,
+     * and the background only reinforces it without stealing focus (banners / alerts, toasts, tags). Use bold when the background itself must demand attention and stand apart
+     * from surrounding UI (critical blocking alerts, destructive confirmation dialogs, system critical toasts). DO NOT use the bold tokens for action-focused elements like buttons;
+     * instead use the Action backgrounds which have color variants for hover and disabled states.
      * @layout table-swatch
      */
     --terra-color-bg-default-subtle: var(--terra-color-neutral-200);
@@ -364,7 +386,16 @@
     --terra-color-bg-info-bold: var(--terra-color-blue-500);
 
     /**
-     * @tokens-subgroup Action background colors (buttons, etc)
+    * @tokens-subsection Action Backgrounds with Interactive States
+    * @description
+    * Background colors for interactive elements that have states, such as buttons. Use the default, hover, active, and disabled variants to provide visual feedback for each state.
+    * The default shade can be used for badges, chips, pills, etc where interactive states are not needed.
+    */
+    /**
+     * @tokens-subgroup Brand Action background colors
+     * @description
+     * Background colors for action-focused elements such as buttons. The Primary action uses the brand color for the main action buttons throughout the UI. Secondary actions are for less prominent actions like “Cancel” buttons.
+     * “Call to action” (CTA) actions direct user attention to a main goal. Use sparingly. Use the default, hover, active, and disabled variants to provide visual feedback for each state.
      * @layout table-swatch
      */
     --terra-color-action-primary-default: var(--terra-color-blue-500);
@@ -379,6 +410,13 @@
     --terra-color-action-cta-hover: var(--terra-color-chartreuse-600);
     --terra-color-action-cta-active: var(--terra-color-chartreuse-700);
     --terra-color-action-cta-disabled: var(--terra-color-chartreuse-100);
+
+    /**
+     * @tokens-subgroup Semantic Action background colors
+     * @description
+     * Semantic background colors for action-focused elements such as buttons. Semantic colors communicate the meaning of an action. Use the default, hover, active, and disabled variants to provide visual feedback for each state.
+     * @layout table-swatch
+     */
     --terra-color-action-success-default: var(--terra-color-green-500);
     --terra-color-action-success-hover: var(--terra-color-green-600);
     --terra-color-action-success-active: var(--terra-color-green-700);
@@ -398,21 +436,36 @@
 
     /**
      * @tokens-subsection Text Color Tokens
+     * @description
+     * Text color tokens define the colors used for text on various surfaces. Text and icon colors variants are defined with the intended use for headings, body text, captions in content areas;
+     * as well as use on buttons, banners, toasts, tags, and other UI element surfaces.  WCAG rules do not require every text token in a design system to be AA compliant. The only requirement is
+     * you must not use non-compliant text for content that users must read.  Some combinations such as tertiary text and disabled text don’t meet WCAG contrast standard, but the low contrast pairing
+     * is useful for aesthetic subtle hints and disabled states.  WCGA AA is the standard most digital products are expected to meet.
      */
 
     /**
-     * @tokens-subgroup Text colors on surfaces
+     * @tokens-subgroup Text colors on neutral surfaces
+     * @description
+     * Text colors on neutral surfaces define the colors used for text on light backgrounds. The primary, secondary, and tertiary variants help establish a clear visual hierarchy.
      * @layout table-swatch
      */
     --terra-text-primary: var(--terra-color-neutral-900);
     --terra-text-secondary: var(--terra-color-neutral-700);
     --terra-text-tertiary: var(--terra-color-neutral-500);
+    /**
+     * @tokens-subgroup Inverse text colors on inverse neutral surfaces
+     * @description
+     * Inverse text colors on inverse neutral surfaces define the colors used for text on dark backgrounds. The primary, secondary, and tertiary variants help establish a clear visual hierarchy.
+     * @layout table-swatch
+     */
     --terra-text-primary-inverse: var(--terra-color-neutral-0);
     --terra-text-secondary-inverse: var(--terra-color-neutral-100);
     --terra-text-tertiary-inverse: var(--terra-color-neutral-300);
 
     /**
-     * @tokens-subgroup Text link colors on surfaces
+     * @tokens-subgroup Text link colors on neutral surfaces
+     * @description
+     * Text link colors for use on primary, secondary, and tertiary neutral surfaces define the colors used for links on light backgrounds.
      * @layout table-swatch
      */
     --terra-text-link-default: var(--terra-color-blue-functional-link-default);
@@ -429,6 +482,12 @@
     --terra-text-link-on-tertiary-hover: var(
         --terra-color-blue-functional-link-on-tertiary-hover
     );
+    /**
+     * @tokens-subgroup Inverse text link colors on inverse neutral surfaces
+     * @description
+     * Inverse text link colors for use on inverse primary, secondary, and tertiary neutral surfaces, define the colors used for links on dark backgrounds.
+     * @layout table-swatch
+     */
     --terra-text-link-inverse-default: var(
         --terra-color-blue-functional-link-inverse-default
     );
@@ -450,6 +509,8 @@
 
     /**
      * @tokens-subgroup Brand Text colors on brand and neutral surfaces
+     * @description
+     * Brand text colors are used for non-link text. They define the text colors used on light, dark and brand backgrounds.
      * @layout table-swatch
      */
     --terra-text-brand-on-brand-primary: var(--terra-color-white);
@@ -463,6 +524,8 @@
 
     /**
      * @tokens-subgroup Text colors on neutral interactive surfaces
+     * @description
+     * Text colors for use on elements such as menus, tabs, combo boxes, and selection lists which have interactive surfaces. These tokens define the colors used for text in different interactive states.
      * @layout table-swatch
      */
     --terra-text-interactive-default: var(--terra-color-neutral-700);
@@ -474,6 +537,9 @@
 
     /**
      * @tokens-subgroup Text colors on semantic surfaces
+     * @description
+     * Text colors for use on semantic surfaces define the colors used for text on success, warning, error, information and default surfaces. Semantic surfaces have subtle and bold variants.
+     * On the subtle backgrounds, use the on-success, on-warning, on-error, on-info, and on-default tokens. On the bold backgrounds, use the on-semantic and on-semantic-inverse tokens.
      * @layout table-swatch
      */
     --terra-text-on-success: var(--terra-color-green-900);
@@ -485,7 +551,12 @@
     --terra-text-on-semantic-inverse: var(--terra-color-neutral-black);
 
     /**
-     * @tokens-subgroup Text colors on action surfaces (buttons etc)
+     * @tokens-subgroup Text colors on action surfaces
+     * @description
+     * Text colors for use on action surfaces define the colors used for text on primary, secondary, CTA, success, warning, error and information action surfaces. 
+     * The "on-action" text is used on the default and hover state action backgrounds. The "on-action-disabled" text is used on all the disabled state action backgrounds. 
+     * All "on-action" colors need to pass at least WCAG AA compliance which is acceptable since text size tends to be larger on actions. The "on-action-disabled" color 
+     * doesn’t need WCAG compliance since it should be recognizably different.
      * @layout table-swatch
      */
     --terra-text-on-action-primary: var(--terra-text-on-semantic);
@@ -499,21 +570,37 @@
 
     /**
      * @tokens-subsection Border Color Tokens
+     * @description
+     * Border color tokens define the colors used for borders on neutral, neutral interactive, brand selected and semantic surfaces. Borders support function and hierarchy by
+     * dividing or separating surfaces (cards, sections, containers), indicating interactive states (focus, hover, error), and reinforcing semantic meaning (error outlines, success banners).
+     * Borders are perceived in relation to their inner fill color, NOT the canvas. It is not necessary to specify a border variant for every single background in your system. Borders serve
+     * a few specific roles, and those can usually be covered by a small set of tokens. 
      */
 
     /**
      * @tokens-subgroup Border colors for neutral surfaces
+     * @description
+     * Use for decorative borders (like light dividers) on neutral surfaces. Light is good forsubtle dividers (table row separators, etc). Use Default for standard containers (dialog, card borders). Use Strong for stronger separation (panels, sidebars).
      * @layout table-swatch
      */
     --terra-border-neutral-light: var(--terra-color-neutral-100);
     --terra-border-neutral-default: var(--terra-color-neutral-300);
     --terra-border-neutral-strong: var(--terra-color-neutral-400);
+
+    /**
+     * @tokens-subgroup Border colors for neutral inverse surfaces
+     * @description
+     * Use for the neutral inverse borders on the neutral inverse surfaces. Light is good forsubtle dividers (table row separators, etc). Use Default for standard containers (dialog, card borders). Use Strong for stronger separation (panels, sidebars).
+     * @layout table-swatch
+     */
     --terra-border-neutral-inverse-light: var(--terra-color-neutral-700);
     --terra-border-neutral-inverse-default: var(--terra-color-neutral-400);
     --terra-border-neutral-inverse-strong: var(--terra-color-neutral-300);
 
     /**
      * @tokens-subgroup Border colors for neutral interactive surfaces
+     * @description
+     * Use for borders on interactive elements with neutral surfaces such as input fields, input controls like radio buttons, check boxes, toggles, and sliders. Hover is used for the hover state, disabled for the disabled state, active for the active state, and focus-ring for the focus ring.
      * @layout table-swatch
      */
     --terra-border-interactive-hover: var(--terra-color-neutral-400);
@@ -522,7 +609,9 @@
     --terra-border-interactive-focus-ring: var(--terra-color-blue-500);
 
     /**
-     * @tokens-subgroup Border colors for brand selected surfaces
+     * @tokens-subgroup Border colors for interactive brand selected surfaces
+     * @description
+     * Use these borders on brand input control surfaces that are selected such as toggle switches, sliders, radio buttons, check boxes.
      * @layout table-swatch
      */
     --terra-border-brand-selected-default: var(--terra-color-blue-500);
@@ -532,6 +621,8 @@
 
     /**
      * @tokens-subgroup Border colors for semantic surfaces
+     * @description
+     * Use semantic borders (Success, Warning, Error, Info) paired with subtle backgrounds to reinforce the meaning. Borders that communicate meaning (e.g., input error states, focus rings) must meet 3:1 against their adjacent background. The bold variants of sematic backgrounds do not need unique borders because the high-contrast fill conveys the meaning.
      * @layout table-swatch
      */
     --terra-border-success: var(--terra-color-green-800);
@@ -541,6 +632,8 @@
 
     /**
      * @tokens-subgroup Border colors for action surfaces
+     * @description
+     * Use for borders on action elements such as buttons and links. Action backgrounds such as buttons have a high-contrast fill so the “meaning” is communicated by the color itself.  Borders here are used for structure and states rather than meaning.   Use either no borders or neutral borders (Default, Strong, Disabled) for states. We use border colors that match the action backgrounds, so borders are not apparent.
      * @layout table-swatch
      */
     --terra-border-action-secondary-default: var(
@@ -591,22 +684,36 @@
     */
 
     /**
-     * @tokens-subgroup Container tokens
+     * @tokens-subsection Container tokens
      * @description
      * Container tokens define the visual appearance of container elements in the design system. They include background and border colors for components such as dialogs, menus, and panels.
-     * @layout table-swatch
+     */
+    /**
+     * @tokens-subgroup Dialog tokens
+    * @layout table-swatch
      */
     --terra-container-dialog-bg: var(--terra-color-bg-surface-neutral-base);
     --terra-container-dialog-border: var(--terra-border-neutral-default);
+    /**
+     * @tokens-subgroup Menu tokens
+     * @layout table-swatch
+     */
     --terra-container-menu-bg: var(--terra-color-bg-surface-neutral-base);
     --terra-container-menu-border: var(--terra-border-neutral-default);
+    /**
+     * @tokens-subgroup Panel tokens
+     * @layout table-swatch
+     */
     --terra-container-panel-bg: var(--terra-color-bg-surface-neutral-base);
     --terra-container-panel-border: var(--terra-border-neutral-default);
 
     /**
-     * @tokens-subgroup Menu Item color tokens
+     * @tokens-subsection Menu Item color tokens
      * @description
-     * Menu Item color tokens define the visual appearance of menu items in the design system.
+     * Menu Item color tokens define the visual appearance of menu items in the design system. They include background and text colors.
+     */
+    /**
+     * @tokens-subgroup Menu Item background tokens
      * @layout table-swatch
      */
     --terra-menu-item-background-hover: var(
@@ -621,7 +728,10 @@
     --terra-menu-item-background-selected: var(
         --terra-color-bg-surface-brand-selected-default
     );
-
+    /**
+     * @tokens-subgroup Menu Item text tokens
+     * @layout table-swatch
+     */
     --terra-menu-item-text-default: var(--terra-text-interactive-default);
     --terra-menu-item-text-hover: var(--terra-text-interactive-hover);
     --terra-menu-item-text-disabled: var(--terra-text-interactive-disabled);
@@ -629,9 +739,12 @@
     --terra-menu-item-text-selected: var(--terra-text-interactive-selected);
 
     /**
-     * @tokens-subgroup Input Style color Tokens
+     * @tokens-subsection Input Style color Tokens
      * @description
-     * Input Style color tokens define the visual appearance of input elements in the design system.
+     * Input Style color tokens define the visual appearance of input elements in the design system. They include background, border, text, and icon colors.
+     */
+    /**
+     * @tokens-subgroup Input background tokens
      * @layout table-swatch
      */
     --terra-input-background-default: var(--terra-color-bg-surface-neutral-base);
@@ -641,42 +754,61 @@
     );
     --terra-input-background-focus: var(--terra-color-bg-surface-interactive-focus);
     --terra-input-background-error: var(--terra-color-red-50);
-
+    /**
+     * @tokens-subgroup Input border tokens
+     * @layout table-swatch
+     */
     --terra-input-border-default: var(--terra-border-neutral-default);
     --terra-input-border-hover: var(--terra-border-interactive-hover);
     --terra-input-border-disabled: var(--terra-border-interactive-disabled);
     --terra-input-border-focus: var(--terra-border-interactive-focus-ring);
     --terra-input-border-error: var(--terra-border-action-error-default);
 
+    /**
+     * @tokens-subgroup Input text tokens
+     * @layout table-swatch
+     */
     --terra-input-text-default: var(--terra-text-secondary);
     --terra-input-text-hover: var(--terra-text-primary);
     --terra-input-text-focus: var(--terra-text-primary);
     --terra-input-text-disabled: var(--terra-text-tertiary);
     --terra-input-text-placeholder: var(--terra-text-tertiary);
-
+    /**
+     * @tokens-subgroup Input icon tokens
+     * @layout table-swatch
+     */
     --terra-input-icon-default: var(--terra-text-secondary);
     --terra-input-icon-hover: var(--terra-text-primary);
 
     /**
-     * @tokens-subgroup Tab color tokens
+     * @tokens-subsection Tab color tokens
      * @description
      * Tab color tokens define the visual appearance of tab elements in the design system.
+     */
+    /**
+     * @tokens-subgroup Tab text tokens
      * @layout table-swatch
      */
-
     --terra-tab-text-default: var(--terra-text-interactive-default);
     --terra-tab-text-hover: var(--terra-text-interactive-hover);
     --terra-tab-text-disabled: var(--terra-text-interactive-disabled);
     --terra-tab-text-active: var(--terra-text-interactive-active);
     --terra-tab-text-selected: var(--terra-text-interactive-brand-selected);
+    /**
+     * @tokens-subgroup Tab indicator and track tokens
+     * @layout table-swatch
+     */
     --terra-tab-indicator-selected: var(--terra-text-interactive-brand-selected);
     --terra-tab-track-color: var(--terra-color-carbon-20);
 
     /**
-     * @tokens-subgroup Input Control color tokens
+     * @tokens-subsection Input Control color tokens
      * @description Input Control color tokens define the visual appearance of input control elements such as checkboxes, radio buttons, toggles, sliders, etc. in the design system.
-     * @layout table-swatch
     */
+    /**
+     * @tokens-subgroup Input Control background tokens
+     * @layout table-swatch
+     */
     --terra-control-bg-default: var(--terra-color-bg-surface-interactive-default);
     --terra-control-bg-hover: var(--terra-color-bg-surface-interactive-hover);
     --terra-control-bg-disabled: var(--terra-color-bg-surface-interactive-disabled);
@@ -691,7 +823,10 @@
     --terra-control-bg-selected-active: var(
         --terra-color-bg-surface-brand-selected-active
     );
-
+    /**
+     * @tokens-subgroup Input Control border tokens
+     * @layout table-swatch
+     */
     --terra-control-border-default: var(--terra-border-neutral-default);
     --terra-control-border-hover: var(--terra-border-interactive-hover);
     --terra-control-border-disabled: var(--terra-border-interactive-disabled);
@@ -703,16 +838,22 @@
         --terra-border-brand-selected-disabled
     );
     --terra-control-border-selected-active: var(--terra-border-brand-selected-active);
-
+    /**
+     * @tokens-subgroup Input Control icon tokens
+     * @layout table-swatch
+     */
     --terra-control-icon-selected: var(--terra-color-neutral-white);
     --terra-control-icon-selected-hover: var(--terra-color-carbon-20);
     --terra-control-icon-selected-disabled: var(--terra-color-carbon-20);
     --terra-control-icon-selected-active: var(--terra-color-carbon-40);
 
     /**
-     * @tokens-subgroup Breadcrumb color tokens
+     * @tokens-subsection Breadcrumb color tokens
      * @description
      * Breadcrumb color tokens define the visual appearance of breadcrumb elements in the design system.
+     */
+    /**
+     * @tokens-subgroup Breadcrumb text tokens
      * @layout table-swatch
      */
     --terra-breadcrumb-text-default: var(--terra-text-interactive-default);
@@ -2130,8 +2271,8 @@
     --terra-status-indicator-font-size: var(--terra-font-size-small);
     --terra-status-indicator-font-weight: var(--terra-font-weight-normal);
     /**
-    * @tokens-subgroup Typography
-    * @layout table
+    * @tokens-subgroup Colors
+    * @layout table-swatch
     */
     --terra-status-indicator-label-color: var(--terra-text-secondary);
     --terra-status-indicator-dot-color-active: var(--terra-color-active-green);
@@ -2194,7 +2335,7 @@
 
     /**
     * @tokens-subgroup Focus
-    * @layout table
+    * @layout table-swatch
     */
     --terra-tab-focus-ring-offset: 2px;
 
@@ -2298,7 +2439,7 @@
 
     /**
     * @tokens-subgroup Focus Ring
-    * @layout table
+    * @layout table-swatch
     */
     --terra-toggle-focus-ring-color: var(--terra-color-nasa-blue);
 
