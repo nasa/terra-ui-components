@@ -1,29 +1,29 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './time-series.styles.js'
-import TerraButton from '../button/button.component.js'
-import TerraAlert from '../alert/alert.component.js'
-import TerraElement from '../../internal/terra-element.js'
-import TerraIcon from '../icon/icon.component.js'
-import TerraLoader from '../loader/loader.component.js'
-import TerraPlot from '../plot/plot.component.js'
+import { TaskStatus } from '@lit/task'
+import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
 import { property, query, state } from 'lit/decorators.js'
-import { TaskStatus } from '@lit/task'
-import { TimeSeriesController } from './time-series.controller.js'
-import type { CSSResultGroup } from 'lit'
-import type { Variable } from '../browse-variables/browse-variables.types.js'
+import { cache } from 'lit/directives/cache.js'
 import type { TerraPlotRelayoutEvent } from '../../events/terra-plot-relayout.js'
+import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
+import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import componentStyles from '../../styles/component.styles.js'
 import { formatDate } from '../../utilities/date.js'
-import { isNotebookEnv } from '../../utilities/isNotebook.js'
 import {
     extractHarmonyError,
     formatHarmonyErrorMessage,
 } from '../../utilities/harmony.js'
-import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
-import { AuthMixin } from '../../mixins/auth.mixin.js'
-import { cache } from 'lit/directives/cache.js'
+import { isNotebookEnv } from '../../utilities/isNotebook.js'
 import { getFetchVariableTask } from '../../utilities/variable-task.js'
-import { QueryClientMixin } from '../../mixins/query-client.mixin.js'
+import TerraAlert from '../alert/alert.component.js'
+import type { Variable } from '../browse-variables/browse-variables.types.js'
+import TerraButton from '../button/button.component.js'
+import TerraIcon from '../icon/icon.component.js'
+import TerraLoader from '../loader/loader.component.js'
+import TerraPlot from '../plot/plot.component.js'
+import TerraPlotToolbar from '../plot-toolbar/plot-toolbar.component.js'
+import { TimeSeriesController } from './time-series.controller.js'
+import styles from './time-series.styles.js'
 
 const variableEntryIdsConverter = {
     fromAttribute: (value: string | null): string[] => {
@@ -386,7 +386,7 @@ export default class TerraTimeSeries extends AuthMixin(
                           <terra-alert
                               variant="warning"
                               duration="10000"
-                              open=${this.quotaExceededOpen}
+                              .open=${this.quotaExceededOpen}
                               closable
                               @terra-after-hide=${() =>
                                   (this.quotaExceededOpen = false)}
