@@ -344,4 +344,9 @@ export default css`
     .panel-close:hover {
         opacity: 0.7;
     }
+
+    .available-range {
+        margin: 0;
+        padding: 0;
+    }
 `

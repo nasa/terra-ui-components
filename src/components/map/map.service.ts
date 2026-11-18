@@ -957,6 +957,7 @@ export class MapService {
 
         const layer = new VectorLayer({
             source: source,
+            style: DrawToolbarControl.getDrawStyleDefaults()
         })
 
         layer.set('name', 'draw')

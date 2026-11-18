@@ -40,6 +40,8 @@ import TerraElement, {
     undefinedStringConverter,
 } from '../../internal/terra-element.js'
 import type { MapEventDetail } from '../map/type.js'
+import { map } from 'lit/directives/map.js'
+import type { LatLngBounds } from '../../components/map/models/LatLngBounds.js'
 
 const ANIMATION_DELAY_DURATION = 500
 /**
@@ -168,7 +170,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
         return maxDateStr ? new Date(maxDateStr) : null
     }
 
-    get spatialConstraints(): string {
+    get spatialConstraints(): LatLngBounds[] {
         return this.#collectionController.spatialConstraints
     }
 
@@ -789,9 +791,12 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
                                 @terra-map-change=${this.#handleMapChange}
                             >
                                 <p class="available-range" slot="additional-text">
-                                    <strong>Available range:</strong> ${
-                                        this.spatialConstraints
-                                    }
+                                    <strong>Available range(s):</strong> 
+                                    ${map(this.spatialConstraints, (spatialConstraint) => html`
+                                        <p class="available-range">
+                                        ${spatialConstraint.toBBoxString()},
+                                        </p>
+                                    `)}
                                 </p>
                             </terra-spatial-picker>
                         </div>

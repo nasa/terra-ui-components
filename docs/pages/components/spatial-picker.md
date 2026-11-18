@@ -42,3 +42,12 @@ This example disables infinite horizontal scrolling on the map.
 ```
 
 [component-metadata:terra-spatial-picker]
+
+
+### Spatial Picker with spatial constraint
+
+```html:preview
+<div style="height: 300px;">
+    <terra-spatial-picker initial-value="-56.18, 57.44, -34.48, 68.12" spatial-constraints="[[-180, -90, 180, -39.23], [-180, 30.98, 180, 90]]"></terra-spatial-picker>
+</div>
+```
