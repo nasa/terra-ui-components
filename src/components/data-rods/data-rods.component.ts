@@ -198,7 +198,6 @@ export default class TerraDataRods extends TerraElement {
                     : null
             }
             <terra-variable-combobox
-                style="z-index:0"
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 .value=${getVariableEntryId(this)}
                 .bearerToken=${this.bearerToken ?? null}
@@ -325,11 +324,6 @@ export default class TerraDataRods extends TerraElement {
         if (event.detail.type === MapEventType.POINT) {
             // TODO: we may want to pick a `toFixed()` length in the spatial picker and stick with it.
             this.location = `${event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)}`
-            this.locationBbox =
-                `${
-                    event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4),
-                    event.detail.latLng.lat.toFixed(4)},${event.detail.latLng.lng.toFixed(4)
-                }`
             this.lastChanged = 'location'
 
             this.compatibilityWarning()

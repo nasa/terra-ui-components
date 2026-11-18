@@ -194,7 +194,7 @@ export default class TerraPlotToolbar extends TerraElement {
                                               ? html`• ${this.#getLocationIcon()}
                                             <terra-dropdown 
                                                 hover 
-                                                placement="bottom-start" 
+                                                placement="bottom-start"
                                                 distance="10">
                                                 <span slot="trigger" class="location-text">
                                                     ${(this.location ?? '').replace(
