@@ -1,12 +1,13 @@
 import type { LitElement } from 'lit'
-import { property, state } from 'lit/decorators.js'
+import { property } from 'lit/decorators.js'
 import { type AuthState, authService, type User } from '../auth/auth.service.js'
 import { undefinedStringConverter } from '../internal/terra-element.js'
 import type { Constructor } from './mixin.types.js'
 
 export interface AuthHost {
     bearerToken?: string
-    authState: AuthState
+    user: User | null
+    authError: string | null
     isAuthenticated: boolean
     isLoggingIn: boolean
     login(): void
@@ -15,12 +16,17 @@ export interface AuthHost {
 }
 
 /**
- * AuthMixin equips a Lit component with Earthdata authentication state,
- * the `bearerToken` property, and login/logout methods directly via authService.
+ * AuthMixin connects a Lit component to the singleton `authService`.
  *
- * Modeled after class-expression mixins:
- * - Subclasses Base cleanly
- * - Safely calls super lifecycle methods
+ * `authService` is the single source of truth for session state. Session fields
+ * (`user`, `authError`, `isLoggingIn`) are read directly from `authService.getState()`
+ * via getters, and `authService.subscribe()` triggers `this.requestUpdate()` whenever
+ * session state changes.
+ *
+ * `bearerToken` is a `@property()` on the element because it serves as both
+ * an inbound HTML attribute/property (`<terra-map bearer-token="...">`) that can
+ * seed `authService` on mount, and a Lit reactive property tracked in
+ * `changedProperties` for `@watch('bearerToken')` observers.
  *
  * @event terra-login - Emitted when authentication state changes or login occurs.
  */
@@ -38,30 +44,32 @@ export function AuthMixin<T extends Constructor<LitElement>>(Base: T) {
         })
         bearerToken?: string
 
-        @state()
-        authState: AuthState = authService.getState()
-
-        @state()
-        isLoggingIn: boolean = false
-
         #unsubscribe?: () => void
 
+        get user(): User | null {
+            return authService.getState().user
+        }
+
+        get authError(): string | null {
+            return authService.getState().error
+        }
+
+        get isLoggingIn(): boolean {
+            return authService.getState().isLoading
+        }
+
         get isAuthenticated(): boolean {
-            return !this.authState.isLoading && Boolean(this.authState.token)
+            return !this.isLoggingIn && Boolean(this.bearerToken)
         }
 
         connectedCallback() {
             super.connectedCallback?.()
 
             this.#unsubscribe = authService.subscribe(state => {
-                this.authState = state
                 this.bearerToken = state.token ?? undefined
+                this.requestUpdate()
                 this.#emitLogin(state)
             }, this.bearerToken)
-
-            if (this.authState.token && !this.bearerToken) {
-                this.bearerToken = this.authState.token
-            }
         }
 
         disconnectedCallback() {
@@ -91,17 +99,11 @@ export function AuthMixin<T extends Constructor<LitElement>>(Base: T) {
             authService.logout()
         }
 
-        async loginWithCredentials(
+        loginWithCredentials(
             username: string,
             password: string
         ): Promise<User | null> {
-            this.isLoggingIn = true
-
-            try {
-                return await authService.loginWithCredentials(username, password)
-            } finally {
-                this.isLoggingIn = false
-            }
+            return authService.loginWithCredentials(username, password)
         }
     }
 
