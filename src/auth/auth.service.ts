@@ -77,10 +77,10 @@ class AuthService {
 
             this.authenticate().then(() => {
                 // wait to finish authenticating before calling the listener
-                listener(this.authState)
+                listener(this.getState())
             })
         } else {
-            listener(this.authState) // Immediately call with current state
+            listener(this.getState()) // Immediately call with current state
         }
 
         return () => {
@@ -129,14 +129,9 @@ class AuthService {
         if (!token || token === '') {
             // no token, set the state to logged out
             this.setState(this.getLoggedOutState())
+
             return null
         }
-
-        this.setState({
-            token,
-            isLoading: true,
-            error: null,
-        })
 
         try {
             // if the environment is UAT, we need to add the environment to the URL
@@ -179,7 +174,7 @@ class AuthService {
 
             this.setState({
                 user: null,
-                token,
+                token: null,
                 isLoading: false,
                 error:
                     error instanceof Error

@@ -55,14 +55,10 @@ export function AuthMixin<T extends Constructor<LitElement>>(Base: T) {
 
             this.#unsubscribe = authService.subscribe(state => {
                 this.authState = state
-                if (state.token) {
-                    this.bearerToken = state.token
-                }
+                this.bearerToken = state.token ?? undefined
                 this.#emitLogin(state)
             }, this.bearerToken)
 
-            // Ensure initial state matches authService.getState() (covers stubbed getState in tests)
-            this.authState = authService.getState()
             if (this.authState.token && !this.bearerToken) {
                 this.bearerToken = this.authState.token
             }
