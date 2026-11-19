@@ -200,8 +200,8 @@ export default class TerraDataRods extends AuthMixin(TerraElement) {
             <terra-spatial-picker
                 initial-value=${this.location}
                 .spatialConstraints=${this.variableBoundingBox}
-                exportparts="map:spatial-picker__map"
-                label="Select Point"
+                exportparts="map:spatial-picker__map, clear-btn:spatial-picker__clear-btn"
+                label="Select Point (lat/lon)"
                 @terra-map-change=${this.#handleMapChange}
                 .showBoundingBoxSelection=${false}
             ></terra-spatial-picker>

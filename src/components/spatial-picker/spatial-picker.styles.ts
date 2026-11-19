@@ -29,17 +29,29 @@ export default css`
         height: 1.4rem;
         width: 1.4rem;
         cursor: pointer;
-        color: var(--terra-spatial-picker-icon-color, #444447);
         flex-shrink: 0;
     }
 
     :host .spatial-picker__input_icon:hover {
-        color: var(--terra-spatial-picker-icon-color-hover, #17171b);
+        fill: var(--terra-spatial-picker-icon-background-color-hover, #17171b);
+        color: var(--terra-spatial-picker-icon-color-hover, #ffffff);
+    }
+
+    .spatial-picker__clear-btn {
+        border: none;
+        background: transparent;
     }
 
     .spatial-picker__clear-btn svg {
         height: 1.4rem;
         width: 1.4rem;
+    }
+
+    .spatial-picker__clear-btn svg:hover {
+        fill: var(--terra-spatial-picker-icon-background-color-hover, #17171b);
+        cursor: pointer;
+        color: var(--terra-spatial-picker-icon-color-hover, #ffffff);
+        font-weight: bold;
     }
 
     .spatial-picker__map-container {
@@ -91,7 +103,7 @@ export default css`
         padding: 10px;
     }
 
-      .dropdown-header {
+    .dropdown-header {
         display: flex;
         justify-content: flex-end;
         padding: 4px 6px;
