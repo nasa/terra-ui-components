@@ -997,9 +997,9 @@
      * Font color tokens define the colors used for text on neutral backgrounds in the design system. Primary is used for headings. Secondary is used for body text. Tertiary is used for captions and other small text.
      * @layout table-swatch
      */
-    --terra-font-color-primary: var(--terra-color-carbon-90);
-    --terra-font-color-secondary: var(--terra-color-carbon-70);
-    --terra-font-color-tertiary: var(--terra-color-carbon-50);
+    --terra-font-color-primary: var(--terra-text-primary);
+    --terra-font-color-secondary: var(--terra-text-secondary);
+    --terra-font-color-tertiary: var(--terra-text-tertiary);
 
     /**
      * @tokens-subgroup Font Sizes

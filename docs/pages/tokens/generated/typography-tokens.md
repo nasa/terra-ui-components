@@ -22,11 +22,11 @@ Font family tokens define the font families used in the design system. Inter fon
 
 Font color tokens define the colors used for text on neutral backgrounds in the design system. Primary is used for headings. Secondary is used for body text. Tertiary is used for captions and other small text.
 
-| Token                          | Value                          | Preview                                                                                                                                                 |
-| ------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-font-color-primary`   | `var(--terra-color-carbon-90)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-font-color-primary);"></span>   |
-| `--terra-font-color-secondary` | `var(--terra-color-carbon-70)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-font-color-secondary);"></span> |
-| `--terra-font-color-tertiary`  | `var(--terra-color-carbon-50)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-font-color-tertiary);"></span>  |
+| Token                          | Value                         | Preview                                                                                                                                                 |
+| ------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-font-color-primary`   | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-font-color-primary);"></span>   |
+| `--terra-font-color-secondary` | `var(--terra-text-secondary)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-font-color-secondary);"></span> |
+| `--terra-font-color-tertiary`  | `var(--terra-text-tertiary)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-font-color-tertiary);"></span>  |
 
 ### Font Sizes
 
