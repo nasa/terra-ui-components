@@ -1,13 +1,13 @@
 import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
+import { property } from 'lit/decorators.js'
 import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
 import TerraIcon from '../icon/icon.js'
 import TerraLoader from '../loader/loader.js'
 import styles from './login.styles.js'
-import { property } from 'lit/decorators.js'
-import { AuthMixin } from '../../mixins/auth.mixin.js'
 
 /**
  * @summary A form that logs in to Earthdata Login (EDL) and returns a bearer token.
@@ -63,7 +63,7 @@ export default class TerraLogin extends AuthMixin(TerraElement) {
     }
 
     render() {
-        if (this.authState.user?.uid) {
+        if (this.user?.uid) {
             // by default we don't show anything in the logged in slot, but if the user wants to show something
             // they can use the logged-in slot
             const template = this.querySelector<HTMLTemplateElement>(
@@ -73,13 +73,13 @@ export default class TerraLogin extends AuthMixin(TerraElement) {
             return html`${
                 template
                     ? template.content.cloneNode(true)
-                    : html`<slot name="logged-in" .user=${this.authState.user}
+                    : html`<slot name="logged-in" .user=${this.user}
                       >${this.#applyUserToMessage(this.loggedInMessage)}</slot
                   >`
             }`
         }
 
-        if (this.authState.isLoading) {
+        if (this.isLoggingIn) {
             // we don't know yet if the user is logged in or out, so show the loading slot
             return html`<slot name="loading">${this.loadingMessage}</slot>`
         }
@@ -91,8 +91,8 @@ export default class TerraLogin extends AuthMixin(TerraElement) {
 
     #applyUserToMessage(message?: string) {
         return (message ?? '')
-            .replace('{username}', this.authState.user?.uid ?? '')
-            .replace('{first_name}', this.authState.user?.first_name ?? '')
-            .replace('{last_name}', this.authState.user?.last_name ?? '')
+            .replace('{username}', this.user?.uid ?? '')
+            .replace('{first_name}', this.user?.first_name ?? '')
+            .replace('{last_name}', this.user?.last_name ?? '')
     }
 }

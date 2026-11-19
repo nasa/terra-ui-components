@@ -98,7 +98,6 @@ export default class TerraElement extends LitElement {
     @property() dir: string
     @property() lang: string
     @property() environment?: Environment = Environment.PROD
-    @property({ converter: undefinedStringConverter }) bearerToken?: string
     @state() isVisible: boolean = false
 
     #io?: IntersectionObserver

@@ -1,12 +1,12 @@
 import { expect, fixture, html } from '@open-wc/testing'
-import sinon from 'sinon'
 import { LitElement, html as litHtml } from 'lit'
+import sinon from 'sinon'
+import { type AuthState, authService, type User } from '../../auth/auth.service.js'
 import { AuthMixin } from '../auth.mixin.js'
-import { authService, type AuthState, type User } from '../../auth/auth.service.js'
 
 class TestAuthElement extends AuthMixin(LitElement) {
     override render() {
-        return litHtml`<span>${this.authState?.user?.uid ?? 'anonymous'}</span>`
+        return litHtml`<span>${this.user?.uid ?? 'anonymous'}</span>`
     }
 }
 
@@ -42,9 +42,12 @@ describe('AuthMixin', () => {
             .stub(authService, 'subscribe')
             .callsFake(
                 (listener: (state: AuthState) => void, bearerToken?: string) => {
-                    activeListener = listener
+                    activeListener = (state: AuthState) => {
+                        getStateStub.returns(state)
+                        listener(state)
+                    }
                     if (bearerToken) {
-                        listener({
+                        activeListener({
                             user: null,
                             token: bearerToken,
                             isLoading: false,
@@ -67,7 +70,7 @@ describe('AuthMixin', () => {
     })
 
     describe('initialization and lifecycle', () => {
-        it('initializes authState from authService.getState()', async () => {
+        it('initializes auth properties from authService.getState()', async () => {
             const loggedInState: AuthState = {
                 user: { uid: 'user1', first_name: 'Test', last_name: 'User' },
                 token: 'token-abc',
@@ -80,8 +83,10 @@ describe('AuthMixin', () => {
                 html`<test-auth-element></test-auth-element>`
             )
 
-            expect(el.authState).to.deep.equal(loggedInState)
+            expect(el.user).to.deep.equal(loggedInState.user)
             expect(el.bearerToken).to.equal('token-abc')
+            expect(el.isLoggingIn).to.be.false
+            expect(el.authError).to.be.null
             expect(el.isAuthenticated).to.be.true
         })
 
@@ -111,7 +116,7 @@ describe('AuthMixin', () => {
     })
 
     describe('reactivity and events', () => {
-        it('updates authState and bearerToken when authService emits a new state', async () => {
+        it('updates auth properties when authService emits a new state', async () => {
             const el = await fixture<TestAuthElement>(
                 html`<test-auth-element></test-auth-element>`
             )
@@ -133,9 +138,41 @@ describe('AuthMixin', () => {
             activeListener!(updatedState)
             await el.updateComplete
 
-            expect(el.authState).to.deep.equal(updatedState)
+            expect(el.user).to.deep.equal(newUser)
             expect(el.bearerToken).to.equal('new-token-456')
+            expect(el.isLoggingIn).to.be.false
+            expect(el.authError).to.be.null
             expect(el.isAuthenticated).to.be.true
+        })
+
+        it('clears bearerToken and user when authService emits a logged-out state', async () => {
+            getStateStub.returns({
+                user: { uid: 'user1', first_name: 'Test', last_name: 'User' },
+                token: 'expired-token',
+                isLoading: false,
+                error: null,
+            })
+
+            const el = await fixture<TestAuthElement>(
+                html`<test-auth-element></test-auth-element>`
+            )
+
+            expect(el.bearerToken).to.equal('expired-token')
+            expect(el.isAuthenticated).to.be.true
+
+            activeListener!({
+                user: null,
+                token: null,
+                isLoading: false,
+                error: 'Unauthorized',
+            })
+            await el.updateComplete
+
+            expect(el.bearerToken).to.be.undefined
+            expect(el.user).to.be.null
+            expect(el.authError).to.equal('Unauthorized')
+            expect(el.isLoggingIn).to.be.false
+            expect(el.isAuthenticated).to.be.false
         })
 
         it('emits terra-login custom event when authService notifies listeners', async () => {
@@ -167,7 +204,13 @@ describe('AuthMixin', () => {
                 html`<test-auth-element></test-auth-element>`
             )
 
-            el.authState = { user: null, token: null, isLoading: false, error: null }
+            activeListener!({
+                user: null,
+                token: null,
+                isLoading: false,
+                error: null,
+            })
+            await el.updateComplete
             expect(el.isAuthenticated).to.be.false
         })
 
@@ -176,12 +219,13 @@ describe('AuthMixin', () => {
                 html`<test-auth-element></test-auth-element>`
             )
 
-            el.authState = {
+            activeListener!({
                 user: null,
                 token: 'token-123',
                 isLoading: true,
                 error: null,
-            }
+            })
+            await el.updateComplete
             expect(el.isAuthenticated).to.be.false
         })
 
@@ -190,12 +234,13 @@ describe('AuthMixin', () => {
                 html`<test-auth-element></test-auth-element>`
             )
 
-            el.authState = {
+            activeListener!({
                 user: null,
                 token: 'token-123',
                 isLoading: false,
                 error: null,
-            }
+            })
+            await el.updateComplete
             expect(el.isAuthenticated).to.be.true
         })
     })
@@ -219,64 +264,23 @@ describe('AuthMixin', () => {
             expect(logoutStub.calledOnce).to.be.true
         })
 
-        it('delegates loginWithCredentials and manages isLoggingIn state on success', async () => {
+        it('delegates loginWithCredentials() to authService.loginWithCredentials()', async () => {
             const mockUser: User = {
                 uid: 'auth-user',
                 first_name: 'Auth',
                 last_name: 'User',
             }
-            let resolveLogin: (user: User) => void
-
-            loginWithCredentialsStub.returns(
-                new Promise<User>(resolve => {
-                    resolveLogin = resolve
-                })
-            )
+            loginWithCredentialsStub.resolves(mockUser)
 
             const el = await fixture<TestAuthElement>(
                 html`<test-auth-element></test-auth-element>`
             )
 
-            expect(el.isLoggingIn).to.be.false
+            const result = await el.loginWithCredentials('user', 'secret')
 
-            const loginPromise = el.loginWithCredentials('user', 'secret')
-
-            expect(el.isLoggingIn).to.be.true
-            expect(loginWithCredentialsStub.calledWith('user', 'secret')).to.be.true
-
-            resolveLogin!(mockUser)
-            const result = await loginPromise
-
+            expect(loginWithCredentialsStub.calledOnceWithExactly('user', 'secret'))
+                .to.be.true
             expect(result).to.deep.equal(mockUser)
-            expect(el.isLoggingIn).to.be.false
-        })
-
-        it('resets isLoggingIn state even when loginWithCredentials throws', async () => {
-            let rejectLogin: (err: Error) => void
-
-            loginWithCredentialsStub.returns(
-                new Promise<User>((_, reject) => {
-                    rejectLogin = reject
-                })
-            )
-
-            const el = await fixture<TestAuthElement>(
-                html`<test-auth-element></test-auth-element>`
-            )
-
-            const loginPromise = el.loginWithCredentials('user', 'invalid')
-            expect(el.isLoggingIn).to.be.true
-
-            rejectLogin!(new Error('Invalid credentials'))
-
-            try {
-                await loginPromise
-                expect.fail('Expected loginWithCredentials to reject')
-            } catch (err) {
-                expect((err as Error).message).to.equal('Invalid credentials')
-            }
-
-            expect(el.isLoggingIn).to.be.false
         })
     })
 })

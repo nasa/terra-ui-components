@@ -914,7 +914,7 @@ export default class TerraDataSubsetter extends AuthMixin(
     }
 
     #renderSizeInfo(estimates: { days: number; links: number }) {
-        if (!this.authState.isLoading && !this.authState.user) {
+        if (!this.isLoggingIn && !this.user) {
             return html`
                 <div class="size-info warning">
                     <terra-login .onLoginClick=${this.onLoginClick}>
@@ -2892,7 +2892,7 @@ export default class TerraDataSubsetter extends AuthMixin(
             collectionConceptId: this.collectionWithServices!.conceptId,
             variables,
             location: this.spatialSelection,
-            anonymous: !this.authState.user,
+            anonymous: !this.user,
         })
 
         if (this.shapeGeoJson) {

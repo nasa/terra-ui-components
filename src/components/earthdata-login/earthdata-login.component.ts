@@ -1,14 +1,14 @@
 import type { CSSResultGroup } from 'lit'
 import { html, nothing } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
 import TerraElement from '../../internal/terra-element.js'
+import { AuthMixin } from '../../mixins/auth.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import TerraButton from '../button/button.js'
 import TerraIcon from '../icon/icon.js'
 import TerraInput from '../input/input.js'
 import TerraLoader from '../loader/loader.js'
 import styles from './earthdata-login.styles.js'
-import { property, state, query } from 'lit/decorators.js'
-import { AuthMixin } from '../../mixins/auth.mixin.js'
 
 /**
  * @summary A form that logs in to Earthdata Login (EDL)
@@ -96,10 +96,10 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                 </div>
 
                 ${
-                    this.authState.user?.uid
+                    this.user?.uid
                         ? html`<div class="login-form">
                           <p>
-                              ${this.authState.user.first_name},<br />
+                              ${this.user.first_name},<br />
                               You've successfully authenticated with Earthdata Login!
                           </p>
                           <terra-button
@@ -150,11 +150,11 @@ export default class TerraEarthdataLogin extends AuthMixin(TerraElement) {
                               </terra-button>
 
                               ${
-                                  this.authState.error
+                                  this.authError
                                       ? html`<div class="form-feedback">
-                                        ${this.authState.error}
+                                        ${this.authError}
                                         ${
-                                            this.authState.error ===
+                                            this.authError ===
                                             'Invalid user credentials'
                                                 ? html`<p>
                                                   <a

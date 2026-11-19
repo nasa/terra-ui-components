@@ -2,14 +2,14 @@ import type { CSSResultGroup } from 'lit'
 import { html } from 'lit'
 import { property, state } from 'lit/decorators.js'
 import type { TerraComboboxChangeEvent } from '../../events/terra-combobox-change.js'
-import type { TerraMapChangeEvent } from '../../events/terra-map.js'
-import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import type { TerraDateRangeChangeEvent } from '../../events/terra-date-range-change.js'
+import type { TerraMapChangeEvent } from '../../events/terra-map.js'
 import TerraElement from '../../internal/terra-element.js'
 import { AuthMixin } from '../../mixins/auth.mixin.js'
 import componentStyles from '../../styles/component.styles.js'
 import { getUTCDate } from '../../utilities/date.js'
 import { getVariableEntryId } from '../../utilities/variable.js'
+import { getFetchVariableTask } from '../../utilities/variable-task.js'
 import type { Variable } from '../browse-variables/browse-variables.types.js'
 import TerraDateRangeSlider from '../date-range-slider/date-range-slider.component.js'
 import { MapEventType } from '../map/type.js'
@@ -187,7 +187,7 @@ export default class TerraDataRods extends AuthMixin(TerraElement) {
             <terra-variable-combobox
                 exportparts="base:variable-combobox__base, combobox:variable-combobox__combobox, button:variable-combobox__button, listbox:variable-combobox__listbox"
                 .value=${getVariableEntryId(this)}
-                .bearerToken=${this.bearerToken ?? null}
+                .bearerToken=${this.bearerToken}
                 .useTags=${true}
                 @terra-combobox-change="${this.#handleVariableChange}"
             ></terra-variable-combobox>
@@ -198,7 +198,7 @@ export default class TerraDataRods extends AuthMixin(TerraElement) {
                     : null
             }
             <terra-spatial-picker
-                initial-value=${this.location}
+                .initialValue=${this.location}
                 .spatialConstraints=${this.variableBoundingBox}
                 exportparts="map:spatial-picker__map, clear-btn:spatial-picker__clear-btn"
                 label="Select Point (lat/lon)"
@@ -207,12 +207,12 @@ export default class TerraDataRods extends AuthMixin(TerraElement) {
             ></terra-spatial-picker>
 
             <terra-time-series
-                variable-entry-id=${getVariableEntryId(this)}
-                start-date=${this.startDate}
-                end-date=${this.endDate}
+                .variableEntryId=${getVariableEntryId(this)}
+                .startDate=${this.startDate}
+                .endDate=${this.endDate}
                 .location=${this.location ?? undefined}
-                bearer-token=${this.bearerToken}
-                show-citation=${true}
+                .bearerToken=${this.bearerToken}
+                show-citation
                 cache
                 @terra-time-series-chunk-progress-change=${this.#handleChunkProgressChange}
                 @terra-time-series-loading-change=${this.#handleTimeSeriesLoadingChange}
@@ -228,10 +228,10 @@ export default class TerraDataRods extends AuthMixin(TerraElement) {
 
             <terra-date-range-slider
                 exportparts="slider:date-range-slider__slider"
-                min-date=${minDate}
-                max-date=${maxDate}
-                start-date=${this.startDate}
-                end-date=${this.endDate}
+                .minDate=${minDate}
+                .maxDate=${maxDate}
+                .startDate=${this.startDate}
+                .endDate=${this.endDate}
                 .disabled=${this.isDateSliderDisabled}
                 @terra-date-range-change="${this.#handleDateRangeSliderChangeEvent}"
                 @terra-date-selection-invalid="${this.#handleInvalidDateSelection}"
