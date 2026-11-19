@@ -28,6 +28,10 @@ export interface GibsTagEntry {
 export interface CmrCollectionsJsonResponse {
     feed: {
         entry: Array<{
+            associations?: {
+                visualizations?: string[]
+                [associationType: string]: string[] | undefined
+            }
             tags?: {
                 'edsc.extra.serverless.gibs'?: {
                     data: GibsTagEntry[]

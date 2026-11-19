@@ -1,10 +1,10 @@
 import { expect } from '@open-wc/testing'
-import sinon from 'sinon'
 import { QueryClient } from '@tanstack/query-core'
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
+import sinon from 'sinon'
 import { apiClient } from '../../lib/api.client.js'
 import type { QueryClientHost } from '../../mixins/query-client.mixin.js'
-import type { Projection } from '../../components/map/layers/gibs.layer.js'
+import type { MapProjection } from '../../types.js'
 import { CmrCollectionController } from '../cmr-collection.controller.js'
 
 const ENTRY_ID = 'AIRS2RET_NRT_7.0'
@@ -76,7 +76,7 @@ function makeHost(): ReactiveControllerHost & QueryClientHost {
 describe('CmrCollectionController', () => {
     let apiGetStub: sinon.SinonStub
     let collectionId: string | undefined
-    let projection: Projection
+    let projection: MapProjection
 
     beforeEach(() => {
         apiGetStub = sinon.stub(apiClient, 'get')

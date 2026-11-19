@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing'
-import type ImageTile from 'ol/source/ImageTile.js'
+import type XYZ from 'ol/source/XYZ.js'
 import { buildBaseLayer, buildDefaultBaseLayers } from '../base.layer.js'
 
 describe('base.layer', () => {
@@ -41,7 +41,7 @@ describe('base.layer', () => {
         ])
     })
 
-    it('passes noWorldWrap through to the underlying ImageTile source', () => {
+    it('passes noWorldWrap through to the underlying tile source', () => {
         const wrappedLayer = buildBaseLayer({
             name: 'osm',
             title: 'OpenStreetMap',
@@ -55,8 +55,8 @@ describe('base.layer', () => {
             noWorldWrap: true,
         })
 
-        const wrappedSource = wrappedLayer.getSource() as ImageTile
-        const unwrappedSource = unwrappedLayer.getSource() as ImageTile
+        const wrappedSource = wrappedLayer.getSource() as XYZ
+        const unwrappedSource = unwrappedLayer.getSource() as XYZ
 
         expect(wrappedSource.getWrapX()).to.be.true
         expect(unwrappedSource.getWrapX()).to.be.false

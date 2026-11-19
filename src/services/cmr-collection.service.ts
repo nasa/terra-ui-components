@@ -2,10 +2,8 @@ import type {
     CmrCollectionsJsonResponse,
     GibsTagEntry,
 } from '../apis/types/cmr/collection-tags.js'
-import type {
-    GibsLayerConfig,
-    Projection,
-} from '../components/map/layers/gibs.layer.js'
+import type { GibsLayerConfig } from '../components/map/layers/gibs.layer.js'
+import type { MapProjection } from '../types.js'
 
 // GIBS' Web Mercator ("epsg3857/best") endpoint is tied to a specific
 // GoogleMapsCompatible_Level# per layer, keyed by its native resolution —
@@ -33,11 +31,20 @@ class CmrCollectionService {
     }
 
     /**
+     * Pulls the associated UMM-Vis concept IDs (`associations.visualizations`) out of a `collections.json` response.
+     */
+    extractVisualizationConceptIds(
+        response?: CmrCollectionsJsonResponse | null
+    ): string[] {
+        return response?.feed?.entry?.[0]?.associations?.visualizations ?? []
+    }
+
+    /**
      * Keeps only the entries actually available in the given map projection.
      */
     filterByProjection(
         entries: GibsTagEntry[],
-        projection: Projection
+        projection: MapProjection
     ): GibsTagEntry[] {
         switch (projection) {
             case 'EPSG:4326':
@@ -56,7 +63,7 @@ class CmrCollectionService {
      */
     getTileMatrixSet(
         entry: GibsTagEntry,
-        projection: Projection
+        projection: MapProjection
     ): string | undefined {
         switch (projection) {
             case 'EPSG:3857':
@@ -80,8 +87,9 @@ class CmrCollectionService {
         entries: GibsTagEntry[],
         options: {
             collectionId: string
-            projection: Projection
+            projection: MapProjection
             date?: string
+            visualizationConceptIds?: string[]
         }
     ): GibsLayerConfig[] {
         return entries.map((entry, index) => ({
@@ -96,6 +104,9 @@ class CmrCollectionService {
                 options.projection === 'EPSG:3857' ? undefined : options.projection,
             position: 'top',
             visible: index === 0,
+            ...(options.visualizationConceptIds?.length
+                ? { visualizationConceptIds: options.visualizationConceptIds }
+                : {}),
         }))
     }
 }
