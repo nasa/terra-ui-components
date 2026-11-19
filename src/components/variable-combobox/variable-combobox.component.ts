@@ -503,7 +503,7 @@ export default class TerraVariableCombobox extends TerraElement {
                     ${this.#renderInfoPanel(this.variableInfo)}
                 </div>
             </terra-popup>
-        ` 
+        `
     }
 
     render() {

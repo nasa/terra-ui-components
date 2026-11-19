@@ -16,7 +16,7 @@ export type ParseResult =
 export class SpatialPickerService {
     /**
      *  Get spatial constraints placeholder based on allowed types
-     * */ 
+     * */
     static defaultConstraints(allowed: AllowedTypes): string {
         return this.placeholder(allowed)
     }
