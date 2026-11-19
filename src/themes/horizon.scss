@@ -59,10 +59,11 @@
 
     /**
      * Figma Design System Tokens
-     * The Primitive, Foundation, and Semantic tokens below originate from the Figma Design System file. 
-     * A custom Figma plugin called "Terra Color Exporter" generates the CSS tokens directly from the Figma 
-     * color variables that are used in the design system. If the colors in the design system are updated, 
-     * the plugin needs to rerun, and the token values copied back into the horizon.scss file.  
+     *
+     * The Primitive, Foundation, and Semantic color tokens below originate from the Figma Horizon Design System file (https://www.figma.com/design/VvOg9o8tFLVafy8TDAtmLs/HDS-Design-System?m=auto&t=BJjdcdJ5ZhhDWuUe-6).
+     * A custom Figma plugin called "Terra Color Exporter" generates the CSS tokens directly from the color variables in the Figma Horizon Design System file. 
+     * The plugin reads the color variables in the Figma file and generates the CSS tokens in this file. If the colors in the Figma Horizon Design System are updated, 
+     * the plugin needs to rerun, and the token values copied back into the horizon.scss file. The source code for the plugin is part of this repository and can be found in the "terra-figma-plugin" folder.
      */
 
     /**
@@ -71,7 +72,7 @@
      * The Horizon Design System colors are organized into a primary palette, an extended palette,
      * and a set of neutrals. The primary palette consists of the core brand colors, while the extended palette includes
      * tints and shades of those colors for added flexibility. The neutrals provide a range of values for text and backgrounds
-     *to ensure appropriate contrast across the system.
+     * to ensure appropriate contrast across the system.
      */
 
     /**
@@ -861,8 +862,9 @@
     --terra-breadcrumb-text-visited: var(--terra-text-tertiary);
     --terra-breadcrumb-text-current: var(--terra-text-interactive-active);
 
-    /* Figma Design System Tokens ------------------------------------------------- END */
+    /* Figma Imported Design System Tokens ------------------------------------------------- END */
 
+    /* Font Tokens ------------------------------------------------------------ START */
     /**
      * @tokens Border Radius Tokens
      * @description
@@ -971,23 +973,40 @@
     --terra-z-index-toast: 950;
     --terra-z-index-tooltip: 1000;
 
+    /* Utility Tokens ------------------------------------------------------------ END
+
     /** 
      * @tokens Typography Tokens
      * @description
      * Typography tokens are used to create consistent typography styles across the design system. They include font families, font sizes, font weights, letter spacings, and line heights. They use rem units
     */
 
-    /* Fonts */
+    /**
+    * @tokens-subgroup Font Family
+    * @description
+    * Font family tokens define the font families used in the design system. Inter font is used for large display as well as headings. Public Sans is a strong, neutral typeface for interfaces and text. It is used for body text. DM Mono is a monospace font that's perfect typeface for reading numbers and small labels.
+    * @layout table-font-family
+    */
     --terra-font-family--inter: 'Inter', sans-serif;
     --terra-font-family--public-sans: 'Public Sans', sans-serif;
     --terra-font-family--dm-mono: 'DM Mono', monospace;
 
-    /* Font colors */
+    /**
+     * @tokens-subgroup Font Colors
+     * @description
+     * Font color tokens define the colors used for text on neutral backgrounds in the design system. Primary is used for headings. Secondary is used for body text. Tertiary is used for captions and other small text.
+     * @layout table-swatch
+     */
     --terra-font-color-primary: var(--terra-color-carbon-90);
     --terra-font-color-secondary: var(--terra-color-carbon-70);
     --terra-font-color-tertiary: var(--terra-color-carbon-50);
 
-    /* Font sizes */
+    /**
+     * @tokens-subgroup Font Sizes
+     * @description
+     * Font size tokens define the sizes used for text in the design system.
+     * @layout table-font-size
+     */
     --terra-font-size-2x-small: 0.625rem; /* 10px */
     --terra-font-size-x-small: 0.75rem; /* 12px */
     --terra-font-size-small: 0.875rem; /* 14px */
@@ -998,18 +1017,40 @@
     --terra-font-size-3x-large: 3rem; /* 48px */
     --terra-font-size-4x-large: 4.5rem; /* 72px */
 
-    /* Font weights */
+    /**
+     * @tokens-subgroup Font Weights
+     * @description
+     * Font weight tokens define the weights used for text in the design system.
+     * @layout table-font-weight
+     */
     --terra-font-weight-light: 300;
     --terra-font-weight-normal: 400;
     --terra-font-weight-semibold: 600;
     --terra-font-weight-bold: 700;
 
-    /* Letter spacings */
+    /**
+     * @tokens-subgroup Letter Spacing
+     * @description
+     * Letter spacing tokens define the spacing between characters in the design system.
+     * @layout table-letter-spacing
+     */
     --terra-letter-spacing-denser: -0.03em;
     --terra-letter-spacing-dense: -0.015em;
     --terra-letter-spacing-normal: normal;
     --terra-letter-spacing-loose: 0.075em;
     --terra-letter-spacing-looser: 0.15em;
+
+    /**
+     * @tokens-subgroup Line Heights
+     * @description
+     * Line height tokens define the spacing between lines of text in the design system.
+     * @layout table-line-height
+     */
+    --terra-line-height-denser: 1;
+    --terra-line-height-dense: 1.4;
+    --terra-line-height-normal: 1.8;
+    --terra-line-height-loose: 2.2;
+    --terra-line-height-looser: 2.6;
 
     /* Line heights */
     /* This is the range of line heights I found in the HDS Guide specified in percentages. Percentage values may produce unexpected results. 
@@ -1025,13 +1066,7 @@
         181.818%; 
     */
 
-    --terra-line-height-denser: 1;
-    --terra-line-height-dense: 1.4;
-    --terra-line-height-normal: 1.8;
-    --terra-line-height-loose: 2.2;
-    --terra-line-height-looser: 2.6;
-
-    /* Utility Tokens ------------------------------------------------------------ END
+    /* Font Tokens ------------------------------------------------------------ END
 
     /**
      * @tokens Common Element Tokens

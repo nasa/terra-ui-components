@@ -17,6 +17,6 @@ Focus Ring Tokens are used to define the highlighted ring that surrounds interac
 
 ### Color
 
-| Token                      | Value                                        | Preview                                                                                                                                                          |
-| -------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-focus-ring-color` | `var(--terra-border-interactive-focus-ring)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-focus-ring);"></span> |
+| Token                      | Value                                        | Preview                                                                                                                                             |
+| -------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-focus-ring-color` | `var(--terra-border-interactive-focus-ring)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-focus-ring-color);"></span> |

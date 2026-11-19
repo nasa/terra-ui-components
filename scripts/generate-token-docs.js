@@ -339,6 +339,16 @@ function renderChildren(children, depth = 2) {
                 md += renderTableSpacingGroup(item.name, item.description, item.tokens)
             } else if (item.layout === 'table-transition') {
                 md += renderTableTransitionGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-font-family') {
+                md += renderTableFontFamilyGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-font-size') {
+                md += renderTableFontSizeGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-font-weight') {
+                md += renderTableFontWeightGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-letter-spacing') {
+                md += renderTableLetterSpacingGroup(item.name, item.description, item.tokens)
+            } else if (item.layout === 'table-line-height') {
+                md += renderTableLineHeightGroup(item.name, item.description, item.tokens)
             } else {
                 md += renderTableGroup(item.name, item.description, item.tokens)
             }
@@ -362,10 +372,9 @@ function renderSwatchGroup(subName, description, tokens) {
     height:60px;
     border-radius:6px;
     border:1px solid #ccc;
-    background:${token.value};
+    background:var(${token.name});
   "></div>
   <div style="margin-top:6px;"><code>${token.name}</code></div>
-  <div><code>${token.value}</code></div>
 </div>
 `
     }
@@ -406,7 +415,7 @@ function renderTableSwatchGroup(subName, description, tokens) {
     md += `|-------|-------|---------|\n`
 
     for (const token of tokens) {
-        md += `| \`${token.name}\` | \`${token.value}\` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:${token.value};"></span> |\n`
+        md += `| \`${token.name}\` | \`${token.value}\` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(${token.name});"></span> |\n`
     }
 
     md += `\n`
@@ -427,7 +436,7 @@ function renderTableRadiusGroup(subName, description, tokens) {
 
     for (const token of tokens) {
         const pxValue = isRemValue(token.value)
-        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="border-radius-demo" style="border-radius: ${token.value};"></div> |\n`
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="border-radius-demo" style="border-radius: var(${token.name});"></div> |\n`
     }
 
     md += `\n`
@@ -447,7 +456,7 @@ function renderTableElevationGroup(subName, description, tokens) {
 
     for (const token of tokens) {
         const pxValue = isRemValue(token.value)
-        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="elevation-demo" style="box-shadow: ${token.value};"></div> |\n`
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="elevation-demo" style="box-shadow: var(${token.name});"></div> |\n`
     }
 
     md += `\n`
@@ -467,7 +476,7 @@ function renderTableSpacingGroup(subName, description, tokens) {
 
     for (const token of tokens) {
         const pxValue = isRemValue(token.value)
-        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="spacing-demo" style="width: ${token.value}; height: ${token.value};"></div> |\n`
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div class="spacing-demo" style="width: var(${token.name}); height: var(${token.name});"></div> |\n`
     }
 
     md += `\n`
@@ -486,7 +495,103 @@ function renderTableTransitionGroup(subName, description, tokens) {
     md += `|-------|-------|---------|\n`
 
     for (const token of tokens) {
-        md += `| \`${token.name}\` | \`${token.value}\` | <div class="transition-demo" style="transition-duration: ${token.value};"></div> |\n`
+        md += `| \`${token.name}\` | \`${token.value}\` | <div class="transition-demo" style="transition-duration: var(${token.name});"></div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableFontFamilyGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description + '\n\n'
+    }
+    
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+
+    for (const token of tokens) {
+        md += `| \`${token.name}\` | \`${token.value}\` | <div style="font-family: var(${token.name});">The National Aeronautics and Space Administration</div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableFontSizeGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description + '\n\n'
+    }
+    
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+
+    for (const token of tokens) {
+        const pxValue = isRemValue(token.value)
+        md += `| \`${token.name}\` | \`${token.value}\`${pxValue ? ` (${pxValue}px)` : '' } | <div style="font-size: var(${token.name});">Aa</div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableFontWeightGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description + '\n\n'
+    }
+    
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+    
+    for (const token of tokens) {
+        md += `| \`${token.name}\` | \`${token.value}\` | <div style="font-weight: var(${token.name});">The National Aeronautics and Space Administration</div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableLetterSpacingGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description + '\n\n'
+    }
+    
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+    
+    for (const token of tokens) {
+        md += `| \`${token.name}\` | \`${token.value}\` | <div style="letter-spacing: var(${token.name});">The National Aeronautics and Space Administration</div> |\n`
+    }
+
+    md += `\n`
+
+    return md
+}
+
+function renderTableLineHeightGroup(subName, description, tokens) {
+    let md = `### ${subName}\n\n`
+
+    if (description.length > 0) {
+        md += description + '\n\n'
+    }
+    
+    md += `| Token | Value | Preview |\n`
+    md += `|-------|-------|---------|\n`
+    
+    for (const token of tokens) {
+        md += `| \`${token.name}\` | \`${token.value}\` | <div style="line-height: var(${token.name});">The National Aeronautics and Space Administration</div> |\n`
     }
 
     md += `\n`
