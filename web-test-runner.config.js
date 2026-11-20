@@ -101,6 +101,28 @@ function commonjsColormapPlugin() {
     }
 }
 
+function browserGeotiffPlugin() {
+    let cachedGeotiff = null
+
+    return {
+        name: 'browser-geotiff-plugin',
+        serve(context) {
+            if (context.path === '/node_modules/geotiff/dist-module/geotiff.js') {
+                if (!cachedGeotiff) {
+                    cachedGeotiff = esbuild.buildSync({
+                        entryPoints: ['node_modules/geotiff/dist-module/geotiff.js'],
+                        bundle: true,
+                        format: 'esm',
+                        platform: 'browser',
+                        write: false,
+                    }).outputFiles[0].text
+                }
+                return { body: cachedGeotiff, type: 'js' }
+            }
+        },
+    }
+}
+
 function resolveTestImages() {
     // 1x1 transparent pixel stub
     const transparentPixel = Buffer.from(
@@ -163,6 +185,7 @@ export default {
     plugins: [
         blockDistImportsPlugin(),
         commonjsColormapPlugin(),
+        browserGeotiffPlugin(),
         horizonThemePlugin(),
         esbuildPlugin({
             ts: true,
