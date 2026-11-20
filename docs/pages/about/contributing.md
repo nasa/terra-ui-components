@@ -92,7 +92,7 @@ You'll be prompted to enter the component tag name (e.g., `terra-my-component`).
 
 - Component TypeScript file (`*.component.ts`)
 - Component styles file (`*.styles.ts`)
-- Component test file (`*.test.ts`)
+- Component test file (`__tests__/*.component.test.ts`)
 - Component definition file (`*.ts`)
 - Documentation page template
 
@@ -100,7 +100,7 @@ After running the generator, you'll need to:
 
 1. Implement your component logic in the `.component.ts` file
 2. Add styles using design tokens in the `.styles.ts` file
-3. Write tests in the `.test.ts` file
+3. Write tests in `__tests__/*.component.test.ts` (plus additional `__tests__/*.<type>.test.ts` suites for controllers, services, etc., as needed)
 4. Update the documentation page in `docs/pages/components/`
 5. Add design tokens to `src/themes/horizon.css` if needed
 
@@ -161,20 +161,20 @@ To run all tests only once:
 npm run test
 ```
 
-To test a single component, use the component's basename as shown in the following example:
+To run a single test suite, pass its filename stem (everything before `.test.ts`) as shown in the following example:
 
 ```bash
-npm run test:component input
+npm run test:component input.component
 ```
 
-This will run tests for the `input` component (the test file `input.test.ts`).
+This will run tests for the `input` component (`src/components/input/__tests__/input.component.test.ts`).
 
 ### Writing Tests
 
-Tests should be placed in `*.test.ts` files alongside the component. Use the `@open-wc/testing` library which provides helpful testing utilities:
+Tests should be placed in a `__tests__/` subdirectory alongside the code under test using a `<name>.<type>.test.ts` filename (e.g., `*.component.test.ts`, `*.controller.test.ts`, `*.service.test.ts`) so each suite has a globally unique group name. Use the `@open-wc/testing` library which provides helpful testing utilities:
 
 ```typescript
-import './my-component.js'
+import '../my-component.js'
 import { expect, fixture, html } from '@open-wc/testing'
 
 describe('<terra-my-component>', () => {

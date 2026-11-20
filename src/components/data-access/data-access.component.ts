@@ -134,7 +134,7 @@ export default class TerraDataAccess extends QueryClientMixin(TerraElement) {
 
     @watch(['shortName', 'version'])
     handleShortNameOrVersionChange() {
-        if (this.shortName && this.version && !this.collectionEntryId) {
+        if (this.shortName && this.version) {
             this.collectionEntryId = `${this.shortName}_${this.version}`
         }
     }

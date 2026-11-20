@@ -71,6 +71,11 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
     @property({ type: Boolean, attribute: 'show-citation' })
     showCitation: boolean = false
     @property({ type: Boolean, attribute: 'show-help' }) showHelp: boolean = true
+    /**
+     * Option hides the Jupyter notebook button in the plot toolbar. Option is set by parent component (time series, time average-map) if Jupyter notebook environemnt is detected.
+     */
+    @property({ type: Boolean, attribute: 'show-jupyter' }) showJupyter: boolean =
+        true
 
     /**
      * if you include an application citation, it will be displayed in the citation panel alongside the data set citation
@@ -191,7 +196,10 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                       ${
                                           this.showLocation
                                               ? html`• ${this.#getLocationIcon()}
-                                            <terra-dropdown hover placement="bottom-start" distance="10">
+                                            <terra-dropdown 
+                                                hover 
+                                                placement="bottom-start"
+                                                distance="10">
                                                 <span slot="trigger" class="location-text">
                                                     ${(this.location ?? '').replace(
                                                         /,/g,
@@ -202,7 +210,7 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                                     .value=${this.location}
                                                     .fitToValue=${true}
                                                     .staticMode=${true}
-                                                    style="width: 300px; height: 200px;"
+                                                    style="width: 300px;"
                                                 ></terra-map>
                                             </terra-dropdown>
                                             `
@@ -280,32 +288,32 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                       : nothing
                               }
 
-                              <terra-button
-                                  circle
-                                  outline
-                                  aria-expanded=${this.activeMenuItem === 'download'}
-                                  aria-controls="menu"
-                                  aria-haspopup="true"
-                                  class="toggle"
-                                  @mouseenter=${this.#handleActiveMenuItem}
-                                  @click=${this.#handleActiveMenuItem}
-                                  data-menu-name="download"
-                              >
-                                  <span class="sr-only"
-                                      >Download options for
-                                      ${this.catalogVariable.dataFieldLongName}</span
-                                  >
+                                <terra-button
+                                    circle
+                                    outline
+                                    aria-expanded=${this.activeMenuItem === 'download'}
+                                    aria-controls="menu"
+                                    aria-haspopup="true"
+                                    class="toggle"
+                                    @mouseenter=${this.#handleActiveMenuItem}
+                                    @click=${this.#handleActiveMenuItem}
+                                    data-menu-name="download"
+                                >
+                                    <span class="sr-only"
+                                        >Download options for
+                                        ${this.catalogVariable.dataFieldLongName}</span
+                                    >
 
-                                  <terra-icon
-                                      name="outline-arrow-down-tray"
-                                      library="heroicons"
-                                      font-size="1.5em"
-                                  ></terra-icon>
-                              </terra-button>
+                                    <terra-icon
+                                        name="outline-arrow-down-tray"
+                                        library="heroicons"
+                                        font-size="1.5em"
+                                    ></terra-icon>
+                                </terra-button>
 
-                              ${
-                                  this.showHelp
-                                      ? html`
+                                ${
+                                    this.showHelp
+                                        ? html`
                                     <terra-button
                                         circle
                                         outline
@@ -329,35 +337,42 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                         ></terra-icon>
                                     </terra-button>
                                     `
-                                      : nothing
-                              }
-                              <terra-button
-                                  circle
-                                  outline
-                                  aria-expanded=${this.activeMenuItem === 'jupyter'}
-                                  aria-controls="menu"
-                                  aria-haspopup="true"
-                                  class="toggle square-button"
-                                  variant="warning"
-                                  @mouseenter=${this.#handleActiveMenuItem}
-                                  @click=${this.#handleActiveMenuItem}
-                                  data-menu-name="jupyter"
-                              >
-                                  <span class="sr-only"
-                                      >Open in Jupyter Notebook for
-                                      ${this.catalogVariable.dataFieldLongName}</span
-                                  >
+                                        : nothing
+                                }
 
-                                  <terra-icon
-                                      name="outline-code-bracket"
-                                      library="heroicons"
-                                      font-size="1.5em"
-                                  ></terra-icon>
-                              </terra-button>
+                                ${
+                                    this.showJupyter
+                                        ? html`
+                                    <terra-button
+                                        circle
+                                        outline
+                                        aria-expanded=${this.activeMenuItem === 'jupyter'}
+                                        aria-controls="menu"
+                                        aria-haspopup="true"
+                                        class="toggle"
+                                        variant="warning"
+                                        @mouseenter=${this.#handleActiveMenuItem}
+                                        @click=${this.#handleActiveMenuItem}
+                                        data-menu-name="jupyter"
+                                    >
+                                        <span class="sr-only"
+                                            >Open in Jupyter Notebook for
+                                            ${this.catalogVariable.dataFieldLongName}</span
+                                        >
 
-                              ${
-                                  this.dataType === 'geotiff'
-                                      ? html`
+                                        <terra-icon
+                                            name="outline-code-bracket"
+                                            library="heroicons"
+                                            font-size="1.5em"
+                                        ></terra-icon>
+                                    </terra-button>
+                                    `
+                                        : nothing
+                                }
+
+                                ${
+                                    this.dataType === 'geotiff'
+                                        ? html`
                                         <terra-button
                                             circle
                                             outline
@@ -378,9 +393,9 @@ export default class TerraPlotToolbar extends AuthMixin(TerraElement) {
                                             ></terra-icon>
                                         </terra-button>
                                     `
-                                      : nothing
-                              }
-                          </div>
+                                        : nothing
+                                }
+                            </div>
 
                           ${
                               !this.mobileView

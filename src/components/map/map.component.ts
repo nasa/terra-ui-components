@@ -17,6 +17,7 @@ import {
 } from '../../queries/giovanni.queries.js'
 import componentStyles from '../../styles/component.styles.js'
 import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
+import { updateGeoTiffStyle } from './layers/geotiff.layer.js'
 import type { Projection } from './layers/gibs.layer.js'
 import {
     buildMapLayer,
@@ -47,6 +48,44 @@ const layersConverter = {
             return []
         }
     },
+}
+
+const PRESENTATION_KEYS = ['opacity', 'visible'] as const
+const GEOTIFF_STYLE_KEYS = [
+    ...PRESENTATION_KEYS,
+    'colorMapName',
+    'colorSteps',
+    'reverseColors',
+] as const
+
+function configsMatchIgnoring(
+    previous: MapLayerConfig,
+    next: MapLayerConfig,
+    ignoredKeys: readonly string[]
+): boolean {
+    if (previous.type !== next.type) {
+        return false
+    }
+
+    const ignored = Object.fromEntries(ignoredKeys.map(key => [key, undefined]))
+
+    return (
+        JSON.stringify({ ...previous, ...ignored }) ===
+        JSON.stringify({ ...next, ...ignored })
+    )
+}
+
+function applyPresentationUpdate(
+    layer: NonNullable<ReturnType<TerraMap['getLayer']>>,
+    config: MapLayerConfig
+) {
+    if (config.opacity !== undefined) {
+        layer.setOpacity(config.opacity)
+    }
+
+    if (config.visible !== undefined) {
+        layer.setVisible(config.visible)
+    }
 }
 
 /**
@@ -189,7 +228,21 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
      * ]'></terra-map>
      * ```
      */
-    @property({ attribute: 'layers', converter: layersConverter })
+    @property({
+        attribute: 'layers',
+        converter: layersConverter,
+        hasChanged(newVal?: MapLayerConfig[], oldVal?: MapLayerConfig[]) {
+            if (newVal === oldVal) {
+                return false
+            }
+
+            if (!newVal || !oldVal || newVal.length !== oldVal.length) {
+                return true
+            }
+
+            return JSON.stringify(newVal) !== JSON.stringify(oldVal)
+        },
+    })
     layers: MapLayerConfig[] = []
 
     /**
@@ -241,6 +294,40 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                 continue // unchanged
             }
 
+            const existingLayer = previousConfig ? this.getLayer(name) : undefined
+            if (previousConfig && existingLayer) {
+                if (configsMatchIgnoring(previousConfig, config, PRESENTATION_KEYS)) {
+                    applyPresentationUpdate(existingLayer, config)
+                    continue // updated in-place without rebuilding
+                }
+
+                if (
+                    previousConfig.type === 'geotiff' &&
+                    config.type === 'geotiff' &&
+                    configsMatchIgnoring(previousConfig, config, GEOTIFF_STYLE_KEYS)
+                ) {
+                    const info = existingLayer.get('info') as
+                        | GeoTiffLayerInfo
+                        | undefined
+                    if (info) {
+                        applyPresentationUpdate(existingLayer, config)
+
+                        if (
+                            previousConfig.colorMapName !== config.colorMapName ||
+                            previousConfig.colorSteps !== config.colorSteps ||
+                            previousConfig.reverseColors !== config.reverseColors
+                        ) {
+                            const updatedInfo = await updateGeoTiffStyle(info, config)
+                            this.emit('terra-map-layer-change', {
+                                detail: { name, type: 'geotiff', info: updatedInfo },
+                            })
+                        }
+
+                        continue // updated in-place without rebuilding
+                    }
+                }
+            }
+
             this.#warnIfProjectionMismatch(name, config)
 
             const requestId = (this.#layerRequestIds.get(name) ?? 0) + 1
@@ -260,7 +347,12 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
                     continue
                 }
 
-                this.#handleLayerBuilt(name, config, result)
+                const isNewDataSource =
+                    !previousConfig ||
+                    ('url' in previousConfig &&
+                        (previousConfig as any).url !== (config as any).url)
+
+                this.#handleLayerBuilt(name, config, result, isNewDataSource)
             } catch (error) {
                 // bail if this layer was removed or superseded while it was building
                 if (this.#layerRequestIds.get(name) !== requestId) {
@@ -331,7 +423,12 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
      * Adds a successfully-built `layers` entry to the map and fires
      * `terra-map-layer-change` with its type-specific detail.
      */
-    #handleLayerBuilt(name: string, config: MapLayerConfig, result: MapLayerResult) {
+    #handleLayerBuilt(
+        name: string,
+        config: MapLayerConfig,
+        result: MapLayerResult,
+        isNewDataSource: boolean
+    ) {
         this.addLayer(result.layer, {
             name,
             position: config.position,
@@ -344,14 +441,17 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
             title: config.title,
         })
         result.layer.setVisible(config.visible ?? true)
+        if (config.opacity !== undefined) {
+            result.layer.setOpacity(config.opacity)
+        }
 
         if (config.type === 'geotiff' && result.type === 'geotiff') {
             // stash the computed info directly on the OL layer
             result.layer.set('info', result.info)
 
-            if (config.fitView && result.info.extent) {
+            if (config.fitView && result.info.extent && isNewDataSource) {
                 this.fitToExtent(result.info.extent, {
-                    projection: result.info.projection,
+                    projection: result.info.projection ?? 'EPSG:4326',
                     padding: [50, 50, 50, 50],
                     duration: 300,
                 })

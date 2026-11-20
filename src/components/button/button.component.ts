@@ -1,20 +1,20 @@
-import componentStyles from '../../styles/component.styles.js'
-import styles from './button.styles.js'
+import type { CSSResultGroup } from 'lit'
+import { property, query, state } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
+import { ifDefined } from 'lit/directives/if-defined.js'
+import { html, literal } from 'lit/static-html.js'
 import { FormControlController, validValidityState } from '../../internal/form.js'
 import { HasSlotController } from '../../internal/slot.js'
-import { html, literal } from 'lit/static-html.js'
-import { ifDefined } from 'lit/directives/if-defined.js'
-import { property, query, state } from 'lit/decorators.js'
-import { watch } from '../../internal/watch.js'
 import TerraElement, { type TerraFormControl } from '../../internal/terra-element.js'
-import type { CSSResultGroup } from 'lit'
-import type TerraDialog from '../dialog/dialog.component.js'
+import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
 import type {
     TerraDialogHideEvent,
     TerraDialogShowEvent,
 } from '../../terra-ui-components.js'
+import type TerraDialog from '../dialog/dialog.component.js'
 import TerraIcon from '../icon/icon.component.js'
+import styles from './button.styles.js'
 
 /**
  * @summary Buttons represent actions that are available to the user.
@@ -150,7 +150,8 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     @property({ attribute: 'formmethod' }) formMethod: 'post' | 'get'
 
     /** Used to override the form owner's `novalidate` attribute. */
-    @property({ attribute: 'formnovalidate', type: Boolean }) formNoValidate: boolean
+    @property({ attribute: 'formnovalidate', type: Boolean })
+    formNoValidate: boolean
 
     /** Used to override the form owner's `target` attribute. */
     @property({ attribute: 'formtarget' }) formTarget:
@@ -382,12 +383,17 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         }
     }
 
+    /* Set icon for pageLink button based on whether link is internal or external */
     setPageLinkIcon(href: string): string {
-        /* Set icon for pageLink button based on whether link is internal or external */
+        const base = globalThis.location?.href
 
-        const parsedUrl = new URL(href)
-        const linkDomain = parsedUrl.hostname
-        const hostDomain = globalThis.location.hostname
+        if (!URL.canParse(href, base)) {
+            return 'outline-arrow-right'
+        }
+
+        const linkDomain = new URL(href, base).hostname
+        const hostDomain = globalThis.location?.hostname
+
         return linkDomain === hostDomain
             ? 'outline-arrow-right'
             : 'outline-arrow-up-right'
@@ -463,7 +469,7 @@ export default class TerraButton extends TerraElement implements TerraFormContro
         @focus=${this.handleFocus}
         @invalid=${this.isButton() ? this.handleInvalid : null}
         @click=${this.handleClick}
-        aria-controls=${ifDefined(this.forDialog || undefined)} 
+        aria-controls=${ifDefined(this.forDialog || undefined)}
         ?aria-haspopup=${this.forDialog ? 'dialog' : undefined}
         aria-expanded=${ifDefined(this.forDialog ? this.expanded : undefined)}
       >

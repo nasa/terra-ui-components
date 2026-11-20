@@ -1,10 +1,17 @@
-import { expect, fixture, html } from '@open-wc/testing';
-import './{{ tagWithoutPrefix tag }}.js';
+import { expect, fixture, html } from '@open-wc/testing'
+import sinon from 'sinon'
+import type {{ properCase tag }} from '../{{ tagWithoutPrefix tag }}.component.js'
+import '../{{ tagWithoutPrefix tag }}.js'
 
 describe('<{{ tag }}>', () => {
-    it('should render a component', async () => {
-        const el = await fixture(html` <{{ tag }}></{{ tag }}> `);
+    afterEach(() => {
+        sinon.restore()
+    })
 
-        expect(el).to.exist;
-    });
-});
+    it('renders and passes accessibility checks', async () => {
+        const el = await fixture<{{ properCase tag }}>(html`<{{ tag }}></{{ tag }}>`)
+
+        expect(el).to.exist
+        await expect(el).to.be.accessible()
+    })
+})

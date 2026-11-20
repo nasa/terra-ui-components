@@ -56,7 +56,7 @@ function getDescription(block) {
         }
     }
 
-    return desc
+    return desc.join(' ')
 }
 
 function getLastGroup(section) {
@@ -119,7 +119,7 @@ function parseScss(content) {
     let buffer = ''
 
     // Step 1: Extract comment blocks related to token documentation for reference in step 2.
-    // These blocks will conntain directives like @token, @token-subsection, @toke-subgroup, @layout.
+    // These blocks will contain directives like @token, @token-subsection, @toke-subgroup, @layout.
     const blocks = []
     let currentBlock = null
 
@@ -287,7 +287,7 @@ function writeFiles(sections, outputDir) {
         // -----------------------------
         // FRONTMATTER
         // -----------------------------
-        const descriptionText = sectionData.description.join(' ')
+        const descriptionText = sectionData.description
 
         md += `---\n`
         md += `meta:\n`
@@ -304,7 +304,7 @@ function writeFiles(sections, outputDir) {
         // DESCRIPTION
         // -----------------------------
         if (sectionData.description.length > 0) {
-            md += sectionData.description.join(' ') + '\n\n'
+            md += sectionData.description + '\n\n'
         }
 
         // -----------------------------
@@ -351,7 +351,7 @@ function renderChildren(children, depth = 2) {
 function renderSwatchGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
     if (description.length > 0) {
-        md += description.join(' ') + '\n\n'
+        md += description + '\n\n'
     }
     md += `<div style="display:flex; flex-wrap:wrap; gap:16px;">\n`
 
@@ -399,7 +399,7 @@ function renderTableSwatchGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
 
     if (description.length > 0) {
-        md += description.join(' ') + '\n\n'
+        md += description + '\n\n'
     }
 
     md += `| Token | Value | Preview |\n`
@@ -419,7 +419,7 @@ function renderTableRadiusGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
 
     if (description.length > 0) {
-        md += description.join(' ') + '\n\n'
+        md += description + '\n\n'
     }
 
     md += `| Token | Value | Preview |\n`
@@ -439,7 +439,7 @@ function renderTableElevationGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
 
     if (description.length > 0) {
-        md += description.join(' ') + '\n\n'
+        md += description + '\n\n'
     }
 
     md += `| Token | Preview |\n`
@@ -459,7 +459,7 @@ function renderTableSpacingGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
 
     if (description.length > 0) {
-        md += description.join(' ') + '\n\n'
+        md += description + '\n\n'
     }
 
     md += `| Token | Value | Preview |\n`
@@ -479,7 +479,7 @@ function renderTableTransitionGroup(subName, description, tokens) {
     let md = `### ${subName}\n\n`
 
     if (description.length > 0) {
-        md += description.join(' ') + '\n\n'
+        md += description + '\n\n'
     }
 
     md += `| Token | Value | Preview |\n`
