@@ -167,9 +167,13 @@ module.exports = function (doc, options) {
                   ? `<div class="code-preview__preview-content" data-flavor="jupyter">${jupyterPreviewContent}</div>`
                   : ''
           }
-          <div class="code-preview__resizer">
+          <div class="code-preview__resizer code-preview__resizer--horizontal" data-resize="horizontal" title="Drag to resize width">
             <terra-icon name="solid-bars-4" library="heroicons"></terra-icon>
           </div>
+          <div class="code-preview__resizer code-preview__resizer--vertical" data-resize="vertical" title="Drag to resize height">
+            <terra-icon name="solid-bars-4" library="heroicons"></terra-icon>
+          </div>
+          <div class="code-preview__resizer code-preview__resizer--corner" data-resize="both" title="Drag to resize width and height"></div>
         </div>
 
         <div class="code-preview__source-group" id="${sourceGroupId}">

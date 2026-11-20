@@ -115,30 +115,49 @@
 
         if (!resizer || !preview) return
 
-        let startX = event.changedTouches
-            ? event.changedTouches[0].pageX
-            : event.clientX
-        let startWidth = parseInt(
-            document.defaultView.getComputedStyle(preview).width,
-            10
-        )
+        const resizeAxis = resizer.dataset.resize || 'horizontal'
+        const touch = event.changedTouches?.[0]
+        const startX = (touch ?? event).clientX
+        const startY = (touch ?? event).clientY
+        const computed = document.defaultView.getComputedStyle(preview)
+        const startWidth = parseFloat(computed.width)
+        const startHeight = parseFloat(computed.height)
+        const container = preview.closest('.code-preview')
 
-        event.preventDefault()
+        if (!touch) {
+            event.preventDefault()
+        }
+        preview.dataset.resizeAxis = resizeAxis
         preview.classList.add('code-preview__preview--dragging')
         document.documentElement.addEventListener('mousemove', dragMove)
         document.documentElement.addEventListener('touchmove', dragMove)
         document.documentElement.addEventListener('mouseup', dragStop)
         document.documentElement.addEventListener('touchend', dragStop)
 
-        function dragMove(event) {
-            const width =
-                startWidth +
-                (event.changedTouches ? event.changedTouches[0].pageX : event.pageX) -
-                startX
-            preview.style.width = `${width}px`
+        function dragMove(moveEvent) {
+            const point = moveEvent.changedTouches?.[0] ?? moveEvent
+            const currentX = point.clientX
+            const currentY = point.clientY
+
+            if (resizeAxis === 'horizontal' || resizeAxis === 'both') {
+                const maxWidth = container
+                    ? container.getBoundingClientRect().width
+                    : Infinity
+                const width = Math.min(
+                    maxWidth,
+                    Math.max(320, startWidth + currentX - startX)
+                )
+                preview.style.width = `${width}px`
+            }
+
+            if (resizeAxis === 'vertical' || resizeAxis === 'both') {
+                const height = Math.max(80, startHeight + currentY - startY)
+                preview.style.height = `${height}px`
+            }
         }
 
         function dragStop() {
+            delete preview.dataset.resizeAxis
             preview.classList.remove('code-preview__preview--dragging')
             document.documentElement.removeEventListener('mousemove', dragMove)
             document.documentElement.removeEventListener('touchmove', dragMove)
