@@ -243,6 +243,7 @@ export default class TerraSelect extends TerraElement implements TerraFormContro
         document.addEventListener('focusin', this.handleDocumentFocusIn)
         document.addEventListener('keydown', this.handleDocumentKeyDown)
         document.addEventListener('mousedown', this.handleDocumentMouseDown)
+        this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
 
         // If the component is rendered in a shadow root, we need to attach the focusin listener there too
         if (this.getRootNode() !== document) {
@@ -265,6 +266,7 @@ export default class TerraSelect extends TerraElement implements TerraFormContro
         document.removeEventListener('focusin', this.handleDocumentFocusIn)
         document.removeEventListener('keydown', this.handleDocumentKeyDown)
         document.removeEventListener('mousedown', this.handleDocumentMouseDown)
+        this.popup.removeEventListener('terra-popup-dismiss', this.handlePopupDismiss)
 
         if (this.getRootNode() !== document) {
             this.getRootNode().removeEventListener(
@@ -285,6 +287,10 @@ export default class TerraSelect extends TerraElement implements TerraFormContro
     private handleBlur() {
         this.hasFocus = false
         this.emit('terra-blur')
+    }
+
+    private handlePopupDismiss = () => {
+        this.hide()
     }
 
     private handleDocumentFocusIn = (event: KeyboardEvent) => {
