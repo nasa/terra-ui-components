@@ -19,7 +19,7 @@
     --docs-sidebar-width: 320px;
     --docs-sidebar-transition-speed: 250ms;
     --docs-content-toc-max-width: 260px;
-    --docs-content-padding: 2rem;
+    --docs-content-padding: 1.5rem;
     --docs-content-vertical-spacing: 2rem;
     --docs-search-overlay-background: rgb(0 0 0 / 0.2);
     --docs-skip-to-main-width: 200px;
@@ -895,7 +895,7 @@ pre:hover .copy-code-button,
 
 /* Sidebar */
 #sidebar {
-    flex: 1 0 var(--docs-sidebar-width);
+    flex: 0 0 var(--docs-sidebar-width);
     background-color: var(--docs-background-color);
     border-right: solid var(--docs-border-width) var(--docs-border-color);
     border-radius: 0;
@@ -987,7 +987,20 @@ pre:hover .copy-code-button,
 
 @media screen and (max-width: 900px) {
     #sidebar {
-        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 25;
+        width: var(--docs-sidebar-width);
+        max-width: 85vw;
+        padding-top: 3.5rem;
+        translate: -100%;
+    }
+
+    .sidebar-open #sidebar {
+        translate: 0;
+        box-shadow: var(--docs-shadow-x-large);
     }
 }
 
@@ -1007,6 +1020,8 @@ pre:hover .copy-code-button,
 
 /* Main content */
 main {
+    flex: 1 1 0;
+    min-width: 0;
     position: relative;
     padding: var(--docs-content-vertical-spacing) var(--docs-content-padding)
         calc(var(--docs-content-vertical-spacing) * 2) var(--docs-content-padding);
@@ -1031,17 +1046,16 @@ main {
 /* Component layouts */
 .content {
     display: grid;
-    grid-template-columns: 100%;
-    gap: 2rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
     position: relative;
     max-width: var(--docs-content-max-width);
     margin: 0 auto;
 }
 
 .content--with-toc {
-    /* There's a 2rem gap, so we need to remove it from the column */
-    grid-template-columns: calc(75% - 2rem) min(
-            25%,
+    grid-template-columns: minmax(0, 1fr) minmax(
+            180px,
             var(--docs-content-toc-max-width)
         );
     max-width: calc(
@@ -1051,6 +1065,7 @@ main {
 
 .content__body {
     order: 1;
+    min-width: 0;
     width: 100%;
 }
 
@@ -1119,7 +1134,8 @@ main {
 }
 
 @media screen and (max-width: 1024px) {
-    .content {
+    .content,
+    .content--with-toc {
         grid-template-columns: 100%;
         gap: 0;
     }
@@ -1149,10 +1165,11 @@ main {
         bottom: 1rem; /* don't cover the scrollbar */
         right: 0;
         width: 2rem;
+        pointer-events: none;
         background: linear-gradient(
             90deg,
             rgba(0 0 0 / 0) 0%,
-            var(--terra-text-primary) 100%
+            var(--docs-background-color) 100%
         );
     }
 
@@ -1182,10 +1199,11 @@ main {
     left: 0.25rem;
     height: auto;
     width: auto;
-    color: black;
-    border: none;
+    color: var(--terra-text-primary);
+    border: solid var(--docs-border-width) var(--docs-border-color);
     border-radius: 50%;
-    background: var(--terra-text-primary);
+    background: var(--docs-background-color);
+    box-shadow: var(--docs-shadow-medium);
     padding: 0.5rem;
     margin: 0;
     cursor: pointer;
@@ -1198,10 +1216,6 @@ main {
     #menu-toggle {
         display: flex;
     }
-}
-
-.terra-theme-dark #menu-toggle {
-    color: white;
 }
 
 #menu-toggle:hover {

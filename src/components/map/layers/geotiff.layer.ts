@@ -326,6 +326,12 @@ export async function buildGeoTiffLayer(
         normalize: false,
     })
 
+    // Wait until the source finishes initializing metadata.
+    // In OpenLayers, `Source.prototype.ready()` is protected in TypeScript typings
+    // but guarantees clean rejection on loading errors; without this, awaiting
+    // `getView()` below would hang indefinitely if source initialization fails.
+    await (gtSource as any).ready()
+
     const layer = new WebGLTileLayer({ source: gtSource })
 
     if (opacity !== undefined) {

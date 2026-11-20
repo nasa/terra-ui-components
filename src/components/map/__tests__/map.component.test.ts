@@ -547,6 +547,37 @@ describe('<terra-map> layers (gibs)', () => {
             // hasChanged returns false, so layersChanged is not called again
             expect(spy.callCount).to.equal(1)
         })
+
+        it('rebuilds a GIBS layer when showBoundary changes', async () => {
+            const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    extent: [-10, -10, 10, 10],
+                    showBoundary: true,
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery'))
+            const firstLayer = el.getLayer('imagery')
+            const removeLayerSpy = sinon.spy(el, 'removeLayer')
+
+            el.layers = [
+                {
+                    type: 'gibs',
+                    name: 'imagery',
+                    layer: 'TestLayer',
+                    extent: [-10, -10, 10, 10],
+                    showBoundary: false,
+                },
+            ]
+            await waitUntil(() => el.getLayer('imagery') !== firstLayer)
+
+            expect(removeLayerSpy.calledWith('imagery')).to.be.true
+            expect(el.getLayer('imagery')).to.exist
+            expect(el.getLayer('imagery')).to.not.equal(firstLayer)
+        })
     })
 })
 
@@ -561,16 +592,6 @@ describe('<terra-map> bearer token', () => {
 })
 
 describe('<terra-map> layers (geotiff)', () => {
-    // NOTE: `ol/source/GeoTIFF.js` statically imports the `geotiff` npm
-    // package, which only ships Node and bundled-browser builds - not a
-    // plain unbundled ESM build - so web-test-runner's unbundled dev server
-    // can't load it (a pre-existing, environment-level constraint; a bundled
-    // build, e.g. `npm run build`, resolves it fine). That means every
-    // geotiff-type `layers` build attempt below rejects, exercising
-    // `layersChanged`'s error path, diffing, and cleanup logic - just not the
-    // happy-path layer construction itself (covered indirectly by
-    // `geotiff.layer.test.ts`'s unit tests of the underlying math).
-
     it('emits an error event when the layer fails to build', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
         const changeSpy = sinon.spy()
@@ -580,11 +601,13 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
 
-        await waitUntil(() => changeSpy.called)
+        await waitUntil(() => changeSpy.called, 'error event was emitted', {
+            timeout: 4000,
+        })
 
         const detail = changeSpy.firstCall.args[0].detail
         expect(detail.name).to.equal('my-data')
@@ -600,7 +623,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
         await el.updateComplete
@@ -620,7 +643,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
         await el.updateComplete
@@ -692,7 +715,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
         await el.updateComplete
@@ -706,64 +729,118 @@ describe('<terra-map> layers (geotiff)', () => {
         expect(removeLayerSpy.called).to.be.false
     })
 
-    it('updates GeoTIFF opacity in-place without rebuilding when only presentation fields change', async () => {
-        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+    function seedGeoTiffLayer(
+        el: TerraMap,
+        name = 'my-data',
+        title = 'Initial Title'
+    ) {
         const layer = new VectorLayer({ source: new VectorSource() })
+        const setStyleStub = sinon.stub(layer, 'setStyle')
         layer.set('info', {
             layer,
             min: 0,
-            max: 1,
+            max: 100,
             colorStops: [],
             legendValues: [],
             projection: 'EPSG:4326',
             noDataValue: -9999,
         })
-        el.addLayer(layer, { name: 'my-data', title: 'Initial Title' })
+        el.addLayer(layer, { name, title })
+        return { layer, setStyleStub }
+    }
 
+    it('updates GeoTIFF opacity and visibility in-place without rebuilding', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        const { layer } = seedGeoTiffLayer(el)
         const removeLayerSpy = sinon.spy(el, 'removeLayer')
+
         const prev = [
             {
                 type: 'geotiff' as const,
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
                 title: 'Initial Title',
                 opacity: 1,
+                visible: true,
             },
         ]
-        const next = [{ ...prev[0], opacity: 0.4 }]
+        const next = [{ ...prev[0], opacity: 0.4, visible: false }]
 
         await el.layersChanged(prev, next)
 
         expect(removeLayerSpy.called).to.be.false
         expect(layer.getOpacity()).to.equal(0.4)
+        expect(layer.getVisible()).to.be.false
     })
 
-    it('rebuilds a GeoTIFF layer when title or position changes instead of ignoring it', async () => {
+    it('updates GeoTIFF title in-place without rebuilding and falls back to name when cleared', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
-        const layer = new VectorLayer({ source: new VectorSource() })
-        layer.set('info', {
-            layer,
-            min: 0,
-            max: 1,
-            colorStops: [],
-            legendValues: [],
-            projection: 'EPSG:4326',
-            noDataValue: -9999,
-        })
-        el.addLayer(layer, { name: 'my-data', title: 'Initial Title' })
+        const { layer } = seedGeoTiffLayer(el)
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
 
+        const prev = [
+            {
+                type: 'geotiff' as const,
+                name: 'my-data',
+                url: '/non-existent.tif',
+                title: 'Initial Title',
+            },
+        ]
+        const updated = [{ ...prev[0], title: 'Updated Title' }]
+
+        await el.layersChanged(prev, updated)
+
+        expect(removeLayerSpy.called).to.be.false
+        expect(layer.get('title')).to.equal('Updated Title')
+
+        const cleared = [{ ...prev[0], title: undefined }]
+        await el.layersChanged(updated, cleared)
+
+        expect(removeLayerSpy.called).to.be.false
+        expect(layer.get('title')).to.equal('my-data')
+    })
+
+    it('updates GeoTIFF colormap style in-place without rebuilding and emits terra-map-layer-change', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        const { setStyleStub } = seedGeoTiffLayer(el)
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
+        const layerChangeSpy = sinon.spy()
+        el.addEventListener('terra-map-layer-change', layerChangeSpy)
+
+        const prev = [
+            {
+                type: 'geotiff' as const,
+                name: 'my-data',
+                url: '/non-existent.tif',
+                colorMapName: 'viridis',
+            },
+        ]
+        const next = [{ ...prev[0], colorMapName: 'jet', reverseColors: true }]
+
+        await el.layersChanged(prev, next)
+
+        expect(removeLayerSpy.called).to.be.false
+        expect(setStyleStub.calledOnce).to.be.true
+        expect(layerChangeSpy.calledOnce).to.be.true
+        expect(el.getGeoTiffLayerInfo('my-data')?.legendValues).to.not.be.empty
+    })
+
+    it('rebuilds a GeoTIFF layer when a structural field like position changes', async () => {
+        const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
+        seedGeoTiffLayer(el)
         const removeLayerSpy = sinon.spy(el, 'removeLayer')
         const errorStub = sinon.stub(console, 'error')
+
         try {
             const prev = [
                 {
                     type: 'geotiff' as const,
                     name: 'my-data',
-                    url: 'https://example.com/data.tif',
-                    title: 'Initial Title',
+                    url: '/non-existent.tif',
+                    position: 'below-borders' as const,
                 },
             ]
-            const next = [{ ...prev[0], title: 'Updated Title' }]
+            const next = [{ ...prev[0], position: 'top' as const }]
 
             await el.layersChanged(prev, next)
 
@@ -865,6 +942,42 @@ describe('<terra-map> layer picker', () => {
 
         expect(layer?.get('name')).to.equal('layer_name')
         expect(layer?.get('title')).to.equal('layer_name')
+    })
+
+    it('updates the displayed title in the layer picker in-place without rebuilding when title changes', async () => {
+        const el = await fixture<TerraMap>(html`
+            <terra-map
+                show-layer-picker
+                layers='[{ "type": "gibs", "name": "imagery", "title": "Title A", "layer": "TestLayer" }]'
+            ></terra-map>
+        `)
+
+        await waitUntil(() => el.getLayer('imagery'))
+        const toggleBtn = el.shadowRoot?.querySelector(
+            '.layer-picker-toggle'
+        ) as HTMLButtonElement
+        toggleBtn.click()
+
+        const removeLayerSpy = sinon.spy(el, 'removeLayer')
+
+        el.layers = [
+            {
+                type: 'gibs',
+                name: 'imagery',
+                title: 'Title B',
+                layer: 'TestLayer',
+            },
+        ]
+        await el.updateComplete
+
+        expect(removeLayerSpy.called).to.be.false
+        expect(el.getLayer('imagery')?.get('title')).to.equal('Title B')
+
+        const labels = Array.from(
+            el.shadowRoot?.querySelectorAll('.layer-picker-item span') ?? []
+        ).map(span => span.textContent)
+        expect(labels).to.include('Title B')
+        expect(labels).to.not.include('Title A')
     })
 })
 

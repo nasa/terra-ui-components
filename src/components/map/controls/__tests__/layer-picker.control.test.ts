@@ -539,6 +539,43 @@ describe('LayerPickerControl', () => {
             expect(slider.getAttribute('aria-valuetext')).to.equal('65%')
         })
 
+        it('reacts to external layer title changes and updates label', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+
+            vizLayer.set('title', 'Updated Temperature Title')
+
+            const label = panel.querySelector('.layer-picker-item span')
+            expect(label?.textContent).to.equal('Updated Temperature Title')
+        })
+
+        it('reacts to external layer info changes and updates legend ramp', () => {
+            const panel = pickerControl.element.querySelector(
+                '.layer-picker-panel'
+            ) as HTMLElement
+
+            const initialBar = panel.querySelector(
+                '.layer-picker-legend-bar'
+            ) as HTMLElement
+            expect(initialBar).to.exist
+            const initialBg = initialBar.style.background
+
+            vizLayer.set('info', {
+                min: 0,
+                max: 100,
+                legendValues: [
+                    { value: '0', rgb: [255, 255, 0] },
+                    { value: '100', rgb: [0, 255, 0] },
+                ],
+            })
+
+            const updatedBar = panel.querySelector(
+                '.layer-picker-legend-bar'
+            ) as HTMLElement
+            expect(updatedBar.style.background).to.not.equal(initialBg)
+        })
+
         it('adjusts layer opacity via keyboard keys and prevents default/propagation so the map does not capture them', () => {
             const panel = pickerControl.element.querySelector(
                 '.layer-picker-panel'

@@ -641,6 +641,8 @@ export class LayerPickerControl extends Control {
         }
         layer.on('change:visible', listener)
         layer.on('change:opacity', listener)
+        layer.addChangeListener('title', listener)
+        layer.addChangeListener('info', listener)
         this.#visibilityListeners.set(layer, listener)
     }
 
@@ -650,6 +652,8 @@ export class LayerPickerControl extends Control {
         if (listener) {
             layer.un('change:visible', listener)
             layer.un('change:opacity', listener)
+            layer.removeChangeListener('title', listener)
+            layer.removeChangeListener('info', listener)
             this.#visibilityListeners.delete(layer)
         }
     }

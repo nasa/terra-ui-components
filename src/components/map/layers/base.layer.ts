@@ -13,6 +13,7 @@ export type BaseLayerConfig = {
     name: string
     title: string
     url: string
+    fallbackUrl?: string
     attributions?: string[]
     visible?: boolean
     noWorldWrap?: boolean
@@ -28,13 +29,25 @@ export type BaseLayerConfig = {
  * without depending on hardware WebGL context availability.
  */
 export function buildBaseLayer(config: BaseLayerConfig): TileLayer<XYZ> {
+    const source = new XYZ({
+        url: config.url,
+        attributions: config.attributions,
+        wrapX: !config.noWorldWrap,
+    })
+
+    if (config.fallbackUrl) {
+        const fallbackUrl = config.fallbackUrl
+        source.once('tileloaderror', () => {
+            console.warn(
+                `Base layer "${config.name}" failed to load tiles from "${config.url}"; falling back to "${fallbackUrl}".`
+            )
+            source.setUrl(fallbackUrl)
+        })
+    }
+
     const layer = new TileLayer({
         visible: config.visible ?? false,
-        source: new XYZ({
-            url: config.url,
-            attributions: config.attributions,
-            wrapX: !config.noWorldWrap,
-        }),
+        source,
     })
 
     layer.set('name', config.name)
@@ -47,6 +60,7 @@ export function buildBaseLayer(config: BaseLayerConfig): TileLayer<XYZ> {
 
 export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
     const yesterday = getYesterdayIsoDate()
+    const trueColorBaseUrl = `${GIBS_WMTS_ENDPOINT}/epsg3857/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default`
 
     return [
         buildBaseLayer({
@@ -61,7 +75,8 @@ export function buildDefaultBaseLayers(options: Options = {}): TileLayer[] {
             ...options,
             name: 'true-color',
             title: 'Corrected Reflectance (True Color)',
-            url: `${GIBS_WMTS_ENDPOINT}/epsg3857/best/VIIRS_SNPP_CorrectedReflectance_TrueColor/default/${yesterday}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+            url: `${trueColorBaseUrl}/${yesterday}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+            fallbackUrl: `${trueColorBaseUrl}/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
             attributions: ['NASA EOSDIS GIBS'],
             visible: false,
         }),

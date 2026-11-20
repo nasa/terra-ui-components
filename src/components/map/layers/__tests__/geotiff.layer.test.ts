@@ -1,19 +1,14 @@
 import { expect } from '@open-wc/testing'
+import WebGLTileLayer from 'ol/layer/WebGLTile.js'
 import {
+    buildGeoTiffLayer,
     buildStopsFromColors,
     computeMinMax,
+    type GeoTiffLayerInfo,
     parseGdalMetadataXml,
+    updateGeoTiffStyle,
 } from '../geotiff.layer.js'
 
-// NOTE: `buildGeoTiffLayer()` and `buildColorStops()` (the parts that import
-// `ol/source/GeoTIFF.js` and the `colormap` package) aren't covered here.
-// Both are CJS/Node-oriented packages that web-test-runner's unbundled dev
-// server can't load as plain ESM - a pre-existing constraint (the same
-// `ol/source/GeoTIFF` + `colormap` usage in `time-average-map.component.ts`
-// has never had test coverage either); a bundled build (`npm run build`)
-// resolves both correctly. The data-range and stop/legend math - the part
-// that was actually untested before this change - is extracted as pure
-// functions so it can be verified directly, independent of those imports.
 describe('computeMinMax', () => {
     it('returns the min and max of the given pixel values', () => {
         expect(computeMinMax([3, 1, 4, 1, 5, 9, 2, 6], undefined)).to.deep.equal({
@@ -103,5 +98,95 @@ describe('parseGdalMetadataXml', () => {
 
     it('returns an empty object for invalid XML', () => {
         expect(parseGdalMetadataXml('<invalid xml')).to.deep.equal({})
+    })
+})
+
+describe('updateGeoTiffStyle', () => {
+    it('updates layer style, colorStops, and legendValues with specified config', async () => {
+        const layer = new WebGLTileLayer()
+        const initialInfo: GeoTiffLayerInfo = {
+            layer,
+            projection: 'EPSG:4326',
+            min: 0,
+            max: 100,
+            colorStops: [],
+            legendValues: [],
+            noDataValue: -9999,
+        }
+
+        const updated = await updateGeoTiffStyle(initialInfo, {
+            colorMapName: 'jet',
+            colorSteps: 10,
+            reverseColors: false,
+        })
+
+        expect(updated.colorStops).to.have.lengthOf(20) // 10 steps * 2 (value + rgba)
+        expect(updated.colorStops[0]).to.equal(0)
+        expect(updated.colorStops[18]).to.equal(100)
+        expect(updated.legendValues.length).to.be.greaterThan(0)
+        expect(layer.get('info')).to.equal(updated)
+    })
+
+    it('reverses colors when reverseColors is true', async () => {
+        const layer = new WebGLTileLayer()
+        const initialInfo: GeoTiffLayerInfo = {
+            layer,
+            projection: 'EPSG:4326',
+            min: 0,
+            max: 100,
+            colorStops: [],
+            legendValues: [],
+            noDataValue: undefined,
+        }
+
+        const normal = await updateGeoTiffStyle(initialInfo, {
+            colorMapName: 'jet',
+            colorSteps: 10,
+            reverseColors: false,
+        })
+
+        const reversed = await updateGeoTiffStyle(initialInfo, {
+            colorMapName: 'jet',
+            colorSteps: 10,
+            reverseColors: true,
+        })
+
+        // The first stop color of normal should match the last stop color of reversed
+        expect(normal.colorStops[1]).to.deep.equal(reversed.colorStops[19])
+        expect(normal.colorStops[19]).to.deep.equal(reversed.colorStops[1])
+    })
+
+    it('falls back to default viridis with 72 steps when config options are omitted', async () => {
+        const layer = new WebGLTileLayer()
+        const initialInfo: GeoTiffLayerInfo = {
+            layer,
+            projection: 'EPSG:4326',
+            min: 10,
+            max: 50,
+            colorStops: [],
+            legendValues: [],
+            noDataValue: undefined,
+        }
+
+        const updated = await updateGeoTiffStyle(initialInfo, {})
+        expect(updated.colorStops).to.have.lengthOf(72 * 2)
+        expect(updated.colorStops[0]).to.equal(10)
+        expect(updated.colorStops[72 * 2 - 2]).to.equal(50)
+    })
+})
+
+describe('buildGeoTiffLayer', () => {
+    it('attempts to instantiate an OpenLayers GeoTIFF source and rejects on missing file', async () => {
+        let error: Error | null = null
+        try {
+            await buildGeoTiffLayer({
+                name: 'A Really Cool Base Layer',
+                type: 'geotiff',
+                url: '/non-existent.tif',
+            })
+        } catch (e) {
+            error = e as Error
+        }
+        expect(error).to.be.an.instanceOf(Error)
     })
 })

@@ -199,7 +199,7 @@ Every entry also takes a required `name` (used for add/remove/update diffing and
 ></terra-map>
 ```
 
-Changing the attribute/property later diffs against what's currently applied, by `name`: entries removed from the array are removed from the map, unchanged entries are left alone, and entries whose config changed are rebuilt. If a GIBS entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. Each build attempt (success or failure) fires a `terra-map-layer-change` event — see below for GeoTIFF's `info`/`error` detail. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
+Changing the attribute/property later diffs against what's currently applied, by `name`: entries removed from the array are removed from the map, and unchanged entries are left alone. Presentation properties (`opacity`, `visible`, `title`) across all layer types and GeoTIFF colormap styling (`colorMapName`, `colorSteps`, `reverseColors`) update in place without reloading or rebuilding the layer. Only entries with structural changes (such as `url`, `position`, `projection`, or `bands`) are rebuilt. If a GIBS entry's projection doesn't match the map's own `projection`, a console warning is logged (see above) rather than silently rendering distorted imagery. Each build attempt (success or failure) fires a `terra-map-layer-change` event — see below for GeoTIFF's `info`/`error` detail. For anything not expressible here — other layer types, or finer imperative control — use `addLayer()`/`removeLayer()` directly instead.
 
 ### Visualizing a CMR Collection's GIBS Imagery
 
@@ -227,8 +227,12 @@ Configurable options on a GeoTIFF layer entry include:
 
 - `url`: Direct URL to a GeoTIFF or blob object URL (`URL.createObjectURL(blob)`).
 - `projection`: Coordinate projection of the raster (e.g. `'EPSG:4326'`). If omitted, read from GeoTIFF metadata or defaults to `'EPSG:4326'`.
-- `opacity`: Number from `0` to `1`. Changes to opacity update the layer in-place without reloading the raster.
-- `colorMapName`: Colormap name (e.g. `'viridis'`, `'jet'`, `'cool'`). Defaults to `'viridis'`.
+- `title`: Display title used in the layer picker. Updates in place without reloading.
+- `visible`: Whether the layer is visible. Updates in place without reloading.
+- `opacity`: Number from `0` to `1`. Updates in place without reloading.
+- `colorMapName`: Colormap name (e.g. `'viridis'`, `'jet'`, `'cool'`). Defaults to `'viridis'`. Updates in place without reloading.
+- `colorSteps`: Number of discrete color stops to interpolate between. Defaults to `72`. Updates in place without reloading.
+- `reverseColors`: Reverses the colormap gradient. Defaults to `false`. Updates in place without reloading.
 - `noDataValue`: Fill value to exclude from min/max statistics and rendering.
 - `bands`: Array of 1-based band indexes to read. Defaults to `[1]`.
 - `fitView`: Fits map view to the GeoTIFF extent when loaded.
