@@ -20,12 +20,13 @@ import componentStyles from '../../styles/component.styles.js'
 import type { MapProjection } from '../../types.js'
 import TerraPopup from '../popup/popup.component.js'
 import TerraSkeleton from '../skeleton/skeleton.component.js'
-import { type GeoTiffLayerInfo, updateGeoTiffStyle } from './layers/geotiff.layer.js'
+import type { GeoTiffLayerInfo } from './layers/geotiff.layer.js'
 import {
     buildMapLayer,
     layerRequiresAuthentication,
     type MapLayerConfig,
     type MapLayerResult,
+    tryUpdateMapLayerInPlace,
 } from './layers/layer.js'
 import {
     type AddLayerOptions,
@@ -50,44 +51,6 @@ const layersConverter = {
             return []
         }
     },
-}
-
-const PRESENTATION_KEYS = ['opacity', 'visible'] as const
-const GEOTIFF_STYLE_KEYS = [
-    ...PRESENTATION_KEYS,
-    'colorMapName',
-    'colorSteps',
-    'reverseColors',
-] as const
-
-function configsMatchIgnoring(
-    previous: MapLayerConfig,
-    next: MapLayerConfig,
-    ignoredKeys: readonly string[]
-): boolean {
-    if (previous.type !== next.type) {
-        return false
-    }
-
-    const ignored = Object.fromEntries(ignoredKeys.map(key => [key, undefined]))
-
-    return (
-        JSON.stringify({ ...previous, ...ignored }) ===
-        JSON.stringify({ ...next, ...ignored })
-    )
-}
-
-function applyPresentationUpdate(
-    layer: NonNullable<ReturnType<TerraMap['getLayer']>>,
-    config: MapLayerConfig
-) {
-    if (config.opacity !== undefined) {
-        layer.setOpacity(config.opacity)
-    }
-
-    if (config.visible !== undefined) {
-        layer.setVisible(config.visible)
-    }
 }
 
 /**
@@ -304,35 +267,19 @@ export default class TerraMap extends AuthMixin(QueryClientMixin(TerraElement)) 
 
             const existingLayer = previousConfig ? this.getLayer(name) : undefined
             if (previousConfig && existingLayer) {
-                if (configsMatchIgnoring(previousConfig, config, PRESENTATION_KEYS)) {
-                    applyPresentationUpdate(existingLayer, config)
-                    continue // updated in-place without rebuilding
-                }
+                const inPlace = await tryUpdateMapLayerInPlace(
+                    existingLayer as MapLayerResult['layer'],
+                    previousConfig,
+                    config
+                )
 
-                if (
-                    previousConfig.type === 'geotiff' &&
-                    config.type === 'geotiff' &&
-                    configsMatchIgnoring(previousConfig, config, GEOTIFF_STYLE_KEYS)
-                ) {
-                    const info = existingLayer.get('info') as
-                        | GeoTiffLayerInfo
-                        | undefined
-                    if (info) {
-                        applyPresentationUpdate(existingLayer, config)
-
-                        if (
-                            previousConfig.colorMapName !== config.colorMapName ||
-                            previousConfig.colorSteps !== config.colorSteps ||
-                            previousConfig.reverseColors !== config.reverseColors
-                        ) {
-                            const updatedInfo = await updateGeoTiffStyle(info, config)
-                            this.emit('terra-map-layer-change', {
-                                detail: { name, type: 'geotiff', info: updatedInfo },
-                            })
-                        }
-
-                        continue // updated in-place without rebuilding
+                if (inPlace.updated) {
+                    if (inPlace.type === 'geotiff' && inPlace.info) {
+                        this.emit('terra-map-layer-change', {
+                            detail: { name, type: 'geotiff', info: inPlace.info },
+                        })
                     }
+                    continue // updated in-place without rebuilding
                 }
             }
 
