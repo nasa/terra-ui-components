@@ -592,16 +592,6 @@ describe('<terra-map> bearer token', () => {
 })
 
 describe('<terra-map> layers (geotiff)', () => {
-    // NOTE: `ol/source/GeoTIFF.js` statically imports the `geotiff` npm
-    // package, which only ships Node and bundled-browser builds - not a
-    // plain unbundled ESM build - so web-test-runner's unbundled dev server
-    // can't load it (a pre-existing, environment-level constraint; a bundled
-    // build, e.g. `npm run build`, resolves it fine). That means every
-    // geotiff-type `layers` build attempt below rejects, exercising
-    // `layersChanged`'s error path, diffing, and cleanup logic - just not the
-    // happy-path layer construction itself (covered indirectly by
-    // `geotiff.layer.test.ts`'s unit tests of the underlying math).
-
     it('emits an error event when the layer fails to build', async () => {
         const el = await fixture<TerraMap>(html`<terra-map></terra-map>`)
         const changeSpy = sinon.spy()
@@ -611,7 +601,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
 
@@ -633,7 +623,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
         await el.updateComplete
@@ -653,7 +643,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
         await el.updateComplete
@@ -725,7 +715,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff',
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
             },
         ]
         await el.updateComplete
@@ -768,7 +758,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff' as const,
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
                 title: 'Initial Title',
                 opacity: 1,
                 visible: true,
@@ -792,7 +782,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff' as const,
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
                 title: 'Initial Title',
             },
         ]
@@ -821,7 +811,7 @@ describe('<terra-map> layers (geotiff)', () => {
             {
                 type: 'geotiff' as const,
                 name: 'my-data',
-                url: 'https://example.com/data.tif',
+                url: '/non-existent.tif',
                 colorMapName: 'viridis',
             },
         ]
@@ -846,7 +836,7 @@ describe('<terra-map> layers (geotiff)', () => {
                 {
                     type: 'geotiff' as const,
                     name: 'my-data',
-                    url: 'https://example.com/data.tif',
+                    url: '/non-existent.tif',
                     position: 'below-borders' as const,
                 },
             ]
