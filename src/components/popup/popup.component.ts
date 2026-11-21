@@ -41,7 +41,7 @@ function isVirtualElement(e: unknown): e is VirtualElement {
  *  operations in your listener or consider debouncing it.
  *
  * @event terra-popup-dismiss - Emitted when the popup is dismissed due to the anchor being scrolled out of view. This event is only emitted when the popup is active and the anchor is scrolled out of view.
- * 
+ *
  * @slot - The popup's content.
  * @slot anchor - The element the popup will be anchored to. If the anchor lives outside of the popup, you can use the
  *  `anchor` attribute or property instead.
@@ -85,7 +85,7 @@ export default class TerraPopup extends TerraElement {
             this.unobserveAnchor()
         }
 
-    this.reposition()
+        this.reposition()
     }
 
     /** A reference to the internal popup container. Useful for animating and styling the popup with JavaScript. */
@@ -262,7 +262,13 @@ export default class TerraPopup extends TerraElement {
     private anchorScrollHandler?: () => void
 
     private observeAnchor() {
-        if (!this.isMobile || !this.active || !this.anchorEl || this.anchorScrollHandler) return
+        if (
+            !this.isMobile ||
+            !this.active ||
+            !this.anchorEl ||
+            this.anchorScrollHandler
+        )
+            return
 
         const anchor =
             this.anchorEl instanceof Element
@@ -295,13 +301,12 @@ export default class TerraPopup extends TerraElement {
     }
 
     private unobserveAnchor() {
-
         // Stop listening for scroll events on the popup anchor when the viewport is wider than the mobile screen threshold.
         if (this.anchorScrollHandler) {
             window.removeEventListener('scroll', this.anchorScrollHandler, true)
             this.anchorScrollHandler = undefined
         }
-    }   
+    }
 
     async updated(changedProps: Map<string, unknown>) {
         super.updated(changedProps)
