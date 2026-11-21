@@ -183,12 +183,17 @@
     .code-preview {
         border: 2px, solid, var(--terra-border-neutral-default);
         border-radius: 30px;
-        overflow-y: scroll;    
+        overflow-y: scroll;
     }
 
     .code-preview__preview {
-        border: none;
+        border: 0px ;
     }
+
+    .code-preview__preview-content {
+        height: fit-content;
+        padding-bottom: 2rem;
+    }   
 }
 
 .code-preview__preview-content:not([data-flavor='html']):not(
