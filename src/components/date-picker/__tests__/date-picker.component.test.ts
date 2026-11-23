@@ -1427,6 +1427,73 @@ describe('<terra-date-picker>', () => {
         })
     })
 
+    describe('Timezone and Preset Time Handling', () => {
+        it('should normalize preset times to midnight and 23:59:59 in the configured timezone', async () => {
+            const el: any = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    show-presets
+                    range
+                    timezone="UTC"
+                    inline
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+            const presetButtons = el.shadowRoot?.querySelectorAll(
+                '.date-picker__preset'
+            )
+
+            const todayPreset = Array.from(presetButtons || []).find(
+                (btn: any) => btn.textContent?.trim() === 'Today'
+            ) as HTMLElement
+
+            // Click preset
+            todayPreset.click()
+            await elementUpdated(el)
+
+            const event = await eventPromise
+
+            // Verify emitted times align precisely with midnight and 23:59:59 bounds
+            expect(event.detail.startDate).to.include('T00:00:00')
+            expect(event.detail.endDate).to.include('T23:59:59')
+        })
+
+        it('should correctly roll over the UTC day when local time plus offset exceeds midnight', async () => {
+            const el = await fixture<TerraDatePicker>(html`
+                <terra-date-picker
+                    enable-time
+                    range
+                    timezone="America/New_York"
+                    start-date="2025-02-24"
+                    end-date="2025-02-24"
+                    inline
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const timeInputs = el.shadowRoot!.querySelectorAll<HTMLInputElement>(
+                '.date-picker__time-input'
+            )
+            const startHourInput = timeInputs[0]
+
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            // Entering 22:00 in America/New_York (UTC-5) shifts UTC time to 03:00 the next day
+            startHourInput.value = '22'
+            startHourInput.dispatchEvent(new Event('input', { bubbles: true }))
+
+            const event = (await eventPromise) as CustomEvent<{
+                startDate: string
+                endDate: string
+            }>
+
+            expect(event.detail.startDate).to.include('2025-02-25')
+            expect(event.detail.endDate).to.include('2025-02-25')
+        })
+    })
+
     describe('Split Inputs', () => {
         it('should show two inputs when split-inputs and range are true', async () => {
             const el: any = await fixture(html`

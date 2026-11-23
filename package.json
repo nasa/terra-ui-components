@@ -5,7 +5,7 @@
   "homepage": "https://github.com/nasa/terra-ui-components",
   "author": "NASA GES DISC <https://disc.gsfc.nasa.gov>",
   "license": "MIT",
-  "customElements": "dist/custom-elements.json",
+  "customElements": "cdn/custom-elements.json",
   "web-types": "./dist/web-types.json",
   "type": "module",
   "types": "dist/terra-ui-components.d.ts",
