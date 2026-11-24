@@ -177,5 +177,33 @@ describe('<terra-button>', () => {
             expect(removeSpy.calledWith('terra-dialog-hide', sinon.match.func)).to.be
                 .true
         })
+
+        it('is accessible in both collapsed and expanded states', async () => {
+            const container = await fixture<HTMLDivElement>(html`
+                <div>
+                    <terra-button for-dialog="a11y-dialog">Open</terra-button>
+                    <terra-dialog id="a11y-dialog" label="Details">Body</terra-dialog>
+                </div>
+            `)
+            const button = container.querySelector('terra-button')!
+            const dialog = container.querySelector('#a11y-dialog') as TerraDialog
+
+            // TerraButton reflects role="button" onto the host around a focusable
+            // shadow <button>, which triggers axe's pre-existing nested-interactive rule.
+            const a11yOptions = { ignoredRules: ['nested-interactive'] }
+
+            await expect(button).to.be.accessible(a11yOptions)
+
+            dialog.open = true
+            dialog.dispatchEvent(
+                new CustomEvent('terra-dialog-show', {
+                    bubbles: true,
+                    composed: true,
+                })
+            )
+            await button.updateComplete
+
+            await expect(button).to.be.accessible(a11yOptions)
+        })
     })
 })
