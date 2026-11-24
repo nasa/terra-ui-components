@@ -2633,5 +2633,67 @@ describe('<terra-date-picker>', () => {
 
             expect(input?.value).to.equal('2024-01-01 15:30:00')
         })
+
+        it('does not resurrect cleared dates when timezone or enableTime changes', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    range
+                    enable-time
+                    timezone="UTC"
+                    start-date="2024-01-01T02:00:00.000Z"
+                    end-date="2024-01-05T12:00:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            el.clear()
+            await elementUpdated(el)
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+
+            el.timezone = 'America/Los_Angeles'
+            await elementUpdated(el)
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+
+            el.enableTime = false
+            await elementUpdated(el)
+            el.enableTime = true
+            await elementUpdated(el)
+            expect(el.selectedStart).to.be.null
+            expect(el.selectedEnd).to.be.null
+        })
+
+        it('preserves and converts user-picked selection when timezone or enableTime changes', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    enable-time
+                    timezone="UTC"
+                    start-date="2024-01-01T02:00:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            // User picks a different date without the host updating the start-date attribute
+            el.selectDate(new Date(Date.UTC(2024, 0, 15)))
+            await elementUpdated(el)
+            expect(formatDate(el.selectedStart)).to.equal('2024-01-15')
+
+            // Changing timezone converts the user's 2024-01-15 02:00:00 UTC -> 2024-01-14 18:00:00 LA
+            // rather than reverting to the stale start-date prop (2024-01-01)
+            el.timezone = 'America/Los_Angeles'
+            await elementUpdated(el)
+            expect(formatDate(el.selectedStart)).to.equal('2024-01-14')
+            const input = el.shadowRoot?.querySelector('terra-input')
+            expect(input?.value).to.equal('2024-01-14 18:00:00')
+
+            // Toggling enableTime off and back on keeps the user's selection and time
+            el.enableTime = false
+            await elementUpdated(el)
+            el.enableTime = true
+            await elementUpdated(el)
+            expect(formatDate(el.selectedStart)).to.equal('2024-01-14')
+            expect(input?.value).to.equal('2024-01-14 18:00:00')
+        })
     })
 })

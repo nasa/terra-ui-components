@@ -130,6 +130,8 @@ export default class TerraDatePicker extends TerraElement {
         'compatible'
     @state() private endDisambiguation: 'earlier' | 'later' | 'compatible' =
         'compatible'
+    #startDirty = false
+    #endDirty = false
 
     /** Screen size detection use to determine layout for mobile devices */
 
@@ -168,19 +170,83 @@ export default class TerraDatePicker extends TerraElement {
      * (zero offset) and logs a warning rather than throwing a runtime RangeError
      * during date operations or Lit rendering.
      */
-    #getValidTimezone(): string {
-        if (!this.timezone) {
+    #resolveTimezone(tz?: string, warn = true): string {
+        if (!tz) {
             return 'UTC'
         }
 
         try {
-            Intl.DateTimeFormat(undefined, { timeZone: this.timezone })
-            return this.timezone
+            Intl.DateTimeFormat(undefined, { timeZone: tz })
+            return tz
         } catch {
-            console.warn(
-                `[terra-date-picker] Invalid IANA timezone "${this.timezone}". Falling back to UTC.`
-            )
+            if (warn) {
+                console.warn(
+                    `[terra-date-picker] Invalid IANA timezone "${tz}". Falling back to UTC.`
+                )
+            }
             return 'UTC'
+        }
+    }
+
+    #getValidTimezone(): string {
+        return this.#resolveTimezone(this.timezone)
+    }
+
+    #disambiguationFor(
+        zdt: Temporal.ZonedDateTime,
+        tz: string
+    ): 'earlier' | 'later' | 'compatible' {
+        const pdt = zdt.toPlainDateTime()
+        const earlierZdt = pdt.toZonedDateTime(tz, {
+            disambiguation: 'earlier',
+        })
+        const laterZdt = pdt.toZonedDateTime(tz, {
+            disambiguation: 'later',
+        })
+
+        return earlierZdt.epochNanoseconds !== laterZdt.epochNanoseconds
+            ? zdt.epochNanoseconds === laterZdt.epochNanoseconds
+                ? 'later'
+                : 'earlier'
+            : 'compatible'
+    }
+
+    #convertSelectionTimezone(isStart: boolean, fromTz: string, toTz: string) {
+        if (fromTz === toTz) {
+            return
+        }
+
+        const date = isStart ? this.selectedStart : this.selectedEnd
+        if (!date) {
+            return
+        }
+
+        const hour = isStart ? this.startHour : this.endHour
+        const minute = isStart ? this.startMinute : this.endMinute
+        const second = isStart ? this.startSecond : this.endSecond
+        const disambiguation = isStart
+            ? this.startDisambiguation
+            : this.endDisambiguation
+
+        const instant = date
+            .toPlainDateTime({ hour, minute, second })
+            .toZonedDateTime(fromTz, { disambiguation })
+            .toInstant()
+        const newZdt = instant.toZonedDateTimeISO(toTz)
+        const newDisambiguation = this.#disambiguationFor(newZdt, toTz)
+
+        if (isStart) {
+            this.selectedStart = newZdt.toPlainDate()
+            this.startHour = newZdt.hour
+            this.startMinute = newZdt.minute
+            this.startSecond = newZdt.second
+            this.startDisambiguation = newDisambiguation
+        } else {
+            this.selectedEnd = newZdt.toPlainDate()
+            this.endHour = newZdt.hour
+            this.endMinute = newZdt.minute
+            this.endSecond = newZdt.second
+            this.endDisambiguation = newDisambiguation
         }
     }
 
@@ -193,9 +259,11 @@ export default class TerraDatePicker extends TerraElement {
         if (isStart) {
             this.startHour = newH
             this.startDisambiguation = 'compatible'
+            this.#startDirty = true
         } else {
             this.endHour = newH
             this.endDisambiguation = 'compatible'
+            this.#endDirty = true
         }
         this.#emitChange()
         this.requestUpdate()
@@ -267,22 +335,7 @@ export default class TerraDatePicker extends TerraElement {
             if (dateString.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(dateString)) {
                 const instant = Temporal.Instant.from(dateString)
                 const zdt = instant.toZonedDateTimeISO(tz)
-                const pdt = zdt.toPlainDateTime()
-
-                // Check for DST fall-back repeated hour (where earlier and later instants differ)
-                const earlierZdt = pdt.toZonedDateTime(tz, {
-                    disambiguation: 'earlier',
-                })
-                const laterZdt = pdt.toZonedDateTime(tz, {
-                    disambiguation: 'later',
-                })
-
-                const disambiguation: 'earlier' | 'later' | 'compatible' =
-                    earlierZdt.epochNanoseconds !== laterZdt.epochNanoseconds
-                        ? zdt.epochNanoseconds === laterZdt.epochNanoseconds
-                            ? 'later'
-                            : 'earlier'
-                        : 'compatible'
+                const disambiguation = this.#disambiguationFor(zdt, tz)
 
                 if (isStart) {
                     this.startHour = zdt.hour
@@ -572,6 +625,8 @@ export default class TerraDatePicker extends TerraElement {
         this.selectedEnd = null
         this.hoverDate = null
         this.isSelectingRange = false
+        this.#startDirty = true
+        this.#endDirty = true
 
         // Reset time to defaults
         this.startHour = 0
@@ -645,15 +700,13 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
-        // Handle startDate/endDate/timezone/enableTime changes
-        const datePropsChanged =
-            changedProperties.has('startDate') ||
-            changedProperties.has('endDate') ||
-            changedProperties.has('timezone') ||
-            changedProperties.has('enableTime')
+        const startChanged = changedProperties.has('startDate')
+        const endChanged = changedProperties.has('endDate')
+        const timezoneChanged = changedProperties.has('timezone')
+        const enableTimeChanged = changedProperties.has('enableTime')
 
-        if (datePropsChanged) {
-            // Sync internal state with props when they change
+        if (startChanged) {
+            this.#startDirty = false
             if (this.startDate) {
                 const start = this.#parseLocalDate(this.startDate)
 
@@ -664,11 +717,14 @@ export default class TerraDatePicker extends TerraElement {
                         this.initializeTimeFromDateString(this.startDate, true)
                     }
                 }
-            } else if (changedProperties.has('startDate')) {
+            } else {
                 this.selectedStart = null
             }
+        }
 
-            if (this.range) {
+        if (this.range) {
+            if (endChanged) {
+                this.#endDirty = false
                 if (this.endDate) {
                     const end = this.#parseLocalDate(this.endDate)
 
@@ -678,20 +734,61 @@ export default class TerraDatePicker extends TerraElement {
                             this.initializeTimeFromDateString(this.endDate, false)
                         }
                     }
-                } else if (changedProperties.has('endDate')) {
+                } else {
                     this.selectedEnd = null
                 }
+            }
+        } else if (startChanged || endChanged || changedProperties.has('range')) {
+            this.selectedEnd = null
+        }
 
+        if (enableTimeChanged && this.enableTime) {
+            if (
+                !startChanged &&
+                !this.#startDirty &&
+                this.selectedStart &&
+                this.startDate
+            ) {
+                this.initializeTimeFromDateString(this.startDate, true)
+            }
+            if (
+                this.range &&
+                !endChanged &&
+                !this.#endDirty &&
+                this.selectedEnd &&
+                this.endDate
+            ) {
+                this.initializeTimeFromDateString(this.endDate, false)
+            }
+        }
+
+        if (timezoneChanged && this.enableTime) {
+            const fromTz = this.#resolveTimezone(
+                changedProperties.get('timezone') as string | undefined,
+                false
+            )
+            const toTz = this.#getValidTimezone()
+
+            if (!startChanged) {
+                this.#convertSelectionTimezone(true, fromTz, toTz)
+            }
+            if (this.range && !endChanged) {
+                this.#convertSelectionTimezone(false, fromTz, toTz)
+            }
+        }
+
+        if (
+            startChanged ||
+            endChanged ||
+            (timezoneChanged && this.enableTime) ||
+            enableTimeChanged
+        ) {
+            if (this.range) {
                 if (this.selectedStart) {
                     this.#updateMonthViews()
                 }
-            } else {
-                // Single date mode - always update left month
-                if (this.selectedStart) {
-                    this.leftMonth = this.selectedStart.with({ day: 1 })
-                }
-
-                this.selectedEnd = null
+            } else if (this.selectedStart) {
+                this.leftMonth = this.selectedStart.with({ day: 1 })
             }
         }
     }
@@ -1034,6 +1131,8 @@ export default class TerraDatePicker extends TerraElement {
         if (!value.trim()) {
             this.selectedStart = null
             this.selectedEnd = null
+            this.#startDirty = true
+            this.#endDirty = true
             input.setCustomValidity('')
             this.#emitChange()
             return
@@ -1175,6 +1274,8 @@ export default class TerraDatePicker extends TerraElement {
 
             this.selectedStart = finalStart
             this.selectedEnd = finalEnd
+            this.#startDirty = true
+            this.#endDirty = true
             this.#updateMonthViews()
             input.value = `${this.#formatDisplayDate(finalStart, true)} – ${this.#formatDisplayDate(finalEnd, false)}`
             input.setCustomValidity('')
@@ -1260,6 +1361,8 @@ export default class TerraDatePicker extends TerraElement {
 
             this.selectedStart = date
             this.selectedEnd = null
+            this.#startDirty = true
+            this.#endDirty = true
             this.#updateMonthViews()
             input.value = this.#formatDisplayDate(date, true)
             input.setCustomValidity('')
@@ -1274,6 +1377,7 @@ export default class TerraDatePicker extends TerraElement {
 
         if (!value.trim()) {
             this.selectedStart = null
+            this.#startDirty = true
 
             input.setCustomValidity('')
             this.#emitChange()
@@ -1370,6 +1474,7 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         this.selectedStart = date
+        this.#startDirty = true
         this.leftMonth = date.with({ day: 1 })
         input.value = this.#formatDisplayDate(date, true)
         input.setCustomValidity('')
@@ -1383,6 +1488,7 @@ export default class TerraDatePicker extends TerraElement {
 
         if (!value.trim()) {
             this.selectedEnd = null
+            this.#endDirty = true
             input.setCustomValidity('')
 
             this.#emitChange()
@@ -1489,6 +1595,7 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         this.selectedEnd = date
+        this.#endDirty = true
         if (
             this.selectedStart &&
             this.#isSameMonth(this.selectedStart, this.selectedEnd)
@@ -1769,6 +1876,8 @@ export default class TerraDatePicker extends TerraElement {
                 this.selectedStart = plainDate
                 this.selectedEnd = null
                 this.isSelectingRange = true
+                this.#startDirty = true
+                this.#endDirty = true
             } else {
                 // Complete the range
                 if (Temporal.PlainDate.compare(plainDate, this.selectedStart) < 0) {
@@ -1779,6 +1888,8 @@ export default class TerraDatePicker extends TerraElement {
                 }
 
                 this.isSelectingRange = false
+                this.#startDirty = true
+                this.#endDirty = true
 
                 // When time is enabled and both dates are the same day,
                 // emit validation event if end time < start time
@@ -1813,6 +1924,8 @@ export default class TerraDatePicker extends TerraElement {
         } else {
             this.selectedStart = plainDate
             this.selectedEnd = null
+            this.#startDirty = true
+            this.#endDirty = true
 
             this.#emitChange()
 
@@ -1874,6 +1987,8 @@ export default class TerraDatePicker extends TerraElement {
 
             this.selectedStart = start
             this.selectedEnd = end
+            this.#startDirty = true
+            this.#endDirty = true
         } else {
             let start = startDate
 
@@ -1886,6 +2001,8 @@ export default class TerraDatePicker extends TerraElement {
 
             this.selectedStart = start
             this.selectedEnd = null
+            this.#startDirty = true
+            this.#endDirty = true
         }
 
         if (this.selectedStart) {
@@ -1985,11 +2102,13 @@ export default class TerraDatePicker extends TerraElement {
             this.startMinute = minute
             this.startSecond = second
             this.startDisambiguation = 'compatible'
+            this.#startDirty = true
         } else {
             this.endHour = hour
             this.endMinute = minute
             this.endSecond = second
             this.endDisambiguation = 'compatible'
+            this.#endDirty = true
         }
 
         this.#emitChange()
@@ -2043,11 +2162,13 @@ export default class TerraDatePicker extends TerraElement {
             this.startMinute = newM
             this.startSecond = newS
             this.startDisambiguation = 'compatible'
+            this.#startDirty = true
         } else {
             this.endHour = newH
             this.endMinute = newM
             this.endSecond = newS
             this.endDisambiguation = 'compatible'
+            this.#endDirty = true
         }
 
         this.#emitChange()
