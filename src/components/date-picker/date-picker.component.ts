@@ -112,14 +112,19 @@ export default class TerraDatePicker extends TerraElement {
     @state() endSecond: number = 59
 
     /**
-     * Disambiguation strategy for resolving ambiguous wall-clock times during
-     * Daylight Saving Time fall-back (when clocks repeat an hour, e.g. 1:00 AM - 2:00 AM).
+     * Tracks which occurrence of a repeated DST fall-back hour an incoming timestamp
+     * came from, so re-emitting it doesn't silently shift by an hour.
      *
-     * - When an incoming ISO instant lands in a repeated hour, this records whether
-     *   it was the 'earlier' (daylight) or 'later' (standard) occurrence so that
-     *   round-tripping preserves the exact instant.
-     * - When a user manually inputs or edits wall-clock values, this resets to
-     *   'compatible' (RFC 9557 / Temporal default: choose the earlier occurrence).
+     * Because the picker stores dates and times separately (`PlainDate` + hour/minute/second)
+     * without a UTC offset, a repeated local time like `1:30 AM` on fall-back day is
+     * ambiguous on its own. Without tracking `'earlier'` (daylight) vs `'later'` (standard),
+     * loading the second `1:30 AM` from a UTC prop and re-emitting it would silently jump
+     * back an hour to the first `1:30 AM`.
+     *
+     * - Incoming ISO instants that land in a repeated hour record `'earlier'` or `'later'`
+     *   to preserve the exact instant on round-trip.
+     * - Manual edits, clears, and presets reset to `'compatible'` (Temporal's default:
+     *   earlier occurrence on fall-back repeats, later offset on spring-forward gaps).
      */
     @state() private startDisambiguation: 'earlier' | 'later' | 'compatible' =
         'compatible'
