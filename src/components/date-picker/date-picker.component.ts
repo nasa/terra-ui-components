@@ -670,8 +670,9 @@ export default class TerraDatePicker extends TerraElement {
             this.selectedEnd = null
         }
 
-        // Only extract time from props when enableTime turns on if the user hasn't
-        // cleared or replaced the prop-derived selection.
+        // When enableTime turns on, sync both date and time from props if the user
+        // hasn't cleared or replaced the prop-derived selection (handles timezone
+        // changes that happened while enableTime was false).
         if (enableTimeChanged && this.enableTime) {
             if (
                 !startChanged &&
@@ -679,6 +680,10 @@ export default class TerraDatePicker extends TerraElement {
                 this.selectedStart &&
                 this.startDate
             ) {
+                const start = this.#parseLocalDate(this.startDate)
+                if (start) {
+                    this.selectedStart = start
+                }
                 this.initializeTimeFromDateString(this.startDate, true)
             }
             if (
@@ -688,13 +693,18 @@ export default class TerraDatePicker extends TerraElement {
                 this.selectedEnd &&
                 this.endDate
             ) {
+                const end = this.#parseLocalDate(this.endDate)
+                if (end) {
+                    this.selectedEnd = end
+                }
                 this.initializeTimeFromDateString(this.endDate, false)
             }
         }
 
         // Convert active selections in-place when timezone changes (skipping endpoints
-        // already re-parsed in the new timezone, and leaving date-only picks unchanged).
-        if (timezoneChanged && this.enableTime) {
+        // already resolved in the new timezone by startChanged/endChanged/enableTimeChanged,
+        // and leaving date-only picks unchanged when enableTime is off).
+        if (timezoneChanged && this.enableTime && !enableTimeChanged) {
             const fromTz = resolveTimezone(
                 changedProperties.get('timezone') as string | undefined
             )
@@ -1187,20 +1197,42 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            // Auto-swap if start is after end (comparing exact instants when enableTime is active)
+            // Auto-swap if start is after end. When either side includes a time,
+            // compare exact instants and swap date+time together; for date-only
+            // inputs, swap only the calendar dates so default start/end times stay put.
             let finalStart = startParsed
             let finalEnd = endParsed
+            const startHasTime = this.enableTime && startFormatted.length > 10
+            const endHasTime = this.enableTime && endFormatted.length > 10
             const tz = this.#getValidTimezone()
-            const isInverted = this.enableTime
-                ? Temporal.Instant.compare(
-                      toInstant(startParsed, tz),
-                      toInstant(endParsed, tz)
-                  ) > 0
-                : Temporal.PlainDate.compare(startParsed.date, endParsed.date) > 0
+            const isInverted =
+                startHasTime || endHasTime
+                    ? Temporal.Instant.compare(
+                          toInstant(startParsed, tz),
+                          toInstant(endParsed, tz)
+                      ) > 0
+                    : Temporal.PlainDate.compare(startParsed.date, endParsed.date) > 0
 
             if (isInverted) {
-                finalStart = endParsed
-                finalEnd = startParsed
+                if (startHasTime || endHasTime) {
+                    finalStart = endParsed
+                    finalEnd = startParsed
+                } else {
+                    finalStart = {
+                        ...startParsed,
+                        date: endParsed.date,
+                        disambiguation: this.selectedStart?.equals(endParsed.date)
+                            ? this.startDisambiguation
+                            : 'compatible',
+                    }
+                    finalEnd = {
+                        ...endParsed,
+                        date: startParsed.date,
+                        disambiguation: this.selectedEnd?.equals(startParsed.date)
+                            ? this.endDisambiguation
+                            : 'compatible',
+                    }
+                }
             }
 
             // Validate against min/max dates
@@ -1311,14 +1343,26 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Validate start is before end if end exists
-        if (
-            this.selectedEnd &&
-            Temporal.PlainDate.compare(parsed.date, this.selectedEnd) > 0
-        ) {
-            const message = 'Start date must be before end date'
-            this.setInputValidationError(input, message)
+        if (this.selectedEnd) {
+            if (this.enableTime && this.#isSameDay(parsed.date, this.selectedEnd)) {
+                const startTimeSeconds =
+                    parsed.hour * 3600 + parsed.minute * 60 + parsed.second
+                const endTimeSeconds =
+                    this.endHour * 3600 + this.endMinute * 60 + this.endSecond
+                if (startTimeSeconds > endTimeSeconds) {
+                    const message =
+                        'Start time must be before end time when dates are the same'
+                    this.setInputValidationError(input, message)
+                    return
+                }
+            } else if (
+                Temporal.PlainDate.compare(parsed.date, this.selectedEnd) > 0
+            ) {
+                const message = 'Start date must be before end date'
+                this.setInputValidationError(input, message)
 
-            return
+                return
+            }
         }
 
         this.#commitSelection(parsed, true)

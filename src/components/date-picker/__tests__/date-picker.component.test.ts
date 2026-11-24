@@ -2731,5 +2731,86 @@ describe('<terra-date-picker>', () => {
             expect(event.detail.endDate).to.equal('2024-03-25T10:00:00.000Z')
             expect(input?.value).to.equal('2024-03-20 15:00:00 – 2024-03-25 10:00:00')
         })
+
+        it('keeps default start/end times when swapping date-only combined range input with enableTime', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker range enable-time></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            input!.value = '2024-03-25 – 2024-03-20'
+            input!.dispatchEvent(new Event('terra-blur'))
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('2024-03-20T00:00:00.000Z')
+            expect(event.detail.endDate).to.equal('2024-03-25T23:59:59.000Z')
+            expect(input?.value).to.equal('2024-03-20 00:00:00 – 2024-03-25 23:59:59')
+        })
+
+        it('does not double-shift when timezone and enableTime change together or sequentially', async () => {
+            // 1. Same-tick update: timezone + enableTime together
+            const sameTick: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    timezone="UTC"
+                    start-date="2024-01-01T02:00:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(sameTick)
+
+            sameTick.timezone = 'America/Los_Angeles'
+            sameTick.enableTime = true
+            await elementUpdated(sameTick)
+
+            expect(formatDate(sameTick.selectedStart)).to.equal('2023-12-31')
+            expect(sameTick.shadowRoot?.querySelector('terra-input')?.value).to.equal(
+                '2023-12-31 18:00:00'
+            )
+
+            // 2. Staggered update: timezone changes while enableTime is false, then enableTime turns on
+            const staggered: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    timezone="UTC"
+                    start-date="2024-01-01T02:00:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(staggered)
+
+            staggered.timezone = 'America/Los_Angeles'
+            await elementUpdated(staggered)
+            staggered.enableTime = true
+            await elementUpdated(staggered)
+
+            expect(formatDate(staggered.selectedStart)).to.equal('2023-12-31')
+            expect(
+                staggered.shadowRoot?.querySelector('terra-input')?.value
+            ).to.equal('2023-12-31 18:00:00')
+        })
+
+        it('rejects start time after end time on the same day in split inputs', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker
+                    inline
+                    range
+                    split-inputs
+                    enable-time
+                    start-date="2024-03-20T09:00:00.000Z"
+                    end-date="2024-03-20T12:00:00.000Z"
+                ></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const startInput = el.shadowRoot?.querySelectorAll('terra-input')[0]
+            startInput!.value = '2024-03-20 15:00:00'
+            startInput!.dispatchEvent(new Event('terra-blur'))
+            await elementUpdated(el)
+
+            expect(startInput!.validationMessage).to.contain(
+                'Start time must be before end time'
+            )
+            expect(el.startHour).to.equal(9)
+        })
     })
 })
