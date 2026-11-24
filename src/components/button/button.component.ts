@@ -199,36 +199,54 @@ export default class TerraButton extends TerraElement implements TerraFormContro
     connectedCallback() {
         super.connectedCallback()
 
-        if (this.forDialog) {
-            document.addEventListener(
-                'terra-dialog-show',
-                this.#handleDialogStateChange.bind(this)
-            )
-            document.addEventListener(
-                'terra-dialog-hide',
-                this.#handleDialogStateChange.bind(this)
-            )
-        }
+        this.#syncDialogListeners()
     }
 
     disconnectedCallback() {
         super.disconnectedCallback()
 
+        this.#removeDialogListeners()
+    }
+
+    @watch('forDialog')
+    handleForDialogChange() {
+        // ensures a button reassigned to another dialog / cleared doesn't keep stale state
+        this.expanded = false
+
+        this.#syncDialogListeners()
+    }
+
+    #syncDialogListeners() {
+        if (this.isConnected && this.forDialog) {
+            document.addEventListener(
+                'terra-dialog-show',
+                this.#handleDialogStateChange
+            )
+            document.addEventListener(
+                'terra-dialog-hide',
+                this.#handleDialogStateChange
+            )
+        } else {
+            this.#removeDialogListeners()
+        }
+    }
+
+    #removeDialogListeners() {
         document.removeEventListener(
             'terra-dialog-show',
-            this.#handleDialogStateChange.bind(this)
+            this.#handleDialogStateChange
         )
         document.removeEventListener(
             'terra-dialog-hide',
-            this.#handleDialogStateChange.bind(this)
+            this.#handleDialogStateChange
         )
     }
 
-    #handleDialogStateChange(e: TerraDialogShowEvent | TerraDialogHideEvent) {
+    #handleDialogStateChange = (e: TerraDialogShowEvent | TerraDialogHideEvent) => {
         if (this.forDialog && this.forDialog === e.target.id) {
             // make sure the aria expanded property gets updated when the dialog hides/shows
             // https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Reference/Attributes/aria-expanded#buttons
-            this.expanded = (e.target as any).open
+            this.expanded = e.target.open
         }
     }
 
