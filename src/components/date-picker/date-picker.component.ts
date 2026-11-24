@@ -376,7 +376,38 @@ export default class TerraDatePicker extends TerraElement {
         return d.year === m.year && d.month === m.month
     }
 
-    #getBounds(): { min?: Temporal.PlainDate; max?: Temporal.PlainDate } {
+    #parseBoundInstant(dateString?: string): Temporal.Instant | undefined {
+        if (!dateString) {
+            return undefined
+        }
+
+        const trimmed = dateString.trim()
+        if (!trimmed || /^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+            return undefined
+        }
+
+        try {
+            if (trimmed.endsWith('Z') || /[+-]\d{2}:\d{2}$/.test(trimmed)) {
+                return Temporal.Instant.from(trimmed)
+            }
+
+            const isoNaive = trimmed.includes(' ')
+                ? trimmed.replace(' ', 'T')
+                : trimmed
+            return Temporal.PlainDateTime.from(isoNaive)
+                .toZonedDateTime(this.#getValidTimezone())
+                .toInstant()
+        } catch {
+            return undefined
+        }
+    }
+
+    #getBounds(): {
+        min?: Temporal.PlainDate
+        max?: Temporal.PlainDate
+        minInstant?: Temporal.Instant
+        maxInstant?: Temporal.Instant
+    } {
         const min = this.minDate
             ? (this.#parseLocalDate(this.minDate) ?? undefined)
             : undefined
@@ -384,7 +415,71 @@ export default class TerraDatePicker extends TerraElement {
             ? (this.#parseLocalDate(this.maxDate) ?? undefined)
             : undefined
 
-        return { min, max }
+        return {
+            min,
+            max,
+            minInstant: this.#parseBoundInstant(this.minDate),
+            maxInstant: this.#parseBoundInstant(this.maxDate),
+        }
+    }
+
+    #toInstant(
+        date: Temporal.PlainDate,
+        hour: number,
+        minute: number,
+        second: number,
+        disambiguation: 'earlier' | 'later' | 'compatible'
+    ): Temporal.Instant {
+        return date
+            .toPlainDateTime({ hour, minute, second })
+            .toZonedDateTime(this.#getValidTimezone(), { disambiguation })
+            .toInstant()
+    }
+
+    #isBeforeMin(
+        date: Temporal.PlainDate,
+        hour: number,
+        minute: number,
+        second: number,
+        disambiguation: 'earlier' | 'later' | 'compatible'
+    ): boolean {
+        const { min, minInstant } = this.#getBounds()
+
+        if (this.enableTime && minInstant) {
+            const candidate = this.#toInstant(
+                date,
+                hour,
+                minute,
+                second,
+                disambiguation
+            )
+            return Temporal.Instant.compare(candidate, minInstant) < 0
+        }
+
+        return Boolean(min && Temporal.PlainDate.compare(date, min) < 0)
+    }
+
+    #isAfterMax(
+        date: Temporal.PlainDate,
+        hour: number,
+        minute: number,
+        second: number,
+        disambiguation: 'earlier' | 'later' | 'compatible'
+    ): boolean {
+        const { max, maxInstant } = this.#getBounds()
+
+        if (this.enableTime && maxInstant) {
+            const candidate = this.#toInstant(
+                date,
+                hour,
+                minute,
+                second,
+                disambiguation
+            )
+            return Temporal.Instant.compare(candidate, maxInstant) > 0
+        }
+
+        return Boolean(max && Temporal.PlainDate.compare(date, max) > 0)
     }
 
     #doesRangeOverlapBounds(range: DateRange): boolean {
@@ -1051,13 +1146,28 @@ export default class TerraDatePicker extends TerraElement {
             }
 
             // Validate against min/max dates
-            const { min, max } = this.#getBounds()
-            if (min && Temporal.PlainDate.compare(finalStart, min) < 0) {
+            if (
+                this.#isBeforeMin(
+                    finalStart,
+                    this.startHour,
+                    this.startMinute,
+                    this.startSecond,
+                    this.startDisambiguation
+                )
+            ) {
                 const message = `Start date must be on or after ${this.formatDateForError(this.minDate!)}`
                 this.setInputValidationError(input, message)
                 return
             }
-            if (max && Temporal.PlainDate.compare(finalEnd, max) > 0) {
+            if (
+                this.#isAfterMax(
+                    finalEnd,
+                    this.endHour,
+                    this.endMinute,
+                    this.endSecond,
+                    this.endDisambiguation
+                )
+            ) {
                 const message = `End date must be on or before ${this.formatDateForError(this.maxDate!)}`
                 this.setInputValidationError(input, message)
                 return
@@ -1117,16 +1227,30 @@ export default class TerraDatePicker extends TerraElement {
             }
 
             // Validate against min/max dates
-            const { min, max } = this.#getBounds()
-
-            if (min && Temporal.PlainDate.compare(date, min) < 0) {
+            if (
+                this.#isBeforeMin(
+                    date,
+                    this.startHour,
+                    this.startMinute,
+                    this.startSecond,
+                    this.startDisambiguation
+                )
+            ) {
                 const message = `Date must be on or after ${this.formatDateForError(this.minDate!)}`
 
                 this.setInputValidationError(input, message)
 
                 return
             }
-            if (max && Temporal.PlainDate.compare(date, max) > 0) {
+            if (
+                this.#isAfterMax(
+                    date,
+                    this.startHour,
+                    this.startMinute,
+                    this.startSecond,
+                    this.startDisambiguation
+                )
+            ) {
                 const message = `Date must be on or before ${this.formatDateForError(this.maxDate!)}`
 
                 this.setInputValidationError(input, message)
@@ -1205,14 +1329,29 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Validate against min/max
-        const { min, max } = this.#getBounds()
-        if (min && Temporal.PlainDate.compare(date, min) < 0) {
+        if (
+            this.#isBeforeMin(
+                date,
+                this.startHour,
+                this.startMinute,
+                this.startSecond,
+                this.startDisambiguation
+            )
+        ) {
             const message = `Date must be on or after ${this.formatDateForError(this.minDate!)}`
             this.setInputValidationError(input, message)
 
             return
         }
-        if (max && Temporal.PlainDate.compare(date, max) > 0) {
+        if (
+            this.#isAfterMax(
+                date,
+                this.startHour,
+                this.startMinute,
+                this.startSecond,
+                this.startDisambiguation
+            )
+        ) {
             const message = `Date must be on or before ${this.formatDateForError(this.maxDate!)}`
             this.setInputValidationError(input, message)
 
@@ -1297,14 +1436,29 @@ export default class TerraDatePicker extends TerraElement {
         }
 
         // Validate against min/max
-        const { min, max } = this.#getBounds()
-        if (min && Temporal.PlainDate.compare(date, min) < 0) {
+        if (
+            this.#isBeforeMin(
+                date,
+                this.endHour,
+                this.endMinute,
+                this.endSecond,
+                this.endDisambiguation
+            )
+        ) {
             const message = `Date must be on or after ${this.formatDateForError(this.minDate!)}`
             this.setInputValidationError(input, message)
 
             return
         }
-        if (max && Temporal.PlainDate.compare(date, max) > 0) {
+        if (
+            this.#isAfterMax(
+                date,
+                this.endHour,
+                this.endMinute,
+                this.endSecond,
+                this.endDisambiguation
+            )
+        ) {
             const message = `Date must be on or before ${this.formatDateForError(this.maxDate!)}`
             this.setInputValidationError(input, message)
 

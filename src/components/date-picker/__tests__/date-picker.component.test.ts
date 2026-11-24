@@ -1897,6 +1897,96 @@ describe('<terra-date-picker>', () => {
                 // Validation error should be cleared
                 expect(startInput!.validationMessage).to.equal('')
             })
+
+            it('should reject time before minDate time on the same calendar day', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        enable-time
+                        min-date="2024-01-01T12:00:00Z"
+                        max-date="2024-01-10T12:00:00Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const input = el.shadowRoot?.querySelector('terra-input')
+
+                input!.value = '2024-01-01 00:00:00'
+                input!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                expect(input!.validationMessage).to.contain('on or after')
+
+                input!.value = '2024-01-01 12:00:00'
+                input!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                expect(input!.validationMessage).to.equal('')
+            })
+
+            it('should reject time after maxDate time on the same calendar day', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        split-inputs
+                        range
+                        enable-time
+                        min-date="2024-01-01T12:00:00Z"
+                        max-date="2024-01-10T12:00:00Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                const endInput = el.shadowRoot?.querySelectorAll('terra-input')[1]
+
+                endInput!.value = '2024-01-10 18:00:00'
+                endInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                expect(endInput!.validationMessage).to.contain('on or before')
+
+                endInput!.value = '2024-01-10 12:00:00'
+                endInput!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+
+                expect(endInput!.validationMessage).to.equal('')
+            })
+
+            it('should validate instant bounds in the configured timezone without disabling the boundary day', async () => {
+                const el = await fixture<TerraDatePicker>(html`
+                    <terra-date-picker
+                        inline
+                        enable-time
+                        timezone="America/New_York"
+                        min-date="2024-01-01T12:00:00Z"
+                    ></terra-date-picker>
+                `)
+                await elementUpdated(el)
+
+                // Jan 1 should remain clickable on the calendar (only times before 07:00 EST are disallowed)
+                const jan1Button = Array.from(
+                    el.shadowRoot?.querySelectorAll('.calendar__day') || []
+                ).find(
+                    btn =>
+                        !btn.classList.contains('calendar__day--outside') &&
+                        btn.textContent?.trim() === '1'
+                ) as HTMLButtonElement | undefined
+                expect(jan1Button?.disabled).to.be.false
+
+                const input = el.shadowRoot?.querySelector('terra-input')
+
+                // 06:59:59 EST == 11:59:59Z (< 12:00:00Z)
+                input!.value = '2024-01-01 06:59:59'
+                input!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+                expect(input!.validationMessage).to.contain('on or after')
+
+                // 07:00:00 EST == 12:00:00Z
+                input!.value = '2024-01-01 07:00:00'
+                input!.dispatchEvent(new Event('terra-blur'))
+                await elementUpdated(el)
+                expect(input!.validationMessage).to.equal('')
+            })
         })
 
         describe('Edge cases', () => {
