@@ -122,3 +122,46 @@ export function getYesterdayIsoDate(): string {
 
     return yesterday.toISOString().slice(0, 10)
 }
+
+/**
+ * ---------------------------------------------------------------------------
+ * Clock & Time-of-Day Utilities
+ * ---------------------------------------------------------------------------
+ * The functions below perform pure clock-time arithmetic between 24-hour and
+ * 12-hour (AM/PM) representations. Unlike the date-oriented functions above,
+ * these operate strictly on clock hours (0–23 or 1–12) and an AM/PM period,
+ * without coupling to calendar days, timezones, or Date objects.
+ */
+
+/**
+ * Converts a 24-hour clock hour (0–23) to a 12-hour representation (1–12)
+ * with an AM or PM period.
+ *
+ * Examples:
+ * - 0  -> { hour: 12, period: 'AM' } (midnight)
+ * - 9  -> { hour: 9,  period: 'AM' }
+ * - 12 -> { hour: 12, period: 'PM' } (noon)
+ * - 15 -> { hour: 3,  period: 'PM' }
+ */
+export function to12Hour(hour24: number): { hour: number; period: 'AM' | 'PM' } {
+    const period: 'AM' | 'PM' = hour24 < 12 ? 'AM' : 'PM'
+    const hour = hour24 % 12 || 12
+    return { hour, period }
+}
+
+/**
+ * Converts a 12-hour clock hour (1–12) and an AM/PM period back to a
+ * standard 24-hour clock hour (0–23).
+ *
+ * Examples:
+ * - { hour: 12, period: 'AM' } -> 0  (midnight)
+ * - { hour: 9,  period: 'AM' } -> 9
+ * - { hour: 12, period: 'PM' } -> 12 (noon)
+ * - { hour: 3,  period: 'PM' } -> 15
+ */
+export function to24Hour(hour12: number, period: 'AM' | 'PM'): number {
+    if (period === 'AM') {
+        return hour12 === 12 ? 0 : hour12
+    }
+    return hour12 === 12 ? 12 : hour12 + 12
+}
