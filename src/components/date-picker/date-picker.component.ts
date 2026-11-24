@@ -22,6 +22,14 @@ export interface PresetRange {
     getValue: () => DateRange
 }
 
+interface ParsedEndpoint {
+    date: Temporal.PlainDate
+    hour: number
+    minute: number
+    second: number
+    disambiguation: 'earlier' | 'later' | 'compatible'
+}
+
 /**
  * @summary A date picker component that implements the Horizon Design System (HDS) Date Picker patterns. Supports single date selection or date range selection with calendar popup.
  * @documentation https://terra-ui.netlify.app/components/date-picker
@@ -1124,6 +1132,76 @@ export default class TerraDatePicker extends TerraElement {
         })
     }
 
+    #parseInputEndpoint(formatted: string, isStart: boolean): ParsedEndpoint | null {
+        const currentDate = isStart ? this.selectedStart : this.selectedEnd
+        const currentHour = isStart ? this.startHour : this.endHour
+        const currentMinute = isStart ? this.startMinute : this.endMinute
+        const currentSecond = isStart ? this.startSecond : this.endSecond
+        const currentDisambiguation = isStart
+            ? this.startDisambiguation
+            : this.endDisambiguation
+
+        if (this.enableTime && formatted.length > 10) {
+            const [dp, tp] = formatted.split(/[T\s]+/)
+            const date = this.#parseLocalDate(dp)
+
+            if (!date) {
+                return null
+            }
+
+            const tc = tp.split(':').map(Number)
+            const newHour = tc[0] || 0
+            const newMinute = tc[1] || 0
+            const newSecond = tc[2] || 0
+            const timeChanged =
+                currentHour !== newHour ||
+                currentMinute !== newMinute ||
+                currentSecond !== newSecond
+            const dateChanged = !currentDate?.equals(date)
+
+            return {
+                date,
+                hour: newHour,
+                minute: newMinute,
+                second: newSecond,
+                disambiguation:
+                    timeChanged || dateChanged ? 'compatible' : currentDisambiguation,
+            }
+        }
+
+        const date = this.#parseLocalDate(formatted)
+        if (!date) {
+            return null
+        }
+
+        const dateChanged = !currentDate?.equals(date)
+        return {
+            date,
+            hour: currentHour,
+            minute: currentMinute,
+            second: currentSecond,
+            disambiguation: dateChanged ? 'compatible' : currentDisambiguation,
+        }
+    }
+
+    #commitEndpoint(parsed: ParsedEndpoint, isStart: boolean) {
+        if (isStart) {
+            this.selectedStart = parsed.date
+            this.startHour = parsed.hour
+            this.startMinute = parsed.minute
+            this.startSecond = parsed.second
+            this.startDisambiguation = parsed.disambiguation
+            this.#startDirty = true
+        } else {
+            this.selectedEnd = parsed.date
+            this.endHour = parsed.hour
+            this.endMinute = parsed.minute
+            this.endSecond = parsed.second
+            this.endDisambiguation = parsed.disambiguation
+            this.#endDirty = true
+        }
+    }
+
     #handleInputBlur(event: Event) {
         const input = event.target as TerraInput
         const value = input.value || ''
@@ -1165,93 +1243,49 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            let start: Temporal.PlainDate | null
-            let end: Temporal.PlainDate | null
+            const startParsed = this.#parseInputEndpoint(startFormatted, true)
+            const endParsed = this.#parseInputEndpoint(endFormatted, false)
 
-            if (this.enableTime && startFormatted.length > 10) {
-                const [sdp, stp] = startFormatted.split(/[T\s]+/)
-
-                start = this.#parseLocalDate(sdp)
-
-                const stc = stp.split(':').map(Number)
-                const newHour = stc[0] || 0
-                const newMinute = stc[1] || 0
-                const newSecond = stc[2] || 0
-                const timeChanged =
-                    this.startHour !== newHour ||
-                    this.startMinute !== newMinute ||
-                    this.startSecond !== newSecond
-                const dateChanged =
-                    !this.selectedStart || !start || !this.selectedStart.equals(start)
-
-                if (timeChanged || dateChanged) {
-                    this.startHour = newHour
-                    this.startMinute = newMinute
-                    this.startSecond = newSecond
-                    this.startDisambiguation = 'compatible'
-                }
-            } else {
-                start = this.#parseLocalDate(startFormatted)
-                if (
-                    !this.selectedStart ||
-                    !start ||
-                    !this.selectedStart.equals(start)
-                ) {
-                    this.startDisambiguation = 'compatible'
-                }
-            }
-
-            if (this.enableTime && endFormatted.length > 10) {
-                const [edp, etp] = endFormatted.split(/[T\s]+/)
-
-                end = this.#parseLocalDate(edp)
-
-                const etc = etp.split(':').map(Number)
-                const newHour = etc[0] || 0
-                const newMinute = etc[1] || 0
-                const newSecond = etc[2] || 0
-                const timeChanged =
-                    this.endHour !== newHour ||
-                    this.endMinute !== newMinute ||
-                    this.endSecond !== newSecond
-                const dateChanged =
-                    !this.selectedEnd || !end || !this.selectedEnd.equals(end)
-
-                if (timeChanged || dateChanged) {
-                    this.endHour = newHour
-                    this.endMinute = newMinute
-                    this.endSecond = newSecond
-                    this.endDisambiguation = 'compatible'
-                }
-            } else {
-                end = this.#parseLocalDate(endFormatted)
-                if (!this.selectedEnd || !end || !this.selectedEnd.equals(end)) {
-                    this.endDisambiguation = 'compatible'
-                }
-            }
-
-            if (!start || !end) {
+            if (!startParsed || !endParsed) {
                 this.setInputValidationError(input, 'Invalid date format')
-
                 return
             }
 
-            // Auto-swap if dates are in wrong order
-            let finalStart = start
-            let finalEnd = end
-            if (Temporal.PlainDate.compare(start, end) > 0) {
-                finalStart = end
-                finalEnd = start
+            // Auto-swap if start is after end (including time-of-day when enableTime is active)
+            let finalStart = startParsed
+            let finalEnd = endParsed
+            const isInverted = this.enableTime
+                ? Temporal.Instant.compare(
+                      this.#toInstant(
+                          startParsed.date,
+                          startParsed.hour,
+                          startParsed.minute,
+                          startParsed.second,
+                          startParsed.disambiguation
+                      ),
+                      this.#toInstant(
+                          endParsed.date,
+                          endParsed.hour,
+                          endParsed.minute,
+                          endParsed.second,
+                          endParsed.disambiguation
+                      )
+                  ) > 0
+                : Temporal.PlainDate.compare(startParsed.date, endParsed.date) > 0
+
+            if (isInverted) {
+                finalStart = endParsed
+                finalEnd = startParsed
             }
 
             // Validate against min/max dates
             if (
                 this.#isBeforeMin(
-                    finalStart,
-                    this.startHour,
-                    this.startMinute,
-                    this.startSecond,
-                    this.startDisambiguation
+                    finalStart.date,
+                    finalStart.hour,
+                    finalStart.minute,
+                    finalStart.second,
+                    finalStart.disambiguation
                 )
             ) {
                 const message = `Start date must be on or after ${this.formatDateForError(this.minDate!)}`
@@ -1260,11 +1294,11 @@ export default class TerraDatePicker extends TerraElement {
             }
             if (
                 this.#isAfterMax(
-                    finalEnd,
-                    this.endHour,
-                    this.endMinute,
-                    this.endSecond,
-                    this.endDisambiguation
+                    finalEnd.date,
+                    finalEnd.hour,
+                    finalEnd.minute,
+                    finalEnd.second,
+                    finalEnd.disambiguation
                 )
             ) {
                 const message = `End date must be on or before ${this.formatDateForError(this.maxDate!)}`
@@ -1272,12 +1306,10 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            this.selectedStart = finalStart
-            this.selectedEnd = finalEnd
-            this.#startDirty = true
-            this.#endDirty = true
+            this.#commitEndpoint(finalStart, true)
+            this.#commitEndpoint(finalEnd, false)
             this.#updateMonthViews()
-            input.value = `${this.#formatDisplayDate(finalStart, true)} – ${this.#formatDisplayDate(finalEnd, false)}`
+            input.value = `${this.#formatDisplayDate(finalStart.date, true)} – ${this.#formatDisplayDate(finalEnd.date, false)}`
             input.setCustomValidity('')
             this.#emitChange()
         } else {
@@ -1289,52 +1321,21 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            let date: Temporal.PlainDate | null
-            if (this.enableTime && formatted.length > 10) {
-                const [dp, tp] = formatted.split(/[T\s]+/)
-                date = this.#parseLocalDate(dp)
-                const tc = tp.split(':').map(Number)
-                const newHour = tc[0] || 0
-                const newMinute = tc[1] || 0
-                const newSecond = tc[2] || 0
-                const timeChanged =
-                    this.startHour !== newHour ||
-                    this.startMinute !== newMinute ||
-                    this.startSecond !== newSecond
-                const dateChanged =
-                    !this.selectedStart || !date || !this.selectedStart.equals(date)
+            const parsed = this.#parseInputEndpoint(formatted, true)
 
-                if (timeChanged || dateChanged) {
-                    this.startHour = newHour
-                    this.startMinute = newMinute
-                    this.startSecond = newSecond
-                    this.startDisambiguation = 'compatible'
-                }
-            } else {
-                date = this.#parseLocalDate(formatted)
-                if (
-                    !this.selectedStart ||
-                    !date ||
-                    !this.selectedStart.equals(date)
-                ) {
-                    this.startDisambiguation = 'compatible'
-                }
-            }
-
-            if (!date) {
+            if (!parsed) {
                 this.setInputValidationError(input, message)
-
                 return
             }
 
             // Validate against min/max dates
             if (
                 this.#isBeforeMin(
-                    date,
-                    this.startHour,
-                    this.startMinute,
-                    this.startSecond,
-                    this.startDisambiguation
+                    parsed.date,
+                    parsed.hour,
+                    parsed.minute,
+                    parsed.second,
+                    parsed.disambiguation
                 )
             ) {
                 const message = `Date must be on or after ${this.formatDateForError(this.minDate!)}`
@@ -1345,11 +1346,11 @@ export default class TerraDatePicker extends TerraElement {
             }
             if (
                 this.#isAfterMax(
-                    date,
-                    this.startHour,
-                    this.startMinute,
-                    this.startSecond,
-                    this.startDisambiguation
+                    parsed.date,
+                    parsed.hour,
+                    parsed.minute,
+                    parsed.second,
+                    parsed.disambiguation
                 )
             ) {
                 const message = `Date must be on or before ${this.formatDateForError(this.maxDate!)}`
@@ -1359,12 +1360,11 @@ export default class TerraDatePicker extends TerraElement {
                 return
             }
 
-            this.selectedStart = date
+            this.#commitEndpoint(parsed, true)
             this.selectedEnd = null
-            this.#startDirty = true
             this.#endDirty = true
             this.#updateMonthViews()
-            input.value = this.#formatDisplayDate(date, true)
+            input.value = this.#formatDisplayDate(parsed.date, true)
             input.setCustomValidity('')
 
             this.#emitChange()
@@ -1395,38 +1395,9 @@ export default class TerraDatePicker extends TerraElement {
             return
         }
 
-        let date: Temporal.PlainDate | null
+        const parsed = this.#parseInputEndpoint(formatted, true)
 
-        if (this.enableTime && formatted.length > 10) {
-            const [dp, tp] = formatted.split(/[T\s]+/)
-
-            date = this.#parseLocalDate(dp)
-
-            const tc = tp.split(':').map(Number)
-            const newHour = tc[0] || 0
-            const newMinute = tc[1] || 0
-            const newSecond = tc[2] || 0
-            const timeChanged =
-                this.startHour !== newHour ||
-                this.startMinute !== newMinute ||
-                this.startSecond !== newSecond
-            const dateChanged =
-                !this.selectedStart || !date || !this.selectedStart.equals(date)
-
-            if (timeChanged || dateChanged) {
-                this.startHour = newHour
-                this.startMinute = newMinute
-                this.startSecond = newSecond
-                this.startDisambiguation = 'compatible'
-            }
-        } else {
-            date = this.#parseLocalDate(formatted)
-            if (!this.selectedStart || !date || !this.selectedStart.equals(date)) {
-                this.startDisambiguation = 'compatible'
-            }
-        }
-
-        if (!date) {
+        if (!parsed) {
             this.setInputValidationError(input, 'Invalid date format')
 
             return
@@ -1435,11 +1406,11 @@ export default class TerraDatePicker extends TerraElement {
         // Validate against min/max
         if (
             this.#isBeforeMin(
-                date,
-                this.startHour,
-                this.startMinute,
-                this.startSecond,
-                this.startDisambiguation
+                parsed.date,
+                parsed.hour,
+                parsed.minute,
+                parsed.second,
+                parsed.disambiguation
             )
         ) {
             const message = `Date must be on or after ${this.formatDateForError(this.minDate!)}`
@@ -1449,11 +1420,11 @@ export default class TerraDatePicker extends TerraElement {
         }
         if (
             this.#isAfterMax(
-                date,
-                this.startHour,
-                this.startMinute,
-                this.startSecond,
-                this.startDisambiguation
+                parsed.date,
+                parsed.hour,
+                parsed.minute,
+                parsed.second,
+                parsed.disambiguation
             )
         ) {
             const message = `Date must be on or before ${this.formatDateForError(this.maxDate!)}`
@@ -1465,7 +1436,7 @@ export default class TerraDatePicker extends TerraElement {
         // Validate start is before end if end exists
         if (
             this.selectedEnd &&
-            Temporal.PlainDate.compare(date, this.selectedEnd) > 0
+            Temporal.PlainDate.compare(parsed.date, this.selectedEnd) > 0
         ) {
             const message = 'Start date must be before end date'
             this.setInputValidationError(input, message)
@@ -1473,10 +1444,9 @@ export default class TerraDatePicker extends TerraElement {
             return
         }
 
-        this.selectedStart = date
-        this.#startDirty = true
-        this.leftMonth = date.with({ day: 1 })
-        input.value = this.#formatDisplayDate(date, true)
+        this.#commitEndpoint(parsed, true)
+        this.leftMonth = parsed.date.with({ day: 1 })
+        input.value = this.#formatDisplayDate(parsed.date, true)
         input.setCustomValidity('')
 
         this.#emitChange()
@@ -1504,38 +1474,9 @@ export default class TerraDatePicker extends TerraElement {
             return
         }
 
-        let date: Temporal.PlainDate | null
+        const parsed = this.#parseInputEndpoint(formatted, false)
 
-        if (this.enableTime && formatted.length > 10) {
-            const [dp, tp] = formatted.split(/[T\s]+/)
-
-            date = this.#parseLocalDate(dp)
-
-            const tc = tp.split(':').map(Number)
-            const newHour = tc[0] || 0
-            const newMinute = tc[1] || 0
-            const newSecond = tc[2] || 0
-            const timeChanged =
-                this.endHour !== newHour ||
-                this.endMinute !== newMinute ||
-                this.endSecond !== newSecond
-            const dateChanged =
-                !this.selectedEnd || !date || !this.selectedEnd.equals(date)
-
-            if (timeChanged || dateChanged) {
-                this.endHour = newHour
-                this.endMinute = newMinute
-                this.endSecond = newSecond
-                this.endDisambiguation = 'compatible'
-            }
-        } else {
-            date = this.#parseLocalDate(formatted)
-            if (!this.selectedEnd || !date || !this.selectedEnd.equals(date)) {
-                this.endDisambiguation = 'compatible'
-            }
-        }
-
-        if (!date) {
+        if (!parsed) {
             this.setInputValidationError(input, 'Invalid date format')
 
             return
@@ -1544,11 +1485,11 @@ export default class TerraDatePicker extends TerraElement {
         // Validate against min/max
         if (
             this.#isBeforeMin(
-                date,
-                this.endHour,
-                this.endMinute,
-                this.endSecond,
-                this.endDisambiguation
+                parsed.date,
+                parsed.hour,
+                parsed.minute,
+                parsed.second,
+                parsed.disambiguation
             )
         ) {
             const message = `Date must be on or after ${this.formatDateForError(this.minDate!)}`
@@ -1558,11 +1499,11 @@ export default class TerraDatePicker extends TerraElement {
         }
         if (
             this.#isAfterMax(
-                date,
-                this.endHour,
-                this.endMinute,
-                this.endSecond,
-                this.endDisambiguation
+                parsed.date,
+                parsed.hour,
+                parsed.minute,
+                parsed.second,
+                parsed.disambiguation
             )
         ) {
             const message = `Date must be on or before ${this.formatDateForError(this.maxDate!)}`
@@ -1573,19 +1514,21 @@ export default class TerraDatePicker extends TerraElement {
 
         // Validate end is after start if start exists
         if (this.selectedStart) {
-            if (this.enableTime && this.#isSameDay(date, this.selectedStart)) {
+            if (this.enableTime && this.#isSameDay(parsed.date, this.selectedStart)) {
                 // When time is enabled and dates are the same, validate time instead of full datetime
                 const startTimeSeconds =
                     this.startHour * 3600 + this.startMinute * 60 + this.startSecond
                 const endTimeSeconds =
-                    this.endHour * 3600 + this.endMinute * 60 + this.endSecond
+                    parsed.hour * 3600 + parsed.minute * 60 + parsed.second
                 if (endTimeSeconds < startTimeSeconds) {
                     const message =
                         'End time must be after start time when dates are the same'
                     this.setInputValidationError(input, message)
                     return
                 }
-            } else if (Temporal.PlainDate.compare(date, this.selectedStart) < 0) {
+            } else if (
+                Temporal.PlainDate.compare(parsed.date, this.selectedStart) < 0
+            ) {
                 // Different dates or time not enabled - compare full datetime
                 const message = 'End date must be after start date'
                 this.setInputValidationError(input, message)
@@ -1594,18 +1537,17 @@ export default class TerraDatePicker extends TerraElement {
             }
         }
 
-        this.selectedEnd = date
-        this.#endDirty = true
+        this.#commitEndpoint(parsed, false)
         if (
             this.selectedStart &&
             this.#isSameMonth(this.selectedStart, this.selectedEnd)
         ) {
             this.rightMonth = this.selectedStart.with({ day: 1 }).add({ months: 1 })
         } else {
-            this.rightMonth = date.with({ day: 1 })
+            this.rightMonth = parsed.date.with({ day: 1 })
         }
 
-        input.value = this.#formatDisplayDate(date, false)
+        input.value = this.#formatDisplayDate(parsed.date, false)
         input.setCustomValidity('')
 
         this.#emitChange()

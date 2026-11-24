@@ -2695,5 +2695,41 @@ describe('<terra-date-picker>', () => {
             expect(formatDate(el.selectedStart)).to.equal('2024-01-14')
             expect(input?.value).to.equal('2024-01-14 18:00:00')
         })
+
+        it('swaps same-day inverted times in combined range input', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker range enable-time></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            input!.value = '2024-03-20 15:00:00 – 2024-03-20 10:00:00'
+            input!.dispatchEvent(new Event('terra-blur'))
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('2024-03-20T10:00:00.000Z')
+            expect(event.detail.endDate).to.equal('2024-03-20T15:00:00.000Z')
+            expect(input?.value).to.equal('2024-03-20 10:00:00 – 2024-03-20 15:00:00')
+        })
+
+        it('swaps both date and time together for cross-day inverted combined range input', async () => {
+            const el: TerraDatePicker = await fixture(html`
+                <terra-date-picker range enable-time></terra-date-picker>
+            `)
+            await elementUpdated(el)
+
+            const input = el.shadowRoot?.querySelector('terra-input')
+            const eventPromise = oneEvent(el, 'terra-date-range-change')
+
+            input!.value = '2024-03-25 10:00:00 – 2024-03-20 15:00:00'
+            input!.dispatchEvent(new Event('terra-blur'))
+            const event = await eventPromise
+
+            expect(event.detail.startDate).to.equal('2024-03-20T15:00:00.000Z')
+            expect(event.detail.endDate).to.equal('2024-03-25T10:00:00.000Z')
+            expect(input?.value).to.equal('2024-03-20 15:00:00 – 2024-03-25 10:00:00')
+        })
     })
 })
