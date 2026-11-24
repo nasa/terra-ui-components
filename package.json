@@ -102,7 +102,8 @@
     "ol": "^10.11.0",
     "ol-mapbox-style": "^13.5.1",
     "plotly.js-dist-min": "^4.1.2",
-    "proj4": "^2.22.0"
+    "proj4": "^2.22.0",
+    "temporal-polyfill": "^1.0.8"
   },
   "devDependencies": {
     "@11ty/eleventy": "^3.1.6",
