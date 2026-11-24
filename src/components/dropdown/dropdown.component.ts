@@ -1,22 +1,29 @@
-import { animateTo, stopAnimations } from '../../internal/animate.js'
+import type { CSSResultGroup } from 'lit'
+import { html } from 'lit'
+import { property, query } from 'lit/decorators.js'
 import { classMap } from 'lit/directives/class-map.js'
+import { ifDefined } from 'lit/directives/if-defined.js'
+import type { TerraSelectEvent } from '../../events/terra-select.js'
+import { getDeepestActiveElement } from '../../internal/active-elements.js'
+import { animateTo, stopAnimations } from '../../internal/animate.js'
+import { waitForEvent } from '../../internal/event.js'
+import { getTabbableBoundary } from '../../internal/tabbable.js'
+import TerraElement from '../../internal/terra-element.js'
+import { watch } from '../../internal/watch.js'
+import componentStyles from '../../styles/component.styles.js'
 import {
     getAnimation,
     setDefaultAnimation,
 } from '../../utilities/animation-registry.js'
-import { getDeepestActiveElement } from '../../internal/active-elements.js'
-import { html } from 'lit'
-import { ifDefined } from 'lit/directives/if-defined.js'
-import { property, query } from 'lit/decorators.js'
-import { waitForEvent } from '../../internal/event.js'
-import { watch } from '../../internal/watch.js'
-import componentStyles from '../../styles/component.styles.js'
+import type TerraButton from '../button/button.component.js'
+import type TerraInput from '../input/input.component.js'
+import type TerraMenu from '../menu/menu.js'
 import TerraPopup from '../popup/popup.component.js'
 import styles from './dropdown.styles.js'
-import type { CSSResultGroup } from 'lit'
-import type { TerraSelectEvent } from '../../events/terra-select.js'
-import type TerraMenu from '../menu/menu.js'
-import TerraElement from '../../internal/terra-element.js'
+
+type ElementWithAriaElements = Element & {
+    ariaLabelledByElements?: readonly Element[] | null
+}
 
 /**
  * @summary Dropdowns expose additional content that "drops down" in a panel.
@@ -112,6 +119,13 @@ export default class TerraDropdown extends TerraElement {
 
     private hoverTimeout: number | null = null
     private hideTimeout: number | null = null
+    #accessibleTriggerUpdateId = 0
+    #managedTrigger: {
+        host: HTMLElement
+        target: HTMLElement
+        addedHaspopup: boolean
+    } | null = null
+    #managedMenu: TerraMenu | null = null
 
     /**
      * Syncs the popup width or height to that of the trigger element.
@@ -145,6 +159,8 @@ export default class TerraDropdown extends TerraElement {
 
     disconnectedCallback() {
         super.disconnectedCallback()
+        this.#accessibleTriggerUpdateId++
+        this.#cleanupAccessibleTrigger()
         this.removeOpenListeners()
         this.removeHoverListeners()
         this.hide()
@@ -159,6 +175,17 @@ export default class TerraDropdown extends TerraElement {
         }
     }
 
+    #getTriggerTargetElement(triggerElement: HTMLElement): HTMLElement {
+        const tag = triggerElement.tagName.toLowerCase()
+        if (tag === 'terra-button') {
+            return (triggerElement as TerraButton).button ?? triggerElement
+        }
+        if (tag === 'terra-input') {
+            return (triggerElement as TerraInput).input ?? triggerElement
+        }
+        return getTabbableBoundary(triggerElement).start ?? triggerElement
+    }
+
     private removeHoverListeners() {
         const assignedElements =
             this.trigger?.assignedElements({ flatten: true }) || []
@@ -168,14 +195,7 @@ export default class TerraDropdown extends TerraElement {
             return
         }
 
-        // For terra-button, try to get the internal button element
-        let targetElement: HTMLElement = triggerElement
-        if (triggerElement.tagName.toLowerCase() === 'terra-button') {
-            const button = (triggerElement as any).button as HTMLElement | undefined
-            if (button) {
-                targetElement = button
-            }
-        }
+        const targetElement = this.#getTriggerTargetElement(triggerElement)
 
         targetElement.removeEventListener('mouseenter', this.handleTriggerMouseEnter)
         targetElement.removeEventListener('mouseleave', this.handleTriggerMouseLeave)
@@ -422,11 +442,15 @@ export default class TerraDropdown extends TerraElement {
     }
 
     handleTriggerSlotChange() {
-        this.updateAccessibleTrigger()
+        this.#updateAccessibleTrigger()
         // Use requestAnimationFrame to ensure the element is fully rendered
         requestAnimationFrame(() => {
             this.attachHoverListeners()
         })
+    }
+
+    #handlePanelSlotChange() {
+        this.#updateAccessibleTrigger()
     }
 
     private attachHoverListeners() {
@@ -441,19 +465,11 @@ export default class TerraDropdown extends TerraElement {
             return
         }
 
-        // Remove old listeners if they exist
-        triggerElement.removeEventListener('mouseenter', this.handleTriggerMouseEnter)
-        triggerElement.removeEventListener('mouseleave', this.handleTriggerMouseLeave)
+        const targetElement = this.#getTriggerTargetElement(triggerElement)
 
-        // For terra-button, try to get the internal button element
-        let targetElement: HTMLElement = triggerElement
-        if (triggerElement.tagName.toLowerCase() === 'terra-button') {
-            // Try to access the internal button element
-            const button = (triggerElement as any).button as HTMLElement | undefined
-            if (button) {
-                targetElement = button
-            }
-        }
+        // Remove old listeners if they exist
+        targetElement.removeEventListener('mouseenter', this.handleTriggerMouseEnter)
+        targetElement.removeEventListener('mouseleave', this.handleTriggerMouseLeave)
 
         // Add listeners to the target element
         targetElement.addEventListener('mouseenter', this.handleTriggerMouseEnter)
@@ -493,42 +509,147 @@ export default class TerraDropdown extends TerraElement {
         })
     }
 
-    //
-    // Slotted triggers can be arbitrary content, but we need to link them to the dropdown panel with `aria-haspopup` and
-    // `aria-expanded`. These must be applied to the "accessible trigger" (the tabbable portion of the trigger element
-    // that gets slotted in) so screen readers will understand them. The accessible trigger could be the slotted element,
-    // a child of the slotted element, or an element in the slotted element's shadow root.
-    //
-    // For example, the accessible trigger of an <terra-button> is a <button> located inside its shadow root.
-    //
-    // To determine this, we assume the first tabbable element in the trigger slot is the "accessible trigger."
-    //
-    updateAccessibleTrigger() {
-        /*
-        TODO:
-        const assignedElements = this.trigger.assignedElements({
-            flatten: true,
-        }) as HTMLElement[]
-        const accessibleTrigger = assignedElements.find(
-            el => getTabbableBoundary(el).start
-        )
-        let target: HTMLElement
+    #cleanupAccessibleTrigger() {
+        if (this.#managedTrigger) {
+            const { target, addedHaspopup } = this.#managedTrigger
+            target.removeAttribute('aria-expanded')
 
-        if (accessibleTrigger) {
-            switch (accessibleTrigger.tagName.toLowerCase()) {
-                // Terra buttons have to update the internal button so it's announced correctly by screen readers
-                case 'terra-button':
-                case 'terra-icon-button':
-                    target = (accessibleTrigger as TerraButton | TerraIconButton).button
-                    break
-
-                default:
-                    target = accessibleTrigger
+            if (addedHaspopup) {
+                target.removeAttribute('aria-haspopup')
             }
 
-            target.setAttribute('aria-haspopup', 'true')
-            target.setAttribute('aria-expanded', this.open ? 'true' : 'false')
-        }*/
+            this.#managedTrigger = null
+        }
+
+        if (this.#managedMenu && 'ariaLabelledByElements' in Element.prototype) {
+            ;(this.#managedMenu as ElementWithAriaElements).ariaLabelledByElements =
+                null
+            this.#managedMenu = null
+        }
+    }
+
+    async #resolveAccessibleTrigger(): Promise<{
+        host: HTMLElement
+        target: HTMLElement
+    } | null> {
+        // Wait for <terra-popup> to render its anchor slot so slotted triggers are in the flat tree for tabbable checks
+        if (this.popup) {
+            await this.popup.updateComplete
+        }
+
+        const assignedElements =
+            (this.trigger?.assignedElements({ flatten: true }) as HTMLElement[]) ?? []
+
+        for (const el of assignedElements) {
+            // Wait for custom elements (e.g. terra-button, terra-input) so their shadow DOM control exists
+            if ('updateComplete' in el && el.updateComplete instanceof Promise) {
+                await el.updateComplete
+            }
+
+            const tag = el.tagName.toLowerCase()
+            if (tag === 'terra-button') {
+                const target = (el as TerraButton).button
+                if (target) return { host: el, target }
+            }
+            if (tag === 'terra-input') {
+                const target = (el as TerraInput).input
+                if (target) return { host: el, target }
+            }
+
+            const tabbable = getTabbableBoundary(el).start
+            if (tabbable) {
+                return { host: el, target: tabbable }
+            }
+
+            if (['button', 'a', 'input', 'select', 'textarea'].includes(tag)) {
+                return { host: el, target: el }
+            }
+        }
+
+        return null
+    }
+
+    //
+    // Slotted triggers can be arbitrary content, but we need to link them to the dropdown panel with `aria-expanded`
+    // and (when a <terra-menu> is present) `aria-haspopup="menu"`. These must be applied to the interactive portion of
+    // the trigger element so screen readers announce the control and its expanded state accurately.
+    //
+    async #updateAccessibleTrigger() {
+        const updateId = ++this.#accessibleTriggerUpdateId
+
+        if (!this.isConnected || !this.trigger) {
+            this.#cleanupAccessibleTrigger()
+
+            return
+        }
+
+        const resolved = await this.#resolveAccessibleTrigger()
+
+        if (
+            updateId !== this.#accessibleTriggerUpdateId ||
+            !this.isConnected ||
+            !this.trigger
+        ) {
+            return
+        }
+
+        if (!resolved) {
+            this.#cleanupAccessibleTrigger()
+
+            return
+        }
+
+        const { host, target } = resolved
+        const currentAssigned = this.trigger.assignedElements({ flatten: true })
+        if (!currentAssigned.includes(host)) {
+            return
+        }
+
+        if (this.#managedTrigger && this.#managedTrigger.target !== target) {
+            this.#managedTrigger.target.removeAttribute('aria-expanded')
+
+            if (this.#managedTrigger.addedHaspopup) {
+                this.#managedTrigger.target.removeAttribute('aria-haspopup')
+            }
+
+            this.#managedTrigger = null
+        }
+
+        const menu = this.getMenu()
+        if (this.#managedMenu && this.#managedMenu !== menu) {
+            if ('ariaLabelledByElements' in Element.prototype) {
+                ;(
+                    this.#managedMenu as ElementWithAriaElements
+                ).ariaLabelledByElements = null
+            }
+
+            this.#managedMenu = null
+        }
+
+        let addedHaspopup = this.#managedTrigger?.addedHaspopup ?? false
+        if (menu) {
+            if (!target.hasAttribute('aria-haspopup')) {
+                target.setAttribute('aria-haspopup', 'menu')
+                addedHaspopup = true
+            }
+        } else if (addedHaspopup) {
+            target.removeAttribute('aria-haspopup')
+            addedHaspopup = false
+        }
+
+        target.setAttribute('aria-expanded', this.open ? 'true' : 'false')
+        this.#managedTrigger = { host, target, addedHaspopup }
+
+        // Link slotted <terra-menu> outward to the Light DOM trigger host when unlabeled
+        if (
+            menu &&
+            'ariaLabelledByElements' in Element.prototype &&
+            !menu.hasAttribute('aria-label') &&
+            !menu.hasAttribute('aria-labelledby')
+        ) {
+            ;(menu as ElementWithAriaElements).ariaLabelledByElements = [host]
+            this.#managedMenu = menu
+        }
     }
 
     /** Shows the dropdown panel. */
@@ -592,7 +713,7 @@ export default class TerraDropdown extends TerraElement {
             return
         }
 
-        this.updateAccessibleTrigger()
+        this.#updateAccessibleTrigger()
 
         if (this.open) {
             // Show
@@ -662,11 +783,12 @@ export default class TerraDropdown extends TerraElement {
                     @slotchange=${this.handleTriggerSlotChange}
                 ></slot>
 
-                <div
-                    aria-hidden=${this.open ? 'false' : 'true'}
-                    aria-labelledby="dropdown"
-                >
-                    <slot part="panel" class="dropdown__panel"></slot>
+                <div aria-hidden=${this.open ? 'false' : 'true'}>
+                    <slot
+                        part="panel"
+                        class="dropdown__panel"
+                        @slotchange=${this.#handlePanelSlotChange}
+                    ></slot>
                 </div>
             </terra-popup>
         `
