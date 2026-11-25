@@ -289,10 +289,7 @@ export default class TerraPopup extends TerraElement {
             if (outsideViewport) {
                 this.active = false
                 this.dispatchEvent(
-                    this.emit('terra-popup-dismiss', {
-                        bubbles: true,
-                        composed: true,
-                    })
+                    this.emit('terra-popup-dismiss')
                 )
             }
         }
@@ -745,7 +742,9 @@ export default class TerraPopup extends TerraElement {
                     'popup--has-arrow': this.arrow,
                 })}
             >
-                <slot></slot>
+                <div class="popup__content">
+                    <slot></slot>
+                </div>                
                 ${
                     this.arrow
                         ? html`<div

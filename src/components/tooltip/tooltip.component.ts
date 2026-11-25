@@ -132,13 +132,10 @@ export default class TerraTooltip extends TerraElement {
 
     firstUpdated() {
         this.body.hidden = !this.open
+        this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
 
         // If the tooltip is visible on init, update its position
         if (this.open) {
-            this.popup.addEventListener(
-                'terra-popup-dismiss',
-                this.handlePopupDismiss
-            )
             this.popup.active = true
             this.popup.reposition()
         }

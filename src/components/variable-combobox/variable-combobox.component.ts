@@ -160,6 +160,11 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
         this.menuOpen = false
     }
 
+    #handlePopupDismiss = () => {
+        this.menuOpen = false
+        this.#hideTimeout = null
+    }
+
     /**
      * This component's value is read by other components.
      * Internally, the variable metdata has slight differences that require adapting.
@@ -477,7 +482,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
         return html`
             <terra-popup
                 .anchor=${this.infoAnchor}
-                ?active=${this.menuOpen}
+                .active=${this.menuOpen}
                 placement="right-start"
                 strategy="fixed"
                 flip
@@ -485,6 +490,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
                 distance="8"
                 @mouseenter=${this.#handleMenuEnter}
                 @mouseleave=${this.#handleMenuLeave}
+                @terra-popup-dismiss=${this.#handlePopupDismiss}
             >
                 <div class="variable-info-popup">
                     ${this.#renderInfoPanel(this.variableInfo)}

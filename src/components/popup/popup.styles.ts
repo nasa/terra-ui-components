@@ -34,6 +34,19 @@ export default css`
             max-height: calc(100vh - 1rem);
             box-sizing: border-box;
         }
+        
+        .popup__content {
+            max-width: min(
+                calc(100vw - 1rem),
+                var(--auto-size-available-width, calc(100vw - 1rem))
+            );
+            max-height: min(
+                calc(100vh - 1rem),
+                var(--auto-size-available-height, calc(100vh - 1rem))
+            );
+            overflow: auto;
+            box-sizing: border-box;
+        }
     }
 
     .popup--fixed {
