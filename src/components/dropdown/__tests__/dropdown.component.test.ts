@@ -11,6 +11,10 @@ import type TerraInput from '../../input/input.component.js'
 import type TerraMenu from '../../menu/menu.component.js'
 import type TerraDropdown from '../dropdown.component.js'
 
+type ElementWithAriaElements = Element & {
+    ariaLabelledByElements?: readonly Element[] | null
+}
+
 describe('<terra-dropdown>', () => {
     describe('Accessible trigger attributes', () => {
         it('sets aria-haspopup="menu" and syncs aria-expanded on a slotted <terra-button>', async () => {
@@ -183,6 +187,209 @@ describe('<terra-dropdown>', () => {
             expect(second.hasAttribute('aria-expanded')).to.be.false
             expect(second.hasAttribute('aria-haspopup')).to.be.false
         })
+
+        it('updates aria-expanded synchronously before terra-show and terra-hide fire', async () => {
+            const el = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <terra-button slot="trigger">Options</terra-button>
+                    <terra-menu>
+                        <terra-menu-item>Item 1</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const trigger = el.querySelector<TerraButton>('terra-button')!
+            await trigger.updateComplete
+            await waitUntil(
+                () => trigger.button.getAttribute('aria-expanded') === 'false'
+            )
+
+            let expandedOnShow: string | null = null
+            let expandedOnHide: string | null = null
+            el.addEventListener('terra-show', () => {
+                expandedOnShow = trigger.button.getAttribute('aria-expanded')
+            })
+            el.addEventListener('terra-hide', () => {
+                expandedOnHide = trigger.button.getAttribute('aria-expanded')
+            })
+
+            await el.show()
+            expect(expandedOnShow).to.equal('true')
+
+            await el.hide()
+            expect(expandedOnHide).to.equal('false')
+        })
+
+        it('restores ARIA attributes when disconnected and reconnected to the DOM', async () => {
+            const container = await fixture<HTMLDivElement>(html`
+                <div>
+                    <terra-dropdown>
+                        <button slot="trigger" type="button">Options</button>
+                        <terra-menu>
+                            <terra-menu-item>Item 1</terra-menu-item>
+                        </terra-menu>
+                    </terra-dropdown>
+                </div>
+            `)
+            const el = container.querySelector<TerraDropdown>('terra-dropdown')!
+            const button = el.querySelector('button')!
+
+            await waitUntil(() => button.getAttribute('aria-expanded') === 'false')
+            expect(button.getAttribute('aria-haspopup')).to.equal('menu')
+
+            el.remove()
+            expect(button.hasAttribute('aria-expanded')).to.be.false
+            expect(button.hasAttribute('aria-haspopup')).to.be.false
+
+            container.appendChild(el)
+            await waitUntil(() => button.getAttribute('aria-expanded') === 'false')
+            expect(button.getAttribute('aria-haspopup')).to.equal('menu')
+        })
+
+        it('resolves a wrapped <terra-button> trigger after it renders', async () => {
+            const el = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <div slot="trigger">
+                        <terra-button>Wrapped Terra Button</terra-button>
+                    </div>
+                    <terra-menu>
+                        <terra-menu-item>Item 1</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const wrapper = el.querySelector('div[slot="trigger"]')!
+            const trigger = wrapper.querySelector<TerraButton>('terra-button')!
+            await trigger.updateComplete
+
+            await waitUntil(
+                () => trigger.button.getAttribute('aria-expanded') === 'false'
+            )
+            expect(trigger.button.getAttribute('aria-haspopup')).to.equal('menu')
+            expect(wrapper.hasAttribute('aria-expanded')).to.be.false
+        })
+
+        it('keeps a disabled native <button> trigger as the target even with a focusable child', async () => {
+            const el = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <button slot="trigger" type="button" disabled>
+                        Filter
+                        <span tabindex="0">Clear</span>
+                    </button>
+                    <terra-menu>
+                        <terra-menu-item>Item 1</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const outerButton = el.querySelector('button')!
+            const innerFocusable = outerButton.querySelector('span')!
+
+            await waitUntil(
+                () => outerButton.getAttribute('aria-expanded') === 'false'
+            )
+            expect(outerButton.getAttribute('aria-haspopup')).to.equal('menu')
+            expect(innerFocusable.hasAttribute('aria-expanded')).to.be.false
+            expect(innerFocusable.hasAttribute('aria-haspopup')).to.be.false
+        })
+
+        it('links unlabeled <terra-menu> via ariaLabelledByElements, updates on swap, and cleans up on disconnect', async () => {
+            if (!('ariaLabelledByElements' in Element.prototype)) {
+                return
+            }
+
+            const buttonDropdown = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <terra-button slot="trigger">Options</terra-button>
+                    <terra-menu>
+                        <terra-menu-item>Item 1</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const terraButton =
+                buttonDropdown.querySelector<TerraButton>('terra-button')!
+            const buttonMenu = buttonDropdown.querySelector<
+                TerraMenu & ElementWithAriaElements
+            >('terra-menu')!
+            await terraButton.updateComplete
+            await waitUntil(
+                () => buttonMenu.ariaLabelledByElements?.[0] === terraButton
+            )
+
+            const wrappedDropdown = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <div slot="trigger">
+                        <button type="button">Wrapped</button>
+                        <span>badge</span>
+                    </div>
+                    <terra-menu>
+                        <terra-menu-item>Item 1</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const wrapper = wrappedDropdown.querySelector('div[slot="trigger"]')!
+            const innerButton = wrapper.querySelector('button')!
+            const wrappedMenu = wrappedDropdown.querySelector<
+                TerraMenu & ElementWithAriaElements
+            >('terra-menu')!
+            await waitUntil(
+                () => wrappedMenu.ariaLabelledByElements?.[0] === innerButton
+            )
+
+            const replacement = document.createElement('button')
+            replacement.type = 'button'
+            replacement.slot = 'trigger'
+            replacement.textContent = 'Replacement'
+            wrapper.replaceWith(replacement)
+
+            await waitUntil(
+                () => replacement.getAttribute('aria-expanded') === 'false'
+            )
+            expect(wrappedMenu.ariaLabelledByElements).to.deep.equal([replacement])
+
+            wrappedDropdown.remove()
+            expect(wrappedMenu.ariaLabelledByElements).to.be.null
+        })
+
+        it('preserves consumer-provided aria-label and ariaLabelledByElements on <terra-menu>', async () => {
+            if (!('ariaLabelledByElements' in Element.prototype)) {
+                return
+            }
+
+            const labeledDropdown = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <button slot="trigger" type="button">Options</button>
+                    <terra-menu aria-label="Custom Actions">
+                        <terra-menu-item>Item 1</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const labeledButton = labeledDropdown.querySelector('button')!
+            const labeledMenu = labeledDropdown.querySelector<
+                TerraMenu & ElementWithAriaElements
+            >('terra-menu')!
+            await waitUntil(
+                () => labeledButton.getAttribute('aria-expanded') === 'false'
+            )
+            expect(labeledMenu.ariaLabelledByElements).to.be.null
+
+            const customLabel = document.createElement('span')
+            customLabel.textContent = 'External Heading'
+            const jsLabeledDropdown = await fixture<TerraDropdown>(html`
+                <div>
+                    ${customLabel}
+                    <terra-dropdown>
+                        <button slot="trigger" type="button">Options</button>
+                        <terra-menu .ariaLabelledByElements=${[customLabel]}>
+                            <terra-menu-item>Item 1</terra-menu-item>
+                        </terra-menu>
+                    </terra-dropdown>
+                </div>
+            `)
+            const jsButton = jsLabeledDropdown.querySelector('button')!
+            const jsMenu = jsLabeledDropdown.querySelector<
+                TerraMenu & ElementWithAriaElements
+            >('terra-menu')!
+            await waitUntil(() => jsButton.getAttribute('aria-expanded') === 'false')
+            expect(jsMenu.ariaLabelledByElements).to.deep.equal([customLabel])
+        })
     })
 
     describe('Interactions and events', () => {
@@ -235,6 +442,30 @@ describe('<terra-dropdown>', () => {
             await sendKeys({ press: 'Escape' })
             await waitUntil(() => !el.open)
             expect(trigger.button.getAttribute('aria-expanded')).to.equal('false')
+        })
+
+        it('returns focus to the inner control for a wrapped trigger on Escape', async () => {
+            const el = await fixture<TerraDropdown>(html`
+                <terra-dropdown>
+                    <div slot="trigger">
+                        <button type="button">Wrapped Actions</button>
+                    </div>
+                    <terra-menu>
+                        <terra-menu-item value="edit">Edit</terra-menu-item>
+                    </terra-menu>
+                </terra-dropdown>
+            `)
+            const button = el.querySelector('button')!
+            const firstItem = el.querySelector('terra-menu-item')!
+            await waitUntil(() => button.getAttribute('aria-expanded') === 'false')
+
+            button.focus()
+            await sendKeys({ press: 'ArrowDown' })
+            await waitUntil(() => el.open && document.activeElement === firstItem)
+
+            await sendKeys({ press: 'Escape' })
+            await waitUntil(() => !el.open)
+            expect(document.activeElement).to.equal(button)
         })
 
         it('closes on menu item selection unless stay-open-on-select is set', async () => {

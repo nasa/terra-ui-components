@@ -139,6 +139,11 @@ export default class TerraDropdown extends TerraElement {
         if (!this.containingElement) {
             this.containingElement = this
         }
+
+        if (this.hasUpdated) {
+            this.#updateAccessibleTrigger()
+            this.attachHoverListeners()
+        }
     }
 
     firstUpdated() {
@@ -208,11 +213,15 @@ export default class TerraDropdown extends TerraElement {
     }
 
     focusOnTrigger() {
-        const trigger = this.trigger.assignedElements({ flatten: true })[0] as
-            | HTMLElement
-            | undefined
-        if (typeof trigger?.focus === 'function') {
-            trigger.focus()
+        const trigger = this.trigger.assignedElements({
+            flatten: true,
+        })[0] as HTMLElement
+        const target =
+            this.#managedTrigger?.target ??
+            (trigger ? this.#getTriggerTargetElement(trigger) : undefined)
+
+        if (typeof target?.focus === 'function') {
+            target.focus()
         }
     }
 
@@ -528,6 +537,58 @@ export default class TerraDropdown extends TerraElement {
         }
     }
 
+    /**
+     * Resolves the interactive control inside a slotted trigger element, handling custom-element
+     * shadow controls, native controls, and wrapper containers.
+     */
+    async #resolveTargetInElement(el: HTMLElement): Promise<HTMLElement | null> {
+        if ('updateComplete' in el && el.updateComplete instanceof Promise) {
+            await el.updateComplete
+        }
+
+        const tag = el.tagName.toLowerCase()
+        if (tag === 'terra-button') {
+            return (el as TerraButton).button ?? null
+        }
+        if (tag === 'terra-input') {
+            return (el as TerraInput).input ?? null
+        }
+        // Check native controls before tabbable traversal so a disabled outer control with focusable
+        // children stays the target; require href on <a> so non-link anchors stay excluded.
+        if (
+            ['button', 'input', 'select', 'textarea'].includes(tag) ||
+            (tag === 'a' && el.hasAttribute('href'))
+        ) {
+            return el
+        }
+
+        // Await descendant custom elements so their shadow DOM controls exist before resolving.
+        for (const child of el.querySelectorAll('*')) {
+            if (
+                'updateComplete' in child &&
+                (child as { updateComplete?: unknown }).updateComplete instanceof
+                    Promise
+            ) {
+                await (child as { updateComplete: Promise<unknown> }).updateComplete
+            }
+        }
+
+        const nestedCustomTrigger = el.querySelector<HTMLElement>(
+            'terra-button, terra-input'
+        )
+
+        if (nestedCustomTrigger) {
+            const nestedTarget =
+                await this.#resolveTargetInElement(nestedCustomTrigger)
+
+            if (nestedTarget) {
+                return nestedTarget
+            }
+        }
+
+        return getTabbableBoundary(el).start
+    }
+
     async #resolveAccessibleTrigger(): Promise<{
         host: HTMLElement
         target: HTMLElement
@@ -541,28 +602,10 @@ export default class TerraDropdown extends TerraElement {
             (this.trigger?.assignedElements({ flatten: true }) as HTMLElement[]) ?? []
 
         for (const el of assignedElements) {
-            // Wait for custom elements (e.g. terra-button, terra-input) so their shadow DOM control exists
-            if ('updateComplete' in el && el.updateComplete instanceof Promise) {
-                await el.updateComplete
-            }
+            const target = await this.#resolveTargetInElement(el)
 
-            const tag = el.tagName.toLowerCase()
-            if (tag === 'terra-button') {
-                const target = (el as TerraButton).button
-                if (target) return { host: el, target }
-            }
-            if (tag === 'terra-input') {
-                const target = (el as TerraInput).input
-                if (target) return { host: el, target }
-            }
-
-            const tabbable = getTabbableBoundary(el).start
-            if (tabbable) {
-                return { host: el, target: tabbable }
-            }
-
-            if (['button', 'a', 'input', 'select', 'textarea'].includes(tag)) {
-                return { host: el, target: el }
+            if (target) {
+                return { host: el, target }
             }
         }
 
@@ -581,6 +624,19 @@ export default class TerraDropdown extends TerraElement {
             this.#cleanupAccessibleTrigger()
 
             return
+        }
+
+        // sync aria state if this is a managed trigger
+        if (
+            this.#managedTrigger?.target.isConnected &&
+            this.trigger
+                .assignedElements({ flatten: true })
+                .includes(this.#managedTrigger.host)
+        ) {
+            this.#managedTrigger.target.setAttribute(
+                'aria-expanded',
+                this.open ? 'true' : 'false'
+            )
         }
 
         const resolved = await this.#resolveAccessibleTrigger()
@@ -640,15 +696,25 @@ export default class TerraDropdown extends TerraElement {
         target.setAttribute('aria-expanded', this.open ? 'true' : 'false')
         this.#managedTrigger = { host, target, addedHaspopup }
 
-        // Link slotted <terra-menu> outward to the Light DOM trigger host when unlabeled
-        if (
-            menu &&
-            'ariaLabelledByElements' in Element.prototype &&
-            !menu.hasAttribute('aria-label') &&
-            !menu.hasAttribute('aria-labelledby')
-        ) {
-            ;(menu as ElementWithAriaElements).ariaLabelledByElements = [host]
-            this.#managedMenu = menu
+        // Link unlabeled <terra-menu> to the interactive trigger when in the same tree,
+        // or outward to the Light DOM host when the trigger control lives in shadow DOM.
+        if (menu && 'ariaLabelledByElements' in Element.prototype) {
+            const menuWithAria = menu as ElementWithAriaElements
+            // Setting ariaLabelledByElements reflects an empty aria-labelledby="" attribute,
+            // so only treat aria-labelledby as consumer-owned when we don't already manage this menu.
+            const hasConsumerLabel =
+                menu.hasAttribute('aria-label') ||
+                (this.#managedMenu !== menu &&
+                    (menu.hasAttribute('aria-labelledby') ||
+                        Boolean(menuWithAria.ariaLabelledByElements?.length)))
+
+            if (!hasConsumerLabel) {
+                const labelElement =
+                    target.getRootNode() === menu.getRootNode() ? target : host
+                menuWithAria.ariaLabelledByElements = [labelElement]
+
+                this.#managedMenu = menu
+            }
         }
     }
 
