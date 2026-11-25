@@ -1,4 +1,3 @@
-
 import { aTimeout, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import { setViewport } from '@web/test-runner-commands'
 import '../popup.js'
@@ -17,8 +16,7 @@ async function createPopup() {
     const popup = el.querySelector('terra-popup')!
 
     // Simulate an anchor that has scrolled above the viewport.
-    anchor.getBoundingClientRect = () =>
-        new DOMRect(20, -40, 20, 20)
+    anchor.getBoundingClientRect = () => new DOMRect(20, -40, 20, 20)
 
     popup.anchor = anchor
     popup.active = true
@@ -49,8 +47,7 @@ async function createPopupNearBottom() {
     const popup = el.querySelector('terra-popup')!
 
     // Leave insufficient room below the anchor for the popup.
-    anchor.getBoundingClientRect = () =>
-        new DOMRect(200, 730, 100, 20)
+    anchor.getBoundingClientRect = () => new DOMRect(200, 730, 100, 20)
 
     popup.anchor = anchor
     popup.active = true
@@ -81,8 +78,7 @@ async function createPopupWithOversizedContent() {
     const anchor = el.querySelector<HTMLButtonElement>('#anchor')!
     const popup = el.querySelector('terra-popup')!
 
-    anchor.getBoundingClientRect = () =>
-        new DOMRect(20, 100, 20, 20)
+    anchor.getBoundingClientRect = () => new DOMRect(20, 100, 20, 20)
 
     popup.anchor = anchor
     popup.active = true
@@ -226,7 +222,6 @@ describe('<terra-popup>', () => {
         expect(popup.active).to.equal(false)
     })
 
-    
     it('allows oversized content to scroll within the popup on mobile viewports', async () => {
         await setViewport({ width: 390, height: 844 })
 
@@ -247,25 +242,21 @@ describe('<terra-popup>', () => {
 
         expect(getComputedStyle(content).overflow).to.equal('auto')
 
-        const arrow =
-            popup.shadowRoot!.querySelector<HTMLElement>('.popup__arrow')!
+        const arrow = popup.shadowRoot!.querySelector<HTMLElement>('.popup__arrow')!
 
         expect(content.contains(arrow)).to.equal(false)
         expect(arrow.parentElement).to.equal(content.parentElement)
     })
-    
+
     it('positions the arrow correctly when the popup flips from bottom to top', async () => {
         await setViewport({ width: 1024, height: 768 })
 
         const { popup, anchor } = await createPopupNearBottom()
 
-        const arrow =
-            popup.shadowRoot!.querySelector<HTMLElement>('.popup__arrow')!
+        const arrow = popup.shadowRoot!.querySelector<HTMLElement>('.popup__arrow')!
 
         // The arrow must be attached to the popup's bottom edge.
-        expect(arrow.style.bottom).to.equal(
-            'calc(var(--arrow-size-diagonal) * -1)'
-        )
+        expect(arrow.style.bottom).to.equal('calc(var(--arrow-size-diagonal) * -1)')
         expect(arrow.style.top).to.equal('')
 
         // The arrow should remain horizontally aligned with the anchor.
@@ -316,5 +307,5 @@ describe('<terra-popup>', () => {
         expect(popup.active).to.equal(true)
         expect((popup as any).anchorScrollHandler).to.equal(undefined)
         expect((popup as any).cleanup).to.equal(undefined)
-    })    
+    })
 })

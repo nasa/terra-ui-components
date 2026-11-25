@@ -20,8 +20,7 @@ describe('<terra-select>', () => {
             '.select__combobox'
         ) as HTMLElement
 
-        combobox.getBoundingClientRect = () =>
-            new DOMRect(20, -40, 200, 40)
+        combobox.getBoundingClientRect = () => new DOMRect(20, -40, 200, 40)
 
         let hideCount = 0
         select.addEventListener('terra-hide', () => {
@@ -39,11 +38,9 @@ describe('<terra-select>', () => {
         expect(popup.active).to.equal(true)
 
         const afterHide = new Promise<void>(resolve => {
-            select.addEventListener(
-                'terra-after-hide',
-                () => resolve(),
-                { once: true }
-            )
+            select.addEventListener('terra-after-hide', () => resolve(), {
+                once: true,
+            })
         })
 
         window.dispatchEvent(new Event('scroll'))

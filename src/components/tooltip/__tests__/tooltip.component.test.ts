@@ -18,8 +18,7 @@ describe('<terra-tooltip>', () => {
         const popup = tooltip.shadowRoot!.querySelector('terra-popup')!
 
         // Simulate an anchor above the viewport.
-        anchor.getBoundingClientRect = () =>
-            new DOMRect(20, -40, 20, 20)
+        anchor.getBoundingClientRect = () => new DOMRect(20, -40, 20, 20)
 
         let hideCount = 0
         tooltip.addEventListener('terra-hide', () => {
@@ -57,6 +56,6 @@ describe('<terra-tooltip>', () => {
         await tooltip.show()
 
         expect(tooltip.open).to.equal(true)
-        expect(popup.active).to.equal(true)    
+        expect(popup.active).to.equal(true)
     })
 })

@@ -175,5 +175,5 @@ describe('<terra-variable-combobox>', () => {
             () => el.menuOpen === true && popup.active === true,
             'variable info popup did not reopen'
         )
-    })    
+    })
 })

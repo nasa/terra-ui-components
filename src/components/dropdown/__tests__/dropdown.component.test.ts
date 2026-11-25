@@ -14,13 +14,10 @@ describe('<terra-dropdown>', () => {
             </terra-dropdown>
         `)
 
-        const trigger = dropdown.querySelector<HTMLButtonElement>(
-            '[slot="trigger"]'
-        )!
+        const trigger = dropdown.querySelector<HTMLButtonElement>('[slot="trigger"]')!
         const popup = dropdown.shadowRoot!.querySelector('terra-popup')!
 
-        trigger.getBoundingClientRect = () =>
-            new DOMRect(20, -40, 20, 20)
+        trigger.getBoundingClientRect = () => new DOMRect(20, -40, 20, 20)
 
         let hideCount = 0
         dropdown.addEventListener('terra-hide', () => {
@@ -38,11 +35,9 @@ describe('<terra-dropdown>', () => {
         expect(popup.active).to.equal(true)
 
         const afterHide = new Promise<void>(resolve => {
-            dropdown.addEventListener(
-                'terra-after-hide',
-                () => resolve(),
-                { once: true }
-            )
+            dropdown.addEventListener('terra-after-hide', () => resolve(), {
+                once: true,
+            })
         })
 
         window.dispatchEvent(new Event('scroll'))
