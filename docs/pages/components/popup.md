@@ -247,4 +247,94 @@ You can anchor the popup to an element outside of it using the `anchor` attribut
 </script>
 ```
 
+### Mobile Behavior
+
+On viewports **768px wide or smaller**, the popup applies additional constraints to fit within the available screen space.
+
+#### Viewport Constraints and Scrolling
+
+The popup is limited to the viewport dimensions, with a 1 rem margin. When the popup content is larger than the available space, the content area becomes independently scrollable. This allows users to access the entire popup without the popup extending beyond the screen.
+
+#### Automatic Dismissal When the Anchor Leaves the Viewport
+
+On mobile devices, an active popup is automatically dismissed when its anchor element is scrolled completely outside the viewport.
+
+This behavior applies when the anchor is entirely:
+
+- Above or below the viewport.
+- To the left or right of the viewport.
+
+If the anchor is only partially outside the viewport, the popup remains open.
+
+When the popup is dismissed this way:
+
+- Its `active` property is set to `false`.
+- A `terra-popup-dismiss` event is emitted.
+
+You can listen for this event to respond to the automatic dismissal:
+
+```javascript
+const popup = document.querySelector('terra-popup')
+
+popup.addEventListener('terra-popup-dismiss', () => {
+    console.log('Popup dismissed because its anchor left the viewport.')
+})
+```
+
+#### Mobile Behavior Preview
+
+To demonstrate mobile device behaviors, resize your browser window to 768px wide or smaller. The preview container will change to a rounded border to indicate a mobile viewport size.
+
+```html:preview
+<div style="min-height: 700px; padding: 1rem;">
+  <p style="margin-bottom: 1rem;">
+    Resize the browser to 768px or narrower, then open the popup.
+    Scroll the page to move the anchor completely out of view to see the popup dismiss automatically.
+  </p>
+
+  <terra-popup id="mobile-popup" placement="bottom" flip shift>
+    <terra-button id="mobile-popup-anchor" slot="anchor">
+      Toggle Mobile Popup
+    </terra-button>
+
+    <div style="padding: 1rem; width: 260px; height: 500px">
+      <h3 style="margin-top: 0;">Mobile Popup</h3>
+      <p>
+        This popup contains enough content to demonstrate independent
+        scrolling on smaller screens.
+      </p>
+      <p>Scroll inside this popup to see more content.</p>
+      <div style="height: 500px; padding: 1rem; border-radius: 4px;">
+        <p>Content near the top.</p>
+        <p style="margin-top: 180px;">Content in the middle.</p>
+        <p style="margin-top: 180px;">Content near the bottom.</p>
+      </div>
+    </div>
+  </terra-popup>
+
+  <div style="height: 500px;"></div>
+
+  <p>
+    The anchor is within the page. Continue scrolling until
+    it leaves the viewport to see the popup dismiss automatically.
+  </p>
+  <div style="height: 200px;"></div>
+</div>
+
+<script type="module">
+  const popup = document.querySelector('#mobile-popup');
+  const anchor = document.querySelector('#mobile-popup-anchor');
+
+  anchor.addEventListener('click', () => {
+    popup.active = !popup.active;
+  });
+
+  popup.addEventListener('terra-popup-dismiss', () => {
+    console.log('Popup dismissed because its anchor left the viewport.');
+  });
+</script>
+```
+
+On larger viewports, the automatic anchor visibility monitoring is disabled. Scrolling the anchor out of view does not automatically dismiss the popup.
+
 [component-metadata:terra-popup]
