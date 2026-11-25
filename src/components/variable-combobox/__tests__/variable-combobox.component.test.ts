@@ -1,6 +1,7 @@
 import { aTimeout, expect, fixture, html, waitUntil } from '@open-wc/testing'
 import sinon from 'sinon'
 import '../variable-combobox.js'
+import { setViewport } from '@web/test-runner-commands'
 
 function okJson(body: unknown) {
     return Promise.resolve(
@@ -116,4 +117,63 @@ describe('<terra-variable-combobox>', () => {
             )
         ).to.deep.equal(['D Long Name'])
     })
+
+    it('closes the variable info popup when its anchor scrolls outside the viewport on mobile and can reopen', async () => {
+        await setViewport({ width: 390, height: 844 })
+
+        const el: any = await fixture(
+            html`<terra-variable-combobox></terra-variable-combobox>`
+        )
+
+        // The variable-info popup uses the component itself as its anchor.
+        el.getBoundingClientRect = () => new DOMRect(20, -40, 200, 40)
+
+        const variableInfo = {
+            dataFieldLongName: 'Air Temperature',
+            dataFieldShortName: 'Temperature',
+            dataFieldUnits: 'K',
+            dataProductDescriptionUrl: '#',
+            dataProductLongName: 'Test Dataset',
+            dataFieldDescriptionUrl: '#',
+        }
+
+        const showVariableInfo = () => {
+            el.dispatchEvent(
+                new CustomEvent('terra-show-variable-info', {
+                    detail: { collection: variableInfo },
+                })
+            )
+        }
+
+        showVariableInfo()
+
+        await waitUntil(
+            () => el.shadowRoot?.querySelector('terra-popup')?.active === true,
+            'variable info popup did not open'
+        )
+
+        const popup = el.shadowRoot!.querySelector('terra-popup')!
+
+        await waitUntil(
+            () => popup.hasAttribute('data-current-placement'),
+            'variable info popup did not finish positioning'
+        )
+
+        expect(el.menuOpen).to.equal(true)
+        expect(popup.active).to.equal(true)
+
+        window.dispatchEvent(new Event('scroll'))
+
+        await waitUntil(
+            () => el.menuOpen === false && popup.active === false,
+            'variable info popup did not close after its anchor scrolled out of view'
+        )
+
+        showVariableInfo()
+
+        await waitUntil(
+            () => el.menuOpen === true && popup.active === true,
+            'variable info popup did not reopen'
+        )
+    })    
 })

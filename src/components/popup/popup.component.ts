@@ -287,10 +287,9 @@ export default class TerraPopup extends TerraElement {
                 rect.left >= window.innerWidth
 
             if (outsideViewport) {
+                this.unobserveAnchor()
                 this.active = false
-                this.dispatchEvent(
-                    this.emit('terra-popup-dismiss')
-                )
+                this.emit('terra-popup-dismiss')
             }
         }
 
