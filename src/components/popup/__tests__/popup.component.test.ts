@@ -222,6 +222,84 @@ describe('<terra-popup>', () => {
         expect(popup.active).to.equal(false)
     })
 
+    it('keeps the popup within the viewport when the anchor is near the right edge on mobile', async () => {
+        await setViewport({ width: 390, height: 844 })
+
+        const el = await fixture(html`
+            <div>
+                <button id="anchor">Anchor</button>
+                <terra-popup placement="bottom">
+                    <div style="width: 250px; height: 100px;">
+                        Popup content
+                    </div>
+                </terra-popup>
+            </div>
+        `)
+
+        const anchor = el.querySelector<HTMLButtonElement>('#anchor')!
+        const popup = el.querySelector('terra-popup')!
+
+        // Position the anchor close to the right edge of the viewport.
+        anchor.getBoundingClientRect = () => new DOMRect(350, 100, 30, 20)
+
+        popup.anchor = anchor
+        popup.active = true
+
+        await popup.updateComplete
+
+        await waitUntil(
+            () => popup.hasAttribute('data-current-placement'),
+            'popup did not finish positioning',
+            { timeout: 3000 }
+        )
+
+        const rect = popup.popup.getBoundingClientRect()
+
+        expect(rect.left).to.be.at.least(0)
+        expect(rect.right).to.be.at.most(window.innerWidth)
+        expect(rect.top).to.be.at.least(0)
+        expect(rect.bottom).to.be.at.most(window.innerHeight)
+    })
+
+    it('keeps the popup within the viewport when the anchor is near the bottom edge on mobile', async () => {
+        await setViewport({ width: 390, height: 844 })
+
+        const el = await fixture(html`
+            <div>
+                <button id="anchor">Anchor</button>
+                <terra-popup placement="bottom">
+                    <div style="width: 250px; height: 150px;">
+                        Popup content
+                    </div>
+                </terra-popup>
+            </div>
+        `)
+
+        const anchor = el.querySelector<HTMLButtonElement>('#anchor')!
+        const popup = el.querySelector('terra-popup')!
+
+        // Set the anchor position before opening the popup.
+        // Only 14px of viewport space remains below it.
+        anchor.getBoundingClientRect = () => new DOMRect(180, 810, 30, 20)
+
+        popup.anchor = anchor
+        popup.active = true
+
+        await popup.updateComplete
+
+        await waitUntil(
+            () => popup.hasAttribute('data-current-placement'),
+            'popup did not finish positioning',
+            { timeout: 3000 }
+        )
+
+        const rect = popup.popup.getBoundingClientRect()
+
+        expect(rect.left).to.be.at.least(0)
+        expect(rect.right).to.be.at.most(window.innerWidth)
+        expect(rect.top).to.be.at.least(0)
+        expect(rect.bottom).to.be.at.most(window.innerHeight)
+    })
     it('allows oversized content to scroll within the popup on mobile viewports', async () => {
         await setViewport({ width: 390, height: 844 })
 

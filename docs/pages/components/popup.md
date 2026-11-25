@@ -255,6 +255,23 @@ On viewports **768px wide or smaller**, the popup applies additional constraints
 
 The popup is limited to the viewport dimensions, with a 1 rem margin. When the popup content is larger than the available space, the content area becomes independently scrollable. This allows users to access the entire popup without the popup extending beyond the screen.
 
+#### Mobile Positioning Overrides
+
+On mobile viewports (768px wide or smaller), the popup automatically applies mobile-specific positioning behavior to keep the popup visible and usable within the viewport. These mobile defaults take precedence over several desktop configuration options.
+
+The following overrides apply on mobile:
+
+- **Positioning strategy:** The popup uses `fixed` positioning, regardless of the configured `strategy` attribute.
+- **Flip:** Automatically enabled, regardless of the `flip` attribute.
+- **Shift:** Automatically enabled, regardless of the `shift` attribute.
+- **Sizing:** Automatic viewport-aware sizing is applied, regardless of the configured `auto-size` setting.
+- **Flip fallback strategy:** Uses `bestFit` to select the placement that best fits the available space.
+- **Flip and shift padding:** Both use an 8px viewport boundary.
+
+Other configured popup options, such as the preferred placement and flip/shift boundaries, continue to apply where supported.
+
+These overrides are intentional. Mobile devices have significantly less available screen space, so keeping popup content visible and accessible takes priority over preserving desktop positioning and sizing preferences. On viewports wider than 768px, the popup uses its configured positioning and sizing options as usual.
+
 #### Automatic Dismissal When the Anchor Leaves the Viewport
 
 On mobile devices, an active popup is automatically dismissed when its anchor element is scrolled completely outside the viewport.
