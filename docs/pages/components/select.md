@@ -142,6 +142,14 @@ Select fields are a form field used to select one option from a list.
 </form>
 ```
 
+### Mobile Behavior
+
+On mobile viewports (768px wide or smaller), the select menu is constrained to the available viewport space. When its content exceeds the available space, the content area becomes independently scrollable.
+
+The select menu automatically closes when its anchor element is scrolled completely outside the viewport. This prevents the menu from remaining open when its associated trigger is no longer visible.
+
+See the [Popup documentation](/components/popup) for more information about mobile viewport constraints, scrolling, and automatic dismissal.
+
 ## Usage
 
 Select fields are used in forms to choose one option from a list. Each field should include a clear label that explains what should be selected. Select fields are particularly useful when there are 7 or more options to choose from, as they take up less space than radio buttons.
