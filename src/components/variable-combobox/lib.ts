@@ -2,10 +2,7 @@ import { html } from 'lit'
 import { repeat } from 'lit/directives/repeat.js'
 import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
-function dispatchVariableInfoEvent(
-    e: MouseEvent,
-    listItem: GroupedListItem
-) {
+function dispatchVariableInfoEvent(e: MouseEvent, listItem: GroupedListItem) {
     e.preventDefault()
     e.stopImmediatePropagation()
     e.stopPropagation()

@@ -221,8 +221,8 @@ describe('<terra-variable-combobox>', () => {
         )
 
         expect(el.shadowRoot.querySelector('terra-popup')?.active).to.equal(false)
-    })   
-    
+    })
+
     it('keeps the variable info popup open when tapped inside and closes it when tapped outside on mobile', async () => {
         await setViewport({ width: 390, height: 844 })
 
@@ -245,7 +245,9 @@ describe('<terra-variable-combobox>', () => {
         )
 
         const popup = el.shadowRoot!.querySelector('terra-popup')!
-        const popupContent = popup.querySelector('.variable-info-popup') as HTMLElement
+        const popupContent = popup.querySelector(
+            '.variable-info-popup'
+        ) as HTMLElement
 
         expect(popupContent).to.exist
 

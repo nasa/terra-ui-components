@@ -149,9 +149,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
             this.menuOpen && this.infoAnchor === e.detail.anchor
 
         this.variableInfo = e.detail.collection
-        this.infoAnchor = this.isMobile
-            ? (e.detail.anchor as HTMLElement)
-            : this
+        this.infoAnchor = this.isMobile ? (e.detail.anchor as HTMLElement) : this
 
         this.menuOpen = !wasOpenForSameAnchor
 
