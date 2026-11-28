@@ -14,24 +14,24 @@ Container tokens define the visual appearance of container elements in the desig
 
 ### Dialog Tokens
 
-| Token                             | Value                                        | Preview                                                                                                                                                          |
-| --------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-container-dialog-bg`     | `var(--terra-color-bg-surface-neutral-base)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-neutral-base);"></span> |
-| `--terra-container-dialog-border` | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-neutral-default);"></span>        |
+| Token                             | Value                                        | Preview                                                                                                                                                    |
+| --------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-container-dialog-bg`     | `var(--terra-color-bg-surface-neutral-base)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-container-dialog-bg);"></span>     |
+| `--terra-container-dialog-border` | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-container-dialog-border);"></span> |
 
 ### Menu Tokens
 
-| Token                           | Value                                        | Preview                                                                                                                                                          |
-| ------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-container-menu-bg`     | `var(--terra-color-bg-surface-neutral-base)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-neutral-base);"></span> |
-| `--terra-container-menu-border` | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-neutral-default);"></span>        |
+| Token                           | Value                                        | Preview                                                                                                                                                  |
+| ------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-container-menu-bg`     | `var(--terra-color-bg-surface-neutral-base)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-container-menu-bg);"></span>     |
+| `--terra-container-menu-border` | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-container-menu-border);"></span> |
 
 ### Panel Tokens
 
-| Token                            | Value                                        | Preview                                                                                                                                                          |
-| -------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-container-panel-bg`     | `var(--terra-color-bg-surface-neutral-base)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-neutral-base);"></span> |
-| `--terra-container-panel-border` | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-neutral-default);"></span>        |
+| Token                            | Value                                        | Preview                                                                                                                                                   |
+| -------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-container-panel-bg`     | `var(--terra-color-bg-surface-neutral-base)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-container-panel-bg);"></span>     |
+| `--terra-container-panel-border` | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-container-panel-border);"></span> |
 
 ## Menu Item Color Tokens
 
@@ -39,22 +39,22 @@ Menu Item color tokens define the visual appearance of menu items in the design 
 
 ### Menu Item Background Tokens
 
-| Token                                   | Value                                                  | Preview                                                                                                                                                                    |
-| --------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-menu-item-background-hover`    | `var(--terra-color-bg-surface-interactive-hover)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-hover);"></span>      |
-| `--terra-menu-item-background-disabled` | `var(--terra-color-bg-surface-interactive-disabled)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-disabled);"></span>   |
-| `--terra-menu-item-background-active`   | `var(--terra-color-bg-surface-interactive-active)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-active);"></span>     |
-| `--terra-menu-item-background-selected` | `var(--terra-color-bg-surface-brand-selected-default)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-brand-selected-default);"></span> |
+| Token                                   | Value                                                  | Preview                                                                                                                                                          |
+| --------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-menu-item-background-hover`    | `var(--terra-color-bg-surface-interactive-hover)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-background-hover);"></span>    |
+| `--terra-menu-item-background-disabled` | `var(--terra-color-bg-surface-interactive-disabled)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-background-disabled);"></span> |
+| `--terra-menu-item-background-active`   | `var(--terra-color-bg-surface-interactive-active)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-background-active);"></span>   |
+| `--terra-menu-item-background-selected` | `var(--terra-color-bg-surface-brand-selected-default)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-background-selected);"></span> |
 
 ### Menu Item Text Tokens
 
-| Token                             | Value                                    | Preview                                                                                                                                                      |
-| --------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--terra-menu-item-text-default`  | `var(--terra-text-interactive-default)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-default);"></span>  |
-| `--terra-menu-item-text-hover`    | `var(--terra-text-interactive-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-hover);"></span>    |
-| `--terra-menu-item-text-disabled` | `var(--terra-text-interactive-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-disabled);"></span> |
-| `--terra-menu-item-text-active`   | `var(--terra-text-interactive-active)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-active);"></span>   |
-| `--terra-menu-item-text-selected` | `var(--terra-text-interactive-selected)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-selected);"></span> |
+| Token                             | Value                                    | Preview                                                                                                                                                    |
+| --------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-menu-item-text-default`  | `var(--terra-text-interactive-default)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-text-default);"></span>  |
+| `--terra-menu-item-text-hover`    | `var(--terra-text-interactive-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-text-hover);"></span>    |
+| `--terra-menu-item-text-disabled` | `var(--terra-text-interactive-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-text-disabled);"></span> |
+| `--terra-menu-item-text-active`   | `var(--terra-text-interactive-active)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-text-active);"></span>   |
+| `--terra-menu-item-text-selected` | `var(--terra-text-interactive-selected)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-menu-item-text-selected);"></span> |
 
 ## Input Style Color Tokens
 
@@ -62,40 +62,40 @@ Input Style color tokens define the visual appearance of input elements in the d
 
 ### Input Background Tokens
 
-| Token                               | Value                                                | Preview                                                                                                                                                                  |
-| ----------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--terra-input-background-default`  | `var(--terra-color-bg-surface-neutral-base)`         | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-neutral-base);"></span>         |
-| `--terra-input-background-hover`    | `var(--terra-color-bg-surface-interactive-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-hover);"></span>    |
-| `--terra-input-background-disabled` | `var(--terra-color-bg-surface-interactive-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-disabled);"></span> |
-| `--terra-input-background-focus`    | `var(--terra-color-bg-surface-interactive-focus)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-focus);"></span>    |
-| `--terra-input-background-error`    | `var(--terra-color-red-50)`                          | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-red-50);"></span>                          |
+| Token                               | Value                                                | Preview                                                                                                                                                      |
+| ----------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--terra-input-background-default`  | `var(--terra-color-bg-surface-neutral-base)`         | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-background-default);"></span>  |
+| `--terra-input-background-hover`    | `var(--terra-color-bg-surface-interactive-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-background-hover);"></span>    |
+| `--terra-input-background-disabled` | `var(--terra-color-bg-surface-interactive-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-background-disabled);"></span> |
+| `--terra-input-background-focus`    | `var(--terra-color-bg-surface-interactive-focus)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-background-focus);"></span>    |
+| `--terra-input-background-error`    | `var(--terra-color-red-50)`                          | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-background-error);"></span>    |
 
 ### Input Border Tokens
 
-| Token                           | Value                                        | Preview                                                                                                                                                          |
-| ------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-input-border-default`  | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-neutral-default);"></span>        |
-| `--terra-input-border-hover`    | `var(--terra-border-interactive-hover)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-hover);"></span>      |
-| `--terra-input-border-disabled` | `var(--terra-border-interactive-disabled)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-disabled);"></span>   |
-| `--terra-input-border-focus`    | `var(--terra-border-interactive-focus-ring)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-focus-ring);"></span> |
-| `--terra-input-border-error`    | `var(--terra-border-action-error-default)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-action-error-default);"></span>   |
+| Token                           | Value                                        | Preview                                                                                                                                                  |
+| ------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-input-border-default`  | `var(--terra-border-neutral-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-border-default);"></span>  |
+| `--terra-input-border-hover`    | `var(--terra-border-interactive-hover)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-border-hover);"></span>    |
+| `--terra-input-border-disabled` | `var(--terra-border-interactive-disabled)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-border-disabled);"></span> |
+| `--terra-input-border-focus`    | `var(--terra-border-interactive-focus-ring)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-border-focus);"></span>    |
+| `--terra-input-border-error`    | `var(--terra-border-action-error-default)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-border-error);"></span>    |
 
 ### Input Text Tokens
 
-| Token                            | Value                         | Preview                                                                                                                                           |
-| -------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-input-text-default`     | `var(--terra-text-secondary)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-secondary);"></span> |
-| `--terra-input-text-hover`       | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-primary);"></span>   |
-| `--terra-input-text-focus`       | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-primary);"></span>   |
-| `--terra-input-text-disabled`    | `var(--terra-text-tertiary)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-tertiary);"></span>  |
-| `--terra-input-text-placeholder` | `var(--terra-text-tertiary)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-tertiary);"></span>  |
+| Token                            | Value                         | Preview                                                                                                                                                   |
+| -------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-input-text-default`     | `var(--terra-text-secondary)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-text-default);"></span>     |
+| `--terra-input-text-hover`       | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-text-hover);"></span>       |
+| `--terra-input-text-focus`       | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-text-focus);"></span>       |
+| `--terra-input-text-disabled`    | `var(--terra-text-tertiary)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-text-disabled);"></span>    |
+| `--terra-input-text-placeholder` | `var(--terra-text-tertiary)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-text-placeholder);"></span> |
 
 ### Input Icon Tokens
 
-| Token                        | Value                         | Preview                                                                                                                                           |
-| ---------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-input-icon-default` | `var(--terra-text-secondary)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-secondary);"></span> |
-| `--terra-input-icon-hover`   | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-primary);"></span>   |
+| Token                        | Value                         | Preview                                                                                                                                               |
+| ---------------------------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-input-icon-default` | `var(--terra-text-secondary)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-icon-default);"></span> |
+| `--terra-input-icon-hover`   | `var(--terra-text-primary)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-input-icon-hover);"></span>   |
 
 ## Tab Color Tokens
 
@@ -103,58 +103,58 @@ Tab color tokens define the visual appearance of tab elements in the design syst
 
 ### Tab Text Tokens
 
-| Token                       | Value                                          | Preview                                                                                                                                                            |
-| --------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--terra-tab-text-default`  | `var(--terra-text-interactive-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-default);"></span>        |
-| `--terra-tab-text-hover`    | `var(--terra-text-interactive-hover)`          | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-hover);"></span>          |
-| `--terra-tab-text-disabled` | `var(--terra-text-interactive-disabled)`       | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-disabled);"></span>       |
-| `--terra-tab-text-active`   | `var(--terra-text-interactive-active)`         | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-active);"></span>         |
-| `--terra-tab-text-selected` | `var(--terra-text-interactive-brand-selected)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-brand-selected);"></span> |
+| Token                       | Value                                          | Preview                                                                                                                                              |
+| --------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-tab-text-default`  | `var(--terra-text-interactive-default)`        | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-text-default);"></span>  |
+| `--terra-tab-text-hover`    | `var(--terra-text-interactive-hover)`          | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-text-hover);"></span>    |
+| `--terra-tab-text-disabled` | `var(--terra-text-interactive-disabled)`       | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-text-disabled);"></span> |
+| `--terra-tab-text-active`   | `var(--terra-text-interactive-active)`         | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-text-active);"></span>   |
+| `--terra-tab-text-selected` | `var(--terra-text-interactive-brand-selected)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-text-selected);"></span> |
 
 ### Tab Indicator And Track Tokens
 
-| Token                            | Value                                          | Preview                                                                                                                                                            |
-| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--terra-tab-indicator-selected` | `var(--terra-text-interactive-brand-selected)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-brand-selected);"></span> |
-| `--terra-tab-track-color`        | `var(--terra-color-carbon-20)`                 | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-carbon-20);"></span>                 |
+| Token                            | Value                                          | Preview                                                                                                                                                   |
+| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-tab-indicator-selected` | `var(--terra-text-interactive-brand-selected)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-indicator-selected);"></span> |
+| `--terra-tab-track-color`        | `var(--terra-color-carbon-20)`                 | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-tab-track-color);"></span>        |
 
 ## Input Control Color Tokens
 
 ### Input Control Background Tokens
 
-| Token                                  | Value                                                   | Preview                                                                                                                                                                     |
-| -------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-control-bg-default`           | `var(--terra-color-bg-surface-interactive-default)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-default);"></span>     |
-| `--terra-control-bg-hover`             | `var(--terra-color-bg-surface-interactive-hover)`       | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-hover);"></span>       |
-| `--terra-control-bg-disabled`          | `var(--terra-color-bg-surface-interactive-disabled)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-disabled);"></span>    |
-| `--terra-control-bg-active`            | `var(--terra-color-bg-surface-interactive-active)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-interactive-active);"></span>      |
-| `--terra-control-bg-selected`          | `var(--terra-color-bg-surface-brand-selected-default)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-brand-selected-default);"></span>  |
-| `--terra-control-bg-selected-hover`    | `var(--terra-color-bg-surface-brand-selected-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-brand-selected-hover);"></span>    |
-| `--terra-control-bg-selected-disabled` | `var(--terra-color-bg-surface-brand-selected-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-brand-selected-disabled);"></span> |
-| `--terra-control-bg-selected-active`   | `var(--terra-color-bg-surface-brand-selected-active)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-bg-surface-brand-selected-active);"></span>   |
+| Token                                  | Value                                                   | Preview                                                                                                                                                         |
+| -------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-control-bg-default`           | `var(--terra-color-bg-surface-interactive-default)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-default);"></span>           |
+| `--terra-control-bg-hover`             | `var(--terra-color-bg-surface-interactive-hover)`       | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-hover);"></span>             |
+| `--terra-control-bg-disabled`          | `var(--terra-color-bg-surface-interactive-disabled)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-disabled);"></span>          |
+| `--terra-control-bg-active`            | `var(--terra-color-bg-surface-interactive-active)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-active);"></span>            |
+| `--terra-control-bg-selected`          | `var(--terra-color-bg-surface-brand-selected-default)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-selected);"></span>          |
+| `--terra-control-bg-selected-hover`    | `var(--terra-color-bg-surface-brand-selected-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-selected-hover);"></span>    |
+| `--terra-control-bg-selected-disabled` | `var(--terra-color-bg-surface-brand-selected-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-selected-disabled);"></span> |
+| `--terra-control-bg-selected-active`   | `var(--terra-color-bg-surface-brand-selected-active)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-bg-selected-active);"></span>   |
 
 ### Input Control Border Tokens
 
-| Token                                      | Value                                         | Preview                                                                                                                                                           |
-| ------------------------------------------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-control-border-default`           | `var(--terra-border-neutral-default)`         | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-neutral-default);"></span>         |
-| `--terra-control-border-hover`             | `var(--terra-border-interactive-hover)`       | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-hover);"></span>       |
-| `--terra-control-border-disabled`          | `var(--terra-border-interactive-disabled)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-disabled);"></span>    |
-| `--terra-control-border-active`            | `var(--terra-border-interactive-active)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-active);"></span>      |
-| `--terra-control-border-focus`             | `var(--terra-border-interactive-focus-ring)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-interactive-focus-ring);"></span>  |
-| `--terra-control-border-selected`          | `var(--terra-border-brand-selected-default)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-brand-selected-default);"></span>  |
-| `--terra-control-border-selected-hover`    | `var(--terra-border-brand-selected-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-brand-selected-hover);"></span>    |
-| `--terra-control-border-selected-disabled` | `var(--terra-border-brand-selected-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-brand-selected-disabled);"></span> |
-| `--terra-control-border-selected-active`   | `var(--terra-border-brand-selected-active)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-border-brand-selected-active);"></span>   |
+| Token                                      | Value                                         | Preview                                                                                                                                                             |
+| ------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-control-border-default`           | `var(--terra-border-neutral-default)`         | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-default);"></span>           |
+| `--terra-control-border-hover`             | `var(--terra-border-interactive-hover)`       | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-hover);"></span>             |
+| `--terra-control-border-disabled`          | `var(--terra-border-interactive-disabled)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-disabled);"></span>          |
+| `--terra-control-border-active`            | `var(--terra-border-interactive-active)`      | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-active);"></span>            |
+| `--terra-control-border-focus`             | `var(--terra-border-interactive-focus-ring)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-focus);"></span>             |
+| `--terra-control-border-selected`          | `var(--terra-border-brand-selected-default)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-selected);"></span>          |
+| `--terra-control-border-selected-hover`    | `var(--terra-border-brand-selected-hover)`    | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-selected-hover);"></span>    |
+| `--terra-control-border-selected-disabled` | `var(--terra-border-brand-selected-disabled)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-selected-disabled);"></span> |
+| `--terra-control-border-selected-active`   | `var(--terra-border-brand-selected-active)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-border-selected-active);"></span>   |
 
 ### Input Control Icon Tokens
 
-| Token                                    | Value                              | Preview                                                                                                                                                |
-| ---------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--terra-control-icon-selected`          | `var(--terra-color-neutral-white)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-neutral-white);"></span> |
-| `--terra-control-icon-selected-hover`    | `var(--terra-color-carbon-20)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-carbon-20);"></span>     |
-| `--terra-control-icon-selected-disabled` | `var(--terra-color-carbon-20)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-carbon-20);"></span>     |
-| `--terra-control-icon-selected-active`   | `var(--terra-color-carbon-40)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-color-carbon-40);"></span>     |
+| Token                                    | Value                              | Preview                                                                                                                                                           |
+| ---------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-control-icon-selected`          | `var(--terra-color-neutral-white)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-icon-selected);"></span>          |
+| `--terra-control-icon-selected-hover`    | `var(--terra-color-carbon-20)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-icon-selected-hover);"></span>    |
+| `--terra-control-icon-selected-disabled` | `var(--terra-color-carbon-20)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-icon-selected-disabled);"></span> |
+| `--terra-control-icon-selected-active`   | `var(--terra-color-carbon-40)`     | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-control-icon-selected-active);"></span>   |
 
 ## Breadcrumb Color Tokens
 
@@ -162,9 +162,9 @@ Breadcrumb color tokens define the visual appearance of breadcrumb elements in t
 
 ### Breadcrumb Text Tokens
 
-| Token                             | Value                                   | Preview                                                                                                                                                     |
-| --------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--terra-breadcrumb-text-default` | `var(--terra-text-interactive-default)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-default);"></span> |
-| `--terra-breadcrumb-text-hover`   | `var(--terra-text-interactive-hover)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-hover);"></span>   |
-| `--terra-breadcrumb-text-visited` | `var(--terra-text-tertiary)`            | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-tertiary);"></span>            |
-| `--terra-breadcrumb-text-current` | `var(--terra-text-interactive-active)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-text-interactive-active);"></span>  |
+| Token                             | Value                                   | Preview                                                                                                                                                    |
+| --------------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--terra-breadcrumb-text-default` | `var(--terra-text-interactive-default)` | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-breadcrumb-text-default);"></span> |
+| `--terra-breadcrumb-text-hover`   | `var(--terra-text-interactive-hover)`   | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-breadcrumb-text-hover);"></span>   |
+| `--terra-breadcrumb-text-visited` | `var(--terra-text-tertiary)`            | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-breadcrumb-text-visited);"></span> |
+| `--terra-breadcrumb-text-current` | `var(--terra-text-interactive-active)`  | <span style="display:inline-block;width:40px;height:20px;border-radius:4px;border:1px solid #ccc;background:var(--terra-breadcrumb-text-current);"></span> |
