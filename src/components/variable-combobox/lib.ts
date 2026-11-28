@@ -2,6 +2,37 @@ import { html } from 'lit'
 import { repeat } from 'lit/directives/repeat.js'
 import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
+function dispatchVariableInfoEvent(e: Event, listItem: GroupedListItem) {
+    e.preventDefault()
+    e.stopImmediatePropagation()
+    e.stopPropagation()
+
+    const anchor = e.currentTarget as HTMLElement
+    const variable = listItem.variables?.[0] ?? {}
+    const detail = JSON.parse(variable.eventDetail || '{}')
+
+    const mappedCollection = {
+        dataFieldLongName: detail.collectionLongName,
+        dataFieldShortName: detail.collectionShortName,
+        dataFieldAccessName: detail.standardName,
+        dataFieldUnits: detail.units,
+        dataProductDescriptionUrl: detail.datasetLandingPage,
+        dataProductLongName: detail.collectionLongName,
+        dataFieldDescriptionUrl: detail.variableLandingPage,
+    }
+
+    anchor.dispatchEvent(
+        new CustomEvent('terra-show-variable-info', {
+            detail: {
+                collection: mappedCollection,
+                anchor,
+            },
+            bubbles: true,
+            composed: true,
+        })
+    )
+}
+
 function renderSearchResult(listItem: GroupedListItem, index: number) {
     return html`<li class="listbox-option-group" data-tree-walker="filter_skip">
         <div class="group-title" data-tree-walker="filter_skip">
@@ -13,30 +44,20 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                 tabindex="0"
                 aria-label="Information for ${listItem.collectionEntryId}"
                 @mouseenter=${(e: MouseEvent) => {
-                    e.preventDefault()
-                    e.stopImmediatePropagation()
-                    e.stopPropagation()
-
-                    const variable = listItem.variables?.[0] ?? {}
-                    const detail = JSON.parse(variable.eventDetail || '{}')
-
-                    const mappedCollection = {
-                        dataFieldLongName: detail.collectionLongName,
-                        dataFieldShortName: detail.collectionShortName,
-                        dataFieldAccessName: detail.standardName,
-                        dataFieldUnits: detail.units,
-                        dataProductDescriptionUrl: detail.datasetLandingPage,
-                        dataProductLongName: detail.collectionLongName,
-                        dataFieldDescriptionUrl: detail.variableLandingPage,
+                    if (!window.matchMedia('(max-width: 768px)').matches) {
+                        dispatchVariableInfoEvent(e, listItem)
                     }
-
-                    const event = new CustomEvent('terra-show-variable-info', {
-                        detail: { collection: mappedCollection },
-                        bubbles: true,
-                        composed: true,
-                    })
-
-                    e.currentTarget?.dispatchEvent(event)
+                }}
+                @click=${(e: MouseEvent) => {
+                    if (window.matchMedia('(max-width: 768px)').matches) {
+                        dispatchVariableInfoEvent(e, listItem)
+                    }
+                }}
+                @keydown=${(e: KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        dispatchVariableInfoEvent(e, listItem)
+                    }
                 }}
             >
                 <terra-icon

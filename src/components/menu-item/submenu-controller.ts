@@ -64,6 +64,10 @@ export class SubmenuController implements ReactiveController {
                     'terra-reposition',
                     this.handlePopupReposition
                 )
+                this.popupRef.value.addEventListener(
+                    'terra-popup-dismiss',
+                    this.handlePopupDismiss
+                )
                 this.isPopupConnected = true
             }
         }
@@ -87,6 +91,10 @@ export class SubmenuController implements ReactiveController {
                 this.popupRef.value.removeEventListener(
                     'terra-reposition',
                     this.handlePopupReposition
+                )
+                this.popupRef.value.removeEventListener(
+                    'terra-popup-dismiss',
+                    this.handlePopupDismiss
                 )
                 this.isPopupConnected = false
             }
@@ -214,6 +222,10 @@ export class SubmenuController implements ReactiveController {
         event.stopPropagation()
     }
 
+    private handlePopupDismiss = () => {
+        this.disableSubmenu()
+    }
+
     // Set the safe triangle values for the submenu when the position changes
     private handlePopupReposition = () => {
         const submenuSlot: HTMLSlotElement | null =
@@ -247,8 +259,8 @@ export class SubmenuController implements ReactiveController {
         if (this.popupRef.value) {
             if (this.popupRef.value.active !== state) {
                 this.popupRef.value.active = state
-                this.host.requestUpdate()
             }
+            this.host.requestUpdate()
         }
     }
 

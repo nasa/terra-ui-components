@@ -3,7 +3,7 @@ import path from 'node:path'
 import { esbuildPlugin } from '@web/dev-server-esbuild'
 import { playwrightLauncher } from '@web/test-runner-playwright'
 import { globbySync } from 'globby'
-
+import { summaryReporter } from '@web/test-runner'
 import * as sass from 'sass'
 
 const packageJson = JSON.parse(
@@ -128,6 +128,7 @@ function resolveTestImages() {
 export default {
     rootDir: '.',
     files: 'src/**/*.test.ts', // "default" group
+    reporters: [summaryReporter()],
     concurrentBrowsers: 3, // when more than one browser is running a time, we can hit core limits and cause test flakiness
     nodeResolve: {
         exportConditions: ['production', 'default'],

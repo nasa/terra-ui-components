@@ -71,6 +71,20 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
     #tagContainer: HTMLDivElement | null = null
 
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state()
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 768px)')
+
+    private handleMobileChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches
+
+        // Close the info popup so it can reopen with the correct anchor (variable-combobox or info-icon).
+        this.menuOpen = false
+    }
+
     /**
      * Label the combobox with this.
      * @example Search All Variables
@@ -130,12 +144,20 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
     @state() private infoAnchor: HTMLElement | null = null
     @state() private variableInfo: any = null
     #hideTimeout: number | null = null
+    #infoTrigger: HTMLElement | null = null
 
     #handleShowVariableInfo = (e: CustomEvent) => {
         e.stopPropagation()
+
+        const wasOpenForSameAnchor =
+            this.menuOpen && this.infoAnchor === e.detail.anchor
+
+        this.#infoTrigger = e.detail.anchor as HTMLElement
         this.variableInfo = e.detail.collection
-        this.infoAnchor = e.currentTarget as HTMLElement
-        this.menuOpen = true
+        this.infoAnchor = this.isMobile ? (e.detail.anchor as HTMLElement) : this
+
+        this.menuOpen = !wasOpenForSameAnchor
+
         if (this.#hideTimeout) {
             clearTimeout(this.#hideTimeout)
             this.#hideTimeout = null
@@ -158,6 +180,21 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
     #handleMenuLeave = () => {
         this.menuOpen = false
+    }
+
+    #handlePopupDismiss = () => {
+        this.menuOpen = false
+        this.#hideTimeout = null
+    }
+
+    #handleInfoPopupKeydown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.menuOpen) {
+            event.preventDefault()
+            event.stopPropagation()
+
+            this.menuOpen = false
+            this.#infoTrigger?.focus()
+        }
     }
 
     /**
@@ -200,6 +237,9 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
     connectedCallback() {
         super.connectedCallback()
 
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMobileChange)
+
         //* instantiate the fetch contoller maybe with a token
         this.#fetchController = new FetchController(this, this.bearerToken ?? null)
 
@@ -210,10 +250,13 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
             this.#handleShowVariableInfo
         )
         this.addEventListener('mouseleave', this.#handleIconLeave)
+        this.addEventListener('keydown', this.#handleInfoPopupKeydown)
     }
 
     disconnectedCallback() {
         super.disconnectedCallback()
+
+        this.mediaQuery.removeEventListener('change', this.handleMobileChange)
 
         globalThis.removeEventListener('click', this.#manageListboxVisibility)
         this.removeEventListener(
@@ -221,6 +264,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
             this.#handleShowVariableInfo
         )
         this.removeEventListener('mouseleave', this.#handleIconLeave)
+        this.removeEventListener('keydown', this.#handleInfoPopupKeydown)
     }
 
     clear() {
@@ -362,6 +406,18 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
         if (!containedThis) {
             this.isExpanded = false
         }
+
+        // On mobile, dismiss the info popup when clicking outside both the info icon and the popup itself.
+        if (this.isMobile && this.menuOpen) {
+            const popup = this.shadowRoot?.querySelector('terra-popup')
+
+            const clickedAnchor = path.includes(this.infoAnchor as EventTarget)
+            const clickedPopup = popup && path.includes(popup)
+
+            if (!clickedAnchor && !clickedPopup) {
+                this.menuOpen = false
+            }
+        }
     }
 
     #selectOption = (option: HTMLLIElement) => {
@@ -477,7 +533,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
         return html`
             <terra-popup
                 .anchor=${this.infoAnchor}
-                ?active=${this.menuOpen}
+                .active=${this.menuOpen}
                 placement="right-start"
                 strategy="fixed"
                 flip
@@ -485,6 +541,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
                 distance="8"
                 @mouseenter=${this.#handleMenuEnter}
                 @mouseleave=${this.#handleMenuLeave}
+                @terra-popup-dismiss=${this.#handlePopupDismiss}
             >
                 <div class="variable-info-popup">
                     ${this.#renderInfoPanel(this.variableInfo)}
