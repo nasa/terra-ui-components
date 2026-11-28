@@ -71,6 +71,17 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
     #tagContainer: HTMLDivElement | null = null
 
+    /** Screen size detection use to determine layout for mobile devices */
+
+    @state()
+    isMobile = false
+
+    private mediaQuery = window.matchMedia('(max-width: 768px)')
+
+    private handleMobileChange = (event: MediaQueryListEvent) => {
+        this.isMobile = event.matches
+    }
+
     /**
      * Label the combobox with this.
      * @example Search All Variables
@@ -133,9 +144,17 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
     #handleShowVariableInfo = (e: CustomEvent) => {
         e.stopPropagation()
+
+        const wasOpenForSameAnchor =
+            this.menuOpen && this.infoAnchor === e.detail.anchor
+
         this.variableInfo = e.detail.collection
-        this.infoAnchor = e.currentTarget as HTMLElement
-        this.menuOpen = true
+        this.infoAnchor = this.isMobile
+            ? (e.detail.anchor as HTMLElement)
+            : this
+
+        this.menuOpen = !wasOpenForSameAnchor
+
         if (this.#hideTimeout) {
             clearTimeout(this.#hideTimeout)
             this.#hideTimeout = null
@@ -205,6 +224,9 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
     connectedCallback() {
         super.connectedCallback()
 
+        this.isMobile = this.mediaQuery.matches
+        this.mediaQuery.addEventListener('change', this.handleMobileChange)
+
         //* instantiate the fetch contoller maybe with a token
         this.#fetchController = new FetchController(this, this.bearerToken ?? null)
 
@@ -219,6 +241,8 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
     disconnectedCallback() {
         super.disconnectedCallback()
+
+        this.mediaQuery.removeEventListener('change', this.handleMobileChange)
 
         globalThis.removeEventListener('click', this.#manageListboxVisibility)
         this.removeEventListener(
@@ -366,6 +390,18 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
         if (!containedThis) {
             this.isExpanded = false
+        }
+
+        // On mobile, dismiss the info popup when clicking outside both the info icon and the popup itself.
+        if (this.isMobile && this.menuOpen) {
+            const popup = this.shadowRoot?.querySelector('terra-popup')
+
+            const clickedAnchor = path.includes(this.infoAnchor as EventTarget)
+            const clickedPopup = popup && path.includes(popup)
+
+            if (!clickedAnchor && !clickedPopup) {
+                this.menuOpen = false
+            }
         }
     }
 

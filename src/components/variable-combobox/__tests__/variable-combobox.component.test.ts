@@ -125,8 +125,12 @@ describe('<terra-variable-combobox>', () => {
             html`<terra-variable-combobox></terra-variable-combobox>`
         )
 
-        // The variable-info popup uses the component itself as its anchor.
-        el.getBoundingClientRect = () => new DOMRect(20, -40, 200, 40)
+        // Mobile popups use the info icon as their anchor.
+        const anchor = document.createElement('span')
+        document.body.appendChild(anchor)
+
+        let anchorRect = new DOMRect(20, 100, 20, 20)
+        anchor.getBoundingClientRect = () => anchorRect
 
         const variableInfo = {
             dataFieldLongName: 'Air Temperature',
@@ -140,7 +144,10 @@ describe('<terra-variable-combobox>', () => {
         const showVariableInfo = () => {
             el.dispatchEvent(
                 new CustomEvent('terra-show-variable-info', {
-                    detail: { collection: variableInfo },
+                    detail: {
+                        collection: variableInfo,
+                        anchor,
+                    },
                 })
             )
         }
@@ -162,6 +169,8 @@ describe('<terra-variable-combobox>', () => {
         expect(el.menuOpen).to.equal(true)
         expect(popup.active).to.equal(true)
 
+        // Move the anchor completely outside the viewport.
+        anchorRect = new DOMRect(20, -40, 20, 20)
         window.dispatchEvent(new Event('scroll'))
 
         await waitUntil(
@@ -169,11 +178,93 @@ describe('<terra-variable-combobox>', () => {
             'variable info popup did not close after its anchor scrolled out of view'
         )
 
+        // Move the anchor back into view and reopen the popup.
+        anchorRect = new DOMRect(20, 100, 20, 20)
         showVariableInfo()
 
         await waitUntil(
             () => el.menuOpen === true && popup.active === true,
             'variable info popup did not reopen'
         )
+
+        anchor.remove()
+    })
+
+    it('toggles the variable info popup when the info icon is tapped on mobile', async () => {
+        await setViewport({ width: 390, height: 844 })
+
+        const el: any = await fixture(
+            html`<terra-variable-combobox></terra-variable-combobox>`
+        )
+
+        await waitUntil(
+            () => (el.shadowRoot?.querySelectorAll('.info-icon')?.length ?? 0) > 0,
+            'variable info icons did not render'
+        )
+
+        const infoIcon = el.shadowRoot!.querySelector('.info-icon') as HTMLElement
+
+        infoIcon.click()
+
+        await waitUntil(
+            () => el.menuOpen === true,
+            'variable info popup did not open after tapping the info icon'
+        )
+
+        expect(el.shadowRoot.querySelector('terra-popup')?.active).to.equal(true)
+
+        infoIcon.click()
+
+        await waitUntil(
+            () => el.menuOpen === false,
+            'variable info popup did not close after tapping the same info icon'
+        )
+
+        expect(el.shadowRoot.querySelector('terra-popup')?.active).to.equal(false)
+    })   
+    
+    it('keeps the variable info popup open when tapped inside and closes it when tapped outside on mobile', async () => {
+        await setViewport({ width: 390, height: 844 })
+
+        const el: any = await fixture(
+            html`<terra-variable-combobox></terra-variable-combobox>`
+        )
+
+        await waitUntil(
+            () => (el.shadowRoot?.querySelectorAll('.info-icon')?.length ?? 0) > 0,
+            'variable info icons did not render'
+        )
+
+        const infoIcon = el.shadowRoot!.querySelector('.info-icon') as HTMLElement
+
+        infoIcon.click()
+
+        await waitUntil(
+            () => el.menuOpen === true,
+            'variable info popup did not open'
+        )
+
+        const popup = el.shadowRoot!.querySelector('terra-popup')!
+        const popupContent = popup.querySelector('.variable-info-popup') as HTMLElement
+
+        expect(popupContent).to.exist
+
+        popupContent.dispatchEvent(
+            new MouseEvent('click', { bubbles: true, composed: true })
+        )
+
+        expect(el.menuOpen).to.equal(true)
+        expect(popup.active).to.equal(true)
+
+        document.body.dispatchEvent(
+            new MouseEvent('click', { bubbles: true, composed: true })
+        )
+
+        await waitUntil(
+            () => el.menuOpen === false,
+            'variable info popup did not close after tapping outside'
+        )
+
+        expect(popup.active).to.equal(false)
     })
 })
