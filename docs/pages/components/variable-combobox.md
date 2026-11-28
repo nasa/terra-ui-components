@@ -37,11 +37,13 @@ On mobile viewports (768px wide or smaller), the variable information popup uses
 
 - **Dismiss:** Tap anywhere outside the information icon and popup to close it.
 
-- **Automatic dismissal:** The popup automatically closes when its anchor element (the information icon) is scrolled completely outside the viewport.
+- **Automatic dismissal:** The popup automatically closes when its anchor element (the information icon) is scrolled completely outside the viewport. This prevents popup content from remaining visible when its associated element is no longer visible.
+
+- **Keyboard dismissal:** Press Escape to close the variable information popup when it is open. The popup can be opened using Enter or Space when the information icon has keyboard focus.
+
+If the viewport crosses the 768px breakpoint while the variable information popup is open, the popup automatically closes. This ensures that the popup uses the appropriate anchor for the new viewport size when reopened. On desktop, the combobox is used as the anchor; on mobile, the information icon is used.
 
 The variable information popup is constrained to the available viewport space. When its content exceeds the available space, the content area becomes independently scrollable.
-
-The popup automatically closes when its anchor element is scrolled completely outside the viewport. This prevents popup content from remaining visible when its associated element is no longer visible.
 
 See the [Popup documentation](/components/popup) for more information about mobile viewport constraints, scrolling, and automatic dismissal.
 

@@ -80,6 +80,9 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
 
     private handleMobileChange = (event: MediaQueryListEvent) => {
         this.isMobile = event.matches
+
+        // Close the info popup so it can reopen with the correct anchor (variable-combobox or info-icon).
+        this.menuOpen = false
     }
 
     /**
@@ -141,6 +144,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
     @state() private infoAnchor: HTMLElement | null = null
     @state() private variableInfo: any = null
     #hideTimeout: number | null = null
+    #infoTrigger: HTMLElement | null = null
 
     #handleShowVariableInfo = (e: CustomEvent) => {
         e.stopPropagation()
@@ -148,6 +152,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
         const wasOpenForSameAnchor =
             this.menuOpen && this.infoAnchor === e.detail.anchor
 
+        this.#infoTrigger = e.detail.anchor as HTMLElement
         this.variableInfo = e.detail.collection
         this.infoAnchor = this.isMobile ? (e.detail.anchor as HTMLElement) : this
 
@@ -180,6 +185,16 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
     #handlePopupDismiss = () => {
         this.menuOpen = false
         this.#hideTimeout = null
+    }
+
+    #handleInfoPopupKeydown = (event: KeyboardEvent) => {
+        if (event.key === 'Escape' && this.menuOpen) {
+            event.preventDefault()
+            event.stopPropagation()
+
+            this.menuOpen = false
+            this.#infoTrigger?.focus()
+        }
     }
 
     /**
@@ -235,6 +250,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
             this.#handleShowVariableInfo
         )
         this.addEventListener('mouseleave', this.#handleIconLeave)
+        this.addEventListener('keydown', this.#handleInfoPopupKeydown)
     }
 
     disconnectedCallback() {
@@ -248,6 +264,7 @@ export default class TerraVariableCombobox extends AuthMixin(TerraElement) {
             this.#handleShowVariableInfo
         )
         this.removeEventListener('mouseleave', this.#handleIconLeave)
+        this.removeEventListener('keydown', this.#handleInfoPopupKeydown)
     }
 
     clear() {

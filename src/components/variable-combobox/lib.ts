@@ -2,7 +2,7 @@ import { html } from 'lit'
 import { repeat } from 'lit/directives/repeat.js'
 import type { GroupedListItem, ListItem } from './variable-combobox.types.js'
 
-function dispatchVariableInfoEvent(e: MouseEvent, listItem: GroupedListItem) {
+function dispatchVariableInfoEvent(e: Event, listItem: GroupedListItem) {
     e.preventDefault()
     e.stopImmediatePropagation()
     e.stopPropagation()
@@ -52,7 +52,13 @@ function renderSearchResult(listItem: GroupedListItem, index: number) {
                     if (window.matchMedia('(max-width: 768px)').matches) {
                         dispatchVariableInfoEvent(e, listItem)
                     }
-                }}                
+                }}
+                @keydown=${(e: KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        dispatchVariableInfoEvent(e, listItem)
+                    }
+                }}
             >
                 <terra-icon
                     name="outline-information-circle"
