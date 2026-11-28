@@ -312,7 +312,6 @@ describe('<terra-variable-combobox>', () => {
 
         // Verify the popup closed.
         expect(el.menuOpen).to.equal(false)
-
     })
 
     it('closes the variable info popup when crossing the mobile breakpoint and reopens with the correct anchor', async () => {
@@ -322,8 +321,7 @@ describe('<terra-variable-combobox>', () => {
             html`<terra-variable-combobox></terra-variable-combobox>`
         )
 
-        const getPopup = () =>
-            el.shadowRoot!.querySelector('terra-popup')
+        const getPopup = () => el.shadowRoot!.querySelector('terra-popup')
 
         const anchor = document.createElement('span')
         document.body.appendChild(anchor)
@@ -391,5 +389,5 @@ describe('<terra-variable-combobox>', () => {
         )
 
         anchor.remove()
-    })    
+    })
 })
