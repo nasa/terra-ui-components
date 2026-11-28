@@ -128,7 +128,10 @@ export default class TerraTooltip extends TerraElement {
         await this.updateComplete
 
         if (this.isConnected) {
-            this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
+            this.popup.addEventListener(
+                'terra-popup-dismiss',
+                this.handlePopupDismiss
+            )
         }
     }
 
@@ -137,7 +140,10 @@ export default class TerraTooltip extends TerraElement {
         // Cleanup this event in case the tooltip is removed while open
         this.closeWatcher?.destroy()
         document.removeEventListener('keydown', this.handleDocumentKeyDown)
-        this.popup?.removeEventListener('terra-popup-dismiss', this.handlePopupDismiss)
+        this.popup?.removeEventListener(
+            'terra-popup-dismiss',
+            this.handlePopupDismiss
+        )
     }
 
     firstUpdated() {
