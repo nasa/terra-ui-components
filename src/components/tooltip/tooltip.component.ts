@@ -122,17 +122,26 @@ export default class TerraTooltip extends TerraElement {
         this.addEventListener('mouseout', this.handleMouseOut)
     }
 
+    async connectedCallback() {
+        super.connectedCallback()
+
+        await this.updateComplete
+
+        if (this.isConnected) {
+            this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
+        }
+    }
+
     disconnectedCallback() {
         super.disconnectedCallback()
         // Cleanup this event in case the tooltip is removed while open
         this.closeWatcher?.destroy()
         document.removeEventListener('keydown', this.handleDocumentKeyDown)
-        this.popup.removeEventListener('terra-popup-dismiss', this.handlePopupDismiss)
+        this.popup?.removeEventListener('terra-popup-dismiss', this.handlePopupDismiss)
     }
 
     firstUpdated() {
         this.body.hidden = !this.open
-        this.popup.addEventListener('terra-popup-dismiss', this.handlePopupDismiss)
 
         // If the tooltip is visible on init, update its position
         if (this.open) {
